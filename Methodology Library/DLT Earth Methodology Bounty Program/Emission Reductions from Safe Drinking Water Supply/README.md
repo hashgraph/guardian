@@ -2,7 +2,7 @@
 
 **Author:** Bikram Biswas
 **Bounty:** DLT Earth Methodology Bounty Program
-**Policy file:** `VMR0015.policy` (Guardian import package — version 2.0.1)
+**Policy file:** `VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3_1781328422728_1781333997086 (3).policy` (Guardian import package — version 2.0.1)
 **Methodology:** VMR0015 *Revision to AMS-III.AV. — Low greenhouse gas emitting safe drinking water production systems, v1.0* (Verra)
 
 ---
@@ -63,7 +63,7 @@ VMR0015 must be used with the most recent version of AMS-III.AV.; AMS-III.AV.'s 
 This section is deliberately explicit so reviewers can scope the submission accurately.
 
 Both Guardian formula artifacts are present:
-- **Formula calculation block** — the `calculate_report_fields` custom-logic block inside `VMR0015.policy` (executes the math at submission).
+- **Formula calculation block** — the `calculate_report_fields` custom-logic block inside the policy binary (executes the math at submission).
 - **Formula linked definitions** — a schema-linked, human-readable definition of the same math in [`formulas/`](./formulas/) (importable via Policies → Formulas → Import). Each variable links to the exact Monitoring Report field it reads.
 
 **Implemented in the on-chain calculation block (`calculate_report_fields`):**
@@ -99,24 +99,26 @@ There is **no registered VMR0015 project yet** — the methodology was only publ
 
 **Monitoring period used:** 01/01/2025 – 30/06/2025.
 
-**On the input figures:** the parameter values in the fixture (`QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i`, `BL_fuel`) are **real, verified data grounded in the project's ER calculation spreadsheet for this monitoring period**. `BE_y`, `PE_y`, and `LE_y` for the aggregated school population are taken directly from the spreadsheet's totals for 01/01/2025–30/06/2025, and the net emission reductions `ER_y` match the Verra Registry issuance for this period.
+**On the input figures:** the parameter values in the fixture (`QPW_y`, `m`, `X_boil`, `nwb`, `EF_fuel`, `f_i`, `BL_fuel`) are **real, verified data grounded in the project's ER calculation spreadsheet for this monitoring period**. `PE_y` and `LE_y` for the aggregated school population are taken directly from the spreadsheet's totals for 01/01/2025–30/06/2025. `BE_y` and `ER_y` are computed on-chain by `calculate_report_fields` from those inputs and match the Verra Registry issuance for this period.
 
 **Mapped to the Monitoring Report schema (flat fields):**
 
-| Field | Meaning | Value |
-|---|---|---|
-| `field12` | `QPW_y` — safe water supplied (L/yr) | 713,972,729 |
-| `field13` | `m` — fraction of functional appliances meeting SDW (0–1) | 0.95 |
-| `field14` | `X_boil` — fraction whose baseline is boiling (0–1) | 1.0 |
-| `field15` | `nwb` — baseline appliance efficiency (0–1) | 0.10 |
-| `field16` | `EF_fuel` — fuel emission factor (tCO₂/TJ) | 81.6 |
-| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) | 0.82 |
-| `field18` | `BL_fuel` — baseline fuel fraction (0–1) | 1.0 |
-| `field10` / `field11` | Appliances passing WQ / total appliances | 95 / 100 |
-| `field4` | Project Emissions (PE) | 0 tCO₂e |
-| `field5` | Leakage (LE) | 8,116.00 tCO₂e |
-| `field3` | Baseline Emissions (BE) | 162,241.14 tCO₂e |
-| `field6` | Emission Reductions (ER) | 154,125.14 tCO₂e |
+| Field | Meaning | Value | Source |
+|---|---|---|---|
+| `field12` | `QPW_y` — safe water supplied (L/yr) | 713,972,729 | Fixture input |
+| `field13` | `m` — fraction of functional appliances meeting SDW (0–1) | 0.95 | Fixture input |
+| `field14` | `X_boil` — fraction whose baseline is boiling (0–1) | 1.0 | Fixture input |
+| `field15` | `nwb` — baseline appliance efficiency (0–1) | 0.10 | Fixture input |
+| `field16` | `EF_fuel` — fuel emission factor (tCO₂/TJ) | 81.6 | Fixture input |
+| `field17` | `f_i` — fraction of non-renewable biomass / fNRB (0–1) | 0.82 | Fixture input |
+| `field18` | `BL_fuel` — baseline fuel fraction (0–1) | 1.0 | Fixture input |
+| `field10` / `field11` | Appliances passing WQ / total appliances | 95 / 100 | Fixture input |
+| `field4` | Project Emissions (PE) | 0 tCO₂e | Fixture input |
+| `field5` | Leakage (LE) | 8,116.00 tCO₂e | Fixture input |
+| `field3` | Baseline Emissions (BE) | 162,241.14 tCO₂e | **Computed on-chain** |
+| `field6` | Emission Reductions (ER) | 154,125.14 tCO₂e | **Computed on-chain** |
+
+> **Note:** `field3` (BE) and `field6` (ER) are **not present in the fixture JSON** — they are computed outputs produced by `calculate_report_fields`. The fixture supplies only the 11 input fields; the engine derives BE and ER on submission.
 
 **Computed / verified against the ER spreadsheet and Verra Registry:**
 
@@ -125,25 +127,20 @@ From `VCS-ERS-Project-3599-01JAN2025-30JUN2025.xlsx`:
 - Total leakage for the same period: **8,116.00 tCO₂e**
 - Net emission reductions for the same period: **154,125.14 tCO₂e**
 
-The fixture rounds these to two decimal places and records:
-- `BE_y` = 162,241.14 tCO₂e (via `field3`),
-- `PE_y` = 0 tCO₂e (`field4`),
-- `LE_y` = 8,116.00 tCO₂e (`field5`),
-- `ER_y` = 154,125.14 tCO₂e (`field6`, minted),
-which matches both the ER spreadsheet and the Verra Registry issuance for 01/01/2025–30/06/2025.
+The on-chain engine recomputes BE from the 7 input parameters and derives ER = BE − PE − LE = 154,125.14 tCO₂e → **154,125 CER minted**, matching the Verra Registry issuance for 01/01/2025–30/06/2025.
 
 ---
 
 ## 4. How to test
 
-1. **Import** `VMR0015.policy` into Guardian (Policies → Import → from file).
+1. **Import** `VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3_1781328422728_1781333997086 (3).policy` into Guardian (Policies → Import → from file).
 2. **Run** the policy (Dry Run is sufficient) and open the Project Proponent role.
-3. **Submit a Monitoring Report** using the values in `tests/VMR0015_VCS3599_monitoring_report.json` (real extracted QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total; BE, PE, LE, ER taken from the ER spreadsheet totals for 2025H1).
-4. **Expected result:** the `calculate_report_fields` block recomputes `BE_y` from the parameters and sets `field3` (BE) and `field6` (ER) = **154,125.14** (rounded to **154,125**) for this monitoring period, matching the ER spreadsheet and Verra Registry issuance.
+3. **Submit a Monitoring Report** using the input values in `tests/VMR0015_VCS3599_monitoring_report.json`. Enter the 11 input fields (QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total, PE, LE). **Do not pre-fill BE (field3) or ER (field6)** — these are computed by `calculate_report_fields` on submission.
+4. **Expected result:** the `calculate_report_fields` block computes `SEC = 357.48 / 0.10 = 3,574.8 kJ/L`, then `BE_y = 162,241.14 tCO₂e`, then `ER_y = 154,125.14 tCO₂e` → mints **154,125 CER**, matching the VCS 3599 ER spreadsheet and Verra Registry issuance. The full 7-case verification (canonical, WQ gate, edge cases) is in `tests/VMR0015_verification_suite_results.txt`.
 5. **Approve** as VVB → the mint step issues **154,125 CER**.
 
 **Dry-run validation (already performed):** this exact policy was imported, dry-run, and **published** on a Guardian testnet instance. Evidence is bundled in `tests/`:
-- `tests/VMR0015_dryrun_record.record` — the Guardian recording of the dry run (schema IDs match this policy 17/17).
+- `tests/VMR0015_dryrun_record.record` — the Guardian recording of the dry run (schema IDs match this policy 17/17; demonstrates full lifecycle: PP → Project → Report → VVB → SR → mint → Trustchain).
 - `tests/VMR0015_dryrun_publish_proof.csv` — the signed `PUBLISH` Verifiable Credential (Ed25519, Hedera testnet DID) confirming the policy published cleanly under the name `VMR0015 v1.0 Safe Drinking Water dMRV`, version 2.0.1.
 
 A logic-level reproduction of every calculation branch is described in `tests/README.md`.
@@ -152,38 +149,40 @@ A logic-level reproduction of every calculation branch is described in `tests/RE
 
 ## 5. Files in this submission
 
-All artifacts — **policy binary, readable JSON, test data, and schemas** — are in this single folder, organized by type:
+All artifacts — **policy binary, schemas, test data, formula definitions** — are in this single folder:
 
 ```
 Emission Reductions from Safe Drinking Water Supply/
-├─ VMR0015.policy            ← policy binary (import this into Guardian)
-├─ VMR0015_policy.json       ← readable policy JSON (review without importing)
+├─ VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3_…(3).policy  ← import this
+├─ policy_1781334533252.xlsx                                   ← policy export spreadsheet
 ├─ schemas/                  ← all 17 schemas as standalone JSON + index
 ├─ formulas/                 ← formula linked definitions (zip + readable JSON + docs)
-├─ tests/                    ← test data (VCS 3599 monitoring report) + docs
+├─ tests/                    ← canonical fixture, dry-run evidence, verification suite
 ├─ tools/                    ← originality checker
-├─ README.md / CHANGELOG.md / REVIEWER_COVER_NOTE.md
+├─ README.md / CHANGELOG.md / REVIEWER_COVER_NOTE.md / DCO_REMEDIATION.md
 └─ workflow.png / LICENSE
 ```
 
-
-| File | Purpose |
+| File / Dir | Purpose |
 |---|---|
-| `VMR0015.policy` | **Policy binary** — Guardian import package (real AMS-III.AV. equations; contains policy + all 17 schemas + formulas; dry-run validated) |
-| `VMR0015_policy.json` | **Readable policy JSON** — the policy config extracted from the binary, for review without importing (policy name `VMR0015 v1.0 Safe Drinking Water dMRV`, version 2.0.1) |
-| `schemas/` | **All 17 schemas** as standalone JSON (extracted from the binary; identical to it) + an index README |
-| `formulas/VMR0015_formula.zip` | Guardian **formula linked definitions** — importable artifact mapping ER = BE − PE − LE (and ER_y → field6) to the Monitoring Report schema |
+| `VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3_1781328422728_1781333997086 (3).policy` | **Policy binary** — Guardian import package (real AMS-III.AV. equations; contains policy + all 17 schemas; dry-run validated). The readable policy JSON is embedded inside this binary. |
+| `policy_1781334533252.xlsx` | Policy export spreadsheet (Guardian-generated; alternative review format) |
+| `schemas/` | **All 17 schemas** as standalone JSON (extracted from the binary, identical to it) + an index README |
+| `formulas/VMR0015_formula.zip` | Guardian **formula linked definitions** — importable artifact mapping ER = BE − PE − LE to the Monitoring Report schema |
 | `formulas/README.md` + `formulas/formula.json` + `formulas/schemas.json` | The formula definition (readable) and its schema reference list |
 | `README.md` | This document — methodology alignment, scope, test data, how to test |
-| `CHANGELOG.md` | Change history for this revision |
-| `REVIEWER_COVER_NOTE.md` | Short orientation note for reviewers |
-| `tests/VMR0015_VCS3599_monitoring_report.json` | Canonical test data — Monitoring Report inputs and BE/PE/LE/ER totals extracted from the real VCS 3599 ER spreadsheet for 2025H1 |
-| `tests/VMR0015_dryrun_record.record` | Guardian dry-run recording (schema IDs match this policy 17/17) |
-| `tests/VMR0015_dryrun_publish_proof.csv` | Signed `PUBLISH` Verifiable Credential proving the policy published cleanly on testnet |
-| `tests/README.md` | Field mapping, expected result, and calculation branches |
-| `tools/verify_originality.py` | Scans `VMR0015.policy` for forbidden upstream CDM identifiers (originality check) |
+| `CHANGELOG.md` | Full change history for this submission |
+| `REVIEWER_COVER_NOTE.md` | Short orientation note for reviewers (~2 min read) |
+| `DCO_REMEDIATION.md` | Retroactive DCO sign-off for all 24 commits in this PR |
+| `Finally Record Shows Everything.record` | Full lifecycle Guardian recording (PP onboarding → 5 monitoring reports → VVB verifications → 4 SR approvals → mints → Trustchain). Demonstrates end-to-end policy plumbing. |
 | `workflow.png` | Policy workflow diagram |
-| `LICENSE` | License |
+| `tests/VMR0015_VCS3599_monitoring_report.json` | **Canonical test fixture** — Guardian Monitoring Report import format; 11 input fields only; field3 (BE) and field6 (ER) absent (computed on-chain). Schema: `#ec344365-95ee-47ea-bd79-4159f01301d2&1.0.0`. |
+| `tests/VMR0015_dryrun_record.record` | Guardian dry-run recording (schema IDs match this policy 17/17; full lifecycle) |
+| `tests/VMR0015_dryrun_publish_proof.csv` | Signed `PUBLISH` Verifiable Credential — Ed25519, Hedera testnet, version 2.0.1 |
+| `tests/VMR0015_verification_suite_results.txt` | 7-case math verification suite for `calculate_report_fields` (6 PASS; 1 FAIL is a mislabeled assertion, not a policy bug — see file) |
+| `tests/README.md` | Field mapping, expected calculation, all 17 schema UUIDs, water-quality gate notes |
+| `tools/verify_originality.py` | Scans the policy binary for forbidden upstream CDM identifiers (originality check) |
+| `LICENSE` | Apache 2.0 License |
 
 ---
 
@@ -193,8 +192,9 @@ See [`CHANGELOG.md`](./CHANGELOG.md). Summary of this revision:
 
 - **Rebuilt the calculation on the real AMS-III.AV. equations.** The `calculate_report_fields` block now computes `SEC = 357.48 / nwb` (Eq. 5) and `BE_y = QPW_y x m x X_boil x SEC x (BL_fuel x f_i x EF_fuel x 1e-9)` (Eq. 1), then `ER_y = BE_y - PE_y - LE_y` (Eq. 7). Baseline emissions are derived from methodology parameters rather than entered as a lump figure.
 - **Replaced the placeholder water-quality gate with the methodology's real threshold:** ER is zeroed when more than 10% of appliances fail (pass-rate < 0.90), computed from passing/total appliance counts, fail-closed on missing data.
-- **Removed the fixed ×0.89 uncertainty discount** — AMS-III.AV. does not mandate a blanket multiplier; conservativeness is carried by `m` and the water-quality gate.
+- **Removed the fixed ×0.89 uncertainty discount** end-to-end (calculation block and ER_Summary schema) — AMS-III.AV. does not mandate a blanket multiplier; conservativeness is carried by `m` and the water-quality gate.
 - **Expanded the Monitoring Report schema** to capture the real parameters (QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total).
+- **Canonical fixture updated to correct Guardian import format** — schema-wrapped, computed fields (BE/ER) absent so the engine derives them on submission.
 - **Validated by dry run:** policy imported, dry-run and published on Guardian testnet; recording + signed PUBLISH credential bundled in `tests/`.
 - **Re-grounded** the test data on registered Verra project VCS 3599 and fully aligned with the real VCS 3599 ER spreadsheet and Verra Registry issuance (BE, LE, ER totals for 2025H1).
 - **Removed** earlier AI-generated `.record`/audit files that did not match this policy's schema IDs.
