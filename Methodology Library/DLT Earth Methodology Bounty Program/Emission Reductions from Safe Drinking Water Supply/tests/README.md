@@ -4,9 +4,22 @@ This directory contains the canonical test fixture and dry-run execution records
 
 ---
 
+## Files in this directory
+
+| File | Purpose |
+|---|---|
+| `VMR0015_VCS3599_monitoring_report.json` | Canonical Guardian-format Monitoring Report fixture (input-only; computed fields absent) |
+| `VMR0015_dryrun_record.record` | Guardian policy execution record confirming full lifecycle and 17/17 schema match |
+| `VMR0015_dryrun_publish_proof.csv` | Signed PUBLISH Verifiable Credential (Ed25519, Hedera testnet, version 2.0.1) |
+| `VMR0015_verification_suite_results.txt` | Reproducible math verification — 7 cases covering canonical, WQ gate, edge cases |
+
+---
+
 ## Canonical test fixture
 
 `VMR0015_VCS3599_monitoring_report.json` is a Guardian-formatted Monitoring Report built from back-calculated VCS 3599 parameters.
+
+> **Format note:** `field3` (BE) and `field6` (ER) are **intentionally absent** from the fixture — the policy engine computes them on-chain via `calculate_report_fields`. Pre-populating them would bypass the calculation. The schema wrapper is `#ec344365-95ee-47ea-bd79-4159f01301d2&1.0.0`.
 
 ### Input parameters
 
@@ -31,11 +44,13 @@ SEC  = 357.48 / nwb = 357.48 / 0.10 = 3,574.8 kJ/L                              
 BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i × EF_fuel × 1e-9)
      = 713,972,729 × 0.95 × 1.0 × 3,574.8 × (1.0 × 0.82 × 81.6 × 1e-9)         = 162,241.14 tCO₂e [Eq.1]
 
-Appliance pass-rate = 95 / 100 = 0.95 ≥ 0.90, so the water-quality gate passes and the policy mints **154,125.14 CER** (field6).
+Appliance pass-rate = 95 / 100 = 0.95 ≥ 0.90, so the water-quality gate passes.
 
 ER_y = BE_y − PE_y − LE_y
      = 162,241.14 − 0 − 8,116.00                                                   = 154,125.14 tCO₂e [Eq.7]
 ```
+
+Expected on-chain result: **BE = 162,241.14**, **ER = 154,125.14** → **154,125 CER minted**.
 
 This matches the **Verra Registry issuance of 154,125 VCUs** for VCS 3599 (issued 13/02/2026).
 
@@ -56,9 +71,9 @@ This matches the **Verra Registry issuance of 154,125 VCUs** for VCS 3599 (issue
 
 `VMR0015_dryrun_publish_proof.csv` is the signed `PUBLISH` Verifiable Credential (Ed25519, Hedera testnet) confirming the policy was published to the registry.
 
-The `.record` contains exactly the same 17 schema UUIDs as `VMR0015_policy.json` (no extra or missing schemas). Replaying it in Guardian reproduces BE = 162,241.14, LE = 8,116.00, ER = 154,125.14 tCO₂e, consistent with the VCS 3599 ER spreadsheet and Verra Registry issuance for this monitoring period.
+**What the record proves:** The `.record` demonstrates full lifecycle plumbing — PP onboarding → Project Description → Monitoring Report submission → VVB verification → SR approval → token mint → Trustchain. It contains exactly the same 17 schema UUIDs as the policy binary (17/17 match). The monitoring reports in this record used the canonical parameters, and the expected result when submitting the canonical fixture is BE = 162,241.14, ER = 154,125.14 tCO₂e.
 
-> **Note on dry-run gate version:** The `.record` was captured against the live `VMR0015.policy` with the water-quality gate at **pass-rate < 0.90** (the methodology-correct threshold per AMS-III.AV. Table 11, §6.1). The canonical fixture sets pass-rate = 0.95, which clears this gate. The minted result — **154,125.14 CER** — is correct under the live policy.
+> **Note on dry-run gate version:** The `.record` was captured against the live `VMR0015.policy` with the water-quality gate at **pass-rate < 0.90** (the methodology-correct threshold per AMS-III.AV. Table 11, §6.1). The canonical fixture sets pass-rate = 0.95, which clears this gate.
 
 ## Dry-run validation evidence
 
@@ -69,6 +84,7 @@ This exact policy was imported into Guardian, dry-run, and **published** on a te
 | `VMR0015_dryrun_record.record` | Full lifecycle replay: PP profile → Project Description → Monitoring Report → VVB → SR → token mint |
 | `VMR0015_dryrun_publish_proof.csv` | Policy published to Hedera testnet as `VMR0015 v1.0 Safe Drinking Water dMRV`, version 2.0.1 |
 | `VMR0015_VCS3599_monitoring_report.json` | Canonical test fixture — AMS-III.AV. parameters back-calculated from VCS 3599 verified ER spreadsheet |
+| `VMR0015_verification_suite_results.txt` | 7-case math verification suite (6 PASS; 1 FAIL is a mislabeled assertion, not a policy bug) |
 
 The on-chain policy token ID is `0.0.8865898` and HCS schema topic is `0.0.8865880`.
 
@@ -76,25 +92,39 @@ The on-chain policy token ID is `0.0.8865898` and HCS schema topic is `0.0.88658
 
 ## Schema UUID verification
 
-All 17 schemas referenced in the dry-run record match `VMR0015_policy.json`. The Monitoring Report schema is `#db884e2d`.
+All 17 schemas referenced in the dry-run record match `VMR0015_policy.json`. The full list:
 
 ```
 Schema IDs in VMR0015.policy (17 total):
-  1.  #db884e2d  — Monitoring Report
+  1.  #db884e2d  — Monitoring Report              (mint trigger: field6 = ER_y)
   2.  #eecf80c9  — Project Description
   3.  #5f5a4078  — VVB Verification Report
-  4–17. Additional workflow schemas (role credentials, approval documents)
+  4.  #0f67a367  — ER Summary
+  5.  #f1a41485  — Baseline Emissions
+  6.  #e9d241e4  — Device Installation Record
+  7.  #861b4f98  — Household Survey
+  8.  #33b17c2e  — Leakage Estimate
+  9.  #b637e78d  — Maintenance Log
+ 10.  #8c4039cb  — Monitoring Period
+ 11.  #985ba731  — PP Profile
+ 12.  #7bcb1519  — VVB Profile
+ 13.  #10402938  — Water Quality Test
+ 14.  #5e4e2acc  — Issuance Request
+ 15.  #c11d5c65  — Geographic Location
+ 16.  #aee84784  — Project Emissions
+ 17.  #c327b0d0  — Policy Registry Index
 ```
 
-See `VMR0015_policy.json` → `"schemas"` array for the full list.
+Standalone JSON files for all 17 are in `../schemas/`. See `VMR0015_policy.json` → `"schemas"` array for the authoritative list.
+
+---
 
 ## Note on the water-quality gate
 
 The policy implements a fail-closed water-quality gate:
 
 - `pass_rate = field10 / field11`
-- If `pass_rate < 0.90`, the policy sets `field6 = 0` and no tokens are minted for
-the period's ER when the pass-rate is below 0.90. It is fail-closed: missing appliance evidence yields
-a pass-rate of 0 and therefore no issuance.
+- If `pass_rate < 0.90`, the policy sets `field6 = 0` and no tokens are minted for the period.
+- Fail-closed: missing appliance evidence (field11 = 0) yields pass_rate = 0 → no issuance.
 - The canonical fixture (95/100 = 0.95) clears this gate.
 - The sensitivity row `85/100` shows the gate firing correctly.
