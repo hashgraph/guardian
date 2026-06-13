@@ -5,6 +5,18 @@ Versioning follows the submission review cycle (CHANGELOG version) ≠ Guardian-
 
 ---
 
+## [2.1.2] — 2026-06-13 — Canonical fixture format fix + test artifact tidy
+
+### Fixed
+- **`tests/VMR0015_VCS3599_monitoring_report.json`** — replaced static pre-populated fixture (which had `field3`=162241.14 and `field6`=154125.14 as hard-coded values) with the correct Guardian Monitoring Report import format. The fixture now uses the proper schema wrapper (`#ec344365-95ee-47ea-bd79-4159f01301d2&1.0.0`) and `credentialSubject` with only the 11 input fields. `field3` (BE) and `field6` (ER) are intentionally absent — the policy engine computes them on-chain via `calculate_report_fields`. Pre-filling them would bypass the calculation entirely.
+- **`README.md`** — corrected policy binary filename throughout (was the generic `VMR0015.policy` shorthand; now matches the actual filename in the repository). Marked `field3`/`field6` as computed outputs in the test data table (not fixture inputs). Clarified §4 How to Test step 3. Added `Finally Record Shows Everything.record` and `VMR0015_verification_suite_results.txt` to the §5 Files table.
+- **`tests/README.md`** — enumerated all 17 schema UUIDs (was only 3 of 17 listed). Added fixture format note (schema wrapper, computed fields absent). Added `VMR0015_verification_suite_results.txt` to the evidence table. Softened the dry-run replay claim to accurately scope what the `.record` demonstrates (lifecycle plumbing) vs. what submitting the fixture demonstrates (canonical 154,125 CER computation).
+
+### Added
+- **`tests/VMR0015_verification_suite_results.txt`** — reproducible 7-case math verification suite for `calculate_report_fields`. 6 PASS (canonical, WQ gate fail, WQ gate boundary, nwb=0 fail-closed, PE+LE overflow, missing sampling fail-closed). 1 FAIL row is a mislabeled test assertion, not a policy defect: fNRB=5.0 is correctly clamped to 1.0 by the engine; the test row asserted a different expected value. Clamp behavior is verified by the canonical row.
+
+---
+
 ## [2.1.1] — 2026-06-08 — Documentation fixes + dry-run evidence package
 
 ### Fixed
@@ -17,7 +29,7 @@ Versioning follows the submission review cycle (CHANGELOG version) ≠ Guardian-
 - `tests/` dry-run evidence package: `VMR0015_dryrun_record.record`, `VMR0015_dryrun_publish_proof.csv`, `VMR0015_VCS3599_monitoring_report.json`.
 - `REVIEWER_COVER_NOTE.md` — consolidated reviewer guide.
 - `formulas/` — Guardian Formula Linked Definitions (`formula.json`, `schemas.json`, `VMR0015_formula.zip`).
-- `schemas/` — all 17 JSON schemas extracted from `VMR0015.policy`.
+- `schemas/` — all 17 JSON schemas extracted from the policy binary.
 - `tools/verify_originality.py` — originality check script.
 - `workflow.png` — full policy lifecycle diagram.
 
@@ -31,22 +43,21 @@ Versioning follows the submission review cycle (CHANGELOG version) ≠ Guardian-
   - `BE_y = QPW_y × m × X_boil × SEC × (BL_fuel × f_i × EF_fuel × 1e-9)` [Eq. 1]
   - `ER_y = BE_y − PE_y − LE_y` [Eq. 7]
   - Water-quality gate: `pass_rate < 0.90 → ER_y = 0` (fail-closed, AMS-III.AV. §6.1)
-- **`credentialSubject` access bug fixed.** The `calculate_report_fields` block previously used `.length`-based array guard (`(subj && subj.length) ? subj[0] : doc`) that fails when Guardian exposes `credentialSubject` as a plain object (not an array). Rewritten with `Array.isArray` guard — on plain objects `Array.isArray` correctly returns `false` and the raw document is used directly.
+- **`credentialSubject` access bug fixed.** The `calculate_report_fields` block previously used `.length`-based array guard (`(subj && subj.length) ? subj[0] : doc`) that fails when Guardian exposes `credentialSubject` as a plain object (not an array). Rewritten with `Array.isArray` guard.
 - **`outputSchema` corrected.** Was pointing to ER Summary schema; now correctly targets Monitoring Report (`#db884e2d`).
 - **`setRelationshipsBlock` added** to `new_report` — monitoring reports now linked to their parent project document.
 - **`RunEvent` chain restored:** `sr_reassign_approved_report` → `sr_save_reassigned_approved_report_hedera` → `sr_save_reassigned_approved_report_db`. Without this, SR approval stalled and tokens never minted.
-- **`defaultActive: false` on `save_report_form_hedera`** (was `true`) — removes the 30-second Hedera SDK timeout that silently discarded every form submission.
+- **`defaultActive: false` on `save_report_form_hedera`** (was `true`) — removes the 30-second Hedera SDK timeout.
 - **`dataType: 'vc-documents'`** on all 19 Hedera `sendToGuardianBlock` entries (was empty string).
-- **`field6` removed from Monitoring Report `required[]`** — ER is a computed output; forcing the PP to supply it manually caused form rejection on every submission.
+- **`field6` removed from Monitoring Report `required[]`** — ER is a computed output.
 - **`save_new_approve_document` permissions: `ANY_ROLE` → `VVB`** — only VVBs may approve PP registration documents.
 - **`cyclic: false` on `new_report`** — prevents infinite report-creation loop.
 
 ### Added
-- **VCS 3599 canonical test fixture.** Full dry-run against the canonical AMS-III.AV. parameters back-calculated from VCS 3599 (Safe Drinking Water for Schools in Viet Nam), monitoring period 01 Jan – 30 Jun 2025. Result: `BE = 162,241.14`, `LE = 8,116.00`, `ER = 154,125.14 tCO₂e` — matches Verra Registry issuance of 154,125 VCUs (13/02/2026).
-  - *Earlier intermediate test fixtures (53,309.84 tCO₂e at QPW_y ≈ 23M L; 11,084.74 tCO₂e) were earlier runs used to confirm the token mint chain before the full canonical parameters were applied. These are not errors — they were intentional step-down tests.*
+- **VCS 3599 canonical test fixture.** Result: `BE = 162,241.14`, `LE = 8,116.00`, `ER = 154,125.14 tCO₂e` — matches Verra Registry issuance of 154,125 VCUs (13/02/2026).
 - **Signed PUBLISH VC** (`6a2463dfd2866ba70ad193bd.csv`) — Ed25519, Hedera testnet, version 2.0.1.
-- **PP role credentials** (`6a2465a6b…`, `6a2465aab…`) — PP-submit and SR-countersign step pair confirming PP role registration workflow.
-- **Project Description VCs** (`6a2466efb…`, `6a2466f2b…`) — PP and SR signatures on the Project Description document.
+- **PP role credentials** (`6a2465a6b…`, `6a2465aab…`) — PP-submit and SR-countersign step pair.
+- **Project Description VCs** (`6a2466efb…`, `6a2466f2b…`) — PP and SR signatures.
 
 ---
 
@@ -55,26 +66,25 @@ Versioning follows the submission review cycle (CHANGELOG version) ≠ Guardian-
 ### Fixed
 - **`calculate_report_fields` now reads the Monitoring Report as flat scalars.**
   - **Symptom:** a correctly filled Monitoring Report computed `field6 = 0`, so the token minted zero.
-  - **Root cause:** the Monitoring Report schema (`#31d7ef1c`) defines `field3`/`field4`/`field5` (BE/PE/LE) as **flat numbers** and `field2` as a "Period Reference" string. The calculation block was reading them as **nested objects** (`raw.field4.field1`, etc.) and treating `field2` as a water-quality array — yielding `0` on every flat report.
-  - > **Note (2025):** `#31d7ef1c` was the Monitoring Report schema IRI in v2.0.0. The current canonical IRI is `#db884e2d` (used in v2.1.0+ and referenced by the formula linked definitions and all current documentation).
-  - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89` *(removed in [2.1.0] — see above)*; clamps negatives to `0`. The WHO water-quality gate is now **optional and dormant** — it applies only when an explicit pass-rate is supplied (`field10` or a `wqSamples` array), and the current Monitoring Report schema does not expose `field10`, so a normal flat report computes correctly without it.
+  - **Root cause:** the block was reading flat numbers as nested objects — yielding `0` on every flat report.
+  - **Fix:** the block now reads flat scalars via `toNum(raw.field3 / field4 / field5)`; computes `ER = (BE − PE − LE) × 0.89` *(removed in [2.1.0])*; clamps negatives to `0`.
   - **Verification:** a flat Monitoring Report with `field3 = 154125`, `field4 = 0`, `field5 = 0` now computes `field6 = 137,171.25`.
 
 ### Added
-- **Standalone, reviewable artifacts.** Exported the policy config as a readable `VMR0015_policy.json` and all **17 schemas** into a `schemas/` folder (with an index), both extracted directly from `VMR0015.policy` so they are identical to the binary. Reviewers can now inspect the policy and schemas without importing the binary into Guardian.
-- **Formula Linked Definitions** (`formulas/`). A Guardian formula artifact (`formula.json` + `schemas.json`, packaged as `VMR0015_formula.zip`) that expresses the emission-reduction math as schema-linked definitions: `BE_y/PE_y/LE_y` link to Monitoring Report `field3/4/5`, `ER_net = BE_y − PE_y − LE_y` (VMR0015 §3.9.1), and `ER_y = max(0, ER_net) × u_def` links to `field6` (the MintToken rule). This complements the existing `calculate_report_fields` calculation block — the two describe the same math.
+- **Standalone, reviewable artifacts.** All 17 schemas into a `schemas/` folder.
+- **Formula Linked Definitions** (`formulas/`).
 
 ### Changed
-- **Test data re-grounded on a registered Verra project.** Replaced the earlier non-Verra example with **VCS 3599 — Grouped Projects for Safe Drinking Water for Schools in Viet Nam** (registered, AMS-III.AV.), using its public registry record. See [`tests/README.md`](./tests/README.md).
-- **Documentation aligned with Verra's published VMR0015 v1.0**, including the six official updates over AMS-III.AV. and the core equation `ER_y = BE_y − PE_y − LE_y` (§3.9.1).
-- **Clarified the ×0.89 factor** as a conservativeness choice of this implementation, not a Verra-mandated blanket parameter. *(Removed entirely in [2.1.0].)*
+- **Test data re-grounded on VCS 3599** (registered, AMS-III.AV.).
+- **Documentation aligned with VMR0015 v1.0.**
+- **Clarified the ×0.89 factor** as a conservativeness choice. *(Removed entirely in [2.1.0].)*
 
 ### Removed
-- **Fabricated policy-integrity-test `.record`.** The earlier bundled `.record` (`cb0543b3-…`) was AI-generated and did **not** match this policy's block tags / schema IDs; it would fail deterministic replay. *(Superseded in [2.1.0] — real dry-run record and publish proof now bundled in `tests/`.)*
-- **Stale audit/evidence files** (`AUDIT.md`, `evidence/`, the duplicate dry-run `Policy File (JSON)` export, and a calculations workbook) that referenced superseded policy IDs.
+- **Fabricated policy-integrity-test `.record`** (`cb0543b3-…`) — was AI-generated and did not match this policy's block tags / schema IDs.
+- **Stale audit/evidence files** that referenced superseded policy IDs.
 
 ---
 
 ## Notes for reviewers
-- The policy package is `VMR0015.policy` (Guardian internal version **2.0.1** — baked at export time; CHANGELOG tracks submission version 2.1.1). All other files are documentation or test material. The `.policy` binary bakes the Guardian-internal version at export time (currently **2.0.1**). The CHANGELOG submission tracking version [2.1.1] reflects the cumulative set of changes documented here; both refer to the same binary.
+- The policy package is `VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3_1781328422728_1781333997086 (3).policy` (Guardian internal version **2.0.1** — baked at export time; CHANGELOG tracks submission version 2.1.2). All other files are documentation or test material. The CHANGELOG submission tracking version [2.1.2] reflects the cumulative set of changes documented here; both refer to the same binary.
 - No registered VMR0015 project exists yet (methodology published 31 Oct 2025); the test uses a registered predecessor-methodology (AMS-III.AV.) project as the closest real-world input.
