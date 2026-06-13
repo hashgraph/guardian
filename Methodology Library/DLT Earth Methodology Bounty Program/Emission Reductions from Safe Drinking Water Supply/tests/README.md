@@ -12,6 +12,10 @@ This directory contains the canonical test fixture and dry-run execution records
 | `VMR0015_dryrun_record.record` | Guardian policy execution record confirming full lifecycle and 17/17 schema match |
 | `VMR0015_dryrun_publish_proof.csv` | Signed PUBLISH Verifiable Credential (Ed25519, Hedera testnet, version 2.0.1) |
 | `VMR0015_verification_suite_results.txt` | Reproducible math verification — 7 cases covering canonical, WQ gate, edge cases |
+| `evidence/VMR0015_dryrun_policy_publish_vc.json` | Policy PUBLISH VC (Policy&1.0.0) for VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3 on Hedera testnet |
+| `evidence/VMR0015_dryrun_mr_mint10_report_vc.json` | Monitoring Report VC `MR-VCS3599-MINT10-TEST` used for minimal 1 CER mint |
+| `evidence/VMR0015_dryrun_mr_mint10_minttoken_vc.json` | MintToken VC for tokenId `eba4abfe-0fd8-4785-99cb-f172bdae07bf` with `amount: "1.00"` |
+| `evidence/VMR0015_dryrun_mr_mint10_vp.json` | Verifiable Presentation bundling the MR VC and MintToken VC with Ed25519 proof |
 
 ---
 
@@ -85,6 +89,10 @@ This exact policy was imported into Guardian, dry-run, and **published** on a te
 | `VMR0015_dryrun_publish_proof.csv` | Policy published to Hedera testnet as `VMR0015 v1.0 Safe Drinking Water dMRV`, version 2.0.1 |
 | `VMR0015_VCS3599_monitoring_report.json` | Canonical test fixture — AMS-III.AV. parameters back-calculated from VCS 3599 verified ER spreadsheet |
 | `VMR0015_verification_suite_results.txt` | 7-case math verification suite (6 PASS; 1 FAIL is a mislabeled assertion, not a policy bug) |
+| `evidence/VMR0015_dryrun_policy_publish_vc.json` | Policy-level Verifiable Credential (Policy&1.0.0) for the dry-run PUBLISH on Hedera testnet |
+| `evidence/VMR0015_dryrun_mr_mint10_report_vc.json` | Monitoring Report VC used to mint 1 CER (MR-VCS3599-MINT10-TEST) |
+| `evidence/VMR0015_dryrun_mr_mint10_minttoken_vc.json` | MintToken VC showing tokenId `eba4abfe-0fd8-4785-99cb-f172bdae07bf` with amount `"1.00"` |
+| `evidence/VMR0015_dryrun_mr_mint10_vp.json` | Verifiable Presentation bundling the MR VC and MintToken VC with Ed25519Signature2018 proof |
 
 The on-chain policy token ID is `0.0.8865898` and HCS schema topic is `0.0.8865880`.
 
