@@ -1,20 +1,10 @@
-:root {
+:root,
+:root.guardian-theme-light {
     --font-family-poppins: 'Poppins', sans-serif;
     --font-family-inter: 'Inter', sans-serif;
 
-    --color-background: #F9FAFC;
     --color-primary: #4169E2;
     --color-secondary: #CDDDFD;
-
-    --color-grey-black-1: #181818;
-    --color-grey-black-2: #23252E;
-    --color-grey-1: #F9FAFC;
-    --color-grey-2: #EFF3F7;
-    --color-grey-3: #E1E7EF;
-    --color-grey-4: #B0B5BA;
-    --color-grey-5: #848FA9;
-    --color-grey-6: #495057;
-    --color-grey-white: #FFFFFF;
 
     --color-accent-red-1: #FF432A;
     --color-accent-red-2: #F5D7D7;
@@ -36,7 +26,6 @@
 
     --app-font-family: 'Lato', sans-serif;
     --primary-color: #4169E2;
-    --text-color: #000;
 
     /* PrimeNG styled-mode bridge: old flat palette names removed in the v18 migration,
        mapped to the new --p-* tokens so existing screens keep their colors. */
@@ -64,6 +53,88 @@
     --input-icon-color: #6c757d;
 
     --vh: 1vh;
+
+    /* Guardian theme-dependent tokens - light mode */
+    --guardian-header-color: #000;
+    --guardian-font-color: #23252E;
+    --guardian-background: #FFFFFF;
+    --guardian-hover: #F0F3FC;
+    --guardian-primary-background: #e1e7fa;
+    --guardian-secondary-color: #FFFFFF;
+    --guardian-secondary-background: #FFFFFF;
+    --guardian-success-background: #CAFDD9;
+    --guardian-failure-background: #FFEAEA;
+    --guardian-disabled-color: #848FA9;
+    --guardian-disabled-background: #EFF3F7;
+    --guardian-disabled-icon: #C4D0E1;
+    --guardian-dry-run-background: #f5f7fd;
+    --guardian-grey-color: #EFF3F7;
+    --guardian-grey-background: #F9FAFC;
+    --guardian-grey-color-2: #E1E7EF;
+    --guardian-grey-color-3: #AAB7C4;
+    --guardian-grey-color-4: #6C7791;
+    --guardian-delete-background: #FFEAEA;
+    --guardian-grid-color: #848FA9;
+    --guardian-border-color: #E1E7EF;
+    --guardian-shadow: #00000014;
+    --guardian-warning-background: #FFF6E3;
+    --formula-constant-background: #e1e7fa;
+    --formula-variable-background: #FFF6E3;
+    --formula-function-background: #fbd9ef;
+    --formula-text-background: #d7f5e2;
+}
+
+:root.guardian-theme-dark {
+    --color-background: #1E1E1E;
+    --color-grey-black-1: #E8E8E8;
+    --color-grey-black-2: #D4D4D4;
+    --color-grey-1: #1E1E1E;
+    --color-grey-2: #2D2D2D;
+    --color-grey-3: #3A3A3A;
+    --color-grey-4: #4A4A4A;
+    --color-grey-5: #6A6A6A;
+    --color-grey-6: #808080;
+    --color-grey-white: #1A1A1A;
+
+    --text-color: #E8E8E8;
+
+    --header-color-primary: #CCCCCC;
+    --header-preloader-color: #1E1E1E;
+    --header-color-primary-dark: rgba(255, 255, 255, 0.9);
+
+    --button-primary-color: #4169E2;
+    --button-primary-color-hover: #5A7AF5;
+
+    --input-icon-color: #9A9A9A;
+
+    /* Guardian theme-dependent tokens - dark mode */
+    --guardian-header-color: #E8E8E8;
+    --guardian-font-color: #E8E8E8;
+    --guardian-background: #252525;
+    --guardian-hover: #323232;
+    --guardian-primary-background: #2E3A5F;
+    --guardian-secondary-color: #2A2A2A;
+    --guardian-secondary-background: #2A2A2A;
+    --guardian-success-background: #1E4620;
+    --guardian-failure-background: #4A1F1F;
+    --guardian-disabled-color: #707070;
+    --guardian-disabled-background: #2D2D2D;
+    --guardian-disabled-icon: #5A5A5A;
+    --guardian-dry-run-background: #2E3A5F;
+    --guardian-grey-color: #2D2D2D;
+    --guardian-grey-background: #1E1E1E;
+    --guardian-grey-color-2: #3A3A3A;
+    --guardian-grey-color-3: #4A4A4A;
+    --guardian-grey-color-4: #6A6A6A;
+    --guardian-delete-background: #4A1F1F;
+    --guardian-grid-color: #707070;
+    --guardian-border-color: #3A3A3A;
+    --guardian-shadow: #00000050;
+    --guardian-warning-background: #4A3A1F;
+    --formula-constant-background: #2E3A5F;
+    --formula-variable-background: #4A3A1F;
+    --formula-function-background: #4A1F4A;
+    --formula-text-background: #1F4A1F;
 }
 
 @media (max-width: 810px) {
