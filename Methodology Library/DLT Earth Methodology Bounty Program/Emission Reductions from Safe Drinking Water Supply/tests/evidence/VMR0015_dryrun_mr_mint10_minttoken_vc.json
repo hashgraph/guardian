@@ -1,0 +1,30 @@
+{
+  "id": "urn:uuid:d20e629b-f80b-4088-80cf-e03339a5025b",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:HA7FYHQfHYXcMkZgyjVKyELNLKCYkcb1UsN1dToLMFu1_0.0.9222530",
+  "issuanceDate": "2026-06-13T12:27:18.122Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+  ],
+  "credentialSubject": [
+    {
+      "date": "2026-06-13T12:27:18.107Z",
+      "tokenId": "eba4abfe-0fd8-4785-99cb-f172bdae07bf",
+      "amount": "1.00",
+      "@context": [
+        "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+      ],
+      "type": "MintToken&1.0.0"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-06-13T12:27:18Z",
+    "verificationMethod": "did:hedera:testnet:HA7FYHQfHYXcMkZgyjVKyELNLKCYkcb1UsN1dToLMFu1_0.0.9222530#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..ZA-H7vH8STYjShbB8ZAdC3pC6gso-7TpX6N_lddn1Aa3Ybn_wLYRC_N6Y3nZ6WKy1ZJZIXjtK9XLSDgAlu7tDw"
+  }
+}
