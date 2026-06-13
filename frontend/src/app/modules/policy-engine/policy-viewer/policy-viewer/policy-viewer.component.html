@@ -187,37 +187,13 @@
           <span>Run</span>
         </div>
         <div class="delimiter"></div>
-        <div
-          (click)="onView('policy')"
-          [attr.action]="view === 'policy'"
-          class="dry-run-btn"
-        >Policy View</div>
-        <div
-          (click)="onView('transactions')"
-          [attr.action]="view === 'transactions'"
-          class="dry-run-btn"
-        >Transactions</div>
-        <div
-          (click)="onView('artifacts')"
-          [attr.action]="view === 'artifacts'"
-          class="dry-run-btn"
-        >Artifacts</div>
-        <div
-          (click)="onView('ipfs')"
-          [attr.action]="view === 'ipfs'"
-          class="dry-run-btn"
-        >IPFS</div>
-        <div class="delimiter"></div>
-        <div
-          (click)="onView('mock_config')"
-          [attr.action]="view === 'mock_config'"
-          class="dry-run-btn"
-        >Mock Config</div>
-        <div
-          (click)="onView('mock_data')"
-          [attr.action]="view === 'mock_data'"
-          class="dry-run-btn"
-        >Mock Data</div>
+        <div (click)="viewMenu.toggle($event)" class="dry-run-group-btn dry-run-view-btn">
+          <i class="pi pi-eye"></i>
+          <span>{{ viewLabels[view] }}</span>
+          <div class="expand-group">
+            <i class="pi pi-sort-down-fill"></i>
+          </div>
+        </div>
       </div>
     }
     <div
@@ -822,6 +798,15 @@
     ></app-record-controller>
   }
 </div>
+
+<p-popover #viewMenu>
+  <div (click)="onView('policy', viewMenu)"       [attr.active]="view === 'policy'"       class="view-menu-item">Policy View</div>
+  <div (click)="onView('transactions', viewMenu)" [attr.active]="view === 'transactions'" class="view-menu-item">Transactions</div>
+  <div (click)="onView('artifacts', viewMenu)"    [attr.active]="view === 'artifacts'"    class="view-menu-item">Artifacts</div>
+  <div (click)="onView('ipfs', viewMenu)"         [attr.active]="view === 'ipfs'"         class="view-menu-item">IPFS</div>
+  <div (click)="onView('mock_config', viewMenu)"  [attr.active]="view === 'mock_config'"  class="view-menu-item">Mock Config</div>
+  <div (click)="onView('mock_data', viewMenu)"    [attr.active]="view === 'mock_data'"    class="view-menu-item">Mock Data</div>
+</p-popover>
 
 <p-popover #menu>
   @for (item of virtualUsers; track item) {

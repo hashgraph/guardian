@@ -495,6 +495,31 @@ a.go-back-link svg {
     left: 2px;
 }
 
+.dry-run-view-btn span {
+    max-width: 90px;
+    min-width: 70px;
+}
+
+.view-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    min-width: 160px;
+    color: #3f51b5;
+    border-radius: 4px;
+    user-select: none;
+
+    &:hover {
+        background: #3f51b50d;
+    }
+
+    &[active="true"] {
+        background: #3f51b5;
+        color: #fff;
+        font-weight: 500;
+    }
+}
+
 .record-btn {
     color: #ff0000;
 }

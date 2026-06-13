@@ -57,6 +57,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         artifacts: ['createDate', 'type', 'owner', 'document'],
         ipfs: ['createDate', 'size', 'url', 'document'],
     };
+    public viewLabels: any = {
+        policy: 'Policy View',
+        transactions: 'Transactions',
+        artifacts: 'Artifacts',
+        ipfs: 'IPFS',
+        mock_config: 'Mock Config',
+        mock_data: 'Mock Data',
+    };
     public pageIndex: number;
     public pageSize: number;
     public documentCount: any;
@@ -464,7 +472,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         this.policyTest.reset();
     }
 
-    onView(view: string) {
+    onView(view: string, menu?: any) {
+        if (menu) { menu.hide(); }
         this.view = view;
         this.columns = this.columnsMap[this.view];
         if (this.view === 'mock_config' || this.view === 'mock_data') {
