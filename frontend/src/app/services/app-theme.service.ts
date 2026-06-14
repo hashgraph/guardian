@@ -1,29 +1,42 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 
-export type AppTheme = 'light' | 'dark';
+export type AppTheme = 'light' | 'dark' | 'system';
 
 export interface AppThemeOption {
     label: string;
     value: AppTheme;
-    className: string;
 }
 
 const APP_THEME_STORAGE_KEY = 'GUARDIAN_APP_THEME';
+const LIGHT_CLASS = 'guardian-theme-light';
+const DARK_CLASS = 'guardian-theme-dark';
 
 @Injectable({
     providedIn: 'root'
 })
-export class AppThemeService {
+export class AppThemeService implements OnDestroy {
     public readonly themes: AppThemeOption[] = [
-        { label: 'Light', value: 'light', className: 'guardian-theme-light' },
-        { label: 'Dark', value: 'dark', className: 'guardian-theme-dark' }
+        { label: 'Light', value: 'light' },
+        { label: 'Dark', value: 'dark' },
+        { label: 'System', value: 'system' }
     ];
 
     private currentTheme: AppTheme = 'light';
+    private readonly darkModeQuery: MediaQueryList = window.matchMedia('(prefers-color-scheme: dark)');
+    private readonly onSystemChange = (): void => {
+        if (this.currentTheme === 'system') {
+            this.applyResolvedTheme();
+        }
+    };
 
     constructor() {
+        this.darkModeQuery.addEventListener('change', this.onSystemChange);
         this.currentTheme = this.readStoredTheme();
-        this.applyTheme(this.currentTheme);
+        this.applyResolvedTheme();
+    }
+
+    public ngOnDestroy(): void {
+        this.darkModeQuery.removeEventListener('change', this.onSystemChange);
     }
 
     public getCurrentTheme(): AppTheme {
@@ -33,23 +46,27 @@ export class AppThemeService {
     public setTheme(theme: AppTheme): void {
         this.currentTheme = this.findTheme(theme).value;
         localStorage.setItem(APP_THEME_STORAGE_KEY, this.currentTheme);
-        this.applyTheme(this.currentTheme);
+        this.applyResolvedTheme();
     }
 
     private readStoredTheme(): AppTheme {
-        const storedTheme = localStorage.getItem(APP_THEME_STORAGE_KEY);
-        return storedTheme === 'dark' ? 'dark' : 'light';
+        return this.findTheme(localStorage.getItem(APP_THEME_STORAGE_KEY)).value;
     }
 
-    private applyTheme(theme: AppTheme): void {
+    private applyResolvedTheme(): void {
         const root = document.documentElement;
-        const themeConfig = this.findTheme(theme);
-
-        root.classList.remove(...this.themes.map((item) => item.className));
-        root.classList.add(themeConfig.className);
+        root.classList.remove(LIGHT_CLASS, DARK_CLASS);
+        root.classList.add(this.isDarkActive() ? DARK_CLASS : LIGHT_CLASS);
     }
 
-    private findTheme(theme: AppTheme): AppThemeOption {
+    private isDarkActive(): boolean {
+        if (this.currentTheme === 'system') {
+            return this.darkModeQuery.matches;
+        }
+        return this.currentTheme === 'dark';
+    }
+
+    private findTheme(theme: string | null): AppThemeOption {
         return this.themes.find((item) => item.value === theme) || this.themes[0];
     }
 }
