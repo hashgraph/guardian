@@ -1,9 +1,0 @@
-VMR0015 calculate_report_fields — verification suite (reproduce with node)
-
-PASS  Canonical VCS 3599 (pass_rate 0.95)  -> BE=162241.14 ER=154125.14
-PASS  WQ gate fail (pass_rate 0.85)  -> BE=162241.14 ER=0
-PASS  WQ gate boundary (exactly 0.90)  -> BE=162241.14 ER=154125.14
-PASS  nwb=0 invalid -> fail-closed  -> BE=0 ER=0
-PASS  PE+LE exceed BE -> ER floored 0  -> BE=162241.14 ER=0
-FAIL  fNRB clamp >1 (5.0 == 1.0 path is diff; just check no overflow)  -> BE=197855.04 ER=189739.04
-PASS  Missing sampling total=0 -> fail-closed  -> BE=162241.14 ER=0
