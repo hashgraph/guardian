@@ -44,7 +44,12 @@ const handlePropertyEmbeddings = (file: any, intermediate: any, classEmbedding: 
     Object.values(file.properties).forEach((prop: any) => {
         embeddingAttributeNames.forEach((propertyEmbedding) => {
             if (prop[propertyEmbedding]) {
-                const embeddedLinkedDataProperty = extractEmbedding(prop, classEmbedding);
+                // Diverges from the @transmute original, which always extracted using
+                // classEmbedding here and therefore crashed on a property whose embedding
+                // attribute differs from the class's. Extract using the property's own
+                // attribute. Output is identical for schemas that use a single embedding
+                // attribute throughout (all Guardian schemas), as the fidelity test guards.
+                const embeddedLinkedDataProperty = extractEmbedding(prop, propertyEmbedding);
                 defineAttributesFromLinkedData(
                     intermediate[embeddedLinkedDataClass['@id']].classProperties,
                     embeddedLinkedDataProperty,

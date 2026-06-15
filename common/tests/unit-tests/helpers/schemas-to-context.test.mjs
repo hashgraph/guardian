@@ -31,10 +31,10 @@ describe('schemasToContext (vendored)', function () {
 });
 
 describe('schemasToContext property embedding extraction', function () {
-    // Locks the fragile handlePropertyEmbeddings line `extractEmbedding(prop, classEmbedding)`:
-    // it detects a property embedding by scanning every supported attribute but extracts it
-    // using the CLASS's embedding attribute. Guardian relies on class and property embeddings
-    // both being $comment; these tests pin that homogeneous behavior and document the limitation.
+    // handlePropertyEmbeddings extracts each property using its own embedding attribute.
+    // Guardian schemas use $comment at both class and property level; the mixed case
+    // ($linkedData property under a $comment class) is exercised here too because the
+    // @transmute original crashed on it (it extracted using the class attribute).
     it('maps a property term under its class when both use $comment', function () {
         const schema = {
             $id: 'urn:test:Thing',
@@ -53,18 +53,24 @@ describe('schemasToContext property embedding extraction', function () {
         });
     });
 
-    it('throws when a property uses a different embedding attribute than its class', function () {
+    it('extracts a property whose embedding attribute differs from its class', function () {
         const schema = {
             $id: 'urn:test:Thing',
             $comment: embed('Thing', 'urn:test:Thing#Thing'),
             type: 'object',
             properties: {
-                // class embedding is $comment, property embedding is $linkedData — unsupported mix
+                // class embedding is $comment, property embedding is $linkedData.
+                // $linkedData is read as-is (no JSON.parse), unlike the stringified $comment.
                 foo: { $linkedData: { term: 'foo', '@id': 'urn:test:Thing#foo' }, type: 'string' },
             },
         };
 
-        assert.throws(() => schemasToContextImpl([schema]));
+        const result = schemasToContextImpl([schema]);
+
+        assert.deepEqual(result['@context'].Thing, {
+            '@id': 'urn:test:Thing#Thing',
+            '@context': { foo: { '@id': 'urn:test:Thing#foo' } },
+        });
     });
 });
 
