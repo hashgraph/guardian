@@ -1,5 +1,5 @@
 .loading {
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     position: fixed;
     z-index: 99;
     top: 0;
@@ -31,7 +31,7 @@
     padding: 24px;
     border-radius: 16px;
     border: 1px solid #E1E7EF;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     margin-bottom: 88px;
     margin-top: 24px;
 
@@ -41,7 +41,7 @@
         font-weight: bold;
         line-height: 14px;
         text-align: left;
-        color: #181818;
+        color: var(--guardian-font-color, #181818);
         margin-bottom: 18px;
     }
 
@@ -51,7 +51,7 @@
         font-weight: 400;
         line-height: 16px;
         text-align: left;
-        color: #181818;
+        color: var(--guardian-font-color, #181818);
         margin-bottom: 18px;
     }
 
@@ -85,7 +85,7 @@
         height: 28px;
         margin-right: 8px;
         border: 1px solid #848FA9;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         border-radius: 6px;
         padding: 3px 12px 3px 12px;
         user-select: none;
@@ -130,7 +130,7 @@
     &::ng-deep .p-multiselect {
         width: 653px;
         border-radius: 8px;
-        background: #FFF;
+        background: var(--guardian-background, #FFF);
 
         .p-multiselect-close {
             display: none;
@@ -182,7 +182,7 @@
             font-weight: 400;
             line-height: 14px;
             text-align: left;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
 
             .category-actions-header {
                 color: #848FA9;
@@ -298,7 +298,7 @@
                     .permission-background {
                         width: 16px;
                         height: 16px;
-                        background: #eee;
+                        background: var(--guardian-grey-background, #eee);
                     }
                 }
             }
@@ -351,7 +351,7 @@
             font-weight: 400;
             line-height: 22px;
             text-align: left;
-            background: #fff;
+            background: var(--guardian-background, #fff);
         }
 
         &:first-child {
@@ -380,14 +380,14 @@
         width: 200px;
         border-radius: 8px;
         border: 1px solid var(--color-grey-3);
-        background: #FFF;
+        background: var(--guardian-background, #FFF);
     }
 
     & ::ng-deep .p-select-overlay,
     .p-select-list-container {
         border-radius: 8px;
         border: 1px solid var(--color-grey-3);
-        background: #FFF;
+        background: var(--guardian-background, #FFF);
         margin-top: 4px;
         box-shadow: 0 0 1px 0 #000;
     }
@@ -466,7 +466,7 @@
     right: 0;
     bottom: 0;
     height: 64px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     width: 100%;
     display: flex;
     justify-content: flex-end;

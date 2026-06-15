@@ -19,6 +19,7 @@ form {
             font-size: 16px;
             font-weight: 600;
             line-height: 20px;
+            color: var(--guardian-font-color, #23252E);
             text-align: left;
             margin-bottom: 24px;
             padding-left: 2px;
@@ -35,6 +36,7 @@ form {
             font-size: 16px;
             font-weight: 600;
             line-height: 20px;
+            color: var(--guardian-font-color, #23252E);
             text-align: left;
             margin-bottom: 0px;
             padding-left: 2px;
@@ -54,8 +56,8 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
-            border: 1px solid #E1E7EF;
+            background: var(--guardian-grey-background, #F9FAFC);
+            border: 1px solid var(--guardian-border-color);
             padding: 16px;
             border-radius: 8px;
         }
@@ -64,8 +66,8 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
-            border: 1px solid #E1E7EF;
+            background: var(--guardian-grey-background, #F9FAFC);
+            border: 1px solid var(--guardian-border-color);
             padding: 16px;
             border-radius: 8px;
         }
@@ -77,7 +79,7 @@ form {
         }
 
         .accordion-container {
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
         }
 
         .sub-schema-geo,
@@ -85,8 +87,8 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
-            border: 1px solid #E1E7EF;
+            background: var(--guardian-grey-background, #F9FAFC);
+            border: 1px solid var(--guardian-border-color);
             padding: 16px;
             border-radius: 8px;
         }
@@ -337,6 +339,8 @@ form {
 
 .label-field,
 .group-label-field {
+    color: var(--guardian-font-color, #23252E);
+
     .page-number {
         font-family: Poppins;
         font-size: 16px;

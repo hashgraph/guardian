@@ -3,7 +3,8 @@
 
     &.p-multiselect,
     .p-multiselect {
-        background: #ffffff;
+        background: var(--guardian-background, #ffffff);
+        color: var(--guardian-font-color, #23252E);
         border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
         border-radius: 8px;
         outline: 0 none;
@@ -36,7 +37,7 @@
             font-weight: 400;
             padding: 0px 16px;
             display: flex;
-            color: #000;
+            color: var(--guardian-font-color, #000);
             align-items: center;
         }
     }
@@ -91,6 +92,8 @@
 .guardian-multiselect-panel {
     border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
     border-radius: 8px;
+    background: var(--guardian-background, #ffffff);
+    color: var(--guardian-font-color, #23252E);
 
     .p-inputtext:enabled:focus {
         outline: 0 none;

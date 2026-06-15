@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     border-radius: 16px;
@@ -26,7 +26,7 @@
         min-width: 250px;
         width: 250px;
         height: 100%;
-        border: 1px solid #E1E7EF;
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
         border-radius: 6px;
         padding: 10px;
         overflow: auto;
@@ -38,7 +38,7 @@
             line-height: 14px;
             text-align: left;
             padding: 4px 0px;
-            color: #848FA9;
+            color: var(--guardian-grid-color, #848FA9);
             margin-bottom: 4px;
         }
 
@@ -90,7 +90,7 @@
         .right-body {
             width: 100%;
             height: 100%;
-            border: 1px solid #E1E7EF;
+            border: 1px solid var(--guardian-border-color, #E1E7EF);
             border-radius: 6px;
             padding: 20px;
             display: flex;
@@ -101,8 +101,8 @@
                 display: flex;
                 flex-direction: row;
                 margin-bottom: 20px;
-                border: 1px solid #C4D0E1;
-                background: #F9FAFC;
+                border: 1px solid var(--guardian-disabled-icon, #C4D0E1);
+                background: var(--guardian-grey-background, #F9FAFC);
                 width: 100%;
 
                 .selector-item {
@@ -113,7 +113,7 @@
                     user-select: none;
                     flex: 1;
                     text-align: center;
-                    color: #AAB7C4;
+                    color: var(--guardian-grey-color-3, #AAB7C4);
                     font-family: Inter;
                     font-size: 14px;
                     font-weight: 500;
@@ -121,11 +121,11 @@
 
                     &[selected="true"] {
                         background: var(--color-primary) !important;
-                        color: var(--color-grey-white) !important;
+                        color: var(--guardian-on-primary-color) !important;
                     }
 
                     &:hover {
-                        background: #E1E7EF;
+                        background: var(--guardian-border-color, #E1E7EF);
                     }
                 }
             }
@@ -143,17 +143,17 @@
             .search-policy-input {
                 width: 100%;
                 height: 40px;
-                border: 1px solid #e1e7ef;
+                border: 1px solid var(--guardian-border-color, #e1e7ef);
                 border-radius: 8px;
                 padding-left: 16px;
                 position: relative;
 
                 &:hover {
-                    border-color: #2196F3;
+                    border-color: var(--guardian-primary-color, #2196F3);
                 }
 
                 &:focus {
-                    outline: 1px solid #2196F3;
+                    outline: 1px solid var(--guardian-primary-color, #2196F3);
                 }
             }
 
@@ -163,7 +163,7 @@
                 font-weight: 400;
                 line-height: 14px;
                 text-align: left;
-                color: #FF432A;
+                color: var(--guardian-failure-color, #FF432A);
                 position: absolute;
                 left: 4px;
                 top: 48px;
@@ -179,7 +179,7 @@
                     .p-multiselect {
                         width: 100%;
                         height: 40px;
-                        border: 1px solid #e1e7ef;
+                        border: 1px solid var(--guardian-border-color, #e1e7ef);
                         border-radius: 8px;
                     }
                 }
@@ -219,7 +219,7 @@
                 bottom: 0px;
                 right: 0px;
                 overflow: auto;
-                border: 1px solid #E1E7EF;
+                border: 1px solid var(--guardian-border-color, #E1E7EF);
                 border-radius: 6px;
                 display: flex;
                 flex-direction: column;
@@ -289,8 +289,8 @@
 }
 
 .close-icon-color {
-    fill: #848FA9;
-    color: #848FA9;
+    fill: var(--guardian-grid-color, #848FA9);
+    color: var(--guardian-grid-color, #848FA9);
 }
 
 .icon2-btn {
@@ -298,8 +298,8 @@
 }
 
 .on-icon-color {
-    fill: #fff;
-    color: #fff;
+    fill: var(--guardian-background, #fff);
+    color: var(--guardian-background, #fff);
 }
 
 .disabled-icon-color {
@@ -345,7 +345,7 @@
 // }
 
 // .form-label {
-//     color: #181818;
+//     color: var(--color-grey-black-1, #181818);
 //     font-family: Inter, sans-serif;
 //     font-size: 12px;
 //     font-style: normal;

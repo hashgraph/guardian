@@ -1,7 +1,7 @@
 .content {
     position: relative;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     width: 100%;
 }
 
@@ -28,7 +28,7 @@
 .grid-filters {
     display: flex;
     gap: 16px;
-    background-color: #f9fafc;
+    background-color: var(--guardian-grey-background, #f9fafc);
     flex-wrap: wrap;
     height: 40px;
 }
@@ -93,7 +93,7 @@
 .btn-approve {
     background: #4caf50;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -101,10 +101,14 @@
     font-weight: 500;
 }
 
+:host-context(.guardian-theme-dark) .btn-approve {
+    background: var(--guardian-success-background, #12351F);
+}
+
 .btn-reject {
     background: #f44336;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -283,7 +287,7 @@ tr.detailed-row {
     border-radius: 10px;
     content: "";
     border: 2px solid rgba(0, 0, 0, 0.3);
-    background: white;
+    background: var(--guardian-background, white);
 }
 
 .timeline-item:last-child {

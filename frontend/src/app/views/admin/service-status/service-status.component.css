@@ -38,7 +38,7 @@
     flex-direction: column;
     height: 60%;
     font-size: xx-large;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .info-message {
@@ -75,7 +75,7 @@ a:visited {
 .status-container>.item {
     height: auto;
     border-radius: 16px;
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     padding: 16px 20px;
     box-shadow: 0 16px 24px 0 rgba(0, 0, 0, 0.08);
 
@@ -94,7 +94,7 @@ a:visited {
 }
 
 .status-container>.item>.header>span {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Inter, serif;
     font-size: 16px;
     font-style: normal;

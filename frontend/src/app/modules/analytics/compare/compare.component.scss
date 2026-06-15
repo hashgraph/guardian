@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -20,6 +20,8 @@
     bottom: 0;
     top: 0;
     display: block;
+    background: var(--color-background);
+    color: var(--guardian-font-color);
 }
 
 .content-result {
@@ -40,8 +42,8 @@
     min-width: 1130px;
     width: 100%;
     height: 75px;
-    background: #ffffff;
-    border-bottom: 1px solid #c9c9c9;
+    background: var(--guardian-background, #ffffff);
+    border-bottom: 1px solid var(--guardian-border-color, #c9c9c9);
     margin-bottom: 10px;
     display: grid;
     grid-template-columns: min-content min-content auto 130px 130px;
@@ -104,7 +106,7 @@
 }
 
 .merge-back>div span {
-    color: #707070;
+    color: var(--guardian-grid-color, #707070);
     position: absolute;
     top: 9px;
     left: 21px;
@@ -115,7 +117,7 @@
 
 .merge-back>div i,
 .merge-back>div svg {
-    color: #707070;
+    color: var(--guardian-grid-color, #707070);
     position: absolute;
     top: 3px;
     left: -4px;
@@ -129,7 +131,7 @@
     right: 0;
     top: 0;
     bottom: 0;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     z-index: 2;
     display: flex;
     justify-content: center;

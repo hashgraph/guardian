@@ -20,7 +20,7 @@
 
 .content {
     flex-wrap: nowrap;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     display: inline-flex;
 }
 
@@ -28,6 +28,7 @@
     display: inline-flex;
     margin-right: 10px;
     align-items: center;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .content-select {
@@ -78,12 +79,12 @@ p-datepicker {
 }
 
 .common-prefix-dropdown {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     display: block;
     height: 40px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--guardian-grid-color, #ced4da);
     padding: 9px 6px 9px 12px;
-    color: #848FA9;
+    color: var(--guardian-font-color, #848FA9);
     font-size: 14px;
     box-sizing: border-box;
     border-top-left-radius: 8px;
@@ -107,29 +108,48 @@ p-datepicker {
 
 .content ::ng-deep .filter-dropdown .p-select {
     border-radius: 0 8px 8px 0;
+    border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
 
     .p-select-label {
         font-size: 14px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         height: 36px;
+    }
+
+    .p-select-dropdown-icon {
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    .p-select-dropdown {
+        border-color: var(--guardian-grid-color, #ced4da);
     }
 }
 
 .content ::ng-deep .filter-dropdown .p-multiselect {
     border-radius: 0 8px 8px 0;
+    border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
 
     .p-multiselect-label {
         font-size: 14px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         height: 36px;
+    }
+
+    .p-multiselect-dropdown-icon {
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    .p-multiselect-dropdown {
+        border-color: var(--guardian-grid-color, #ced4da);
     }
 }
 
 .content ::ng-deep .calendar-filter .p-inputtext {
     padding: 8px 8px 11px 16px;
     border-radius: 0 8px 8px 0;
+    border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
     height: 37px;
 }
@@ -140,17 +160,17 @@ p-datepicker {
     right: 8px;
     transform: translateY(-50%);
     pointer-events: none;
-    background-color: white;
+    background-color: var(--guardian-background, white);
     color: gray;
     border: none;
     padding: 0;
 }
 
 .input-filter {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     display: block;
     height: 38px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--guardian-grid-color, #ced4da);
     padding: 9px 6px 9px 12px;
     font-size: 14px;
     box-sizing: border-box;

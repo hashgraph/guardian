@@ -5,7 +5,7 @@
     bottom: 0;
     top: 0;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     //width: fit-content;
 }
 

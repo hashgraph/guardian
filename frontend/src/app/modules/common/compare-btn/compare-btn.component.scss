@@ -22,8 +22,8 @@
     margin-right: 8px;
 
     &[disable="true"] {
-        color: #888;
-        border: 1px solid #888;
+        color: var(--guardian-grid-color, #888);
+        border: 1px solid var(--guardian-grid-color, #888);
         cursor: not-allowed;
     }
 

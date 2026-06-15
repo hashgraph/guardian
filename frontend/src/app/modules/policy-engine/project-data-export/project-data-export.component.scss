@@ -241,7 +241,7 @@
         .related-button {
             height: 28;
             padding: 6px 16px;
-            background-color: var(--color-grey-white, #FFFFFF);
+            background-color: var(--color-grey-white);
             border-radius: 6px;
             border: 1px solid var(--color-primary, #4169E2);
 
@@ -364,7 +364,7 @@
                 }
 
                 &:hover {
-                    background: #f1f1f1;
+                    background: var(--guardian-grey-background, #f1f1f1);
                 }
             }
         }
@@ -470,7 +470,7 @@ a {
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     p {
         margin: 0;

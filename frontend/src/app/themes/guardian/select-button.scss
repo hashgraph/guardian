@@ -21,12 +21,12 @@
             box-shadow: none;
             border-radius: 0px;
             color: var(--guardian-primary-color);
-            background: var(--guardian-secondary-color);
+            background: var(--guardian-secondary-background);
             border-color: var(--guardian-primary-color);
 
             &:hover {
                 color: var(--guardian-primary-color);
-                background: var(--guardian-secondary-color);
+                background: var(--guardian-secondary-background);
                 border-color: var(--guardian-primary-color);
                 filter: brightness(0.95);
             }

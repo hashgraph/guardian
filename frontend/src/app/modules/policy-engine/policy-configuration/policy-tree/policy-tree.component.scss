@@ -64,7 +64,7 @@
     height: 34px;
     position: relative;
     min-width: 160px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border: 2px solid #000;
     box-sizing: border-box;
     cursor: pointer;
@@ -102,12 +102,12 @@
     width: 26px;
     height: 26px;
     padding: 3px;
-    background: #f5f5f5;
+    background: var(--guardian-grey-background, #f5f5f5);
 }
 
 .block-expand:hover i,
 .block-all-expand svg {
-    color: #000;
+    color: var(--guardian-font-color, #000);
 }
 
 .block-container[expandable="false"] .block-expand {
@@ -166,7 +166,7 @@
     position: absolute;
     top: 50%;
     left: 9px;
-    color: #404040;
+    color: var(--guardian-font-color, #404040);
     transform: translate(0px, -50%);
     width: 18px;
     height: 18px;
@@ -226,7 +226,7 @@
 }
 
 .block-container[block-type="module"] .block-item {
-    background: white;
+    background: var(--guardian-background, white);
     border-color: #adadad;
 }
 
@@ -249,13 +249,13 @@
     width: 30px;
     height: 30px;
     font-size: 18px;
-    background: #f5f5f5;
+    background: var(--guardian-grey-background, #f5f5f5);
     padding: 4px;
 }
 
 .block-all-expand:hover i,
 .block-all-expand svg {
-    color: #000;
+    color: var(--guardian-font-color, #000);
 }
 
 
@@ -274,7 +274,7 @@
     top: -8px;
     left: 0px;
     border-bottom-width: 0;
-    background: white;
+    background: var(--guardian-background, white);
     border-top-left-radius: 4px;
     border-top-right-radius: 4px;
     z-index: 2;
@@ -294,8 +294,8 @@
     z-index: 2;
     box-sizing: border-box;
     background-image:
-        linear-gradient(180deg, #838383 3px, white 3px),
-        linear-gradient(180deg, white 3px, #838383 3px);
+        linear-gradient(180deg, #838383 3px, var(--guardian-background, #fff) 3px),
+        linear-gradient(180deg, var(--guardian-background, #fff) 3px, #838383 3px);
     background-position: 0 0, 3px 0;
     background-size: 3px 6px, 3px 6px;
     background-repeat: repeat-y;
@@ -304,7 +304,7 @@
 .tool-body .block-item,
 .module-body .block-item {
     height: 40px;
-    background: #fff !important;
+    background: var(--guardian-background, #fff) !important;
     border-color: #838383 !important;
     padding: 2px 12px 2px 12px;
     margin: 8px 8px 3px 0px;
@@ -341,7 +341,7 @@
     top: 0px;
     pointer-events: none !important;
     transform: translate(-50%, -100%) translate(0, -5px);
-    background: #fff;
+    background: var(--guardian-background, #fff);
     padding: 5px 15px;
     border: 1px solid #7c7c7c;
     border-radius: 4px;
@@ -385,16 +385,16 @@
 }
 
 .action-button {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     font-size: 10px;
     border-radius: 5px;
     width: 31px;
     height: 31px;
     line-height: 0px;
     margin: 2px;
-    color: #3f51b5;
+    color: var(--guardian-font-color, #3f51b5);
     z-index: 2;
-    border: 1px solid rgb(200 200 200);
+    border: 1px solid var(--guardian-border-color, rgb(200 200 200));
     box-shadow: 2px 2px 6px 1px #00000035;
     cursor: pointer;
 
@@ -404,7 +404,7 @@
 }
 
 .action-button:hover {
-    background-color: #f5f5f5;
+    background-color: var(--guardian-grey-background, #f5f5f5);
 }
 
 .delete-action {
@@ -536,7 +536,7 @@
 }
 
 .tree[move-actions="0"] .actions-container {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     border: 1px solid rgb(200 200 200);
     box-shadow: 2px 2px 6px 1px #00000035;
     border-radius: 5px;
@@ -674,7 +674,7 @@
         font-size: 12px;
         line-height: 20px;
         letter-spacing: 0%;
-        color: var(--color-grey-white, #FFFFFF);
+        color: var(--guardian-on-primary-color, #FFFFFF);
     }
 }
 
@@ -690,7 +690,7 @@
         font-size: 12px;
         line-height: 20px;
         letter-spacing: 0%;
-        color: var(--color-grey-white, #FFFFFF);
+        color: var(--guardian-on-primary-color, #FFFFFF);
     }
 }
 

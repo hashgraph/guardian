@@ -50,7 +50,7 @@
 }
 
 .condition-container {
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
     border: 1px solid #E1E7EF;
     width: 100%;
     padding: 16px;
@@ -65,7 +65,7 @@
         width: 100%;
         padding: 16px;
         border-radius: 8px;
-        background: #FFFFFF;
+        background: var(--guardian-background, #FFFFFF);
         border: 1px solid #E1E7EF;
 
         .condition-type {

@@ -16,7 +16,7 @@
     border: 1px solid var(--color-primary);
     height: 40px;
     padding: 8px 16px 8px 8px;
-    color: var(--color-grey-white, #FFF);
+    color: var(--guardian-on-primary-color, #FFF);
     font-family: Inter;
     font-size: 14px;
     font-style: normal;
@@ -59,7 +59,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -83,14 +83,14 @@
     min-width: 300px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
 :host ::ng-deep .p-select-overlay,
 .p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
 }
@@ -236,7 +236,7 @@
         font-size: 14px;
         line-height: 16px;
         vertical-align: middle;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         display: flex;
         align-items: center;
     }
@@ -305,7 +305,7 @@
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     .selected-info-block {
         display: flex;
@@ -342,7 +342,7 @@
                 font-style: normal;
                 font-weight: 500;
                 line-height: 30px;
-                color: var(--color-grey-white, #FFF);
+                color: var(--guardian-on-primary-color, #FFF);
             }
 
             &:disabled {

@@ -270,7 +270,7 @@ th {
 .table-paginator {
     height: 64px !important;
     border-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 }
 

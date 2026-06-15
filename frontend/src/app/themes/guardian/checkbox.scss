@@ -43,7 +43,7 @@
     .p-checkbox-label {
         margin-left: 12px;
         margin-right: 12px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;
@@ -99,7 +99,7 @@
     .p-checkbox-label {
         margin-left: 12px;
         margin-right: 12px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;
@@ -174,7 +174,7 @@
 .p-checkbox-label {
     margin-left: 12px;
     margin-right: 12px;
-    color: #23252e;
+    color: var(--guardian-font-color, #23252e);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -210,7 +210,7 @@
     .p-radiobutton {
         .p-radiobutton-box {
             border-color: var(--guardian-primary-color, #4169E2);
-            background: #ffffff;
+            background: var(--guardian-background, #ffffff);
 
             .p-radiobutton-icon {
                 background: var(--guardian-primary-color, #4169E2);
@@ -264,7 +264,7 @@
     .p-radiobutton-label {
         margin-left: 12px;
         margin-right: 12px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;

@@ -34,7 +34,7 @@
     border: 1px solid var(--color-primary);
     height: 40px;
     padding: 8px 16px 8px 8px;
-    color: var(--color-grey-white, #FFF);
+    color: var(--guardian-on-primary-color, #FFF);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -72,7 +72,7 @@
 
     &.NEW-status {
         color: #848FA9;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
     }
 
     &.APPROVED-status {

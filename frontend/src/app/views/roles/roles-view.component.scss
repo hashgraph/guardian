@@ -7,7 +7,7 @@
 }
 
 .loading {
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     position: fixed;
     z-index: 99;
     top: 0;
@@ -100,7 +100,7 @@
     border: 1px solid var(--color-primary);
     height: 40px;
     padding: 8px 16px 8px 8px;
-    color: var(--color-grey-white, #FFF);
+    color: var(--guardian-on-primary-color, #FFF);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -127,8 +127,8 @@
 }
 
 .color-white {
-    fill: white;
-    color: white;
+    fill: var(--guardian-secondary-color, #FFFFFF);
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .disabled-color {
@@ -163,7 +163,7 @@
     padding: 24px;
     border-radius: 16px;
     border: 1px solid #E1E7EF;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     margin-bottom: 24px;
     margin-top: 24px;
 }
@@ -180,7 +180,7 @@
         width: 270px;
 
         .categories {
-            background: #FFFFFF;
+            background: var(--guardian-background, #FFFFFF);
             border-radius: 8px;
             border: 1px solid #E1E7EF;
             padding: 8px 0px;
@@ -271,7 +271,7 @@
             .category-details {
                 width: 100%;
                 min-height: 200px;
-                background: #fff;
+                background: var(--guardian-background, #fff);
                 padding: 24px;
                 border-radius: 8px;
                 border: 1px solid #E1E7EF;
@@ -286,7 +286,7 @@
                 font-weight: 400;
                 line-height: 14px;
                 text-align: left;
-                background: #F9FAFC;
+                background: var(--guardian-grey-background, #F9FAFC);
 
                 .category-actions-header {
                     color: #848FA9;
@@ -322,13 +322,13 @@
                 .permission-background {
                     width: 16px;
                     height: 16px;
-                    background: #eee;
+                    background: var(--guardian-grey-background, #eee);
                 }
             }
 
             .category-permission {
                 width: 100%;
-                background: #fff;
+                background: var(--guardian-background, #fff);
                 border-radius: 8px;
                 border: 1px solid #E1E7EF;
 
@@ -426,7 +426,7 @@
                         .permission-background {
                             width: 16px;
                             height: 16px;
-                            background: #eee;
+                            background: var(--guardian-grey-background, #eee);
                         }
                     }
                 }
@@ -445,7 +445,7 @@
     right: 0;
     bottom: 0;
     height: 64px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     width: 100%;
     display: flex;
     justify-content: flex-end;

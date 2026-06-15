@@ -1,8 +1,8 @@
 .guardian-accordion {
     .p-accordionpanel {
         overflow: hidden;
-        background: #F9FAFC;
-        border: 1px solid #E1E7EF;
+        background: var(--guardian-grey-background, #F9FAFC);
+        border: 1px solid var(--guardian-border-color);
         border-radius: 8px;
     }
 
@@ -49,8 +49,8 @@
 
     .p-accordioncontent-content {
         padding: 16px;
-        background: #F9FAFC;
-        border-top: 1px solid #E1E7EF;
+        background: var(--guardian-grey-background, #F9FAFC);
+        border-top: 1px solid var(--guardian-border-color);
     }
 
     .p-accordion-header-link {

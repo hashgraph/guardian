@@ -49,7 +49,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    background-color: var(--color-grey-white, #FFFFFF);
+    background-color: var(--color-grey-white);
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
     padding: 0 48px;
 }
@@ -63,14 +63,14 @@
     width: 400px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
 :host ::ng-deep .p-select-overlay,
 .p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
 }
@@ -167,7 +167,7 @@ th {
 .table-paginator {
     height: 64px !important;
     border-radius: 8px !important;
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -269,7 +269,7 @@ button[disabled] {
 }
 
 .modal-header {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, sans-serif;
     font-size: 24px;
     font-style: normal;
@@ -335,7 +335,7 @@ button[disabled] {
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -353,7 +353,7 @@ button[disabled] {
     width: 100px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
 .cursor-pointer {
@@ -380,7 +380,7 @@ button[disabled] {
         }
 
         h4 {
-            color: #000;
+            color: var(--guardian-font-color, #000);
             font-family: Inter, sans-serif;
             font-size: 16px;
             font-style: normal;
