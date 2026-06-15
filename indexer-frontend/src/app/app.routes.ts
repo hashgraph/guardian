@@ -50,6 +50,7 @@ import { LabelDocumentDetailsComponent } from '@views/details/label-document-det
 import { FormulasComponent } from '@views/collections/formulas/formulas.component';
 import { FormulaDetailsComponent } from '@views/details/formula-details/formula-details.component';
 import { PriorityQueueComponent } from '@views/priority-queue/priority-queue.component';
+import { ProjectsComponent } from '@views/projects/projects.component';
 import { SchemasPackagesComponent } from '@views/collections/schemas-packages/schemas-packages.component';
 import { SchemasPackageDetailsComponent } from '@views/details/schemas-packages-details/schemas-packages-details.component';
 
@@ -65,6 +66,7 @@ export const routes: Routes = [
     { path: '', component: HomeComponent },
     { path: 'search', component: SearchViewComponent },
     { path: 'priority-queue', component: PriorityQueueComponent },
+    { path: 'projects', component: ProjectsComponent },
 
     //Collections
     { path: 'registries', component: RegistriesComponent },

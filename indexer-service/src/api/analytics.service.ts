@@ -11,7 +11,7 @@ import {
     ZipUtils
 } from '@indexer/common';
 import escapeStringRegexp from 'escape-string-regexp';
-import { MessageAction, MessageType, Page, Policy, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails } from '@indexer/interfaces';
+import { MessageAction, MessageType, Page, Policy, RawMessage, SearchPolicyParams, SearchPolicyResult, VCDetails, VC } from '@indexer/interfaces';
 import { CompareOptions, HashComparator, PolicyComparator, PolicyLoader, PolicyModel } from '../analytics/index.js';
 import { getPolicyData } from '../helpers/parsers/policy.parser.js';
 import { parsePageParams } from '../utils/parse-page-params.js';
@@ -272,6 +272,197 @@ export class AnalyticsService {
             };
 
             return new MessageResponse<Page<Policy>>(result);
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    /**
+     * GET_ANALYTICS_PROJECTS
+     * Returns aggregate Mint Token VC data (tonnage) per policy project.
+     * Fixes #4509: project/tonnage API for eCommerce consumers and track-record use-case.
+     */
+    @MessagePattern(IndexerMessageAPI.GET_ANALYTICS_PROJECTS)
+    async getAnalyticsProjects(
+        @Payload() msg: {
+            pageIndex?: number;
+            pageSize?: number;
+            orderField?: string;
+            orderDir?: string;
+            policyId?: string;
+            owner?: string;
+            topicId?: string;
+            minMinted?: number;
+        }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const em = DataBaseHelper.getEntityManager();
+
+            const pageSize = Number(msg.pageSize) || 25;
+            const pageIndex = Number(msg.pageIndex) || 0;
+
+            // Base policy filter
+            const policyFilter: any = {
+                type: MessageType.INSTANCE_POLICY,
+                action: MessageAction.PublishPolicy,
+            };
+            if (msg.policyId) {
+                policyFilter.consensusTimestamp = msg.policyId;
+            }
+            if (msg.owner) {
+                policyFilter['options.owner'] = msg.owner;
+            }
+            if (msg.topicId) {
+                policyFilter.topicId = msg.topicId;
+            }
+
+            const policies: Policy[] = await em.find(Message, policyFilter as any) as Policy[];
+
+            const results: any[] = [];
+
+            for (const policy of policies) {
+                // Find all Mint Token VCs under this policy
+                const mintVcFilter: any = {
+                    type: MessageType.VC_DOCUMENT,
+                    'analytics.policyId': policy.consensusTimestamp,
+                    'analytics.schemaName': createRegex('Mint Token'),
+                };
+
+                const mintVcs: VC[] = await em.find(Message, mintVcFilter as any) as VC[];
+
+                if (mintVcs.length === 0) continue;
+
+                // Aggregate by tokenId
+                const tokenMap = new Map<string, { tokenName: string; total: number; count: number; lastTs: string }>();
+                let grandTotal = 0;
+                let lastTs = '';
+
+                for (const vc of mintVcs) {
+                    const vcAny: any = vc;
+                    const amount = Number(vcAny.options?.amount ?? vcAny.document?.tokenAmount ?? 0);
+                    const tId = vcAny.analytics?.tokenId ?? vcAny.options?.tokenId ?? 'unknown';
+                    const tName = vcAny.options?.tokenName ?? tId;
+                    const cTs = vc.consensusTimestamp ?? '';
+
+                    grandTotal += amount;
+                    if (!lastTs || cTs > lastTs) lastTs = cTs;
+
+                    if (!tokenMap.has(tId)) {
+                        tokenMap.set(tId, { tokenName: tName, total: 0, count: 0, lastTs: '' });
+                    }
+                    const entry = tokenMap.get(tId)!;
+                    entry.total += amount;
+                    entry.count += 1;
+                    if (!entry.lastTs || cTs > entry.lastTs) entry.lastTs = cTs;
+                }
+
+                if (msg.minMinted && grandTotal < Number(msg.minMinted)) continue;
+
+                const tokens = Array.from(tokenMap.entries()).map(([tokenId, d]) => ({
+                    tokenId,
+                    tokenName: d.tokenName,
+                    totalMinted: d.total,
+                    mintEventCount: d.count,
+                    lastMintTimestamp: d.lastTs,
+                }));
+
+                results.push({
+                    policyId: policy.consensusTimestamp,
+                    policyName: policy.options?.name,
+                    owner: policy.options?.owner,
+                    totalMinted: grandTotal,
+                    mintEventCount: mintVcs.length,
+                    tokens,
+                    topicId: policy.topicId,
+                });
+            }
+
+            // Sort
+            const orderDir = (msg.orderDir === 'DESC') ? -1 : 1;
+            results.sort((a, b) => orderDir * (b.totalMinted - a.totalMinted));
+
+            const total = results.length;
+            const paged = results.slice(pageIndex * pageSize, (pageIndex + 1) * pageSize);
+
+            return new MessageResponse({
+                items: paged,
+                total,
+                pageIndex,
+                pageSize,
+            });
+        } catch (error) {
+            return new MessageError(error);
+        }
+    }
+
+    /**
+     * GET_ANALYTICS_VC_TREE
+     * Returns a hierarchical tree of VC documents from a root message,
+     * traversing options.relationships recursively up to maxDepth.
+     * Addresses #4509: Tree API for eCommerce consumer context.
+     */
+    @MessagePattern(IndexerMessageAPI.GET_ANALYTICS_VC_TREE)
+    async getVcTree(
+        @Payload() msg: { messageId: string; maxDepth?: number }
+    ): Promise<AnyResponse<any>> {
+        try {
+            const { messageId, maxDepth = 10 } = msg;
+            const em = DataBaseHelper.getEntityManager();
+            const visited = new Set<string>();
+
+            const buildNode = async (id: string, depth: number): Promise<any | null> => {
+                if (!id || visited.has(id) || depth > maxDepth) return null;
+                visited.add(id);
+
+                const item = await em.findOne(Message, {
+                    consensusTimestamp: id,
+                    type: MessageType.VC_DOCUMENT,
+                } as any) as VC | null;
+
+                if (!item) return null;
+
+                const childIds: string[] = Array.isArray(item.options?.relationships)
+                    ? (item.options.relationships as string[])
+                    : [];
+
+                const children: any[] = [];
+                for (const childId of childIds) {
+                    const child = await buildNode(childId, depth + 1);
+                    if (child) children.push(child);
+                }
+
+                return {
+                    messageId: item.consensusTimestamp,
+                    type: item.type,
+                    schemaName: item.analytics?.schemaName,
+                    schemaId: item.analytics?.schemaId,
+                    issuer: item.options?.issuer,
+                    policyId: item.analytics?.policyId,
+                    topicId: item.topicId,
+                    consensusTimestamp: item.consensusTimestamp,
+                    tokenAmount: (item as any).options?.amount,
+                    tokenId: (item as any).analytics?.tokenId ?? (item as any).options?.tokenId,
+                    children,
+                };
+            };
+
+            const root = await buildNode(messageId, 0);
+            if (!root) {
+                return new MessageResponse({ rootId: messageId, depth: 0, nodeCount: 0, root: null });
+            }
+
+            // Count nodes
+            const countNodes = (node: any): number =>
+                1 + node.children.reduce((sum: number, c: any) => sum + countNodes(c), 0);
+            const getDepth = (node: any): number =>
+                node.children.length === 0 ? 0 : 1 + Math.max(...node.children.map(getDepth));
+
+            return new MessageResponse({
+                rootId: messageId,
+                depth: getDepth(root),
+                nodeCount: countNodes(root),
+                root,
+            });
         } catch (error) {
             return new MessageError(error);
         }

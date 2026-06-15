@@ -61,6 +61,14 @@ async function updateIndexes() {
             }
         );
     }
+    // Index for options.relationships array field (fixes search-by-role-ID bug, #4509)
+    const relationshipsIndex = await collection.indexExists('options_relationships');
+    if (!relationshipsIndex) {
+        await collection.createIndex(
+            { 'options.relationships': 1 },
+            { name: 'options_relationships', sparse: true }
+        );
+    }
 }
 
 @Module({

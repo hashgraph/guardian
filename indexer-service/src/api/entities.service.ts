@@ -97,12 +97,21 @@ function createRegex(text: string) {
     }
 }
 
+// Fields stored as arrays in MongoDB — must use $elemMatch/$in, not $regex
+const ARRAY_FILTER_FIELDS = new Set<string>([
+    'options.relationships',
+    'options.tokens',
+]);
+
 function parsePageFilters(msg: PageFilters, exactFields?: Set<string>) {
     let filters: any = {};
     const keys = Object.keys(msg).filter((name) => !pageOptions.has(name));
     for (const key of keys) {
         if (exactFields && exactFields.has(key)) {
             filters[key] = msg[key];
+        } else if (ARRAY_FILTER_FIELDS.has(key)) {
+            // Array field: use $elemMatch so MongoDB searches inside the array
+            filters[key] = { $elemMatch: { $eq: msg[key] } };
         } else {
             filters[key] = createRegex(msg[key]);
         }

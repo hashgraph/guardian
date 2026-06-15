@@ -1,0 +1,41 @@
+<div class="page-content">
+    <div class="content">
+        <h1 class="content__header">Projects &amp; Tonnage</h1>
+        <p class="content__subtitle" style="color:#888;font-size:13px;margin:-12px 0 16px;">
+            Aggregate token issuance (mint credits) per policy project — for eCommerce consumers and supply discovery.
+            Fixes Indexer use-case #7: project developer track record via role-ID relationships.
+        </p>
+        <div class="content__table">
+            <app-table
+                class="collection-container__table"
+                [loading]="loading"
+                [columns]="columns"
+                [data]="items"
+                [pageIndex]="pageIndex"
+                [pageSize]="pageSize"
+                [total]="total"
+                (onPage)="onPage($event)"
+                [sortColumn]="orderField"
+                [sortDirection]="orderDir"
+                (onSort)="onSort($event)"
+                (onRowClick)="onRowClick($event)">
+                <div class="filters">
+                    <div class="filters__fields">
+                        <p-inputGroup>
+                            <p-inputGroupAddon>Owner / Registry</p-inputGroupAddon>
+                            <input pInputText placeholder="DID or owner address" [formControl]="ownerFilter" />
+                        </p-inputGroup>
+                        <p-inputGroup>
+                            <p-inputGroupAddon>Policy ID</p-inputGroupAddon>
+                            <input pInputText placeholder="consensus timestamp" [formControl]="policyFilter" />
+                        </p-inputGroup>
+                        <p-inputGroup>
+                            <p-inputGroupAddon>Min Minted</p-inputGroupAddon>
+                            <input pInputText type="number" placeholder="e.g. 10000" [formControl]="minMintedFilter" />
+                        </p-inputGroup>
+                    </div>
+                </div>
+            </app-table>
+        </div>
+    </div>
+</div>

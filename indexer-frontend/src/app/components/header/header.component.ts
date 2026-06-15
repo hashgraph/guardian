@@ -66,6 +66,10 @@ export class HeaderComponent {
             routerLink: '/policies',
         },
         {
+            label: 'Projects & Tonnage',
+            routerLink: '/projects',
+        },
+        {
             label: 'header.tools',
             routerLink: '/tools',
         },
