@@ -93,6 +93,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/admin/settings'
             },
             {
+                title: 'Worker Tasks',
+                routerLink: '/worker-tasks'
+            },
+            {
                 title: 'Application Branding',
                 routerLink: '/branding'
             },
@@ -318,6 +322,12 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             childItems.push({
                 title: 'Settings',
                 routerLink: '/admin/settings'
+            });
+        }
+        if (user.WORKER_TASKS_READ) {
+            childItems.push({
+                title: 'Worker Tasks',
+                routerLink: '/worker-tasks'
             });
         }
         if (user.BRANDING_CONFIG_UPDATE) {

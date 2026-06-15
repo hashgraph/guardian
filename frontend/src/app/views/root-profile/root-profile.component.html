@@ -56,17 +56,12 @@
 
         <p-card styleClass="profile-card">
           <div class="profile-card-inner">
-            <div class="profile-card-title">Account</div>
-            <div class="profile-avatar">
-              <div class="profile-avatar-initials">{{ (profile!.username || '?')[0].toUpperCase() }}</div>
-            </div>
-            <div class="profile-row">
-              <span class="profile-label">Username</span>
-              <span class="profile-value">{{ profile!.username }}</span>
-            </div>
-            <div class="profile-row">
-              <span class="profile-label">Role</span>
-              <p-tag [value]="profile!.role" styleClass="profile-role-tag"></p-tag>
+            <div class="profile-account-header">
+              <div class="profile-avatar-initials">{{ getInitials(profile!.username) }}</div>
+              <div class="profile-account-identity">
+                <div class="profile-account-name">{{ profile!.username }}</div>
+                <div class="profile-account-role">{{ formatRole(profile!.role) }}</div>
+              </div>
             </div>
             <div class="profile-row">
               <span class="profile-label">Balance</span>
@@ -77,7 +72,10 @@
 
         <p-card styleClass="profile-card">
           <div class="profile-card-inner">
-            <div class="profile-card-title">Hedera network</div>
+            <div class="profile-card-title">
+              <i class="pi pi-globe profile-card-title-icon"></i>
+              Hedera network
+            </div>
             <div class="profile-row">
               <span class="profile-label">Account ID</span>
               <div class="profile-value-actions">
@@ -117,12 +115,15 @@
 
         <p-card styleClass="profile-card">
           <div class="profile-card-inner">
-            <div class="profile-card-title">Identity</div>
+            <div class="profile-card-title">
+              <i class="pi pi-id-card profile-card-title-icon"></i>
+              Identity
+            </div>
             <div class="profile-row">
               <div class="profile-label-with-icon">
                 <span class="profile-label">DID</span>
                 <i class="pi pi-question-circle profile-help-icon"
-                  pTooltip="Decentralized Identifier — a globally unique, self-sovereign identifier you control"
+                  pTooltip="Decentralized Identifier – a globally unique, self-sovereign identifier you control"
                   tooltipPosition="top"></i>
               </div>
               <div class="profile-value-actions">
@@ -137,7 +138,7 @@
               <div class="profile-label-with-icon">
                 <span class="profile-label">DID Document</span>
                 <i class="pi pi-question-circle profile-help-icon"
-                  pTooltip="A JSON-LD document describing your DID — keys, services, and verification methods"
+                  pTooltip="A JSON-LD document describing your DID – keys, services, and verification methods"
                   tooltipPosition="top"></i>
               </div>
               <div (click)="openDIDDocument(profile!.didDocument, 'DID Document')" class="view-document-button">
@@ -149,7 +150,7 @@
               <div class="profile-label-with-icon">
                 <span class="profile-label">VC Document</span>
                 <i class="pi pi-question-circle profile-help-icon"
-                  pTooltip="Verifiable Credential — a tamper-proof digital attestation of your identity, signed by an issuer"
+                  pTooltip="Verifiable Credential – a tamper-proof digital attestation of your identity, signed by an issuer"
                   tooltipPosition="top"></i>
               </div>
               <div (click)="openVCDocument(profile!.vcDocument, 'VC Document')" class="view-document-button">
@@ -165,20 +166,26 @@
       <div class="profile-config-column">
         <p-card styleClass="profile-card">
           <div class="profile-card-inner">
-            <div class="profile-card-title">Configuration</div>
+            <div class="profile-card-title">
+              <i class="pi pi-cog profile-card-title-icon"></i>
+              Configuration
+            </div>
 
             <div class="config-row">
               <div class="config-row-label">
                 <span class="config-row-title">Documentation</span>
-                <span class="config-row-desc">Show the documentation widget</span>
+                <span class="config-row-desc">Show the in-app docs widget</span>
               </div>
-              <p-toggleswitch
-                [ngModel]="docWidgetEnabled"
-                (onChange)="onDocWidgetToggle($event.checked)"
-                [disabled]="!docWidgetAvailable"
+              <span
+                class="profile-toggle-wrapper"
                 [pTooltip]="docWidgetAvailable ? '' : 'Documentation is only available over HTTPS'"
                 tooltipPosition="left">
-              </p-toggleswitch>
+                <p-toggleswitch
+                  [ngModel]="docWidgetEnabled"
+                  (onChange)="onDocWidgetToggle($event.checked)"
+                  [disabled]="!docWidgetAvailable">
+                </p-toggleswitch>
+              </span>
             </div>
 
             <div class="config-row">
@@ -200,10 +207,10 @@
               <p-button label="Change" severity="secondary" size="small" (onClick)="changePassword(profile)"></p-button>
             </div>
 
-            <div class="config-row config-row--last">
+            <div class="config-row">
               <div class="config-row-label">
                 <span class="config-row-title">Theme</span>
-                <span class="config-row-desc">Light, dark, or system default</span>
+                <span class="config-row-desc">Appearance for this device</span>
               </div>
               <p-selectbutton
                 [options]="appThemes"

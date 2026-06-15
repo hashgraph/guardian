@@ -114,8 +114,7 @@
 }
 
 #menuBar {
-    max-height: calc(100vh - 80px - 18px - 18px - 345px);
-    height: calc(100vh - 80px - 18px - 18px - 345px);
+    flex: 1;
     min-height: 150px;
     overflow-y: auto;
 
@@ -126,11 +125,8 @@
 
 #footerBar {
     margin-top: 18px;
-    max-height: 345px;
-    height: 345px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
 }
 
 .item-block {

@@ -79,42 +79,26 @@
 
 <ng-template #footerBar>
   <div id="footerBar">
-    @if (user.WORKER_TASKS_READ) {
+    <div class="boundary-box">
       <div
-        [class.current]="activeLink.startsWith('/worker-tasks')"
-        [routerLink]="'/worker-tasks'"
+        [class.current]="activeLink.startsWith('/notifications')"
+        [routerLink]="'/notifications'"
         class="item cursor-pointer"
         >
-        <img alt="" src="assets/images/icons/table.svg">
+        <img alt="" src="assets/images/icons/notification.svg">
         <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
-          <!--                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>-->
+          @if (menuCollapsed) {
+            <app-notification
+            (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
+          }
         </div>
         <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
-          <span>Worker Tasks</span>
-          <!--                <app-notification [menuCollapsed]="smallMenuMode"></app-notification>-->
+          <span>Notifications</span>
+          @if (!menuCollapsed) {
+            <app-notification
+            (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
+          }
         </div>
-      </div>
-    }
-
-
-    <div
-      [class.current]="activeLink.startsWith('/notifications')"
-      [routerLink]="'/notifications'"
-      class="item cursor-pointer"
-      >
-      <img alt="" src="assets/images/icons/notification.svg">
-      <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
-        @if (menuCollapsed) {
-          <app-notification
-          (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
-        }
-      </div>
-      <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
-        <span>Notifications</span>
-        @if (!menuCollapsed) {
-          <app-notification
-          (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
-        }
       </div>
     </div>
 

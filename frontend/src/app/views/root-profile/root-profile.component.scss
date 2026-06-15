@@ -406,13 +406,14 @@ button[disabled] {
     grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     gap: 16px;
     align-items: start;
+    padding-bottom: 24px;
 }
 
 .profile-info-column,
 .profile-config-column {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
 }
 
 :host ::ng-deep .profile-card {
@@ -426,7 +427,7 @@ button[disabled] {
 }
 
 .profile-card-inner {
-    padding: 20px 24px;
+    padding: 16px 24px;
 }
 
 .profile-card-title {
@@ -436,28 +437,63 @@ button[disabled] {
     line-height: 24px;
     color: var(--color-grey-black-1, #181818);
     padding-bottom: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
     border-bottom: 1px solid var(--guardian-border-color, var(--color-grey-3, #e1e7ef));
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
-.profile-avatar {
+.profile-card-title-icon {
+    font-size: 15px;
+    color: var(--color-grey-5, #848fa9);
+}
+
+.profile-account-header {
     display: flex;
-    justify-content: center;
-    padding: 8px 0 16px;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0 16px;
 }
 
 .profile-avatar-initials {
-    width: 64px;
-    height: 64px;
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
     background: var(--color-primary, #4169E2);
     color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 16px;
     font-weight: 600;
     font-family: Inter, sans-serif;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.profile-account-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.profile-account-name {
+    font-family: Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-grey-black-1, #181818);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-account-role {
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-grey-5, #848fa9);
 }
 
 .profile-row {
@@ -465,13 +501,7 @@ button[disabled] {
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    padding: 8px 0;
-    border-bottom: 1px solid var(--guardian-border-color, var(--color-grey-3, #e1e7ef));
-
-    &:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
+    padding: 5px 0;
 }
 
 .profile-label-with-icon {
@@ -516,9 +546,6 @@ button[disabled] {
     overflow: hidden;
 }
 
-.profile-role-tag {
-    font-size: 12px;
-}
 
 :host ::ng-deep .profile-copy-btn.p-button {
     width: 28px;
@@ -560,14 +587,12 @@ button[disabled] {
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--guardian-border-color, var(--color-grey-3, #e1e7ef));
+    padding: 8px 0;
+}
 
-    &:last-child,
-    &--last {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
+.profile-toggle-wrapper {
+    display: inline-flex;
+    flex-shrink: 0;
 }
 
 .config-row-label {

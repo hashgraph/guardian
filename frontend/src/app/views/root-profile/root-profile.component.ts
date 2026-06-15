@@ -850,8 +850,24 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     refreshOtpStatus() {
         this.auth.getOtpStatus().subscribe((result) => {
-            this.is2faEnabled = result.enabled;
+            const enabled = result.enabled;
+            // Force p-toggleswitch to re-sync even when the value didn't change
+            this.is2faEnabled = !enabled;
+            this.cdRef.detectChanges();
+            this.is2faEnabled = enabled;
         });
+    }
+
+    getInitials(username: string | undefined): string {
+        if (!username) { return '?'; }
+        const caps = username.match(/[A-Z]/g);
+        if (caps && caps.length >= 2) { return caps.slice(0, 2).join(''); }
+        return username.slice(0, 2).toUpperCase();
+    }
+
+    formatRole(role: string | undefined): string {
+        if (!role) { return ''; }
+        return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     }
 
     generate2fa() {
@@ -924,7 +940,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     copyToClipboard(value: string | null | undefined): void {
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {
-            this.toastr.success('Copied to clipboard', '', { timeOut: 2000 });
+            this.toastr.success('Copied to clipboard', '', { timeOut: 2000, positionClass: 'toast-bottom-right' });
         }).catch((err) => {
             console.error(err);
         });

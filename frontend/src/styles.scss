@@ -169,7 +169,13 @@ p-table {
 
 .p-tooltip .p-tooltip-text,
 .guardian-tooltip .p-tooltip-text {
-    color: var(--guardian-font-color, #23252E);
+    background: rgba(30, 42, 58, 0.95);
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.p-tooltip-arrow {
+    display: none;
 }
 
 button.mat-raised-button,
