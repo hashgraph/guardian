@@ -1,14 +1,16 @@
 <script setup lang="ts">
-import { BookOpen, Copy, Check } from "lucide-vue-next";
+import { BookOpen, Copy, Check, Download, Loader2 } from "lucide-vue-next";
 import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type {
   MethodologySortKey,
   MethodologySortDir,
+  MethodologiesResponse,
 } from "~/composables/api/useMethodologiesApi";
 import type { SortDirection } from "~/composables/useFilteredPagination";
 import { formatCredits } from "~/lib/format";
 import { useRegistriesApi } from "~/composables/api/useRegistriesApi";
+import { downloadCsv, csvDateStamp, buildMethodologyCsvRows } from '~/lib/csv-export';
 
 const { t } = useI18n();
 
@@ -284,6 +286,60 @@ const decodeStatusI18nKey = (status: string | null | undefined): string => {
 const skeletonRows = computed(() =>
   Array.from({ length: pageSize.value }, (_, i) => i),
 );
+
+const downloading = ref(false);
+
+async function downloadMethodologies() {
+    if (downloading.value) return;
+    downloading.value = true;
+    try {
+        const config = useRuntimeConfig();
+        const baseURL = import.meta.server
+            ? (config.apiBaseUrl as string)
+            : (config.public.apiBaseUrl as string);
+
+        const PAGE_LIMIT = 1000;
+        const baseQuery: Record<string, string | number> = { limit: PAGE_LIMIT };
+        const search = searchQuery.value?.trim();
+        if (search) baseQuery.search = search;
+        if (apiSortBy.value && apiSortDir.value) {
+            baseQuery.sortBy = apiSortBy.value;
+            baseQuery.sortDir = apiSortDir.value;
+        }
+        const FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
+        for (const key of FILTER_KEYS) {
+            const raw = filters.value[key];
+            if (raw == null) continue;
+            const trimmed = String(raw).trim();
+            if (trimmed) baseQuery[key] = trimmed;
+        }
+
+        // Fetch page 1 to get total, then fetch remaining pages in parallel
+        const first = await $fetch<MethodologiesResponse>(
+            `/api/v1/${network.value}/methodologies`,
+            { baseURL, query: { ...baseQuery, page: 1 } },
+        );
+        const totalPages = first?.meta?.totalPages ?? 1;
+        let allData = first?.data ?? [];
+
+        if (totalPages > 1) {
+            const rest = await Promise.all(
+                Array.from({ length: totalPages - 1 }, (_, i) =>
+                    $fetch<MethodologiesResponse>(
+                        `/api/v1/${network.value}/methodologies`,
+                        { baseURL, query: { ...baseQuery, page: i + 2 } },
+                    ).then(r => r?.data ?? []),
+                ),
+            );
+            allData = [...allData, ...rest.flat()];
+        }
+
+        const rows = buildMethodologyCsvRows(allData, network.value);
+        downloadCsv(`methodologies_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
 </script>
 
 <template>
@@ -325,6 +381,17 @@ const skeletonRows = computed(() =>
     </div>
 
     <div class="px-6 pb-6">
+      <div class="flex justify-end mb-2">
+        <button
+          :disabled="downloading"
+          class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="downloadMethodologies"
+        >
+          <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+          <Download v-else class="h-3.5 w-3.5" />
+          {{ $t('methodologies.downloadData') }}
+        </button>
+      </div>
       <div class="rounded-xl border bg-card overflow-hidden">
         <div class="overflow-x-auto">
         <table class="w-full text-sm table-fixed min-w-[1100px]">

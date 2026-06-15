@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2 } from 'lucide-vue-next';
+import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { SDG_LIST } from '~/lib/sdgs';
@@ -7,8 +7,10 @@ import { generateProjectVc } from '~/lib/mock-vc';
 import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
 import { getMethodologyLongName } from '~/lib/methodologies';
 import type { Project } from '~/types/models';
+import { downloadCsv, csvDateStamp, buildProjectCsvRows } from '~/lib/csv-export';
 
 const { t } = useI18n();
+const { network } = useNetwork();
 const { projects, total, filterOptions } = useProjects();
 const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
 const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
@@ -159,6 +161,20 @@ const statusColor: Record<string, string> = {
     Issuing: 'bg-stat-green/10 text-stat-green',
     Completed: 'bg-purple-50 text-purple-600',
 };
+
+const downloading = ref(false);
+
+async function downloadProjects() {
+    if (downloading.value) return;
+    downloading.value = true;
+    await nextTick();
+    try {
+        const rows = buildProjectCsvRows(filtered.value, network.value);
+        downloadCsv(`projects_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
 </script>
 
 <template>
@@ -215,6 +231,17 @@ const statusColor: Record<string, string> = {
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-2">
+                <button
+                    :disabled="downloading"
+                    class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    @click="downloadProjects"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('projects.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">

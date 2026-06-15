@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { FileJson, Sparkles } from 'lucide-vue-next';
+import { FileJson, Sparkles, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
+import { downloadCsv, csvDateStamp, buildCreditCsvRows } from '~/lib/csv-export';
 
 const { t, locale } = useI18n();
 const { network } = useNetwork();
@@ -107,6 +108,20 @@ const summaryStats = computed(() => {
 });
 
 const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat-blue', 'Non-Fungible': 'bg-stat-amber/10 text-stat-amber' };
+
+const downloading = ref(false);
+
+async function downloadCredits() {
+    if (downloading.value) return;
+    downloading.value = true;
+    await nextTick();
+    try {
+        const rows = buildCreditCsvRows(filtered.value, network.value);
+        downloadCsv(`issuances_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
 </script>
 
 <template>
@@ -189,6 +204,17 @@ const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-2">
+                <button
+                    :disabled="downloading"
+                    class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    @click="downloadCredits"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('credits.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="text-sm w-full">

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Building2, Copy, Check, FileJson } from 'lucide-vue-next';
+import { Building2, Copy, Check, FileJson, Download, Loader2 } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
-import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
+import type { RegistrySortKey, RegistrySortDir, RegistryDto, RegistriesResponse } from '~/composables/api/useRegistriesApi';
+import { downloadCsv, csvDateStamp, buildRegistryCsvRows } from '~/lib/csv-export';
 import type { SortDirection } from '~/composables/useFilteredPagination';
 
 
@@ -231,6 +232,65 @@ const tagsAsList = (tags: string | null): string[] => {
     return tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0);
 };
 
+const downloading = ref(false);
+
+async function downloadRegistries() {
+    if (downloading.value) return;
+    downloading.value = true;
+    try {
+        const config = useRuntimeConfig();
+        const baseURL = import.meta.server
+            ? (config.apiBaseUrl as string)
+            : (config.public.apiBaseUrl as string);
+
+        const PAGE_LIMIT = 1000;
+        const baseQuery: Record<string, string | number | boolean> = { limit: PAGE_LIMIT };
+        const search = searchQuery.value?.trim();
+        if (search) baseQuery.search = search;
+        if (apiSortBy.value && apiSortDir.value) {
+            baseQuery.sortBy = apiSortBy.value;
+            baseQuery.sortDir = apiSortDir.value;
+        }
+        const FILTER_KEYS = ['displayName', 'did', 'id', 'tags', 'geography', 'law'] as const;
+        for (const key of FILTER_KEYS) {
+            const raw = filters.value[key];
+            if (raw == null) continue;
+            const trimmed = String(raw).trim();
+            if (trimmed) baseQuery[key] = trimmed;
+        }
+        if (filters.value.hideEmpty === true) baseQuery.hideEmpty = true;
+        const ts = filters.value.sourceTimestamp;
+        if (ts && typeof ts === 'object') {
+            if (ts.from) baseQuery.createdAtFrom = ts.from;
+            if (ts.to) baseQuery.createdAtTo = ts.to;
+        }
+
+        const first = await $fetch<RegistriesResponse>(
+            `/api/v1/${network.value}/registries`,
+            { baseURL, query: { ...baseQuery, page: 1 } },
+        );
+        const totalPagesCount = first?.meta?.totalPages ?? 1;
+        let allData = first?.data ?? [];
+
+        if (totalPagesCount > 1) {
+            const rest = await Promise.all(
+                Array.from({ length: totalPagesCount - 1 }, (_, i) =>
+                    $fetch<RegistriesResponse>(
+                        `/api/v1/${network.value}/registries`,
+                        { baseURL, query: { ...baseQuery, page: i + 2 } },
+                    ).then(r => r?.data ?? []),
+                ),
+            );
+            allData = [...allData, ...rest.flat()];
+        }
+
+        const rows = buildRegistryCsvRows(allData, network.value);
+        downloadCsv(`registries_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
+
 // Raw-data viewer state — same VcJsonViewer pattern used elsewhere.
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
@@ -274,6 +334,17 @@ function viewRegistry(r: RegistryDto) {
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-3">
+                <button
+                    class="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                    :disabled="downloading"
+                    @click="downloadRegistries"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('registries.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">

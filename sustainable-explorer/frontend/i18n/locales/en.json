@@ -210,6 +210,7 @@
         "subtitle": "Verified sustainability projects on the Guardian network",
         "searchPlaceholder": "Search projects...",
         "quickFilters": "Quick filters:",
+        "downloadData": "Download Data",
         "projectsFound": "{count} projects found",
         "totalIssuances": "Total issuances:",
         "countries": "Countries:",
@@ -315,6 +316,7 @@
         "subtitle": "Tokens issued on Hedera",
         "searchPlaceholder": "Search issuances...",
         "quickFilters": "Quick filters:",
+        "downloadData": "Download Data",
         "presets": {
             "fungible": "Fungible tokens",
             "nonFungible": "Non-Fungible (NFTs)",
@@ -363,6 +365,7 @@
         "subtitle": "Published policy workflows for sustainability verification",
         "searchPlaceholder": "Search methodologies...",
         "noMatch": "No methodologies match your filters",
+        "downloadData": "Download Data",
         "columns": {
             "methodology": "Methodology",
             "name": "Name",
@@ -606,6 +609,7 @@
         "subtitle": "Standard Registries operating on the Guardian network",
         "searchPlaceholder": "Search registries...",
         "noMatch": "No registries match your filters",
+        "downloadData": "Download Data",
         "columns": {
             "name": "Name",
             "id": "ID",
