@@ -11,6 +11,7 @@ import { HeaderPropsService } from '../../services/header-props.service';
 import { BrandingService } from '../../services/branding.service';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { Subscription } from 'rxjs';
+import { DocWidgetService } from '../../services/doc-widget.service';
 
 @Component({
     selector: 'app-new-header',
@@ -32,8 +33,6 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
 
     public policyRequests = 0;
     public newPolicyRequests = 0;
-    public showDocWidget: boolean = true;
-    public readonly docWidgetAvailable: boolean = window.location.protocol === 'https:';
 
     private commonLinksDisabled: boolean = false;
     private balanceType: string;
@@ -58,7 +57,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         public webSocketService: WebSocketService,
         public headerProps: HeaderPropsService,
         private brandingService: BrandingService,
-        private externalPoliciesService: ExternalPoliciesService) {
+        private externalPoliciesService: ExternalPoliciesService,
+        private docWidgetService: DocWidgetService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -68,8 +68,6 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         try {
             this.smallMenuMode = localStorage.getItem('MAIN_HEADER') === 'true';
             this.menuCollapsed = this.smallMenuMode;
-            const savedDocWidget = localStorage.getItem('SHOW_DOC_WIDGET');
-            this.showDocWidget = savedDocWidget !== 'false';
         } catch (error) {
             console.error(error)
         }
@@ -77,11 +75,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
 
     ngOnInit(): void {
         this.update();
-        const gitBook = (window as any).GitBook;
-
-        if (gitBook && !this.showDocWidget) {
-            gitBook('hide');
-        }
+        this.docWidgetService.applyOnStartup();
 
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
@@ -286,30 +280,6 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             localStorage.setItem('MAIN_HEADER', String(this.smallMenuMode));
         } catch (error) {
             console.error(error);
-        }
-    }
-
-    public toggleDocWidget() {
-        if (!this.docWidgetAvailable) {
-            return;
-        }
-        this.showDocWidget = !this.showDocWidget;
-
-        try {
-            localStorage.setItem('SHOW_DOC_WIDGET', String(this.showDocWidget));
-        } catch (error) {
-            console.error(error);
-        }
-
-        const gitBook = (window as any).GitBook;
-
-        if (gitBook) {
-            if (this.showDocWidget) {
-                gitBook('show');
-            } else {
-                gitBook('close');
-                gitBook('hide');
-            }
         }
     }
 

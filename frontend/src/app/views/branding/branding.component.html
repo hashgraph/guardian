@@ -14,19 +14,6 @@
 <ng-template #header>
   <div class="branding-page-header">
     <div class="guardian-user-page-header">Application Branding</div>
-    <div class="branding-theme-switcher">
-      <label class="branding-theme-switcher-label" for="appThemeDropdown">Theme</label>
-      <p-select
-        id="appThemeDropdown"
-        class="guardian-dropdown branding-theme-select"
-        [options]="appThemes"
-        [(ngModel)]="selectedAppTheme"
-        optionLabel="label"
-        optionValue="value"
-        appendTo="body"
-        (onChange)="onAppThemeChange($event.value)">
-      </p-select>
-    </div>
   </div>
 </ng-template>
 

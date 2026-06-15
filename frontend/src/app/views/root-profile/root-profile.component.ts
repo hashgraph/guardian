@@ -22,6 +22,9 @@ import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dia
 import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
+import { ToastrService } from 'ngx-toastr';
+import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
+import { DocWidgetService } from '../../services/doc-widget.service';
 
 enum OperationMode {
     None,
@@ -121,7 +124,10 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private dialogService: DialogService,
         private route: ActivatedRoute,
         private router: Router,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private docWidgetService: DocWidgetService,
+        private appThemeService: AppThemeService,
+        private toastr: ToastrService
     ) {
         this.profile = null;
         this.balance = null;
@@ -881,5 +887,46 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 });
             }
         })
+    }
+
+    get appThemes(): AppThemeOption[] {
+        return this.appThemeService.themes;
+    }
+
+    get selectedTheme(): AppTheme {
+        return this.appThemeService.getCurrentTheme();
+    }
+
+    get docWidgetEnabled(): boolean {
+        return this.docWidgetService.isEnabled();
+    }
+
+    get docWidgetAvailable(): boolean {
+        return this.docWidgetService.available;
+    }
+
+    onThemeChange(theme: AppTheme): void {
+        this.appThemeService.setTheme(theme);
+    }
+
+    onDocWidgetToggle(checked: boolean): void {
+        this.docWidgetService.setEnabled(checked);
+    }
+
+    onToggle2fa(checked: boolean): void {
+        if (checked) {
+            this.generate2fa();
+        } else {
+            this.deactivate2fa();
+        }
+    }
+
+    copyToClipboard(value: string | null | undefined): void {
+        if (!value) { return; }
+        navigator.clipboard.writeText(value).then(() => {
+            this.toastr.success('Copied to clipboard', '', { timeOut: 2000 });
+        }).catch((err) => {
+            console.error(err);
+        });
     }
 }

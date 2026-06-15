@@ -6,7 +6,6 @@ import {InformService} from 'src/app/services/inform.service';
 import {BrandingPayload, BrandingService} from 'src/app/services/branding.service';
 import {colorToGradient} from '../../static/color-remoter.function';
 import {Subscription} from 'rxjs';
-import {AppTheme, AppThemeOption, AppThemeService} from '../../services/app-theme.service';
 
 @Component({
     selector: 'app-branding',
@@ -21,8 +20,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
     public isChangesMade: boolean = false;
     public innerWidth: any;
     public termsAndConditions = new UntypedFormControl('', [Validators.required]);
-    public appThemes: AppThemeOption[] = [];
-    public selectedAppTheme: AppTheme = 'light';
 
     faviconLinks = document.querySelectorAll<HTMLLinkElement>('link[rel="shortcut icon"],link[rel="icon"]');
 
@@ -68,10 +65,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
         private http: HttpClient,
         private informService: InformService,
         private brandingService: BrandingService,
-        private appThemeService: AppThemeService,
     ) {
-        this.appThemes = this.appThemeService.themes;
-        this.selectedAppTheme = this.appThemeService.getCurrentTheme();
         this.fontControl.valueChanges.subscribe((value) => {
             this.selectedFont = this.fonts.find(font => font.value === value);
         });
@@ -93,11 +87,6 @@ export class BrandingComponent implements OnInit, OnDestroy {
             this.termsAndConditions.setValue(brandingData.termsAndConditions);
             this.loading = false;
         });
-    }
-
-    public onAppThemeChange(theme: AppTheme): void {
-        this.selectedAppTheme = theme;
-        this.appThemeService.setTheme(theme);
     }
 
     ngOnDestroy() {
