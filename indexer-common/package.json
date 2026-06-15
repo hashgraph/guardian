@@ -12,7 +12,7 @@
         "dotenv": "^16.0.0",
         "jszip": "^3.7.1",
         "module-alias": "^2.2.2",
-        "mongodb": "6.16.0",
+        "mongodb": "6.21.0",
         "nats": "^2.6.1",
         "reflect-metadata": "^0.2.2"
     },
