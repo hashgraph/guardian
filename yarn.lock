@@ -1430,7 +1430,7 @@ __metadata:
     "@transmute/credentials-context": "npm:0.7.0-unstable.80"
     "@transmute/did-context": "npm:0.7.0-unstable.80"
     "@transmute/ed25519-signature-2018": "npm:0.7.0-unstable.80"
-    "@transmute/jsonld-schema": "npm:0.7.0-unstable.80"
+    "@transmute/jsonld-schema": "npm:0.7.0-unstable.82"
     "@transmute/security-context": "npm:0.7.0-unstable.80"
     "@transmute/vc.js": "npm:0.7.0-unstable.80"
     "@types/express": "npm:^5.0.1"
@@ -4363,18 +4363,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@transmute/jsonld-schema@npm:0.7.0-unstable.80":
-  version: 0.7.0-unstable.80
-  resolution: "@transmute/jsonld-schema@npm:0.7.0-unstable.80"
-  dependencies:
-    "@transmute/jsonld": "npm:0.0.4"
-    ajv: "npm:^8.6.1"
-    genson-js: "npm:0.0.5"
-  checksum: 10c0/009bd15e51a96cfac17f832d46de17931ed5f937001889bfb9637e99fc438e11ac3aa4977ede785ef355262ddba6dbfd607a3458849d0b49cf29e75013b4aa21
-  languageName: node
-  linkType: hard
-
-"@transmute/jsonld-schema@npm:^0.7.0-unstable.80":
+"@transmute/jsonld-schema@npm:0.7.0-unstable.82, @transmute/jsonld-schema@npm:^0.7.0-unstable.80":
   version: 0.7.0-unstable.82
   resolution: "@transmute/jsonld-schema@npm:0.7.0-unstable.82"
   dependencies:
