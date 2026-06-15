@@ -1832,9 +1832,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/community@npm:1.1.28":
-  version: 1.1.28
-  resolution: "@langchain/community@npm:1.1.28"
+"@langchain/community@npm:1.1.29":
+  version: 1.1.29
+  resolution: "@langchain/community@npm:1.1.29"
   dependencies:
     "@langchain/classic": "npm:^1.0.27"
     "@langchain/openai": "npm:^1.4.1"
@@ -2198,7 +2198,7 @@ __metadata:
       optional: true
     youtubei.js:
       optional: true
-  checksum: 10c0/b1d5589a54f827c60126c5b995501808b036f9c3f597edf22fee5bd94c09ce67cd87adad35c5e858aefbdef6218fef4aa828714906f8e2ae88e9b04fdd014c98
+  checksum: 10c0/e52b84256de68a08bbb4520e287598f495982e3da5e2192cfb764156927e0646b5709704405210e4e5c16edec9987319be63dc665d13ed408bdd53f7f122eb7e
   languageName: node
   linkType: hard
 
@@ -5297,7 +5297,7 @@ __metadata:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@langchain/classic": "npm:1.0.34"
-    "@langchain/community": "npm:1.1.28"
+    "@langchain/community": "npm:1.1.29"
     "@langchain/core": "npm:1.1.48"
     "@langchain/openai": "npm:1.4.7"
     "@langchain/textsplitters": "npm:1.0.1"
