@@ -17,6 +17,7 @@ import { SynchronizationAll } from './helpers/synchronizers/index.js';
 import { fixtures } from './helpers/fixtures.js';
 import { AnalyticsTask } from './helpers/analytics-task.js';
 import {ArtifactsService} from './api/artifacts.service.js';
+import { AdvancedSearchService } from './api/advanced-search.service.js';
 
 const channelName = (
     process.env.SERVICE_CHANNEL || `indexer-service.${Utils.GenerateUUIDv4(26)}`
@@ -86,7 +87,8 @@ async function updateIndexes() {
         AnalyticsService,
         SettingsService,
         LoadingQueueService,
-        ArtifactsService
+        ArtifactsService,
+        AdvancedSearchService
     ],
 })
 class AppModule { }

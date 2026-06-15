@@ -7,6 +7,7 @@ import { DocumentsComponent } from '@dev/logs/documents/documents.component';
 
 //Home
 import { SearchViewComponent } from '@views/search/search.component';
+import { AdvancedSearchViewComponent } from '@views/search/advanced/advanced-search.component';
 import { HomeComponent } from '@views/home/home.component';
 
 //Details
@@ -64,6 +65,7 @@ export const routes: Routes = [
     //Home
     { path: '', component: HomeComponent },
     { path: 'search', component: SearchViewComponent },
+    { path: 'search/advanced', component: AdvancedSearchViewComponent },
     { path: 'priority-queue', component: PriorityQueueComponent },
 
     //Collections

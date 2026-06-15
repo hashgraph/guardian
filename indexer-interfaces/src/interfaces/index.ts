@@ -16,3 +16,4 @@ export * from './network-explorer-settings.interface.js';
 export * from './data-loading-progress.interface.js';
 export * from './data-priority-loading-progress.interface.js';
 export * from './priority-options.interface.js';
+export * from './advanced-search.interface.js';

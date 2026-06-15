@@ -1,0 +1,204 @@
+// ── Page layout ───────────────────────────────────────────────────────────────
+
+.advanced-search-page {
+    padding: 24px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+// ── Header ────────────────────────────────────────────────────────────────────
+
+.page-header {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 24px;
+
+    h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        margin: 0;
+    }
+    .page-subtitle {
+        font-size: 14px;
+        color: #666;
+        margin: 0;
+    }
+    .page-actions {
+        display: flex;
+        gap: 8px;
+        margin-top: 8px;
+    }
+}
+
+// ── Steps ─────────────────────────────────────────────────────────────────────
+
+.step-panel {
+    margin-bottom: 12px;
+    border-left: 3px solid var(--mdc-theme-primary, #3f51b5);
+
+    .step-subtitle {
+        font-size: 12px;
+        color: #888;
+        margin-left: 8px;
+        font-weight: 400;
+    }
+}
+
+.step-body {
+    padding: 16px 0 0;
+}
+
+.step-meta-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.conditions-header {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 8px;
+
+    .conditions-label {
+        font-weight: 600;
+        font-size: 14px;
+
+        em {
+            font-weight: 400;
+            color: #888;
+            font-size: 12px;
+        }
+    }
+}
+
+.condition-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e0e0e0;
+
+    &:last-child { border-bottom: none; }
+}
+
+// ── Carry-forward field ───────────────────────────────────────────────────────
+
+.field-carry {
+    width: 100%;
+}
+
+// ── Add step ─────────────────────────────────────────────────────────────────
+
+.add-step-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 16px 0;
+
+    .add-step-hint {
+        font-size: 12px;
+        color: #888;
+    }
+    code {
+        background: #f3f4f6;
+        padding: 1px 5px;
+        border-radius: 3px;
+        font-family: monospace;
+        font-size: 11px;
+    }
+}
+
+// ── Config panels (columns) ───────────────────────────────────────────────────
+
+.config-panel { margin-bottom: 16px; }
+
+.columns-body {
+    padding: 12px 0 0;
+}
+
+.column-row {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+// ── Divider ───────────────────────────────────────────────────────────────────
+
+.section-divider {
+    margin: 16px 0;
+}
+
+// ── Submit ────────────────────────────────────────────────────────────────────
+
+.submit-row {
+    margin: 20px 0 8px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+
+    button { min-width: 140px; height: 44px; font-size: 15px; }
+}
+
+// ── Error ─────────────────────────────────────────────────────────────────────
+
+.error-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #991b1b;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 14px;
+    margin-bottom: 16px;
+
+    mat-icon { font-size: 18px; }
+}
+
+// ── Results ───────────────────────────────────────────────────────────────────
+
+.results-section {
+    margin-top: 24px;
+}
+
+.results-header {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 12px;
+
+    h2 {
+        font-size: 1.2rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    .results-count {
+        font-size: 14px;
+        color: #888;
+        font-weight: 400;
+    }
+    .bookmark-hint {
+        font-size: 12px;
+        color: #888;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-left: auto;
+
+        mat-icon { font-size: 14px; }
+    }
+}
+
+// ── Field widths ──────────────────────────────────────────────────────────────
+
+.field-short  { min-width: 180px; flex: 1; }
+.field-field  { min-width: 220px; flex: 2; }
+.field-op     { min-width: 160px; flex: 1; }
+.field-value  { min-width: 180px; flex: 2; }

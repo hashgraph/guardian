@@ -1,9 +1,9 @@
-import { Controller, HttpCode, HttpStatus, Get, Query } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiQuery, ApiInternalServerErrorResponse } from '@nestjs/swagger';
+import { Controller, HttpCode, HttpStatus, Get, Post, Body, Query } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiQuery, ApiInternalServerErrorResponse, ApiBody, ApiOkResponse } from '@nestjs/swagger';
 import { IndexerMessageAPI } from '@indexer/common';
 import { ApiClient } from '../api-client.js';
 import { ApiPaginatedResponse } from '#decorators';
-import { InternalServerErrorDTO, SearchItemDTO } from '#dto';
+import { InternalServerErrorDTO, SearchItemDTO, AdvancedSearchParamsDTO, AdvancedSearchResultDTO } from '#dto';
 
 @Controller('search')
 @ApiTags('search')
@@ -51,5 +51,28 @@ export class SearchApi extends ApiClient {
             pageIndex,
             pageSize
         });
+    }
+
+    @ApiOperation({
+        summary: 'Advanced Search',
+        description:
+            'Multi-step, multi-condition search across Indexer documents. ' +
+            'Supports exact match, substring, regex, range, and set operators. ' +
+            'Steps can cross-reference field values from previous steps. ' +
+            'The response includes configurable display columns and a serialised ' +
+            'search token that can be saved as a URL bookmark.',
+    })
+    @ApiBody({ type: AdvancedSearchParamsDTO })
+    @ApiOkResponse({ type: AdvancedSearchResultDTO })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error',
+        type: InternalServerErrorDTO,
+    })
+    @Post('/advanced')
+    @HttpCode(HttpStatus.OK)
+    async advancedSearch(
+        @Body() body: AdvancedSearchParamsDTO
+    ): Promise<AdvancedSearchResultDTO> {
+        return await this.send(IndexerMessageAPI.GET_ADVANCED_SEARCH_API, body);
     }
 }

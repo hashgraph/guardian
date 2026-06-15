@@ -10,7 +10,7 @@ import {
 } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatButtonModule } from '@angular/material/button';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TranslocoModule } from '@jsverse/transloco';
 import { ColumnType, TableComponent } from '@components/table/table.component';
@@ -37,6 +37,7 @@ import { SearchItem } from '@indexer/interfaces';
         InputTextModule,
         InputIconModule,
         IconFieldModule,
+        RouterModule,
     ],
 })
 export class SearchViewComponent {

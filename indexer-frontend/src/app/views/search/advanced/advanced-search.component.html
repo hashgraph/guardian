@@ -1,0 +1,234 @@
+<div class="advanced-search-page">
+
+  <!-- ── Header ──────────────────────────────────────────────────────────── -->
+  <div class="page-header">
+    <h1>Advanced Search</h1>
+    <p class="page-subtitle">
+      Build multi-step, multi-condition queries across Guardian Indexer documents.
+      Cross-reference field values between steps and configure the result grid.
+    </p>
+    <div class="page-actions">
+      <button mat-stroked-button (click)="copyLink()" [disabled]="!searchToken"
+              matTooltip="Copy search URL to clipboard">
+        <mat-icon>link</mat-icon> Copy Link
+      </button>
+      <button mat-stroked-button (click)="resetForm()">
+        <mat-icon>refresh</mat-icon> Reset
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Search Steps ────────────────────────────────────────────────────── -->
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div formArrayName="steps">
+      @for (step of steps.controls; track $index; let si = $index) {
+        <mat-expansion-panel class="step-panel" [expanded]="true">
+          <mat-expansion-panel-header>
+            <mat-panel-title>
+              <mat-icon>search</mat-icon>
+              <strong>Step {{ si + 1 }}</strong>
+              <span class="step-subtitle">
+                {{ step.get('label')?.value || step.get('type')?.value || 'Document search' }}
+              </span>
+            </mat-panel-title>
+            <mat-panel-description>
+              {{ steps.length > 1 && si < steps.length - 1 ? 'Intermediate — results feed step ' + (si + 2) : 'Final — results shown in grid' }}
+            </mat-panel-description>
+          </mat-expansion-panel-header>
+
+          <div [formGroupName]="si" class="step-body">
+
+            <!-- Step meta -->
+            <div class="step-meta-row">
+              <mat-form-field appearance="outline" class="field-short">
+                <mat-label>Step label (optional)</mat-label>
+                <input matInput formControlName="label" placeholder="e.g. Monitoring Reports">
+              </mat-form-field>
+
+              <mat-form-field appearance="outline" class="field-short">
+                <mat-label>Document type filter</mat-label>
+                <mat-select formControlName="type">
+                  <mat-option value="">— any —</mat-option>
+                  @for (t of documentTypes; track t) {
+                    <mat-option [value]="t">{{ t }}</mat-option>
+                  }
+                </mat-select>
+              </mat-form-field>
+            </div>
+
+            <!-- Conditions -->
+            <div class="conditions-header">
+              <span class="conditions-label">Conditions <em>(all must match — AND)</em></span>
+              <button mat-icon-button type="button" (click)="addCondition(si)"
+                      matTooltip="Add condition" color="primary">
+                <mat-icon>add_circle</mat-icon>
+              </button>
+            </div>
+
+            <div formArrayName="conditions">
+              @for (cond of getConditions(si).controls; track $index; let ci = $index) {
+                <div [formGroupName]="ci" class="condition-row">
+
+                  <mat-form-field appearance="outline" class="field-field">
+                    <mat-label>Field path</mat-label>
+                    <input matInput formControlName="field"
+                           placeholder="e.g. analytics.policyId">
+                    <mat-hint>
+                      Use dot notation or $step{{ si }}.fieldPath to reference prior step
+                    </mat-hint>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="field-op">
+                    <mat-label>Operator</mat-label>
+                    <mat-select formControlName="operator">
+                      @for (op of operators; track op.value) {
+                        <mat-option [value]="op.value">{{ op.label }}</mat-option>
+                      }
+                    </mat-select>
+                  </mat-form-field>
+
+                  <mat-form-field appearance="outline" class="field-value">
+                    <mat-label>
+                      {{ isListOp(cond.get('operator')?.value) ? 'Values (comma-separated)' : 'Value' }}
+                    </mat-label>
+                    <input matInput formControlName="value"
+                           [placeholder]="isListOp(cond.get('operator')?.value)
+                             ? 'val1, val2, val3'
+                             : isRangeOp(cond.get('operator')?.value)
+                               ? 'from value'
+                               : 'e.g. ACM0007'">
+                  </mat-form-field>
+
+                  @if (isRangeOp(cond.get('operator')?.value)) {
+                    <mat-form-field appearance="outline" class="field-value">
+                      <mat-label>To value</mat-label>
+                      <input matInput formControlName="valueTo" placeholder="upper bound">
+                    </mat-form-field>
+                  }
+
+                  <button mat-icon-button type="button" color="warn"
+                          (click)="removeCondition(si, ci)"
+                          [disabled]="getConditions(si).length <= 1"
+                          matTooltip="Remove condition">
+                    <mat-icon>remove_circle</mat-icon>
+                  </button>
+
+                </div>
+              }
+            </div>
+
+            <!-- Carry-forward (intermediate steps only) -->
+            @if (si < steps.length - 1) {
+              <mat-form-field appearance="outline" class="field-carry">
+                <mat-label>Carry forward fields (comma-separated)</mat-label>
+                <input matInput formControlName="carryFields"
+                       placeholder="e.g. analytics.policyId, options.credentialSubject.projectId">
+                <mat-hint>
+                  Values of these fields will be available in step {{ si + 2 }}
+                  as <code>$step{{ si }}.fieldPath</code>
+                </mat-hint>
+              </mat-form-field>
+            }
+
+          </div>
+
+          <mat-action-row>
+            <button mat-button type="button" color="warn"
+                    [disabled]="steps.length <= 1"
+                    (click)="removeStep(si)">
+              <mat-icon>delete</mat-icon> Remove step
+            </button>
+          </mat-action-row>
+
+        </mat-expansion-panel>
+      }
+    </div>
+
+    <!-- ── Add step button ──────────────────────────────────────────────── -->
+    <div class="add-step-row">
+      <button mat-stroked-button type="button" (click)="addStep()" color="primary">
+        <mat-icon>add</mat-icon> Add step
+      </button>
+      <span class="add-step-hint">
+        Each step can cross-reference values from previous steps using
+        <code>$step{'{n}'}.fieldPath</code> as a condition value.
+      </span>
+    </div>
+
+    <mat-divider class="section-divider"></mat-divider>
+
+    <!-- ── Display Columns ─────────────────────────────────────────────── -->
+    <mat-expansion-panel class="config-panel">
+      <mat-expansion-panel-header>
+        <mat-panel-title><mat-icon>view_column</mat-icon> Result Grid Columns</mat-panel-title>
+        <mat-panel-description>Configure which fields appear in the result table</mat-panel-description>
+      </mat-expansion-panel-header>
+      <div class="columns-body">
+        <div formArrayName="displayColumns">
+          @for (col of displayColumnsArr.controls; track $index; let ci = $index) {
+            <div [formGroupName]="ci" class="column-row">
+              <mat-form-field appearance="outline" class="field-short">
+                <mat-label>Field path</mat-label>
+                <input matInput formControlName="field" placeholder="analytics.policyId">
+              </mat-form-field>
+              <mat-form-field appearance="outline" class="field-short">
+                <mat-label>Column header</mat-label>
+                <input matInput formControlName="header" placeholder="Policy ID">
+              </mat-form-field>
+              <button mat-icon-button type="button" color="warn" (click)="removeColumn(ci)">
+                <mat-icon>remove_circle</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+        <button mat-stroked-button type="button" (click)="addColumn()">
+          <mat-icon>add</mat-icon> Add column
+        </button>
+      </div>
+    </mat-expansion-panel>
+
+    <!-- ── Submit ──────────────────────────────────────────────────────── -->
+    <div class="submit-row">
+      <button mat-raised-button color="primary" type="submit" [disabled]="loading">
+        @if (loading) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <mat-icon>search</mat-icon>
+        }
+        Run Search
+      </button>
+    </div>
+
+  </form>
+
+  <!-- ── Error ─────────────────────────────────────────────────────────── -->
+  @if (errorMessage) {
+    <div class="error-banner">
+      <mat-icon>error</mat-icon> {{ errorMessage }}
+    </div>
+  }
+
+  <!-- ── Results ───────────────────────────────────────────────────────── -->
+  @if (results.length > 0 || (!loading && total === 0 && searchToken)) {
+    <div class="results-section">
+      <div class="results-header">
+        <h2>Results <span class="results-count">{{ total }} total</span></h2>
+        <span class="bookmark-hint">
+          <mat-icon>bookmark</mat-icon>
+          Bookmark this page to save your search.
+        </span>
+      </div>
+
+      <app-table
+        [columns]="columns"
+        [data]="results"
+        [total]="total"
+        [pageIndex]="pageIndex"
+        [pageSize]="pageSize"
+        [pageSizeOptions]="pageSizeOptions"
+        (pageChange)="onPage($event)"
+      ></app-table>
+    </div>
+  }
+
+</div>
