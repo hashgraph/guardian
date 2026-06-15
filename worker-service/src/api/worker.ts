@@ -1364,6 +1364,51 @@ export class Worker extends NatsService {
                     break;
                 }
 
+                case WorkerTaskType.ORACLE_UPDATE_VERDICT: {
+                    const { oracleUpdateVerdict } = await import('./helpers/oracle-helper.js');
+                    result.data = await oracleUpdateVerdict({
+                        contractAddress:   task.data.contractAddress,
+                        tokenAddress:      task.data.tokenAddress,
+                        isValid:           task.data.isValid,
+                        operatorKey:       task.data.operatorKey,
+                        networkName:       task.data.networkName,
+                    });
+                    break;
+                }
+
+                case WorkerTaskType.ORACLE_UPDATE_VERDICTS_BATCH: {
+                    const { oracleUpdateVerdictsBatch } = await import('./helpers/oracle-helper.js');
+                    result.data = await oracleUpdateVerdictsBatch({
+                        contractAddress: task.data.contractAddress,
+                        tokenAddresses:  task.data.tokenAddresses,
+                        validities:      task.data.validities,
+                        operatorKey:     task.data.operatorKey,
+                        networkName:     task.data.networkName,
+                    });
+                    break;
+                }
+
+                case WorkerTaskType.ORACLE_GET_VERDICT: {
+                    const { oracleGetVerdict } = await import('./helpers/oracle-helper.js');
+                    result.data = await oracleGetVerdict({
+                        contractAddress: task.data.contractAddress,
+                        tokenAddress:    task.data.tokenAddress,
+                        networkName:     task.data.networkName,
+                    });
+                    break;
+                }
+
+                case WorkerTaskType.ORACLE_REGISTER_OPERATOR: {
+                    const { oracleRegisterOperator } = await import('./helpers/oracle-helper.js');
+                    result.data = await oracleRegisterOperator({
+                        contractAddress:  task.data.contractAddress,
+                        operatorAddress:  task.data.operatorAddress,
+                        ownerKey:         task.data.ownerKey,
+                        networkName:      task.data.networkName,
+                    });
+                    break;
+                }
+
                 default:
                     result.error = 'unknown task'
             }

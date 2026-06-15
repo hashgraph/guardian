@@ -47,6 +47,11 @@ export enum WorkerTaskType {
     ANALYTICS_GET_INDEXER_AVAILABILITY = 'analytics-get-indexer-availability',
     ANALYTICS_GET_RETIRE_DOCUMENTS = 'analytics-get-retire-documents',
     RESOLVE_ACCOUNT_ALIAS = 'RESOLVE_ACCOUNT_ALIAS',
+    // Oracle task types
+    ORACLE_UPDATE_VERDICT = 'oracle-update-verdict',
+    ORACLE_UPDATE_VERDICTS_BATCH = 'oracle-update-verdicts-batch',
+    ORACLE_GET_VERDICT = 'oracle-get-verdict',
+    ORACLE_REGISTER_OPERATOR = 'oracle-register-operator',
 }
 
 /**
