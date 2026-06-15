@@ -39,6 +39,10 @@ h2 {
     line-height: 32px;
 }
 
+h3 {
+    color: var(--guardian-font-color, #23252E);
+}
+
 .title {
     background: var(--guardian-background, #fff);
     display: block;

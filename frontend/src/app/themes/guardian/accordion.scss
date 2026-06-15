@@ -2,7 +2,7 @@
     .p-accordionpanel {
         overflow: hidden;
         background: var(--guardian-grey-background, #F9FAFC);
-        border: 1px solid #E1E7EF;
+        border: 1px solid var(--guardian-border-color);
         border-radius: 8px;
     }
 
@@ -50,7 +50,7 @@
     .p-accordioncontent-content {
         padding: 16px;
         background: var(--guardian-grey-background, #F9FAFC);
-        border-top: 1px solid #E1E7EF;
+        border-top: 1px solid var(--guardian-border-color);
     }
 
     .p-accordion-header-link {

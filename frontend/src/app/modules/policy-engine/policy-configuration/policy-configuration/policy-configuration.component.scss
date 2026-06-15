@@ -1,34 +1,39 @@
 ::ng-deep body {
-    --pc-main-grid-border: #b4c4cb;
-    --pc-border-color: #bdbdbd;
+    --pc-main-grid-border: var(--guardian-border-color, #b4c4cb);
+    --pc-border-color: var(--guardian-border-color, #bdbdbd);
     --pc-active-resize-delimiter-color: #626f75;
-    --pc-active-icon-color: #3f51b5;
-    --pc-no-active-color: #555;
-    --pc-active-background-color: #eff0f9;
-    --pc-header-color: #555555;
+    --pc-active-icon-color: var(--guardian-font-color, #3f51b5);
+    --pc-no-active-color: var(--guardian-disabled-color, #555);
+    --pc-active-background-color: var(--guardian-primary-background, #eff0f9);
+    --pc-header-color: var(--guardian-font-color, #555555);
     --pc-favorite-color: #f3ac0e;
-    --pc-un-favorite-color: #f0f0f0;
-    --pc-favorite-focus-color: #d0d0d0;
-    --pc-component-hover: #fbfbfb;
+    --pc-un-favorite-color: var(--guardian-disabled-icon, #f0f0f0);
+    --pc-favorite-focus-color: var(--guardian-disabled-color, #d0d0d0);
+    --pc-component-hover: var(--guardian-hover, #fbfbfb);
     --pc-edit-status-color: #9c27b0;
     --pc-dry-run-status-color: var(--pc-active-icon-color);
     --pc-publish-status-color: #4caf50;
     --pc-error-color: #dd0a0a;
+    --pc-error-border-strong: #b80000;
+    --pc-error-bg-strong: var(--guardian-failure-background, #fff2f2);
+    --pc-error-shadow: #b80000cc;
+    --pc-warning-border-light: #ff6b6b;
+    --pc-warning-bg-light: var(--guardian-failure-background, #ffe9ea);
     --pc-valid-color: #00bd06;
-    --pc-btn-border-color: #dcdcdc;
+    --pc-btn-border-color: var(--guardian-border-color, #dcdcdc);
     --pc-selected-btn-color: #9c27b0;
     --pc-event-color: #bd9012;
     --pc-event-icon-color: #ffc107;
-    --pc-prop-border-color: #e5e5e5;
-    --pc-tabs-active-color: #fff;
-    --pc-tabs-color: #e6e6e6;
-    --pc-tabs-background-color: #d0d0d0;
-    --pc-tabs-hover-color: #f0f0f0;
+    --pc-prop-border-color: var(--guardian-border-color, #e5e5e5);
+    --pc-tabs-active-color: var(--guardian-background, #fff);
+    --pc-tabs-color: var(--guardian-grey-background, #e6e6e6);
+    --pc-tabs-background-color: var(--guardian-grey-color, #d0d0d0);
+    --pc-tabs-hover-color: var(--guardian-hover, #f0f0f0);
     --pc-prop-btn-color: #6166ff;
     --pc-del-color: #eb0303;
     --pc-required-color: #eb0303;
     --pc-wizard-color: #9c27b0;
-    --pc-hover-color: #d0d0d0;
+    --pc-hover-color: var(--guardian-hover, #d0d0d0);
 
     --pc-ui-block-background-color: #efe5fc;
     --pc-server-block-background-color: #e2f9fe;
@@ -39,9 +44,9 @@
     --pc-addon-block-border-color: #f9b465;
     --pc-tool-block-color: #c37a29;
 
-    --pc-drag-text-color: #404040;
-    --pc-readonly-text-color: rgba(0, 0, 0, .45);
-    --pc-text-color: #000;
+    --pc-drag-text-color: var(--guardian-font-color, #404040);
+    --pc-readonly-text-color: var(--guardian-disabled-color, rgba(0, 0, 0, .45));
+    --pc-text-color: var(--guardian-font-color, #000);
     --pc-background-color: var(--guardian-background, #fff);
 }
 
@@ -158,6 +163,7 @@
     // border-right: 4px solid var(--pc-main-grid-border);
     box-sizing: border-box;
     background-color: var(--guardian-background, white);
+    color: var(--guardian-font-color, #23252E);
     z-index: 1;
     min-width: 150px;
 }
@@ -170,6 +176,7 @@
     // border-right: 4px solid var(--pc-main-grid-border);
     z-index: 1;
     background-color: var(--guardian-background, white);
+    color: var(--guardian-font-color, #23252E);
     min-width: 275px;
 }
 
@@ -179,7 +186,7 @@
     overflow: hidden;
     box-sizing: border-box;
     background: var(--guardian-grey-background, #f5f5f5);
-    background-image: radial-gradient(circle, #bfbfbf 1px, #f5f5f5 1px);
+    background-image: radial-gradient(circle, var(--guardian-border-color, #bfbfbf) 1px, var(--guardian-grey-background, #f5f5f5) 1px);
     background-size: 20px 20px;
 }
 
@@ -314,12 +321,12 @@
         cursor: pointer;
         position: relative;
         user-select: none;
-        background: #fcfcfc;
+        background: var(--guardian-background, #fcfcfc);
         border: 1px solid var(--pc-btn-border-color);
         border-radius: 6px;
 
         &:hover {
-            background: #f9f9fd;
+            background: var(--guardian-hover, #f9f9fd);
             border: 1px solid var(--pc-active-icon-color);
         }
 
@@ -425,7 +432,7 @@
             bottom: 0;
             width: 18px;
             overflow: hidden;
-            background: rgb(240 240 240);
+            background: var(--guardian-grey-background, rgb(240 240 240));
             border-top-right-radius: 6px;
             border-bottom-right-radius: 6px;
             border-left: 1px solid var(--pc-btn-border-color);
@@ -536,6 +543,8 @@
             border-radius: 4px;
             padding: 2px 24px 2px 7px;
             outline: none;
+            background: var(--guardian-background, #fff);
+            color: var(--guardian-font-color, #23252E);
         }
 
         .components-search-icon {
@@ -981,7 +990,7 @@
             cursor: pointer;
             box-sizing: border-box;
             border-left: 1px solid var(--pc-border-color);
-            color: #555;
+            color: var(--guardian-font-color, #555);
             display: grid;
             justify-content: center;
             align-content: center;
@@ -1155,7 +1164,7 @@
     border: 1px solid var(--pc-error-color);
     padding: 5px;
     color: var(--pc-error-color);
-    background: #fff2f2;
+    background: var(--pc-error-bg-strong);
     position: relative;
     padding-left: 10px;
     margin: 5px 5px 5px 5px;
@@ -1170,7 +1179,7 @@
     z-index: 99;
     padding: 10px;
     background: var(--pc-background-color);
-    border-top: 1px solid #c9c9c9;
+    border-top: 1px solid var(--pc-border-color);
 }
 
 .tool-icon {
@@ -1441,7 +1450,7 @@
     border-radius: 3px;
     border: 1px solid var(--pc-valid-color);
     color: var(--pc-valid-color);
-    background: #eefbf0;
+    background: var(--guardian-success-background, #eefbf0);
     padding: 5px 10px;
     margin: 5px;
     box-sizing: border-box;
@@ -1516,5 +1525,5 @@
     line-height: 16px;
     vertical-align: middle;
     color: var(--color-grey-5, #848FA9);
-    background-color: #EFEFEF;
+    background-color: var(--guardian-grey-background, #EFEFEF);
 }

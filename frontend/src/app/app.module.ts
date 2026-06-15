@@ -159,7 +159,7 @@ const GuardianPreset = definePreset(Aura, {
         },
         colorScheme: {
             light: {
-                primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
+                primary: { color: 'var(--primary-color)', contrastColor: 'var(--guardian-on-primary-color)',
                     hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
                 content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
                     borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
@@ -174,7 +174,7 @@ const GuardianPreset = definePreset(Aura, {
                 list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
             },
             dark: {
-                primary: { color: 'var(--primary-color)', contrastColor: '#ffffff',
+                primary: { color: 'var(--primary-color)', contrastColor: 'var(--guardian-on-primary-color)',
                     hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
                 content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
                     borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },

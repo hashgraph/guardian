@@ -115,7 +115,7 @@
     justify-content: center;
     color: var(--primary-color);
     background: var(--guardian-grey-background, #F9FAFC);
-    border: 1px solid #C4D0E1;
+    border: 1px solid var(--guardian-border-color);
     height: 52px;
     min-height: 52px;
     border-radius: 8px;

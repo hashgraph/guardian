@@ -205,7 +205,8 @@
 }
 
 .color-white {
-    fill: white;
+    fill: var(--guardian-secondary-color, #FFFFFF);
+    color: var(--guardian-secondary-color, #FFFFFF);
     width: 16px;
     height: 16px;
 }

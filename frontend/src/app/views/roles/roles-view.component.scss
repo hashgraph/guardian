@@ -127,8 +127,8 @@
 }
 
 .color-white {
-    fill: white;
-    color: white;
+    fill: var(--guardian-secondary-color, #FFFFFF);
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .disabled-color {

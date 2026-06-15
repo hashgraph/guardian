@@ -196,13 +196,13 @@ a.go-back-link svg {
 
 .dry-run-back-button {
     background: none !important;
-    color: #ffffff !important;
-    border: 1px solid #fff !important;
+    color: var(--guardian-secondary-color, #FFFFFF) !important;
+    border: 1px solid var(--guardian-secondary-color, #FFFFFF) !important;
 
     svg {
         transition: all 0.25s ease-in-out;
-        fill: #ffffff !important;
-        color: #ffffff !important;
+        fill: var(--guardian-secondary-color, #FFFFFF) !important;
+        color: var(--guardian-secondary-color, #FFFFFF) !important;
     }
 
     &:hover {
@@ -219,7 +219,7 @@ a.go-back-link svg {
 .policy-header[policy-status="DRY-RUN"] {
     top: 170px;
     background: #000;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .policy-container {
@@ -331,7 +331,7 @@ a.go-back-link svg {
     text-overflow: ellipsis;
     font-size: 12px;
     margin-bottom: 2px;
-    color: #3c3c3c;
+    color: var(--guardian-font-color);
 }
 
 .dry-run-panel {
@@ -344,7 +344,7 @@ a.go-back-link svg {
     min-height: 136px;
     height: 136px;
     background: #23252e;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .content[status="DISCONTINUED"] .policy-header {
@@ -363,14 +363,14 @@ a.go-back-link svg {
 
 .content[status="DEMO"] .go-back-link,
 .content[status="DRY-RUN"] .go-back-link {
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .content[status="DEMO"] .go-back-link i,
 .content[status="DRY-RUN"] .go-back-link i,
 .content[status="DEMO"] .go-back-link svg,
 .content[status="DRY-RUN"] .go-back-link svg {
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .dry-run-content {
@@ -384,8 +384,8 @@ a.go-back-link svg {
     z-index: 150;
     font-size: 20px;
     background: var(--guardian-background, #fff);
-    border-bottom: 1px solid #000000;
-    box-shadow: 0px 0px 1px 1px rgb(179 179 179);
+    border-bottom: 1px solid var(--guardian-border-color);
+    box-shadow: 0px 0px 1px 1px var(--guardian-border-color);
     padding: 3px 10px 0px 10px;
 }
 
@@ -394,13 +394,13 @@ a.go-back-link svg {
     font-size: 14px;
     padding: 6px 12px;
     margin: 6px 6px 6px 0px;
-    color: #646464;
+    color: var(--guardian-font-color);
     cursor: pointer;
     user-select: none;
 }
 
 .dry-run-btn:hover {
-    background: #f7f8fc;
+    background: var(--guardian-grey-background);
 }
 
 .dry-run-btn[action="true"] {
@@ -420,14 +420,14 @@ a.go-back-link svg {
     font-size: 12px;
     align-items: center;
     align-content: center;
-    color: #3f51b5;
+    color: var(--guardian-font-color);
     cursor: pointer;
     padding-top: 4px;
     position: relative;
     user-select: none;
     border-radius: 6px;
-    background: rgb(252 252 252);
-    border: 1px solid rgb(220 220 220);
+    background: var(--guardian-grey-background);
+    border: 1px solid var(--guardian-border-color);
     box-sizing: border-box;
 
     .icon-style-restart_alt {
@@ -481,10 +481,10 @@ a.go-back-link svg {
     bottom: 0;
     width: 18px;
     overflow: hidden;
-    background: rgb(240 240 240);
+    background: var(--guardian-grey-background);
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
-    border-left: 1px solid rgb(220 220 220);
+    border-left: 1px solid var(--guardian-border-color);
 }
 
 .dry-run-group-btn .expand-group i,
@@ -506,7 +506,7 @@ a.go-back-link svg {
 .delimiter {
     width: 2px;
     height: 30px;
-    border-left: 1px solid #7e7e7e;
+    border-left: 1px solid var(--guardian-border-color);
     margin-left: 12px;
     margin-right: 10px;
     margin-top: 7px;
@@ -745,10 +745,11 @@ a.go-back-link svg {
 }
 
 .white-additional-policy-info-text {
-    color: #ffffff !important;
+    color: var(--guardian-secondary-color, #FFFFFF) !important;
 }
 
 .policy-name-container {
+    color: var(--guardian-secondary-color, #FFFFFF);
     font-family: Poppins, sans-serif;
     font-size: 32px;
     font-style: normal;

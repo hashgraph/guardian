@@ -210,7 +210,7 @@ a {
 .btn-approve {
     background: var(--color-primary);
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -228,7 +228,7 @@ a {
 .btn-unpublished {
     background: #f44336;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -530,8 +530,8 @@ a {
 }
 
 .color-white {
-    fill: white;
-    color: white;
+    fill: var(--guardian-secondary-color, #FFFFFF);
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .disabled-color {

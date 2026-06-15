@@ -5,22 +5,22 @@
     --pc-row-font-style: normal;
 
     --guardian-primary-color: var(--color-primary, #4169E2);
-    --pc-border-color: #bdbdbd;
-    --pc-active-icon-color: #3f51b5;
-    --pc-header-color: #555555;
+    --pc-border-color: var(--guardian-border-color, #bdbdbd);
+    --pc-active-icon-color: var(--guardian-font-color, #3f51b5);
+    --pc-header-color: var(--guardian-font-color, #555555);
     --pc-error-color: #dd0a0a;
     --pc-error-border-strong: #b80000;
-    --pc-error-bg-strong: #ffb3b3;
+    --pc-error-bg-strong: var(--guardian-failure-background, #ffb3b3);
     --pc-error-shadow: #b80000cc;
     --pc-event-color: #bd9012;
     --pc-event-icon-color: #ffc107;
-    --pc-prop-border-color: #e5e5e5;
+    --pc-prop-border-color: var(--guardian-border-color, #e5e5e5);
     --pc-del-color: #eb0303;
     --pc-required-color: #eb0303;
-    --pc-readonly-text-color: rgba(0, 0, 0, .45);
+    --pc-readonly-text-color: var(--guardian-disabled-color, rgba(0, 0, 0, .45));
     --pc-background-color: var(--guardian-background, #fff);
     --pc-warning-border-light: #ff6b6b;
-    --pc-warning-bg-light: #ffe9ea;
+    --pc-warning-bg-light: var(--guardian-failure-background, #ffe9ea);
     --pc-warning-shadow: #ff6b6bcc;
 
     .properties {
@@ -145,7 +145,7 @@
             }
 
             &:nth-child(2n) .propRowCell {
-                background: #f7f7f7;
+                background: var(--guardian-grey-background, #f7f7f7);
             }
 
             .cellName {
@@ -278,6 +278,8 @@
                 padding: 2px 24px 2px 6px;
                 outline: none;
                 width: 100%;
+                background: var(--guardian-background, #fff);
+                color: var(--guardian-font-color, #000);
 
                 &:hover {
                     border: 1px solid var(--guardian-primary-color);
@@ -317,7 +319,8 @@
                 font-size: 16px;
                 min-width: 100% !important;
                 min-height: 70px;
-                color: var(--color-grey-6);
+                color: var(--guardian-font-color, var(--color-grey-6));
+                background: var(--guardian-background, #fff);
 
                 &[readonly] {
                     border-color: transparent;
@@ -562,7 +565,7 @@
         overflow: auto;
 
         .loading {
-            background: rgb(255 255 255 / 70%);
+            background: color-mix(in srgb, var(--guardian-background, #fff) 70%, transparent);
             position: absolute;
             z-index: 99;
             top: 0;

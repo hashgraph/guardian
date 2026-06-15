@@ -66,7 +66,7 @@
 .nav-title {
     flex: 1 1 auto;
     font-size: 13px;
-    color: #333;
+    color: var(--guardian-font-color);
     transition: color 0.2s ease;
     white-space: nowrap;
     overflow: hidden;
@@ -74,8 +74,8 @@
 }
 
 .nav-count {
-    background: rgba(239, 243, 247, 1);
-    color: #333;
+    background: var(--color-grey-2);
+    color: var(--guardian-font-color);
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 12px;

@@ -166,7 +166,7 @@
     position: absolute;
     top: 50%;
     left: 9px;
-    color: #404040;
+    color: var(--guardian-font-color, #404040);
     transform: translate(0px, -50%);
     width: 18px;
     height: 18px;
@@ -294,8 +294,8 @@
     z-index: 2;
     box-sizing: border-box;
     background-image:
-        linear-gradient(180deg, #838383 3px, white 3px),
-        linear-gradient(180deg, white 3px, #838383 3px);
+        linear-gradient(180deg, #838383 3px, var(--guardian-background, #fff) 3px),
+        linear-gradient(180deg, var(--guardian-background, #fff) 3px, #838383 3px);
     background-position: 0 0, 3px 0;
     background-size: 3px 6px, 3px 6px;
     background-repeat: repeat-y;
@@ -392,9 +392,9 @@
     height: 31px;
     line-height: 0px;
     margin: 2px;
-    color: #3f51b5;
+    color: var(--guardian-font-color, #3f51b5);
     z-index: 2;
-    border: 1px solid rgb(200 200 200);
+    border: 1px solid var(--guardian-border-color, rgb(200 200 200));
     box-shadow: 2px 2px 6px 1px #00000035;
     cursor: pointer;
 

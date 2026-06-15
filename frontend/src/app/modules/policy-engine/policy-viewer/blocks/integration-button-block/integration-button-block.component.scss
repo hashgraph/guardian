@@ -22,7 +22,7 @@
 
 .btn-approve {
     background: var(--color-accent-green-1) !important;
-    color: var(--guardian-on-primary-color) !important;
+    color: var(--guardian-secondary-color, #FFFFFF) !important;
     border: none !important;
     border-radius: 6px;
     display: inline-block;
@@ -31,10 +31,14 @@
     cursor: pointer;
 }
 
+:host-context(.guardian-theme-dark) .btn-approve {
+    background: var(--guardian-success-background, #12351F) !important;
+}
+
 .btn-reject {
     background: var(--color-accent-red-1) !important;
     border-radius: 6px;
-    color: var(--guardian-on-primary-color) !important;
+    color: var(--guardian-secondary-color, #FFFFFF) !important;
     border: none !important;
     display: inline-block;
     padding: 2px 8px;
