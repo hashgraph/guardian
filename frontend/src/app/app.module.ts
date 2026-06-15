@@ -12,6 +12,8 @@ import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
+import { CardModule } from 'primeng/card';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
@@ -287,6 +289,8 @@ const GuardianPreset = definePreset(Aura, {
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
+        CardModule,
+        ToggleSwitchModule,
         AngularSvgIconModule.forRoot(),
         TreeTableModule
     ],

@@ -52,25 +52,6 @@
     }
 }
 
-.branding-theme-switcher {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-height: 40px;
-}
-
-.branding-theme-switcher-label {
-    color: var(--color-grey-5);
-    font-family: Inter, serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-}
-
-:host ::ng-deep .branding-theme-select.p-select {
-    width: 160px;
-}
 
 .actions-container {
     position: fixed;
