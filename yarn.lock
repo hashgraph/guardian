@@ -1417,7 +1417,7 @@ __metadata:
     "@formulajs/formulajs": "npm:4.6.0"
     "@google-cloud/secret-manager": "npm:^4.2.2"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.84.0"
+    "@hiero-ledger/sdk": "npm:2.85.0"
     "@mattrglobal/jsonld-signatures-bbs": "npm:^1.1.2"
     "@meeco/cryppo": "npm:^2.0.2"
     "@mikro-orm/core": "npm:6.4.16"
@@ -1481,15 +1481,15 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hiero-ledger/cryptography@npm:1.18.0":
-  version: 1.18.0
-  resolution: "@hiero-ledger/cryptography@npm:1.18.0"
+"@hiero-ledger/cryptography@npm:1.19.0":
+  version: 1.19.0
+  resolution: "@hiero-ledger/cryptography@npm:1.19.0"
   dependencies:
     "@noble/curves": "npm:1.8.1"
     ansi-regex: "npm:6.2.2"
     ansi-styles: "npm:6.2.3"
     asn1js: "npm:3.0.6"
-    bignumber.js: "npm:10.0.2"
+    bignumber.js: "npm:11.1.2"
     bn.js: "npm:5.2.3"
     buffer: "npm:6.0.3"
     crypto-js: "npm:4.2.0"
@@ -1504,23 +1504,7 @@ __metadata:
   peerDependenciesMeta:
     expo-crypto:
       optional: true
-  checksum: 10c0/f41d0b530126e6b150db8af92cfee09f142821bae1e73d524811c19faf9deed1105d0ab857143ae1f5b1f7e22b63692e32326ce41edcfe87b4c52e46e072a708
-  languageName: node
-  linkType: hard
-
-"@hiero-ledger/proto@npm:2.30.0":
-  version: 2.30.0
-  resolution: "@hiero-ledger/proto@npm:2.30.0"
-  dependencies:
-    long: "npm:5.3.1"
-    rimraf: "npm:6.1.2"
-  peerDependencies:
-    ansi-regex: 6.2.2
-    ansi-styles: 6.2.3
-    debug: 4.4.1
-    protobufjs: 8.0.1
-    strip-ansi: 7.1.2
-  checksum: 10c0/344752b583b1b62b8b5bee5ba0902fba5f09e205361d65a3412f720c10d837e38ee64dcbcd48a58c4e05ecaa90b31acdec301b7fcd29fec4c49122ffda00f119
+  checksum: 10c0/9f08e0737ccffbc004d05dca31ac7e0522d02832a65efc3902fbebe5bbe2b5e4f1f461ac3670af0507e52a70ef99a8a45dd2b7c161c058e101c8dd10e59e3fef
   languageName: node
   linkType: hard
 
@@ -1539,16 +1523,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@hiero-ledger/sdk@npm:2.84.0":
-  version: 2.84.0
-  resolution: "@hiero-ledger/sdk@npm:2.84.0"
+"@hiero-ledger/sdk@npm:2.85.0":
+  version: 2.85.0
+  resolution: "@hiero-ledger/sdk@npm:2.85.0"
   dependencies:
     "@grpc/grpc-js": "npm:1.12.6"
-    "@hiero-ledger/cryptography": "npm:1.18.0"
-    "@hiero-ledger/proto": "npm:2.30.0"
+    "@hiero-ledger/cryptography": "npm:1.19.0"
+    "@hiero-ledger/proto": "npm:2.31.0"
     ansi-regex: "npm:6.2.2"
     ansi-styles: "npm:6.2.3"
-    bignumber.js: "npm:10.0.2"
+    bignumber.js: "npm:11.1.2"
     bn.js: "npm:5.2.3"
     crypto-js: "npm:4.2.0"
     debug: "npm:4.4.1"
@@ -1557,13 +1541,13 @@ __metadata:
     long: "npm:5.3.1"
     pino: "npm:10.1.0"
     pino-pretty: "npm:13.0.0"
-    protobufjs: "npm:8.0.1"
+    protobufjs: "npm:8.2.0"
     rfc4648: "npm:1.5.3"
     strip-ansi: "npm:7.1.2"
     utf8: "npm:3.0.0"
   peerDependencies:
     bn.js: 5.2.3
-  checksum: 10c0/bc5e3859cf96be6a061ad1c4af37c4ea9ad79e141d0a45db872323abb74d1de6a80b26ac865292ad4ad0a753aa4223a864e138caf38c4f06e82c354b78215a32
+  checksum: 10c0/d08a4e48b375f42ce5a15018f3da7726aad7d420f4753a9aab14fe52fc91ea47a7f52b1466c3ad788eaeefaf1df6ee3e45cfb7050efd3719e9d282495271d3b8
   languageName: node
   linkType: hard
 
@@ -6172,10 +6156,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bignumber.js@npm:10.0.2":
-  version: 10.0.2
-  resolution: "bignumber.js@npm:10.0.2"
-  checksum: 10c0/471a17d851d275e458156d090c028b8851c84389dc41db79b08dd584b4df1e4d24f70b1684705a5974aec6c59dc8511337007e01bd78d8ed8d93e1a541356a7f
+"bignumber.js@npm:11.1.2":
+  version: 11.1.2
+  resolution: "bignumber.js@npm:11.1.2"
+  checksum: 10c0/a57ebdd4b5e84acd37236b34375af953396fa3ed8e41ecc7201128b8cd08cec8728086ab8135560e92cf706cc698257ed666fcabcea7bc3dedc3110d4f093731
   languageName: node
   linkType: hard
 
@@ -9643,7 +9627,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"glob@npm:*, glob@npm:^13.0.0":
+"glob@npm:*":
   version: 13.0.6
   resolution: "glob@npm:13.0.6"
   dependencies:
@@ -14330,7 +14314,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"package-json-from-dist@npm:^1.0.0, package-json-from-dist@npm:^1.0.1":
+"package-json-from-dist@npm:^1.0.0":
   version: 1.0.1
   resolution: "package-json-from-dist@npm:1.0.1"
   checksum: 10c0/62ba2785eb655fec084a257af34dbe24292ab74516d6aecef97ef72d4897310bc6898f6c85b5cd22770eaa1ce60d55a0230e150fb6a966e3ecd6c511e23d164b
@@ -14912,23 +14896,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"protobufjs@npm:8.0.1":
-  version: 8.0.1
-  resolution: "protobufjs@npm:8.0.1"
+"protobufjs@npm:8.2.0":
+  version: 8.2.0
+  resolution: "protobufjs@npm:8.2.0"
   dependencies:
-    "@protobufjs/aspromise": "npm:^1.1.2"
-    "@protobufjs/base64": "npm:^1.1.2"
-    "@protobufjs/codegen": "npm:^2.0.4"
-    "@protobufjs/eventemitter": "npm:^1.1.0"
-    "@protobufjs/fetch": "npm:^1.1.0"
-    "@protobufjs/float": "npm:^1.0.2"
-    "@protobufjs/inquire": "npm:^1.1.0"
-    "@protobufjs/path": "npm:^1.1.2"
-    "@protobufjs/pool": "npm:^1.1.0"
-    "@protobufjs/utf8": "npm:^1.1.0"
     "@types/node": "npm:>=13.7.0"
     long: "npm:^5.0.0"
-  checksum: 10c0/04c8c1b5b1b6355230534aaf01915f1d46cbf1ca14799628097997163d0c6611931fd9971c3eef9b2428703dc81464ef27c7f1f41f3cbb885a567ea942401454
+  checksum: 10c0/010775548a00e3ce60db0fabf92b3dc6fcd4bd70d2f0a246bc2be984fd7d3a72b89ac184520b47b35ca08e0cb9a585cdef3828e4093c8ddd0ddc0ff679e1efe1
   languageName: node
   linkType: hard
 
@@ -15680,18 +15654,6 @@ __metadata:
   bin:
     rimraf: ./bin.js
   checksum: 10c0/4eef73d406c6940927479a3a9dee551e14a54faf54b31ef861250ac815172bade86cc6f7d64a4dc5e98b65e4b18a2e1c9ff3b68d296be0c748413f092bb0dd40
-  languageName: node
-  linkType: hard
-
-"rimraf@npm:6.1.2":
-  version: 6.1.2
-  resolution: "rimraf@npm:6.1.2"
-  dependencies:
-    glob: "npm:^13.0.0"
-    package-json-from-dist: "npm:^1.0.1"
-  bin:
-    rimraf: dist/esm/bin.mjs
-  checksum: 10c0/c11a6a6fad937ada03c12fe688860690df8296d7cd08dbe59e3cc087f44e43573ae26ecbe48e54cb7a6db745b8c81fe5a15b9359233cc21d52d9b5b3330fcc74
   languageName: node
   linkType: hard
 
@@ -17100,7 +17062,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.84.0"
+    "@hiero-ledger/sdk": "npm:2.85.0"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -18311,7 +18273,7 @@ __metadata:
     "@filebase/client": "npm:^0.0.5"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@hiero-ledger/sdk": "npm:2.84.0"
+    "@hiero-ledger/sdk": "npm:2.85.0"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
