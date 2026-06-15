@@ -30,7 +30,7 @@
         "hpp": "^0.2.3",
         "jszip": "^3.7.1",
         "prom-client": "^14.1.1",
-        "reflect-metadata": "^0.1.13",
+        "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1"
     },
     "description": "",

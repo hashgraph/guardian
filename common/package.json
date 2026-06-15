@@ -44,7 +44,7 @@
         "node-vault": "^0.12.0",
         "papaparse": "5.5.3",
         "prom-client": "^14.1.1",
-        "reflect-metadata": "^0.1.13",
+        "reflect-metadata": "^0.2.2",
         "seq-logging": "^2.2.0",
         "ws": "^8.2.1"
     },
