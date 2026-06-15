@@ -93,7 +93,7 @@ For the avoidance of doubt, such confirmations to do not pass private keys to th
 
 When disconnecting from a remote (external) policy, there are two available options.
 
-<figure><img src="../../.gitbook/assets/image.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
 
 **2.1. Disconnect from the Remote Policy Only**
 
@@ -115,10 +115,10 @@ In this case, if you need to resume working with the policy, you will have to:
 
 A System Administrator (SR) can disconnect a remote policy and completely remove it from the Guardian instance, thereby freeing server resources.
 
-<figure><img src="../../.gitbook/assets/image (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-Note:&#x20;
+Note:
 
 This removal:
 

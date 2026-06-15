@@ -1,55 +1,45 @@
 # Adding Settings
 
-## SET SETTINGS
+**`POST /settings/`**
 
-{% swagger method="post" path="" baseUrl="/settings" summary="Set settings." %}
-{% swagger-description %}
-Set settings. For users with the Standard Registry role only.
-{% endswagger-description %}
+Sets Hedera operator credentials and other system settings. For Standard Registry users only.
 
-{% swagger-parameter in="body" type="String" required="true" name="operatorID" %}
-ID of the operator
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="body" name="operatorKey" type="String" required="true" %}
-Key of the operator
-{% endswagger-parameter %}
+**Permission:** `Permissions.SETTINGS_SETTINGS_UPDATE`
 
-{% swagger-parameter in="body" name="nftApiKey" type="String" required="true" %}
-API key of NFT
-{% endswagger-parameter %}
+---
 
-{% swagger-response status="201: Created" description="Created" %}
-```javascript
+## Request
+
+### Request Body
+
+```json
 {
-    // Response
+  "operatorAccountId": "0.0.4532001",
+  "operatorPrivateKey": "302e020100300506032b657004220420..."
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `operatorAccountId` | string | Yes | Hedera operator account ID (e.g. `0.0.4532001`) |
+| `operatorPrivateKey` | string | Yes | Hedera operator private key |
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+---
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+No response body.
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

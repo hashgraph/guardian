@@ -18,6 +18,9 @@ import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { NewRelayerAccountDialog } from 'src/app/components/new-relayer-account-dialog/new-relayer-account-dialog.component';
 import { RelayerAccountDetailsDialog } from 'src/app/components/relayer-account-details-dialog/relayer-account-details-dialog.component';
+import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dialog.component';
+import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
+import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
 
 enum OperationMode {
@@ -43,6 +46,7 @@ interface IColumn {
     selector: 'app-root-profile',
     templateUrl: './root-profile.component.html',
     styleUrls: ['./root-profile.component.scss'],
+    standalone: false
 })
 export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
@@ -59,6 +63,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public progress: number = 0;
     public userTopics: any[] = [];
     public schema!: Schema;
+    public is2faEnabled = false;
     public hederaForm = this.fb.group({
         hederaAccountId: ['', Validators.required],
         hederaAccountKey: ['', Validators.required],
@@ -91,9 +96,9 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     private subscriptions = new Subscription()
     public isRestore = false;
 
-    public tab: 'general' | 'relayerAccounts' = 'general';
+    public tab: 'general' | 'relayerAccounts' | 'credentials' = 'general';
     public tabIndex = 0;
-    public tabs: ['general', 'relayerAccounts'] = ['general', 'relayerAccounts'];
+    public tabs: ['general', 'relayerAccounts', 'credentials'] = ['general', 'relayerAccounts', 'credentials'];
 
     public relayerAccountPage: any[];
     public relayerAccountCount: number;
@@ -182,6 +187,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         );
         this.loadProfile();
         this.step = 'HEDERA';
+        this.refreshOtpStatus();
     }
 
     ngOnDestroy(): void {
@@ -684,7 +690,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 viewDocument: true,
                 getByUser: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -701,7 +707,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -713,14 +719,14 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 login: profile?.username,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             this.loadProfile();
         });
     }
 
-    public onChangeTab(tab: any) {
-        this.tabIndex = tab.index;
-        this.tab = this.tabs[tab.index] || 'general';
+    public onChangeTab(index: string | number | undefined) {
+        this.tabIndex = typeof index === 'number' ? index : 0;
+        this.tab = this.tabs[this.tabIndex] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
@@ -781,7 +787,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 title: 'Add Relayer Account'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
@@ -804,7 +810,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -834,5 +840,46 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         for (const row of this.relayerAccountPage) {
             this.updateBalance(row);
         }
+    }
+
+    refreshOtpStatus() {
+        this.auth.getOtpStatus().subscribe((result) => {
+            this.is2faEnabled = result.enabled;
+        });
+    }
+
+    generate2fa() {
+        this.auth.generateOtpSecret().subscribe(config => {
+
+            this.dialogService.open(OtpConfigDialogComponent, {
+                header: 'Enable two-factor authentication',
+                width: '50vw',
+                closable: false,
+                data: { config: config }
+            })!.onClose.subscribe((codes) => {
+                this.refreshOtpStatus();
+                if (codes && codes.length) {
+                    this.dialogService.open(OtpCodesDialogComponent, {
+                        header: "Save your recovery codes",
+                        data: { codes: codes }
+                    });
+                }
+            })
+        });
+    }
+
+    deactivate2fa() {
+        this.dialogService.open(OtpDisableDialogComponent, {
+            header: 'Deactivate two-factor authentication',
+            width: '50vw',
+            closable: false,
+
+        })!.onClose.subscribe(result => {
+            if (result == true) {
+                this.auth.deactivateOtp().subscribe(() => {
+                    this.refreshOtpStatus();
+                });
+            }
+        })
     }
 }

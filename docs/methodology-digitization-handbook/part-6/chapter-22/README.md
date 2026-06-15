@@ -19,9 +19,9 @@ Guardian's dry-run mode creates a sandbox environment where you can simulate mul
 3. **Create Virtual Users** - Set up users for each role (Project Proponent, VVB, OWNER)
 4. **Execute Complete Workflows** - Test full project lifecycle with role transitions
 
-![Choose role during dry run](<../../../.gitbook/assets/image (187).png>)
+![Choose role during dry run](<../../../.gitbook/assets/image (151).png>)
 
-![Switch role UI](<../../../.gitbook/assets/image-1 (10).png>)
+![Switch role UI](<../../../.gitbook/assets/image-1 (8).png>)
 
 ![VVB documents review UI for Registry role](<../../../.gitbook/assets/image-3 (5).png>)
 
@@ -70,7 +70,7 @@ After PDD submission and approval by registry, the project developer selects a V
 * Project status updates reflect VVB assignment
 * Document access permissions transfer correctly
 
-![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1).png>)
+![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1) (1).png>)
 
 ![VVB selection via dropdown](<../../../.gitbook/assets/image-6 (1).png>)
 

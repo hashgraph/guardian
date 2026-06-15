@@ -1,53 +1,60 @@
 # Schema Preview from IPFS
 
-### PREVIEWING SCHEMA FROM IPFS FILE
+**`POST /schemas/import/message/preview`**
 
-{% swagger method="post" path="" baseUrl="/schemas/import/message/preview" summary="Schema preview from IPFS" %}
-{% swagger-description %}
-Previews the schema from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Previews the schema from IPFS without importing it into the local database.
 
-{% swagger-parameter in="body" name="" type="Object" required="true" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "messageId": "1680000000.000000001"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | The Hedera message ID containing the IPFS CID of the schema |
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+---
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Carbon Offset Schema",
+    "entity": "VC",
+    "version": "1.0.0",
+    "document": {
+      "$id": "#CarbonOffset",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "type": "object",
+      "properties": {}
+    }
+  }
+]
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Message ID is missing |
+| `500 Internal Server Error` | Unexpected server failure |

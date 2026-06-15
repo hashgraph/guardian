@@ -1,54 +1,50 @@
-# Run formula without making any persistent changes or executing         transaction.
+# Run Formula Without Making Any Persistent Changes or Executing Transaction
 
-<mark style="color:red;">`PUT`</mark> `/formulas/{formulaId}/dry-run`
+**`PUT /api/v1/formulas/{formulaId}/dry-run`**
 
-Run formula without making any persistent changes or executing transaction
+Runs a formula in dry-run mode without making any persistent changes or executing blockchain transactions.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.FORMULAS_FORMULA_CREATE`
 
-**Body**
+---
 
-| Name      | Type   | Description        |
-| --------- | ------ | ------------------ |
-| formulaId | string | Formula Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
- description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FormulaDTO'
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `formulaId` | string | Yes | Database ID of the formula to dry-run |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "uuid": "c4a3b2d1-e5f6-7890-abcd-ef1234567890",
+  "name": "Carbon Credit Calculator",
+  "description": "Calculates carbon credits based on emission factors",
+  "status": "DRY-RUN",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "policyId": "63e3e5e8a01b3c001234abcd",
+  "config": {}
+}
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-description: Unauthorized.
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
-
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Formula with the given ID does not exist |
+| `422 Unprocessable Entity` | `formulaId` parameter is missing or empty |
+| `500 Internal Server Error` | Unexpected server failure |

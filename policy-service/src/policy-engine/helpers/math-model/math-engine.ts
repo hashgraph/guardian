@@ -102,6 +102,11 @@ export class MathEngine {
 
         list.set('_', new FieldLink('_'));
         list.set('index', new FieldLink('index'));
+        list.set('Lookup', new FieldLink('Lookup'));
+        list.set('LookupTwo', new FieldLink('LookupTwo'));
+        list.set('LookupMin', new FieldLink('LookupMin'));
+        list.set('LookupMax', new FieldLink('LookupMax'));
+        list.set('EqualString', new FieldLink('EqualString'));
 
         // Variables
         for (const page of this.variables.pages) {

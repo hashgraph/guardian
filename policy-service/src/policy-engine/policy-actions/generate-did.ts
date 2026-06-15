@@ -35,7 +35,9 @@ export class GenerateDID {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
         const item = PolicyUtils.createDID(ref, user, didObject);
@@ -129,7 +131,9 @@ export class GenerateDID {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: null
             });
 
         const item = PolicyUtils.createDID(ref, user, didObject);

@@ -63,6 +63,9 @@ export async function preparePreviewMessage(
             userId: user.id,
             interception: null
         });
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
     }
@@ -205,18 +208,23 @@ export async function publishModule(
 
     notifier.startStep(STEP_CREATE_TOPIC);
     const topicHelper = new TopicHelper(root.hederaAccountId, root.hederaAccountKey, root.signOptions);
-    const rootTopic = await topicHelper.create({
+    const moduleTopic = await topicHelper.create({
         type: TopicType.ModuleTopic,
         name: model.name || TopicType.ModuleTopic,
         description: TopicType.ModuleTopic,
         owner: user.owner,
         policyId: null,
         policyUUID: null
-    }, user.id);
-    await rootTopic.saveKeys(user.id);
-    await DatabaseServer.saveTopic(rootTopic.toObject());
+    }, {
+        admin: true,
+        submit: true
+    }, {
+        userId: user.id
+    });
+    await moduleTopic.saveKeys(user.id);
+    await DatabaseServer.saveTopic(moduleTopic.toObject());
 
-    model.topicId = rootTopic.topicId;
+    model.topicId = moduleTopic.topicId;
     notifier.completeStep(STEP_CREATE_TOPIC);
 
     notifier.startStep(STEP_GENERATE_FILE);
@@ -251,7 +259,12 @@ export async function publishModule(
     notifier.completeStep(STEP_PUBLISH_MODULE);
 
     notifier.startStep(STEP_LINK_TOPIC);
-    await topicHelper.twoWayLink(rootTopic, userTopic, result.getId(), user.id);
+    await topicHelper.twoWayLink({
+        topic: moduleTopic,
+        parent: userTopic,
+        rationale: result.getId(),
+        userId: user.id
+    });
     notifier.completeStep(STEP_LINK_TOPIC);
 
     logger.info('Published module', ['GUARDIAN_SERVICE'], user.id);
@@ -641,10 +654,12 @@ export async function modulesAPI(logger: PinoLogger): Promise<void> {
                 if (moduleTopicId) {
                     const messageServer = new MessageServer(null);
                     const tagMessages = await messageServer.getMessages<TagMessage>(
-                        moduleTopicId,
-                        userId,
-                        MessageType.Tag,
-                        MessageAction.PublishTag
+                        {
+                            topicId: moduleTopicId,
+                            type: MessageType.Tag,
+                            action: MessageAction.PublishTag,
+                            userId
+                        }
                     );
                     for (const tag of tagMessages) {
                         if (tag.entity === TagType.Module && tag.target === messageId) {

@@ -5,7 +5,8 @@ import { AutocompleteItem } from './autocomplete-item';
 @Component({
     selector: 'mwl-text-input-autocomplete-menu',
     templateUrl: './text-input-autocomplete-menu.component.html',
-    styleUrls: ['./text-input-autocomplete-menu.component.scss']
+    styleUrls: ['./text-input-autocomplete-menu.component.scss'],
+    standalone: false
 })
 export class TextInputAutocompleteMenuComponent {
     @ViewChild('dropdownMenu') dropdownMenuElement: ElementRef<HTMLUListElement>;
@@ -43,7 +44,7 @@ export class TextInputAutocompleteMenuComponent {
     }
 
     @HostListener('document:keydown.ArrowDown', ['$event'])
-    onArrowDown(event: KeyboardEvent) {
+    onArrowDown(event: Event) {
         event.preventDefault();
         const index = this.choices.indexOf(this.activeChoice);
         if (this.choices[index + 1]) {
@@ -52,7 +53,7 @@ export class TextInputAutocompleteMenuComponent {
     }
 
     @HostListener('document:keydown.ArrowUp', ['$event'])
-    onArrowUp(event: KeyboardEvent) {
+    onArrowUp(event: Event) {
         event.preventDefault();
         const index = this.choices.indexOf(this.activeChoice);
         if (this.choices[index - 1]) {
@@ -61,7 +62,7 @@ export class TextInputAutocompleteMenuComponent {
     }
 
     @HostListener('document:keydown.Enter', ['$event'])
-    onEnter(event: KeyboardEvent) {
+    onEnter(event: Event) {
         if (this.choices.indexOf(this.activeChoice) > -1) {
             event.preventDefault();
             this.selectChoice.next(this.activeChoice);

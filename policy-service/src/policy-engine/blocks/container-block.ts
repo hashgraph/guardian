@@ -1,6 +1,6 @@
 import { ContainerBlock } from '../helpers/decorators/container-block.js';
 import { PolicyInputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { LocationType } from '@guardian/interfaces';
@@ -13,6 +13,7 @@ import { IPolicyGetData } from '@policy-engine/policy-engine.interface.js';
     blockType: 'interfaceContainerBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Container',
         title: `Add 'Container' Block`,
@@ -25,7 +26,31 @@ import { IPolicyGetData } from '@policy-engine/policy-engine.interface.js';
             PolicyInputEventType.RefreshEvent,
         ],
         output: null,
-        defaultEvent: false
+        defaultEvent: false,
+        properties: [{
+            name: 'uiMetaData',
+            label: 'UI',
+            title: 'UI Properties',
+            type: PropertyType.Group,
+            editable: true,
+            properties: [{
+                name: 'title',
+                label: 'Title',
+                title: 'Title',
+                type: PropertyType.Input,
+                editable: true
+            },{
+                name: 'type',
+                label: 'Type',
+                title: 'Type',
+                type: PropertyType.Select,
+                items: [
+                    { label: 'BLANK', value: 'blank' },
+                    { label: 'TABS', value: 'tabs' },
+                ],
+                editable: true,
+            }]
+        }]
     },
     variables: []
 })
@@ -36,6 +61,8 @@ export class InterfaceContainerBlock {
      */
     async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef(this);
+        const options = await ref.getOptions(user);
+
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -44,7 +71,7 @@ export class InterfaceContainerBlock {
                 ref.actionType === LocationType.REMOTE &&
                 user.location === LocationType.REMOTE
             ),
-            uiMetaData: ref.options?.uiMetaData
+            uiMetaData: options?.uiMetaData
         };
     }
 }

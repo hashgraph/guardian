@@ -192,6 +192,21 @@ export class AggregateVC extends BaseEntity {
     _documentFileId?: ObjectId;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
+     * Recording action step identifier
+     */
+    @Property({ nullable: true })
+    recordActionId?: string;
+
+    /**
      * Set defaults
      */
     @BeforeCreate()

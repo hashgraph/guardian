@@ -93,7 +93,8 @@ export class SchemaHelper {
             suggest,
             autocalculate,
             expression,
-            isUpdatable
+            isUpdatable,
+            enumName,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
         if (field.isRef) {
@@ -137,6 +138,7 @@ export class SchemaHelper {
         field.expression = expression;
         field.order = orderPosition || -1;
         field.isUpdatable = isUpdatable;
+        field.enumName = enumName;
         return field;
     }
 
@@ -358,6 +360,19 @@ export class SchemaHelper {
     }
 
     /**
+     * Clone a SchemaField array
+     */
+    private static cloneFields(fields: SchemaField[]): SchemaField[] {
+        return fields.map((f) => {
+            const clone: SchemaField = { ...f };
+            if (Array.isArray(f.fields)) {
+                clone.fields = SchemaHelper.cloneFields(f.fields);
+            }
+            return clone;
+        });
+    }
+
+    /**
      * Parse fields
      * @param document
      * @param contextURL
@@ -415,7 +430,8 @@ export class SchemaHelper {
                     });
                 }
                 const subSchema = schemaCache.get(field.type);
-                field.fields = subSchema.fields;
+                // Clone schema field array to avoid path mutations
+                field.fields = SchemaHelper.cloneFields(subSchema.fields);
                 field.conditions = subSchema.conditions;
             }
             if (field.order === -1) {
@@ -638,6 +654,9 @@ export class SchemaHelper {
         }
         if (field.isUpdatable) {
             comment.isUpdatable = field.isUpdatable;
+        }
+        if (field.enumName) {
+            comment.enumName = field.enumName;
         }
         return JSON.stringify(comment);
     }

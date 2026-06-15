@@ -1,33 +1,51 @@
-# Imports new tool from IPFS Asynchronously
+# Imports New Tool from IPFS Asynchronously
 
-{% swagger method="post" path="" baseUrl="/tools/push/import/message" summary="Imports new tool from IPFS." %}
-{% swagger-description %}
-Imports new tool and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/tools/push/import/message`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+Asynchronously imports a new tool and all associated artifacts from IPFS using a Hedera message ID, and returns a task ID for polling the result.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "messageId": "1700000000.000000001"
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaskDTO'
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | Hedera message ID referencing the tool on IPFS |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
+{
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Import tool message"
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `messageId` is missing from the request body |
+| `500 Internal Server Error` | Unexpected server failure |

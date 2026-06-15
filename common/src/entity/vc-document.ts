@@ -280,6 +280,15 @@ export class VcDocument extends RestoreEntity implements IVCDocument {
     initId?: string;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Document defaults
      */
     @BeforeCreate()

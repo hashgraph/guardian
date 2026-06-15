@@ -63,8 +63,8 @@
     }
 }
 
-.guardian-dropdown::ng-deep .p-dropdown {
-    border-radius: 0px !important;
+.guardian-dropdown::ng-deep .p-select {
+    border-radius: 0px;
 }
 
 .guardian-multiselect::ng-deep .p-multiselect {
@@ -92,10 +92,10 @@
     font-size: 14px;
 }
 
-::ng-deep p-dropdown .p-dropdown {
+::ng-deep p-select .p-select {
     width: 175px;
 }
 
-::ng-deep .p-dropdown-items {
+::ng-deep .p-select-list {
     width: 472px;
 }

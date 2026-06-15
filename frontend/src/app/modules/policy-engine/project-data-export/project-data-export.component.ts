@@ -21,6 +21,7 @@ interface IColumn {
     selector: 'app-project-data-export',
     templateUrl: './project-data-export.component.html',
     styleUrls: ['./project-data-export.component.scss'],
+    standalone: false
 })
 export class ProjectDataExportComponent implements OnInit {
     public loading: boolean = true;

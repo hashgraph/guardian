@@ -23,7 +23,9 @@ export class RemoteDidLoader extends DocumentLoader {
                 },
             },
             {
-                priority: 10
+                priority: 10,
+                dryRun: null,
+                mockId: null
             }
         );
         const didMessage = messages
@@ -40,7 +42,7 @@ export class RemoteDidLoader extends DocumentLoader {
         if (!didMessage) {
             return null
         }
-        const didDocument = await IPFS.getFile(didMessage.cid, 'json')
+        const didDocument = await IPFS.getFile(didMessage.cid, 'json', IPFS.DEFAULT_OPTIONS)
 
         return {
             documentUrl: iri,

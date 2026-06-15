@@ -50,7 +50,7 @@ Submitting data via APIs is much faster than manual form filling if schema is to
 
 For every dry run triggered, these IDs change so make sure you have the latest ones.
 
-![Add Project Button JSON config](<../../../.gitbook/assets/image (172).png>)
+![Add Project Button JSON config](<../../../.gitbook/assets/image (187).png>)
 
 **API Endpoint Construction:**
 
@@ -70,7 +70,7 @@ POST https://guardianservice.app/api/v1/policies/689d5badaf8487e6c32c8a2a/blocks
 
 ```
 
-![Authorization header can be extracted via dev tools console](<../../../.gitbook/assets/image-1 (9).png>)
+![Authorization header can be extracted via dev tools console](<../../../.gitbook/assets/image-1 (10).png>)
 
 ## Dry-Run API Operations
 

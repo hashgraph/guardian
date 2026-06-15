@@ -1,300 +1,141 @@
-# Prerequesite Steps
+# Prerequisite Steps
 
-Prior to creating a policy there are a few steps that need to be done first. Please see below for the prerequesite steps:
+Before calling any Policy API endpoint, complete the following setup steps.
 
-### **New Standard Registry registration**
+---
 
-{% swagger method="post" path="" baseUrl="/api/v1/accounts/register" summary="" %}
-{% swagger-description %}
+## 1. Register a Standard Registry Account
 
-{% endswagger-description %}
+**`POST /api/v1/accounts/register`**
 
-{% swagger-parameter in="body" name="username" type="String" required="true" %}
-njkqur8x
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="password" type="String" required="true" %}
-test
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-STANDARD_REGISTRY
-{% endswagger-parameter %}
-
-{% swagger-response status="201: Created" description="Created" %}
-
-
-```typescript
+```json
 {
-  username: string
-  password: string
-  password_confirmation: string
-  role: string
+  "username": "example_user",
+  "password": "examplePassword123",
+  "role": "STANDARD_REGISTRY"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
 
-### **Login**
+**Response `201 Created`:**
 
-{% swagger method="post" path="" baseUrl="/api/v1/accounts/login" summary="" %}
-{% swagger-description %}
-
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="username" type="String" required="true" %}
-njkgur8x
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="password" type="String" required="true" %}
-test
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-````javascript
-```typescript
+```json
 {
-  username: string
-  did: any
-  role: string
-  accessToken: string
+  "username": "example_user",
+  "role": "STANDARD_REGISTRY"
 }
 ```
-````
-{% endswagger-response %}
-{% endswagger %}
 
-### **Hedera account creation**
+---
 
-{% swagger method="get" path="" baseUrl="/api/v1/demo/random-key" summary="" %}
-{% swagger-description %}
+## 2. Obtain a Bearer Token
 
-{% endswagger-description %}
+**`POST /api/v1/accounts/login`**
 
-{% swagger-response status="200: OK" description="" %}
-```javascript
+```json
 {
-    
-	"id":"0.0.29511776",
-	"key":"302e020100300506032b6570042204200c8d2abbdd9aee64eed6e4891c276aa50248ab182c0cd7dfbec8506e5eaaaef8"
-
+  "username": "example_user",
+  "password": "examplePassword123"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
 
-### **Address book creation**
+**Response `200 OK`:**
 
-{% swagger method="put" path="" baseUrl="/api/v1/profile" summary="" %}
-{% swagger-description %}
-
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="hederaAccountId" required="true" %}
-0.0.29511776
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="hederaAccountKey" required="true" %}
-302e020100300506032b6570042204200c8d2abbdd9aee64eed6e4891c276aa50248ab182c0cd7dfbec8506e5eaaaef8
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="name" type="String" required="true" %}
-DD
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="type" type="String" required="true" %}
-StandardRegistry
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="context" type="String" required="true" %}
-
-
-[https://localhost/schema](https://localhost/schema)
-
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="aopnetname" type="String" required="true" %}
-Test Identity SDK appnet
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="didSrverURL" required="true" type="URL" %}
-
-
-[http://localhost:3000/api/v1](http://localhost:3000/api/v1)
-
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="didTopicMemo" required="true" %}
-Test Identity SDK appnet DID topic
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="vcTopicMemo" required="true" %}
-Test Identity SDK appnet DID topic
-{% endswagger-parameter %}
-{% endswagger %}
-
-### **iRec schema creation**
-
-{% swagger method="post" path="" baseUrl="/api/v1/schemas" summary="" %}
-{% swagger-description %}
-
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="uuid" required="true" %}
-d018a6ce-71f0-4bc5-9380-6bae4d4bb5bb
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="status" required="true" %}
-DRAFT
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="readonly" required="true" %}
-False
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="name" type="String" required="true" %}
-iRec
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="description" type="String" required="true" %}
-iRec Application Form
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="entity" type="String" required="true" %}
-VC
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="owner" type="String" required="false" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="version" type="String" required="false" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="document" required="true" %}
-{"$id":"#d018a6ce-71f0-4bc5-9380-6bae4d4bb5bb","$comment":"{ \\"term\\": \\"d018a6ce-71f0-4bc5-9380-6bae4d4bb5bb\\", \\"@id\\": \\"https://localhost/schema#d018a6ce-71f0-4bc5-9380-6bae4d4bb5bb\\" }","title":"iRec","description":"iRec application form","type":"object","properties":{"@context":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"type":{"oneOf":[{"type":"string"},{"type":"array","items":{"type":"string"}}],"readOnly":true},"id":{"type":"string","readOnly":true},"field0":{"title":"Test field","description":"Test field","readOnly":false,"$comment":"{ \\"term\\": \\"field0\\", \\"@id\\": \\"https://www.schema.org/text\\" }","type":"string"},"field1":{"title":"Required field","description":"Required field","readOnly":false,"$comment":"{ \\"term\\": \\"field1\\", \\"@id\\": \\"https://www.schema.org/text\\" }","type":"string"},"field2":{"title":"Multiple field","description":"Multiple field","readOnly":false,"type":"array","items":{"type":"string"},"$comment":"{ \\"term\\": \\"field2\\", \\"@id\\": \\"https://www.schema.org/text\\" }"},"policyId":{"title":"policyId","description":"policyId","readOnly":true,"$comment":"{ \\"term\\": \\"policyId\\", \\"@id\\": \\"https://www.schema.org/text\\" }","type":"string"}},"required":["@context","type","field1","policyId"],"additionalProperties":false}
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+```json
 {
-    ...
-	{
-		"id":"61ee7ecd9c02660014fa662e",
-		...
-	}
+  "username": "example_user",
+  "did": null,
+  "role": "STANDARD_REGISTRY",
+  "accessToken": "<token>"
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
 
-### **iRec schema publish**
-
-{% swagger method="put" path="" baseUrl="/api/v1/schemas/61ee7ecd9c02660014fa662e/publish" summary="" %}
-{% swagger-description %}
-
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="version" required="true" %}
-{"version":"1.0.0"}
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Ok" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="404: Not Found" description="Not Found" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
+Use the `accessToken` value as the Bearer token in the `Authorization` header for all subsequent requests:
 
 ```
-Version already exists.
+Authorization: Bearer <accessToken>
 ```
 
-```
-Schema is published.
-```
-{% endswagger-response %}
+---
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+## 3. Create a Hedera Account (Demo)
 
-{% endswagger-response %}
-{% endswagger %}
+**`GET /api/v1/demo/random-key`**
 
-### **Token creation**
-
-{% swagger method="post" path="" baseUrl="/api/v1/tokens" summary="" %}
-{% swagger-description %}
-
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="tokenName" type="String" required="true" %}
-iRec
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="tokenSymbol" type="String" required="true" %}
-iRec
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="tokenType" type="String" required="true" %}
-fungible
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="decimals" type="String" required="true" %}
-2
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="initialsupply" type="String" required="true" %}
-0
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="enableAdmin" type="Boolean" required="false" %}
-true
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="changeSupply" type="Boolean" required="false" %}
-true
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="enableFreeze" type="Boolean" required="false" %}
-true
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="enableKYC" type="Boolean" required="false" %}
-true
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="enableWipe" type="Boolean" required="false" %}
-true
-{% endswagger-parameter %}
-
-{% swagger-response status="201: Created" description="Created" %}
-```javascript
+```json
 {
-    
-		"id":"61ee817b9c02660014fa662f",
-		"tokenId":"0.0.29511821",
-		...
-	
+  "id": "0.0.4532001",
+  "key": "302e020100300506032b657004220420..."
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+---
 
+## 4. Set Up the Standard Registry Profile
+
+**`PUT /api/v1/profile`**
+
+```json
+{
+  "hederaAccountId": "0.0.4532001",
+  "hederaAccountKey": "302e020100300506032b657004220420...",
+  "name": "My Registry",
+  "type": "StandardRegistry"
+}
+```
+
+---
+
+## 5. Create and Publish a Schema
+
+Create a schema via **`POST /api/v1/schemas`** with the schema document, then publish it via **`PUT /api/v1/schemas/{schemaId}/publish`** with body `{ "version": "1.0.0" }`.
+
+---
+
+## 6. Create a Token
+
+**`POST /api/v1/tokens`**
+
+```json
+{
+  "tokenName": "Example Token",
+  "tokenSymbol": "EXT",
+  "tokenType": "fungible",
+  "decimals": "2",
+  "initialSupply": "0",
+  "enableAdmin": true,
+  "changeSupply": true,
+  "enableFreeze": true,
+  "enableKYC": true,
+  "enableWipe": true
+}
+```
+
+**Response `201 Created`:**
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "tokenId": "0.0.5000001"
+}
+```
+
+---
+
+## Base URL
+
+All policy endpoints are relative to:
 
 ```
-User not registered
+/api/v1/policies
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+## Pagination
+
+Endpoints that return lists support standard pagination query parameters:
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `pageIndex` | number | 0 | Zero-based page index |
+| `pageSize` | number | 20 | Number of items per page |
+
+The total item count is returned in the `X-Total-Count` response header.

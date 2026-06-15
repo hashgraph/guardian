@@ -4,14 +4,16 @@ import { FormsModule } from '@angular/forms';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
-import { DropdownModule } from 'primeng/dropdown';
-import { TabViewModule } from 'primeng/tabview';
+import { SelectModule } from 'primeng/select';
+import { ButtonModule } from 'primeng/button';
+import { TabsModule } from 'primeng/tabs';
 import { CheckboxModule } from 'primeng/checkbox';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { MultiSelectModule } from 'primeng/multiselect';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { PopoverModule } from 'primeng/popover';
 import { DragDropModule } from 'primeng/dragdrop';
 import { TreeModule } from 'primeng/tree';
 import { TreeDragDropService } from 'primeng/api';
@@ -47,12 +49,13 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         TableModule,
         TooltipModule,
         InputTextModule,
-        DropdownModule,
-        TabViewModule,
+        SelectModule,
+        ButtonModule,
+        TabsModule,
         CheckboxModule,
         RadioButtonModule,
         MultiSelectModule,
-        OverlayPanelModule,
+        PopoverModule,
         DragDropModule,
         TreeModule,
         TieredMenuModule,
@@ -62,7 +65,7 @@ import { FormulasGraphTabComponent } from "./dialogs/formulas-view-dialog/formul
         FormulasViewDialog
     ],
     providers: [
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
         TreeDragDropService
     ],
 })

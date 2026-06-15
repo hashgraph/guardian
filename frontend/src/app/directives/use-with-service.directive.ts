@@ -3,7 +3,8 @@ import { WebSocketService } from '../services/web-socket.service';
 import { Subscription } from 'rxjs';
 
 @Directive({
-    selector: '[useWithServiceDecorator]'
+    selector: '[useWithServiceDecorator]',
+    standalone: false
 })
 export class UseWithServiceDirective{
 

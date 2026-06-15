@@ -1,8 +1,8 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post, Req } from '@nestjs/common';
-import { ApiExtraModels, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
+import { ApiExtraModels, ApiNoContentResponse, ApiTags, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiBody } from '@nestjs/swagger';
 import {Auth, AuthUser} from '#auth';
 import { Permissions } from '@guardian/interfaces';
-import { BrandingDTO, InternalServerErrorDTO } from '#middlewares';
+import { BrandingDTO, InternalServerErrorDTO, ObjectExamples } from '#middlewares';
 import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheService } from '#helpers';
 import {IAuthUser, PinoLogger} from '@guardian/common';
 
@@ -30,14 +30,26 @@ export class BrandingApi {
     @ApiBody({
         description: 'Object that contains config.',
         required: true,
-        type: BrandingDTO
+        type: BrandingDTO,
+        examples: {
+            default: {
+                summary: 'Update branding',
+                value: { headerColor: '#0031ff', headerColor1: '#8259ef', primaryColor: '#0031ff', companyName: 'GUARDIAN', companyLogoUrl: '/assets/images/logo.png', loginBannerUrl: '/assets/bg.jpg', faviconUrl: 'favicon.ico' }
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
+    @ApiNoContentResponse({
+        description: 'Branding updated successfully. No response body.',
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.NO_CONTENT)
@@ -81,13 +93,29 @@ export class BrandingApi {
      * Get branding
      */
     @Get('/')
+    @ApiOperation({
+        summary: 'Returns branding configuration.',
+        description: 'Returns current branding configuration.',
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: BrandingDTO
+        type: BrandingDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: ObjectExamples.BRANDING
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(BrandingDTO, InternalServerErrorDTO)
     @UseCache()

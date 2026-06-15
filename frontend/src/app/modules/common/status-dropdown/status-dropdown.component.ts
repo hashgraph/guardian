@@ -13,7 +13,8 @@ interface IOptions {
 @Component({
     selector: 'status-dropdown',
     templateUrl: './status-dropdown.component.html',
-    styleUrls: ['./status-dropdown.component.scss']
+    styleUrls: ['./status-dropdown.component.scss'],
+    standalone: false
 })
 export class StatusDropdown {
     @Input('item') item!: any;

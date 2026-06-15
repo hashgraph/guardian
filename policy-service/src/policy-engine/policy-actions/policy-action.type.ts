@@ -10,5 +10,6 @@ export enum PolicyActionType {
     DissociateToken = 'dissociate-token',
     AddRelayerAccount = 'add-relayer-account',
     CreatePolicyDiscussion = 'create-policy-discussion',
-    CreatePolicyComment = 'create-policy-comment'
+    CreatePolicyComment = 'create-policy-comment',
+    DisconnectPolicy = 'disconnect-policy',
 }

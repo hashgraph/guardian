@@ -17,6 +17,7 @@ import { SendMessages } from './send-messages.js';
 import { RelayerAccountAction } from './relayer-account.js';
 import { PolicyDiscussionAction } from './policy-discussion.js';
 import { PolicyCommentAction } from './policy-comment.js';
+import { PolicyDisconnectAction } from './policy-disconnect.js';
 
 export class PolicyActionsUtils {
     public static needKey(status: PolicyStatus, availability: PolicyAvailability): boolean {
@@ -80,7 +81,8 @@ export class PolicyActionsUtils {
         remoteAction: PolicyAction,
         user: PolicyUser,
         policyOwner: string,
-        policyOwnerId: string | null
+        policyOwnerId: string | null,
+        policyId: string,
     ) {
         const type = remoteAction?.document?.type;
         switch (type) {
@@ -92,6 +94,9 @@ export class PolicyActionsUtils {
             }
             case PolicyActionType.CreatePolicyComment: {
                 return await PolicyCommentAction.complete(remoteAction);
+            }
+            case PolicyActionType.DisconnectPolicy: {
+                return await PolicyDisconnectAction.complete(remoteAction, policyId, user);
             }
             default:
                 return false;
@@ -571,5 +576,16 @@ export class PolicyActionsUtils {
         const data = await PolicyCommentAction.request(options);
         const controller = PolicyComponentsUtils.getActionsController(policyId);
         return await controller.sendRemoteAction(user, data, true);
+    }
+
+    public static async disconnectPolicy(options: {
+        policyId: string,
+        user: PolicyUser,
+        userId: string | null
+    }): Promise<PolicyComment> {
+        const { policyId, user } = options;
+        const data = await PolicyDisconnectAction.request(options);
+        const controller = PolicyComponentsUtils.getActionsController(policyId);
+        return await controller.sendRemoteAction(user, data, false);
     }
 }

@@ -1,0 +1,85 @@
+name: Major dependency updates check
+on:
+  schedule:
+    - cron: '0 14 1 * *'   # monthly, 1st of month at 14:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-majors:
+    runs-on: guardian-linux-medium
+    strategy:
+      matrix:
+        node-version: [ 20.20.2 ]
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Find major updates
+        id: ncu
+        run: |
+          npx npm-check-updates --workspaces --target major --jsonUpgraded > majors.raw.json
+          # ncu emits a per-workspace map keyed by package.json path; flatten to one pkg -> version object
+          jq '[.[]] | add // {}' majors.raw.json > majors.json
+          echo "count=$(jq 'length' majors.json)" >> "$GITHUB_OUTPUT"
+
+      - name: Close existing major-updates issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const existing = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: 'major-dependencies',
+              state: 'open'
+            });
+            for (const i of existing.data) {
+              if (i.pull_request) continue; // listForRepo also returns PRs; never close those
+              await github.rest.issues.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: i.number,
+                state: 'closed'
+              });
+            }
+
+      - name: Open consolidated issue
+        if: steps.ncu.outputs.count != '0'
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const majors = require('./majors.json');
+            const rows = Object.entries(majors)
+              .map(([pkg, ver]) => `| \`${pkg}\` | ${ver} |`)
+              .join('\n');
+            const body = [
+              '## Major dependency updates available',
+              '',
+              '| Package | Available version |',
+              '|---|---|',
+              rows,
+              '',
+              `> Generated ${new Date().toISOString().slice(0,10)}. Review each manually – majors may contain breaking changes.`
+            ].join('\n');
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Major dependency updates – ${new Date().toISOString().slice(0,7)}`,
+              body,
+              labels: ['major-dependencies'],
+              assignees: ['Pyatakov']
+            });

@@ -15,7 +15,8 @@ import { DiscussionGroup, DiscussionItem, FieldItem, LastRead, ListItem, placeho
 @Component({
     selector: 'policy-comments',
     templateUrl: './policy-comments.component.html',
-    styleUrls: ['./policy-comments.component.scss']
+    styleUrls: ['./policy-comments.component.scss'],
+    standalone: false
 })
 export class PolicyComments {
     @Input('document-id') documentId!: any | undefined;

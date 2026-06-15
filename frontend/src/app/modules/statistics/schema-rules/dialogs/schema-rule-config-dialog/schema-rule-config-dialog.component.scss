@@ -99,7 +99,7 @@
                 position: relative;
                 height: 40px;
 
-                &::ng-deep .p-dropdown {
+                &::ng-deep .p-select {
                     width: 134px;
                 }
             }
@@ -144,7 +144,7 @@
                         &.variable-name-dropdown {
                             width: 135px;
 
-                            &::ng-deep .p-dropdown-label {
+                            &::ng-deep .p-select-label {
                                 color: #4169E2 !important;
                                 font-size: 14px;
                                 font-weight: 700;

@@ -1,37 +1,71 @@
 # Updates Tool Configuration
 
-{% swagger method="put" path="" baseUrl="/tools/{id}" summary="Updates tool configuration." %}
-{% swagger-description %}
-Updates tool configuration for the specified tool ID. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`PUT /api/v1/tools/{id}`**
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Tool ID
-{% endswagger-parameter %}
+Updates the configuration for a specific tool by its ID.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_UPDATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Tool ID (MongoDB ObjectId) |
+
+### Request Body
+
+```json
+{
+  "name": "Updated Tool Name",
+  "description": "Updated description",
+  "config": {
+    "blockType": "tool",
+    "children": []
+  }
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ToolDTO'
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Human-readable name of the tool |
+| `description` | string | No | Brief description of the tool's purpose |
+| `config` | object | Yes | Tool configuration object; `blockType` must be `"tool"` |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "Updated Tool Name",
+  "description": "Updated description",
+  "status": "DRAFT",
+  "creator": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "topicId": "0.0.5000001",
+  "config": {
+    "blockType": "tool",
+    "children": []
+  }
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `id` is missing, or tool config is invalid |
+| `500 Internal Server Error` | Unexpected server failure |

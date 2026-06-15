@@ -22,7 +22,11 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { NewRelayerAccountDialog } from 'src/app/components/new-relayer-account-dialog/new-relayer-account-dialog.component';
 import { RelayerAccountDetailsDialog } from 'src/app/components/relayer-account-details-dialog/relayer-account-details-dialog.component';
+import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
+import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
+import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dialog.component';
 import moment from 'moment';
+
 
 enum OperationMode {
     None,
@@ -59,6 +63,7 @@ interface IColumn {
     selector: 'app-user-profile',
     templateUrl: './user-profile.component.html',
     styleUrls: ['./user-profile.component.scss'],
+    standalone: false
 })
 export class UserProfileComponent implements OnInit {
     public loading: boolean = true;
@@ -76,6 +81,8 @@ export class UserProfileComponent implements OnInit {
     public currentStep!: IStep;
 
     public noFilterResults: boolean = false;
+
+    public is2faEnabled = false;
 
     public get hasRegistries(): boolean {
         return this.standardRegistriesList.length > 0;
@@ -127,9 +134,9 @@ export class UserProfileComponent implements OnInit {
     public remoteDidDocumentForm!: UntypedFormControl;
     public didKeys: any[] = [];
 
-    public tab: 'general' | 'keys' | 'relayerAccounts' = 'general';
+    public tab: 'general' | 'keys' | 'relayerAccounts' | 'credentials' = 'general';
     public tabIndex = 0;
-    public tabs: ['general', 'relayerAccounts', 'keys'] = ['general', 'relayerAccounts', 'keys'];
+    public tabs: ['general', 'relayerAccounts', 'keys', 'credentials'] = ['general', 'relayerAccounts', 'keys', 'credentials'];
 
     public keyPage: any[];
     public keyCount: number;
@@ -461,6 +468,7 @@ export class UserProfileComponent implements OnInit {
         );
         this.loadDate();
         this.update();
+        this.refreshOtpStatus();
     }
 
     ngOnDestroy(): void {
@@ -572,7 +580,7 @@ export class UserProfileComponent implements OnInit {
                 type: 'VC',
                 viewDocument: true,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -590,7 +598,7 @@ export class UserProfileComponent implements OnInit {
                 title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -968,7 +976,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 login: profile?.username,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             this.loadDate();
         });
     }
@@ -1008,9 +1016,9 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    public onChangeTab(tab: any) {
-        this.tabIndex = tab.index;
-        this.tab = this.tabs[tab.index] || 'general';
+    public onChangeTab(index: string | number | undefined) {
+        this.tabIndex = typeof index === 'number' ? index : 0;
+        this.tab = this.tabs[this.tabIndex] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
@@ -1063,7 +1071,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 type: 'create',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.createKey(result.messageId);
@@ -1079,7 +1087,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 type: 'import',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.createKey(result.messageId, result.key)
@@ -1097,7 +1105,7 @@ export class UserProfileComponent implements OnInit {
                 type: 'preview',
                 key
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => { });
     }
 
@@ -1117,7 +1125,7 @@ export class UserProfileComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.deleteKey(item.id)
@@ -1202,7 +1210,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 title: 'Add Relayer Account'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
@@ -1225,7 +1233,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -1255,5 +1263,46 @@ export class UserProfileComponent implements OnInit {
         for (const row of this.relayerAccountPage) {
             this.updateBalance(row);
         }
+    }
+
+    refreshOtpStatus() {
+        this.auth.getOtpStatus().subscribe((result) => {
+            this.is2faEnabled = result.enabled;
+        });
+    }
+
+    generate2fa() {
+        this.auth.generateOtpSecret().subscribe(config => {
+
+            this.dialogService.open(OtpConfigDialogComponent, {
+                header: 'Enable two-factor authentication',
+                width: '50vw',
+                closable: false,
+                data: { config: config }
+            })!.onClose.subscribe((codes) => {
+                this.refreshOtpStatus();
+                if (codes && codes.length) {
+                    this.dialogService.open(OtpCodesDialogComponent, {
+                        header: "Save your recovery codes",
+                        data: { codes: codes }
+                    });
+                }
+            })
+        });
+    }
+
+    deactivate2fa() {
+        this.dialogService.open(OtpDisableDialogComponent, {
+            header: 'Deactivate two-factor authentication',
+            width: '50vw',
+            closable: false,
+
+        })!.onClose.subscribe(result => {
+            if (result == true) {
+                this.auth.deactivateOtp().subscribe(() => {
+                    this.refreshOtpStatus();
+                });
+            }
+        })
     }
 }

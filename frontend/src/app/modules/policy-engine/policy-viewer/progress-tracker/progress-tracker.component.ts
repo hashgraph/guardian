@@ -17,6 +17,7 @@ import { PolicyProgressService } from '../../services/policy-progress.service';
     selector: 'progress-tracker',
     templateUrl: './progress-tracker.component.html',
     styleUrls: ['./progress-tracker.component.scss'],
+    standalone: false
 })
 export class ProgressTrackerComponent implements OnInit {
     @Input('steps') steps!: IStep[];

@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hiero-ledger/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -35,6 +35,12 @@ import { CommentMessage } from './comment-message.js';
 import { DiscussionMessage } from './discussion-message.js';
 import { PolicyRecordMessage } from './policy-record-message.js';
 
+interface LoadOptions {
+    dryRun?: string,
+    mockId?: string,
+    userId?: string | null
+}
+
 interface LoadMessageOptions {
     messageId: string,
     loadIPFS?: boolean,
@@ -42,7 +48,8 @@ interface LoadMessageOptions {
     userId?: string | null,
     dryRun?: string,
     encryptKey?: string,
-    interception: string | boolean | null
+    interception: string | boolean | null,
+    mockId?: string
 }
 
 interface LoadMessagesOptions {
@@ -51,7 +58,8 @@ interface LoadMessagesOptions {
     userId?: string | null,
     type?: MessageType | MessageType[] | null,
     action?: MessageAction,
-    timeStamp?: string
+    timeStamp?: string,
+    mockId?: string,
 }
 
 interface MessageServerOptions {
@@ -67,7 +75,9 @@ interface MessageOptions {
     memo?: string,
     userId?: string | null,
     interception?: string | boolean | null,
-    notifier?: INotificationStep
+    notifier?: INotificationStep,
+    dryRun?: string,
+    mockId?: string
 }
 
 /**
@@ -187,7 +197,7 @@ export class MessageServer {
         message = await this.sendHedera(message, options);
         notifier.completeStep(STEP_SEND_MESSAGES);
 
-        if (this.dryRun) {
+        if (this.dryRun && !options.mockId) {
             await DatabaseServer.saveVirtualMessage<T>(this.dryRun, message);
         }
 
@@ -202,11 +212,27 @@ export class MessageServer {
      * @virtual
      * @private
      */
-    private async getFile(cid: string, responseType: 'json' | 'raw' | 'str') {
-        if (this.dryRun) {
-            throw new Error('Unable to get virtual file');
-        }
-        return await IPFS.getFile(cid, responseType);
+    private async getFile(
+        cid: string,
+        responseType: 'json' | 'raw' | 'str',
+        options: IPFSOptions
+    ) {
+        return await IPFS.getFile(cid, responseType, options);
+    }
+
+    /**
+     * Get File
+     * @param cid
+     * @param responseType
+     * @virtual
+     * @private
+     */
+    private static async getFile(
+        cid: string,
+        responseType: 'json' | 'raw' | 'str',
+        options: IPFSOptions
+    ) {
+        return await IPFS.getFile(cid, responseType, options);
     }
 
     /**
@@ -275,13 +301,14 @@ export class MessageServer {
      * @param options
      * @private
      */
-    private async addFile(file: Buffer, options?: MessageOptions) {
+    private async addFile(file: Buffer, options: MessageOptions) {
         const notifier = options?.notifier || NewNotifier.empty();
-        if (this.dryRun) {
+
+        if (this.dryRun && !options.mockId) {
             const id = GenerateUUIDv4();
             const result = {
                 cid: id,
-                url: id
+                url: IPFS.IPFS_PROTOCOL + id
             }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
@@ -303,11 +330,11 @@ export class MessageServer {
      * @param message
      * @private
      */
-    public async loadIPFS<T extends Message>(message: T): Promise<T> {
+    public async loadIPFS<T extends Message>(message: T, options: IPFSOptions): Promise<T> {
         const urls = message.getUrls();
         const promises = urls
             .map(url => {
-                return this.getFile(url.cid, message.responseType);
+                return this.getFile(url.cid, message.responseType, options);
             });
         const documents = await Promise.all(promises);
         message = (await message.loadDocuments(documents, this.encryptKey)) as T;
@@ -321,12 +348,13 @@ export class MessageServer {
      */
     public static async loadIPFS<T extends Message>(
         message: T,
-        key?: string
+        key: string,
+        options: IPFSOptions
     ): Promise<T> {
         const urls = message.getUrls();
         const promises = urls
             .map(url => {
-                return IPFS.getFile(url.cid, message.responseType);
+                return MessageServer.getFile(url.cid, message.responseType, options);
             });
         const documents = await Promise.all(promises);
         message = await message.loadDocuments(documents, key) as T;
@@ -594,8 +622,6 @@ export class MessageServer {
     private async sendHedera<T extends Message>(
         message: T,
         options: MessageOptions
-        // memo?: string,
-        // userId: string = null
     ): Promise<T> {
         if (!this.topicId) {
             throw new Error('Topic is not set');
@@ -629,7 +655,9 @@ export class MessageServer {
             attempts: 0,
             userId: options.userId,
             interception: options.interception,
-            registerCallback: true
+            registerCallback: true,
+            dryRun: this.dryRun,
+            mockId: options.mockId,
         });
 
         await this.messageEndLog(time, 'Hedera', options.userId);
@@ -645,7 +673,8 @@ export class MessageServer {
      */
     public static async getTopic(
         topicId: string | TopicId,
-        userId: string | null
+        userId: string | null,
+        options: LoadOptions
     ): Promise<TopicMessage> {
         if (!topicId) {
             throw new Error(`Invalid Topic Id`);
@@ -660,7 +689,9 @@ export class MessageServer {
                 payload: { userId }
             }
         }, {
-            priority: 10
+            priority: 10,
+            dryRun: options.dryRun,
+            mockId: options.mockId,
         });
         new PinoLogger().info(`getTopic, ${topic}`, ['GUARDIAN_SERVICE'], userId);
         try {
@@ -684,20 +715,20 @@ export class MessageServer {
      * Load document
      * @param message
      */
-    public async loadDocument<T extends Message>(message: T): Promise<T> {
-        return await this.loadIPFS<T>(message);
+    public async loadDocument<T extends Message>(message: T, options: IPFSOptions): Promise<T> {
+        return await this.loadIPFS<T>(message, options);
     }
 
     /**
      * Load documents
      * @param message
      */
-    public async loadDocuments<T extends Message>(messages: T[]): Promise<T[]> {
+    public async loadDocuments<T extends Message>(messages: T[], options: IPFSOptions): Promise<T[]> {
         for (const message of messages) {
             const urls = message.getUrls();
             const documents: any[] = [];
             for (const url of urls) {
-                const doc = await this.getFile(url.cid, message.responseType);
+                const doc = await this.getFile(url.cid, message.responseType, options);
                 documents.push(doc);
             }
             await message.loadDocuments(documents, this.encryptKey);
@@ -709,11 +740,15 @@ export class MessageServer {
      * Load document
      * @param message
      */
-    public static async loadDocument<T extends Message>(message: T, cryptoKey?: string): Promise<T> {
+    public static async loadDocument<T extends Message>(
+        message: T,
+        cryptoKey: string,
+        options: LoadOptions
+    ): Promise<T> {
         const urls = message.getUrls();
         const documents: any[] = [];
         for (const url of urls) {
-            const doc = await IPFS.getFile(url.cid, message.responseType);
+            const doc = await MessageServer.getFile(url.cid, message.responseType, options);
             documents.push(doc);
         }
         await message.loadDocuments(documents, cryptoKey);
@@ -724,12 +759,16 @@ export class MessageServer {
      * Load documents
      * @param message
      */
-    public static async loadDocuments<T extends Message>(messages: T[], cryptoKey?: string): Promise<T[]> {
+    public static async loadDocuments<T extends Message>(
+        messages: T[],
+        cryptoKey: string,
+        options: LoadOptions
+    ): Promise<T[]> {
         for (const message of messages) {
             const urls = message.getUrls();
             const documents: any[] = [];
             for (const url of urls) {
-                const doc = await IPFS.getFile(url.cid, message.responseType);
+                const doc = await MessageServer.getFile(url.cid, message.responseType, options);
                 documents.push(doc);
             }
             await message.loadDocuments(documents, cryptoKey);
@@ -742,7 +781,10 @@ export class MessageServer {
      * @param messageId
      * @param userId
      */
-    public async findTopic(messageId: string, userId: string | null): Promise<string> {
+    public async findTopic(
+        messageId: string,
+        options: LoadOptions
+    ): Promise<string> {
         try {
             if (messageId && typeof messageId === 'string') {
                 const timeStamp = messageId.trim();
@@ -754,10 +796,14 @@ export class MessageServer {
                         operatorKey: this.operatorKey,
                         dryRun: this.dryRun,
                         timeStamp,
-                        payload: { userId }
+                        payload: {
+                            userId: options.userId
+                        }
                     }
                 }, {
-                    priority: 10
+                    priority: 10,
+                    dryRun: this.dryRun,
+                    mockId: options.mockId,
                 });
                 return topicId;
             }
@@ -785,16 +831,17 @@ export class MessageServer {
             if (!messageId || typeof messageId !== 'string') {
                 return null;
             }
-            if (dryRun) {
+            if (dryRun && !options.mockId) {
                 return await MessageServer.getDryRunTopicMessage<T>(dryRun, messageId, type, userId);
             } else {
                 let message = await MessageServer.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
-                    message = await MessageServer.loadIPFS(message, options.encryptKey);
+                    message = await MessageServer.loadIPFS(message, options.encryptKey, options);
                 }
                 return message;
             }
         } catch (error) {
+            new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
             return null;
         }
     }
@@ -818,16 +865,17 @@ export class MessageServer {
             if (!messageId || typeof messageId !== 'string') {
                 return null;
             }
-            if (this.dryRun) {
+            if (this.dryRun && !options.mockId) {
                 return await this.getDryRunTopicMessage<T>(messageId, type, userId);
             } else {
                 let message = await this.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
-                    message = await this.loadIPFS(message);
+                    message = await this.loadIPFS(message, options);
                 }
                 return message as T;
             }
         } catch (error) {
+            new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
             return null;
         }
     }
@@ -867,7 +915,9 @@ export class MessageServer {
             attempts: 0,
             userId: options.userId,
             interception: options.interception,
-            registerCallback: true
+            registerCallback: true,
+            dryRun: this.dryRun,
+            mockId: options.mockId,
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
@@ -909,7 +959,9 @@ export class MessageServer {
             attempts: 0,
             userId: options.userId,
             interception: options.interception,
-            registerCallback: true
+            registerCallback: true,
+            dryRun: options.dryRun,
+            mockId: options.mockId,
         });
 
         const item = MessageServer.fromMessage<T>(message, options.userId, type);
@@ -974,7 +1026,7 @@ export class MessageServer {
      * @param action
      */
     public static async getMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
-        if (options.dryRun) {
+        if (options.dryRun && !options.mockId) {
             return await MessageServer.getDryRunMessages(options) as T[];
         } else {
             return await MessageServer.getTopicMessages(options) as T[];
@@ -1049,7 +1101,9 @@ export class MessageServer {
                 payload: { userId }
             }
         }, {
-            priority: 10
+            priority: 10,
+            dryRun: options.dryRun,
+            mockId: options.mockId,
         });
         new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
         const result: Message[] = [];
@@ -1082,55 +1136,36 @@ export class MessageServer {
 
     /**
      * Get messages
-     * @param topicId
-     * @param userId
-     * @param type
-     * @param action
+     * @param options
      */
-    public async getMessages<T extends Message>(
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType | MessageType[],
-        action?: MessageAction
-    ): Promise<T[]> {
-        if (this.dryRun) {
-            return await this.getDryRunMessages(this.dryRun, topicId, userId, type, action) as T[];
+    public async getMessages<T extends Message>(options: LoadMessagesOptions): Promise<T[]> {
+        if (this.dryRun && !options.mockId) {
+            options.dryRun = this.dryRun;
+            return await this.getDryRunMessages(options) as T[];
         } else {
-            return await this.getTopicMessages(topicId, userId, type, action) as T[];
+            return await this.getTopicMessages(options) as T[];
         }
     }
 
     /**
      * Get topic message
-     * @param dryRun
-     * @param topicId
-     * @param userId
-     * @param type
-     * @param action
-     * @param timeStamp
+     * @param options
      * @private
      */
-    public async getDryRunMessages<T extends Message>(
-        dryRun: string,
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType | MessageType[],
-        action?: MessageAction,
-        timeStamp?: string
-    ): Promise<Message[]> {
-        const messages = await DatabaseServer.getVirtualMessages(dryRun, topicId);
+    public async getDryRunMessages<T extends Message>(options: LoadMessagesOptions): Promise<Message[]> {
+        const messages = await DatabaseServer.getVirtualMessages(options.dryRun, options.topicId);
         const result: T[] = [];
         for (const message of messages) {
             try {
-                const item = MessageServer.fromMessage<T>(message.document, userId);
+                const item = MessageServer.fromMessage<T>(message.document, options.userId);
                 let filter = true;
-                if (Array.isArray(type)) {
-                    filter = filter && type.includes(item.type);
-                } else if (type) {
-                    filter = filter && item.type === type;
+                if (Array.isArray(options.type)) {
+                    filter = filter && options.type.includes(item.type);
+                } else if (options.type) {
+                    filter = filter && item.type === options.type;
                 }
-                if (action) {
-                    filter = filter && item.action === action;
+                if (options.action) {
+                    filter = filter && item.action === options.action;
                 }
                 if (filter) {
                     item.setId(message.messageId);
@@ -1153,48 +1188,46 @@ export class MessageServer {
      * @param action
      * @param timeStamp
      */
-    public async getTopicMessages(
-        topicId: string | TopicId,
-        userId: string | null,
-        type?: MessageType | MessageType[],
-        action?: MessageAction,
-        timeStamp?: string
-    ): Promise<Message[]> {
-        if (!topicId) {
+    public async getTopicMessages(options: LoadMessagesOptions): Promise<Message[]> {
+        if (!options?.topicId) {
             throw new Error(`Invalid Topic Id`);
         }
 
-        if (timeStamp && typeof timeStamp === 'string') {
-            timeStamp = timeStamp.trim();
+        if (options.timeStamp && typeof options.timeStamp === 'string') {
+            options.timeStamp = options.timeStamp.trim();
         }
 
-        const topic = topicId.toString();
+        const topic = options?.topicId.toString();
         const workers = new Workers();
         const messages = await workers.addNonRetryableTask({
             type: WorkerTaskType.GET_TOPIC_MESSAGES,
             data: {
                 dryRun: this.dryRun,
                 topic,
-                timeStamp,
-                payload: { userId }
+                timeStamp: options.timeStamp,
+                payload: {
+                    userId: options.userId
+                }
             }
         }, {
-            priority: 10
+            priority: 10,
+            dryRun: this.dryRun,
+            mockId: options.mockId,
         });
 
-        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], userId);
+        new PinoLogger().info(`getTopicMessages, ${topic}`, ['GUARDIAN_SERVICE'], options.userId);
         const result: Message[] = [];
         for (const message of messages) {
             try {
-                const item = MessageServer.fromMessage(message.message, userId);
+                const item = MessageServer.fromMessage(message.message, options.userId);
                 let filter = true;
-                if (Array.isArray(type)) {
-                    filter = filter && type.includes(item.type);
-                } else if (type) {
-                    filter = filter && item.type === type;
+                if (Array.isArray(options.type)) {
+                    filter = filter && options.type.includes(item.type);
+                } else if (options.type) {
+                    filter = filter && item.type === options.type;
                 }
-                if (action) {
-                    filter = filter && item.action === action;
+                if (options.action) {
+                    filter = filter && item.action === options.action;
                 }
                 if (filter) {
                     item.setPayer(message.payer_account_id);

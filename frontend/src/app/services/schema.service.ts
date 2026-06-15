@@ -104,6 +104,7 @@ export class SchemaService {
         category?: SchemaCategory,
         topicId?: string,
         search?: string,
+        searchOptions?: string[],
         pageIndex?: number,
         pageSize?: number | string,
     }): Observable<HttpResponse<ISchema[]>> {
@@ -231,6 +232,28 @@ export class SchemaService {
 
     public getSchemaTree(id: string): Observable<SchemaNode> {
         return this.http.get<SchemaNode>(`${this.singleSchemaUrl}/${id}/tree`);
+    }
+
+    public getSchemaTreePlantUML(
+        id: string,
+        includeFields: boolean = true,
+        includeFormulas: boolean = false,
+        includeDependencies: boolean = false
+    ): Observable<string> {
+        const params: Record<string, string> = {};
+        if (!includeFields) {
+            params.includeFields = 'false';
+        }
+        if (includeFormulas) {
+            params.includeFormulas = 'true';
+        }
+        if (includeDependencies) {
+            params.includeDependencies = 'true';
+        }
+        return this.http.get(`${this.singleSchemaUrl}/${id}/tree/export/plantuml`, {
+            responseType: 'text',
+            params
+        });
     }
 
     public getSchemaDeletionPreview(schemaIds: string[]): Observable<ISchemaDeletionPreview> {

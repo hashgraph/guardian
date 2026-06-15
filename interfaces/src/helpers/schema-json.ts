@@ -40,6 +40,7 @@ export interface IFieldJson {
     private?: boolean;
 
     enum?: string[] | string;
+    enumName?: string;
     availableOptions?: string[] | string;
 
     textSize?: string;
@@ -307,6 +308,9 @@ export class SchemaToJson {
         if (enumValue) {
             fieldJson.enum = enumValue;
         }
+        if (field.enumName) {
+            fieldJson.enumName = field.enumName;
+        }
 
         const availableOptionsValue = SchemaToJson.getAvailableOptions(field);
         if (availableOptionsValue) {
@@ -392,7 +396,7 @@ export class SchemaToJson {
 
         if (ic?.field?.name !== undefined) {
             json.if.field = ic.field.name;
-            json.if.fieldValue = ic.fieldfieldValue;
+            json.if.fieldValue = ic.fieldValue;
             return json;
         }
         if (Array.isArray(ic?.predicates) && ic.predicates.length) {
@@ -1054,6 +1058,7 @@ export class JsonToSchema {
             textBold: JsonToSchema.fromFont(value, context).bold,
 
             enum: JsonToSchema.fromEnum(value, context).enum,
+            enumName: JsonToSchema.fromString(value.enumName, context.add('enumName')) as any,
             availableOptions: JsonToSchema.fromAvailableOptions(value, context).availableOptions,
             remoteLink: JsonToSchema.fromEnum(value, context).link,
 

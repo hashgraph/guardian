@@ -5,7 +5,8 @@ import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms
 @Component({
     selector: 'app-register-dialog',
     templateUrl: './register-dialog.component.html',
-    styleUrls: ['./register-dialog.component.scss']
+    styleUrls: ['./register-dialog.component.scss'],
+    standalone: false
 })
 export class RegisterDialogComponent implements OnInit {
 

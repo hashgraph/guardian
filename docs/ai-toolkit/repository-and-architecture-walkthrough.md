@@ -2,7 +2,7 @@
 icon: pallet-boxes
 ---
 
-# Repository\_And\_Architecture\_Walkthrough
+# Repository and Architecture Walkthrough
 
 This page explains the structure of the Hedera Guardian AI Toolkit repository and how its core components work together.
 
@@ -32,19 +32,19 @@ The toolkit accelerates this workflow by:
 
 {% stepper %}
 {% step %}
-### Place methodology documents into the input folder
+#### Place methodology documents into the input folder
 
 Place methodology documents (PDF or DOCX) into the input folder.
 {% endstep %}
 
 {% step %}
-### Run ingestion workers
+#### Run ingestion workers
 
 Run ingestion workers.
 {% endstep %}
 
 {% step %}
-### Ingestion workers parse and process documents
+#### Ingestion workers parse and process documents
 
 The ingestion workers:
 
@@ -55,19 +55,19 @@ The ingestion workers:
 {% endstep %}
 
 {% step %}
-### Store embeddings in Qdrant
+#### Store embeddings in Qdrant
 
 Store embeddings in a Qdrant vector database.
 {% endstep %}
 
 {% step %}
-### MCP server connects Qdrant to AI assistant
+#### MCP server connects Qdrant to AI assistant
 
 The MCP server connects Qdrant to an MCP-compatible AI assistant.
 {% endstep %}
 
 {% step %}
-### AI assistant capabilities
+#### AI assistant capabilities
 
 The AI assistant can:
 

@@ -1,0 +1,55 @@
+<div class="content-search">
+  <div class="content-search-input-wrapper">
+    <i class="pi pi-search content-search-icon"></i>
+    <input
+      #searchInput
+      class="content-search-input"
+      type="text"
+      [placeholder]="placeholder"
+      [value]="query"
+      (input)="onInput($any($event.target).value)"
+      (keydown)="onKeydown($event)"
+      tabindex="0"
+      />
+    @if (query && matchCount > 0) {
+      <span class="content-search-counter">
+        {{ currentIndex + 1 }} / {{ matchCount }}
+      </span>
+    }
+    @if (query && matchCount === 0) {
+      <span class="content-search-counter no-results">
+        0 results
+      </span>
+    }
+    @if (query) {
+      <div class="content-search-actions">
+        <button
+          class="content-search-btn"
+          (click)="goToPrevious()"
+          [disabled]="matchCount === 0"
+          title="Previous match (Shift+Enter)"
+          tabindex="-1"
+          >
+          <i class="pi pi-chevron-up"></i>
+        </button>
+        <button
+          class="content-search-btn"
+          (click)="goToNext()"
+          [disabled]="matchCount === 0"
+          title="Next match (Enter)"
+          tabindex="-1"
+          >
+          <i class="pi pi-chevron-down"></i>
+        </button>
+        <button
+          class="content-search-btn"
+          (click)="onClear()"
+          title="Clear search (Esc)"
+          tabindex="-1"
+          >
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+    }
+  </div>
+</div>

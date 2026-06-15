@@ -31,7 +31,12 @@ form {
 }
 
 :host ::ng-deep {
-    .p-tabview-nav-link {
+    .p-tabs {
+        display: block;
+        margin-bottom: 40px;
+    }
+
+    .p-tab {
         padding: 0 !important;
     }
 }

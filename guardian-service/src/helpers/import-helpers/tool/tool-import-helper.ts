@@ -3,6 +3,7 @@ import { DatabaseServer, INotificationStep, IToolComponents, MessageAction, Mess
 import { importTag } from '../tag/tag-import-helper.js';
 import { SchemaImportExportHelper } from '../schema/schema-import-helper.js';
 import { ImportToolMap, ImportToolResult, ImportToolResults } from './tool-import.interface.js';
+import { resolveToolOverrides } from './tool-override-resolver.js';
 
 /**
  * Import tools by messages
@@ -218,12 +219,12 @@ export async function importToolByMessage(
         };
         await DatabaseServer.saveTopic(tagsTopic);
 
-        const tagMessages = await messageServer.getMessages<TagMessage>(
-            message.tagsTopicId,
-            userId,
-            MessageType.Tag,
-            MessageAction.PublishTag
-        );
+        const tagMessages = await messageServer.getMessages<TagMessage>({
+            topicId: message.tagsTopicId,
+            type: MessageType.Tag,
+            action: MessageAction.PublishTag,
+            userId
+        });
         for (const tag of tagMessages) {
             if (tag.entity === TagType.Tool && tag.target === messageId) {
                 toolTags.push({
@@ -366,28 +367,7 @@ export async function importToolByFile(
     const users = new Users();
     const root = await users.getHederaAccount(user.creator, userId);
 
-    const toolsMapping: {
-        oldMessageId: string;
-        messageId: string;
-        oldHash: string;
-        newHash?: string;
-    }[] = [];
-    if (metadata?.tools) {
-        // tslint:disable-next-line:no-shadowed-variable
-        for (const tool of tools) {
-            if (
-                metadata.tools[tool.messageId] &&
-                tool.messageId !== metadata.tools[tool.messageId]
-            ) {
-                toolsMapping.push({
-                    oldMessageId: tool.messageId,
-                    messageId: metadata.tools[tool.messageId],
-                    oldHash: tool.hash,
-                });
-                tool.messageId = metadata.tools[tool.messageId];
-            }
-        }
-    }
+    const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
 
     delete tool._id;
     delete tool.id;
@@ -416,7 +396,12 @@ export async function importToolByFile(
         owner: user.owner,
         targetId: null,
         targetUUID: null
-    }, userId, { admin: true, submit: true });
+    }, {
+        admin: true,
+        submit: true
+    }, {
+        userId
+    });
     await topic.saveKeys(userId);
     notifier.completeStep(STEP_CREATE_TOPIC);
 
@@ -440,7 +425,12 @@ export async function importToolByFile(
     notifier.completeStep(STEP_CREATE_TOOL);
 
     notifier.startStep(STEP_LINK_TOPIC);
-    await topicHelper.twoWayLink(topic, parent, messageStatus.getId(), userId);
+    await topicHelper.twoWayLink({
+        topic,
+        parent,
+        rationale: messageStatus.getId(),
+        userId
+    });
 
     await DatabaseServer.saveTopic(topic.toObject());
     tool.topicId = topic.topicId;
@@ -451,16 +441,16 @@ export async function importToolByFile(
     notifier.startStep(STEP_IMPORT_SUB_SCHEMAS);
     const toolsResult = await importSubTools(
         root,
-        tools,
+        toolsToImport,
         user,
         notifier.getStep(STEP_IMPORT_SUB_SCHEMAS),
         userId
     );
+    toolsResult.tools = [...preResolvedTools, ...toolsResult.tools];
 
     for (const toolMapping of toolsMapping) {
         const toolByMessageId = toolsResult.tools.find(
-            // tslint:disable-next-line:no-shadowed-variable
-            (tool) => tool.messageId === toolMapping.messageId
+            (t) => t.messageId === toolMapping.messageId
         );
         toolMapping.newHash = toolByMessageId?.hash;
     }
@@ -498,6 +488,7 @@ export async function importToolByFile(
 
     // Replace id
     await replaceConfig(tool, schemasMap, toolsMapping);
+    await updateToolConfig(tool);
 
     const item = await DatabaseServer.createTool(tool);
     const _topicRow = await DatabaseServer.getTopicById(topic.topicId);

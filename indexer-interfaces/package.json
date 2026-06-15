@@ -1,10 +1,9 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
-    "dependencies": {},
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "description": "Indexer interfaces",
     "devDependencies": {
-        "@types/node": "^22.15.19",
         "@types/glob": "^8.1.0",
+        "@types/node": "^22.15.19",
         "tslint": "^6.1.3",
         "typescript": "^5.8.3"
     },
@@ -22,5 +21,5 @@
         "prepack": "npm run build"
     },
     "type": "module",
-    "version": "3.5.0"
+    "version": "3.6.0"
 }

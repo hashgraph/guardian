@@ -7,7 +7,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'viewer-dialog',
     templateUrl: './viewer-dialog.component.html',
-    styleUrls: ['./viewer-dialog.component.scss']
+    styleUrls: ['./viewer-dialog.component.scss'],
+    standalone: false
 })
 export class ViewerDialog {
     public title: string = '';
@@ -15,6 +16,7 @@ export class ViewerDialog {
     public text: any = '';
     public json: any = '';
     public links: any = [];
+    public dryRun: boolean = false;
 
     public data: any
 
@@ -33,8 +35,10 @@ export class ViewerDialog {
             value,
             title,
             type,
+            dryRun
         } = this.data;
 
+        this.dryRun = dryRun;
         this.title = title;
         this.type = type || 'TEXT';
         if (this.type === 'JSON') {

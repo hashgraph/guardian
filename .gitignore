@@ -10,8 +10,8 @@ www-data/
 tsconfig.tsbuildinfo
 .yarn/*
 !.yarn/patches
-!.yarn/releases
 !.yarn/plugins
+!.yarn/releases
 !.yarn/sdks
 !.yarn/versions
 .pnp.*
@@ -42,3 +42,12 @@ logs/
 
 # Contracts
 /contractAddresses.json
+
+# SSL certificates
+certs/
+
+# Claude Code
+.claude/
+.claude/settings.local.json
+!.claude/settings.json
+CLAUDE.local.md

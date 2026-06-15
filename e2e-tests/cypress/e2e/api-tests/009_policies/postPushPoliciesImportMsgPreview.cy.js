@@ -4,6 +4,7 @@ import * as Authorization from "../../../support/authorization";
 
 context("Schemas", { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const policyMessageId = Cypress.env('irec_policy');
 
     it("Push preview the policy from IPFS", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -14,7 +15,7 @@ context("Schemas", { tags: ['policies', 'secondPool', 'all'] }, () => {
                     authorization,
                 },
                 body: {
-                    "messageId": "1707125414.999819805"
+                    "messageId": policyMessageId
                 },
                 timeout: 600000
             }).then((response) => {

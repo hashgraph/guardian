@@ -10,6 +10,7 @@ import { DynamicDialogRef, DynamicDialogConfig } from 'primeng/dynamicdialog';
     selector: 'data-input-dialog',
     templateUrl: './data-input-dialog.component.html',
     styleUrls: ['./data-input-dialog.component.scss'],
+    standalone: false
 })
 export class DataInputDialogComponent {
     public dataForm = new UntypedFormGroup({});

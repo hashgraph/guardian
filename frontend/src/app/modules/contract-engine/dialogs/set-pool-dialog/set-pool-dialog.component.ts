@@ -21,6 +21,7 @@ import {DynamicDialogRef} from 'primeng/dynamicdialog';
     templateUrl: './set-pool-dialog.component.html',
     styleUrls: ['./set-pool-dialog.component.scss'],
     providers: [],
+    standalone: false
 })
 export class SetPoolDialogComponent {
     loading: boolean = false;

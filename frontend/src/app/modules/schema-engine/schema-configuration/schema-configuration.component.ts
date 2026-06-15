@@ -38,10 +38,12 @@ function NoBindingValidator(control: UntypedFormControl): ValidationErrors | nul
     selector: 'app-schema-configuration',
     templateUrl: './schema-configuration.component.html',
     styleUrls: ['./schema-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaConfigurationComponent implements OnInit {
     @Input('type') type!: 'new' | 'edit' | 'version';
     @Input('policies') policies!: any[];
+    @Input('allPolicies') allPolicies!: any[];
     @Input('tools') tools!: any[];
     @Input('schemaType') schemaType!: SchemaType;
     @Input('extended') extended!: boolean;
@@ -168,6 +170,22 @@ export class SchemaConfigurationComponent implements OnInit {
         return this.dataForm?.get('entity')?.value;
     }
 
+    public trackBySchemaField(index: number, field: SchemaField): string | number {
+        return field?.name || index;
+    }
+
+    public trackByFieldControl(index: number, field: FieldControl): string | number {
+        return field?.name || index;
+    }
+
+    public trackByCondition(index: number, condition: ConditionControl): string | number {
+        return condition?.name || index;
+    }
+
+    public trackByIndex(index: number): number {
+        return index;
+    }
+
     public ngOnInit(): void {
         this.started = false;
         this.initForm.emit(this);
@@ -268,7 +286,7 @@ export class SchemaConfigurationComponent implements OnInit {
             props.topicId = [this._topicId, NoBindingValidator];
         } else if (this.isPolicy) {
             props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
-            props.topicId = [this._topicId];
+            props.topicId = [this._topicId, Validators.required];
         } else {
             props.entity = new UntypedFormControl(SchemaEntity.VC, Validators.required);
             props.topicId = [this._topicId];
@@ -596,12 +614,11 @@ export class SchemaConfigurationComponent implements OnInit {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const option = this.schemaTypeMap[key];
-            if (field.customType) {
+            if (field.customType && field.customType !== 'subSchema') {
                 if (option.customType === field.customType) {
                     return key;
-                } else {
-                    continue;
                 }
+                continue;
             }
             if (option.type === field.type) {
                 if (
@@ -751,6 +768,7 @@ export class SchemaConfigurationComponent implements OnInit {
             unit,
             remoteLink,
             enumArray,
+            enumName,
             availableOptionsArray,
             textColor,
             textSize,
@@ -851,6 +869,7 @@ export class SchemaConfigurationComponent implements OnInit {
             readOnly: false,
             remoteLink: type?.customType === 'enum' ? remoteLink : undefined,
             enum: type?.customType === 'enum' && !remoteLink ? enumArray : undefined,
+            enumName: type?.customType === 'enum' ? enumName : undefined,
             availableOptions: availableOptionsArray || type?.availableOptions,
             isPrivate: this.dataForm.value?.entity === SchemaEntity.EVC ? isPrivate : undefined,
             default: defaultValue,
@@ -1028,7 +1047,7 @@ export class SchemaConfigurationComponent implements OnInit {
         if (!field) {
             return;
         }
-        
+
         if (condition.changeEvents) {
             condition.fieldValue.patchValue('', {
                 emitEvent: false

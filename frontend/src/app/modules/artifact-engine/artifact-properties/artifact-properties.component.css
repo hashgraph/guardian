@@ -24,7 +24,7 @@
     position: relative;
 }
 
-::ng-deep .p-overlaypanel-content .artifact-row {
+::ng-deep .p-popover-content .artifact-row {
     padding: 5px 0;
 }
 

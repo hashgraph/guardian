@@ -80,6 +80,7 @@ interface IPropertyRow {
     selector: 'app-projects-comparison-table',
     templateUrl: './projects-comparison-table.component.html',
     styleUrls: ['./projects-comparison-table.component.scss'],
+    standalone: false
 })
 export class ProjectsComparisonTableComponent implements OnInit {
     public vpDocuments: any[] = [];

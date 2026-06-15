@@ -64,7 +64,7 @@ A standard registry is an organization that establishes science-based standards 
 
 When a policy is published a message is sent to the policy topic (on the policies page) where the policy (VP) and schemas are stored.
 
-In the guardian a VP is a VP. It's just an object with schemas and dids inside of it.
+In the guardian a VP is a VP. It's just an object with schemas and DIDs inside of it.
 
 **17. How does Guardian Provenance works?**
 

@@ -6,6 +6,8 @@ import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { RegisteredService } from '../../../services/registered.service';
 import { DynamicMsalAuthService } from '../../../services/dynamic-msal-auth.service';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { BlockType } from '@guardian/interfaces';
 
 /**
  * Component for display block of 'requestVcDocument' type.
@@ -14,11 +16,13 @@ import { DynamicMsalAuthService } from '../../../services/dynamic-msal-auth.serv
     selector: 'action-block',
     templateUrl: './action-block.component.html',
     styleUrls: ['./action-block.component.scss'],
+    standalone: false
 })
 export class ActionBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('static') static!: any;
+    @Input('dryRun') dryRun!: any;
 
     loading: boolean = true;
     socket: any;
@@ -43,7 +47,8 @@ export class ActionBlockComponent implements OnInit {
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
         private toastr: ToastrService,
-        private dynamicMsalAuthService: DynamicMsalAuthService
+        private dynamicMsalAuthService: DynamicMsalAuthService,
+        private ipfsService: IPFSService,
     ) {
     }
 
@@ -142,7 +147,12 @@ export class ActionBlockComponent implements OnInit {
     private createInstance(config: any) {
         const code: any = this.registeredService.getCode(config.blockType);
         if (code) {
-            return new code(config, this.policyEngineService, this.dynamicMsalAuthService, this.toastr);
+            if (config.blockType === BlockType.IpfsTransformationUIAddon) {
+                return new code(config, this.policyEngineService, this.ipfsService, this.dryRun);
+            }
+            else{
+                return new code(config, this.policyEngineService, this.dynamicMsalAuthService, this.toastr);
+            }
         }
         return null;
     }

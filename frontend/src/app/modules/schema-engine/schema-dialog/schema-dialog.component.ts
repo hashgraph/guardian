@@ -14,6 +14,7 @@ import { SchemaType } from '../../policy-engine/structures/types/schema-type.typ
     selector: 'schema-dialog',
     templateUrl: './schema-dialog.component.html',
     styleUrls: ['./schema-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaDialog {
     public header: string;
@@ -32,6 +33,7 @@ export class SchemaDialog {
     public subSchemas: Schema[];
     public topicId: any;
     public policies: any[];
+    public allPolicies: any[];
     public tools: any[];
     public properties: any[];
     public category: string;
@@ -76,6 +78,7 @@ export class SchemaDialog {
         this.type = this.config.data.type || null;
         this.schemaType = this.config.data.schemaType || 'policy';
         this.policies = this.config.data.policies || [];
+        this.allPolicies = this.config.data.allPolicies || [];
         this.tools = this.config.data.tools || [];
         this.properties = this.config.data.properties || [];
         this.category = this.config.data.category;
@@ -200,8 +203,8 @@ export class SchemaDialog {
     }
 
 
-    public onChangeTab($event: any, order: number): void {
-        $event.stopPropagation();
+    public onTabChange(order: string | number | undefined): void {
+        if (typeof order !== 'number') { return; }
         this.error = null;
         if (this.tab === order) {
             return;

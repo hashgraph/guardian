@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-policy-labels',
     templateUrl: './policy-labels.component.html',
     styleUrls: ['./policy-labels.component.scss'],
+    standalone: false
 })
 export class PolicyLabelsComponent implements OnInit {
     public readonly title: string = 'Policy Labels';
@@ -226,7 +227,7 @@ export class PolicyLabelsComponent implements OnInit {
     public onCreate() {
         const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
-            width: '720px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'Create New',
@@ -234,7 +235,7 @@ export class PolicyLabelsComponent implements OnInit {
                 policy: this.currentPolicy,
                 action: 'Create'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -256,12 +257,12 @@ export class PolicyLabelsComponent implements OnInit {
     public onImport() {
         const dialogRef = this.dialogService.open(ImportEntityDialog, {
             showHeader: false,
-            width: '720px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 type: ImportEntityType.PolicyLabel,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -273,7 +274,7 @@ export class PolicyLabelsComponent implements OnInit {
         const { type, data, label } = result;
         const dialogRef = this.dialogService.open(NewPolicyLabelDialog, {
             showHeader: false,
-            width: '720px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 title: 'Preview',
@@ -282,7 +283,7 @@ export class PolicyLabelsComponent implements OnInit {
                 policy: this.currentPolicy,
                 label
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.policyId) {
                 this.loading = true;
@@ -338,7 +339,7 @@ export class PolicyLabelsComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -373,7 +374,7 @@ export class PolicyLabelsComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Publish') {
                 this.loading = true;

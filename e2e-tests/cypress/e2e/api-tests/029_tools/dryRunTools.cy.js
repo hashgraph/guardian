@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -5,7 +6,7 @@ import * as Authorization from "../../../support/authorization";
 context("Tools", { tags: ['tools', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     let toolId, policy, policyId;
-    const toolBlockConfigUUID = Math.floor(Math.random() * 99999).toString();
+    const toolBlockConfigUUID = randomInt(99999).toString();
 
     before("Import tool", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {

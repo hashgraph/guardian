@@ -1,53 +1,46 @@
 # Delete System Schema
 
-### DELETE THE SYSTEM SCHEMA WITH THE PROVIDED SCHEMA ID
+**`DELETE /schemas/system/{schemaId}`**
 
-{% swagger method="delete" path="" baseUrl="/schemas/system/{schemaId}" summary="Deletes the Schema" %}
-{% swagger-description %}
-Deletes the system schema with the provided Schema ID. Only users with the Standard Registry role are allowed to make a request.
-{% endswagger-description %}
+Deletes the system schema with the specified schema ID asynchronously. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-SchemaID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="204: No Content" description="No Content" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_DELETE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | string | Yes | The schema ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Delete schemas"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-   content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions or schema belongs to another user |
+| `404 Not Found` | Schema not found |
+| `422 Unprocessable Entity` | Schema is active and cannot be deleted |
+| `500 Internal Server Error` | Unexpected server failure |

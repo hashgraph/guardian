@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ButtonModule } from 'primeng/button';
@@ -31,7 +31,7 @@ import { CompareModule } from '../analytics/analytics.module';
         FormsModule,
         BrowserModule,
         InputTextModule,
-        DropdownModule,
+        SelectModule,
         BrowserAnimationsModule,
         InputNumberModule,
         ButtonModule,

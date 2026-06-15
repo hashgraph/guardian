@@ -1,9 +1,23 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Permissions, SchemaCategory, SchemaHelper } from '@guardian/interfaces';
-import { ApiParam, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiBody, ApiExtraModels, ApiQuery } from '@nestjs/swagger';
+import { ApiBody, ApiConsumes, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
-import { ExportMessageDTO, ImportMessageDTO, ModuleDTO, ModulePreviewDTO, SchemaDTO, ModuleValidationDTO, Examples, pageHeader, InternalServerErrorDTO } from '#middlewares';
+import {
+    ExportMessageDTO,
+    ImportMessageDTO,
+    ModuleDTO,
+    ModuleImportFileResponseDTO,
+    ModulePublishResponseDTO,
+    ModulePreviewDTO,
+    SchemaDTO,
+    ModuleValidationDTO,
+    Examples,
+    pageHeader,
+    InternalServerErrorDTO,
+    ObjectExamples,
+    UnprocessableEntityErrorDTO
+} from '#middlewares';
 import { Guardians, SchemaUtils, UseCache, InternalException, EntityOwner, CacheService, getCacheKey } from '#helpers';
 import { MODULE_REQUIRED_PROPS, PREFIXES } from '#constants';
 
@@ -28,18 +42,36 @@ export class ModulesApi {
         description: 'Creates a new module.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Module config.',
+        description:
+            'Module configuration. Only config with blockType: "module" is required. ' +
+            'Other fields (name, description) are optional. Fields like id, uuid, creator, owner are set by the server.',
+        required: true,
         type: ModuleDTO,
+        examples: {
+            createModule: {
+                summary: 'Minimal create',
+                value: ObjectExamples.MODULE_POST_CREATE_REQUEST
+            }
+        }
     })
-    @ApiOkResponse({
-        description: 'Created module.',
+    @ApiCreatedResponse({
+        description: 'Successful operation.',
         type: ModuleDTO,
+        example: ObjectExamples.MODULE_POST_CREATE_RESPONSE
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Invalid module config (missing config or config.blockType !== "module").',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid module config'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async postModules(
         @AuthUser() user: IAuthUser,
@@ -96,12 +128,13 @@ export class ModulesApi {
         isArray: true,
         headers: pageHeader,
         type: ModuleDTO,
+        example: ObjectExamples.MODULES_GET_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getModules(
         @AuthUser() user: IAuthUser,
@@ -153,12 +186,13 @@ export class ModulesApi {
         isArray: true,
         headers: pageHeader,
         type: ModuleDTO,
+        example: ObjectExamples.MODULES_GET_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @Version('2')
     async getModulesV2(
@@ -197,7 +231,7 @@ export class ModulesApi {
     @ApiQuery({
         name: 'topicId',
         type: String,
-        description: 'Topic id',
+        description: 'Filter module schemas by topic id.',
         required: false,
         example: Examples.ACCOUNT_ID
     })
@@ -220,12 +254,13 @@ export class ModulesApi {
         isArray: true,
         headers: pageHeader,
         type: SchemaDTO,
+        example: ObjectExamples.MODULE_SCHEMAS_GET_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache({ isFastify: true })
     @HttpCode(HttpStatus.OK)
     async getModuleSchemas(
@@ -275,17 +310,32 @@ export class ModulesApi {
     @ApiBody({
         description: 'Schema config.',
         type: SchemaDTO,
+        examples: {
+            createModuleSchema: {
+                summary: 'Create module schema',
+                value: ObjectExamples.MODULE_SCHEMAS_POST_REQUEST
+            }
+        }
     })
     @ApiCreatedResponse({
         description: 'Created schema.',
         type: SchemaDTO,
         isArray: true,
+        example: ObjectExamples.MODULE_SCHEMAS_POST_RESPONSE_LIST
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Schema does not exist.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Schema does not exist.'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async postSchemas(
         @AuthUser() user: IAuthUser,
@@ -343,12 +393,13 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: Boolean,
+        example: true
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteModule(
         @AuthUser() user: IAuthUser,
@@ -394,12 +445,13 @@ export class ModulesApi {
         description: 'Modules.',
         isArray: true,
         type: ModuleDTO,
+        example: ObjectExamples.MODULES_MENU_RESPONSE_LIST
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getMenu(
@@ -435,12 +487,33 @@ export class ModulesApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: ModuleDTO,
+        example: {
+            createDate: '2026-03-25T12:23:29.549Z',
+            uuid: 'e4ecf6f4-36fb-4872-99b8-9b592aac241d',
+            name: 'Device configuration module',
+            description: 'Part of devices flow',
+            status: 'DRAFT',
+            creator: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161',
+            codeVersion: '1.0.0',
+            type: 'CUSTOM',
+            config: {},
+            id: '69c3d3c1462c9c1141de3066'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Invalid uuid.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid uuid'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     @UseCache()
     async getModule(
@@ -480,16 +553,31 @@ export class ModulesApi {
     @ApiBody({
         description: 'Module config.',
         type: ModuleDTO,
+        examples: {
+            updateModule: {
+                summary: 'Update module',
+                value: ObjectExamples.MODULE_PUT_UPDATE_REQUEST
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: ModuleDTO,
+        example: ObjectExamples.MODULE_PUT_UPDATE_RESPONSE
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Invalid module config.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Invalid module config'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async putModule(
         @AuthUser() user: IAuthUser,
@@ -540,14 +628,20 @@ export class ModulesApi {
         description: 'Module Identifier',
         example: Examples.UUID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'File.',
+        description:
+            'Binary ZIP archive (`Content-Type: application/zip`, `Content-Disposition: attachment`). Not JSON.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async moduleExportFile(
         @AuthUser() user: IAuthUser,
@@ -586,13 +680,20 @@ export class ModulesApi {
     })
     @ApiOkResponse({
         description: 'Message.',
-        type: ExportMessageDTO
+        type: ExportMessageDTO,
+        example: {
+            uuid: '2abde099-08f6-4d75-9de3-d6f33d95bc72',
+            name: 'New Module',
+            description: 'New module description',
+            messageId: '1774441459.171929000',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8361161'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ExportMessageDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async moduleExportMessage(
         @AuthUser() user: IAuthUser,
@@ -621,16 +722,31 @@ export class ModulesApi {
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
+        examples: {
+            importModuleMessage: {
+                summary: 'Import module by message',
+                value: ObjectExamples.MODULE_IMPORT_MESSAGE_REQUEST
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Created module.',
         type: ModuleDTO,
+        example: ObjectExamples.MODULE_IMPORT_MESSAGE_RESPONSE
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Message ID in body is empty.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Message ID in body is empty'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ImportMessageDTO, ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async moduleImportMessage(
         @AuthUser() user: IAuthUser,
@@ -668,18 +784,25 @@ export class ModulesApi {
         summary: 'Imports new module from a zip file.',
         description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'File.',
+        description: 'Module archive as raw binary request body.',
+        required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Created module.',
         type: ModuleDTO,
+        example: ObjectExamples.MODULE_IMPORT_FILE_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async moduleImportFile(
         @AuthUser() user: IAuthUser,
@@ -715,16 +838,31 @@ export class ModulesApi {
     @ApiBody({
         description: 'Message.',
         type: ImportMessageDTO,
+        examples: {
+            importModuleMessagePreview: {
+                summary: 'Preview module by message',
+                value: ObjectExamples.MODULE_IMPORT_MESSAGE_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Module preview.',
-        type: ModulePreviewDTO
+        type: ModulePreviewDTO,
+        example: ObjectExamples.MODULE_IMPORT_MESSAGE_PREVIEW_RESPONSE
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Message ID in body is empty.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Message ID in body is empty'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ImportMessageDTO, ModulePreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async moduleImportMessagePreview(
         @AuthUser() user: IAuthUser,
@@ -762,24 +900,31 @@ export class ModulesApi {
         summary: 'Imports new module from a zip file.',
         description: 'Imports new module and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB.' + ONLY_SR,
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'File.',
+        description: 'Module archive as raw binary request body.',
+        required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiOkResponse({
         description: 'Module preview.',
-        type: ModulePreviewDTO
+        type: ModuleImportFileResponseDTO,
+        example: ObjectExamples.MODULE_IMPORT_FILE_PREVIEW_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModulePreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async moduleImportFilePreview(
         @AuthUser() user: IAuthUser,
         @Body() body: any,
         @Req() req
-    ): Promise<ModulePreviewDTO> {
+    ): Promise<ModuleImportFileResponseDTO> {
         try {
             const guardian = new Guardians();
 
@@ -815,25 +960,34 @@ export class ModulesApi {
         example: Examples.UUID
     })
     @ApiBody({
-        description: 'Module.',
+        description:
+            'Ignored by the current implementation. Publish uses the `uuid` path parameter and the module stored in DB.',
+        required: false,
         type: ModuleDTO,
+        examples: {
+            ignoredBody: {
+                summary: 'Body is ignored',
+                value: {}
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ModuleDTO,
+        type: ModulePublishResponseDTO,
+        example: ObjectExamples.MODULE_PUBLISH_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async publishModule(
         @AuthUser() user: IAuthUser,
         @Param('uuid') uuid: string,
         @Body() module: ModuleDTO,
         @Req() req
-    ): Promise<ModuleDTO> {
+    ): Promise<ModulePublishResponseDTO> {
         try {
             const guardian = new Guardians();
 
@@ -867,16 +1021,36 @@ export class ModulesApi {
     @ApiBody({
         description: 'Module config.',
         type: ModuleDTO,
+        examples: {
+            valid: {
+                summary: 'Valid module',
+                value: ObjectExamples.MODULE_VALIDATE_REQUEST_VALID
+            },
+            invalid: {
+                summary: 'Invalid createTokenBlock',
+                value: ObjectExamples.MODULE_VALIDATE_REQUEST_INVALID
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Validation result.',
         type: ModuleValidationDTO,
+        examples: {
+            valid: {
+                summary: 'All blocks valid',
+                value: ObjectExamples.MODULE_VALIDATE_RESPONSE_VALID
+            },
+            invalid: {
+                summary: 'createTokenBlock fails validation',
+                value: ObjectExamples.MODULE_VALIDATE_RESPONSE_INVALID
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ModuleDTO, ModuleValidationDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async validateModule(
         @AuthUser() user: IAuthUser,

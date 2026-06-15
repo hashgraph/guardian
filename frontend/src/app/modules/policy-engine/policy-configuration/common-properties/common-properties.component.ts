@@ -17,7 +17,8 @@ import {
 @Component({
     selector: 'common-properties',
     templateUrl: './common-properties.component.html',
-    styleUrls: ['./common-properties.component.scss']
+    styleUrls: ['./common-properties.component.scss'],
+    standalone: false
 })
 export class CommonPropertiesComponent implements OnInit {
     @ViewChild('configContainer', { read: ViewContainerRef }) configContainer!: ViewContainerRef;

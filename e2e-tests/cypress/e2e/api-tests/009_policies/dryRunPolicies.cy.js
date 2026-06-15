@@ -5,7 +5,7 @@ import * as Authorization from "../../../support/authorization";
 
 context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-
+    const policyMessageId = Cypress.env('irec_policy');
     const importMsgUrl = `${API.ApiServer}${API.PolicisImportMsg}`;
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
     const dryRunBase = (policyId) => `${policiesUrl}${policyId}/${API.DryRun}`;
@@ -17,6 +17,16 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
             method: METHOD.POST,
             url,
             headers: { authorization },
+            ...(body ? { body } : {}),
+            ...(opts.timeout ? { timeout: opts.timeout } : {}),
+            ...(opts.failOnStatusCode !== undefined ? { failOnStatusCode: opts.failOnStatusCode } : {}),
+        });
+
+    const postWithAuth2 = (authorization, url, body = undefined, opts = {}) =>
+        cy.request({
+            method: METHOD.POST,
+            url,
+            headers: { authorization, "api-version": 2 },
             ...(body ? { body } : {}),
             ...(opts.timeout ? { timeout: opts.timeout } : {}),
             ...(opts.failOnStatusCode !== undefined ? { failOnStatusCode: opts.failOnStatusCode } : {}),
@@ -42,7 +52,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postWithAuth(authorization, importMsgUrl, { messageId: "1707125414.999819805" }, { timeout: 600000 })
+            postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
                 .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                     policyId = response.body.at(0).id;
@@ -92,12 +102,29 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 
     it("Create a new virtual account and login", () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
+            postWithAuth2(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
                 expect(response.status).eql(STATUS_CODE.SUCCESS);
-                const did = response.body[0].did;
+                expect(response.body).to.have.property('did');
+                const did = response.body.did;
 
                 postWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/login`, { did }).then((loginRes) => {
                     expect(loginRes.status).to.eq(STATUS_CODE.OK);
+                });
+            });
+        });
+    });
+
+    it("Get virtual user by DID", () => {
+        Authorization.getAccessToken(SRUsername).then((authorization) => {
+            // First create a user
+            postWithAuth2(authorization, `${policiesUrl}${policyId}/dry-run/user`).then((response) => {
+                expect(response.status).eql(STATUS_CODE.SUCCESS);
+                const did = response.body.did;
+
+                // Then fetch that user by DID
+                getWithAuth(authorization, `${policiesUrl}${policyId}/dry-run/user/${encodeURIComponent(did)}`).then((getRes) => {
+                    expect(getRes.status).to.eq(STATUS_CODE.OK);
+                    expect(getRes.body).to.have.property('did', did);
                 });
             });
         });

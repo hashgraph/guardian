@@ -5,6 +5,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'new-import-file-dialog',
     templateUrl: './new-import-file-dialog.component.html',
     styleUrls: ['./new-import-file-dialog.component.scss'],
+    standalone: false
 })
 export class NewImportFileDialog {
     public loading = true;

@@ -16,11 +16,15 @@ import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structure
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosave-utils';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
+import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
+import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 
 @Component({
     selector: 'request-document-block-dialog',
     templateUrl: './request-document-block-dialog.component.html',
     styleUrls: ['./request-document-block-dialog.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockDialog {
     public loading: boolean = true;
@@ -59,6 +63,19 @@ export class RequestDocumentBlockDialog {
     public currentRelayerAccount: string;
     public relayerAccounts: any[] = [];
     public remoteWarning: boolean = false;
+
+    public enableAdditionalData: boolean = false;
+    public evidenceText: string = '';
+    public evidenceFiles: AttachedFile[] = [];
+    private _evidenceFileMap = new WeakMap<AttachedFile, File>();
+
+    public get isEvidenceUploading(): boolean {
+        return this.evidenceFiles.some(f => !f.loaded && !f.error);
+    }
+
+    public get evidenceStepIndex(): number {
+        return 1;
+    }
 
     public minutesAgo$ = getMinutesAgoStream(() => this.lastSavedAt);
     private buttonNames: { [id: string]: string } = {
@@ -99,12 +116,15 @@ export class RequestDocumentBlockDialog {
         private changeDetectorRef: ChangeDetectorRef,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
+        private ipfsService: IPFSService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
         this.storage = new DocumentAutosaveStorage(indexedDb);
         if (this.parent) {
             this.parent.dialog = this;
+            this.enableAdditionalData = !!(this.parent as any).enableAdditionalData;
         }
     }
 
@@ -207,6 +227,64 @@ export class RequestDocumentBlockDialog {
         }
     }
 
+    public onEvidenceDrop($event: DragEvent) {
+        $event.preventDefault();
+        const files = $event.dataTransfer?.files;
+        if (files?.length) {
+            this.addEvidenceFiles(Array.from(files));
+        }
+    }
+
+    public onEvidenceAttach($event: any) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.multiple = true;
+        input.onchange = (e: any) => {
+            const files: File[] = Array.from(e.target.files || []);
+            if (files.length) {
+                this.addEvidenceFiles(files);
+            }
+        };
+        input.click();
+    }
+
+    public onDeleteEvidenceFile(file: AttachedFile) {
+        const index = this.evidenceFiles.indexOf(file);
+        if (index !== -1) {
+            this.evidenceFiles.splice(index, 1);
+            this._evidenceFileMap.delete(file);
+        }
+    }
+
+    private addEvidenceFiles(files: File[]) {
+        for (const rawFile of files) {
+            if (this.evidenceFiles.some(f => this._evidenceFileMap.get(f)?.name === rawFile.name)) {
+                continue;
+            }
+            const af = AttachedFile.fromFile('', '', '', rawFile);
+            this._evidenceFileMap.set(af, rawFile);
+            this.evidenceFiles.push(af);
+            this.ipfsService.addFile(rawFile).subscribe((cid: string) => {
+                af.cid = cid;
+                af.link = 'ipfs://' + cid;
+                af.loaded = true;
+            }, () => {
+                af.error = true;
+            });
+        }
+    }
+
+    private buildEvidence(): Array<{ dataType: 'message' | 'file'; data: string }> {
+        const entries: Array<{ dataType: 'message' | 'file'; data: string }> = [];
+        if (this.evidenceText?.trim()) {
+            entries.push({ dataType: 'message', data: this.evidenceText.trim() });
+        }
+        for (const file of this.evidenceFiles.filter(f => f.loaded && !f.error)) {
+            entries.push({ dataType: 'file', data: file.link });
+        }
+        return entries;
+    }
+
     private async onSubmit(draft?: boolean) {
         const data = this.dataForm.getRawValue();
         this.loading = true;
@@ -217,15 +295,31 @@ export class RequestDocumentBlockDialog {
         const draftId = this.parent instanceof RequestDocumentBlockComponent ? this.parent.draftId : null;
         this.storage.delete(this.autosaveId);
 
+        const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
+
+        const payload = {
+            document: data,
+            ref: this.docRef,
+            draft,
+            draftId,
+            relayerAccount: this.getRelayerAccount(),
+            ...(evidence?.length ? { evidence } : {})
+        };
+
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
+
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                document: data,
-                ref: this.docRef,
-                draft: draft,
-                draftId: draftId,
-                relayerAccount: this.getRelayerAccount()
-            })
-            .subscribe(() => {
+            .setBlockDataWithResult(this.id, this.policyId, payload)
+            .subscribe((result) => {
+                if (captureOutput) {
+                    this.policyTest.captureTestCase({
+                        policyId: this.policyId,
+                        blockId: this.id,
+                        blockType: 'requestDocumentBlock',
+                        ...payload,
+                        result: result?.result || result?.response
+                    });
+                }
                 setTimeout(() => {
                     this.loading = false;
                     if (!draft) {
@@ -245,13 +339,14 @@ export class RequestDocumentBlockDialog {
             return;
         }
         if (this.dataForm.valid || draft) {
-            if (this.relayerAccount) {
-                if (this.isStep(0)) {
-                    this.setStep(1);
-                    this.loadRelayerAccounts();
-                } else {
-                    await this.onSubmit(draft);
-                }
+            if (this.enableAdditionalData && this.isStep(0)) {
+                this.setStep(1);
+            } else if (this.enableAdditionalData && this.isStep(1) && this.relayerAccount) {
+                this.setStep(2);
+                this.loadRelayerAccounts();
+            } else if (!this.enableAdditionalData && this.relayerAccount && this.isStep(0)) {
+                this.setStep(1);
+                this.loadRelayerAccounts();
             } else {
                 await this.onSubmit(draft);
             }
@@ -275,7 +370,7 @@ export class RequestDocumentBlockDialog {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
 
             dialogOptionRef.onClose.subscribe((result: string) => {
                 if (result == 'Confirm') {
@@ -310,11 +405,11 @@ export class RequestDocumentBlockDialog {
     }
 
     public getButtonName(item: any) {
-        if (this.relayerAccount && item.id === 'submit') {
-            if (this.isStep(0)) {
+        if (item.id === 'submit') {
+            if (this.enableAdditionalData && this.isStep(0)) {
+                return 'Add Evidence Attachments';
+            } else if (this.relayerAccount && (this.isStep(this.enableAdditionalData ? 1 : 0))) {
                 return this.buttonNames['relayerAccount'];
-            } else {
-                return this.buttonNames['submit'];
             }
         }
         return this.buttonNames[item.id] || item.text;
@@ -333,7 +428,8 @@ export class RequestDocumentBlockDialog {
 
     public ifRelayerAccountDisabled() {
         if (this.relayerAccount) {
-            if (this.isStep(1)) {
+            const relayerStep = this.enableAdditionalData ? 2 : 1;
+            if (this.isStep(relayerStep)) {
                 if (this.relayerAccountType === 'account') {
                     return false;
                 } else if (this.relayerAccountType === 'relayerAccount') {

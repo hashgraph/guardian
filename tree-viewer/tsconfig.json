@@ -3,8 +3,7 @@
         "module": "ESNext",
         "target": "es2022",
         "lib": [
-            "es5",
-            "es6"
+            "esnext"
         ],
         "moduleResolution": "node",
         "sourceMap": true,
@@ -12,6 +11,8 @@
         "emitDecoratorMetadata": true,
         "experimentalDecorators": true,
         "esModuleInterop": true,
+        "skipLibCheck": true,
+        "baseUrl": "./src",
     },
     "include": [
         "src/**/*"

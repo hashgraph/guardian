@@ -657,7 +657,7 @@
                         padding: 1px 1px !important;
 
                         &::ng-deep {
-                            .p-dropdown-label {
+                            .p-select-label {
                                 padding-left: 16px;
                             }
                         }
@@ -807,10 +807,10 @@
 }
 
 .guardian-dropdown {
-    &::ng-deep .p-dropdown {
+    &::ng-deep .p-select {
         width: 100%;
 
-        .p-dropdown-label {
+        .p-select-label {
             padding-left: 0px;
         }
     }

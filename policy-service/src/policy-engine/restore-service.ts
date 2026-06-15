@@ -27,6 +27,12 @@ class Timer {
         this._tickEnd = this.tickEnd.bind(this);
     }
 
+    public destroy(): void {
+        this._lock = true;
+        clearTimeout(this._minTimer);
+        clearTimeout(this._maxTimer);
+    }
+
     public subscribe(callback: () => Promise<void>): Timer {
         this.callback = callback;
         return this;
@@ -124,6 +130,10 @@ export class PolicyBackupService {
         this.backup();
     }
 
+    public async destroy(): Promise<void> {
+        this.timer.destroy();
+    }
+
     public backup(): void {
         this.timer.push();
     }
@@ -164,7 +174,9 @@ export class PolicyBackupService {
                 sendToIPFS: true,
                 memo: null,
                 userId: this.userId,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
 
         diff.messageId = result.getId();
@@ -212,10 +224,16 @@ export class PolicyRestoreService {
         await this.topicListener.subscribe(this.task.bind(this));
     }
 
+    public async destroy(): Promise<void> {
+        if (this.topicListener) {
+            await this.topicListener.close();
+        }
+    }
+
     private async task(data: ITopicMessage): Promise<boolean> {
         try {
             const message = PolicyDiffMessage.fromMessage(data.message);
-            await MessageServer.loadDocument(message);
+            await MessageServer.loadDocument(message, null, { dryRun: null, mockId: null });
             const buffer = message.document;
             const arrayBuffer = buffer?.buffer?.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength) as ArrayBuffer;
             const file = await FileHelper.unZipFile(arrayBuffer);

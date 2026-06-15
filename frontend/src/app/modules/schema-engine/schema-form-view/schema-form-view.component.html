@@ -1,7 +1,7 @@
 <form>
     <ng-container *ngFor="let item of fields">
 
-        <div *ngIf="ifFieldVisible(item)" class="form-field-container" [attr.field-id]="item.fullPath">
+        <div *ngIf="ifFieldVisible(item) && this.values && this.values[item.name]" class="form-field-container" [attr.field-id]="item.fullPath">
 
             <!-- simple field -->
             <div *ngIf="ifSimpleField(item)" class="form-field">
@@ -242,11 +242,12 @@
             </div>
 
             <div *ngIf="ifSubSchema(item)" class="form-field-group">
-                <p-accordion class="guardian-accordion">
-                    <p-accordionTab [(selected)]="item.open">
-                        <ng-template pTemplate="header">
-                            <div class="label-field-accordion">{{item.description}}</div>
-                        </ng-template>
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                    <p-accordion-panel [value]="0">
+                        <p-accordion-header>
+                            <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
+                        </p-accordion-header>
+                        <p-accordion-content>
                         <ng-container *ngIf="item.open">
                             <div *ngIf="this.values && this.values[item.name]" class="form-field-array-item">
                                 <div class="form-field-group">
@@ -271,16 +272,19 @@
                                             [rules]="rules"
                                             [formulas]="formulas"
                                             [link]="item.link"
+                                            [accordionLink]="item.accordionLink"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
-                                            (discussion-action)="onDiscussionAction($event)">
+                                            (discussion-action)="onDiscussionAction($event)"
+                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, $event.path)">
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>
                             </div>
                         </ng-container>
-                    </p-accordionTab>
+                        </p-accordion-content>
+</p-accordion-panel>
                 </p-accordion>
             </div>
 
@@ -288,7 +292,7 @@
             <div *ngIf="canDrawTable(item)">
                 <p-table [value]="getTableHRowFields(item) || []">
                     <ng-template pTemplate="header">
-                        <tr>
+                        <tr [attr.accordiontabid]="item.fullPath">
                             <th style="width: 3rem">#</th>
                             <th 
                                 *ngFor="let col of getTableHeaderFields(item)"
@@ -304,7 +308,7 @@
                                 <div class="form-field-value">{{ rowIndex + 1 }}</div>
                             </td>
                             <td *ngFor="let field of rowData">
-                                <div>
+                                <div [attr.accordiontabid]="field.fullPath">
                                     <div *ngIf="ifSimpleField(field)" class="form-field-value">
                                         <div *ngIf="isPrefix(field)" class="form-field-prefix">
                                             {{ field.unit }}
@@ -419,16 +423,18 @@
             </div>
 
             <div *ngIf="ifSubSchemaArray(item) && !canDrawTable(item)" class="form-field-group schema-form-field-array-group">
-                <p-accordion class="guardian-accordion">
-                    <p-accordionTab [(selected)]="item.open">
-                        <ng-template pTemplate="header">
-                            <div class="label-field-accordion">{{item.description}}</div>
-                        </ng-template>
+                <p-accordion class="guardian-accordion" [value]="item.open ? 0 : null" (valueChange)="item.open = ($event === 0); emitAccordionSelect(item.open, item)">
+                    <p-accordion-panel [value]="0">
+                        <p-accordion-header>
+                            <div class="label-field-accordion" [attr.accordiontabid]="item.fullPath">{{item.description}}</div>
+                        </p-accordion-header>
+                        <p-accordion-content>
                         <ng-container *ngIf="item.open">
                             <div
                                 *ngFor="let listItem of getItemsPage(item)"
                                 class="form-field-array-item short-delimiter"
-                                [attr.index]="item.list.indexOf(listItem)">
+                                [attr.index]="item.list.indexOf(listItem)"
+                            >
                                 <div class="form-field-group">
                                     <ng-container [ngSwitch]="item.customType">
                                         <app-geojson-type
@@ -451,10 +457,13 @@
                                             [rules]="rules"
                                             [formulas]="formulas"
                                             [link]="item.link"
+                                            [accordionLink]="item.accordionLink"
                                             [discussion]="discussionData"
                                             [discussion-view]="discussionView"
                                             [discussion-action]="discussionAction"
-                                            (discussion-action)="onDiscussionAction($event)">
+                                            (discussion-action)="onDiscussionAction($event)"
+                                            (onAccordionSelect)="onAccordionSelectEvent($event.isOpen, item, $event.path)"
+                                        >
                                         </app-schema-form-view>
                                     </ng-container>
                                 </div>
@@ -471,7 +480,8 @@
                                 (page)="onPage(item, $event)"
                             ></app-paginator>
                         </ng-container>
-                    </p-accordionTab>
+                        </p-accordion-content>
+</p-accordion-panel>
                 </p-accordion>
             </div>
 

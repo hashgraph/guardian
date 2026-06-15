@@ -38,6 +38,7 @@ export * from './wizard-config.interface.js';
 export * from './schema-node.interface.js';
 export * from './policy-category-export.interface.js';
 export * from './migration-config.interface.js';
+export * from './migration-run.interface.js';
 export * from './policy-tool-metadata.interface.js';
 export * from './sign-options.interface.js'
 export * from './owner.interface.js'
@@ -45,8 +46,10 @@ export * from './statistic.interface.js'
 export * from './schema-rules.interface.js'
 export * from './retirement-message.interface.js'
 export * from './policy-label.interface.js'
+export * from './policy-test-record-metadata.interface.js'
 export * from './formulas.interface.js'
 export * from './listener-options.interface.js'
 export * from './table-field.interface.js'
 export * from './schema-deletion.interface.js'
 export * from './global-events.js'
+export * from './service-credential-schema.interface.js'

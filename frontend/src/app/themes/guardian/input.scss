@@ -37,7 +37,7 @@
         }
     }
 
-    .p-dropdown {
+    .p-select {
         width: 100%;
     }
 
@@ -111,6 +111,23 @@
         border: none !important;
         padding: 8px 0px;
         height: 100%;
+    }
+}
+
+.p-input-icon-right {
+    position: relative;
+    display: inline-block;
+
+    > i:last-of-type {
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        margin-top: -0.5rem;
+        color: var(--input-icon-color);
+    }
+
+    > .p-inputtext {
+        padding-right: 2.5rem;
     }
 }
 

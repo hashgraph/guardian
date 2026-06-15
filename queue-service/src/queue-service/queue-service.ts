@@ -45,6 +45,7 @@ export class QueueService extends NatsService {
             const task = await dataBaseServer.findOne(TaskEntity, { taskId: data.id });
             if (!data.error || !task.isRetryableTask) {
                 await this.completeTaskInQueue(data.id, data.data, data.error);
+                await this.refreshAndReassignTasks();
                 return;
             }
             if (task.isRetryableTask && (task.attempts > 0)) {
@@ -55,21 +56,18 @@ export class QueueService extends NatsService {
                 } else {
                     task.isError = true;
                     task.errorReason = data.error;
-                    if (!task.interception) {
-                        await this.completeTaskInQueue(data.id, data.data, data.error);
-                    }
+                    await this.completeTaskInQueue(data.id, data.data, data.error);
                 }
             } else {
                 task.attempt = 0;
                 task.isError = true;
                 task.errorReason = data.error;
 
-                if (!task.interception) {
-                    await this.completeTaskInQueue(data.id, data.data, data.error);
-                }
+                await this.completeTaskInQueue(data.id, data.data, data.error);
             }
 
             await dataBaseServer.save(TaskEntity, task);
+            await this.refreshAndReassignTasks();
         });
 
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: {
@@ -194,6 +192,8 @@ export class QueueService extends NatsService {
         return {
             id: task.taskId,
             priority: task.priority,
+            dryRun: task.dryRun,
+            mockId: task.mockId,
             type: task.type,
             data: task.data,
         };

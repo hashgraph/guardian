@@ -7,6 +7,8 @@ jobs:
   buildAndTest:
     name: Build and Test
     runs-on: guardian-linux-medium
+    env:
+      YARN_ENABLE_GLOBAL_CACHE: 'false'
     services:
       cache:
         image: registry.redict.io/redict
@@ -14,31 +16,36 @@ jobs:
           - 6379:6379
     strategy:
       matrix:
-        node-version: [ 20.19.5 ]
+        node-version: [ 20.20.2 ]
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: 'develop'
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 #v6.2.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup Yarn
-        uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache yarn
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          cmd: install
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
       - name: Build packages
         run: |
@@ -77,58 +84,51 @@ jobs:
             popd
 
       - name: Start NatsMQ
-        uses: step-security/nats-action@4c3a6529e7e03047bc23f178a4b47ea8f901d215 # v0.1.3
+        uses: step-security/nats-action@2254b4cc4958120e36da3a096e8200dac968be1c # v0.1.4
         with:
           port: '4222'
 
+      - name: Set up IPFS
+        uses: oduwsdl/setup-ipfs@678755ac20f92d2dfca7e16138e40ae75f7a0f6f # v0.8.0
+        with:
+          ipfs_version: 0.42.0
+
+      - name: Start IPFS offline
+        shell: bash
+        run: |
+          # setup-ipfs always starts an online daemon (run_daemon is a no-op); stop it before our offline node.
+          ipfs shutdown || true
+          until ! curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
+          ipfs config profile apply test    # Routing.Type=none, no bootstrap, mDNS off
+          ipfs bootstrap rm --all
+          ipfs config Addresses.API /ip4/127.0.0.1/tcp/5001   # test profile randomizes ports; pin RPC for the app and probe
+          ipfs config --json Discovery.MDNS.Enabled false
+          ipfs daemon --offline &
+          until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
+
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@7263579321780efeb685cdd6a2a356aad687ebab # v1.12.3
+        uses: step-security/mongodb-github-action@ca72004b9c8ad6d9ed996c3174edbe62f9f7424a
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 
       - name: Run Guardian
         run: |
-          pushd notification-service
-          npm start &
-          sleep 20
-          popd
-          pushd logger-service
-          npm start &
-          sleep 20
-          popd
-          pushd auth-service
-          npm start &
-          sleep 20
-          popd
-          pushd guardian-service
-          npm start &
-          sleep 20
-          popd
-          pushd policy-service
-          npm start &
-          sleep 20
-          popd
-          pushd queue-service
-          npm start &
-          sleep 20
-          popd
-          pushd topic-listener-service
-          npm start &
-          sleep 20
-          popd
-          pushd worker-service
-          npm start &
-          npm start &
-          npm start &
-          npm start &
-          npm start &
-          sleep 20
-          popd
-          pushd api-gateway
-          npm start &
-          sleep 20
-          popd
-          sleep 60
+          start() { for s in "$@"; do (cd "$s" && npm start) & done; }
+
+          start logger-service notification-service
+          sleep 5
+          start auth-service queue-service
+          sleep 5
+          start policy-service topic-listener-service
+          for _ in {1..5}; do (cd worker-service && npm start) & done
+          sleep 5
+          start guardian-service
+          sleep 5
+          start api-gateway
+
+          echo "Waiting for API gateway on :3002..."
+          timeout 180 bash -c 'until (exec 3<>/dev/tcp/127.0.0.1/3002) 2>/dev/null; do sleep 2; done'
+          sleep 15   # grace for backend NATS subscriptions
         env:
           CI: true
           NODE_OPTIONS: '--openssl-legacy-provider'
@@ -138,19 +138,29 @@ jobs:
           JWT_PUBLIC_KEY: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_PUBLIC_KEY_ALL: ${{ secrets.CI_JWT_PUBLIC_KEY }}
           SERVICE_JWT_SECRET_KEY_ALL: ${{ secrets.CI_JWT_PRIVATE_KEY }}
-          IPFS_NODE_ADDRESS: http://localhost:5001
-          IPFS_PROVIDER: web3storage
-          IPFS_PUBLIC_GATEWAY: https://w3s.link/ipfs/${cid}
+          IPFS_NODE_ADDRESS: http://127.0.0.1:5001
+          IPFS_PROVIDER: local
+          IPFS_PUBLIC_GATEWAY: https://ipfs.filebase.io/ipfs/{cid}
           IPFS_STORAGE_KEY: ${{ secrets.E2E_IPFS_STORAGE_KEY }}
           IPFS_STORAGE_PROOF: ${{ secrets.E2E_IPFS_STORAGE_PROOF }}
+          IPFS_STORAGE_API_KEY: ${{ secrets.IPFS_STORAGE_API_KEY }}
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
           INITIAL_BALANCE: 5
-          INITIAL_STANDARD_REGISTRY_BALANCE: 15
+          INITIAL_STANDARD_REGISTRY_BALANCE: 20
+
+      - name: Set up Docker Buildx
+        uses: step-security/setup-buildx-action@f931205d68723ad9589fd2a7e2ece238bf9de341 # v4.0.0
 
       - name: Build Cypress Docker image
-        run: docker build -t cypress-runner ./e2e-tests
+        uses: step-security/docker-build-push-action@846549baaf047e867d038826129a64d81df0f704 # v7.1.0
+        with:
+          context: ./e2e-tests
+          tags: cypress-runner
+          load: true
+          cache-from: type=local,src=/tmp/buildkit-cache
+          cache-to: type=local,dest=/tmp/buildkit-cache,mode=min
 
       - name: Run Cypress Tests in Docker
         run: |
@@ -176,7 +186,7 @@ jobs:
           docker rm -f cypress-test-run || true
 
       - name: Publish API Test Results
-        uses: step-security/publish-unit-test-result-action@7dff603bf17ef13dee847147bef8d7cd1728b566 # v2.22.0
+        uses: step-security/publish-unit-test-result-action@681100d67b09305624c089873f12c545ee7cbc24 # v2.23.0
         if: always()
         with:
           files: e2e-tests/cypress/test_results/**/*.xml

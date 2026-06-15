@@ -36,6 +36,15 @@ export class GlobalEventsReaderStream extends RestoreEntity {
     @Property({ nullable: false, type: 'json' })
     branchDocumentTypeByBranch: Record<string, GlobalDocumentType> = {};
 
+    /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
     @BeforeCreate()
     @BeforeUpdate()
     public prepareEntity(): void {

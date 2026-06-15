@@ -1,58 +1,49 @@
 # Creates New System Schema
 
-<mark style="color:green;">`POST`</mark> `/schemas/system/{username}`
+**`POST /schemas/system/{username}`**
 
 Creates new system schema. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description |
-| ------------------------------------------ | ------ | ----------- |
-| username<mark style="color:red;">\*</mark> | String | Username    |
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_CREATE`
 
-#### Request Body
+---
 
-| Name                               | Type   | Description                       |
-| ---------------------------------- | ------ | --------------------------------- |
-| <mark style="color:red;">\*</mark> | String | Object that contains valid Schema |
+## Request
 
-{% tabs %}
-{% tab title="201: Created Successful Operation" %}
-```javascript
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `username` | String | Yes | Username |
+
+### Request Body
+
+A valid schema object.
+
+```json
 {
-    // Response
+  "name": "System schema name",
+  "description": "Description",
+  "entity": "string",
+  "document": {}
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+---
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+## Response
 
-{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
+### Success Response
 
-{% endtab %}
+**Status:** `201 Created`
 
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error |
+| `500 Internal Server Error` | Unexpected server failure |

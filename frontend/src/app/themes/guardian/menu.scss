@@ -1,15 +1,15 @@
 .guardian-menu {
     margin-top: 6px;
 
-    &.p-overlaypanel:after {
+    &.p-popover:after {
         display: none;
     }
 
-    &.p-overlaypanel::before {
+    &.p-popover::before {
         display: none;
     }
 
-    .p-overlaypanel-content {
+    .p-popover-content {
         padding: 0px;
     }
 

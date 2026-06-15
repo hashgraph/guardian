@@ -74,6 +74,7 @@ type WorkerTopicMessageRaw = {
     blockType: 'globalEventsReaderBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Global Events Reader',
         title: `Add 'Global Events Reader' Block`,
@@ -99,6 +100,7 @@ type WorkerTopicMessageRaw = {
                 title: 'Show button to move to next block with cached payload',
                 type: PropertyType.Checkbox,
                 default: false,
+                editable: true
             },
             {
                 name: 'eventTopics',
@@ -113,7 +115,8 @@ type WorkerTopicMessageRaw = {
                             name: 'topicId',
                             label: 'Topic ID',
                             title: 'Hedera topic id (0.0.x)',
-                            type: PropertyType.Input
+                            type: PropertyType.Input,
+                            editable: true
                         },
                         {
                             name: 'active',
@@ -121,6 +124,7 @@ type WorkerTopicMessageRaw = {
                             title: 'Add this topic stream as active for new users',
                             type: PropertyType.Checkbox,
                             default: true,
+                            editable: true
                         }
                     ]
                 }
@@ -130,6 +134,7 @@ type WorkerTopicMessageRaw = {
                 label: 'Branches',
                 title: 'Branch outputs',
                 type: PropertyType.Array,
+                editable: true,
                 items: {
                     label: 'Branch',
                     value: '@branchEvent',
@@ -138,7 +143,8 @@ type WorkerTopicMessageRaw = {
                             name: 'branchEvent',
                             label: 'Branch event',
                             title: 'Output event name',
-                            type: PropertyType.Input
+                            type: PropertyType.Input,
+                            editable: true
                         },
                         {
                             name: 'documentType',
@@ -147,12 +153,14 @@ type WorkerTopicMessageRaw = {
                             type: PropertyType.Select,
                             items: GLOBAL_DOCUMENT_TYPE_ITEMS,
                             default: GLOBAL_DOCUMENT_TYPE_DEFAULT,
+                            editable: true
                         },
                         {
                             name: 'schema',
                             label: 'Schema',
                             title: 'Local policy schema (validate VC before routing)',
                             type: PropertyType.Schemas,
+                            editable: false
                         }
                     ]
                 }
@@ -182,6 +190,8 @@ class GlobalEventsReaderBlock {
             user.userId
         );
 
+        const options = await ref.getOptions(user);
+
         const existingTopicIds = new Set<string>();
 
         for (const stream of existingStreams) {
@@ -191,7 +201,7 @@ class GlobalEventsReaderBlock {
             }
         }
 
-        const config = ref.options;
+        const config = options;
         const optionTopicIds = config.eventTopics ?? [];
 
         const defaultBranchDocumentTypeByBranch: Record<string, GlobalDocumentType> = {};
@@ -268,7 +278,12 @@ class GlobalEventsReaderBlock {
         this.job.start();
     }
 
-    private async fetchEvents(topicId: string, fromCursor: string, userId: string): Promise<GlobalTopicMessage[]> {
+    private async fetchEvents(
+        ref: AnyBlockType,
+        topicId: string,
+        fromCursor: string,
+        userId: string
+    ): Promise<GlobalTopicMessage[]> {
         const workers = new Workers();
 
         const result = await workers.addRetryableTask(
@@ -284,7 +299,9 @@ class GlobalEventsReaderBlock {
             },
             {
                 priority: 10,
-                userId
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             }
         ) as WorkerTopicMessageRaw[];
 
@@ -411,7 +428,11 @@ class GlobalEventsReaderBlock {
         return this.ifExtendFields(extension, base);
     }
 
-    private async resolvePayloadObject(payload: string, userId: string): Promise<any> {
+    private async resolvePayloadObject(
+        ref: AnyBlockType,
+        payload: string,
+        userId: string
+    ): Promise<any> {
         let payloadObject: any = payload;
 
         try {
@@ -424,7 +445,11 @@ class GlobalEventsReaderBlock {
                 return payloadObject;
             }
 
-            let file = await IPFS.getFile(cid, 'str', { userId });
+            let file = await IPFS.getFile(cid, 'str', {
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
 
             if (file && file.type === 'Buffer' && Array.isArray(file.data)) {
                 file = Buffer.from(file.data).toString('utf-8');
@@ -446,7 +471,7 @@ class GlobalEventsReaderBlock {
     ): Promise<void> {
         const payload = await this.loadPayload(ref, event, user.userId);
 
-        const payloadObject = await this.resolvePayloadObject(payload, user.userId);
+        const payloadObject = await this.resolvePayloadObject(ref, payload, user.userId);
 
         const policyDocument: IPolicyDocument = {
             document: payloadObject,
@@ -473,7 +498,7 @@ class GlobalEventsReaderBlock {
             currentSchemaItem = schemaBatch.find((s) => s?.id === schemaRef);
 
             if (currentSchemaItem) {
-                currentSchema = await this.loadSchemaDocumentFromBatchItem(currentSchemaItem, user.userId);
+                currentSchema = await this.loadSchemaDocumentFromBatchItem(ref, currentSchemaItem, user.userId);
             }
         }
 
@@ -614,7 +639,9 @@ class GlobalEventsReaderBlock {
                 },
                 {
                     priority: 10,
-                    userId
+                    userId,
+                    dryRun: ref.dryRun,
+                    mockId: ref.mockId
                 }
             );
 
@@ -634,11 +661,16 @@ class GlobalEventsReaderBlock {
     }
 
     private async loadSchemaDocumentFromBatchItem(
+        ref: AnyBlockType,
         item: SchemaBatchItem,
         userId: string
     ): Promise<any | null> {
         try {
-            const row = await IPFS.getFile(item.cid, 'str', { userId });
+            const row = await IPFS.getFile(item.cid, 'str', {
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
 
             const doc = typeof row === 'string'
                 ? JSON.parse(row)
@@ -698,7 +730,9 @@ class GlobalEventsReaderBlock {
 
         const messages = await MessageServer.getTopicMessages({
             topicId: policyTopicId,
-            userId
+            userId,
+            dryRun: ref.dryRun,
+            mockId: ref.mockId
         });
 
         const schemaMessages = (messages || []).filter(
@@ -728,7 +762,10 @@ class GlobalEventsReaderBlock {
                 );
             }
 
-            const topicMessage = await MessageServer.getTopic(currentTopicId, userId);
+            const topicMessage = await MessageServer.getTopic(currentTopicId, userId, {
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
             if (!topicMessage) {
                 return { policyTopicId: null };
             }
@@ -786,7 +823,11 @@ class GlobalEventsReaderBlock {
             const metaCID = message.getMetadataUrl(UrlType.cid);
             const documentCID = message.getDocumentUrl(UrlType.cid);
 
-            const metaData = await IPFS.getFile(metaCID, 'str', { userId });
+            const metaData = await IPFS.getFile(metaCID, 'str', {
+                userId,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
+            });
             const meta = JSON.parse(metaData);
             const schemas = meta.schemas;
 
@@ -903,7 +944,9 @@ class GlobalEventsReaderBlock {
         user: PolicyUser,
         stream: GlobalEventsReaderStream
     ): Promise<void> {
-        const config = (ref.options || {}) as GlobalEventReaderConfig;
+        const options = await ref.getOptions(user);
+
+        const config = (options || {}) as GlobalEventReaderConfig;
         const branches = config.branches ?? [];
 
         if (!stream.globalTopicId) {
@@ -915,6 +958,7 @@ class GlobalEventsReaderBlock {
         }
 
         const messages = await this.fetchEvents(
+            ref,
             stream.globalTopicId,
             stream.lastMessageCursor,
             user.userId
@@ -1081,7 +1125,8 @@ class GlobalEventsReaderBlock {
 
     public async getData(user: PolicyUser): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const config = ref.options;
+        const options = await ref.getOptions(user);
+        const config = options;
 
         if (ref.dryRun) {
             return {
@@ -1217,10 +1262,13 @@ class GlobalEventsReaderBlock {
                         blockId: ref.uuid,
                     },
                 },
-                user.userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId: user.userId,
+                    mockId: ref.mockId
                 }
             );
 
@@ -1242,6 +1290,7 @@ class GlobalEventsReaderBlock {
         actionStatus
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = await ref.getOptions(user);
 
         if (ref.dryRun) {
             throw new BlockActionError('Block is disabled in dry run mode', ref.blockType, ref.uuid);
@@ -1253,7 +1302,7 @@ class GlobalEventsReaderBlock {
             throw new BlockActionError('Invalid operation', ref.blockType, ref.uuid);
         }
 
-        const config = ref.options || {};
+        const config = options || {};
         const configuredTopicIdSet = new Set<string>(this.extractConfiguredTopicIds(config));
 
         const value: SetDataPayloadReader | { streams: [] } = data.value ?? { streams: [] };

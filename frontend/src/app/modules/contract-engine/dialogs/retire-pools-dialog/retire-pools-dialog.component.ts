@@ -8,6 +8,7 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
     selector: 'app-retire-pools-dialog',
     templateUrl: './retire-pools-dialog.component.html',
     styleUrls: ['./retire-pools-dialog.component.scss'],
+    standalone: false
 })
 export class RetirePoolsDialogComponent implements OnInit {
     pools: any[] = [];

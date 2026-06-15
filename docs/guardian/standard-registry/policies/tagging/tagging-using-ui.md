@@ -13,7 +13,7 @@ Document objects which can be attached to Schemas, Policies, Modules, Tokens, DI
 
 #### **1.1 Object**
 
-* _**uuid**_ – unique tag identificator, tags with the same uuid are considered to be the same
+* _**uuid**_ – unique tag identification, tags with the same uuid are considered to be the same
 * _**name**_ – label visible to the user and the criteria upon which tags are grouped
 * _**description**_ – optional text field to provide additional information about tags
 * _**owner**_ – DID of the user who created the tag
@@ -62,7 +62,7 @@ Tag can be created with label and the description as shown below:
 
 An additional document can be added/linked with the tag using _**Add Document** button and then selecting a suitable document schema_
 
-![Adding Document](<../../../../.gitbook/assets/2 (1) (2) (1).png>)
+![Adding Document](<../../../../.gitbook/assets/2 (1) (2).png>)
 
 #### **2.2 Remove**
 
@@ -74,7 +74,7 @@ Users (DIDs) who created a tag are able to remove it later.
 
 For documents displayed in the grid only the first (alphabetically) tag is shown.
 
-![Documents display](<../../../../.gitbook/assets/4 (1) (3) (1).png>)
+![Documents display](<../../../../.gitbook/assets/4 (1) (3).png>)
 
 Users can click on the tag icon to show the detailed information about all tag assigned to the document.
 
@@ -82,7 +82,7 @@ Users can click on the tag icon to show the detailed information about all tag a
 
 Tags are grounded by labels. When a label is selected then a detailed information about all tags with this label is displayed below.
 
-![detailed information about the tags](<../../../../.gitbook/assets/6 (2) (2) (1).png>)
+![detailed information about the tags](<../../../../.gitbook/assets/6 (2) (2).png>)
 
 #### **2.4 History**
 
@@ -92,7 +92,7 @@ Tags which have been imported with the Policy or Schema are marked as _**History
 
 #### **2.5 Tag updates (synchronization)**
 
-Any credentialed entity can create/remove a tag on any object at any point of time independently from the Guardian instance where this tagable object (document etc) has been created. This presents a challenge for displaying the up-to-date state of 3rd party tags associated with the object, since continuous search and import/updates of such tags can affect UI responsiveness and general UX. Guardian users can refresh (or ‘pull’) 3rd party tags and update their display in their local Guardian instance by clicking on the corresponding icon (highlighted on the screenshot below).
+Any credentialed entity can create/remove a tag on any object at any point of time independently from the Guardian instance where this taggable object (document etc) has been created. This presents a challenge for displaying the up-to-date state of 3rd party tags associated with the object, since continuous search and import/updates of such tags can affect UI responsiveness and general UX. Guardian users can refresh (or ‘pull’) 3rd party tags and update their display in their local Guardian instance by clicking on the corresponding icon (highlighted on the screenshot below).
 
 ![synchronization icon](<../../../../.gitbook/assets/8 (1) (1) (1) (1) (1) (1) (1) (1).png>)
 

@@ -9,7 +9,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'icon-preview-dialog',
     templateUrl: './icon-preview-dialog.component.html',
-    styleUrls: ['./icon-preview-dialog.component.css']
+    styleUrls: ['./icon-preview-dialog.component.css'],
+    standalone: false
 })
 export class IconPreviewDialog {
     iconType!: string;

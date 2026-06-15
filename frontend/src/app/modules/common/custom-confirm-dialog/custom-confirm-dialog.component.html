@@ -1,26 +1,62 @@
 <div class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{ header }}</div>
-    </div>
-    <div class="header-icon" (click)="onClick()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{ header }}</div>
+  </div>
+  <div class="header-icon" (click)="onClick()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 
 <div class="dialog-body">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 
+  @if (text) {
     <div class="confirmation-text">{{ text }}</div>
+  }
+  @if (texts) {
+    <div class="confirmation-texts">
+      @for (t of texts; track t) {
+        <div >{{t}}</div>
+      }
+    </div>
+  }
+
+  @if (options) {
+    <div class="options">
+      @for (op of options; track op) {
+        <div class="option-value">
+          <div class="option-value-select">
+            <p-radioButton
+              class="guardian-radio-button radio-button-24"
+              name="types"
+              [value]="op.value"
+              [(ngModel)]="option"
+            inputId="{{op.id}}"></p-radioButton>
+          </div>
+          <label class="option-value-name" for="{{op.id}}">
+            <div>{{op.title}}</div>
+            @if (op.sub) {
+              <div class="option-value-name-sub">{{op.sub}}</div>
+            }
+          </label>
+        </div>
+      }
+    </div>
+  }
 </div>
 
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div *ngFor="let button of buttons" class="{{button.class}}-button">
-            <button 
-                (click)="onClick(button)" 
-                class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
-        </div>
-    </div>
+  <div class="action-buttons">
+    @for (button of buttons; track button) {
+      <div class="{{button.class}}-button">
+        <button
+          (click)="onClick(button)"
+        class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
+      </div>
+    }
+  </div>
 </div>

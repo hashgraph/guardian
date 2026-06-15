@@ -9,7 +9,8 @@ import {DialogService, DynamicDialogConfig, DynamicDialogRef} from 'primeng/dyna
 @Component({
     selector: 'record-result-dialog',
     templateUrl: './record-result-dialog.component.html',
-    styleUrls: ['./record-result-dialog.component.scss']
+    styleUrls: ['./record-result-dialog.component.scss'],
+    standalone: false
 })
 export class RecordResultDialog {
     public loading: boolean = false;

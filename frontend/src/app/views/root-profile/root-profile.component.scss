@@ -256,28 +256,6 @@
 
 /*new Design*/
 
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: 42px 48px;
-}
-
-.container>.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.container>.header>h1 {
-    width: 100%;
-    color: #000;
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
-}
-
 .tokenId {
     display: flex;
     white-space: nowrap;
@@ -307,15 +285,15 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 400px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #fff;
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #fff;
@@ -409,14 +387,14 @@ button[disabled] {
     align-content: center;
 }
 
-:host ::ng-deep .topic-id-field .p-dropdown {
+:host ::ng-deep .topic-id-field .p-select {
     width: 200px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #fff;
 }
 
-:host ::ng-deep.p-dropdown {
+:host ::ng-deep.p-select {
     width: 100px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
@@ -424,7 +402,6 @@ button[disabled] {
 }
 
 .user-info-container {
-    margin-top: 24px;
     display: flex;
     flex-direction: column;
     grid-row-gap: 16px;
@@ -760,6 +737,26 @@ mat-radio-button {
     min-width: 110px !important;
 }
 
-:host ::ng-deep .p-tabview-nav-link {
+:host ::ng-deep .p-tab {
     text-decoration: none !important;
+}
+
+.otp-status {
+    &.disabled {
+        border-color: var(--color-grey-3) !important;
+        background-color: var(--color-grey-3);
+
+        span {
+            color: var(--color-grey-6) !important;
+        }
+    }
+
+    &.active {
+        border-color: var(--color-accent-green-2) !important;
+        background-color: var(--color-accent-green-2);
+
+        span {
+            color: var(--color-accent-green-1) !important;
+        }
+    }
 }

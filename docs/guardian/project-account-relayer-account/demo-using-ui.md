@@ -20,17 +20,17 @@ Users can add Relayer Accounts using the corresponding button on their profile p
 
 To add an existing account, the account name, the Hedera account ID, and its private key must be provided.
 
-<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 It is also possible to create a new Hedera account and set it up as one of the relayer account for the user.
 
 {% hint style="info" %}
-Note 1: hbar balance of the new account would be 0 and would need to be toped-up (externally to Guardian) for the account to become useable.
+Note 1: hbar balance of the new account would be 0 and would need to be topped-up (externally to Guardian) for the account to become usable.
 {% endhint %}
 
-<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note 2: make sure that the private key of the generated account is securely saved somewhere. Guardian does not have facilities to recover the lost key.

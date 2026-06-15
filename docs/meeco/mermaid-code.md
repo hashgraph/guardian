@@ -23,7 +23,7 @@ sequenceDiagram
   SVX-->>-Au: 200 {presentationRequest}
   Au->>+SVX: GET /me
   SVX-->>-Au: 200 {me}
-  Au->>Au: exteract externaId from me.user.did
+  Au->>Au: extract externalId from me.user.did
   Au->>+SVX: GET /key_encryption_key
   SVX-->>-Au: 200 {key_encryption_key}
   Au->>+SVX: GET /keypairs/external_id/${externalId}
@@ -49,9 +49,9 @@ sequenceDiagram
         break Submission received
             Au->>Au: Verify Submission
             alt Submission is Valid
-                Au->>Au: Exteract VC
-                Au->>GW: Send NATS message MEECO_VERIFY_VP {cid,credentailSubject,presentationRequestId,submissionIs}
-                GW->>GUI: Send WS MEECO_VERIFY_VP {credentailSubject,presentationRequestId,submissionIs}
+                Au->>Au: Extract VC
+                Au->>GW: Send NATS message MEECO_VERIFY_VP {cid,credentialSubject,presentationRequestId,submissionIs}
+                GW->>GUI: Send WS MEECO_VERIFY_VP {credentialSubject,presentationRequestId,submissionIs}
             else  Submission is Invalid
                 Au->>GW: Send NATS message MEECO_VERIFY_VP_FAILED {cid,credentailSubject,error}
                 GW->>GUI: Send WS MEECO_VERIFY_VP_FAILED {error}
@@ -74,7 +74,7 @@ sequenceDiagram
         H->>GUI: hit Approve button
         GUI->>GW: Send WS message MEECO_APPROVE_SUBMISSION_RESPONSE {presentationRequestId,submissionId}
         GW->>+Au: Send NATS message MEECO_APPROVE_SUBMISSION {cid,presentationRequestId,submissionId}
-        Au->>+SVX: PATCH /oidc/presentations/requests/${requestId}/submissions/${submissionId} {submisiion: {status: "verified}}
+        Au->>+SVX: PATCH /oidc/presentations/requests/${requestId}/submissions/${submissionId} {submission: {status: "verified}}
         SVX-->>-Au: 200 OK
         Au->>Au: generate JWT
         Au-->>-GW: {cid,JWT}

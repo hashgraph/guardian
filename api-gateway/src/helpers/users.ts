@@ -175,9 +175,10 @@ export class Users extends NatsService {
      * Register new token
      * @param username
      * @param password
+     * @param otp
      */
-    public async generateNewToken(username: string, password: string): Promise<AccountsSessionResponseDTO> {
-        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password });
+    public async generateNewToken(username: string, password: string, otp?: string): Promise<AccountsSessionResponseDTO> {
+        return await this.sendMessage(AuthEvents.GENERATE_NEW_TOKEN, { username, password, otp });
     }
 
     public async generateNewAccessToken(refreshToken: string): Promise<any> {
@@ -446,6 +447,22 @@ export class Users extends NatsService {
         user: IAuthUser
     ): Promise<any> {
         return await this.sendMessage(AuthEvents.GENERATE_RELAYER_ACCOUNT, { user });
+    }
+
+    public async otpGenerateSecret(userId: string) {
+        return await this.sendMessage(AuthEvents.OTP_GENERATE_SECRET, { userId });
+    }
+
+    public async otpConfirmSecret(userId: any, token: string) {
+        return await this.sendMessage(AuthEvents.OTP_CONFIRM_SECRET, { userId, token });
+    }
+
+    public async otpGetStatus(userId: string) {
+        return await this.sendMessage(AuthEvents.OTP_GET_STATUS, { userId });
+    }
+
+    public async otpDeactivate(userId: string) {
+        return await this.sendMessage(AuthEvents.OTP_DEACTIVATE, { userId });
     }
 }
 

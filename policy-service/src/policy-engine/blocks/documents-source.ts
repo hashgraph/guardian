@@ -18,6 +18,7 @@ import { LocationType } from '@guardian/interfaces';
     blockType: 'interfaceDocumentsSourceBlock',
     commonBlock: false,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Documents',
         title: `Add 'Documents Source' Block`,
@@ -64,7 +65,8 @@ export class InterfaceDocumentsSource {
 
     async onAddonEvent(user: PolicyUser, tag: string, documentId: string, handler: (document: any) => Promise<IPolicyEventState>, actionStatus) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
-        const fields = ref.options?.uiMetaData?.fields?.filter((field) =>
+        const options = await ref.getOptions(user);
+        const fields = options?.uiMetaData?.fields?.filter((field) =>
             field?.bindBlocks?.includes(tag)
         );
 
@@ -72,7 +74,7 @@ export class InterfaceDocumentsSource {
         const savepointIds = saved.__savepointIds as string[] | undefined;
 
         const enableCommonSorting =
-            !!ref.options?.uiMetaData?.enableSorting
+            !!options?.uiMetaData?.enableSorting
 
         const sourceAddons = fields
             ?.filter((field) => field.bindGroup)
@@ -147,6 +149,7 @@ export class InterfaceDocumentsSource {
      */
     async getData(user: PolicyUser, uuid: string, queryParams: any): Promise<IPolicyGetData> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicySourceBlock>(this);
+        const options = await ref.getOptions(user);
 
         let ret: IPolicyGetData = {
             id: ref.uuid,
@@ -228,7 +231,7 @@ export class InterfaceDocumentsSource {
             return addon.blockType === 'historyAddon';
         }) as IPolicyAddonBlock;
 
-        const enableCommonSorting = ref.options.uiMetaData.enableSorting || (sortDirection && sortField)
+        const enableCommonSorting = options.uiMetaData.enableSorting || (sortDirection && sortField)
 
         let sortState = this.state[user.id] || {};
         if (sortDirection && sortField) {
@@ -253,6 +256,8 @@ export class InterfaceDocumentsSource {
         if (
             !enableCommonSorting && history
         ) {
+            const timelineLabelPath = history.options.timelineLabelPath || 'option.status';
+            const timelineCommentPath = history.options.timelineDescriptionPath || 'option.comment';
             for (const document of data) {
                 const filter: any = { documentId: document.id };
 
@@ -266,29 +271,15 @@ export class InterfaceDocumentsSource {
                 }
 
                 document.history = (
-                    await ref.databaseServer.getDocumentStates(filter)
-                ).map((state) =>
-                    Object.assign(
-                        {},
-                        {
-                            labelValue: ObjGet(
-                                state.document,
-                                history
-                                    ? history.options.timelineLabelPath ||
-                                    'option.status'
-                                    : 'option.status'
-                            ),
-                            comment: ObjGet(
-                                state.document,
-                                history
-                                    ? history.options.timelineDescriptionPath ||
-                                    'option.comment'
-                                    : 'option.comment'
-                            ),
-                            created: state.createDate,
-                        }
+                    await ref.databaseServer.getDocumentStateHistory(
+                        filter,
+                        [timelineLabelPath, timelineCommentPath]
                     )
-                );
+                ).map((state) => ({
+                    labelValue: ObjGet(state.document, timelineLabelPath),
+                    comment: ObjGet(state.document, timelineCommentPath),
+                    created: state.createDate,
+                }));
             }
         }
 
@@ -328,7 +319,7 @@ export class InterfaceDocumentsSource {
                 blocks: filters,
                 commonAddons,
             },
-            Object.assign(ref.options.uiMetaData, {
+            Object.assign(options.uiMetaData, {
                 viewHistory: !!history,
             }),
             sortState

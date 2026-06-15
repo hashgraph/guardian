@@ -13,8 +13,16 @@
                 </label>
             </div>
         </div>
-        <p-accordion [multiple]="true">
-            <p-accordionTab header="Description" [selected]="true">
+        <p-accordion
+            class="compare-policy-accordion"
+            [multiple]="true"
+            [value]="['description', 'blocks']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+            <p-accordion-panel value="description">
+    <p-accordion-header>Description</p-accordion-header>
+    <p-accordion-content>
                 <div class="info-container">
                     <div class="left-compare-result compare-result" [attr.open]="true">
                         <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy1 }"></ng-container>
@@ -24,9 +32,12 @@
                         <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy2 }"></ng-container>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Roles">
+            <p-accordion-panel value="roles">
+    <p-accordion-header>Policy Roles</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="roles && roles.length" class="merge-tree">
                     <div *ngFor="let item of roles" class="report-item report-item-small"
                          [attr.type]="item.type" [attr.rate]="item.total_rate">
@@ -45,9 +56,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Groups">
+            <p-accordion-panel value="groups">
+    <p-accordion-header>Policy Groups</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="groups && groups.length" class="merge-tree">
                     <div *ngFor="let item of groups" class="report-item report-item-small" [attr.type]="item.type"
                          [attr.rate]="item.total_rate">
@@ -66,9 +80,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Tokens">
+            <p-accordion-panel value="tokens">
+    <p-accordion-header>Policy Tokens</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="topics && topics.length" class="merge-tree">
                     <div *ngFor="let item of topics" class="report-item report-item-small" [attr.type]="item.type"
                          [attr.rate]="item.total_rate">
@@ -87,9 +104,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Tools">
+            <p-accordion-panel value="tools">
+    <p-accordion-header>Policy Tools</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="tools && tools.length" class="merge-tree">
                     <div *ngFor="let item of tools" class="report-item report-item-small" [attr.type]="item.type"
                          [attr.rate]="item.total_rate">
@@ -108,9 +128,12 @@
                         </div>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Blocks" [selected]="true">
+            <p-accordion-panel value="blocks">
+    <p-accordion-header>Policy Blocks</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-container">
                     <div class="legend" [attr.type-1]="type1" [attr.type-2]="type2" [attr.type-3]="type3"
                          [attr.type-4]="type4">
@@ -271,7 +294,8 @@
                     </div>
 
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
         </p-accordion>
 
     </div>

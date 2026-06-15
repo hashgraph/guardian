@@ -1,6 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { SchemaService } from 'src/app/services/schema.service';
-import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ExportPlantUMLDialog } from '../export-plantuml-dialog/export-plantuml-dialog.component';
 import { TreeGraphComponent } from '../../common/tree-graph/tree-graph.component';
 import { TreeSource } from '../../common/tree-graph/tree-source';
 import { TreeNode } from '../../common/tree-graph/tree-node';
@@ -29,6 +30,7 @@ interface TagItem {
     selector: 'app-schema-tree',
     templateUrl: './schema-tree.component.html',
     styleUrls: ['./schema-tree.component.scss'],
+    standalone: false
 })
 export class SchemaTreeComponent implements OnInit {
     public loading = false;
@@ -55,7 +57,8 @@ export class SchemaTreeComponent implements OnInit {
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private schemaService: SchemaService,
-        private informService: InformService
+        private informService: InformService,
+        private dialogService: DialogService
     ) {
         this.header = this.config.header || '';
         this.schema = this.config.data;
@@ -261,6 +264,17 @@ export class SchemaTreeComponent implements OnInit {
         if (el instanceof HTMLElement) {
             this.centerNode(el);
         }
+    }
+
+    public openExportDialog(): void {
+        this.dialogService.open(ExportPlantUMLDialog, {
+            header: 'Export PlantUML',
+            width: '400px',
+            styleClass: 'custom-dialog',
+            data: {
+                schema: this.schema
+            }
+        });
     }
 
     public toggleSize(): void {

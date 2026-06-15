@@ -34,6 +34,7 @@ interface IMetadata {
     blockType: 'mathBlock',
     commonBlock: true,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Math',
         title: `Add 'Math' Block`,
@@ -54,17 +55,20 @@ interface IMetadata {
             name: 'inputSchema',
             label: 'Input Schema',
             title: 'Input Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }, {
             name: 'outputSchema',
             label: 'Output Schema',
             title: 'Output Schema',
-            type: PropertyType.Schemas
+            type: PropertyType.Schemas,
+            editable: false
         }, {
             name: 'unsigned',
             label: 'Unsigned VC',
             title: 'Unsigned document',
-            type: PropertyType.Checkbox
+            type: PropertyType.Checkbox,
+            editable: true
         }]
     },
     variables: [
@@ -83,15 +87,31 @@ export class MathBlock {
         return new Promise<IPolicyDocument>(async (resolve, reject) => {
             const workerFile = path.join(path.dirname(filename), '..', 'helpers', 'workers', 'math-worker.js');
             const worker = new Worker(workerFile, { workerData });
+
+            // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+            const cleanup = () => {
+                worker.terminate().catch(() => {
+                    // Ignore errors during worker termination
+                });
+            };
+            worker.on('exit', (code) => {
+                cleanup();
+                if (code !== 0 && code !== null) {
+                    reject(new Error(`Math worker exited with code ${code}`));
+                }
+            });
             worker.on('error', (error) => {
+                cleanup();
                 reject(error);
             });
             worker.on('message', async (data) => {
                 try {
                     if (data?.type === 'done') {
+                        cleanup();
                         resolve(data.result)
                     }
                 } catch (error) {
+                    cleanup();
                     reject(error);
                 }
             });
@@ -110,11 +130,12 @@ export class MathBlock {
         documents: DocumentMap,
         user: PolicyUser
     ): Promise<any> {
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const options = await ref.getOptions(user);
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const schema = new Schema(outputSchema);
 
         // Artifacts
-        const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+        const files = Array.isArray(options.artifacts) ? options.artifacts : [];
         const artifacts = [];
         const jsonArtifacts = files.filter((file: any) => file.type === ArtifactType.JSON);
         for (const jsonArtifact of jsonArtifacts) {
@@ -124,12 +145,12 @@ export class MathBlock {
 
         // Run
         const result = await this.createWorker({
-            expression: ref.options.expression,
+            expression: options.expression,
             documents: documents.toJson(),
             artifacts,
             user,
             schema,
-            copy: !ref.options.outputSchema || ref.options.outputSchema === ref.options.inputSchema
+            copy: !options.outputSchema || options.outputSchema === options.inputSchema
         })
 
         return result;
@@ -149,16 +170,22 @@ export class MathBlock {
      * @param documents
      * @param ref
      * @param userId
+     * @param recordActionId
+     * @param user
      * @private
      */
     private async process(
         documents: IPolicyDocument,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        recordActionId: string | null = null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         if (!documents) {
             throw new BlockActionError('Invalid VC', ref.blockType, ref.uuid);
         }
+
+        const options = await ref.getOptions(user);
 
         const sources: IPolicyDocument[] = await PolicyUtils.findRelationships(ref, documents);
 
@@ -173,11 +200,11 @@ export class MathBlock {
         map.addRelationships(contextRelationships.map((d) => this.getCredentialSubject(d)));
 
         const newJson = await this.calculate(ref, map, docOwner);
-        if (ref.options.unsigned) {
-            return await this.createUnsignedDocument(newJson, ref);
+        if (options.unsigned) {
+            return await this.createUnsignedDocument(newJson, ref, recordActionId);
         } else {
             const metadata = await this.aggregateMetadata(contextDocument, ref, userId);
-            return await this.createDocument(newJson, metadata, ref, userId);
+            return await this.createDocument(newJson, metadata, ref, userId, recordActionId, user);
         }
     }
 
@@ -199,6 +226,7 @@ export class MathBlock {
         let tokens: any = {};
         let id: string;
         let reference: string;
+
         if (isArray) {
             const credentialSubject = documents[0].document?.credentialSubject;
             if (credentialSubject) {
@@ -244,12 +272,17 @@ export class MathBlock {
      * @param json
      * @param metadata
      * @param ref
+     * @param userId
+     * @param recordActionId
+     * @param user
      */
     private async createDocument(
         json: any,
         metadata: IMetadata,
         ref: IPolicyCalculateBlock,
-        userId: string | null
+        userId: string | null,
+        recordActionId: string | null = null,
+        user?: PolicyUser
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -263,7 +296,9 @@ export class MathBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const options = await ref.getOptions(user);
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
 
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
@@ -295,7 +330,7 @@ export class MathBlock {
             { uuid }
         );
 
-        const item = PolicyUtils.createVC(ref, owner, newVC);
+        const item = PolicyUtils.createVC(ref, owner, newVC, recordActionId);
         item.type = outputSchema.iri;
         item.schema = outputSchema.iri;
         item.relationships = relationships.length ? relationships : null;
@@ -311,13 +346,15 @@ export class MathBlock {
      * Generate unsigned document
      * @param json
      * @param ref
+     * @param recordActionId
      */
     private async createUnsignedDocument(
         json: any,
-        ref: IPolicyCalculateBlock
+        ref: IPolicyCalculateBlock,
+        recordActionId: string | null = null
     ): Promise<IPolicyDocument> {
         const vc = PolicyUtils.createVcFromSubject(json);
-        return PolicyUtils.createUnsignedVC(ref, vc);
+        return PolicyUtils.createUnsignedVC(ref, vc, recordActionId);
     }
 
     /**
@@ -339,12 +376,12 @@ export class MathBlock {
         if (Array.isArray(event.data.data)) {
             const result: IPolicyDocument[] = [];
             for (const doc of event.data.data) {
-                const newVC = await this.process(doc, ref, event?.user?.userId);
+                const newVC = await this.process(doc, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user);
                 result.push(newVC)
             }
             event.data.data = result;
         } else {
-            event.data.data = await this.process(event.data.data, ref, event?.user?.userId);
+            event.data.data = await this.process(event.data.data, ref, event?.user?.userId, event.actionStatus?.id ?? null, event.user);
         }
 
         ref.triggerEvents(PolicyOutputEventType.RunEvent, event.user, event.data, event.actionStatus);

@@ -8,7 +8,8 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
     selector: 'revoke-config',
     templateUrl: './revoke-config.component.html',
     styleUrls: ['./revoke-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class RevokeConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

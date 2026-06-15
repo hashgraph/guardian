@@ -26,6 +26,7 @@ interface SetDataPayload {
     blockType: 'globalEventsWriterBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: true,
     about: {
         label: 'Global Events Writer',
         title: 'Publish VC reference to a global Hedera topics',
@@ -50,12 +51,14 @@ interface SetDataPayload {
                 title: 'Show button to move to next block with cached payload',
                 type: PropertyType.Checkbox,
                 default: false,
+                editable: true
             },
             {
                 name: 'topicIds',
                 label: 'Global topics',
                 title: 'One or more Hedera topics where notifications are published',
                 type: PropertyType.Array,
+                editable: true,
                 items: {
                     label: 'Topic',
                     value: '@topicId',
@@ -65,6 +68,7 @@ interface SetDataPayload {
                             label: 'Topic id',
                             title: 'Hedera topic id',
                             type: PropertyType.Input,
+                            editable: true
                         },
                         {
                             name: 'active',
@@ -72,6 +76,7 @@ interface SetDataPayload {
                             title: 'Add this topic stream as active for new users',
                             type: PropertyType.Checkbox,
                             default: true,
+                            editable: true
                         },
                         {
                             name: 'documentType',
@@ -80,6 +85,7 @@ interface SetDataPayload {
                             type: PropertyType.Select,
                             items: GLOBAL_DOCUMENT_TYPE_ITEMS,
                             default: GLOBAL_DOCUMENT_TYPE_DEFAULT,
+                            editable: true
                         },
                     ],
                 },
@@ -98,6 +104,8 @@ export class GlobalEventsWriterBlock {
             user.userId,
         );
 
+        const options = await ref.getOptions(user);
+
         const existingTopicIds = new Set<string>();
         for (const stream of existingStreams) {
             if (stream?.globalTopicId) {
@@ -105,7 +113,7 @@ export class GlobalEventsWriterBlock {
             }
         }
 
-        const optionTopicIds = ref.options.topicIds ?? [];
+        const optionTopicIds = options.topicIds ?? [];
 
         for (const optionTopic of optionTopicIds) {
             const optionTopicId = optionTopic.topicId;
@@ -297,6 +305,8 @@ export class GlobalEventsWriterBlock {
                 memo: 'GlobalEvent',
                 userId: user.userId,
                 interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
             ref.log(`Publish to global topic ${currentTopicId} was successfully.`);
@@ -359,10 +369,13 @@ export class GlobalEventsWriterBlock {
                         blockId: ref.uuid,
                     },
                 },
-                user.userId,
                 {
                     admin: true,
                     submit: false,
+                },
+                {
+                    userId: user.userId,
+                    mockId: ref.mockId
                 }
             );
             if (!created?.topicId) {
@@ -478,7 +491,9 @@ export class GlobalEventsWriterBlock {
      */
     public async getData(user: PolicyUser): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
-        const config = ref.options || {}
+        const options = await ref.getOptions(user);
+
+        const config = options || {}
 
         if (ref.dryRun) {
             return {
@@ -507,7 +522,7 @@ export class GlobalEventsWriterBlock {
 
         const streams = await ref.databaseServer.getGlobalEventsWriterStreamsByUser(ref.policyId, ref.uuid, user.userId);
         const defaultTopicIds: string[] = [];
-        const optionTopicIds = ref.options.topicIds ?? [];
+        const optionTopicIds = options.topicIds ?? [];
 
         for (const item of optionTopicIds) {
             defaultTopicIds.push(item.topicId);
@@ -535,6 +550,8 @@ export class GlobalEventsWriterBlock {
      */
     public async setData(user: PolicyUser, data: SetDataPayload, _, actionStatus): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<AnyBlockType>(this);
+        const options = await ref.getOptions(user);
+
         const operation = data.operation;
         const streams = data.streams ?? [];
 
@@ -610,7 +627,7 @@ export class GlobalEventsWriterBlock {
         }
 
         if (operation === 'Delete') {
-            const optionTopicIds = ref.options.topicIds ?? [];
+            const optionTopicIds = options.topicIds ?? [];
             const defaultTopicIds = new Set<string>();
 
             for (const item of optionTopicIds) {

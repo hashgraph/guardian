@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { Record, VpDocument as VpDocumentCollection, VcDocument as VcDocumentCollection, VcDocument, VpDocument } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { FilterObject } from '@mikro-orm/core';
+import { IRecordPolicyTestMetadata } from '@guardian/interfaces';
 
 /**
  * Record result
@@ -19,6 +20,10 @@ export interface IRecordResult {
      * Document body (JSON)
      */
     document: any;
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string | null;
 }
 
 /**
@@ -41,6 +46,10 @@ export interface IRecordComponents {
      * Duration
      */
     duration: number;
+    /**
+     * Policy test metadata
+     */
+    policyTest?: IRecordPolicyTestMetadata;
 }
 
 /**
@@ -121,6 +130,45 @@ export class RecordImportExport {
      */
     public static readonly recordFileName = 'actions.csv';
     /**
+     * Policy test metadata filename
+     */
+    public static readonly policyTestFileName = 'policy-test.json';
+
+    /**
+     * Get result link for policy test metadata
+     * @param result result document
+     * @returns encoded result link
+     */
+    public static resultLink(result: IRecordResult): string {
+        return `results/${btoa(`${result.type}|${result.id}`)}`;
+    }
+
+    /**
+     * Check if components have selected outputs
+     * @param components record components
+     * @returns true if selected outputs exist
+     */
+    public static hasSelectedOutputs(components: IRecordComponents): boolean {
+        return !!components.policyTest?.outputs?.length;
+    }
+
+    /**
+     * Get comparison results based on selected outputs
+     * @param components record components
+     * @returns filtered results or all results
+     */
+    public static getComparisonResults(components: IRecordComponents): IRecordResult[] {
+        const outputLinks = components.policyTest?.outputs || [];
+        if (!outputLinks.length) {
+            return components.results;
+        }
+
+        return components.results.filter((result) => {
+            return outputLinks.includes(RecordImportExport.resultLink(result));
+        });
+    }
+
+    /**
      * Generate archive for single record entry
      * @param record
      */
@@ -196,7 +244,8 @@ export class RecordImportExport {
             results.push({
                 id: vc.document.id,
                 type: 'vc',
-                document: vc.document
+                document: vc.document,
+                recordActionId: vc.recordActionId
             });
         }
 
@@ -211,7 +260,8 @@ export class RecordImportExport {
             results.push({
                 id: vp.document.id,
                 type: 'vp',
-                document: vp.document
+                document: vp.document,
+                recordActionId: vp.recordActionId
             });
         }
         const policy = await DatabaseServer.getPolicyById(policyId);
@@ -266,7 +316,8 @@ export class RecordImportExport {
             result.push({
                 id: vc.document.id,
                 type: 'vc',
-                document: vc.document
+                document: vc.document,
+                recordActionId: vc.recordActionId
             });
         }
 
@@ -274,7 +325,8 @@ export class RecordImportExport {
             result.push({
                 id: vp.document.id,
                 type: 'vp',
-                document: vp.document
+                document: vp.document,
+                recordActionId: vp.recordActionId
             });
         }
 
@@ -306,26 +358,28 @@ export class RecordImportExport {
     /**
      * Generate Zip File
      * @param record record to pack
+     * @param policyTest policy test metadata
      *
      * @returns Zip file
      * @public
      * @static
      */
-    public static async generate(uuid: string): Promise<JSZip> {
+    public static async generate(uuid: string, policyTest?: IRecordPolicyTestMetadata | null): Promise<JSZip> {
         const components = await RecordImportExport.loadRecordComponents(uuid);
-        const file = await RecordImportExport.generateZipFile(components);
+        const file = await RecordImportExport.generateZipFile(components, policyTest);
         return file;
     }
 
     /**
      * Generate Zip File
      * @param components record components
+     * @param policyTest policy test metadata
      *
      * @returns Zip file
      * @public
      * @static
      */
-    public static async generateZipFile(components: IRecordComponents): Promise<JSZip> {
+    public static async generateZipFile(components: IRecordComponents, policyTest?: IRecordPolicyTestMetadata | null): Promise<JSZip> {
         const zip = new JSZip();
         zip.folder('documents');
         zip.folder('results');
@@ -352,9 +406,8 @@ export class RecordImportExport {
                 } else {
                     row.push('');
                 }
-                if (item.userRole) {
-                    row.push(item.userRole);
-                }
+                row.push(item.userRole || '');
+                row.push(item.recordActionId || '');
             }
             json += row.join(',') + '\r\n';
         }
@@ -362,6 +415,17 @@ export class RecordImportExport {
         for (const result of components.results) {
             const item = RecordResult.fromObject(result)
             zip.file(`results/${item.name}`, item.file);
+        }
+
+        if (
+            policyTest?.outputs?.length ||
+            policyTest?.name ||
+            policyTest?.description
+        ) {
+            zip.file(
+                RecordImportExport.policyTestFileName,
+                JSON.stringify(policyTest)
+            );
         }
 
         zip.file(RecordImportExport.recordFileName, json);
@@ -393,6 +457,12 @@ export class RecordImportExport {
             documents.set(documentId, document);
         }
 
+        let policyTest: IRecordPolicyTestMetadata | undefined;
+        const policyTestFile = content.files[RecordImportExport.policyTestFileName];
+        if (policyTestFile && !policyTestFile.dir) {
+            policyTest = JSON.parse(await policyTestFile.async('string'));
+        }
+
         const results: IRecordResult[] = [];
         const resultFiles = Object.entries(content.files)
             .filter(file => !file[1].dir)
@@ -408,7 +478,7 @@ export class RecordImportExport {
         const lines = recordString.split('\r\n');
         for (const line of lines) {
             if (line && !line.startsWith('--')) {
-                const [method, time, action, user, target, documentId, userRole = ''] = line.split(',');
+                const [method, time, action, user, target, documentId, userRole = '', recordActionId = ''] = line.split(',');
                 if (method) {
                     records.push({
                         method,
@@ -418,6 +488,7 @@ export class RecordImportExport {
                         time: RecordImportExport.addTime(now, time),
                         document: documents.get(documentId),
                         userRole,
+                        recordActionId: recordActionId || undefined
                     });
                 }
             }
@@ -429,7 +500,8 @@ export class RecordImportExport {
             records,
             results,
             duration,
-            time: now
+            time: now,
+            policyTest
         };
     }
 }

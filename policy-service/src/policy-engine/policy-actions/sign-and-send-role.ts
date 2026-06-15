@@ -50,7 +50,9 @@ export class SignAndSendRole {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: ref.dryRun,
+                mockId: ref.mockId
             });
 
         return { vc: userVC, message: messageResult };
@@ -162,7 +164,9 @@ export class SignAndSendRole {
                 sendToIPFS: true,
                 memo: null,
                 userId,
-                interception: null
+                interception: null,
+                dryRun: null,
+                mockId: null
             });
 
         return { vc: userVC, message: messageResult };

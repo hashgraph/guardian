@@ -25,6 +25,7 @@ export interface FiltersDialogResult {
     selector: 'global-events-reader-filters-dialog',
     templateUrl: './global-events-reader-filters-dialog.component.html',
     styleUrls: ['./global-events-reader-filters-dialog.component.scss'],
+    standalone: false
 })
 export class GlobalEventsReaderFiltersDialogComponent {
     public readonly: boolean = false;

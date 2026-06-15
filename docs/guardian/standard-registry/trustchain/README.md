@@ -2,7 +2,7 @@
 
 ### Introduction&#x20;
 
-In the ever-evolving landscape of digital asset management and environmental sustainability,  Guardian introduces a groundbreaking feature known as the Trust Chain. This component is crucial for establishing verifiable and transparent chains of custody for digital environmental assets, ensuring the integrity and reliability of transactions within the the Guardian ecosystem.&#x20;
+In the ever-evolving landscape of digital asset management and environmental sustainability,  Guardian introduces a groundbreaking feature known as the Trust Chain. This component is crucial for establishing verifiable and transparent chains of custody for digital environmental assets, ensuring the integrity and reliability of transactions within the Guardian ecosystem.&#x20;
 
 ### Description&#x20;
 

@@ -1,230 +1,277 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{dialogTitle}}</div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{dialogTitle}}</div>
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div *ngIf="loading" class="guardian-loading">
-        <div class="guardian-loading-image"></div>
+  @if (loading) {
+    <div class="guardian-loading">
+      <div class="guardian-loading-image"></div>
     </div>
-    <div class="dialog-body-container">
-        <div *ngIf="restoreData" class="restore-data">
-            <svg-icon class="svg-icon"
-                src="/assets/images/icons/info.svg"
-                svgClass="icon-color-primary">
+  }
+  <div class="dialog-body-container">
+    @if (restoreData) {
+      <div class="restore-data">
+        <svg-icon class="svg-icon"
+          src="/assets/images/icons/info.svg"
+          svgClass="icon-color-primary">
+        </svg-icon>
+        <b>There is some data to restore. You can restore latest values:</b>
+        <button
+          (click)="onRestoreClick()"
+          class="guardian-button guardian-button-primary">
+          <div class="guardian-button-icon">
+            <svg-icon class="icon-btn svg-icon"
+              src="/assets/images/icons/16/refresh.svg"
+              svgClass="icon-color-secondary">
             </svg-icon>
-            <b>There is some data to restore. You can restore latest values:</b>
-            <button
-                (click)="onRestoreClick()"
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/16/refresh.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Restore Values</div>
-            </button>
-        </div>
-        <div *ngIf="dryRun" class="restore-data">
-            <svg-icon class="svg-icon"
-                src="/assets/images/icons/info.svg"
-                svgClass="icon-color-primary">
+          </div>
+          <div class="guardian-button-label">Restore Values</div>
+        </button>
+      </div>
+    }
+    @if (dryRun) {
+      <div class="restore-data">
+        <svg-icon class="svg-icon"
+          src="/assets/images/icons/info.svg"
+          svgClass="icon-color-primary">
+        </svg-icon>
+        <b>Dry run mode. You can fill this document with test data:</b>
+        <button
+          (click)="onDryRun()"
+          class="guardian-button guardian-button-primary">
+          <div class="guardian-button-icon">
+            <svg-icon class="icon-btn svg-icon"
+              src="/assets/images/icons/16/refresh.svg"
+              svgClass="icon-color-secondary">
             </svg-icon>
-            <b>Dry run mode. You can fill this document with test data:</b>
-            <button
-                (click)="onDryRun()"
-                class="guardian-button guardian-button-primary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/16/refresh.svg"
-                        svgClass="icon-color-secondary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Test</div>
-            </button>
-        </div>
-        <div *ngIf="relayerAccount" class="relayer-account-steps">
-            <div class="guardian-step-container">
-                <div class="guardian-stepper horizontal-stepper">
-                    <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
-                        <div class="guardian-step-marker">1</div>
-                        <div class="guardian-step-name">Fill Form</div>
-                    </div>
-                    <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" [attr.action]="isActionStep(1)" [attr.disabled]="!isStep(2)" (click)="setStep(1)">
-                        <div class="guardian-step-marker">2</div>
-                        <div class="guardian-step-name">Configure Relayer Account</div>
-                    </div>
-                    <!-- <div class="guardian-step-separator"></div>
-                    <div class="guardian-step" [attr.action]="isActionStep(2)" [attr.disabled]="true">
-                        <div class="guardian-step-marker">3</div>
-                        <div class="guardian-step-name">Validation Results</div>
-                    </div> -->
-                </div>
+          </div>
+          <div class="guardian-button-label">Test</div>
+        </button>
+      </div>
+    }
+    @if (relayerAccount || enableAdditionalData) {
+      <div class="relayer-account-steps">
+        <div class="guardian-step-container">
+          <div class="guardian-stepper horizontal-stepper">
+            <div class="guardian-step" [attr.action]="isActionStep(0)" [attr.disabled]="isStep(0)" (click)="setStep(0)">
+              <div class="guardian-step-marker">1</div>
+              <div class="guardian-step-name">Fill Form</div>
             </div>
+            @if (enableAdditionalData) {
+              <div class="guardian-step-separator"></div>
+              <div class="guardian-step" [attr.action]="isActionStep(1)" [attr.disabled]="!isStep(1) && !isStep(2)" (click)="isStep(2) && setStep(1)">
+                <div class="guardian-step-marker">2</div>
+                <div class="guardian-step-name">Add Evidence Attachments</div>
+              </div>
+            }
+            @if (relayerAccount) {
+              <div class="guardian-step-separator"></div>
+              <div class="guardian-step" [attr.action]="isActionStep(enableAdditionalData ? 2 : 1)" [attr.disabled]="!isStep(enableAdditionalData ? 3 : 2)" (click)="isStep(enableAdditionalData ? 3 : 2) && setStep(enableAdditionalData ? 2 : 1)">
+                <div class="guardian-step-marker">{{enableAdditionalData ? 3 : 2}}</div>
+                <div class="guardian-step-name">Configure Relayer Account</div>
+              </div>
+            }
+          </div>
         </div>
-        <div *ngIf="schema" class="body-dialog-template">
-            <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="isStep(0)">
-                <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
-                    <app-schema-form-root
-                        tabindex="0"
-                        [schema]="schema"
-                        [preset]="presetDocument"
-                        [private-fields]="hideFields"
-                        [readonly-fields]="presetReadonlyFields"
-                        [dryRun]="dryRun"
-                        [policyId]="policyId"
-                        [blockId]="id"
-                        [rules]="rulesResults"
-                        [isFormForRequestBlock]="true"
-                        [saveShown]="!edit || draft"
-                        [comesFromDialog]="true"
-                        [showButtons]="false"
-                        cancelText = "Cancel"
-                        submitText = "Validate & Create"
-                        saveText = "Save Draft"
-                        (form)="initForm($event)"
-                        (buttons)="onChangeButtons($event)"
-                        (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
-                        (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
-                        (saveBtnEvent)="handleSaveBtnEvent($event, this)"
-                        style="outline: none !important"
-                    >
-                    </app-schema-form-root>
-                </div>
-            </form>
-            <div class="relayer-account-container" [attr.visibility]="isStep(1)">
-                <div class="relayer-account-type-values">
-                    <div *ngIf="needRemoteWarning" class="account-warning">
-                        <svg-icon
-                            class="svg-icon"
-                            src="/assets/images/icons/warning.svg"
-                            svgClass="icon-color-warning">
-                        </svg-icon>
-                        <div class="account-warning-text">Relayer Account signing key will now be securely transferred to the primary Guardian policy instance.</div>
-                        <p-checkbox
-                            [(ngModel)]="remoteWarning"
-                            [binary]="true"
-                            inputId="ipfsCheckbox"
-                            class="guardian-checkbox-warning checkbox-24 account-warning-action"
-                            label="Please confirm action.">
-                        </p-checkbox>
-                    </div>
-
-                    <div class="relayer-account-type-value">
-                        <div class="relayer-account-type-value-select">
-                            <p-radioButton
-                                class="guardian-radio-button radio-button-24"
-                                name="types"
-                                value="account"
-                                [(ngModel)]="relayerAccountType"
-                                inputId="type_1"></p-radioButton>
-                        </div>
-                        <label class="relayer-account-type-value-name" for="type_1">
-                            User Account
-                        </label>
-                    </div>
-                    <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='account'">
-                        Current Account: {{user.hederaAccountId}}
-                    </div>
-
-
-                    <div class="relayer-account-type-value">
-                        <div class="relayer-account-type-value-select">
-                            <p-radioButton
-                                class="guardian-radio-button radio-button-24"
-                                name="types"
-                                value="relayerAccount"
-                                [(ngModel)]="relayerAccountType"
-                                inputId="type_2"></p-radioButton>
-                        </div>
-                        <label class="relayer-account-type-value-name" for="type_2">
-                            Use existing relayer account
-                        </label>
-                    </div>
-                    <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='relayerAccount'">
-                        <p-dropdown
-                            [(ngModel)]="currentRelayerAccount"
-                            [options]="relayerAccounts"
-                            [showClear]="false"
-                            class="guardian-dropdown"
-                            optionLabel="name"
-                            optionValue="account"
-                            placeholder="Select Relayer Account"
-                            panelStyleClass="guardian-dropdown-panel">
-                        </p-dropdown>
-                    </div>
-
-                    <div class="relayer-account-type-value">
-                        <div class="relayer-account-type-value-select">
-                            <p-radioButton
-                                class="guardian-radio-button radio-button-24"
-                                name="types"
-                                value="new"
-                                [(ngModel)]="relayerAccountType"
-                                inputId="type_3"></p-radioButton>
-                        </div>
-                        <label class="relayer-account-type-value-name" for="type_3">
-                            New relayer account
-                        </label>
-                    </div>
-                    <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='new'">
-                        <form class="relayer-account-form" [formGroup]="relayerAccountForm" autocomplete="off">
-                            <div class="guardian-input-container" style="grid-column: 1 / 3;">
-                                <label class="form-label" htmlFor="name">* Relayer Account Name</label>
-                                <input formControlName="name" id="name" pInputText type="text" [readonly]="relayerAccountType!=='new'" autocomplete="off" />
-                            </div>
-
-                            <div class="guardian-input-container">
-                                <label class="form-label" htmlFor="account">* Relayer Account ID</label>
-                                <input formControlName="account" id="account" pInputText type="text" [readonly]="relayerAccountType!=='new'" autocomplete="off" />
-                            </div>
-                            <div class="guardian-input-container">
-                                <label class="form-label" htmlFor="key">* Relayer Account Key</label>
-                                <p-password formControlName="key" id="key" [toggleMask]="true" autocomplete="off" [feedback]="false" />
-                            </div>
-                        </form>
-                        <button 
-                            (click)="onGenerateRelayerAccount()" 
-                            [disabled]="relayerAccountType!=='new'"
-                            class="guardian-button guardian-button-secondary">Generate New Account & Key</button>
-                    </div>
-
-
-                </div>
+      </div>
+    }
+    @if (schema) {
+      <div class="body-dialog-template">
+        <form (ngSubmit)="onStep()" [formGroup]="dataForm" [attr.visibility]="isStep(0)">
+          <div class="form-dialog" [attr.dry-run]="!!dryRun" [attr.restore]="!!restoreData">
+            <app-schema-form-root
+              tabindex="0"
+              [schema]="schema"
+              [preset]="presetDocument"
+              [private-fields]="hideFields"
+              [readonly-fields]="presetReadonlyFields"
+              [dryRun]="dryRun"
+              [policyId]="policyId"
+              [blockId]="id"
+              [rules]="rulesResults"
+              [isFormForRequestBlock]="true"
+              [saveShown]="!edit || draft"
+              [comesFromDialog]="true"
+              [showButtons]="false"
+              cancelText = "Cancel"
+              submitText = "Validate & Create"
+              saveText = "Save Draft"
+              (form)="initForm($event)"
+              (buttons)="onChangeButtons($event)"
+              (cancelBtnEvent)="handleCancelBtnEvent($event, this)"
+              (submitBtnEvent)="handleSubmitBtnEvent($event, this)"
+              (saveBtnEvent)="handleSaveBtnEvent($event, this)"
+              style="outline: none !important"
+              >
+            </app-schema-form-root>
+          </div>
+        </form>
+        @if (enableAdditionalData) {
+          <div class="evidence-container" [attr.visibility]="isStep(evidenceStepIndex)">
+            <div class="toolbar-textarea guardian-textarea-container">
+              <textarea
+                placeholder="Add a comment (optional)"
+                rows="3"
+                [(ngModel)]="evidenceText"
+                [maxlength]="600">
+              </textarea>
             </div>
-            <div class="result-container" [attr.visibility]="isStep(2)"></div>
-            <ng-template #preloader>
-                <div class="preloader-image"></div>
-            </ng-template>
+            <div class="toolbar-files">
+              @for (file of evidenceFiles; track file) {
+                <div class="toolbar-file">
+                  @if (!file.loaded && !file.error) {
+                    <div class="toolbar-file-loading guardian-loading"></div>
+                  }
+                  @if (file.loaded || file.error) {
+                    <div class="toolbar-file-name">{{ file.name }}</div>
+                  }
+                  <div class="toolbar-file-action" (click)="onDeleteEvidenceFile(file)">
+                    <svg-icon
+                      class="svg-icon-16"
+                      src="/assets/images/icons/16/close.svg"
+                    svgClass="icon-color-close"></svg-icon>
+                  </div>
+                </div>
+              }
+            </div>
+            <div class="toolbar-actions" (drop)="onEvidenceDrop($event)" (dragover)="$event.preventDefault()">
+              <button pButton class="guardian-button guardian-button-secondary" (click)="onEvidenceAttach($event)">Attach</button>
+            </div>
+          </div>
+        }
+        <div class="relayer-account-container" [attr.visibility]="isStep(enableAdditionalData ? 2 : 1)">
+          <div class="relayer-account-type-values">
+            @if (needRemoteWarning) {
+              <div class="account-warning">
+                <svg-icon
+                  class="svg-icon"
+                  src="/assets/images/icons/warning.svg"
+                  svgClass="icon-color-warning">
+                </svg-icon>
+                <div class="account-warning-text">Relayer Account signing key will now be securely transferred to the primary Guardian policy instance.</div>
+                <p-checkbox
+                  [(ngModel)]="remoteWarning"
+                  [binary]="true"
+                  inputId="confirmActionWarning"
+                  class="guardian-checkbox-warning checkbox-24 account-warning-action">
+                </p-checkbox>
+                <label class="p-checkbox-label" for="confirmActionWarning">Please confirm action.</label>
+              </div>
+            }
+            <div class="relayer-account-type-value">
+              <div class="relayer-account-type-value-select">
+                <p-radioButton
+                  class="guardian-radio-button radio-button-24"
+                  name="types"
+                  value="account"
+                  [(ngModel)]="relayerAccountType"
+                inputId="type_1"></p-radioButton>
+              </div>
+              <label class="relayer-account-type-value-name" for="type_1">
+                User Account
+              </label>
+            </div>
+            <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='account'">
+              Current Account: {{user.hederaAccountId}}
+            </div>
+            <div class="relayer-account-type-value">
+              <div class="relayer-account-type-value-select">
+                <p-radioButton
+                  class="guardian-radio-button radio-button-24"
+                  name="types"
+                  value="relayerAccount"
+                  [(ngModel)]="relayerAccountType"
+                inputId="type_2"></p-radioButton>
+              </div>
+              <label class="relayer-account-type-value-name" for="type_2">
+                Use existing relayer account
+              </label>
+            </div>
+            <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='relayerAccount'">
+              <p-select
+                [(ngModel)]="currentRelayerAccount"
+                [options]="relayerAccounts"
+                [showClear]="false"
+                class="guardian-dropdown"
+                optionLabel="name"
+                optionValue="account"
+                placeholder="Select Relayer Account"
+                panelStyleClass="guardian-dropdown-panel">
+              </p-select>
+            </div>
+            <div class="relayer-account-type-value">
+              <div class="relayer-account-type-value-select">
+                <p-radioButton
+                  class="guardian-radio-button radio-button-24"
+                  name="types"
+                  value="new"
+                  [(ngModel)]="relayerAccountType"
+                inputId="type_3"></p-radioButton>
+              </div>
+              <label class="relayer-account-type-value-name" for="type_3">
+                New relayer account
+              </label>
+            </div>
+            <div class="relayer-account-type-config" [attr.selected]="relayerAccountType==='new'">
+              <form class="relayer-account-form" [formGroup]="relayerAccountForm" autocomplete="off">
+                <div class="guardian-input-container" style="grid-column: 1 / 3;">
+                  <label class="form-label" htmlFor="name">* Relayer Account Name</label>
+                  <input formControlName="name" id="name" pInputText type="text" [readonly]="relayerAccountType!=='new'" autocomplete="off" />
+                </div>
+                <div class="guardian-input-container">
+                  <label class="form-label" htmlFor="account">* Relayer Account ID</label>
+                  <input formControlName="account" id="account" pInputText type="text" [readonly]="relayerAccountType!=='new'" autocomplete="off" />
+                </div>
+                <div class="guardian-input-container">
+                  <label class="form-label" htmlFor="key">* Relayer Account Key</label>
+                  <p-password formControlName="key" id="key" [toggleMask]="true" autocomplete="off" [feedback]="false" />
+                </div>
+              </form>
+              <button
+                (click)="onGenerateRelayerAccount()"
+                [disabled]="relayerAccountType!=='new'"
+              class="guardian-button guardian-button-secondary">Generate New Account & Key</button>
+            </div>
+          </div>
         </div>
-    </div>
+        <div class="result-container" [attr.visibility]="isStep(enableAdditionalData && relayerAccount ? 3 : 2)"></div>
+        <ng-template #preloader>
+          <div class="preloader-image"></div>
+        </ng-template>
+      </div>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div
-            *ngFor="let config of buttons"
-            [attr.visible]="config.visible()"
-            [attr.id]="config.id"
-            class="dialog-button">
-            <button
-                (click)="config.fn()"
-                [disabled]="ifDisabledBtn(config)"
-                class="guardian-button guardian-button-{{config.type}}"
-            >
-                <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
-                {{getButtonName(config)}}
-            </button>
-        </div>
-        <div *ngIf="lastSavedAt" class="last-autosave">
-            {{ minutesAgo$ | async }}
-        </div>
-    </div>
+  <div class="action-buttons">
+    @for (config of buttons; track config) {
+      <div
+        [attr.visible]="config.visible()"
+        [attr.id]="config.id"
+        class="dialog-button">
+        <button
+          (click)="config.fn()"
+          [disabled]="ifDisabledBtn(config)"
+          class="guardian-button guardian-button-{{config.type}}"
+          >
+          @if (config.iconPath) {
+            <svg-icon src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+          }
+          {{getButtonName(config)}}
+        </button>
+      </div>
+    }
+    @if (lastSavedAt) {
+      <div class="last-autosave">
+        {{ minutesAgo$ | async }}
+      </div>
+    }
+  </div>
 </div>
