@@ -220,7 +220,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
             document.body.style.setProperty('--linear-gradient', gradientData);
             // document.body.style.setProperty('--header-color-shadow', shadow);
             document.body.style.setProperty('--color-primary', this.primaryHexColorControl.value);
-            companyName.innerHTML = brandingData.companyName;
+            companyName.textContent = brandingData.companyName;
             document.title = brandingData.companyName;
 
             if (brandingData.companyLogoUrl) {
@@ -242,7 +242,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
         document.body.style.setProperty('--color-primary', primaryColor);
         //document.documentElement.style.setProperty('--button-primary-color', primaryColor);
         if (this.companyNameControl.value) {
-            companyName.innerHTML = this.companyNameControl.value;
+            companyName.textContent = this.companyNameControl.value;
             document.title = this.companyNameControl.value;
         }
         if (this.companyLogoUrl) {
