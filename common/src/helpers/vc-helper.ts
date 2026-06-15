@@ -335,10 +335,15 @@ export class VcHelper extends VCJS {
         const vcSchema = await VcHelper.getSchemaByContext(subject['@context'], subject.type);
         const entity: SchemaEntity = vcSchema?.entity;
         if (entity === SchemaEntity.EVC) {
-            return SignatureType.BbsBlsSignature2020;
-        } else {
-            return SignatureType.Ed25519Signature2018;
+            // EVC schemas are signed with BbsBlsSignature2020, whose archived @mattrglobal
+            // stack is incompatible with the current jsonld-signatures version and JSON-LD
+            // contexts. Fail with a clear, intentional error until the BBS cryptosuite
+            // migration restores the path, instead of a cryptic library exception.
+            throw new Error(
+                'Encrypted Verifiable Credentials (BbsBlsSignature2020) are temporarily unsupported pending the BBS cryptosuite migration; use a standard (Ed25519) schema in the meantime.'
+            );
         }
+        return SignatureType.Ed25519Signature2018;
     }
 
     /**
