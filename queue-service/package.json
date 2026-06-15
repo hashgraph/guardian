@@ -7,7 +7,7 @@
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
         "dotenv": "^16.0.0",
-        "reflect-metadata": "^0.1.13",
+        "reflect-metadata": "^0.2.2",
         "rxjs": "^7.8.1"
     },
     "description": "",
