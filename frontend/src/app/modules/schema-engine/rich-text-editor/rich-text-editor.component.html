@@ -1,0 +1,73 @@
+<div class="rte-wrapper" [class.rte-readonly]="readonly || isDisabled">
+
+  <!-- Toolbar (hidden in readonly mode) -->
+  @if (!readonly && !isDisabled) {
+    <div class="rte-toolbar" role="toolbar" aria-label="Text formatting">
+      @for (item of toolbarItems; track $index) {
+        @if (item.separator) {
+          <span class="rte-separator"></span>
+        } @else {
+          <button
+            type="button"
+            class="rte-btn"
+            [title]="item.title!"
+            (mousedown)="execCommand(item.command!, $event)"
+            tabindex="-1"
+          >
+            @if (item.icon) {
+              <i [class]="item.icon"></i>
+            } @else {
+              <span class="rte-label">{{ item.label }}</span>
+            }
+          </button>
+        }
+      }
+    </div>
+  }
+
+  <!-- Editable area -->
+  <div
+    #editor
+    class="rte-editor"
+    [class.rte-empty]="isEmpty"
+    [attr.contenteditable]="(readonly || isDisabled) ? false : true"
+    [attr.data-placeholder]="placeholder"
+    (input)="onInput()"
+    (blur)="onBlur()"
+    role="textbox"
+    aria-multiline="true"
+    [attr.aria-label]="placeholder"
+    [attr.aria-readonly]="readonly || isDisabled"
+  ></div>
+
+  <!-- Inline link dialog -->
+  @if (showLinkDialog) {
+    <div class="rte-link-dialog" role="dialog" aria-modal="true" aria-label="Insert hyperlink">
+      <div class="rte-link-dialog-content">
+        <label class="rte-link-label">URL</label>
+        <input
+          class="rte-link-input p-inputtext"
+          type="url"
+          [(ngModel)]="linkUrl"
+          placeholder="https://example.com"
+          (keydown.enter)="insertLink()"
+          (keydown.escape)="cancelLink()"
+          autofocus
+        />
+        <div class="rte-link-actions">
+          <button
+            type="button"
+            class="guardian-button guardian-button-primary"
+            (click)="insertLink()"
+          >Insert</button>
+          <button
+            type="button"
+            class="guardian-button guardian-button-secondary"
+            (click)="cancelLink()"
+          >Cancel</button>
+        </div>
+      </div>
+    </div>
+  }
+
+</div>

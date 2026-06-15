@@ -385,7 +385,12 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
             && item.customType !== 'table'
+            && item.customType !== 'richText'
         );
+    }
+
+    public isRichText(item: IFieldControl<any>): boolean {
+        return item.customType === 'richText';
     }
 
     public isHelpText(item: IFieldControl<any>): boolean {
@@ -561,6 +566,8 @@ export class SchemaFormComponent implements OnInit {
             switch (customType) {
                 case 'hederaAccount':
                     return PlaceholderByFieldType.HederaAccount;
+                case 'richText':
+                    return PlaceholderByFieldType.String;
                 default:
                     return "";
             }

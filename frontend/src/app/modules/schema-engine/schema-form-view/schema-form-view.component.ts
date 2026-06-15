@@ -377,9 +377,14 @@ export class SchemaFormViewComponent implements OnInit {
                 item.format !== 'date' &&
                 item.format !== 'time' &&
                 item.format !== 'date-time' &&
-                item.customType !== 'table'
+                item.customType !== 'table' &&
+                item.customType !== 'richText'
             )
         );
+    }
+
+    public isRichText(item: IFieldControl): boolean {
+        return item.customType === 'richText';
     }
 
     public isPrefix(item: IFieldControl): boolean {

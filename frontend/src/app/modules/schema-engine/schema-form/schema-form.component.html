@@ -106,6 +106,18 @@
                             "
                       ></table-field>
                     }
+                    @if (isRichText(item)) {
+                      <div
+                        class="form-field-input guardian-input-container"
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
+                        >
+                        <app-rich-text-editor
+                          [formControl]="item.control"
+                          [placeholder]="getPlaceholderByFieldType(item)"
+                          [readonly]="!!(isEditMode && !item.isUpdatable)"
+                        ></app-rich-text-editor>
+                      </div>
+                    }
                     @if (isInput(item)) {
                       <div
                         class="form-field-input guardian-input-container"
@@ -636,6 +648,20 @@
                                     "
                                 ></table-field>
                               </ng-container>
+                            }
+                            @if (isRichText(item)) {
+                              <div
+                                class="form-field-input guardian-input-container"
+                                [attr.readonly-field]="
+                                    isEditMode && !item.isUpdatable
+                                "
+                                >
+                                <app-rich-text-editor
+                                  [formControl]="listItem.control"
+                                  [placeholder]="getPlaceholderByFieldType(item)"
+                                  [readonly]="!!(isEditMode && !item.isUpdatable)"
+                                ></app-rich-text-editor>
+                              </div>
                             }
                             @if (isInput(item)) {
                               <div

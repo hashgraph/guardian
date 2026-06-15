@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 import { CodemirrorModule } from '@ctrl/ngx-codemirror';
 import { GeojsonTypeComponent } from './geojson-type/geojson-type.component';
@@ -56,6 +56,7 @@ import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dial
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
 import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
 import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
+import { RichTextEditorComponent } from './rich-text-editor/rich-text-editor.component';
 
 @NgModule({
     declarations: [
@@ -89,11 +90,13 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         TableFieldComponent,
         TableViewerComponent,
         SchemaFormNavigationComponent,
-        SchemaFormViewNavigationComponent
+        SchemaFormViewNavigationComponent,
+        RichTextEditorComponent
     ],
     imports: [
         CommonModule,
         FormsModule,
+        ReactiveFormsModule,
         CommonComponentsModule,
         MaterialModule,
         ClipboardModule,
