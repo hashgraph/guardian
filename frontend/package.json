@@ -55,7 +55,7 @@
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "^18.2.12",
-    "@angular/cli": "^18.2.12",
+    "@angular/cli": "^22.0.1",
     "@angular/compiler-cli": "^18.2.12",
     "@types/file-saver": "2.0.7",
     "@types/geojson": "7946.0.16",
