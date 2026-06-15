@@ -16,6 +16,8 @@ declare module '@digitalbazaar/security-context' {
 
 declare module '@digitalbazaar/ed25519-signature-2018' {
     export class Ed25519Signature2018 {
+        static CONTEXT_URL: string;
+        static CONTEXT: any;
         constructor(options?: any);
     }
 }

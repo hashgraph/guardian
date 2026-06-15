@@ -12,6 +12,7 @@ import { VcSubject } from './vc-subject.js';
 import { TimestampUtils } from '../timestamp-utils.js';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function.js';
 import { DocumentLoader } from '../document-loader/document-loader.js';
+import { IDocumentFormat } from '../document-loader/document-format.js';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader.js';
 import { Issuer } from './issuer.js';
 import axios from 'axios';
@@ -199,7 +200,7 @@ export class VCJS {
             result = await vcjs.verifyCredential({
                 credential: json,
                 suite: [new Ed25519Signature2018()],
-                documentLoader,
+                documentLoader: this.ed25519VerificationDocumentLoader(documentLoader),
             });
         } else {
             result = await verify(json, {
@@ -220,6 +221,50 @@ export class VCJS {
             }
             throw new Error('Verification error');
         }
+    }
+
+    /**
+     * Adapt a document loader for @digitalbazaar/ed25519-signature-2018 verification.
+     *
+     * The digitalbazaar suite requires the resolved verification method to carry the
+     * suite context, and it authorizes the controller by absolute assertionMethod id.
+     * Guardian DID documents declare only the did/v1 context and use relative
+     * assertionMethod references, so this wrapper: serves the suite context, returns the
+     * requested verification method as a key node carrying that context, and rewrites the
+     * controller's relative assertionMethod references to absolute ids. Non-DID documents
+     * and non-Ed25519 verification methods pass through unchanged, so the BBS path that
+     * shares this loader is unaffected.
+     *
+     * @param {DocumentLoaderFunction} documentLoader - base document loader
+     *
+     * @returns {DocumentLoaderFunction} - wrapped document loader
+     */
+    private ed25519VerificationDocumentLoader(documentLoader: DocumentLoaderFunction): DocumentLoaderFunction {
+        const contextUrl = Ed25519Signature2018.CONTEXT_URL;
+        const context = Ed25519Signature2018.CONTEXT;
+        return async (iri: string): Promise<IDocumentFormat> => {
+            if (iri === contextUrl) {
+                return { documentUrl: iri, document: context };
+            }
+            const result = await documentLoader(iri);
+            const document = result?.document;
+            if (document && Array.isArray(document.verificationMethod)) {
+                if (iri.indexOf('#') !== -1) {
+                    const method = document.verificationMethod.find((item: any) => item?.id === iri);
+                    if (method && method.type === HederaEd25519Method.TYPE) {
+                        return { documentUrl: iri, document: { '@context': contextUrl, ...method } };
+                    }
+                } else if (Array.isArray(document.assertionMethod)) {
+                    const assertionMethod = document.assertionMethod.map((reference: any) =>
+                        (typeof reference === 'string' && reference.startsWith('#'))
+                            ? document.id + reference
+                            : reference
+                    );
+                    return { documentUrl: iri, document: { ...document, assertionMethod } };
+                }
+            }
+            return result;
+        };
     }
 
     /**
