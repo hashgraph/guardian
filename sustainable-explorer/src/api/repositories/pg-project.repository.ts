@@ -25,6 +25,9 @@ interface RawRow {
     updatedAt: Date;
     registry_name: string | null;
     issuance_count: number | null;
+    // pg returns bigint columns as strings
+    total_issued: string | null;
+    total_retired: string | null;
 }
 
 /**
@@ -56,6 +59,44 @@ const ISSUANCE_COUNT_JOIN = `
         WHERE pml.project_key = bv."projectKey"
           AND pml.token_id IS NOT NULL
     ) mint ON true
+`;
+
+/**
+ * LATERAL subquery that sums all mint amounts attributed to a project via
+ * project_mint_link. Mirrors the primary path in findById.
+ */
+const LIFECYCLE_ISSUED_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(pml.amount), 0)::bigint AS total_issued
+        FROM project_mint_link pml
+        WHERE pml.project_key = bv."projectKey"
+    ) lc_issued ON true
+`;
+
+/**
+ * LATERAL subquery that counts deleted NFT serials for tokens attributed to
+ * the project. Only NON_FUNGIBLE_UNIQUE tokens can have retired serials.
+ * Mirrors the NFT retirement path in findById.
+ */
+const LIFECYCLE_RETIRED_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT COALESCE(SUM(nc_agg.retired_count), 0)::bigint AS total_retired
+        FROM (
+            SELECT pml.token_id
+            FROM project_mint_link pml
+            JOIN token_cache tc
+                ON tc."tokenId" = pml.token_id
+               AND tc.type = 'NON_FUNGIBLE_UNIQUE'
+            WHERE pml.project_key = bv."projectKey"
+              AND pml.token_id IS NOT NULL
+            GROUP BY pml.token_id
+        ) nft_tok
+        JOIN LATERAL (
+            SELECT COUNT(*) FILTER (WHERE deleted = true)::bigint AS retired_count
+            FROM nft_cache
+            WHERE "tokenId" = nft_tok.token_id
+        ) nc_agg ON true
+    ) lc_retired ON true
 `;
 
 /**
@@ -140,10 +181,14 @@ export class PgProjectRepository extends ProjectRepository {
                 bv.*,
                 reg.registry_name,
                 COALESCE(mint.issuance_count, 0) AS issuance_count,
+                lc_issued.total_issued,
+                lc_retired.total_retired,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
             ${ISSUANCE_COUNT_JOIN}
+            ${LIFECYCLE_ISSUED_JOIN}
+            ${LIFECYCLE_RETIRED_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -503,6 +548,17 @@ export class PgProjectRepository extends ProjectRepository {
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
         policySchemas?: PolicySchemaRow[],
     ): ProjectRow {
+        // When called from findAll(), lifecycle totals come from the lateral
+        // subquery columns on the raw row. When called from findById(), they
+        // are passed explicitly as the lifecycle argument (which takes priority).
+        const resolvedLifecycle = lifecycle ?? (row.total_issued != null
+            ? (() => {
+                const issued = parseInt(row.total_issued!, 10);
+                const retired = parseInt(row.total_retired ?? '0', 10);
+                return { totalIssued: issued, totalRetired: retired, totalActive: issued - retired };
+              })()
+            : undefined);
+
         return {
             id: row.id,
             sourceTimestamp: row.sourceTimestamp,
@@ -518,9 +574,9 @@ export class PgProjectRepository extends ProjectRepository {
             updatedAt: row.updatedAt,
             issuances,
             issuanceCount: row.issuance_count ?? undefined,
-            totalIssued: lifecycle?.totalIssued,
-            totalRetired: lifecycle?.totalRetired,
-            totalActive: lifecycle?.totalActive,
+            totalIssued: resolvedLifecycle?.totalIssued,
+            totalRetired: resolvedLifecycle?.totalRetired,
+            totalActive: resolvedLifecycle?.totalActive,
             policySchemas,
         };
     }

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { Building2, Copy, Check, FileJson } from 'lucide-vue-next';
+import { Building2, Copy, Check, FileJson, Download, Loader2 } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
+import { downloadCsv, csvDateStamp, buildRegistryCsvRows } from '~/lib/csv-export';
 import type { SortDirection } from '~/composables/useFilteredPagination';
 
 
@@ -231,6 +232,42 @@ const tagsAsList = (tags: string | null): string[] => {
     return tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0);
 };
 
+const downloading = ref(false);
+
+async function downloadRegistries() {
+    if (downloading.value) return;
+    downloading.value = true;
+    try {
+        const { fetchAllPages } = useApiDownload();
+        const query: Record<string, string | number | boolean> = {};
+        const search = searchQuery.value?.trim();
+        if (search) query.search = search;
+        if (apiSortBy.value && apiSortDir.value) {
+            query.sortBy = apiSortBy.value;
+            query.sortDir = apiSortDir.value;
+        }
+        const FILTER_KEYS = ['displayName', 'did', 'id', 'tags', 'geography', 'law'] as const;
+        for (const key of FILTER_KEYS) {
+            const raw = filters.value[key];
+            if (raw == null) continue;
+            const trimmed = String(raw).trim();
+            if (trimmed) query[key] = trimmed;
+        }
+        if (filters.value.hideEmpty === true) query.hideEmpty = true;
+        const ts = filters.value.sourceTimestamp;
+        if (ts && typeof ts === 'object') {
+            if (ts.from) query.createdAtFrom = ts.from;
+            if (ts.to) query.createdAtTo = ts.to;
+        }
+
+        const allData = await fetchAllPages(`/api/v1/${network.value}/registries`, query);
+        const rows = buildRegistryCsvRows(allData, network.value);
+        downloadCsv(`registries_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
+
 // Raw-data viewer state — same VcJsonViewer pattern used elsewhere.
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
@@ -274,6 +311,17 @@ function viewRegistry(r: RegistryDto) {
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-3">
+                <button
+                    class="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                    :disabled="downloading"
+                    @click="downloadRegistries"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('registries.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2 } from 'lucide-vue-next';
+import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { SDG_LIST } from '~/lib/sdgs';
@@ -7,8 +7,11 @@ import { generateProjectVc } from '~/lib/mock-vc';
 import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
 import { getMethodologyLongName } from '~/lib/methodologies';
 import type { Project } from '~/types/models';
+import { downloadCsv, csvDateStamp, buildProjectCsvRows } from '~/lib/csv-export';
+import { mapApiProject } from '~/composables/useProjects';
 
 const { t } = useI18n();
+const { network } = useNetwork();
 const { projects, total, filterOptions } = useProjects();
 const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
 const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
@@ -159,6 +162,54 @@ const statusColor: Record<string, string> = {
     Issuing: 'bg-stat-green/10 text-stat-green',
     Completed: 'bg-purple-50 text-purple-600',
 };
+
+const downloading = ref(false);
+
+async function downloadProjects() {
+    if (downloading.value) return;
+    downloading.value = true;
+    try {
+        const { fetchAllPages } = useApiDownload();
+        const af = activeFilters.value;
+        const query: Record<string, string | number> = {};
+        const search = searchQuery.value?.trim();
+        if (search)       query.search   = search;
+        if (af.status)    query.status   = af.status;
+        if (af.registry)  query.registry = af.registry;
+        if (af.country)   query.country  = af.country;
+        if (af.developer) query.developer = af.developer;
+        // sector, sectoralScope, sdgs, vintage range — applied client-side below
+
+        let mapped = (await fetchAllPages(`/api/v1/${network.value}/projects`, query)).map(mapApiProject);
+
+        if (af.sector) {
+            const sectors = af.sector.split(',').map((s: string) => s.trim().toLowerCase());
+            mapped = mapped.filter(p => sectors.some(s => (p.sector ?? '').toLowerCase().includes(s)));
+        }
+        if (af.sectoralScope) {
+            const scope = af.sectoralScope.toLowerCase();
+            mapped = mapped.filter(p => (p.sectoralScope ?? '').toLowerCase().includes(scope));
+        }
+        if (af.sdgs) {
+            const selectedSdgs = af.sdgs.split(',').map((s: string) => s.trim());
+            mapped = mapped.filter(p => Array.isArray(p.sdgs) && selectedSdgs.some(s => p.sdgs.map(String).includes(s)));
+        }
+        if (af.vintage) {
+            const [from, to] = af.vintage.split('|');
+            mapped = mapped.filter(p => {
+                const v = String(p.vintage ?? '');
+                if (from && v < from) return false;
+                if (to && v > to) return false;
+                return true;
+            });
+        }
+
+        const rows = buildProjectCsvRows(mapped, network.value);
+        downloadCsv(`projects_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
 </script>
 
 <template>
@@ -215,6 +266,17 @@ const statusColor: Record<string, string> = {
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-2">
+                <button
+                    :disabled="downloading"
+                    class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    @click="downloadProjects"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('projects.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">

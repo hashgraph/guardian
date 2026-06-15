@@ -33,6 +33,9 @@ interface RawRow {
     sectoral_scopes: unknown | null;
     emission_reduction_approach: unknown | null;
     policy_source_cid: string | null;
+    // pg returns bigint columns as strings
+    total_issued: string | null;
+    total_retired: string | null;
 }
 
 /**
@@ -80,6 +83,35 @@ const EFFECTIVE_DECODE_STATUS = `
         WHEN p."decodeStatus" = 'decoded' THEN 'success'
         ELSE p."decodeStatus"
     END
+`;
+
+/**
+ * LATERAL subquery that computes totalIssued and totalRetired for each
+ * methodology in the list. Mirrors the primary path used in findById:
+ * - Joins projects to this methodology via businessData->>'instanceTopicId'
+ * - Sums mint amounts from project_mint_link for totalIssued
+ * - Counts deleted NFT serials from nft_cache for totalRetired
+ */
+const LIFECYCLE_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT
+            COALESCE(SUM(pml.amount), 0)::bigint AS total_issued,
+            COALESCE(SUM(
+                CASE WHEN tc.type = 'NON_FUNGIBLE_UNIQUE' THEN
+                    (SELECT COUNT(*) FILTER (WHERE deleted = true)::bigint
+                     FROM nft_cache nc
+                     WHERE nc."tokenId" = pml.token_id)
+                ELSE 0::bigint END
+            ), 0)::bigint AS total_retired
+        FROM project_mint_link pml
+        JOIN business_view proj
+            ON proj."viewType" = 'PROJECT'
+           AND proj."projectKey" = pml.project_key
+           AND proj."businessData"->>'instanceTopicId' = bv."relatedTopicId"
+        LEFT JOIN token_cache tc ON tc."tokenId" = pml.token_id
+        WHERE pml.token_id IS NOT NULL
+          AND bv."relatedTopicId" IS NOT NULL
+    ) lc_m ON true
 `;
 
 /**
@@ -180,12 +212,15 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
                 p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
                 p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
+                lc_m.total_issued,
+                lc_m.total_retired,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
                 ON s."relatedTopicId" = bv."relatedTopicId"
             ${REGISTRY_NAME_JOIN}
             ${POLICY_DECODE_STATUS_JOIN}
+            ${LIFECYCLE_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -365,6 +400,16 @@ export class PgMethodologyRepository extends MethodologyRepository {
         issuances?: IssuanceRow[],
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
     ): MethodologyRow {
+        // findById passes lifecycle explicitly; findAll supplies it via the
+        // LIFECYCLE_JOIN lateral columns on the raw row.
+        const resolvedLifecycle = lifecycle ?? (row.total_issued != null
+            ? (() => {
+                const issued = parseInt(row.total_issued!, 10);
+                const retired = parseInt(row.total_retired ?? '0', 10);
+                return { totalIssued: issued, totalRetired: retired, totalActive: issued - retired };
+              })()
+            : undefined);
+
         const stats: MethodologyStatsRow = {
             projectCount: parseInt(row.project_count || '0', 10),
             instanceProjectCount: parseInt(row.instance_project_count || '0', 10),
@@ -422,9 +467,9 @@ export class PgMethodologyRepository extends MethodologyRepository {
             updatedAt: row.updatedAt,
             stats,
             issuances,
-            totalIssued: lifecycle?.totalIssued,
-            totalRetired: lifecycle?.totalRetired,
-            totalActive: lifecycle?.totalActive,
+            totalIssued: resolvedLifecycle?.totalIssued,
+            totalRetired: resolvedLifecycle?.totalRetired,
+            totalActive: resolvedLifecycle?.totalActive,
             decodeStatus: row.decode_status ?? null,
             policySourceCid: row.policy_source_cid ?? null,
         };
