@@ -1,7 +1,6 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import * as vcLib from '@digitalbazaar/vc';
-import { VerificationResult } from '@digitalbazaar/vc';
 import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
@@ -196,7 +195,7 @@ export class VCJS {
      * @returns {boolean} - status
      */
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
-        let result: VerificationResult;
+        let result: vcLib.VerificationResult;
         if (json.proof.type === SignatureType.Ed25519Signature2018) {
             result = await vcLib.verifyCredential({
                 credential: json,
