@@ -5,7 +5,6 @@ import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type {
   MethodologySortKey,
   MethodologySortDir,
-  MethodologiesResponse,
 } from "~/composables/api/useMethodologiesApi";
 import type { SortDirection } from "~/composables/useFilteredPagination";
 import { formatCredits } from "~/lib/format";
@@ -293,47 +292,23 @@ async function downloadMethodologies() {
     if (downloading.value) return;
     downloading.value = true;
     try {
-        const config = useRuntimeConfig();
-        const baseURL = import.meta.server
-            ? (config.apiBaseUrl as string)
-            : (config.public.apiBaseUrl as string);
-
-        const PAGE_LIMIT = 1000;
-        const baseQuery: Record<string, string | number> = { limit: PAGE_LIMIT };
+        const { fetchAllPages } = useApiDownload();
+        const query: Record<string, string | number> = {};
         const search = searchQuery.value?.trim();
-        if (search) baseQuery.search = search;
+        if (search) query.search = search;
         if (apiSortBy.value && apiSortDir.value) {
-            baseQuery.sortBy = apiSortBy.value;
-            baseQuery.sortDir = apiSortDir.value;
+            query.sortBy = apiSortBy.value;
+            query.sortDir = apiSortDir.value;
         }
         const FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
         for (const key of FILTER_KEYS) {
             const raw = filters.value[key];
             if (raw == null) continue;
             const trimmed = String(raw).trim();
-            if (trimmed) baseQuery[key] = trimmed;
+            if (trimmed) query[key] = trimmed;
         }
 
-        // Fetch page 1 to get total, then fetch remaining pages in parallel
-        const first = await $fetch<MethodologiesResponse>(
-            `/api/v1/${network.value}/methodologies`,
-            { baseURL, query: { ...baseQuery, page: 1 } },
-        );
-        const totalPages = first?.meta?.totalPages ?? 1;
-        let allData = first?.data ?? [];
-
-        if (totalPages > 1) {
-            const rest = await Promise.all(
-                Array.from({ length: totalPages - 1 }, (_, i) =>
-                    $fetch<MethodologiesResponse>(
-                        `/api/v1/${network.value}/methodologies`,
-                        { baseURL, query: { ...baseQuery, page: i + 2 } },
-                    ).then(r => r?.data ?? []),
-                ),
-            );
-            allData = [...allData, ...rest.flat()];
-        }
-
+        const allData = await fetchAllPages(`/api/v1/${network.value}/methodologies`, query);
         const rows = buildMethodologyCsvRows(allData, network.value);
         downloadCsv(`methodologies_export_${csvDateStamp()}.csv`, rows);
     } finally {

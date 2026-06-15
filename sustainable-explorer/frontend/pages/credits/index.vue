@@ -114,9 +114,48 @@ const downloading = ref(false);
 async function downloadCredits() {
     if (downloading.value) return;
     downloading.value = true;
-    await nextTick();
     try {
-        const rows = buildCreditCsvRows(filtered.value, network.value);
+        const { fetchAllPages } = useApiDownload();
+        const af = activeFilters.value;
+        const query: Record<string, string | number> = {};
+        const search = searchQuery.value?.trim();
+        if (search) query.search = search;
+        // type: API only handles single value; multi-select applied client-side below
+        if (af.type && !af.type.includes(',')) query.type = af.type;
+        if (af.registry) query.registry = af.registry;
+        if (projectKeyFilter.value) query.projectKey = projectKeyFilter.value;
+        if (methodologyIdFilter.value) query.methodologyId = methodologyIdFilter.value;
+        if (registryDidFilter.value) query.registryDid = registryDidFilter.value;
+        const API_SORT_KEYS = new Set(['name', 'symbol', 'type', 'supply', 'registry', 'mintDate']);
+        if (sortKey.value && sortDir.value && API_SORT_KEYS.has(String(sortKey.value))) {
+            query.sortBy = String(sortKey.value);
+            query.sortDir = sortDir.value;
+        }
+
+        let allData = await fetchAllPages(`/api/v1/${network.value}/credits`, query);
+
+        // Apply client-side-only hideUnlinked filter
+        if (hideUnlinked.value) allData = allData.filter(c => c.projectId);
+
+        // type multi-select (backend only handles single value; OR match across selected types)
+        if (af.type && af.type.includes(',')) {
+            const types = af.type.split(',').map((s: string) => s.trim());
+            allData = allData.filter(c => types.includes(c.type ?? ''));
+        }
+        // supply range stored as "min|max"
+        if (af.supply) {
+            const [min, max] = af.supply.split('|');
+            if (min) allData = allData.filter(c => (c.supply ?? 0) >= parseFloat(min));
+            if (max) allData = allData.filter(c => (c.supply ?? 0) <= parseFloat(max));
+        }
+        // mintDate range stored as "from|to" (YYYY-MM-DD)
+        if (af.mintDate) {
+            const [from, to] = af.mintDate.split('|');
+            if (from) allData = allData.filter(c => (c.mintDate ?? '') >= from);
+            if (to) allData = allData.filter(c => (c.mintDate ?? '') <= to);
+        }
+
+        const rows = buildCreditCsvRows(allData, network.value);
         downloadCsv(`issuances_export_${csvDateStamp()}.csv`, rows);
     } finally {
         downloading.value = false;

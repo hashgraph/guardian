@@ -2,7 +2,7 @@
 import { Building2, Copy, Check, FileJson, Download, Loader2 } from 'lucide-vue-next';
 import { useDebounceFn } from '@vueuse/core';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
-import type { RegistrySortKey, RegistrySortDir, RegistryDto, RegistriesResponse } from '~/composables/api/useRegistriesApi';
+import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
 import { downloadCsv, csvDateStamp, buildRegistryCsvRows } from '~/lib/csv-export';
 import type { SortDirection } from '~/composables/useFilteredPagination';
 
@@ -238,52 +238,29 @@ async function downloadRegistries() {
     if (downloading.value) return;
     downloading.value = true;
     try {
-        const config = useRuntimeConfig();
-        const baseURL = import.meta.server
-            ? (config.apiBaseUrl as string)
-            : (config.public.apiBaseUrl as string);
-
-        const PAGE_LIMIT = 1000;
-        const baseQuery: Record<string, string | number | boolean> = { limit: PAGE_LIMIT };
+        const { fetchAllPages } = useApiDownload();
+        const query: Record<string, string | number | boolean> = {};
         const search = searchQuery.value?.trim();
-        if (search) baseQuery.search = search;
+        if (search) query.search = search;
         if (apiSortBy.value && apiSortDir.value) {
-            baseQuery.sortBy = apiSortBy.value;
-            baseQuery.sortDir = apiSortDir.value;
+            query.sortBy = apiSortBy.value;
+            query.sortDir = apiSortDir.value;
         }
         const FILTER_KEYS = ['displayName', 'did', 'id', 'tags', 'geography', 'law'] as const;
         for (const key of FILTER_KEYS) {
             const raw = filters.value[key];
             if (raw == null) continue;
             const trimmed = String(raw).trim();
-            if (trimmed) baseQuery[key] = trimmed;
+            if (trimmed) query[key] = trimmed;
         }
-        if (filters.value.hideEmpty === true) baseQuery.hideEmpty = true;
+        if (filters.value.hideEmpty === true) query.hideEmpty = true;
         const ts = filters.value.sourceTimestamp;
         if (ts && typeof ts === 'object') {
-            if (ts.from) baseQuery.createdAtFrom = ts.from;
-            if (ts.to) baseQuery.createdAtTo = ts.to;
+            if (ts.from) query.createdAtFrom = ts.from;
+            if (ts.to) query.createdAtTo = ts.to;
         }
 
-        const first = await $fetch<RegistriesResponse>(
-            `/api/v1/${network.value}/registries`,
-            { baseURL, query: { ...baseQuery, page: 1 } },
-        );
-        const totalPagesCount = first?.meta?.totalPages ?? 1;
-        let allData = first?.data ?? [];
-
-        if (totalPagesCount > 1) {
-            const rest = await Promise.all(
-                Array.from({ length: totalPagesCount - 1 }, (_, i) =>
-                    $fetch<RegistriesResponse>(
-                        `/api/v1/${network.value}/registries`,
-                        { baseURL, query: { ...baseQuery, page: i + 2 } },
-                    ).then(r => r?.data ?? []),
-                ),
-            );
-            allData = [...allData, ...rest.flat()];
-        }
-
+        const allData = await fetchAllPages(`/api/v1/${network.value}/registries`, query);
         const rows = buildRegistryCsvRows(allData, network.value);
         downloadCsv(`registries_export_${csvDateStamp()}.csv`, rows);
     } finally {

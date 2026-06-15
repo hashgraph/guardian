@@ -8,6 +8,7 @@ import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
 import { getMethodologyLongName } from '~/lib/methodologies';
 import type { Project } from '~/types/models';
 import { downloadCsv, csvDateStamp, buildProjectCsvRows } from '~/lib/csv-export';
+import { mapApiProject } from '~/composables/useProjects';
 
 const { t } = useI18n();
 const { network } = useNetwork();
@@ -167,9 +168,43 @@ const downloading = ref(false);
 async function downloadProjects() {
     if (downloading.value) return;
     downloading.value = true;
-    await nextTick();
     try {
-        const rows = buildProjectCsvRows(filtered.value, network.value);
+        const { fetchAllPages } = useApiDownload();
+        const af = activeFilters.value;
+        const query: Record<string, string | number> = {};
+        const search = searchQuery.value?.trim();
+        if (search)       query.search   = search;
+        if (af.status)    query.status   = af.status;
+        if (af.registry)  query.registry = af.registry;
+        if (af.country)   query.country  = af.country;
+        if (af.developer) query.developer = af.developer;
+        // sector, sectoralScope, sdgs, vintage range — applied client-side below
+
+        let mapped = (await fetchAllPages(`/api/v1/${network.value}/projects`, query)).map(mapApiProject);
+
+        if (af.sector) {
+            const sectors = af.sector.split(',').map((s: string) => s.trim().toLowerCase());
+            mapped = mapped.filter(p => sectors.some(s => (p.sector ?? '').toLowerCase().includes(s)));
+        }
+        if (af.sectoralScope) {
+            const scope = af.sectoralScope.toLowerCase();
+            mapped = mapped.filter(p => (p.sectoralScope ?? '').toLowerCase().includes(scope));
+        }
+        if (af.sdgs) {
+            const selectedSdgs = af.sdgs.split(',').map((s: string) => s.trim());
+            mapped = mapped.filter(p => Array.isArray(p.sdgs) && selectedSdgs.some(s => p.sdgs.map(String).includes(s)));
+        }
+        if (af.vintage) {
+            const [from, to] = af.vintage.split('|');
+            mapped = mapped.filter(p => {
+                const v = String(p.vintage ?? '');
+                if (from && v < from) return false;
+                if (to && v > to) return false;
+                return true;
+            });
+        }
+
+        const rows = buildProjectCsvRows(mapped, network.value);
         downloadCsv(`projects_export_${csvDateStamp()}.csv`, rows);
     } finally {
         downloading.value = false;
