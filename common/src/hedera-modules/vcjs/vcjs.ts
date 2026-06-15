@@ -1,10 +1,11 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import * as vcjs from '@digitalbazaar/vc';
+import * as vcLib from '@digitalbazaar/vc';
+import { VerificationResult } from '@digitalbazaar/vc';
 import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { CheckResult } from '../../helpers/jsonld-schema/schemas-to-context-impl.js';
+import { SchemaValidationResult } from './schema-validation-result.js';
 import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
@@ -195,9 +196,9 @@ export class VCJS {
      * @returns {boolean} - status
      */
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
-        let result;
+        let result: VerificationResult;
         if (json.proof.type === SignatureType.Ed25519Signature2018) {
-            result = await vcjs.verifyCredential({
+            result = await vcLib.verifyCredential({
                 credential: json,
                 suite: [new Ed25519Signature2018()],
                 documentLoader: this.ed25519VerificationDocumentLoader(documentLoader),
@@ -272,9 +273,9 @@ export class VCJS {
      *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
      *
-     * @returns {CheckResult} - is verified
+     * @returns {SchemaValidationResult} - is verified
      */
-    public async verifySchema(vcDocument: VcDocument | any): Promise<CheckResult> {
+    public async verifySchema(vcDocument: VcDocument | any): Promise<SchemaValidationResult> {
         let vc: IVC;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();
@@ -315,7 +316,7 @@ export class VCJS {
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
 
-        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
     }
 
     /**
@@ -367,9 +368,9 @@ export class VCJS {
      *
      * @param {any} subject - subject
      *
-     * @returns {CheckResult} - is verified
+     * @returns {SchemaValidationResult} - is verified
      */
-    public async verifySubject(subject: any): Promise<CheckResult> {
+    public async verifySubject(subject: any): Promise<SchemaValidationResult> {
         if (!this.schemaLoader) {
             throw new Error('Schema Loader not found');
         }
@@ -391,7 +392,7 @@ export class VCJS {
 
         const valid = validate(subject);
 
-        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
     }
 
     /**
@@ -513,7 +514,7 @@ export class VCJS {
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
         ContextHelper.clearContext(vc);
-        const verifiableCredential = await vcjs.issue({
+        const verifiableCredential = await vcLib.issue({
             credential: vc,
             suite,
             documentLoader,
@@ -542,8 +543,10 @@ export class VCJS {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<VpDocument> {
+        // signPresentation only attaches a proof; it expects an already-formed VP
+        // (verifiableCredential entries set via VpDocument), it does not build one.
         const vp = vpDocument.toJsonTree();
-        const verifiablePresentation = await vcjs.signPresentation({
+        const verifiablePresentation = await vcLib.signPresentation({
             presentation: vp,
             challenge: '123',
             suite,

@@ -98,18 +98,6 @@ const intermediateToPartialContext = (intermediate: any): any => {
     return partialContext;
 };
 
-export class CheckResult {
-    ok: boolean;
-    error?: { type: string; details: any[] };
-
-    constructor(ok: boolean, type: string = '', details: any[] = []) {
-        this.ok = ok;
-        if (!ok) {
-            this.error = { type, details };
-        }
-    }
-}
-
 export const schemasToContext = (
     schemas: any[],
     options: {

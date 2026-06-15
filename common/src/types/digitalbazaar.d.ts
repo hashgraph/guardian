@@ -30,7 +30,12 @@ declare module '@digitalbazaar/ed25519-verification-key-2018' {
 }
 
 declare module '@digitalbazaar/vc' {
+    export interface VerificationResult {
+        verified: boolean;
+        results?: Array<{ verified: boolean; error?: { message?: string } }>;
+        error?: any;
+    }
     export function issue(options: any): Promise<any>;
-    export function verifyCredential(options: any): Promise<any>;
+    export function verifyCredential(options: any): Promise<VerificationResult>;
     export function signPresentation(options: any): Promise<any>;
 }
