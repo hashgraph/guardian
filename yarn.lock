@@ -12,6 +12,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@arnog/colors@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "@arnog/colors@npm:0.5.0"
+  checksum: 10c0/24405b0313b09ac695a2ac97b527c981c4a438b2e25740619e6d813f0ca7aaccfeee04e123c96420e66a6ce8b3d4d9b22b7b108ef187c039cdf3a5d9a728fa99
+  languageName: node
+  linkType: hard
+
 "@assemblyscript/loader@npm:^0.9.4":
   version: 0.9.4
   resolution: "@assemblyscript/loader@npm:0.9.4"
@@ -1059,13 +1066,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@cortex-js/compute-engine@npm:^0.27.0":
-  version: 0.27.0
-  resolution: "@cortex-js/compute-engine@npm:0.27.0"
+"@cortex-js/compute-engine@npm:^0.59.0":
+  version: 0.59.0
+  resolution: "@cortex-js/compute-engine@npm:0.59.0"
   dependencies:
+    "@arnog/colors": "npm:^0.5.0"
     complex-esm: "npm:^2.1.1-esm1"
-    decimal.js: "npm:^10.4.3"
-  checksum: 10c0/7942cd499eda1f389b518c1bbf96a4fe8d817629a3d5b03108fbe906290e9585073eca30b57b09dc7473cd37540237d47d5f42ad9f6dcf096010691e5fa4cecf
+  checksum: 10c0/784aafe5d55b251f218ec0869b01aa881b6295d84764674e2b07f64463501eb643af7cd9fa5d9e2af86bbbbf8eb13f8678dce355e0e925cc466aa4c5d68c2557
   languageName: node
   linkType: hard
 
@@ -14630,7 +14637,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "policy-service@workspace:policy-service"
   dependencies:
-    "@cortex-js/compute-engine": "npm:^0.27.0"
+    "@cortex-js/compute-engine": "npm:^0.59.0"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@mikro-orm/core": "npm:6.4.16"
