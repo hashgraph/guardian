@@ -60,9 +60,9 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
         p.category ?? '',
         p.sector ?? '',
         p.sectoralScope ?? '',
-        isoDate(p.createdAt),
-        isoDate(p.creditingPeriodStart),
-        isoDate(p.creditingPeriodEnd),
+        p.createdAt ?? '',
+        p.creditingPeriodStart ?? '',
+        p.creditingPeriodEnd ?? '',
         p.issuanceCount ?? 0,
         p.totalIssued ?? 0,
         p.totalRetired ?? 0,
@@ -90,11 +90,12 @@ export function buildCreditCsvRows(credits: any[], network: string = ''): string
     return [header, ...rows];
 }
 
-export function hederaTimestampToIsoDate(ts: string | null | undefined): string {
+export function hederaTimestamp(ts: string | null | undefined, format: 'date' | 'datetime' = 'date'): string {
     if (!ts) return '';
     const seconds = parseFloat(ts);
     if (isNaN(seconds)) return ts;
-    return new Date(seconds * 1000).toISOString().slice(0, 10);
+    const d = new Date(seconds * 1000);
+    return format === 'datetime' ? d.toLocaleString('en-US') : d.toISOString().slice(0, 10);
 }
 
 export function buildRegistryCsvRows(registries: any[], network: string = ''): string[][] {
@@ -113,7 +114,7 @@ export function buildRegistryCsvRows(registries: any[], network: string = ''): s
         r.stats?.userCount ?? 0,
         r.stats?.issuanceCount ?? 0,
         r.tags ?? '',
-        hederaTimestampToIsoDate(r.sourceTimestamp),
+        hederaTimestamp(r.sourceTimestamp),
     ]);
     return [header, ...rows];
 }
@@ -122,7 +123,7 @@ export function buildMethodologyCsvRows(methodologies: any[], network: string = 
     const header = [
         'Network', 'Methodology Name', 'ID', 'Description', 'Status', 'Registry Name',
         'Version', 'Sectoral Scopes', 'Emission Reduction Approach',
-        'Source Timestamp', 'Created At', 'Updated At',
+        'Published Date',
         'Project Count', 'Issuances', 'Total Issued', 'Total Retired', 'Total Active',
     ];
     const rows = methodologies.map(m => [
@@ -135,9 +136,7 @@ export function buildMethodologyCsvRows(methodologies: any[], network: string = 
         m.version ?? '',
         Array.isArray(m.sectoralScopes) ? m.sectoralScopes.join(';') : (m.sectoralScopes ?? ''),
         m.emissionReductionApproach ?? '',
-        isoDate(m.sourceTimestamp),
-        isoDate(m.createdAt),
-        isoDate(m.updatedAt),
+        hederaTimestamp(m.sourceTimestamp, 'datetime'),
         m.stats?.instanceProjectCount ?? 0,
         m.stats?.instanceIssuanceCount ?? 0,
         m.totalIssued ?? 0,
