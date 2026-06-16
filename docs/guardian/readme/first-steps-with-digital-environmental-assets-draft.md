@@ -6,9 +6,7 @@ description: >-
 
 # First steps with digital environmental assets (draft)
 
-## Alt 1 (progressive setup)
-
-* [ ] Get set up • 0/5 steps
+* #### Get set up • 0/5 steps
 
 {% stepper %}
 {% step %}
@@ -83,32 +81,3 @@ Visit the \[LINK: AUDIT] interface to inspect the documents created after data w
 * LINK Subscribe to community calendar
 * LINK Feedback & Support
 * LINK Contributing
-
-
-
-## Alt 2 (video support)
-
-
-
-{% columns %}
-{% column width="41.66666666666667%" %}
-{% stepper %}
-{% step %}
-###
-
-
-{% endstep %}
-
-{% step %}
-###
-
-
-{% endstep %}
-{% endstepper %}
-{% endcolumn %}
-
-{% column width="58.33333333333333%" %}
-{% embed url="https://www.youtube.com/watch?v=eUf9MNKVPHE" %}
-{% endcolumn %}
-{% endcolumns %}
-
