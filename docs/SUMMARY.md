@@ -45,6 +45,7 @@
   * [Security](guardian/readme/security.md)
   * [Meeco authentication](guardian/readme/security-1/README.md)
     * [How it works](guardian/readme/security-1/how-it-works.md)
+  * [First Steps (draft)](guardian/readme/first-steps-draft.md)
 * [Architecture](guardian/architecture/README.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
