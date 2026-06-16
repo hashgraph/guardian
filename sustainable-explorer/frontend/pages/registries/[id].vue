@@ -10,11 +10,9 @@ import {
     AlertCircle,
     ExternalLink,
     Shield,
-    MapPin,
     BookOpen,
     Coins,
     Layers,
-    Hash,
     BarChart3,
     Tag,
     CheckCircle2,
@@ -606,13 +604,9 @@ function openRawData() {
 
             <!-- ── Project Locations Map ───────────────────────────────── -->
             <div class="rounded-xl border bg-card overflow-hidden">
-                <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                            <MapPin class="h-4 w-4 text-primary" />
-                            {{ $t('registries.detail.map.title') }}
-                        </h2>
-                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('registries.detail.map.subtitle') }}</p>
+                <div class="flex h-[28rem]">
+                    <div class="flex-1 relative">
+                        <ProjectMap :countries="mapCountries" :points="mapPoints" :auto-fit="true" />
                     </div>
                 </div>
                 <div v-if="mapCountries.length > 0 || mapPoints.length > 0" class="flex h-[28rem]">

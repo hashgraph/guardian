@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 export interface CountryData {
     country: string;
@@ -19,6 +18,7 @@ export interface ProjectPoint {
 const props = defineProps<{
     countries: CountryData[];
     points?: ProjectPoint[];
+    autoFit?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -128,13 +128,14 @@ function renderPoints() {
     if (!map || !pointsLayer) return;
     pointsLayer.clearLayers();
     if (!props.points?.length) return;
+    const isSingle = props.points.length === 1;
     for (const pt of props.points) {
         L.circleMarker([pt.lat, pt.lng], {
-            radius: 4,
+            radius: isSingle ? 8 : 4,
             fillColor: '#1a9850',
             fillOpacity: 0.9,
             color: '#fff',
-            weight: 1.5,
+            weight: isSingle ? 2.5 : 1.5,
         })
             .bindPopup(`
                 <div style="font-size:12px;line-height:1.6">
@@ -144,6 +145,25 @@ function renderPoints() {
             `)
             .addTo(pointsLayer);
     }
+    if (props.autoFit) {
+        const latlngs = props.points.map(pt => [pt.lat, pt.lng] as [number, number]);
+        if (latlngs.length === 1) {
+            map.setView(latlngs[0]!, 5);
+        } else {
+            map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40], maxZoom: 6 });
+        }
+    }
+}
+
+function fitPoints() {
+    const pts = props.points?.filter(p => p.lat !== 0 || p.lng !== 0);
+    if (!pts?.length || !map) return;
+    if (pts.length === 1) {
+        map.setView([pts[0].lat, pts[0].lng], 5, { animate: false });
+    } else {
+        const bounds = L.latLngBounds(pts.map(p => [p.lat, p.lng] as [number, number]));
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6, animate: false });
+    }
 }
 
 let resizeObserver: ResizeObserver | null = null;
@@ -151,8 +171,14 @@ let resizeObserver: ResizeObserver | null = null;
 onMounted(async () => {
     await nextTick();
     await initMap();
-    // Leaflet needs a size recalc after the container is laid out
-    setTimeout(() => { map?.invalidateSize(); }, 100);
+    // Leaflet needs a size recalc after the container is laid out.
+    // autoFit is called after invalidateSize so the container has real pixel
+    // dimensions — fitBounds reads container height to compute zoom, which is
+    // NaN if called before the layout pass.
+    setTimeout(() => {
+        map?.invalidateSize();
+        if (props.autoFit) fitPoints();
+    }, 100);
 
     // Re-invalidate on parent resize. The dashboard's side panel slides in/out
     // and changes the map area's width; without this, tiles render offset and
@@ -183,6 +209,7 @@ watch(() => props.countries, () => {
 
 watch(() => props.points, () => {
     renderPoints();
+    if (props.autoFit) fitPoints();
 }, { deep: true });
 </script>
 
