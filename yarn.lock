@@ -5618,7 +5618,7 @@ __metadata:
     chai-http: "npm:4.4.0"
     dotenv: "npm:^16.0.0"
     express: "npm:5.2.1"
-    js-yaml: "npm:^4.1.0"
+    js-yaml: "npm:^4.2.0"
     mocha: "npm:^10.2.0"
     morgan: "npm:1.10.1"
     nodemon: "npm:^2.0.20"
@@ -11533,6 +11533,17 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10c0/6746baaaeac312c4db8e75fa22331d9a04cccb7792d126ed8ce6a0bbcfef0cedaddd0c5098fade53db067c09fe00aa1c957674b4765610a8b06a5a189e46433b
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^4.2.0":
+  version: 4.2.0
+  resolution: "js-yaml@npm:4.2.0"
+  dependencies:
+    argparse: "npm:^2.0.1"
+  bin:
+    js-yaml: bin/js-yaml.js
+  checksum: 10c0/1916456c118746603b067d74bbcbb0445d9a1d5e474ad4ae775e7b20525bed902e01d9d97dd0c81fcd8d4f596162309d0eb057f4aa38f3e9647f14075e9dea45
   languageName: node
   linkType: hard
 
