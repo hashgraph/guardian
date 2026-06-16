@@ -559,7 +559,7 @@
                 "issuanceTrendYears": "años",
                 "issuanceTrendTotal": "{total}{unit} total",
                 "vintageDistribution": "Distribución por añada",
-                "vintageDistributionSub": "Distribución de proyectos por añada",
+                "vintageDistributionSub": "Créditos por año de añada",
                 "noVintageData": "No hay datos de añada disponibles",
                 "vintageYear": "añada",
                 "vintageYears": "añadas",

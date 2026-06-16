@@ -19,6 +19,7 @@ export interface ProjectPoint {
 const props = defineProps<{
     countries: CountryData[];
     points?: ProjectPoint[];
+    autoFit?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -128,13 +129,14 @@ function renderPoints() {
     if (!map || !pointsLayer) return;
     pointsLayer.clearLayers();
     if (!props.points?.length) return;
+    const isSingle = props.points.length === 1;
     for (const pt of props.points) {
         L.circleMarker([pt.lat, pt.lng], {
-            radius: 4,
+            radius: isSingle ? 8 : 4,
             fillColor: '#1a9850',
             fillOpacity: 0.9,
             color: '#fff',
-            weight: 1.5,
+            weight: isSingle ? 2.5 : 1.5,
         })
             .bindPopup(`
                 <div style="font-size:12px;line-height:1.6">
@@ -143,6 +145,14 @@ function renderPoints() {
                 </div>
             `)
             .addTo(pointsLayer);
+    }
+    if (props.autoFit) {
+        const latlngs = props.points.map(pt => [pt.lat, pt.lng] as [number, number]);
+        if (latlngs.length === 1) {
+            map.setView(latlngs[0]!, 5);
+        } else {
+            map.fitBounds(L.latLngBounds(latlngs), { padding: [40, 40], maxZoom: 6 });
+        }
     }
 }
 
