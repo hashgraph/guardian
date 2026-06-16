@@ -90,18 +90,12 @@ export function buildCreditCsvRows(credits: any[], network: string = ''): string
     return [header, ...rows];
 }
 
-export function hederaTimestampToIsoDate(ts: string | null | undefined): string {
+export function hederaTimestamp(ts: string | null | undefined, format: 'date' | 'datetime' = 'date'): string {
     if (!ts) return '';
     const seconds = parseFloat(ts);
     if (isNaN(seconds)) return ts;
-    return new Date(seconds * 1000).toISOString().slice(0, 10);
-}
-
-export function hederaTimestampToIso(ts: string | null | undefined): string {
-    if (!ts) return '';
-    const seconds = parseFloat(ts);
-    if (isNaN(seconds)) return ts;
-    return new Date(seconds * 1000).toLocaleString('en-US');
+    const d = new Date(seconds * 1000);
+    return format === 'datetime' ? d.toLocaleString('en-US') : d.toISOString().slice(0, 10);
 }
 
 export function buildRegistryCsvRows(registries: any[], network: string = ''): string[][] {
@@ -120,7 +114,7 @@ export function buildRegistryCsvRows(registries: any[], network: string = ''): s
         r.stats?.userCount ?? 0,
         r.stats?.issuanceCount ?? 0,
         r.tags ?? '',
-        hederaTimestampToIsoDate(r.sourceTimestamp),
+        hederaTimestamp(r.sourceTimestamp),
     ]);
     return [header, ...rows];
 }
@@ -142,7 +136,7 @@ export function buildMethodologyCsvRows(methodologies: any[], network: string = 
         m.version ?? '',
         Array.isArray(m.sectoralScopes) ? m.sectoralScopes.join(';') : (m.sectoralScopes ?? ''),
         m.emissionReductionApproach ?? '',
-        hederaTimestampToIso(m.sourceTimestamp),
+        hederaTimestamp(m.sourceTimestamp, 'datetime'),
         m.stats?.instanceProjectCount ?? 0,
         m.stats?.instanceIssuanceCount ?? 0,
         m.totalIssued ?? 0,
