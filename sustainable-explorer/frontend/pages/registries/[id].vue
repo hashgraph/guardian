@@ -21,7 +21,7 @@ import {
     FolderKanban,
 } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
-import { allocateDonutColors } from '~/lib/chart-colors';
+import { allocateDonutColors, mergeTopBinsWithOther, DONUT_TOP_N, DONUT_OTHER_COLOR } from '~/lib/chart-colors';
 import type { MethodologyDto, MethodologiesResponse } from '~/composables/api/useMethodologiesApi';
 import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
 
@@ -170,6 +170,52 @@ const mapPoints = computed(() =>
         .map(p => ({ lat: p.lat, lng: p.lng, name: p.name })),
 );
 
+// Country choropleth data for ProjectMap
+const mapCountries = computed(() => {
+    const counts: Record<string, { projects: number; credits: number; name: string }> = {};
+    for (const p of registryProjects.value) {
+        const code = p.countryCode ?? 'UNK';
+        if (code === 'UNK' || !p.country) continue;
+        if (!counts[code]) counts[code] = { projects: 0, credits: 0, name: p.country };
+        counts[code].projects++;
+        counts[code].credits += p.credits ?? 0;
+    }
+    return Object.entries(counts).map(([code, d]) => ({
+        countryCode: code,
+        country: d.name,
+        projects: d.projects,
+        credits: String(d.credits),
+    }));
+});
+
+const selectedMapCountry = ref<string | null>(null);
+
+const activeMapDetail = computed(() => {
+    const code = selectedMapCountry.value;
+    if (!code) return null;
+    const entry = mapCountries.value.find(c => c.countryCode === code);
+    if (!entry) return null;
+
+    const countryProjects = registryProjects.value.filter(p => (p.countryCode ?? 'UNK') === code);
+    const catCounts: Record<string, number> = {};
+    for (const p of countryProjects) {
+        const label = p.category || p.sector || 'Unknown';
+        catCounts[label] = (catCounts[label] ?? 0) + 1;
+    }
+    const total = countryProjects.length || 1;
+    const ordered = Object.entries(catCounts)
+        .map(([label, count]) => ({ label, value: Math.round((count / total) * 100) }))
+        .sort((a, b) => b.value - a.value);
+    const colors = allocateDonutColors(ordered.length, `reg-geo-${code}`);
+    const sectors = ordered.map((s, i) => ({ ...s, color: colors[i] ?? '#d4d4d8' }));
+
+    return { ...entry, sectors };
+});
+
+function onMapCountryClick(code: string): void {
+    selectedMapCountry.value = selectedMapCountry.value === code ? null : code;
+}
+
 // Top 10 methodologies sorted by instanceProjectCount (the value shown in the UI)
 const topMethodologies = computed(() =>
     [...methodologies.value]
@@ -177,18 +223,22 @@ const topMethodologies = computed(() =>
         .slice(0, 10),
 );
 
-// Methodology donut: top 8 by instanceProjectCount
+// Methodology donut: all methodologies with projects, top DONUT_TOP_N shown, rest merged into Other
 const methodologySegments = computed(() => {
-    const items = [...methodologies.value]
-        .sort((a, b) => b.stats.instanceProjectCount - a.stats.instanceProjectCount)
-        .slice(0, 8)
-        .filter(m => m.stats.instanceProjectCount > 0);
-    if (items.length === 0) return [];
-    const colors = allocateDonutColors(items.length, `reg-method-${registry.value?.id ?? ''}`);
-    return items.map((m, i) => ({
-        label: m.name,
-        value: m.stats.instanceProjectCount,
-        color: colors[i] ?? '#ccc',
+    const bins = methodologies.value
+        .filter(m => m.stats.instanceProjectCount > 0)
+        .map(m => ({
+            label: m.name ?? m.topicId ?? '',
+            projectCount: m.stats.instanceProjectCount,
+            creditCount: m.stats.instanceIssuanceCount,
+        }));
+    if (bins.length === 0) return [];
+    const merged = mergeTopBinsWithOther(bins, 'projects', 'Other');
+    const colors = allocateDonutColors(merged.length, `reg-method-${registry.value?.id ?? ''}`);
+    return merged.map((b, i) => ({
+        label: b.label,
+        value: b.projectCount,
+        color: b.label === 'Other' ? DONUT_OTHER_COLOR : (colors[i] ?? '#ccc'),
     }));
 });
 
@@ -565,10 +615,71 @@ function openRawData() {
                         <p class="text-xs text-muted-foreground mt-0.5">{{ $t('registries.detail.map.subtitle') }}</p>
                     </div>
                 </div>
-                <div v-if="mapPoints.length > 0" style="height: 360px;">
-                    <ClientOnly>
-                        <RegistryProjectsMap :points="mapPoints" class="h-full w-full" />
-                    </ClientOnly>
+                <div v-if="mapCountries.length > 0 || mapPoints.length > 0" class="flex h-[28rem]">
+                    <!-- Map -->
+                    <div class="flex-1 relative">
+                        <ProjectMap
+                            :countries="mapCountries"
+                            :points="mapPoints"
+                            @country-click="onMapCountryClick"
+                        />
+                    </div>
+                    <!-- Side panel -->
+                    <Transition
+                        enter-active-class="transition-all duration-300 [transition-timing-function:cubic-bezier(0.34,1.16,0.64,1)]"
+                        enter-from-class="w-0 opacity-0"
+                        enter-to-class="w-64 opacity-100"
+                        leave-active-class="transition-all duration-200 ease-in"
+                        leave-from-class="w-64 opacity-100"
+                        leave-to-class="w-0 opacity-0"
+                    >
+                        <div
+                            v-if="activeMapDetail"
+                            class="w-64 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card"
+                            style="scrollbar-gutter: stable;"
+                        >
+                            <div class="p-4 space-y-4">
+                                <!-- Header -->
+                                <div class="flex items-center justify-between gap-2">
+                                    <div class="flex items-center gap-2 min-w-0">
+                                        <CountryFlag :code="activeMapDetail.countryCode" size="lg" />
+                                        <h3 class="text-sm font-semibold text-foreground truncate">{{ activeMapDetail.country }}</h3>
+                                    </div>
+                                    <button
+                                        class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                        @click="selectedMapCountry = null"
+                                    >
+                                        <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
+                                </div>
+                                <!-- Project count -->
+                                <NuxtLink
+                                    :to="{ path: '/projects', query: { country: activeMapDetail.country } }"
+                                    class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
+                                >
+                                    <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeMapDetail.projects.toLocaleString() }}</div>
+                                    <div class="text-[11px] text-muted-foreground mt-0.5">Active Projects →</div>
+                                </NuxtLink>
+                                <!-- Sector breakdown -->
+                                <div v-if="activeMapDetail.sectors.length > 0">
+                                    <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
+                                    <div class="flex items-start gap-3">
+                                        <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
+                                            <DonutChart :segments="activeMapDetail.sectors" :size="90" />
+                                        </div>
+                                        <div class="space-y-1.5 flex-1 min-w-0">
+                                            <div v-for="s in activeMapDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
+                                                <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
+                                                <span class="text-[11px] text-muted-foreground truncate min-w-0">
+                                                    <strong class="text-foreground">{{ s.value }}%</strong> {{ s.label }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Transition>
                 </div>
                 <div v-else class="py-12 text-center text-sm text-muted-foreground">
                     <MapPin class="h-8 w-8 mx-auto mb-3 opacity-30" />
@@ -608,7 +719,7 @@ function openRawData() {
                     <NuxtLink
                         v-for="(m, i) in topMethodologies"
                         :key="m.id"
-                        :to="`/methodologies/${encodeURIComponent(m.sourceTimestamp ?? m.id)}`"
+                        :to="m.topicId ? `/methodologies/${encodeURIComponent(m.topicId)}` : undefined"
                         class="flex items-center gap-4 px-5 py-3.5 hover:bg-muted/30 transition-colors group"
                     >
                         <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">
