@@ -60,9 +60,9 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
         p.category ?? '',
         p.sector ?? '',
         p.sectoralScope ?? '',
-        isoDate(p.createdAt),
-        isoDate(p.creditingPeriodStart),
-        isoDate(p.creditingPeriodEnd),
+        p.createdAt ?? '',
+        p.creditingPeriodStart ?? '',
+        p.creditingPeriodEnd ?? '',
         p.issuanceCount ?? 0,
         p.totalIssued ?? 0,
         p.totalRetired ?? 0,
@@ -97,6 +97,13 @@ export function hederaTimestampToIsoDate(ts: string | null | undefined): string 
     return new Date(seconds * 1000).toISOString().slice(0, 10);
 }
 
+export function hederaTimestampToIso(ts: string | null | undefined): string {
+    if (!ts) return '';
+    const seconds = parseFloat(ts);
+    if (isNaN(seconds)) return ts;
+    return new Date(seconds * 1000).toLocaleString('en-US');
+}
+
 export function buildRegistryCsvRows(registries: any[], network: string = ''): string[][] {
     const header = [
         'Network', 'Name', 'ID', 'Geography', 'Website',
@@ -122,7 +129,7 @@ export function buildMethodologyCsvRows(methodologies: any[], network: string = 
     const header = [
         'Network', 'Methodology Name', 'ID', 'Description', 'Status', 'Registry Name',
         'Version', 'Sectoral Scopes', 'Emission Reduction Approach',
-        'Source Timestamp', 'Created At', 'Updated At',
+        'Published Date',
         'Project Count', 'Issuances', 'Total Issued', 'Total Retired', 'Total Active',
     ];
     const rows = methodologies.map(m => [
@@ -135,9 +142,7 @@ export function buildMethodologyCsvRows(methodologies: any[], network: string = 
         m.version ?? '',
         Array.isArray(m.sectoralScopes) ? m.sectoralScopes.join(';') : (m.sectoralScopes ?? ''),
         m.emissionReductionApproach ?? '',
-        isoDate(m.sourceTimestamp),
-        isoDate(m.createdAt),
-        isoDate(m.updatedAt),
+        hederaTimestampToIso(m.sourceTimestamp),
         m.stats?.instanceProjectCount ?? 0,
         m.stats?.instanceIssuanceCount ?? 0,
         m.totalIssued ?? 0,
