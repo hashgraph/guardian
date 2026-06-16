@@ -14,7 +14,7 @@
       </p-menubar>
     </div>
   } @else {
-    <div (mouseleave)="onNavbarMouseLeave()" class="navbar-wrapper">
+    <div class="navbar-wrapper">
       <div [class.collapse]="menuCollapsed" id="navbar">
         <ng-container [ngTemplateOutlet]="logotype"></ng-container>
         @if (menuItems) {
@@ -110,13 +110,13 @@
     <i class="pi pi-bell item-icon"></i>
     @if (menuCollapsed && layout === 'vertical') {
       <div class="collapsed-notify-counter">
-        <app-notification (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
+        <app-notification></app-notification>
       </div>
     }
     <div [class.hidden-logotype]="menuCollapsed && layout === 'vertical'" class="span-icon">
       <span>Notifications</span>
       @if (!(menuCollapsed && layout === 'vertical')) {
-        <app-notification (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
+        <app-notification></app-notification>
       }
     </div>
   </div>

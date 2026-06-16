@@ -1,6 +1,7 @@
-import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { getMenuItems, NavbarMenuItem } from './menu.model';
+import { getUserInitials } from '../../utils';
 import { MenuLayout, MenuLayoutService } from '../../services/menu-layout.service';
 import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from '../../services/auth-state.service';
@@ -21,14 +22,13 @@ import { DocWidgetService } from '../../services/doc-widget.service';
     styleUrls: ['./new-header.component.scss'],
     standalone: false
 })
-export class NewHeaderComponent implements OnInit, AfterViewChecked {
+export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
     public isLogin: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public username: string | null = null;
     public balance: string = '';
     public menuCollapsed: boolean = false;
     public smallMenuMode: boolean = false;
-    public notificationOpen: boolean = false;
     public menuItems: NavbarMenuItem[];
     public horizontalModel: MenuItem[] = [];
     public layout: MenuLayout = 'vertical';
@@ -45,6 +45,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     private ws!: any;
     private authSubscription!: any;
     private policyRequestsSubscription = new Subscription();
+    private layoutSubscription = new Subscription();
+    private brandingData: any = null;
 
     @Input() remoteContainerMethod: any;
 
@@ -77,14 +79,14 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             console.error(error)
         }
         this.layout = this.menuLayout.layout;
-        this.menuLayout.changes.subscribe((layout) => {
+        this.layoutSubscription.add(this.menuLayout.changes.subscribe((layout) => {
             this.layout = layout;
             if (this.isLogin) {
                 this.applyContainerLayout();
                 // the logo/name nodes are re-created when the layout template swaps
                 setTimeout(() => this.applyBranding());
             }
-        });
+        }));
     }
 
     ngOnInit(): void {
@@ -147,6 +149,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.authSubscription = null;
         }
         this.policyRequestsSubscription.unsubscribe();
+        this.layoutSubscription.unsubscribe();
     }
 
     private resetBalance() {
@@ -217,17 +220,29 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     }
 
     private applyBranding() {
+        // Branding doesn't change during a session, so fetch it once and re-apply the
+        // cached values to the logo/name nodes (which are re-created when the layout or
+        // collapse state swaps the template) without hitting the network each time.
+        if (this.brandingData) {
+            this.renderBranding(this.brandingData);
+            return;
+        }
         this.brandingService.getBrandingData().then(res => {
-            const logo = document.getElementById('company-logo') as HTMLImageElement;
-            if (logo) {
-                logo.src = res.companyLogoUrl;
-                logo.style.display = res.companyLogoUrl ? 'block' : 'none';
-            }
-            const name = document.getElementById('company-name');
-            if (name) {
-                name.innerText = res.companyName;
-            }
+            this.brandingData = res;
+            this.renderBranding(res);
         });
+    }
+
+    private renderBranding(res: any) {
+        const logo = document.getElementById('company-logo') as HTMLImageElement;
+        if (logo) {
+            logo.src = res.companyLogoUrl;
+            logo.style.display = res.companyLogoUrl ? 'block' : 'none';
+        }
+        const name = document.getElementById('company-name');
+        if (name) {
+            name.innerText = res.companyName;
+        }
     }
 
     private checkUsernameOverflow(): void {
@@ -258,21 +273,6 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         this.auth.removeUsername();
         this.authState.updateState(false);
         this.router.navigate(['/login']);
-    }
-
-    public onNotificationOpenChange(open: boolean) {
-        this.notificationOpen = open;
-        if (!open && this.menuCollapsed !== this.smallMenuMode) {
-            this.menuCollapsed = this.smallMenuMode;
-        }
-    }
-
-    public onNavbarMouseLeave() {
-        // Restore the persisted collapse state, unless the notification overlay is open.
-        if (this.notificationOpen) {
-            return;
-        }
-        this.menuCollapsed = this.smallMenuMode;
     }
 
     private applyContainerLayout() {
@@ -338,16 +338,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         this.router.navigate([home]);
     }
 
-    /** Same rule as the profile page: prefer capital letters, else first two chars. */
     public getInitials(username: string | null): string {
-        if (!username) {
-            return '?';
-        }
-        const caps = username.match(/[A-Z]/g);
-        if (caps && caps.length >= 2) {
-            return caps.slice(0, 2).join('');
-        }
-        return username.slice(0, 2).toUpperCase();
+        return getUserInitials(username);
     }
 
     public goToBrandingPage(event: MouseEvent) {

@@ -37,6 +37,9 @@ export class MenuLayoutService {
 
     public setLayout(layout: MenuLayout): void {
         const resolved = this.findLayout(layout).value;
+        if (resolved === this.layout$.value) {
+            return;
+        }
         try {
             localStorage.setItem(MENU_LAYOUT_STORAGE_KEY, resolved);
         } catch (error) {
