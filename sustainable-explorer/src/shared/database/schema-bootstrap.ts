@@ -134,4 +134,12 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         ON business_view ("relatedTopicId")
         WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
     `);
+
+    // GIN index backing the linkedVcs @> containment lookups used by
+    // mint-project-linker (topic-keyed projects) and findActivity.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_linked_vcs
+        ON business_view USING GIN (("businessData" -> 'linkedVcs'))
+        WHERE "viewType" = 'PROJECT'
+    `);
 }

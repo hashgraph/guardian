@@ -223,6 +223,10 @@ export class MessageProcessProcessor extends WorkerHost {
                 );
                 continue;
             }
+            // No priority: prioritized jobs are starved here because the
+            // continuous topic re-poll stream keeps the `wait` list non-empty,
+            // so the worker never drains the `prioritized` set. Enqueueing
+            // discovery on the same `wait` FIFO guarantees it is processed.
             await this.topicQueue.add(
                 'sync',
                 {
@@ -232,7 +236,6 @@ export class MessageProcessProcessor extends WorkerHost {
                 },
                 {
                     jobId: `topic-${topic.topicId}-0`,
-                    priority: topic.isOrgTopic ? 1 : 10,
                 },
             );
         }

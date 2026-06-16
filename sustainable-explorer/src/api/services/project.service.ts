@@ -5,6 +5,7 @@ import { NetworkDataSourceRegistry } from '../database/network-datasource.regist
 import { PgProjectRepository } from '../repositories/pg-project.repository';
 import { ProjectRepository } from '../repositories/project.repository';
 import { MappingReprocessService } from './mapping-reprocess.service';
+import { PolicyWorkflowGraph } from './policy-graph.builder';
 
 @Injectable()
 export class ProjectsService {
@@ -87,6 +88,32 @@ export class ProjectsService {
         consensusTimestamp: string,
     ): Promise<Record<string, unknown>> {
         return this.mappingReprocessService.getLinkedVcDocument(network, projectId, consensusTimestamp);
+    }
+
+    /**
+     * Returns the raw VC document plus a per-field label map derived from the
+     * policy's schemaFields.  Delegates entirely to MappingReprocessService.
+     */
+    async getLinkedVcEvidence(
+        network: string,
+        projectId: string,
+        consensusTimestamp: string,
+    ): Promise<{ document: Record<string, unknown>; fieldLabels: Record<string, string> }> {
+        return this.mappingReprocessService.getLinkedVcEvidence(network, projectId, consensusTimestamp);
+    }
+
+    /**
+     * Returns the methodology workflow graph (role swimlanes + real flow edges)
+     * for a project's policy, extracted from policy.json. Delegates to
+     * MappingReprocessService.
+     */
+    async getPolicyGraph(network: string, id: string): Promise<PolicyWorkflowGraph> {
+        return this.mappingReprocessService.getPolicyGraph(network, id);
+    }
+
+    /** Raw decoded policy.json for the project's policy (JSON inspector). */
+    async getPolicyJson(network: string, id: string): Promise<Record<string, unknown> | null> {
+        return this.mappingReprocessService.getPolicyJson(network, id);
     }
 
     /**

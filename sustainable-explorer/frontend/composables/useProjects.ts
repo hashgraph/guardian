@@ -1,4 +1,4 @@
-import type { Project, ProjectIssuance, LinkedSchema, LinkedVc } from '~/types/models';
+import type { Project, ProjectIssuance, IssuanceEvent, LinkedSchema, LinkedVc } from '~/types/models';
 
 // country display name → ISO 3166-1 alpha-3 for CountryFlag component
 export const COUNTRY_ALPHA3: Record<string, string> = {
@@ -147,6 +147,19 @@ export function mapApiProject(raw: Record<string, any>): Project {
                 rawVc: i['rawVc'] ?? null,
             }))
             : [],
+        issuanceEvents: Array.isArray(raw.issuanceEvents)
+            ? (raw.issuanceEvents as Array<Record<string, any>>).map((e): IssuanceEvent => ({
+                mintConsensusTimestamp: typeof e['mintConsensusTimestamp'] === 'string' ? e['mintConsensusTimestamp'] : '',
+                tokenId: typeof e['tokenId'] === 'string' ? e['tokenId'] : null,
+                name: typeof e['name'] === 'string' ? e['name'] : null,
+                symbol: typeof e['symbol'] === 'string' ? e['symbol'] : null,
+                type: typeof e['type'] === 'string' ? e['type'] : null,
+                amount: typeof e['amount'] === 'number' ? e['amount'] : null,
+                mintDate: typeof e['mintDate'] === 'string' ? e['mintDate'] : null,
+                linkMethod: typeof e['linkMethod'] === 'string' ? e['linkMethod'] : null,
+                rawVc: e['rawVc'] && typeof e['rawVc'] === 'object' ? (e['rawVc'] as Record<string, any>) : null,
+            }))
+            : [],
         totalIssued: typeof raw.totalIssued === 'number' ? raw.totalIssued : 0,
         totalRetired: typeof raw.totalRetired === 'number' ? raw.totalRetired : 0,
         totalActive: typeof raw.totalActive === 'number' ? raw.totalActive : 0,
@@ -155,6 +168,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
                 schemaUuid: s['schemaUuid'] ?? '',
                 schemaName: s['schemaName'] ?? null,
                 isProjectSchema: Boolean(s['isProjectSchema']),
+                docType: typeof s['docType'] === 'string' ? s['docType'] : 'unknown',
                 vcCount: typeof s['vcCount'] === 'number' ? s['vcCount'] : 0,
                 linkedVcs: Array.isArray(s['linkedVcs'])
                     ? (s['linkedVcs'] as Array<Record<string, any>>).map((v): LinkedVc => ({
@@ -165,6 +179,8 @@ export function mapApiProject(raw: Record<string, any>): Project {
                     : [],
             }))
             : [],
+        decodeMethod: typeof raw.decodeMethod === 'string' ? raw.decodeMethod : null,
+        metadata: raw.metadata && typeof raw.metadata === 'object' ? (raw.metadata as Record<string, unknown>) : null,
     };
 }
 
@@ -263,6 +279,7 @@ export interface ActivityEvent {
     date: string;
     action: string;
     type: string;
+    schemaName: string | null;
 }
 
 const VALID_ACTIVITY_TYPES = new Set(['document', 'verification', 'registry', 'monitoring', 'credit']);
@@ -275,6 +292,7 @@ function mapActivityEvent(raw: Record<string, unknown>): ActivityEvent {
         date: typeof raw.date === 'string' ? raw.date : '',
         action: typeof raw.action === 'string' ? raw.action : 'Activity recorded',
         type,
+        schemaName: typeof raw.schemaName === 'string' ? raw.schemaName : null,
     };
 }
 

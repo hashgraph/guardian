@@ -8,6 +8,7 @@ import { PROJECT_EXTRACT_FIELDS } from '@worker/project-mapper/project-fields';
 import { UpdateMappingDto } from '../dto/update-mapping.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
+import { buildPolicyWorkflowGraph, PolicyWorkflowGraph } from './policy-graph.builder';
 
 // ---------------------------------------------------------------------------
 // Internal row shapes
@@ -732,8 +733,8 @@ export class MappingReprocessService {
         const ds = this.dataSources.getDataSource(network);
 
         // Resolve the project and verify the timestamp is in its linkedVcs.
-        const projectRows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
-            `SELECT "businessData"
+        const projectRows: Array<{ projectKey: string | null; businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "projectKey", "businessData"
              FROM business_view
              WHERE "viewType" = 'PROJECT'
                AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
@@ -752,9 +753,22 @@ export class MappingReprocessService {
             ? (businessData['linkedVcs'] as Array<Record<string, unknown>>)
             : [];
 
-        const isLinked = linkedVcs.some(
+        let isLinked = linkedVcs.some(
             v => typeof v['consensusTimestamp'] === 'string' && v['consensusTimestamp'] === consensusTimestamp,
         );
+
+        // MintToken VCs are attributed via project_mint_link (the mint linker),
+        // not businessData.linkedVcs — accept those too so issuance evidence is
+        // viewable from the project namespace.
+        if (!isLinked && projectRows[0].projectKey) {
+            const mintRows: unknown[] = await ds.query(
+                `SELECT 1 FROM project_mint_link
+                 WHERE mint_consensus_timestamp = $1 AND project_key = $2
+                 LIMIT 1`,
+                [consensusTimestamp, projectRows[0].projectKey],
+            );
+            isLinked = mintRows.length > 0;
+        }
 
         if (!isLinked) {
             throw new NotFoundException(
@@ -778,9 +792,166 @@ export class MappingReprocessService {
         return msgRows[0].documents!;
     }
 
+    /**
+     * Returns the raw VC document AND a per-field label map derived from the
+     * policy's schemaFields.  The document fetch is delegated to
+     * getLinkedVcDocument so all verification logic is reused exactly once.
+     *
+     * fieldLabels maps credentialSubject key → human label (description or
+     * title from the matching schemaFields entry).  Returns an empty map when
+     * the schema cannot be resolved — the caller must fall back gracefully.
+     */
+    async getLinkedVcEvidence(
+        network: string,
+        projectId: string,
+        consensusTimestamp: string,
+    ): Promise<{ document: Record<string, unknown>; fieldLabels: Record<string, string> }> {
+        const document = await this.getLinkedVcDocument(network, projectId, consensusTimestamp);
+        const ds = this.dataSources.getDataSource(network);
+        const fieldLabels = await this.buildVcFieldLabels(ds, consensusTimestamp, document);
+        return { document, fieldLabels };
+    }
+
+    /**
+     * Returns the methodology workflow graph (role swimlanes of document/action
+     * steps + real flow edges) for a project's policy, extracted from
+     * policy.json. Returns an empty graph when the project has no decoded policy
+     * (the frontend renders an empty-state).
+     */
+    async getPolicyGraph(network: string, projectId: string): Promise<PolicyWorkflowGraph> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const projectRows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "businessData"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+        if (projectRows.length === 0) {
+            throw new NotFoundException(`Project with ID "${projectId}" not found on ${network}.`);
+        }
+
+        const businessData = projectRows[0].businessData ?? {};
+        const policyTopicId = typeof businessData['policyTopicId'] === 'string'
+            ? (businessData['policyTopicId'] as string)
+            : null;
+        if (!policyTopicId) return { roles: [], nodes: [], edges: [] };
+
+        const policyRows: Array<{ rawPolicyJson: Record<string, unknown> | null; rawSchemaJson: Record<string, unknown> | null }> =
+            await ds.query(
+                `SELECT "rawPolicyJson", "rawSchemaJson"
+                 FROM policy
+                 WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded'
+                 LIMIT 1`,
+                [policyTopicId],
+            );
+        if (policyRows.length === 0) return { roles: [], nodes: [], edges: [] };
+
+        return buildPolicyWorkflowGraph(policyRows[0].rawPolicyJson, policyRows[0].rawSchemaJson);
+    }
+
+    /**
+     * Returns the raw decoded policy.json for a project's policy (for the
+     * "view policy JSON" inspector). Returns null when no decoded policy exists.
+     */
+    async getPolicyJson(network: string, projectId: string): Promise<Record<string, unknown> | null> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const projectRows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "businessData"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+        if (projectRows.length === 0) {
+            throw new NotFoundException(`Project with ID "${projectId}" not found on ${network}.`);
+        }
+
+        const policyTopicId = typeof projectRows[0].businessData?.['policyTopicId'] === 'string'
+            ? (projectRows[0].businessData!['policyTopicId'] as string)
+            : null;
+        if (!policyTopicId) return null;
+
+        const policyRows: Array<{ rawPolicyJson: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "rawPolicyJson"
+             FROM policy
+             WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded'
+             LIMIT 1`,
+            [policyTopicId],
+        );
+        return policyRows[0]?.rawPolicyJson ?? null;
+    }
+
     // ---------------------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------------------
+
+    /**
+     * Builds a map of { [fieldPath]: humanLabel } for the credentialSubject
+     * fields of the given VC document by looking up the policy's schemaFields.
+     *
+     * Returns {} when any required data is absent — callers must handle this
+     * gracefully (fall back to humanizeKey on the frontend).
+     */
+    private async buildVcFieldLabels(
+        ds: import('typeorm').DataSource,
+        consensusTimestamp: string,
+        document: Record<string, unknown>,
+    ): Promise<Record<string, string>> {
+        try {
+            // 1. Extract the schema IRI from credentialSubject[0].type
+            const cs = Array.isArray(document['credentialSubject'])
+                ? (document['credentialSubject'][0] as Record<string, unknown> | undefined)
+                : (document['credentialSubject'] as Record<string, unknown> | undefined);
+            if (!cs) return {};
+
+            const schemaIriRaw = String(cs['type'] ?? '');
+            const bareUuid = schemaIriRaw.replace(/^#/, '').split('&')[0].trim();
+            if (!bareUuid) return {};
+
+            // 2. Fetch policy schemaFields for the message's policyId
+            const rows: Array<{ schemaFields: unknown }> = await ds.query(
+                `SELECT p."schemaFields"
+                 FROM message m
+                 JOIN policy p ON p."policyId" = m."policyId"
+                 WHERE m."consensusTimestamp" = $1
+                   AND p."decodeStatus" = 'decoded'
+                 LIMIT 1`,
+                [consensusTimestamp],
+            );
+
+            if (rows.length === 0) return {};
+            const schemaFields = rows[0].schemaFields;
+            if (!Array.isArray(schemaFields)) return {};
+
+            // 3. Build the label map for entries whose schemaIri bare-UUID matches
+            const labels: Record<string, string> = {};
+            for (const entry of schemaFields as Array<Record<string, unknown>>) {
+                const entryIri = String(entry['schemaIri'] ?? '');
+                const entryBareUuid = entryIri.replace(/^#/, '').split('&')[0].trim();
+                if (entryBareUuid !== bareUuid) continue;
+
+                const path = String(entry['path'] ?? '').trim();
+                if (!path) continue;
+
+                const description = String(entry['description'] ?? '').trim();
+                const title = String(entry['title'] ?? '').trim();
+                const label = description || title;
+                if (!label) continue;
+
+                labels[path] = label;
+            }
+
+            return labels;
+        } catch {
+            // Never let label resolution failures surface as HTTP errors
+            return {};
+        }
+    }
 
     /**
      * Resolves the policy topic ID for a methodology given its URL `id` param.

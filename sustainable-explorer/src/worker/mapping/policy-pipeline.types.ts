@@ -24,6 +24,7 @@ export interface PolicyMappingEntry {
     schemaType?: PolicyMappingSchemaType;
     fieldPath?: string;          // path within the schema document, dot-separated
     isProjectSchema?: boolean;   // priority hint, not a filter
+    docType?: string;            // coarse Guardian document type (see DocumentType)
 
     // when source = 'policyJson'
     policyJsonPath?: string;

@@ -6,7 +6,7 @@ import Redis from 'ioredis';
 import configuration from '@shared/config/configuration';
 import { getDatabaseConfig } from '@shared/config/database.config';
 import { getRedictConfig } from '@shared/config/redict.config';
-import { QUEUE_NAMES, getActiveQueues } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, getActiveQueues, getQueueConfigs } from '@shared/config/bullmq.config';
 
 // Modules
 import { MappingModule } from './mapping/mapping.module';
@@ -15,6 +15,12 @@ import { MappingModule } from './mapping/mapping.module';
 import { HederaService } from './services/hedera.service';
 import { IpfsService } from './services/ipfs.service';
 import { ProjectMapperService } from './services/project-mapper.service';
+import { TopicClassifierService } from './project-mapper/topic-classifier';
+import { DynamicTopicResolver } from './project-mapper/resolvers/dynamic-topic.resolver';
+import { CsRefResolver } from './project-mapper/resolvers/cs-ref.resolver';
+import { RelationshipsResolver } from './project-mapper/resolvers/relationships.resolver';
+import { ProjectSchemaResolver } from './project-mapper/resolvers/project-schema.resolver';
+import { ProjectKeyResolverChain } from './project-mapper/resolvers/resolver-chain.service';
 import { ReverseGeoService } from './services/reverse-geo.service';
 import { POLICY_ZIP_STORAGE } from './services/storage/policy-zip-storage.interface';
 import { LocalPolicyZipStorage } from './services/storage/local-policy-zip-storage.service';
@@ -56,6 +62,18 @@ export class WorkerModule {
         const activeQueues = getActiveQueues();
         const allQueueNames = Object.values(QUEUE_NAMES);
 
+        // Per-queue retention defaults. Without these, BullMQ keeps EVERY
+        // completed/failed job forever — the continuous topic-sync poll loop then
+        // grows the completed set unbounded until Redict OOMs. Apply only the
+        // retention fields (not attempts/backoff) so existing retry behaviour is
+        // unchanged. Per-job opts can still override (poll jobs use `true`).
+        const retentionByName = new Map(
+            getQueueConfigs().map(q => [q.name, {
+                removeOnComplete: q.defaultJobOptions.removeOnComplete,
+                removeOnFail: q.defaultJobOptions.removeOnFail,
+            }]),
+        );
+
         // Only register processors for queues this instance handles
         const activeProcessors = activeQueues
             .map(q => PROCESSOR_MAP[q])
@@ -89,7 +107,10 @@ export class WorkerModule {
 
                 // Register ALL queues (so processors can enqueue to any queue)
                 BullModule.registerQueue(
-                    ...allQueueNames.map(name => ({ name })),
+                    ...allQueueNames.map(name => ({
+                        name,
+                        defaultJobOptions: retentionByName.get(name),
+                    })),
                 ),
 
                 // Mapping pipeline module
@@ -117,6 +138,13 @@ export class WorkerModule {
                 IpfsService,
                 ReverseGeoService,
                 ProjectMapperService,
+                // Project-key resolver chain (M1→M4) + its dependencies.
+                TopicClassifierService,
+                DynamicTopicResolver,
+                CsRefResolver,
+                RelationshipsResolver,
+                ProjectSchemaResolver,
+                ProjectKeyResolverChain,
                 { provide: POLICY_ZIP_STORAGE, useClass: LocalPolicyZipStorage },
 
                 // Only processors for active queues

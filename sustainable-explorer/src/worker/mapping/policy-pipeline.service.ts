@@ -5,6 +5,8 @@ import { PROJECT_EXTRACT_FIELDS } from '../project-mapper/project-fields';
 import { derivePerPolicyProjectMeta } from './derive-project-meta';
 import { flattenSchemaDocument } from './flatten-schema-fields';
 import { classifySchemaTypeByName } from './classify-schema-type';
+import { DocumentType } from '../project-mapper/types';
+import { classifyDocumentType } from '../project-mapper/document-type-classifier';
 import {
     FlattenedSchemaField,
     PolicyMapping,
@@ -31,13 +33,25 @@ export class PolicyMappingPipelineService {
 
         const schemaFields = this.flattenAll(schemas, schemaTypes);
 
+        // Per-schema field-title lists feed the (weak) doctype signal.
+        const titlesBySchema = new Map<string, string[]>();
+        for (const f of schemaFields) {
+            const list = titlesBySchema.get(f.schemaIri);
+            if (list) list.push(f.title);
+            else titlesBySchema.set(f.schemaIri, [f.title]);
+        }
+        const docTypeBySchema = new Map<string, DocumentType>();
+        for (const s of schemas) {
+            docTypeBySchema.set(s.id, classifyDocumentType(s.name, s.id, titlesBySchema.get(s.id) ?? []));
+        }
+
         const fieldDescriptors = this.fieldDescriptors();
         const { fieldMap } = await this.base.executePipeline(schemas, fieldDescriptors);
         const projectMeta = derivePerPolicyProjectMeta(fieldMap, schemas);
         if (projectMeta) schemaTypes.set(projectMeta.projectSchemaId, 'project');
 
         const policyMapping: PolicyMapping = {};
-        this.attachSchemaMappings(policyMapping, fieldMap, schemas, schemaTypes, projectMeta?.projectSchemaId);
+        this.attachSchemaMappings(policyMapping, fieldMap, schemas, schemaTypes, projectMeta?.projectSchemaId, docTypeBySchema);
         this.attachPolicyJsonMappings(policyMapping, input.rawPolicyJson);
 
         return { policyMapping, schemaFields };
@@ -126,6 +140,7 @@ export class PolicyMappingPipelineService {
         schemas: SchemaInfo[],
         schemaTypes: Map<string, PolicyMappingSchemaType>,
         projectSchemaId: string | undefined,
+        docTypeBySchema: Map<string, DocumentType>,
     ): void {
         const schemaById = new Map(schemas.map(s => [s.id, s] as const));
         // Longest-first so e.g. "#uuid&1.0.0" matches before "#uuid&1".
@@ -147,6 +162,7 @@ export class PolicyMappingPipelineService {
                     schemaType: schemaTypes.get(schemaIri) ?? 'other',
                     fieldPath,
                     isProjectSchema: schemaIri === projectSchemaId,
+                    docType: docTypeBySchema.get(schemaIri) ?? 'unknown',
                     title: field.label,
                     description: '',
                 };

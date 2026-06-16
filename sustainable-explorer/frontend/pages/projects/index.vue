@@ -22,10 +22,20 @@ const INVALID_COUNTRY = new Set([
     'point', 'multipoint', 'linestring', 'multilinestring',
     'polygon', 'multipolygon', 'geometrycollection',
 ]);
+// A country cell should be a place name — never a URL, IPFS/file URI, or raw CID
+// that leaked in from a geo/file field during mapping.
+function looksLikeLocation(name: string): boolean {
+    const v = name.trim();
+    if (!v) return false;
+    if (INVALID_COUNTRY.has(v.toLowerCase())) return false;
+    if (/:\/\//.test(v)) return false;                       // ipfs:// http(s):// ar:// …
+    if (/^(Qm[1-9A-HJ-NP-Za-km-z]{44}|baf[a-z0-9]{20,})$/i.test(v)) return false; // bare CID
+    return true;
+}
 function displayCountry(p: Project): string | null {
     const name = resolvedName(p);
     if (!name) return null;
-    return INVALID_COUNTRY.has(name.toLowerCase().trim()) ? null : name;
+    return looksLikeLocation(name) ? name : null;
 }
 
 

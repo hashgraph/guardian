@@ -83,7 +83,7 @@ export class BusinessViewBuilderProcessor extends WorkerHost {
                 jsonb_build_object(
                     'description', m.options->>'description',
                     'status', m.status,
-                    'topicId', m."topicId",
+                    'topicId', COALESCE(NULLIF(m.options->>'topicId', ''), m."topicId"),
                     'tokenId', COALESCE(m.options->>'tokenId', tc."tokenId"),
                     'owner', m.owner,
                     'options', m.options,

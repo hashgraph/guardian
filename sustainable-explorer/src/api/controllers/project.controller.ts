@@ -2,6 +2,7 @@ import { Controller, Get, Post, Param, Query, NotFoundException, BadRequestExcep
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { ProjectsService } from '../services/project.service';
 import { ProjectExportService, type ExportFormat } from '../services/project-export.service';
+import { PolicyWorkflowGraph } from '../services/policy-graph.builder';
 import {
     ProjectQueryDto,
     ProjectResponseDto,
@@ -175,6 +176,86 @@ export class ProjectsController {
         @Param('consensusTimestamp') consensusTimestamp: string,
     ): Promise<Record<string, unknown>> {
         return this.projectsService.getLinkedVcDocument(network, id, consensusTimestamp);
+    }
+
+    @Get(':id/vc-evidence/:consensusTimestamp')
+    @ApiOperation({
+        summary: 'Get the raw VC document and schema field labels for a single linked VC',
+        description:
+            'Returns the full JSONB VC document from the message table together with a ' +
+            'fieldLabels map (credentialSubject key → human-readable label from the policy ' +
+            'schemaFields).  The consensusTimestamp must appear in the project\'s ' +
+            'businessData->linkedVcs list.  fieldLabels is an empty object when the policy ' +
+            'schema cannot be resolved — callers must fall back gracefully.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({
+        name: 'id',
+        description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project',
+    })
+    @ApiParam({
+        name: 'consensusTimestamp',
+        description: 'HCS consensus timestamp of the linked VC message (e.g. "1234567890.123456789")',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Raw VC document and per-field label map',
+        schema: {
+            type: 'object',
+            properties: {
+                document: { type: 'object', additionalProperties: true },
+                fieldLabels: { type: 'object', additionalProperties: { type: 'string' } },
+            },
+        },
+    })
+    @ApiResponse({ status: 404, description: 'Project not found, VC not linked to this project, or no document stored' })
+    async getLinkedVcEvidence(
+        @Param('network') network: string,
+        @Param('id') id: string,
+        @Param('consensusTimestamp') consensusTimestamp: string,
+    ): Promise<{ document: Record<string, unknown>; fieldLabels: Record<string, string> }> {
+        return this.projectsService.getLinkedVcEvidence(network, id, consensusTimestamp);
+    }
+
+    @Get(':id/policy-graph')
+    @ApiOperation({
+        summary: 'Get the methodology workflow graph for a project',
+        description:
+            'Returns the policy.json-derived workflow graph: role swimlanes of document/action ' +
+            'steps and the real flow edges between them (UI-refresh events are filtered out). ' +
+            'Each node carries its schema UUID so the frontend can overlay VC availability. ' +
+            'Returns an empty graph ({roles:[],nodes:[],edges:[]}) when the project has no decoded policy.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
+    @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project' })
+    @ApiResponse({ status: 200, description: 'Policy workflow graph (roles, nodes, edges)' })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async getPolicyGraph(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<PolicyWorkflowGraph> {
+        return this.projectsService.getPolicyGraph(network, id);
+    }
+
+    @Get(':id/policy-json')
+    @ApiOperation({
+        summary: 'Get the raw decoded policy.json for a project',
+        description: 'Returns the full policy.json document of the project\'s decoded policy, ' +
+            'for the in-app JSON inspector. Returns null when no decoded policy exists.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
+    @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project' })
+    @ApiResponse({ status: 200, description: 'Raw policy.json (or null)' })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async getPolicyJson(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<Record<string, unknown> | null> {
+        return this.projectsService.getPolicyJson(network, id);
     }
 
     @Get(':id/export/:format')

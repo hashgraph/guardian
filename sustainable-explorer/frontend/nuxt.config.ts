@@ -20,6 +20,14 @@ export default defineNuxtConfig({
 
     css: ['~/assets/css/main.css'],
 
+    // @vue-flow/core ships untranspiled ESM that touches Vue component internals;
+    // it must be transpiled so it is SSR-safe when pulled into the server bundle
+    // graph (the project page imports the .client.vue canvas). Without this, SSR
+    // crashes at module-eval with "Cannot read properties of null (reading 'ce')".
+    build: {
+        transpile: ['@vue-flow/core'],
+    },
+
     vite: {
         plugins: [
             // @ts-ignore
