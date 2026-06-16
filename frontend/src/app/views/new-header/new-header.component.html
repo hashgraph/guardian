@@ -1,196 +1,190 @@
 @if (isLogin) {
-  <div (mouseleave)="onNavbarMouseLeave()" class="navbar-wrapper">
-    <ng-container [ngTemplateOutlet]="remoteButton"></ng-container>
-    <div (mousemove)="onNavbarMouseMove()" [class.collapse]="menuCollapsed" id="navbar">
-      <ng-container [ngTemplateOutlet]="logotype"></ng-container>
-      @if (menuItems) {
-        <ng-container [ngTemplateOutlet]="menuBar"></ng-container>
-        <ng-container [ngTemplateOutlet]="footerBar"></ng-container>
-      }
+  @if (layout === 'horizontal') {
+    <div class="topbar" id="topbar">
+      <p-menubar [model]="horizontalModel" styleClass="guardian-menubar">
+        <ng-template pTemplate="start">
+          <div [routerLink]="'/'" class="topbar-brand">
+            <img alt="" id="company-logo" src="/assets/images/logo.png" />
+            <span id="company-name"></span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="end">
+          <ng-container [ngTemplateOutlet]="footerActions"></ng-container>
+        </ng-template>
+      </p-menubar>
     </div>
-  </div>
+  } @else {
+    <div (mouseleave)="onNavbarMouseLeave()" class="navbar-wrapper">
+      <div [class.collapse]="menuCollapsed" id="navbar">
+        <ng-container [ngTemplateOutlet]="logotype"></ng-container>
+        @if (menuItems) {
+          <ng-container [ngTemplateOutlet]="menuBar"></ng-container>
+          <ng-container [ngTemplateOutlet]="footerBar"></ng-container>
+        }
+      </div>
+    </div>
+  }
 }
 
-<ng-template #remoteButton>
-  <div (click)="toggleMenuMode()" [class.collapse-button]="menuCollapsed"
-    id="remoteButton">
-    <svg [class.rotate-180]="smallMenuMode" fill="none" height="14" viewBox="0 0 8 14" width="8" xmlns="http://www.w3.org/2000/svg">
-      <path class="icon-color"
-        d="M7.28273 0.689065C6.89223 0.298565 6.25903 0.298565 5.86853 0.689065L0.981094 5.58127C0.200694 6.36247 0.201003 7.62827 0.981783 8.40907L5.87213 13.2994C6.26263 13.6899 6.89583 13.6899 7.28633 13.2994C7.67693 12.9089 7.67693 12.2757 7.28633 11.8852L3.10073 7.69956C2.71023 7.30896 2.71023 6.67587 3.10073 6.28536L7.28273 2.10326C7.67323 1.71276 7.67323 1.07956 7.28273 0.689065Z"/>
-    </svg>
-  </div>
-</ng-template>
-
 <ng-template #logotype>
-  <div [routerLink]="'/'" id="logotype">
-    <img alt="" id="company-logo" src="/assets/images/logo.png" />
-    <span [class.hidden-logotype]="menuCollapsed" id="company-name"></span>
+  <div id="logotype">
+    <div [routerLink]="'/'" class="logotype-brand">
+      <img alt="" id="company-logo" src="/assets/images/logo.png" />
+      <span [class.hidden-logotype]="menuCollapsed" id="company-name"></span>
+    </div>
+    <div (click)="toggleMenuMode()" [pTooltip]="menuCollapsed ? 'Expand menu' : 'Collapse menu'" class="collapse-toggle" tooltipPosition="right">
+      <i [class.rotate-180]="menuCollapsed" class="pi pi-angle-left"></i>
+    </div>
   </div>
 </ng-template>
 
 <ng-template #menuBar>
   <div id="menuBar">
-    <ng-container [ngTemplateOutletContext]="{barItems: menuItems}" [ngTemplateOutlet]="menuBarItem"></ng-container>
-  </div>
-
-  <ng-template #menuBarItem let-barItems="barItems">
-    @for (barItem of barItems; track barItem) {
-      <div class="item-block">
+    @for (barItem of menuItems; track barItem) {
+      @if (barItem.section && !menuCollapsed) {
+        <div class="menu-section">{{ barItem.section }}</div>
+      }
+      <div [class.has-flyout]="menuCollapsed && barItem.childItems" class="item-block">
         <div
           (click)="onRouter(barItem)"
           [class.current]="isCurrent(barItem, activeLink)"
+          [class.parent-active]="hasActiveChild(barItem)"
           class="item clickable"
           >
-          @if (barItem.iconUrl) {
-            <img [src]="'/assets/images/icons/' + barItem.iconUrl + '.svg'" alt="">
-          }
-          @if (barItem.svgIcon) {
-            <svg-icon
-              class="svg-icon-16"
-              src="/assets/images/icons/16/{{barItem.svgIcon}}.svg"
-              svgClass="icon-color-menu">
-            </svg-icon>
+          @if (barItem.icon) {
+            <i class="pi {{ barItem.icon }} item-icon"></i>
           }
           <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
-            <span [class.without-icon]="!(barItem.iconUrl || barItem.svgIcon)">
-              {{ barItem.title }}
-            </span>
+            <span [class.without-icon]="!barItem.icon">{{ barItem.title }}</span>
             @if (barItem.childItems) {
-              <img
-                [class.rotate-180]="barItem.active"
-                alt=""
-                class="smooth-rotate"
-                src="/assets/images/icons/chevron-white.svg"
-                >
+              <i [class.rotate-180]="barItem.active" class="pi pi-chevron-down chevron smooth-rotate"></i>
             }
           </div>
         </div>
+
         @if (!menuCollapsed && barItem.active && barItem.childItems) {
           <div class="item-container">
-            <ng-container
-              [ngTemplateOutletContext]="{barItems: barItem.childItems}"
-            [ngTemplateOutlet]="menuBarItem"></ng-container>
+            @for (child of barItem.childItems; track child) {
+              <div
+                (click)="onRouter(child)"
+                [class.current]="isCurrent(child, activeLink)"
+                class="item child-item clickable"
+                >
+                <span>{{ child.title }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        @if (menuCollapsed && barItem.childItems) {
+          <div class="flyout">
+            <div class="flyout-title">{{ barItem.title }}</div>
+            @for (child of barItem.childItems; track child) {
+              <div
+                (click)="onRouter(child)"
+                [class.current]="isCurrent(child, activeLink)"
+                class="flyout-item clickable"
+                >
+                <span>{{ child.title }}</span>
+              </div>
+            }
           </div>
         }
       </div>
     }
-  </ng-template>
+  </div>
 </ng-template>
 
 <ng-template #footerBar>
   <div id="footerBar">
-    <div class="boundary-box">
-      <div
-        [class.current]="activeLink.startsWith('/notifications')"
-        [routerLink]="'/notifications'"
-        class="item cursor-pointer"
-        >
-        <img alt="" src="assets/images/icons/notification.svg">
-        <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
-          @if (menuCollapsed) {
-            <app-notification
-            (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
-          }
-        </div>
-        <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
-          <span>Notifications</span>
-          @if (!menuCollapsed) {
-            <app-notification
-            (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
-          }
-        </div>
-      </div>
-    </div>
+    <ng-container [ngTemplateOutlet]="footerActions"></ng-container>
+  </div>
+</ng-template>
 
-    @if (policyRequests && policyRequests > 0) {
-      <div
-        [class.current]="activeLink.startsWith('/policy-requests')"
-        [routerLink]="'/policy-requests'"
-        class="item cursor-pointer"
-        >
-        <img alt="" src="assets/images/icons/notification.svg">
-        <div [class.hidden-logotype]="!menuCollapsed" class="collapsed-notify-counter">
-          <div>
-            @if (newPolicyRequests > 0) {
-              <div
-                class="badge"
-                >
-                <span class="notification-counter">
-                  {{ newPolicyRequests }}
-                </span>
-              </div>
-            }
-          </div>
-        </div>
-        <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
-          <span>Incoming Requests</span>
-          <div>
-            @if (newPolicyRequests > 0) {
-              <div
-                class="badge"
-                >
-                <span class="notification-counter">
-                  {{ newPolicyRequests }}
-                </span>
-              </div>
-            }
-          </div>
-        </div>
+<ng-template #footerActions>
+  <div
+    [class.current]="activeLink.startsWith('/notifications')"
+    [routerLink]="'/notifications'"
+    class="item cursor-pointer notification-item"
+    >
+    <i class="pi pi-bell item-icon"></i>
+    @if (menuCollapsed && layout === 'vertical') {
+      <div class="collapsed-notify-counter">
+        <app-notification (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
       </div>
     }
-
-    @if (user.ANALYTIC_DOCUMENT_READ) {
-      <app-compare-viewer
-        [collapsed]="menuCollapsed"
-        [active]="activeLink.startsWith('/compare')"
-      ></app-compare-viewer>
-    }
-
-    <div
-      [class.collapsed-item]="menuCollapsed"
-      [routerLink]="(user.STANDARD_REGISTRY) ? '/config' : 'user-profile'"
-      [queryParams]="{tab: 'relayerAccount'}"
-      class="item balance-item"
-      >
-      <svg-icon
-        class="svg-icon-16"
-        src="/assets/images/icons/16/wallet.svg"
-        svgClass="icon-color-menu">
-      </svg-icon>
-      <span> Accounts @if (balance) {
-        <span>{{ balance }}</span>
-      }</span>
-      @if (!balance) {
-        <div class="preloader">
-          <div class="preloader-image"></div>
-        </div>
+    <div [class.hidden-logotype]="menuCollapsed && layout === 'vertical'" class="span-icon">
+      <span>Notifications</span>
+      @if (!(menuCollapsed && layout === 'vertical')) {
+        <app-notification (menuOpenedChange)="onNotificationOpenChange($event)"></app-notification>
       }
     </div>
+  </div>
 
-    <div class="boundary-box">
-      <div
-        (click)="goToHomePage()"
-        [class.clickable]="!user.AUDITOR"
-        [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')"
-        class="item"
-        >
-        <img alt="" src="assets/images/icons/user.svg">
-        <div [style.display]="menuCollapsed ? 'none' : 'flex'" class="span-icon">
+  @if (policyRequests && policyRequests > 0) {
+    <div
+      [class.current]="activeLink.startsWith('/policy-requests')"
+      [routerLink]="'/policy-requests'"
+      class="item cursor-pointer"
+      >
+      <i class="pi pi-inbox item-icon"></i>
+      <div [class.hidden-logotype]="menuCollapsed && layout === 'vertical'" class="span-icon">
+        <span>Incoming Requests</span>
+        @if (newPolicyRequests > 0) {
+          <div class="badge"><span class="notification-counter">{{ newPolicyRequests }}</span></div>
+        }
+      </div>
+    </div>
+  }
+
+  @if (user.ANALYTIC_DOCUMENT_READ) {
+    <app-compare-viewer
+      [collapsed]="menuCollapsed && layout === 'vertical'"
+      [active]="activeLink.startsWith('/compare')"
+    ></app-compare-viewer>
+  }
+
+  @if (layout === 'horizontal') {
+    <div
+      [routerLink]="(user.STANDARD_REGISTRY) ? '/config' : 'user-profile'"
+      [queryParams]="{tab: 'relayerAccounts'}"
+      class="balance-chip"
+      pTooltip="Accounts"
+      tooltipPosition="bottom"
+      >
+      <i class="pi pi-wallet"></i>
+      <span>{{ balance || '…' }}</span>
+    </div>
+  }
+
+  <div class="user-box">
+    <div
+      (click)="goToHomePage()"
+      [class.clickable]="!user.AUDITOR"
+      [class.current]="activeLink.startsWith('/config') || activeLink.startsWith('/user-profile')"
+      class="item user-item"
+      >
+      <div class="user-avatar">{{ getInitials(username) }}</div>
+      @if (!(menuCollapsed && layout === 'vertical')) {
+        <div class="user-meta">
           <span
             #usernameSpan
             [pTooltip]="isUsernameOverflowing ? (username || '') : 'Open Profile'"
+            class="user-name"
             tooltipPosition="right"
             tooltipStyleClass="one-line-tooltip"
           >{{ username }}</span>
-          <div class="flex-column-gap-10">
-            <i (click)="logOut()"
-              class="pi pi-sign-out icon-color-grey"
-              pTooltip="Logout"
-              tooltipPosition="right"
-            ></i>
-          </div>
+          @if (layout === 'vertical' && balance) {
+            <span class="user-balance">{{ balance }}</span>
+          }
         </div>
-      </div>
+        <i
+          (click)="logOut(); $event.stopPropagation()"
+          class="pi pi-sign-out logout-icon"
+          pTooltip="Logout"
+          tooltipPosition="right"
+        ></i>
+      }
     </div>
   </div>
 </ng-template>

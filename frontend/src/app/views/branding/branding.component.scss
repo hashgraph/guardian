@@ -1,3 +1,7 @@
+.guardian-page {
+    padding-bottom: 88px;
+}
+
 .not-exist {
     position: absolute;
     left: 48px;
@@ -55,13 +59,14 @@
 
 .actions-container {
     position: fixed;
-    left: 270px;
+    left: var(--header-width, var(--header-width-expand));
     right: 0;
     bottom: 0;
     height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    transition: left 0.125s ease-in-out;
     background-color: var(--color-grey-white);
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
     padding: 0 48px;

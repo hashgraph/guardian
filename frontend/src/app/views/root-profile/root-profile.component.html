@@ -226,6 +226,21 @@
               </p-selectbutton>
             </div>
 
+            <div class="config-row">
+              <div class="config-row-label">
+                <span class="config-row-title">Menu layout</span>
+                <span class="config-row-desc">Navigation as a side rail or a top bar</span>
+              </div>
+              <p-selectbutton
+                [options]="menuLayouts"
+                [ngModel]="selectedMenuLayout"
+                (onChange)="onMenuLayoutChange($event.value)"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="profile-theme-select">
+              </p-selectbutton>
+            </div>
+
           </div>
         </p-card>
       </div>

@@ -24,6 +24,7 @@ import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disab
 import moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
+import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
 
 enum OperationMode {
@@ -127,6 +128,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private cdRef: ChangeDetectorRef,
         private docWidgetService: DocWidgetService,
         private appThemeService: AppThemeService,
+        private menuLayoutService: MenuLayoutService,
         private toastr: ToastrService
     ) {
         this.profile = null;
@@ -923,6 +925,18 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     onThemeChange(theme: AppTheme): void {
         this.appThemeService.setTheme(theme);
+    }
+
+    get menuLayouts(): MenuLayoutOption[] {
+        return this.menuLayoutService.layouts;
+    }
+
+    get selectedMenuLayout(): MenuLayout {
+        return this.menuLayoutService.layout;
+    }
+
+    onMenuLayoutChange(layout: MenuLayout): void {
+        this.menuLayoutService.setLayout(layout);
     }
 
     onDocWidgetToggle(checked: boolean): void {
