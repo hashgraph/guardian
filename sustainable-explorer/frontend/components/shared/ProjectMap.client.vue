@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 export interface CountryData {
     country: string;
@@ -156,13 +155,30 @@ function renderPoints() {
     }
 }
 
+function fitPoints() {
+    const pts = props.points?.filter(p => p.lat !== 0 || p.lng !== 0);
+    if (!pts?.length || !map) return;
+    if (pts.length === 1) {
+        map.setView([pts[0].lat, pts[0].lng], 5, { animate: false });
+    } else {
+        const bounds = L.latLngBounds(pts.map(p => [p.lat, p.lng] as [number, number]));
+        map.fitBounds(bounds, { padding: [40, 40], maxZoom: 6, animate: false });
+    }
+}
+
 let resizeObserver: ResizeObserver | null = null;
 
 onMounted(async () => {
     await nextTick();
     await initMap();
-    // Leaflet needs a size recalc after the container is laid out
-    setTimeout(() => { map?.invalidateSize(); }, 100);
+    // Leaflet needs a size recalc after the container is laid out.
+    // autoFit is called after invalidateSize so the container has real pixel
+    // dimensions — fitBounds reads container height to compute zoom, which is
+    // NaN if called before the layout pass.
+    setTimeout(() => {
+        map?.invalidateSize();
+        if (props.autoFit) fitPoints();
+    }, 100);
 
     // Re-invalidate on parent resize. The dashboard's side panel slides in/out
     // and changes the map area's width; without this, tiles render offset and
@@ -193,6 +209,7 @@ watch(() => props.countries, () => {
 
 watch(() => props.points, () => {
     renderPoints();
+    if (props.autoFit) fitPoints();
 }, { deep: true });
 </script>
 

@@ -10,11 +10,9 @@ import {
     AlertCircle,
     ExternalLink,
     Shield,
-    MapPin,
     BookOpen,
     Coins,
     Layers,
-    Hash,
     BarChart3,
     Tag,
     CheckCircle2,
@@ -169,6 +167,25 @@ const mapPoints = computed(() =>
         .filter(p => p.lat !== 0 || p.lng !== 0)
         .map(p => ({ lat: p.lat, lng: p.lng, name: p.name })),
 );
+
+const mapCountries = computed(() => {
+    const countryMap = new Map<string, { projects: number; countryCode: string }>();
+    for (const p of registryProjects.value) {
+        if (!p.country) continue;
+        const existing = countryMap.get(p.country);
+        if (existing) {
+            existing.projects++;
+        } else {
+            countryMap.set(p.country, { projects: 1, countryCode: p.countryCode ?? '' });
+        }
+    }
+    return [...countryMap.entries()].map(([country, data]) => ({
+        country,
+        countryCode: data.countryCode,
+        projects: data.projects,
+        credits: '',
+    }));
+});
 
 // Top 10 methodologies sorted by instanceProjectCount (the value shown in the UI)
 const topMethodologies = computed(() =>
@@ -556,23 +573,10 @@ function openRawData() {
 
             <!-- ── Project Locations Map ───────────────────────────────── -->
             <div class="rounded-xl border bg-card overflow-hidden">
-                <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                            <MapPin class="h-4 w-4 text-primary" />
-                            {{ $t('registries.detail.map.title') }}
-                        </h2>
-                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('registries.detail.map.subtitle') }}</p>
+                <div class="flex h-[28rem]">
+                    <div class="flex-1 relative">
+                        <ProjectMap :countries="mapCountries" :points="mapPoints" :auto-fit="true" />
                     </div>
-                </div>
-                <div v-if="mapPoints.length > 0" style="height: 360px;">
-                    <ClientOnly>
-                        <RegistryProjectsMap :points="mapPoints" class="h-full w-full" />
-                    </ClientOnly>
-                </div>
-                <div v-else class="py-12 text-center text-sm text-muted-foreground">
-                    <MapPin class="h-8 w-8 mx-auto mb-3 opacity-30" />
-                    {{ $t('registries.detail.map.noProjects') }}
                 </div>
             </div>
 
