@@ -1058,7 +1058,9 @@ const issuanceTrendTotal = computed(() =>
                 </Transition>
               </div>
             </div>
-            <div v-else class="text-xs text-muted-foreground px-5 pb-4">{{ $t('methodologies.detail.charts.noGeographicData') }}</div>
+            <div v-else class="mx-5 mb-5 rounded-xl border bg-card flex items-center justify-center h-32">
+              <p class="text-sm text-muted-foreground">{{ $t('methodologies.detail.charts.noGeographicData') }}</p>
+            </div>
           </div>
 
           <!-- Issuance Trend + Vintage Distribution -->
