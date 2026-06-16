@@ -4,7 +4,11 @@ description: >-
   assets.
 ---
 
-# First steps with digital environmental assets (draft)
+# First steps with digital environmental assets
+
+{% hint style="warning" %}
+This page is under developement.
+{% endhint %}
 
 * #### Get set up • 0/5 steps
 
