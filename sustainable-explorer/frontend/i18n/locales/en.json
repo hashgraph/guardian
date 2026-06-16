@@ -564,7 +564,7 @@
                 "issuanceTrendYears": "years",
                 "issuanceTrendTotal": "{total}{unit} total",
                 "vintageDistribution": "Vintage Distribution",
-                "vintageDistributionSub": "Project distribution by vintage",
+                "vintageDistributionSub": "Credits by vintage year",
                 "noVintageData": "No vintage data available",
                 "vintageYear": "vintage",
                 "vintageYears": "vintages",

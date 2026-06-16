@@ -30,6 +30,7 @@ import {
   Download,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
+import { allocateDonutColors } from "~/lib/chart-colors";
 import type {
   MethodologyDto,
   MethodologiesResponse,
@@ -716,10 +717,43 @@ const geoDistribution = computed(() => {
     counts[name].projects++;
   }
   return Object.entries(counts)
-    .map(([country, d]) => ({ country, projects: d.projects, code: d.code }))
-    .sort((a, b) => b.projects - a.projects)
-    .slice(0, 8);
+    .map(([country, d]) => ({ country, projects: d.projects, code: d.code, countryCode: d.code }))
+    .sort((a, b) => b.projects - a.projects);
 });
+
+const mapPoints = computed(() =>
+  linkedProjectsMapped.value
+    .filter(p => typeof p.lat === 'number' && typeof p.lng === 'number' && (p.lat !== 0 || p.lng !== 0))
+    .map(p => ({ name: p.name ?? '', lat: p.lat as number, lng: p.lng as number }))
+);
+
+const selectedGeoCountry = ref<string | null>(null);
+
+const activeGeoDetail = computed(() => {
+  const code = selectedGeoCountry.value;
+  if (!code) return null;
+  const entry = geoDistribution.value.find(c => c.countryCode === code);
+  if (!entry) return null;
+
+  const countryProjects = linkedProjectsMapped.value.filter(p => resolvedProjectCode(p) === code);
+  const catCounts: Record<string, number> = {};
+  for (const p of countryProjects) {
+    const label = p.category || p.sector || 'Unknown';
+    catCounts[label] = (catCounts[label] ?? 0) + 1;
+  }
+  const total = countryProjects.length || 1;
+  const ordered = Object.entries(catCounts)
+    .map(([label, count]) => ({ label, value: Math.round((count / total) * 100) }))
+    .sort((a, b) => b.value - a.value);
+  const colors = allocateDonutColors(ordered.length, `geo-sector-${code}`);
+  const sectors = ordered.map((s, i) => ({ ...s, color: colors[i] ?? '#d4d4d8' }));
+
+  return { ...entry, sectors };
+});
+
+function onGeoCountryClick(code: string) {
+  selectedGeoCountry.value = selectedGeoCountry.value === code ? null : code;
+}
 
 const issuanceTrend = computed(() => {
   const byYear: Record<string, number> = {};
@@ -752,22 +786,25 @@ const issuanceTrend = computed(() => {
 });
 
 const vintageByIssuance = computed(() => {
-  const byVintage: Record<string, number> = {};
+  const byVintage: Record<string, { credits: number; projects: number }> = {};
   for (const p of linkedProjectsMapped.value) {
-    const raw = p.vintage?.trim() || (p.creditingPeriodStart ? String(new Date(p.creditingPeriodStart).getFullYear()) : '');
+    const raw = p.vintage?.trim() || (p.creditingPeriodStart ? String(new Date(p.creditingPeriodStart as string).getFullYear()) : '');
     const match = raw.match(/\d{4}/);
     if (!match) continue;
     const year = match[0];
-    byVintage[year] = (byVintage[year] ?? 0) + 1;
+    if (!byVintage[year]) byVintage[year] = { credits: 0, projects: 0 };
+    byVintage[year].credits += p.credits ?? 0;
+    byVintage[year].projects += 1;
   }
   return Object.entries(byVintage)
     .sort(([a], [b]) => a.localeCompare(b))
-    .map(([label, value]) => ({ label, value }));
+    .map(([label, d]) => ({ label, credits: d.credits, projects: d.projects }));
 });
 
-const vintageMax = computed(() => Math.max(...vintageByIssuance.value.map(v => v.value), 0));
+const vintageMax = computed(() => Math.max(...vintageByIssuance.value.map(v => v.credits), 0));
 
-const vintageTotal = computed(() => vintageByIssuance.value.reduce((s, v) => s + v.value, 0));
+const vintageTotal = computed(() => vintageByIssuance.value.reduce((s, v) => s + v.projects, 0));
+
 
 const issuanceTrendTotal = computed(() =>
   Math.round(issuanceTrend.value.data.reduce((s, d) => s + d.value, 0) * 10) / 10,
@@ -936,9 +973,6 @@ const issuanceTrendTotal = computed(() =>
             <BarChart3 class="h-4 w-4 text-primary" />
             {{ $t('methodologies.detail.dashboard.title') }}
           </h2>
-          <span class="text-[11px] text-muted-foreground">
-            {{ $t('methodologies.detail.dashboard.stats', { projects: methodology.stats.projectCount, issuances: methodology.stats.issuanceCount }) }}
-          </span>
         </div>
 
         <div v-if="linkedProjectsPending && linkedProjects.length === 0" class="px-5 py-8 flex items-center justify-center gap-2 text-sm text-muted-foreground">
@@ -948,30 +982,83 @@ const issuanceTrendTotal = computed(() =>
 
         <div v-else>
           <!-- Geographic Distribution (full width) -->
-          <div class="border-b px-5 py-4">
-            <div class="flex items-center justify-between mb-4">
+          <div class="border-b">
+            <div class="flex items-center justify-between px-5 py-4">
               <div>
                 <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.geographicDistribution') }}</h3>
                 <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.geographicDistributionSub') }}</p>
               </div>
               <span class="text-[11px] text-muted-foreground">{{ geoDistribution.length }} {{ geoDistribution.length !== 1 ? $t('methodologies.detail.charts.geographicCountries') : $t('methodologies.detail.charts.geographicCountry') }}</span>
             </div>
-            <div v-if="geoDistribution.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-2.5">
-              <div v-for="item in geoDistribution" :key="item.country" class="flex items-center gap-2.5">
-                <div class="flex items-center gap-1.5 w-32 shrink-0 min-w-0">
-                  <CountryFlag :code="item.code" size="sm" />
-                  <span class="text-xs text-foreground truncate">{{ item.country }}</span>
-                </div>
-                <div class="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    class="h-full bg-primary rounded-full transition-all duration-500"
-                    :style="{ width: `${(item.projects / geoDistribution[0].projects) * 100}%` }"
+            <div v-if="geoDistribution.length > 0" class="rounded-xl border mx-5 mb-5 bg-card overflow-hidden">
+              <div class="flex h-[28rem]">
+                <!-- Map -->
+                <div class="flex-1 relative">
+                  <ProjectMap
+                    :countries="geoDistribution.map(c => ({ country: c.country, countryCode: c.countryCode, projects: c.projects, credits: '' }))"
+                    :points="mapPoints"
+                    @country-click="onGeoCountryClick"
                   />
                 </div>
-                <span class="text-xs tabular-nums text-muted-foreground w-4 text-right shrink-0">{{ item.projects }}</span>
+                <!-- Side panel -->
+                <Transition
+                  enter-active-class="transition-all duration-300 [transition-timing-function:cubic-bezier(0.34,1.16,0.64,1)]"
+                  enter-from-class="w-0 opacity-0"
+                  enter-to-class="w-64 opacity-100"
+                  leave-active-class="transition-all duration-200 ease-in"
+                  leave-from-class="w-64 opacity-100"
+                  leave-to-class="w-0 opacity-0"
+                >
+                  <div
+                    v-if="activeGeoDetail"
+                    class="w-64 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card"
+                    style="scrollbar-gutter: stable;"
+                  >
+                    <div class="p-4 space-y-4">
+                      <!-- Header -->
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-2 min-w-0">
+                          <CountryFlag :code="activeGeoDetail.countryCode" size="lg" />
+                          <h3 class="text-sm font-semibold text-foreground truncate">{{ activeGeoDetail.country }}</h3>
+                        </div>
+                        <button
+                          class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          @click="selectedGeoCountry = null"
+                        >
+                          <svg class="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+                      </div>
+                      <!-- Project count -->
+                      <NuxtLink
+                        :to="{ path: '/projects', query: { country: activeGeoDetail.country } }"
+                        class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
+                      >
+                        <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeGeoDetail.projects.toLocaleString() }}</div>
+                        <div class="text-[11px] text-muted-foreground mt-0.5">Active Projects →</div>
+                      </NuxtLink>
+                      <!-- Sector breakdown -->
+                      <div v-if="activeGeoDetail.sectors.length > 0">
+                        <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
+                        <div class="flex items-start gap-3">
+                          <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
+                            <DonutChart :segments="activeGeoDetail.sectors" :size="90" />
+                          </div>
+                          <div class="space-y-1.5 flex-1 min-w-0">
+                            <div v-for="s in activeGeoDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
+                              <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
+                              <span class="text-[11px] text-muted-foreground truncate min-w-0">
+                                <strong class="text-foreground">{{ s.value }}%</strong> {{ s.label }}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </Transition>
               </div>
             </div>
-            <div v-else class="text-xs text-muted-foreground py-2">{{ $t('methodologies.detail.charts.noGeographicData') }}</div>
+            <div v-else class="text-xs text-muted-foreground px-5 pb-4">{{ $t('methodologies.detail.charts.noGeographicData') }}</div>
           </div>
 
           <!-- Issuance Trend + Vintage Distribution -->
@@ -1017,10 +1104,10 @@ const issuanceTrendTotal = computed(() =>
                     :key="item.label"
                     class="flex-1 flex flex-col items-center gap-2"
                   >
-                    <span class="text-[11px] font-medium text-muted-foreground tabular-nums">{{ item.value }}</span>
+                    <span class="text-[11px] font-medium text-muted-foreground tabular-nums">{{ formatCredits(item.credits) }}</span>
                     <div
                       class="w-full rounded-t-md bg-chart-2/80 hover:bg-chart-2 transition-colors"
-                      :style="{ height: `${vintageMax > 0 ? (item.value / vintageMax) * 140 : 0}px` }"
+                      :style="{ height: `${vintageMax > 0 ? (item.credits / vintageMax) * 140 : 0}px` }"
                     />
                     <span class="text-[11px] text-muted-foreground">{{ item.label }}</span>
                   </div>
@@ -1036,6 +1123,7 @@ const issuanceTrendTotal = computed(() =>
             </div>
           </div>
           </div><!-- end Issuance + Vintage grid -->
+
         </div><!-- end v-else -->
       </div>
 
