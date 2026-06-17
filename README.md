@@ -76,7 +76,7 @@ To get a local copy up and running quickly, follow the steps below. Please refer
    - **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning
    - Local IPFS node (e.g., **[Kubo](https://github.com/ipfs/kubo)**) – auto-provisioned when using Docker Compose
 
-5. **[Redict](https://redict.io/)** – in-memory cache & message broker, independent fork of Redis® (auto-provisioned by the Docker stack)
+5. **[Valkey](https://valkey.io)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
@@ -410,7 +410,7 @@ If you want to manually build every component with debug information, then build
 - [Node.js v20.20](https://nodejs.org)
 - [Yarn](https://yarnpkg.com/getting-started/install)
 - [Nats 2.9.25](https://nats.io/)
-- [Redict](https://redict.io/)
+- [Valkey](https://valkey.io)
 - [Seq 2025.2 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
