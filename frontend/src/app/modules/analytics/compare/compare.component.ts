@@ -135,6 +135,9 @@ export class CompareComponent implements OnInit {
         if (this.isModules) {
             return 'Manage Modules';
         }
+        if (this.isDocuments) {
+            return 'Manage Documents';
+        }
         return 'Compare';
     }
 

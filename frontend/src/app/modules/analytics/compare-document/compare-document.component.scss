@@ -15,60 +15,41 @@
     font-size: 20px;
 }
 
-.item-headers {
-    display: grid;
+/* Multi-document is wide and scrolls horizontally. Keep the projected
+   Type/Export actions pinned to the right edge of the scroll viewport. */
+:host ::ng-deep .compare-page-actions {
     position: sticky;
-    z-index: 4;
-    left: 0;
-    top: 0;
-    padding: 14px 20px;
-    margin-bottom: 4px;
-    height: 22px;
+    right: -28px;
+    width: max-content;
+    margin-left: auto;
+    z-index: 5;
+}
+
+.document-description-section {
+    margin-bottom: 8px;
+}
+
+.document-description-title {
+    color: var(--guardian-header-color, #000);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 24px;
+    margin-bottom: 12px;
+}
+
+.document-description-card {
+    display: grid;
+    gap: 64px;
     background: var(--guardian-background, #fff);
-    opacity: 0.95;
-    border-radius: 8px 8px 0 0;
+    border: 1px solid var(--guardian-border-color, #e1e7ef);
+    border-radius: 8px;
     box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
-    overflow: hidden;
+    padding: 24px 28px;
+    box-sizing: border-box;
+}
 
-    .item-header {
-        border-left: 1px solid var(--guardian-border-color, #bbb);
-        border-right: 1px solid var(--guardian-border-color, #bbb);
-        font-size: 12px;
-        color: var(--guardian-font-color, #444);
-        padding-left: 12px;
-        padding-right: 100px;
-        overflow: hidden;
-        position: relative;
-        margin-right: -2px;
-    }
-
-    .item-header-rate {
-        top: 0;
-        right: 16px;
-        position: absolute;
-        font-weight: 500;
-        text-align: end;
-    }
-
-    .item-header-color-green {
-        color: var(--guardian-success-color, #008d0c);
-    }
-
-    .item-header-color-yellow {
-        color: var(--guardian-warning-color, #c79604);
-    }
-
-    .item-header-color-red {
-        color: var(--guardian-failure-color, #e70000);
-    }
-
-    .item-header-name {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        width: 100%;
-        display: block;
-    }
+.document-description-column {
+    min-width: 0;
 }
 
 .compare-btn {
@@ -197,16 +178,27 @@
 
 
 .result-info {
-    padding-left: 5px;
+    padding: 0;
 
     .result-info-field {
         display: grid;
-        grid-template-columns: 100px 50%;
+        grid-template-columns: 100px minmax(0, 1fr);
+        gap: 12px;
+        min-height: 24px;
+        align-items: center;
     }
 
     .result-info-field-name {
-        font-weight: bold;
-        color: var(--guardian-grid-color, #686868);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--guardian-font-color, #172033);
+    }
+
+    .result-info-field-value {
+        min-width: 0;
+        color: var(--guardian-font-color, #172033);
+        font-size: 12px;
+        overflow-wrap: anywhere;
     }
 }
 
@@ -902,40 +894,88 @@
 }
 
 :host ::ng-deep .compare-document-accordion {
+    background: transparent;
+
     .p-accordionpanel {
         margin-bottom: 8px;
-        border-radius: 8px;
-        box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
-        overflow: hidden;
-    }
-
-    .p-accordionheader {
-        gap: 8px;
-        width: 100%;
-        min-height: 48px;
-        padding: 0 10px;
-        background: var(--guardian-background, #fff);
         border: 0;
-        color: var(--guardian-font-color, #172033);
-        font-weight: 600;
-        text-align: left;
-        box-shadow: none;
-    }
-
-    .p-accordionheader-toggle-icon {
-        flex: 0 0 auto;
-        width: 14px;
-        height: 14px;
-        margin: 0;
+        border-radius: 8px;
+        background: var(--guardian-background, #fff);
+        box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+        /* clip (not hidden) so it is not a scroll container — lets the sticky
+           chevron pin to the viewport while the wide tree scrolls. */
+        overflow: clip;
     }
 
     .p-accordioncontent {
-        border: none;
+        border: 0;
+        background: var(--guardian-background, #fff);
+        display: block;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    p-motion,
+    .p-accordioncontent-wrapper {
+        display: block;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .p-accordionheader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        width: 100%;
+        box-sizing: border-box;
+        min-height: 50px;
+        padding: 0 20px;
+        background: var(--guardian-background, #fff);
+        border: 0;
+        color: var(--guardian-font-color, #172033);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 20px;
+        text-align: left;
+        box-shadow: none;
+        /* keep the sticky toggle chevron bound to the real horizontal scroller */
+        overflow: visible;
+    }
+
+    .p-accordionheader > :not(.p-accordionheader-toggle-icon) {
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .p-accordionheader-toggle-icon {
+        order: 2;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 16px;
+        width: 16px;
+        height: 16px;
+        margin-left: 0;
+        color: var(--guardian-grid-color, #848fa9);
+        font-size: 12px;
+        line-height: 1;
+        opacity: 1;
+        visibility: visible;
+        position: sticky;
+        right: -28px;
+        z-index: 3;
     }
 
     .p-accordioncontent-content {
         padding: 0;
         background: var(--guardian-background, #fff);
         border: 0;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 }

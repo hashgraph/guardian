@@ -30,6 +30,9 @@
           @if (isMultiPolicies) {
             <h1 class="compare-summary-title">Multiple Policies</h1>
           }
+          @if (!showSummaryLine && !isMultiPolicies) {
+            <h1 class="compare-summary-title">Comparing {{ compareNoun }}</h1>
+          }
           @if (isPolicies) {
             <div class="compare-header-colorblind-toggle">
               <label class="toggle-label">
@@ -40,12 +43,12 @@
           }
         </div>
       </div>
-      @if (!isPolicies && !isMultiPolicies && !isSchemas && !isModules) {
+      @if (!isPolicies && !isMultiPolicies && !isSchemas && !isModules && !isDocuments) {
         <ng-container *ngTemplateOutlet="compareActions"></ng-container>
       }
     </div>
 
-    @if (!isPolicies && !isMultiPolicies && !isSchemas && !isModules) {
+    @if (!isPolicies && !isMultiPolicies && !isSchemas && !isModules && !isDocuments) {
       <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
     }
   }
@@ -129,7 +132,12 @@
         [propLvl]="propLvl"
         [type]="visibleType"
         [value]="result"
-      (change)="onChange($event)"></app-compare-document>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-document>
     </div>
   }
 
