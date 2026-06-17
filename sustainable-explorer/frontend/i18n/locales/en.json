@@ -1,24 +1,24 @@
 {
     "feedback": {
-      "button": "Feedback",
-      "title": "Send us feedback",
-      "close": "Close",
-      "page": "Page",
-      "descriptionLabel": "Description",
-      "placeholder": "Tell us what's working, what's broken, or what you'd like to see...",
-      "emailLabel": "Email",
-      "emailPlaceholder": "you{'@'}example.com",
-      "emailHint": "We'll only use it to notify you when this is resolved.",
-      "emailInvalid": "Please enter a valid email address.",
-      "attachScreenshot": "Capture screen",
-      "removeScreenshot": "Remove screenshot",
-      "optional": "optional",
-      "cancel": "Cancel",
-      "submit": "Send",
-      "success": "Thanks for your feedback!",
-      "error": "Failed to send feedback. Please try again.",
-      "screenshotError": "Could not capture a screenshot.",
-      "descriptionRequired": "Please enter a description."
+        "button": "Feedback",
+        "title": "Send us feedback",
+        "close": "Close",
+        "page": "Page",
+        "descriptionLabel": "Description",
+        "placeholder": "Tell us what's working, what's broken, or what you'd like to see...",
+        "emailLabel": "Email",
+        "emailPlaceholder": "you{'@'}example.com",
+        "emailHint": "We'll only use it to notify you when this is resolved.",
+        "emailInvalid": "Please enter a valid email address.",
+        "attachScreenshot": "Capture screen",
+        "removeScreenshot": "Remove screenshot",
+        "optional": "optional",
+        "cancel": "Cancel",
+        "submit": "Send",
+        "success": "Thanks for your feedback!",
+        "error": "Failed to send feedback. Please try again.",
+        "screenshotError": "Could not capture a screenshot.",
+        "descriptionRequired": "Please enter a description."
     },
     "common": {
         "search": "Search",
@@ -336,7 +336,7 @@
         "clearMethodologyFilter": "Clear filter",
         "filteredByRegistry": "Showing issuances for registry",
         "clearRegistryFilter": "Clear filter",
-        "supplyTooltip": "Total token supply minted on Hedera. For fungible tokens this is the total supply. For NFTs this is the number of unique serials.",
+        "supplyTooltip": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials.",
         "columns": {
             "token": "Token",
             "symbol": "Symbol",
@@ -357,7 +357,8 @@
         },
         "tooltips": {
             "hideUnlinked": "Hides tokens that have not yet been matched to a project. Uncheck to see all indexed tokens including those still awaiting project attribution.",
-            "mintDate": "Mint Date"
+            "mintDate": "Mint Date",
+            "mintAmount": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials."
         }
     },
     "methodologies": {

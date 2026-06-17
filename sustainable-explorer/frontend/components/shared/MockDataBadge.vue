@@ -17,7 +17,7 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
   <span
     v-if="props.compact"
-    class="inline-flex items-center gap-1 rounded-full bg-stat-amber/10 text-stat-amber text-[10px] font-medium px-2 py-0.5 align-middle"
+    class="inline-flex items-center gap-1 rounded-full bg-stat-amber/10 text-stat-amber text-[10px] font-medium px-2 py-0.5 align-middle w-fit"
     :title="props.detail || 'This view is showing placeholder data — not live indexed data.'"
   >
     <FlaskConical class="h-3 w-3" />

@@ -10,6 +10,7 @@ import type { SortDirection } from "~/composables/useFilteredPagination";
 import { formatCredits } from "~/lib/format";
 import { useRegistriesApi } from "~/composables/api/useRegistriesApi";
 import { downloadCsv, csvDateStamp, buildMethodologyCsvRows } from '~/lib/csv-export';
+import { naturalCompare } from '~/lib/utils';
 
 const { t } = useI18n();
 
@@ -29,7 +30,7 @@ type ColumnKey =
 
 const columnToApiSort: Record<ColumnKey, MethodologySortKey | null> = {
   name: "name",
-  registryDid: "registryDid",
+  registryDid: "registryName",
   projects: "projects",
   issuances: "issuances",
   schemas: "schemas",
@@ -107,7 +108,7 @@ const registryNameOptions = computed(() => {
         if (r.name) names.add(r.name);
     }
     return [...names]
-        .sort((a, b) => a.localeCompare(b))
+        .sort((a, b) => naturalCompare(a, b))
         .map(n => ({ value: n, label: n }));
 });
 
@@ -185,7 +186,32 @@ if (import.meta.client) {
   onBeforeUnmount(() => clearInterval(pollInterval));
 }
 
-const methodologies = computed<any[]>(() => data.value?.data ?? []);
+const SORT_FIELD_MAP: Record<string, (m: any) => any> = {
+    name:        m => m.name ?? '',
+    registryDid: m => m.registryName ?? '',
+    projects:    m => m.stats?.instanceProjectCount ?? 0,
+    issuances:   m => m.stats?.instanceIssuanceCount ?? 0,
+    schemas:     m => m.stats?.schemaCount ?? 0,
+    description: m => m.description ?? '',
+    id:          m => m.topicId ?? '',
+    createdAt:   m => m.sourceTimestamp ?? '',
+};
+
+const methodologies = computed<any[]>(() => {
+    const result = data.value?.data ?? [];
+    if (!sortKey.value || !sortDir.value) return result;
+    const getter = SORT_FIELD_MAP[sortKey.value] ?? ((m: any) => (m as any)[sortKey.value as string] ?? '');
+    const dir = sortDir.value === 'asc' ? 1 : -1;
+    return [...result].sort((a, b) => {
+        const aVal = getter(a);
+        const bVal = getter(b);
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+        return naturalCompare(String(aVal), String(bVal)) * dir;
+    });
+});
 const meta = computed(
   () =>
     data.value?.meta ?? {
@@ -296,10 +322,6 @@ async function downloadMethodologies() {
         const query: Record<string, string | number> = {};
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
-        if (apiSortBy.value && apiSortDir.value) {
-            query.sortBy = apiSortBy.value;
-            query.sortDir = apiSortDir.value;
-        }
         const FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
         for (const key of FILTER_KEYS) {
             const raw = filters.value[key];
@@ -308,7 +330,22 @@ async function downloadMethodologies() {
             if (trimmed) query[key] = trimmed;
         }
 
-        const allData = await fetchAllPages(`/api/v1/${network.value}/methodologies`, query);
+        let allData = await fetchAllPages(`/api/v1/${network.value}/methodologies`, query);
+
+        if (sortKey.value && sortDir.value) {
+            const getter = SORT_FIELD_MAP[sortKey.value] ?? ((m: any) => (m as any)[sortKey.value as string] ?? '');
+            const dir = sortDir.value === 'asc' ? 1 : -1;
+            allData = [...allData].sort((a, b) => {
+                const aVal = getter(a);
+                const bVal = getter(b);
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return 1;
+                if (bVal == null) return -1;
+                if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
+            });
+        }
+
         const rows = buildMethodologyCsvRows(allData, network.value);
         downloadCsv(`methodologies_export_${csvDateStamp()}.csv`, rows);
     } finally {
@@ -439,13 +476,7 @@ async function downloadMethodologies() {
                 :sort-dir="sortDir"
                 @sort="toggleSort($event)"
               />
-              <SortableHeader
-                :label="$t('methodologies.columns.version')"
-                sort-key="version"
-                :active-sort-key="sortKey as string"
-                :sort-dir="sortDir"
-                @sort="toggleSort($event)"
-              />
+              <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.columns.version') }}</th>
               <th class="py-2.5 pl-4 pr-8 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                 {{ $t('methodologies.columns.decoded') }}
               </th>

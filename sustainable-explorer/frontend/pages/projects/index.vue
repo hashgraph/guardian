@@ -2,6 +2,7 @@
 import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
+import { naturalCompare } from '~/lib/utils';
 import { SDG_LIST } from '~/lib/sdgs';
 import { generateProjectVc } from '~/lib/mock-vc';
 import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
@@ -12,7 +13,7 @@ import { mapApiProject } from '~/composables/useProjects';
 
 const { t } = useI18n();
 const { network } = useNetwork();
-const { projects, total, filterOptions } = useProjects();
+const { projects, total, filterOptions, pending } = useProjects();
 const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
 const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
 
@@ -75,7 +76,7 @@ const allProjects = computed(() => projects.value.map(p => ({
 })));
 
 const countryFilterOptions = computed(() =>
-    [...new Set(allProjects.value.map(p => p.country).filter(Boolean))].sort(),
+    [...new Set(allProjects.value.map(p => p.country).filter(Boolean))].sort(naturalCompare),
 );
 
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
@@ -173,6 +174,8 @@ const statusColor: Record<string, string> = {
     Completed: 'bg-purple-50 text-purple-600',
 };
 
+const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
+
 const downloading = ref(false);
 
 async function downloadProjects() {
@@ -211,6 +214,20 @@ async function downloadProjects() {
                 if (from && v < from) return false;
                 if (to && v > to) return false;
                 return true;
+            });
+        }
+
+        if (sortKey.value && sortDir.value) {
+            const key = sortKey.value as string;
+            const dir = sortDir.value === 'asc' ? 1 : -1;
+            mapped = [...mapped].sort((a, b) => {
+                const aVal = (a as any)[key];
+                const bVal = (b as any)[key];
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return 1;
+                if (bVal == null) return -1;
+                if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
             });
         }
 
@@ -319,15 +336,25 @@ async function downloadProjects() {
                             <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" mock :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                <span class="inline-flex items-center gap-1">
+                                <span class="inline-flex items-start gap-1">
                                     {{ $t('projects.columns.sdgs') }}
-                                    <InfoTooltip :text="$t('projects.sdgsTooltip')" />
+                                    <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('projects.sdgsTooltip')" /></span>
                                 </span>
                             </th>
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">{{ $t('projects.columns.rawData') }} <InfoTooltip :text="$t('tooltips.viewRawData')" /></span></th>
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-start gap-1">{{ $t('projects.columns.rawData') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('tooltips.viewRawData')" /></span></span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
+                        <!-- Loading skeleton -->
+                        <template v-if="pending && paginated.length === 0">
+                            <tr v-for="i in skeletonRows" :key="`sk-${i}`">
+                                <td v-for="col in 12" :key="col" class="py-3 px-4">
+                                    <Skeleton class="h-4 w-full max-w-[120px]" />
+                                </td>
+                            </tr>
+                        </template>
+
+                        <template v-else>
                         <tr
                             v-for="p in paginated"
                             :key="p.id"
@@ -408,6 +435,7 @@ async function downloadProjects() {
                         <tr v-if="paginated.length === 0">
                             <td colspan="12" class="py-12 text-center text-sm text-muted-foreground">{{ $t('projects.noMatch') }}</td>
                         </tr>
+                        </template>
                     </tbody>
                 </table>
                 </div>

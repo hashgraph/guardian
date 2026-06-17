@@ -38,6 +38,7 @@ import type {
 import type { DecodedMethodologyResponse } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
 import { meetsDashboardThreshold } from "~/lib/methodology-threshold";
+import { naturalCompare } from '~/lib/utils';
 
 const { t } = useI18n();
 const route = useRoute();
@@ -797,7 +798,7 @@ const vintageByIssuance = computed(() => {
     byVintage[year].projects += 1;
   }
   return Object.entries(byVintage)
-    .sort(([a], [b]) => a.localeCompare(b))
+    .sort(([a], [b]) => naturalCompare(a, b))
     .map(([label, d]) => ({ label, credits: d.credits, projects: d.projects }));
 });
 
@@ -2151,7 +2152,9 @@ const issuanceTrendTotal = computed(() =>
                   <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                  <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.supply') }}</th>
+                  <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                    <span class="inline-flex items-start justify-end gap-1">{{ $t('credits.columns.supply') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('credits.tooltips.mintAmount')" /></span></span>
+                  </th>
                   <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
                   <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Raw Data</th>
                 </tr>

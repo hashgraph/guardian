@@ -2,6 +2,7 @@
 import { FileJson, Sparkles, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
+import { naturalCompare } from '~/lib/utils';
 import { downloadCsv, csvDateStamp, buildCreditCsvRows } from '~/lib/csv-export';
 
 const { t, locale } = useI18n();
@@ -77,10 +78,10 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
     });
 
 const presets = computed(() => [
-    { label: t('credits.presets.fungible'), filters: { type: 'Fungible' } },
-    { label: t('credits.presets.nonFungible'), filters: { type: 'Non-Fungible' } },
-    { label: t('credits.presets.minted2024'), filters: { mintDate: '2024-01-01|2024-12-31' } },
-    { label: t('credits.presets.minted2025'), filters: { mintDate: '2025-01-01|2025-12-31' } },
+    { label: t('credits.presets.fungible'), filters: { type: 'Fungible' } as Record<string, string> },
+    { label: t('credits.presets.nonFungible'), filters: { type: 'Non-Fungible' } as Record<string, string> },
+    { label: t('credits.presets.minted2024'), filters: { mintDate: '2024-01-01|2024-12-31' } as Record<string, string> },
+    { label: t('credits.presets.minted2025'), filters: { mintDate: '2025-01-01|2025-12-31' } as Record<string, string> },
 ]);
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
@@ -88,8 +89,8 @@ const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i
 // Derive filter options from allCredits so the dropdowns reflect whatever is
 // currently visible (respects hideUnlinked toggle and projectKey filter).
 const visibleFilterOptions = computed(() => ({
-    types: [...new Set(allCredits.value.map(c => c.type).filter((t): t is NonNullable<typeof t> => t !== null))].sort(),
-    registries: [...new Set(allCredits.value.map(c => c.registry).filter((r): r is NonNullable<typeof r> => r !== null))].sort(),
+    types: [...new Set(allCredits.value.map(c => c.type).filter((t): t is NonNullable<typeof t> => t !== null))].sort(naturalCompare),
+    registries: [...new Set(allCredits.value.map(c => c.registry).filter((r): r is NonNullable<typeof r> => r !== null))].sort(naturalCompare),
 }));
 
 const filters = computed<FilterOption[]>(() => [
@@ -126,11 +127,6 @@ async function downloadCredits() {
         if (projectKeyFilter.value) query.projectKey = projectKeyFilter.value;
         if (methodologyIdFilter.value) query.methodologyId = methodologyIdFilter.value;
         if (registryDidFilter.value) query.registryDid = registryDidFilter.value;
-        const API_SORT_KEYS = new Set(['name', 'symbol', 'type', 'supply', 'registry', 'mintDate']);
-        if (sortKey.value && sortDir.value && API_SORT_KEYS.has(String(sortKey.value))) {
-            query.sortBy = String(sortKey.value);
-            query.sortDir = sortDir.value;
-        }
 
         let allData = await fetchAllPages(`/api/v1/${network.value}/credits`, query);
 
@@ -153,6 +149,22 @@ async function downloadCredits() {
             const [from, to] = af.mintDate.split('|');
             if (from) allData = allData.filter(c => (c.mintDate ?? '') >= from);
             if (to) allData = allData.filter(c => (c.mintDate ?? '') <= to);
+        }
+
+        if (sortKey.value && sortDir.value) {
+            // Display keys don't exist on raw DTO — map them to the underlying field
+            const DISPLAY_KEY_MAP: Record<string, string> = { methodologyDisplay: 'methodology', projectDisplay: 'project' };
+            const key = DISPLAY_KEY_MAP[String(sortKey.value)] ?? String(sortKey.value);
+            const dir = sortDir.value === 'asc' ? 1 : -1;
+            allData = [...allData].sort((a, b) => {
+                const aVal = (a as any)[key];
+                const bVal = (b as any)[key];
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return 1;
+                if (bVal == null) return -1;
+                if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
+            });
         }
 
         const rows = buildCreditCsvRows(allData, network.value);
@@ -267,7 +279,7 @@ async function downloadCredits() {
                             <SortableHeader :label="$t('credits.columns.project')" sort-key="projectDisplay" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.methodology')" sort-key="methodologyDisplay" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('credits.columns.registry')" sort-key="registry" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">{{ $t('credits.columns.rawData') }} <InfoTooltip :text="$t('tooltips.viewRawData')" /></span></th>
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-start gap-1">{{ $t('credits.columns.rawData') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('tooltips.viewRawData')" /></span></span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
