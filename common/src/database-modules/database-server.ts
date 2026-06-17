@@ -3117,7 +3117,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyCategories(): Promise<PolicyCategory[]> {
-        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory as FilterQuery<PolicyCategory>);
+        return await new DataBaseHelper(PolicyCategory).find({});
     }
 
     /**
@@ -3134,7 +3134,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyProperties(): Promise<PolicyProperty[]> {
-        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty as FilterQuery<PolicyProperty>);
+        return await new DataBaseHelper(PolicyProperty).find({});
     }
 
     /**
