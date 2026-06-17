@@ -50,7 +50,9 @@
         [scrollToDoc]="selectedDoc"
         [showTotal]="false"
         [fieldStatusFilter]="fieldStatusFilter"
-        [fieldNameFilter]="fieldNameFilter || ''">
+        [fieldNameFilter]="fieldNameFilter || ''"
+        (documentOpen)="onDocumentOpen($event)"
+        (documentClose)="onDocumentClose($event)">
         <div recordControls class="record-compare-controls">
           <div class="merge-lvl">
             @if (docOptions.length) {

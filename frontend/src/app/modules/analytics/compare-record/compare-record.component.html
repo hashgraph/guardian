@@ -97,7 +97,7 @@
                                         'hidden-item': true,
                                         'fantom-tree': treeItemContext.fantom
                                     }">
-                          <div class="block-tree" (click)="row.open = !row.open">
+                          <div class="block-tree" (click)="onRowOpen(row)">
                             <div class="block-index">
                               {{ treeItemContext.data.docIndex }}
                             </div>
@@ -110,7 +110,7 @@
                         @if (treeItemContext.right) {
                           <div class="middle-tree"
                             [style.grid-column-start]="2 * treeItemContext.index">
-                            <div class="compare-btn" (click)="row.open = !row.open">
+                            <div class="compare-btn" (click)="onRowOpen(row)">
                               @if (!row.open) {
                                 <i
                                 class="pi pi-arrow-up-right-and-arrow-down-left-from-center"></i>
