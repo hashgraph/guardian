@@ -138,6 +138,9 @@ export class CompareComponent implements OnInit {
         if (this.isDocuments) {
             return 'Manage Documents';
         }
+        if (this.isTools) {
+            return 'Manage Tools';
+        }
         return 'Compare';
     }
 
