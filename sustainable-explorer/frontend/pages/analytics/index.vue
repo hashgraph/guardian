@@ -6,6 +6,7 @@ import {
     CheckCircle2, AlertCircle,
 } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
+import { naturalCompare } from '~/lib/utils';
 import { allocateDonutColors } from '~/lib/chart-colors';
 import { SDG_LIST } from '~/lib/sdgs';
 
@@ -111,7 +112,7 @@ const vintageBuckets = computed(() => {
     }
     return Object.values(map)
         .filter(b => /^\d{4}$/.test(b.vintage))
-        .sort((a, b) => a.vintage.localeCompare(b.vintage));
+        .sort((a, b) => naturalCompare(a.vintage, b.vintage));
 });
 
 const maxVintageCredits = computed(() => Math.max(1, ...vintageBuckets.value.map(b => b.credits)));

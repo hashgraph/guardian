@@ -352,7 +352,8 @@
         },
         "tooltips": {
             "hideUnlinked": "Oculta los tokens que aún no han sido asociados a ningún proyecto. Desmarque para ver todos los tokens indexados.",
-            "mintDate": "Fecha de emisión"
+            "mintDate": "Fecha de emisión",
+            "mintAmount": "Número total de créditos acuñados para el proyecto. Para NFTs, es el número de seriales únicos."
         }
     },
     "methodologies": {

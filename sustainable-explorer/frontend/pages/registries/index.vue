@@ -5,6 +5,7 @@ import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
 import { downloadCsv, csvDateStamp, buildRegistryCsvRows } from '~/lib/csv-export';
 import type { SortDirection } from '~/composables/useFilteredPagination';
+import { naturalCompare } from '~/lib/utils';
 
 
 const { t, locale } = useI18n();
@@ -155,7 +156,33 @@ if (import.meta.client) {
     onBeforeUnmount(() => clearInterval(pollInterval));
 }
 
-const registries = computed<any[]>(() => data.value?.data ?? []);
+const SORT_FIELD_MAP: Record<string, (r: any) => any> = {
+    name:           r => r.name ?? '',
+    relatedTopicId: r => r.relatedTopicId ?? '',
+    geography:      r => r.geography ?? '',
+    law:            r => r.law ?? '',
+    policies:       r => r.stats?.policyCount ?? 0,
+    projects:       r => r.stats?.projectCount ?? 0,
+    credits:        r => r.stats?.issuanceCount ?? 0,
+    tags:           r => r.tags ?? '',
+    createdAt:      r => r.sourceTimestamp ?? '',
+};
+
+const registries = computed<any[]>(() => {
+    const result = data.value?.data ?? [];
+    if (!sortKey.value || !sortDir.value) return result;
+    const getter = SORT_FIELD_MAP[sortKey.value] ?? ((r: any) => (r as any)[sortKey.value as string] ?? '');
+    const dir = sortDir.value === 'asc' ? 1 : -1;
+    return [...result].sort((a, b) => {
+        const aVal = getter(a);
+        const bVal = getter(b);
+        if (aVal == null && bVal == null) return 0;
+        if (aVal == null) return 1;
+        if (bVal == null) return -1;
+        if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+        return naturalCompare(String(aVal), String(bVal)) * dir;
+    });
+});
 const meta = computed(
     () => data.value?.meta ?? { page: 1, limit: pageSize.value, total: 0, totalPages: 1 },
 );

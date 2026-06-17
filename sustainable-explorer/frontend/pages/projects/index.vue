@@ -2,6 +2,7 @@
 import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
+import { naturalCompare } from '~/lib/utils';
 import { SDG_LIST } from '~/lib/sdgs';
 import { generateProjectVc } from '~/lib/mock-vc';
 import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
@@ -75,7 +76,7 @@ const allProjects = computed(() => projects.value.map(p => ({
 })));
 
 const countryFilterOptions = computed(() =>
-    [...new Set(allProjects.value.map(p => p.country).filter(Boolean))].sort(),
+    [...new Set(allProjects.value.map(p => p.country).filter(Boolean))].sort(naturalCompare),
 );
 
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
@@ -214,6 +215,20 @@ async function downloadProjects() {
             });
         }
 
+        if (sortKey.value && sortDir.value) {
+            const key = sortKey.value as string;
+            const dir = sortDir.value === 'asc' ? 1 : -1;
+            mapped = [...mapped].sort((a, b) => {
+                const aVal = (a as any)[key];
+                const bVal = (b as any)[key];
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return 1;
+                if (bVal == null) return -1;
+                if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
+            });
+        }
+
         const rows = buildProjectCsvRows(mapped, network.value);
         downloadCsv(`projects_export_${csvDateStamp()}.csv`, rows);
     } finally {
@@ -319,12 +334,12 @@ async function downloadProjects() {
                             <SortableHeader :label="$t('projects.columns.retired')" sort-key="retired" align="right" mock :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('projects.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                                <span class="inline-flex items-center gap-1">
+                                <span class="inline-flex items-start gap-1">
                                     {{ $t('projects.columns.sdgs') }}
-                                    <InfoTooltip :text="$t('projects.sdgsTooltip')" />
+                                    <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('projects.sdgsTooltip')" /></span>
                                 </span>
                             </th>
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-center gap-1">{{ $t('projects.columns.rawData') }} <InfoTooltip :text="$t('tooltips.viewRawData')" /></span></th>
+                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider"><span class="inline-flex items-start gap-1">{{ $t('projects.columns.rawData') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('tooltips.viewRawData')" /></span></span></th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">

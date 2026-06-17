@@ -1,3 +1,5 @@
+import { naturalCompare } from '~/lib/utils';
+
 export type SortDirection = 'asc' | 'desc' | null;
 
 export function useFilteredPagination<T>(
@@ -168,7 +170,7 @@ export function useFilteredPagination<T>(
                 if (typeof aVal === 'number' && typeof bVal === 'number') {
                     return (aVal - bVal) * dir;
                 }
-                return String(aVal).localeCompare(String(bVal)) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
             });
         }
 

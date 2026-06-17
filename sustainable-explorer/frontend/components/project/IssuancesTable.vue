@@ -106,9 +106,11 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                         <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
                         <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
                         <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
+                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            <span class="inline-flex items-start justify-end gap-1">Mint Amount <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('credits.tooltips.mintAmount')" /></span></span>
+                        </th>
                         <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <span class="inline-flex items-center gap-1">Raw Data <InfoTooltip text="Raw VC document on the blockchain" /></span>
+                            <span class="inline-flex items-start gap-1">Raw Data <span class="mt-0.5 shrink-0"><InfoTooltip text="Raw VC document on the blockchain" /></span></span>
                         </th>
                     </tr>
                 </thead>
@@ -173,7 +175,7 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                         <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.supply') }}</th>
                         <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
                         <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <span class="inline-flex items-center gap-1">Raw Data <InfoTooltip text="Raw VC document on the blockchain" /></span>
+                            <span class="inline-flex items-start gap-1">Raw Data <span class="mt-0.5 shrink-0"><InfoTooltip text="Raw VC document on the blockchain" /></span></span>
                         </th>
                     </tr>
                 </thead>
