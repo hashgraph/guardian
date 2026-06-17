@@ -269,10 +269,6 @@ async function downloadRegistries() {
         const query: Record<string, string | number | boolean> = {};
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
-        if (apiSortBy.value && apiSortDir.value) {
-            query.sortBy = apiSortBy.value;
-            query.sortDir = apiSortDir.value;
-        }
         const FILTER_KEYS = ['displayName', 'did', 'id', 'tags', 'geography', 'law'] as const;
         for (const key of FILTER_KEYS) {
             const raw = filters.value[key];
@@ -287,7 +283,22 @@ async function downloadRegistries() {
             if (ts.to) query.createdAtTo = ts.to;
         }
 
-        const allData = await fetchAllPages(`/api/v1/${network.value}/registries`, query);
+        let allData = await fetchAllPages(`/api/v1/${network.value}/registries`, query);
+
+        if (sortKey.value && sortDir.value) {
+            const getter = SORT_FIELD_MAP[sortKey.value] ?? ((r: any) => (r as any)[sortKey.value as string] ?? '');
+            const dir = sortDir.value === 'asc' ? 1 : -1;
+            allData = [...allData].sort((a, b) => {
+                const aVal = getter(a);
+                const bVal = getter(b);
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return 1;
+                if (bVal == null) return -1;
+                if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
+            });
+        }
+
         const rows = buildRegistryCsvRows(allData, network.value);
         downloadCsv(`registries_export_${csvDateStamp()}.csv`, rows);
     } finally {

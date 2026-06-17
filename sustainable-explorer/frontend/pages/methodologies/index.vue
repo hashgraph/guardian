@@ -322,10 +322,6 @@ async function downloadMethodologies() {
         const query: Record<string, string | number> = {};
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
-        if (apiSortBy.value && apiSortDir.value) {
-            query.sortBy = apiSortBy.value;
-            query.sortDir = apiSortDir.value;
-        }
         const FILTER_KEYS = ['name', 'id', 'description', 'decodeStatus', 'registryDid', 'registryName', 'version', 'policyTopicId'] as const;
         for (const key of FILTER_KEYS) {
             const raw = filters.value[key];
@@ -334,7 +330,22 @@ async function downloadMethodologies() {
             if (trimmed) query[key] = trimmed;
         }
 
-        const allData = await fetchAllPages(`/api/v1/${network.value}/methodologies`, query);
+        let allData = await fetchAllPages(`/api/v1/${network.value}/methodologies`, query);
+
+        if (sortKey.value && sortDir.value) {
+            const getter = SORT_FIELD_MAP[sortKey.value] ?? ((m: any) => (m as any)[sortKey.value as string] ?? '');
+            const dir = sortDir.value === 'asc' ? 1 : -1;
+            allData = [...allData].sort((a, b) => {
+                const aVal = getter(a);
+                const bVal = getter(b);
+                if (aVal == null && bVal == null) return 0;
+                if (aVal == null) return 1;
+                if (bVal == null) return -1;
+                if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * dir;
+                return naturalCompare(String(aVal), String(bVal)) * dir;
+            });
+        }
+
         const rows = buildMethodologyCsvRows(allData, network.value);
         downloadCsv(`methodologies_export_${csvDateStamp()}.csv`, rows);
     } finally {
