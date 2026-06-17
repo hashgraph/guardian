@@ -675,7 +675,7 @@
             "map": {
                 "title": "Project Locations",
                 "subtitle": "Geographic distribution of projects in this registry",
-                "noProjects": "No project location data available for this registry"
+                "noProjects": "No Geographic Data Available"
             },
             "topMethodologies": {
                 "title": "Top Methodologies",
