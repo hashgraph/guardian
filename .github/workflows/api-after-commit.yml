@@ -12,7 +12,7 @@ jobs:
       YARN_ENABLE_GLOBAL_CACHE: 'false'
     services:
       cache:
-        image: registry.redict.io/redict
+        image: valkey/valkey:8.1-alpine
         ports:
           - 6379:6379
     strategy:
