@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
 import {
     ProjectRepository,
     ProjectListQuery,
@@ -48,56 +49,15 @@ const REGISTRY_NAME_JOIN = `
 `;
 
 /**
- * LATERAL subquery joined into findAll to count per-project mints from the
- * pre-computed project_mint_link table. Uses idx_pml_project_src so the
- * lookup is O(log n) per row, and correctly splits grouped projects that
- * share one instance topic.
+ * Per-project lifecycle aggregates (issuance count, total issued, total
+ * retired) are read from the mv_project_stats materialized view instead of
+ * being computed live per row. The MV is keyed by projectKey and refreshed by
+ * MvRefreshProcessor; see project-stats.mv.ts for the aggregation that mirrors
+ * the old ISSUANCE_COUNT/LIFECYCLE_ISSUED/LIFECYCLE_RETIRED lateral joins.
  */
-const ISSUANCE_COUNT_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT COUNT(DISTINCT pml.token_id)::int AS issuance_count
-        FROM project_mint_link pml
-        WHERE pml.project_key = bv."projectKey"
-          AND pml.token_id IS NOT NULL
-    ) mint ON true
-`;
-
-/**
- * LATERAL subquery that sums all mint amounts attributed to a project via
- * project_mint_link. Mirrors the primary path in findById.
- */
-const LIFECYCLE_ISSUED_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT COALESCE(SUM(pml.amount), 0)::bigint AS total_issued
-        FROM project_mint_link pml
-        WHERE pml.project_key = bv."projectKey"
-    ) lc_issued ON true
-`;
-
-/**
- * LATERAL subquery that counts deleted NFT serials for tokens attributed to
- * the project. Only NON_FUNGIBLE_UNIQUE tokens can have retired serials.
- * Mirrors the NFT retirement path in findById.
- */
-const LIFECYCLE_RETIRED_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT COALESCE(SUM(nc_agg.retired_count), 0)::bigint AS total_retired
-        FROM (
-            SELECT pml.token_id
-            FROM project_mint_link pml
-            JOIN token_cache tc
-                ON tc."tokenId" = pml.token_id
-               AND tc.type = 'NON_FUNGIBLE_UNIQUE'
-            WHERE pml.project_key = bv."projectKey"
-              AND pml.token_id IS NOT NULL
-            GROUP BY pml.token_id
-        ) nft_tok
-        JOIN LATERAL (
-            SELECT COUNT(*) FILTER (WHERE deleted = true)::bigint AS retired_count
-            FROM nft_cache
-            WHERE "tokenId" = nft_tok.token_id
-        ) nc_agg ON true
-    ) lc_retired ON true
+const PROJECT_STATS_JOIN = `
+    LEFT JOIN ${MV_PROJECT_STATS_NAME} ps
+        ON ps."projectKey" = bv."projectKey"
 `;
 
 /**
@@ -165,10 +125,10 @@ export class PgProjectRepository extends ProjectRepository {
         const orderBy = search
             ? `search_rank DESC, bv."createdAt" DESC`
             : builder.buildOrderBy({
-                  sortBy,
-                  sortDir,
-                  defaultExpr: 'bv."createdAt" DESC NULLS LAST',
-              });
+                sortBy,
+                sortDir,
+                defaultExpr: 'bv."createdAt" DESC NULLS LAST',
+            });
 
         const whereSql = builder.getWhereClause();
         const params = builder.getParams();
@@ -181,28 +141,30 @@ export class PgProjectRepository extends ProjectRepository {
             SELECT
                 bv.*,
                 reg.registry_name,
-                COALESCE(mint.issuance_count, 0) AS issuance_count,
-                lc_issued.total_issued,
-                lc_retired.total_retired,
+                COALESCE(ps.issuance_count, 0) AS issuance_count,
+                COALESCE(ps.total_issued, 0)   AS total_issued,
+                COALESCE(ps.total_retired, 0)  AS total_retired,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
-            ${ISSUANCE_COUNT_JOIN}
-            ${LIFECYCLE_ISSUED_JOIN}
-            ${LIFECYCLE_RETIRED_JOIN}
+            ${PROJECT_STATS_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE and LATERAL join (so filters that
-        // reference `reg.registry_name` resolve correctly), but skips the
-        // LIMIT/OFFSET params.
+        // Count query reuses the same WHERE but skips the LIMIT/OFFSET params.
+        // The registry-name LATERAL is a LEFT JOIN that can never change
+        // COUNT(*), so we only include it when the `registry` filter actually
+        // references `reg.registry_name` in the WHERE clause. Omitting it in the
+        // common (unfiltered) case avoids running that subquery once per project
+        // row — the dominant cost on large PROJECT sets.
         const countParams = params.slice(0, params.length - 2);
+        const countJoin = query.registry ? REGISTRY_NAME_JOIN : '';
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM business_view bv
-            ${REGISTRY_NAME_JOIN}
+            ${countJoin}
             WHERE ${whereSql}
         `;
 
@@ -376,15 +338,15 @@ export class PgProjectRepository extends ProjectRepository {
             if (siblingCount > 1) {
                 // Shared topic — cannot safely attribute credits to this project alone.
             } else {
-            const creditRows: Array<{
-                tokenId: string | null;
-                name: string | null;
-                symbol: string | null;
-                type: string | null;
-                supply: string | null;
-                mintDate: Date | null;
-            }> = await this.dataSource.query(
-                `SELECT
+                const creditRows: Array<{
+                    tokenId: string | null;
+                    name: string | null;
+                    symbol: string | null;
+                    type: string | null;
+                    supply: string | null;
+                    mintDate: Date | null;
+                }> = await this.dataSource.query(
+                    `SELECT
                     COALESCE(tc."tokenId", bv."businessData"->>'tokenId') AS "tokenId",
                     COALESCE(tc.name,      bv."displayName")              AS name,
                     COALESCE(tc.symbol,    bv."businessData"->>'symbol')  AS symbol,
@@ -397,42 +359,42 @@ export class PgProjectRepository extends ProjectRepository {
                  WHERE bv."viewType" = 'CREDIT'
                    AND bv."relatedTopicId" = $1
                  ORDER BY bv."createdAt" ASC`,
-                [instanceTopicId],
-            );
+                    [instanceTopicId],
+                );
 
-            issuances = creditRows.map(r => ({
-                tokenId: r.tokenId ?? '',
-                name: r.name ?? null,
-                symbol: r.symbol ?? null,
-                type: r.type ?? null,
-                supply: r.supply != null ? parseFloat(r.supply) : 0,
-                mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
-            }));
+                issuances = creditRows.map(r => ({
+                    tokenId: r.tokenId ?? '',
+                    name: r.name ?? null,
+                    symbol: r.symbol ?? null,
+                    type: r.type ?? null,
+                    supply: r.supply != null ? parseFloat(r.supply) : 0,
+                    mintDate: r.mintDate ? r.mintDate.toISOString().split('T')[0] : null,
+                }));
 
-            const nftTokenIds = issuances
-                .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
-                .map(i => i.tokenId)
-                .filter((tid): tid is string => !!tid);
+                const nftTokenIds = issuances
+                    .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
+                    .map(i => i.tokenId)
+                    .filter((tid): tid is string => !!tid);
 
-            if (nftTokenIds.length > 0) {
-                const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
-                    await this.dataSource.query(
-                        `SELECT "tokenId",
+                if (nftTokenIds.length > 0) {
+                    const nftStats: Array<{ tokenId: string; total_minted: string; total_retired: string }> =
+                        await this.dataSource.query(
+                            `SELECT "tokenId",
                                 COUNT(*)::text                               AS total_minted,
                                 COUNT(*) FILTER (WHERE deleted = true)::text AS total_retired
                          FROM nft_cache
                          WHERE "tokenId" = ANY($1::varchar[])
                          GROUP BY "tokenId"`,
-                        [nftTokenIds],
-                    );
-                for (const s of nftStats) {
-                    totalIssued += parseInt(s.total_minted, 10);
-                    totalRetired += parseInt(s.total_retired, 10);
+                            [nftTokenIds],
+                        );
+                    for (const s of nftStats) {
+                        totalIssued += parseInt(s.total_minted, 10);
+                        totalRetired += parseInt(s.total_retired, 10);
+                    }
                 }
-            }
-            for (const i of issuances) {
-                if (i.type !== 'NON_FUNGIBLE_UNIQUE') totalIssued += i.supply;
-            }
+                for (const i of issuances) {
+                    if (i.type !== 'NON_FUNGIBLE_UNIQUE') totalIssued += i.supply;
+                }
             } // end else (siblingCount === 1)
         }
 
@@ -619,7 +581,7 @@ export class PgProjectRepository extends ProjectRepository {
                 const issued = parseInt(row.total_issued!, 10);
                 const retired = parseInt(row.total_retired ?? '0', 10);
                 return { totalIssued: issued, totalRetired: retired, totalActive: issued - retired };
-              })()
+            })()
             : undefined);
 
         return {
