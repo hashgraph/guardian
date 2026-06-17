@@ -160,13 +160,30 @@ export class QueryBuilder {
      */
     private buildOperatorClause(sql: string, op: FilterOperator, value: unknown): string | null {
         switch (op) {
-            case 'eq':
+            case 'eq': {
+                if (typeof value === 'string' && value.includes(',')) {
+                    const parts = value.split(',').map(s => s.trim()).filter(Boolean);
+                    if (parts.length > 1) {
+                        this.params.push(parts);
+                        return `${sql} = ANY($${this.paramIdx++}::text[])`;
+                    }
+                }
                 this.params.push(value);
                 return `${sql} = $${this.paramIdx++}`;
+            }
 
-            case 'ilike':
-                this.params.push(`%${String(value)}%`);
+            case 'ilike': {
+                const parts = String(value).split(',').map(s => s.trim()).filter(Boolean);
+                if (parts.length > 1) {
+                    const clauses = parts.map(p => {
+                        this.params.push(`%${p}%`);
+                        return `${sql} ILIKE $${this.paramIdx++}`;
+                    });
+                    return `(${clauses.join(' OR ')})`;
+                }
+                this.params.push(`%${parts[0] ?? String(value)}%`);
                 return `${sql} ILIKE $${this.paramIdx++}`;
+            }
 
             case 'in':
                 if (!Array.isArray(value) || value.length === 0) return null;

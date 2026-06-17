@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2 } from 'lucide-vue-next';
+import { FolderKanban, FileJson, Sparkles, CheckSquare, Square, X, Columns2, Download, Loader2 } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { SDG_LIST } from '~/lib/sdgs';
@@ -7,8 +7,11 @@ import { generateProjectVc } from '~/lib/mock-vc';
 import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from '~/data';
 import { getMethodologyLongName } from '~/lib/methodologies';
 import type { Project } from '~/types/models';
+import { downloadCsv, csvDateStamp, buildProjectCsvRows } from '~/lib/csv-export';
+import { mapApiProject } from '~/composables/useProjects';
 
 const { t } = useI18n();
+const { network } = useNetwork();
 const { projects, total, filterOptions } = useProjects();
 const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
 const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
@@ -84,10 +87,18 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
     });
 
 const presets = computed(() => [
-    { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } },
-    { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } },
-    { label: t('projects.presets.vintage2024'), filters: { vintage: '2024|2024' } },
+    { label: t('projects.presets.goldStandard'), filters: { registry: 'Gold Standard' } as Record<string, string> },
+    { label: t('projects.presets.sdg13'), filters: { sdgs: '13' } as Record<string, string> },
+    { label: t('projects.presets.vintage2022'), filters: { vintage: '2022|2022' } as Record<string, string> },
+    { label: t('projects.presets.issuingEnergy'), filters: { status: 'Issuing', sector: 'Energy' } as Record<string, string> },
+    { label: t('projects.presets.glycolRecycling'), filters: { sector: 'Glycol Recycling' } as Record<string, string> },
 ]);
+
+function isPresetActive(preset: { filters: Record<string, string> }): boolean {
+    const af = activeFilters.value;
+    const entries = Object.entries(preset.filters);
+    return entries.length > 0 && entries.every(([key, value]) => af[key] === value);
+}
 
 // Summary statistics for filtered results
 const summaryStats = computed(() => {
@@ -107,11 +118,14 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'registry',
         label: t('projects.filters.registry'),
+        multiSelect: true,
+        searchable: true,
         options: filterOptions.value.registries.map(r => ({ value: r, label: r })),
     },
     {
         key: 'country',
         label: t('projects.filters.country'),
+        multiSelect: true,
         searchable: true,
         options: countryFilterOptions.value.map(c => ({ value: c, label: c })),
     },
@@ -124,6 +138,7 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'sector',
         label: t('projects.filters.sector'),
+        multiSelect: true,
         options: filterOptions.value.sectors.map(s => ({ value: s, label: s })),
     },
     {
@@ -134,6 +149,8 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'developer',
         label: t('projects.filters.developer'),
+        multiSelect: true,
+        searchable: true,
         options: filterOptions.value.developers.map(d => ({ value: d, label: d })),
     },
     {
@@ -155,6 +172,54 @@ const statusColor: Record<string, string> = {
     Issuing: 'bg-stat-green/10 text-stat-green',
     Completed: 'bg-purple-50 text-purple-600',
 };
+
+const downloading = ref(false);
+
+async function downloadProjects() {
+    if (downloading.value) return;
+    downloading.value = true;
+    try {
+        const { fetchAllPages } = useApiDownload();
+        const af = activeFilters.value;
+        const query: Record<string, string | number> = {};
+        const search = searchQuery.value?.trim();
+        if (search)       query.search   = search;
+        if (af.status)    query.status   = af.status;
+        if (af.registry)  query.registry = af.registry;
+        if (af.country)   query.country  = af.country;
+        if (af.developer) query.developer = af.developer;
+        // sector, sectoralScope, sdgs, vintage range — applied client-side below
+
+        let mapped = (await fetchAllPages(`/api/v1/${network.value}/projects`, query)).map(mapApiProject);
+
+        if (af.sector) {
+            const sectors = af.sector.split(',').map((s: string) => s.trim().toLowerCase());
+            mapped = mapped.filter(p => sectors.some(s => (p.sector ?? '').toLowerCase().includes(s)));
+        }
+        if (af.sectoralScope) {
+            const scope = af.sectoralScope.toLowerCase();
+            mapped = mapped.filter(p => (p.sectoralScope ?? '').toLowerCase().includes(scope));
+        }
+        if (af.sdgs) {
+            const selectedSdgs = af.sdgs.split(',').map((s: string) => s.trim());
+            mapped = mapped.filter(p => Array.isArray(p.sdgs) && selectedSdgs.some(s => p.sdgs.map(String).includes(s)));
+        }
+        if (af.vintage) {
+            const [from, to] = af.vintage.split('|');
+            mapped = mapped.filter(p => {
+                const v = String(p.vintage ?? '');
+                if (from && v < from) return false;
+                if (to && v > to) return false;
+                return true;
+            });
+        }
+
+        const rows = buildProjectCsvRows(mapped, network.value);
+        downloadCsv(`projects_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
 </script>
 
 <template>
@@ -184,8 +249,13 @@ const statusColor: Record<string, string> = {
                 <button
                     v-for="preset in presets"
                     :key="preset.label"
-                    class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    @click="applyPreset({ search: preset.search, filters: preset.filters } as any)"
+                    :class="[
+                        'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors',
+                        isPresetActive(preset)
+                            ? 'border-primary/50 bg-primary/10 text-primary'
+                            : 'border-primary/25 text-muted-foreground hover:bg-muted hover:text-foreground'
+                    ]"
+                    @click="applyPreset({ filters: preset.filters })"
                 >
                     {{ preset.label }}
                 </button>
@@ -206,6 +276,17 @@ const statusColor: Record<string, string> = {
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-2">
+                <button
+                    :disabled="downloading"
+                    class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    @click="downloadProjects"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('projects.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">
@@ -287,8 +368,8 @@ const statusColor: Record<string, string> = {
                                 <span v-else class="text-xs">—</span>
                             </td>
                             <td class="py-3 px-4 text-muted-foreground text-xs break-words">{{ p.registry }}</td>
-                            <td class="py-3 px-4">
-                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default truncate">{{ p.methodology }}</span>
+                            <td class="py-3 px-4 max-w-0">
+                                <span class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default break-words">{{ p.methodology }}</span>
                             </td>
                             <td class="py-3 px-4">
                                 <span class="block text-xs text-muted-foreground cursor-default truncate">{{ p.sector }}</span>

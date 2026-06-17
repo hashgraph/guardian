@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { Building2, Copy, Check, FileJson } from 'lucide-vue-next';
-import type { FilterField } from '~/components/shared/DataFilters.vue';
+import { Building2, Copy, Check, FileJson, Download, Loader2 } from 'lucide-vue-next';
+import { useDebounceFn } from '@vueuse/core';
+import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import type { RegistrySortKey, RegistrySortDir, RegistryDto } from '~/composables/api/useRegistriesApi';
+import { downloadCsv, csvDateStamp, buildRegistryCsvRows } from '~/lib/csv-export';
 import type { SortDirection } from '~/composables/useFilteredPagination';
 
 
@@ -28,40 +30,94 @@ const columnToApiSort: Record<ColumnKey, RegistrySortKey | null> = {
 
 // Reactive query state
 const route = useRoute();
-// hideEmpty defaults to true so the table mirrors the dashboard stat card,
-// which counts only registries with at least one policy/project/user/issuance.
-// `?hideEmpty=false` in the URL turns it off.
+const router = useRouter();
+// hideEmpty defaults to true so the table mirrors the dashboard stat card.
 const initialFilters: Record<string, any> = {
     hideEmpty: route.query.hideEmpty !== 'false',
 };
+// Keep `?did=` deep-link support (used by ProjectKeyFacts and methodologies page).
 if (route.query.did && typeof route.query.did === 'string') {
     initialFilters.did = route.query.did;
 }
-// Dashboard top-registries row links here with displayName=<name> so the
-// list lands pre-filtered. Also accept the other text filters defined in
-// filterFields for symmetry.
-for (const k of ['displayName', 'id', 'tags', 'geography', 'law'] as const) {
-    if (route.query[k] && typeof route.query[k] === 'string') {
-        initialFilters[k] = route.query[k];
-    }
+if (route.query.sourceTimestamp && typeof route.query.sourceTimestamp === 'string') {
+    const [from, to] = (route.query.sourceTimestamp as string).split('|');
+    if (from || to) initialFilters.sourceTimestamp = { from: from || '', to: to || '' };
 }
 const filters = ref<Record<string, any>>(initialFilters);
 const currentPage = ref(1);
 const pageSize = ref(10);
 
-// Placeholder search ref kept for the composable signature.
-// All text filtering now flows through the `filters` object.
-const searchQuery = ref('');
+// Unified search — debounced so each keystroke doesn't fire an API request.
+// Falls back to old per-field URL params for backward compat.
+const localSearch = ref(
+    typeof route.query.search === 'string' ? route.query.search :
+    (['displayName', 'id', 'tags', 'geography', 'law'] as const)
+        .map(k => route.query[k])
+        .find((v): v is string => typeof v === 'string') ?? ''
+);
+const searchQuery = ref(localSearch.value.trim());
+const debouncedSearch = useDebounceFn((val: string) => {
+    searchQuery.value = val.trim();
+}, 300);
 
-const filterFields = computed<FilterField[]>(() => [
-    { key: 'displayName', label: t('registries.filters.name'), type: 'text', placeholder: t('registries.filters.namePlaceholder'), width: 'md' },
-    { key: 'id', label: t('registries.filters.id'), type: 'text', placeholder: t('registries.filters.idPlaceholder'), width: 'sm' },
-    { key: 'did', label: t('registries.filters.registryDid'), type: 'text', width: 'md' },
-    { key: 'tags', label: t('registries.filters.tags'), type: 'text', width: 'sm' },
-    { key: 'geography', label: t('registries.filters.geography'), type: 'text', width: 'sm' },
-    { key: 'law', label: t('registries.filters.law'), type: 'text', width: 'sm' },
-    { key: 'sourceTimestamp', label: t('registries.filters.createdDate'), type: 'daterange', width: 'md' },
+function syncToUrl() {
+    const q: Record<string, string> = { ...(route.query as Record<string, string>) };
+    const search = localSearch.value.trim();
+    if (search) q.search = search; else delete q.search;
+    for (const k of ['displayName', 'id', 'tags', 'geography', 'law']) delete q[k];
+    const ts = filters.value.sourceTimestamp;
+    if (ts && typeof ts === 'object' && (ts.from || ts.to)) {
+        q.sourceTimestamp = `${ts.from || ''}|${ts.to || ''}`;
+    } else {
+        delete q.sourceTimestamp;
+    }
+    if (filters.value.did) q.did = String(filters.value.did); else delete q.did;
+    router.replace({ query: q });
+}
+
+watch(localSearch, (val) => {
+    debouncedSearch(val);
+    syncToUrl();
+});
+
+const barFilters = computed<FilterOption[]>(() => [
+    {
+        key: 'sourceTimestamp',
+        label: t('registries.filters.createdDate'),
+        type: 'daterange',
+        options: [],
+    },
 ]);
+
+const activeFilterRecord = computed<Record<string, string>>(() => {
+    const r: Record<string, string> = {};
+    const ts = filters.value.sourceTimestamp;
+    if (ts && typeof ts === 'object' && (ts.from || ts.to)) {
+        r.sourceTimestamp = `${ts.from || ''}|${ts.to || ''}`;
+    }
+    return r;
+});
+
+function setRegistryFilter(key: string, value: string) {
+    const next = { ...filters.value };
+    if (!value || value === 'all') {
+        delete next[key];
+    } else if (key === 'sourceTimestamp') {
+        const [from, to] = value.split('|');
+        next[key] = { from: from || '', to: to || '' };
+    } else {
+        next[key] = value;
+    }
+    filters.value = next;
+}
+
+function clearRegistryFilters() {
+    const next: Record<string, any> = { hideEmpty: filters.value.hideEmpty };
+    if (filters.value.did) next.did = filters.value.did;
+    filters.value = next;
+    localSearch.value = '';
+    searchQuery.value = '';
+}
 
 const sortKey = ref<ColumnKey | null>('createdAt');
 const sortDir = ref<SortDirection>('desc');
@@ -114,6 +170,7 @@ watch(
     filters,
     () => {
         currentPage.value = 1;
+        syncToUrl();
     },
     { deep: true },
 );
@@ -175,6 +232,42 @@ const tagsAsList = (tags: string | null): string[] => {
     return tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0);
 };
 
+const downloading = ref(false);
+
+async function downloadRegistries() {
+    if (downloading.value) return;
+    downloading.value = true;
+    try {
+        const { fetchAllPages } = useApiDownload();
+        const query: Record<string, string | number | boolean> = {};
+        const search = searchQuery.value?.trim();
+        if (search) query.search = search;
+        if (apiSortBy.value && apiSortDir.value) {
+            query.sortBy = apiSortBy.value;
+            query.sortDir = apiSortDir.value;
+        }
+        const FILTER_KEYS = ['displayName', 'did', 'id', 'tags', 'geography', 'law'] as const;
+        for (const key of FILTER_KEYS) {
+            const raw = filters.value[key];
+            if (raw == null) continue;
+            const trimmed = String(raw).trim();
+            if (trimmed) query[key] = trimmed;
+        }
+        if (filters.value.hideEmpty === true) query.hideEmpty = true;
+        const ts = filters.value.sourceTimestamp;
+        if (ts && typeof ts === 'object') {
+            if (ts.from) query.createdAtFrom = ts.from;
+            if (ts.to) query.createdAtTo = ts.to;
+        }
+
+        const allData = await fetchAllPages(`/api/v1/${network.value}/registries`, query);
+        const rows = buildRegistryCsvRows(allData, network.value);
+        downloadCsv(`registries_export_${csvDateStamp()}.csv`, rows);
+    } finally {
+        downloading.value = false;
+    }
+}
+
 // Raw-data viewer state — same VcJsonViewer pattern used elsewhere.
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
@@ -195,7 +288,16 @@ function viewRegistry(r: RegistryDto) {
         </div>
 
         <div class="px-6 pb-3">
-            <DataFilters v-model="filters" :fields="filterFields" />
+            <FilterBar
+                v-model="localSearch"
+                :filters="barFilters"
+                :active-filters="activeFilterRecord"
+                :result-count="totalCount"
+                :total-count="totalCount"
+                :search-placeholder="$t('registries.searchPlaceholder')"
+                @filter="setRegistryFilter"
+                @clear="clearRegistryFilters"
+            />
             <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
                 <input
                     type="checkbox"
@@ -209,6 +311,17 @@ function viewRegistry(r: RegistryDto) {
         </div>
 
         <div class="px-6 pb-6">
+            <div class="flex justify-end mb-3">
+                <button
+                    class="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                    :disabled="downloading"
+                    @click="downloadRegistries"
+                >
+                    <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
+                    <Download v-else class="h-3.5 w-3.5" />
+                    {{ $t('registries.downloadData') }}
+                </button>
+            </div>
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">

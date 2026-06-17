@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 
 const props = defineProps<{
     lat: number;
@@ -11,8 +10,16 @@ const props = defineProps<{
 
 const mapContainer = ref<HTMLElement | null>(null);
 let map: L.Map | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
-onMounted(() => {
+onMounted(async () => {
+    if (!mapContainer.value) return;
+
+    // Wait for a real browser animation frame so the container has been laid out.
+    // nextTick() only flushes Vue's microtask queue; rAF waits for the browser's
+    // actual style/layout pass, which is necessary after ClientOnly inserts nodes.
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
     if (!mapContainer.value) return;
 
     map = L.map(mapContainer.value, {
@@ -20,6 +27,9 @@ onMounted(() => {
         zoom: props.approximate ? 5 : 8,
         zoomControl: true,
         scrollWheelZoom: true,
+        minZoom: 2,
+        maxBounds: [[-85, -180], [85, 180]],
+        maxBoundsViscosity: 1.0,
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -38,13 +48,23 @@ onMounted(() => {
     L.marker([props.lat, props.lng], { icon })
         .bindPopup(`<strong style="font-size:12px">${props.name}</strong>`)
         .addTo(map);
+
+    setTimeout(() => { map?.invalidateSize(); }, 150);
+
+    if (typeof ResizeObserver !== 'undefined') {
+        resizeObserver = new ResizeObserver(() => { map?.invalidateSize(); });
+        resizeObserver.observe(mapContainer.value);
+    }
 });
 
 onUnmounted(() => {
+    resizeObserver?.disconnect();
+    resizeObserver = null;
     map?.remove();
     map = null;
 });
 </script>
+
 
 <template>
     <div class="relative h-full w-full">

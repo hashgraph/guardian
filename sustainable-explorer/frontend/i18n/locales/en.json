@@ -210,6 +210,7 @@
         "subtitle": "Verified sustainability projects on the Guardian network",
         "searchPlaceholder": "Search projects...",
         "quickFilters": "Quick filters:",
+        "downloadData": "Download Data",
         "projectsFound": "{count} projects found",
         "totalIssuances": "Total issuances:",
         "countries": "Countries:",
@@ -244,7 +245,9 @@
         "presets": {
             "goldStandard": "Gold Standard",
             "sdg13": "SDG 13: Climate Action",
-            "vintage2024": "Vintage 2024"
+            "vintage2022": "Vintage 2022",
+            "issuingEnergy": "Issuing Energy",
+            "glycolRecycling": "Glycol Recycling"
         },
         "notFound": "Project not found",
         "details": {
@@ -311,8 +314,9 @@
     "credits": {
         "title": "Issuances",
         "subtitle": "Tokens issued on Hedera",
-        "searchPlaceholder": "Search by name, symbol, token ID...",
+        "searchPlaceholder": "Search issuances...",
         "quickFilters": "Quick filters:",
+        "downloadData": "Download Data",
         "presets": {
             "fungible": "Fungible tokens",
             "nonFungible": "Non-Fungible (NFTs)",
@@ -361,6 +365,7 @@
         "subtitle": "Published policy workflows for sustainability verification",
         "searchPlaceholder": "Search methodologies...",
         "noMatch": "No methodologies match your filters",
+        "downloadData": "Download Data",
         "columns": {
             "methodology": "Methodology",
             "name": "Name",
@@ -559,7 +564,7 @@
                 "issuanceTrendYears": "years",
                 "issuanceTrendTotal": "{total}{unit} total",
                 "vintageDistribution": "Vintage Distribution",
-                "vintageDistributionSub": "Project distribution by vintage",
+                "vintageDistributionSub": "Credits by vintage year",
                 "noVintageData": "No vintage data available",
                 "vintageYear": "vintage",
                 "vintageYears": "vintages",
@@ -602,7 +607,9 @@
     "registries": {
         "title": "Registries",
         "subtitle": "Standard Registries operating on the Guardian network",
+        "searchPlaceholder": "Search registries...",
         "noMatch": "No registries match your filters",
+        "downloadData": "Download Data",
         "columns": {
             "name": "Name",
             "id": "ID",
@@ -668,7 +675,7 @@
             "map": {
                 "title": "Project Locations",
                 "subtitle": "Geographic distribution of projects in this registry",
-                "noProjects": "No project location data available for this registry"
+                "noProjects": "No Geographic Data Available"
             },
             "topMethodologies": {
                 "title": "Top Methodologies",

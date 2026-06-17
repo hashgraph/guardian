@@ -210,7 +210,7 @@ function getActiveLabel(filter: FilterOption): string {
         return `${t('common.to')} ${formatShortDate(to)}`;
     }
     const active = props.activeFilters[filter.key];
-    if (!active || active === 'all') return filter.label;
+    if (!active || active === 'all') return filter.multiSelect ? filter.label : t('common.all');
     if (filter.multiSelect) {
         const count = active.split(',').length;
         return `${filter.label} (${count})`;
@@ -286,33 +286,49 @@ if (import.meta.client) {
                 <!-- Multi-select dropdown -->
                 <div
                     v-if="openDropdown === filter.key && filter.multiSelect"
-                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[12rem] max-w-[16rem] max-h-64 overflow-y-auto overflow-x-hidden rounded-md border bg-popover p-1 shadow-md text-left']"
+                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[12rem] max-w-[16rem] rounded-md border bg-popover shadow-md text-left']"
                 >
-                    <button
-                        class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent text-muted-foreground"
-                        @click="emit('filter', filter.key, 'all')"
-                    >
-                        {{ $t('common.clearSelection') }}
-                    </button>
-                    <div class="my-1 border-t" />
-                    <button
-                        v-for="opt in filter.options"
-                        :key="opt.value"
-                        class="flex w-full items-center justify-start text-left gap-2 rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
-                        :class="isMultiSelected(filter.key, opt.value) ? 'font-medium text-foreground' : 'text-muted-foreground'"
-                        @click.stop="toggleMultiSelect(filter.key, opt.value)"
-                    >
-                        <span
-                            class="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors"
-                            :class="isMultiSelected(filter.key, opt.value) ? 'bg-primary border-primary' : 'border-input'"
+                    <!-- Inline search for searchable multi-select dropdowns -->
+                    <div v-if="filter.searchable" class="p-1 border-b border-border">
+                        <div class="relative">
+                            <Search class="absolute left-2 top-1/2 h-3 w-3 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+                            <input
+                                v-model="dropdownSearch[filter.key]"
+                                type="text"
+                                :placeholder="$t('common.searchEllipsis')"
+                                class="h-7 w-full rounded-sm border border-input bg-background pl-6 pr-2 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                                @click.stop
+                                @keydown.esc.stop="openDropdown = null"
+                            />
+                        </div>
+                    </div>
+                    <div class="p-1 max-h-64 overflow-y-auto overflow-x-hidden">
+                        <button
+                            class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent text-muted-foreground"
+                            @click="emit('filter', filter.key, 'all')"
                         >
-                            <svg v-if="isMultiSelected(filter.key, opt.value)" class="h-2.5 w-2.5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                        </span>
-                        <img v-if="opt.icon" :src="opt.icon" :alt="opt.label" class="h-4 w-4 rounded-sm shrink-0" />
-                        <span class="text-left whitespace-normal break-words">{{ opt.label }}</span>
-                    </button>
+                            {{ $t('common.clearSelection') }}
+                        </button>
+                        <div class="my-1 border-t" />
+                        <button
+                            v-for="opt in filteredOptions(filter)"
+                            :key="opt.value"
+                            class="flex w-full items-center justify-start text-left gap-2 rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
+                            :class="isMultiSelected(filter.key, opt.value) ? 'font-medium text-foreground' : 'text-muted-foreground'"
+                            @click.stop="toggleMultiSelect(filter.key, opt.value)"
+                        >
+                            <span
+                                class="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border transition-colors"
+                                :class="isMultiSelected(filter.key, opt.value) ? 'bg-primary border-primary' : 'border-input'"
+                            >
+                                <svg v-if="isMultiSelected(filter.key, opt.value)" class="h-2.5 w-2.5 text-primary-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                                </svg>
+                            </span>
+                            <img v-if="opt.icon" :src="opt.icon" :alt="opt.label" class="h-4 w-4 rounded-sm shrink-0" />
+                            <span class="text-left whitespace-normal break-words">{{ opt.label }}</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Numeric range dropdown -->
@@ -473,7 +489,7 @@ if (import.meta.client) {
                     <!-- Options list -->
                     <div :class="['p-1 overflow-y-auto overflow-x-hidden', filter.searchable ? 'max-h-52' : 'max-h-64']">
                         <button
-                            v-for="opt in [{ value: 'all', label: `${t('common.all')} ${filter.label}` }, ...filteredOptions(filter)]"
+                            v-for="opt in [{ value: 'all', label: t('common.all') }, ...filteredOptions(filter)]"
                             :key="opt.value"
                             class="flex w-full items-center justify-start text-left rounded-sm px-2.5 py-1.5 text-xs transition-colors hover:bg-accent"
                             :class="(activeFilters[filter.key] || 'all') === opt.value ? 'font-medium text-foreground' : 'text-muted-foreground'"

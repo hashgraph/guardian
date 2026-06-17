@@ -10,6 +10,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "vue-sonner/style.css";
+@import "leaflet/dist/leaflet.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -129,4 +130,9 @@ pre {
         transition-duration: 0.01ms !important;
         scroll-behavior: auto !important;
     }
+}
+
+/* Override Leaflet's default #ddd container background to match the CARTO light tile ocean color */
+.leaflet-container {
+    background: #D4DADC !important;
 }
