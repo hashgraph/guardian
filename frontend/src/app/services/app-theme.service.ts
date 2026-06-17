@@ -5,6 +5,7 @@ export type AppTheme = 'light' | 'dark' | 'system';
 export interface AppThemeOption {
     label: string;
     value: AppTheme;
+    icon: string;
 }
 
 const APP_THEME_STORAGE_KEY = 'GUARDIAN_APP_THEME';
@@ -16,9 +17,9 @@ const DARK_CLASS = 'guardian-theme-dark';
 })
 export class AppThemeService implements OnDestroy {
     public readonly themes: AppThemeOption[] = [
-        { label: 'Light', value: 'light' },
-        { label: 'Dark', value: 'dark' },
-        { label: 'System', value: 'system' }
+        { label: 'Light', value: 'light', icon: 'pi pi-sun' },
+        { label: 'Dark', value: 'dark', icon: 'pi pi-moon' },
+        { label: 'System', value: 'system', icon: 'pi pi-desktop' }
     ];
 
     private currentTheme: AppTheme = 'light';

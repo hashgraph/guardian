@@ -615,10 +615,20 @@ button[disabled] {
     color: var(--color-grey-5, #848fa9);
 }
 
-:host ::ng-deep .profile-theme-select {
-    .p-togglebutton {
+:host ::ng-deep p-selectbutton {
+    p-togglebutton {
         padding: 4px 10px;
-        font-size: 12px;
+    }
+
+    p-togglebutton > span {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    p-togglebutton i,
+    p-togglebutton span {
+        font-size: 14px !important;
     }
 }
 

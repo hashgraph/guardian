@@ -219,6 +219,10 @@
                 optionLabel="label"
                 optionValue="value"
                 styleClass="profile-theme-select">
+                <ng-template let-item pTemplate="item">
+                  <i [class]="item.icon"></i>
+                  <span>{{ item.label }}</span>
+                </ng-template>
               </p-selectbutton>
             </div>
 
