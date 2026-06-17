@@ -13,7 +13,7 @@ import { mapApiProject } from '~/composables/useProjects';
 
 const { t } = useI18n();
 const { network } = useNetwork();
-const { projects, total, filterOptions } = useProjects();
+const { projects, total, filterOptions, pending } = useProjects();
 const { selectedEntries, canAdd, isSelected, toggleProject, removeProject, clearAll, goToCompare } = useProjectComparison();
 const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
 
@@ -173,6 +173,8 @@ const statusColor: Record<string, string> = {
     Issuing: 'bg-stat-green/10 text-stat-green',
     Completed: 'bg-purple-50 text-purple-600',
 };
+
+const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
 
 const downloading = ref(false);
 
@@ -343,6 +345,16 @@ async function downloadProjects() {
                         </tr>
                     </thead>
                     <tbody class="divide-y">
+                        <!-- Loading skeleton -->
+                        <template v-if="pending && paginated.length === 0">
+                            <tr v-for="i in skeletonRows" :key="`sk-${i}`">
+                                <td v-for="col in 12" :key="col" class="py-3 px-4">
+                                    <Skeleton class="h-4 w-full max-w-[120px]" />
+                                </td>
+                            </tr>
+                        </template>
+
+                        <template v-else>
                         <tr
                             v-for="p in paginated"
                             :key="p.id"
@@ -423,6 +435,7 @@ async function downloadProjects() {
                         <tr v-if="paginated.length === 0">
                             <td colspan="12" class="py-12 text-center text-sm text-muted-foreground">{{ $t('projects.noMatch') }}</td>
                         </tr>
+                        </template>
                     </tbody>
                 </table>
                 </div>
