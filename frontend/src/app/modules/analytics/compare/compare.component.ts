@@ -60,6 +60,7 @@ export class CompareComponent implements OnInit {
     public items: any[] = [];
     public parent: any;
     public error: any;
+    public policyColorBlindMode: boolean = false;
 
     public get isEventsLvl(): boolean {
         return this.type === ItemType.Policy;
@@ -105,6 +106,36 @@ export class CompareComponent implements OnInit {
         return this.type === ItemType.Tool;
     }
 
+    public get compareNoun(): string {
+        if (this.isPolicies || this.isMultiPolicies) {
+            return 'Policies';
+        }
+        if (this.isSchemas) {
+            return 'Schemas';
+        }
+        if (this.isModules) {
+            return 'Modules';
+        }
+        if (this.isDocuments) {
+            return 'Documents';
+        }
+        if (this.isTools) {
+            return 'Tools';
+        }
+        return 'Items';
+    }
+
+    public get compareBreadcrumb(): string {
+        if (this.isPolicies || this.isMultiPolicies) {
+            return 'Manage Policies';
+        }
+        return 'Compare';
+    }
+
+    public get showSummaryLine(): boolean {
+        return this.isPolicies || this.isSchemas || this.isModules;
+    }
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
@@ -114,6 +145,8 @@ export class CompareComponent implements OnInit {
     }
 
     ngOnInit() {
+        const saved = localStorage.getItem('compare-policy-colorblind');
+        this.policyColorBlindMode = saved === 'true';
         this.route.queryParams.subscribe(queryParams => {
             this.loadData();
         });
@@ -542,6 +575,11 @@ export class CompareComponent implements OnInit {
 
     onFilterChange() {
         this.needApplyFilters = true;
+    }
+
+    togglePolicyColorBlindMode() {
+        this.policyColorBlindMode = !this.policyColorBlindMode;
+        localStorage.setItem('compare-policy-colorblind', String(this.policyColorBlindMode));
     }
 
 }

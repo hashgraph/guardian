@@ -1,39 +1,27 @@
 <div class="content">
     <div *ngIf="policy1 && policy2" class="list">
 
-        <div class="toolbar">
-            <div class="total-info" [attr.total]="total">
-                Policies are <span>{{ total }}%</span> the same.
+        <section class="policy-description-section">
+            <div class="policy-description-title">Description</div>
+            <div class="policy-description-card">
+                <div class="policy-description-column">
+                    <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy1 }"></ng-container>
+                </div>
+                <div class="policy-description-column">
+                    <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy2 }"></ng-container>
+                </div>
             </div>
+        </section>
 
-            <div class="colorblind-toggle">
-                <label class="toggle-label">
-                    <input type="checkbox" [checked]="colorBlindMode" (change)="toggleColorBlindMode()">
-                    <span class="toggle-text">Color-blind mode</span>
-                </label>
-            </div>
-        </div>
+        <ng-content select="[policyControls]"></ng-content>
+
         <p-accordion
             class="compare-policy-accordion"
             [multiple]="true"
-            [value]="['description', 'blocks']"
+            [value]="['blocks']"
             expandIcon="pi pi-chevron-down icon-start"
             collapseIcon="pi pi-chevron-up icon-start"
         >
-            <p-accordion-panel value="description">
-    <p-accordion-header>Description</p-accordion-header>
-    <p-accordion-content>
-                <div class="info-container">
-                    <div class="left-compare-result compare-result" [attr.open]="true">
-                        <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy1 }"></ng-container>
-                    </div>
-                    <div class="middle-compare-result compare-result" [attr.open]="true"></div>
-                    <div class="right-compare-result compare-result" [attr.open]="true">
-                        <ng-container *ngTemplateOutlet="policyInfo; context: { policy: policy2 }"></ng-container>
-                    </div>
-                </div>
-                </p-accordion-content>
-</p-accordion-panel>
 
             <p-accordion-panel value="roles">
     <p-accordion-header>Policy Roles</p-accordion-header>

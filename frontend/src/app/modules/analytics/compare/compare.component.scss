@@ -19,37 +19,255 @@
     right: 0;
     bottom: 0;
     top: 0;
-    display: block;
+    display: flex;
+    flex-direction: column;
     background: var(--color-background);
     color: var(--guardian-font-color);
+    overflow: auto;
+    min-width: 1130px;
+    padding: 40px 48px 48px;
+    box-sizing: border-box;
 }
 
 .content-result {
     min-width: 1130px;
-    position: absolute;
-    left: 0;
-    top: 80px;
-    right: 0;
-    bottom: 0;
-    overflow: auto;
+    padding: 0 0 40px;
+    box-sizing: border-box;
 }
 
 .content-result[headers='true'] {
     padding-top: 22px;
 }
 
+.compare-page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    padding: var(--guardian-page-header-padding);
+    margin-bottom: var(--guardian-page-header-gap);
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.compare-page-title {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.compare-back-button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--guardian-primary-color, #3f51b5);
+    font-size: 14px;
+    font-weight: 500;
+    padding: 0;
+    margin-bottom: 4px;
+}
+
+.compare-breadcrumb {
+    color: var(--guardian-primary-color, #3f51b5);
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.compare-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    flex-wrap: nowrap;
+    width: 100%;
+}
+
+.compare-summary-title {
+    margin: 0;
+    font-family: var(--guardian-page-header-font-family);
+    font-size: var(--guardian-page-header-font-size);
+    font-weight: var(--guardian-page-header-font-weight);
+    color: var(--guardian-header-color, #000);
+}
+
+.compare-summary-title span {
+    color: var(--guardian-failure-color, #e70000);
+}
+
+.compare-summary-title[total='100'] span {
+    color: var(--guardian-success-color, #008d0c);
+}
+
+.compare-page-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.compare-page-actions .export-btn {
+    margin-top: 0;
+    height: 40px;
+}
+
+.compare-header-colorblind-toggle {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    align-self: center;
+}
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--guardian-grid-color, #686868);
+}
+
+.toggle-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.compare-type-select {
+    width: 160px;
+    flex-shrink: 0;
+}
+
+.compare-type-select .p-fluid {
+    padding: 0;
+}
+
+:host ::ng-deep .compare-type-select .guardian-dropdown,
+:host ::ng-deep .compare-type-select .p-select {
+    width: 100%;
+}
+
+:host ::ng-deep .compare-type-select .p-select {
+    min-height: 40px;
+}
+
 .merge-options {
     min-width: 1130px;
     width: 100%;
-    height: 75px;
     background: var(--guardian-background, #ffffff);
-    border-bottom: 1px solid var(--guardian-border-color, #c9c9c9);
-    margin-bottom: 10px;
-    display: grid;
-    grid-template-columns: min-content min-content auto 130px 130px;
-    padding: 10px;
+    border: 1px solid var(--guardian-border-color, #e1e7ef);
+    border-radius: 8px;
+    margin: 16px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 16px;
     box-sizing: border-box;
-    box-shadow: 0px 3px 1px -2px rgb(0 0 0 / 8%), 0px 2px 2px 0px rgb(0 0 0 / 8%), 0px 1px 5px 0px rgb(0 0 0 / 6%);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+    flex-shrink: 0;
+}
+
+.policy-compare-controls {
+    margin: 24px 0 16px;
+}
+
+.policy-compare-controls .compare-page-actions {
+    margin-bottom: 12px;
+}
+
+.policy-compare-controls .compare-type-select {
+    width: max-content;
+}
+
+.policy-compare-controls .merge-options {
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+    padding: 8px 12px;
+    align-items: center;
+    justify-content: flex-start;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+}
+
+.policy-compare-controls .merge-lvl {
+    gap: 12px;
+}
+
+.policy-compare-controls .f1 {
+    width: max-content;
+    height: 40px;
+    margin-right: 0;
+    overflow: visible;
+}
+
+.policy-compare-controls .f1 .p-fluid {
+    padding: 0;
+}
+
+.policy-compare-controls .dropdown-border-label {
+    top: 50%;
+    left: 16px;
+    transform: translateY(-50%);
+    background: transparent;
+    color: var(--guardian-grid-color, #848fa9);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    pointer-events: none;
+}
+
+:host ::ng-deep .policy-compare-controls .p-select {
+    width: max-content;
+    min-height: 40px;
+    height: 40px;
+    border-radius: 6px;
+    border-color: var(--guardian-grey-color-2, #E1E7EF);
+    box-shadow: none;
+}
+
+:host ::ng-deep .policy-compare-controls .p-select-label {
+    display: flex;
+    align-items: center;
+    padding: 8px 34px 8px 68px;
+    color: var(--guardian-font-color, #23252e);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+:host ::ng-deep .policy-compare-controls .compare-type-select .p-select-label {
+    padding-left: 54px;
+}
+
+:host ::ng-deep .policy-compare-controls .filter-events .p-select-label {
+    padding-left: 74px;
+}
+
+:host ::ng-deep .policy-compare-controls .filter-properties .p-select-label {
+    padding-left: 98px;
+}
+
+:host ::ng-deep .policy-compare-controls .filter-children .p-select-label {
+    padding-left: 86px;
+}
+
+:host ::ng-deep .policy-compare-controls .filter-uuid .p-select-label {
+    padding-left: 60px;
+}
+
+.policy-compare-controls .merge-lvl-btn {
+    width: 72px;
+    height: 40px;
+    margin-top: 0;
+    flex-shrink: 0;
 }
 
 .merge-options::ng-deep .mat-form-field-appearance-outline .mat-form-field-infix {
@@ -58,6 +276,43 @@
 
 .merge-lvl {
     display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+:host ::ng-deep {
+    .compare-policy-accordion,
+    .compare-schema-accordion,
+    .compare-module-accordion,
+    .compare-document-accordion,
+    .compare-tool-accordion,
+    .multi-compare-policy-accordion {
+        .p-accordionpanel {
+            margin-bottom: 8px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+            /* clip (not hidden) so panels are not scroll containers — lets the
+               multi-policy sticky chevron pin to the viewport during scroll. */
+            overflow: clip;
+        }
+
+        .p-accordionheader {
+            background: var(--guardian-background, #fff);
+            border: none;
+        }
+
+        .p-accordioncontent {
+            border: none;
+        }
+    }
+
+    .item-headers {
+        background: var(--guardian-background, #fff);
+        border-radius: 8px 8px 0 0;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+        padding: 14px 20px;
+        margin-bottom: 4px;
+    }
 }
 
 .merge-lvl-btn {
@@ -76,53 +331,10 @@
     overflow: hidden;
 }
 
-
-.f2 {
-    width: 225px;
-    display: flex;
-    height: 50px;
-    box-sizing: border-box;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.merge-type {
-    display: flex;
-}
-
-
 .export-btn {
     margin-top: 8px;
     height: 40px;
     width: 115px;
-}
-
-.merge-back>div {
-    width: 105px;
-    height: 38px;
-    margin: 6px;
-    position: relative;
-    cursor: pointer;
-}
-
-.merge-back>div span {
-    color: var(--guardian-grid-color, #707070);
-    position: absolute;
-    top: 9px;
-    left: 21px;
-    font-weight: 500;
-    font-size: 18px;
-    pointer-events: none;
-}
-
-.merge-back>div i,
-.merge-back>div svg {
-    color: var(--guardian-grid-color, #707070);
-    position: absolute;
-    top: 3px;
-    left: -4px;
-    font-size: 30px;
-    pointer-events: none;
 }
 
 .error-message {
@@ -142,7 +354,6 @@
 @media screen and (max-width: 1130px) {
     .merge-options {
         min-width: 670px;
-        grid-template-columns: min-content min-content auto 60px 80px;
     }
 
     .content-result {
@@ -171,7 +382,6 @@
 @media screen and (max-width: 830px) {
     .merge-options {
         min-width: 520px;
-        grid-template-columns: min-content min-content auto 52px 70px;
     }
 
     .content-result {
