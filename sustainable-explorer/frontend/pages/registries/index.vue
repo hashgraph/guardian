@@ -336,22 +336,19 @@ function viewRegistry(r: RegistryDto) {
                 @filter="setRegistryFilter"
                 @clear="clearRegistryFilters"
             />
-            <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
-                <input
-                    type="checkbox"
-                    class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
-                    :checked="filters.hideEmpty === true"
-                    @change="(e) => { filters = { ...filters, hideEmpty: (e.target as HTMLInputElement).checked }; currentPage = 1; }"
-                />
-                {{ $t('registries.filters.hideEmpty') }}
-                <InfoTooltip :text="$t('registries.tooltips.hideEmpty')" />
-            </label>
-        </div>
-
-        <div class="px-6 pb-6">
-            <div class="flex justify-end mb-3">
+            <div class="mt-2 flex items-center">
+                <label class="inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
+                    <input
+                        type="checkbox"
+                        class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                        :checked="filters.hideEmpty === true"
+                        @change="(e) => { filters = { ...filters, hideEmpty: (e.target as HTMLInputElement).checked }; currentPage = 1; }"
+                    />
+                    {{ $t('registries.filters.hideEmpty') }}
+                    <InfoTooltip :text="$t('registries.tooltips.hideEmpty')" />
+                </label>
                 <button
-                    class="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+                    class="ml-auto inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
                     :disabled="downloading"
                     @click="downloadRegistries"
                 >
@@ -360,6 +357,9 @@ function viewRegistry(r: RegistryDto) {
                     {{ $t('registries.downloadData') }}
                 </button>
             </div>
+        </div>
+
+        <div class="px-6 pb-6">
             <div class="rounded-xl border bg-card overflow-hidden">
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">

@@ -511,6 +511,11 @@ if (import.meta.client) {
             <X class="h-3 w-3" />
             {{ $t('common.clear') }}
         </button>
+
+        <!-- Actions slot (e.g. download button) — pushed to the right -->
+        <div v-if="$slots.default" class="ml-auto">
+            <slot />
+        </div>
     </div>
     </div>
 </template>

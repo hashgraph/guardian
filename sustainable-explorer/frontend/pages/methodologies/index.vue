@@ -389,11 +389,7 @@ async function downloadMethodologies() {
         :search-placeholder="$t('methodologies.searchPlaceholder')"
         @filter="setMethodologyFilter"
         @clear="clearMethodologyFilters"
-      />
-    </div>
-
-    <div class="px-6 pb-6">
-      <div class="flex justify-end mb-2">
+      >
         <button
           :disabled="downloading"
           class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -403,7 +399,10 @@ async function downloadMethodologies() {
           <Download v-else class="h-3.5 w-3.5" />
           {{ $t('methodologies.downloadData') }}
         </button>
-      </div>
+      </FilterBar>
+    </div>
+
+    <div class="px-6 pb-6">
       <div class="rounded-xl border bg-card overflow-hidden">
         <div class="overflow-x-auto">
         <table class="w-full text-sm table-fixed min-w-[1100px]">
