@@ -20,18 +20,12 @@
     <div class="content-result">
       <div class="test-results-header">
         <div class="header-row header-row-back">
-          <div class="guardian-user-back-button">
-            <button (click)="onBack()" class="guardian-button guardian-button-secondary">
-              <div class="guardian-button-icon">
-                <svg-icon class="icon-btn svg-icon"
-                  src="/assets/images/icons/left-arrow.svg"
-                  svgClass="icon-color-primary">
-                </svg-icon>
-              </div>
-              <div class="guardian-button-label">Back</div>
-            </button>
-          </div>
-          <span class="test-breadcrumb">
+          <span
+            class="test-breadcrumb test-breadcrumb-clickable"
+            role="button"
+            tabindex="0"
+            (click)="onBack()"
+            (keydown.enter)="onBack()">
             <span class="breadcrumb-item">Manage Policies</span>
             @if (policyName) {
               <span class="breadcrumb-sep"> / </span>
@@ -49,39 +43,6 @@
           <span class="test-total-info" [attr.total]="results?.total">
             Documents are <span>{{ results?.total }}%</span> the same.
           </span>
-          @if (docOptions.length) {
-            <p-select
-              class="guardian-dropdown doc-nav-dropdown"
-              [options]="computedDocOptions"
-              [(ngModel)]="selectedDoc"
-              (onChange)="onDocSelect($event.value)"
-              [filter]="true"
-              filterBy="label"
-              placeholder="Choose document"
-              [autoOptionFocus]="false"
-              appendTo="body"
-              panelStyleClass="guardian-dropdown-panel">
-              <ng-template pTemplate="item" let-option>
-                <span [title]="option.label">{{ option.label }}</span>
-              </ng-template>
-            </p-select>
-          }
-          <p-select
-            class="guardian-dropdown field-status-filter-dropdown"
-                    [options]="[
-                        { label: 'All fields', value: 'all' },
-                        { label: 'Equal', value: 'matched' },
-                        { label: 'Different', value: 'mismatched' },
-                        { label: 'Ignored', value: 'system' }
-                    ]"
-            [(ngModel)]="fieldStatusFilter"
-            (onChange)="selectedDoc = null"
-            appendTo="body"
-            panelStyleClass="guardian-dropdown-panel">
-            <ng-template pTemplate="item" let-option>
-              <span [title]="option.label">{{ option.label }}</span>
-            </ng-template>
-          </p-select>
         </div>
       </div>
       <app-compare-record
@@ -90,6 +51,55 @@
         [showTotal]="false"
         [fieldStatusFilter]="fieldStatusFilter"
         [fieldNameFilter]="fieldNameFilter || ''">
+        <div recordControls class="record-compare-controls">
+          <div class="merge-lvl">
+            @if (docOptions.length) {
+              <div class="f1 filter-document">
+                <div class="p-fluid">
+                  <label for="recordDocumentDropdown" class="dropdown-border-label">Document</label>
+                  <p-select
+                    id="recordDocumentDropdown"
+                    class="guardian-dropdown doc-nav-dropdown"
+                    [options]="computedDocOptions"
+                    [(ngModel)]="selectedDoc"
+                    (onChange)="onDocSelect($event.value)"
+                    [filter]="true"
+                    filterBy="label"
+                    placeholder="Choose document"
+                    [autoOptionFocus]="false"
+                    appendTo="body"
+                    panelStyleClass="guardian-dropdown-panel">
+                    <ng-template pTemplate="item" let-option>
+                      <span [title]="option.label">{{ option.label }}</span>
+                    </ng-template>
+                  </p-select>
+                </div>
+              </div>
+            }
+            <div class="f1 filter-status">
+              <div class="p-fluid">
+                <label for="recordStatusDropdown" class="dropdown-border-label">Fields</label>
+                <p-select
+                  id="recordStatusDropdown"
+                  class="guardian-dropdown field-status-filter-dropdown"
+                          [options]="[
+                              { label: 'All fields', value: 'all' },
+                              { label: 'Equal', value: 'matched' },
+                              { label: 'Different', value: 'mismatched' },
+                              { label: 'Ignored', value: 'system' }
+                          ]"
+                  [(ngModel)]="fieldStatusFilter"
+                  (onChange)="selectedDoc = null"
+                  appendTo="body"
+                  panelStyleClass="guardian-dropdown-panel">
+                  <ng-template pTemplate="item" let-option>
+                    <span [title]="option.label">{{ option.label }}</span>
+                  </ng-template>
+                </p-select>
+              </div>
+            </div>
+          </div>
+        </div>
       </app-compare-record>
     </div>
   }
