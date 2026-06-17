@@ -132,6 +132,9 @@ export class CompareComponent implements OnInit {
         if (this.isSchemas) {
             return 'Manage Schemas';
         }
+        if (this.isModules) {
+            return 'Manage Modules';
+        }
         return 'Compare';
     }
 

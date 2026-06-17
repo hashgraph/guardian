@@ -1,22 +1,27 @@
 <div class="content">
   @if (module1 && module2) {
     <div class="list">
+      <section class="module-description-section">
+        <div class="module-description-title">Description</div>
+        <div class="module-description-card">
+          <div class="module-description-column">
+            <ng-container *ngTemplateOutlet="moduleInfo; context: { module: module1 }"></ng-container>
+          </div>
+          <div class="module-description-column">
+            <ng-container *ngTemplateOutlet="moduleInfo; context: { module: module2 }"></ng-container>
+          </div>
+        </div>
+      </section>
+
+      <ng-content select="[policyControls]"></ng-content>
+
       <p-accordion
         class="compare-module-accordion"
         [multiple]="true"
-        [value]="['description', 'blocks']"
+        [value]="['blocks']"
         expandIcon="pi pi-chevron-down icon-start"
         collapseIcon="pi pi-chevron-up icon-start"
         >
-        <p-accordion-panel value="description">
-          <p-accordion-header>Description</p-accordion-header>
-          <p-accordion-content>
-            <div class="info-container">
-              <ng-container *ngTemplateOutlet="moduleInfo; context: { module: module1 }"></ng-container>
-              <ng-container *ngTemplateOutlet="moduleInfo; context: { module: module2 }"></ng-container>
-            </div>
-          </p-accordion-content>
-        </p-accordion-panel>
         <p-accordion-panel value="input-events">
           <p-accordion-header>Input Events</p-accordion-header>
           <p-accordion-content>
