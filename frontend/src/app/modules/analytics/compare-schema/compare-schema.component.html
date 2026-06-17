@@ -1,22 +1,27 @@
 <div class="content">
   @if (schema1 && schema2) {
     <div class="list">
+      <section class="schema-description-section">
+        <div class="schema-description-title">Description</div>
+        <div class="schema-description-card">
+          <div class="schema-description-column">
+            <ng-container *ngTemplateOutlet="schemaInfo; context: { schema: schema1 }"></ng-container>
+          </div>
+          <div class="schema-description-column">
+            <ng-container *ngTemplateOutlet="schemaInfo; context: { schema: schema2 }"></ng-container>
+          </div>
+        </div>
+      </section>
+
+      <ng-content select="[policyControls]"></ng-content>
+
       <p-accordion
         class="compare-schema-accordion"
         [multiple]="true"
-        [value]="['description', 'fields']"
+        [value]="['fields']"
         expandIcon="pi pi-chevron-down icon-start"
         collapseIcon="pi pi-chevron-up icon-start"
         >
-        <p-accordion-panel value="description">
-          <p-accordion-header>Description</p-accordion-header>
-          <p-accordion-content>
-            <div class="info-container">
-              <ng-container *ngTemplateOutlet="schemaInfo; context: { schema: schema1 }"></ng-container>
-              <ng-container *ngTemplateOutlet="schemaInfo; context: { schema: schema2 }"></ng-container>
-            </div>
-          </p-accordion-content>
-        </p-accordion-panel>
         <p-accordion-panel value="fields">
           <p-accordion-header>Schema Fields</p-accordion-header>
           <p-accordion-content>

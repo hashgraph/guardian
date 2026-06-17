@@ -40,12 +40,12 @@
           }
         </div>
       </div>
-      @if (!isPolicies && !isMultiPolicies) {
+      @if (!isPolicies && !isMultiPolicies && !isSchemas) {
         <ng-container *ngTemplateOutlet="compareActions"></ng-container>
       }
     </div>
 
-    @if (!isPolicies && !isMultiPolicies) {
+    @if (!isPolicies && !isMultiPolicies && !isSchemas) {
       <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
     }
   }
@@ -75,7 +75,12 @@
         [type]="visibleType"
         [value]="result"
         [idLvl]="idLvl"
-      (change)="onChange($event)"></app-compare-schema>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-schema>
     </div>
   }
 

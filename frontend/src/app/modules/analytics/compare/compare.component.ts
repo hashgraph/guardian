@@ -129,6 +129,9 @@ export class CompareComponent implements OnInit {
         if (this.isPolicies || this.isMultiPolicies) {
             return 'Manage Policies';
         }
+        if (this.isSchemas) {
+            return 'Manage Schemas';
+        }
         return 'Compare';
     }
 
