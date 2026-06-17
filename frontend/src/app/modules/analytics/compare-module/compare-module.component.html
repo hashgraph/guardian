@@ -1,9 +1,6 @@
 <div class="content">
   @if (module1 && module2) {
     <div class="list">
-      <div class="total-info" [attr.total]="total">
-        Modules are <span>{{ total }}%</span> the same.
-      </div>
       <p-accordion
         class="compare-module-accordion"
         [multiple]="true"

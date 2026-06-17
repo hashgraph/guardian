@@ -1,9 +1,6 @@
 <div class="content">
   @if (schema1 && schema2) {
     <div class="list">
-      <div class="total-info" [attr.total]="total">
-        Schemas are <span>{{ total }}%</span> the same.
-      </div>
       <p-accordion
         class="compare-schema-accordion"
         [multiple]="true"

@@ -7,6 +7,9 @@
     display: grid;
     grid-template-columns: calc(50% - 18px) 35px calc(50% - 18px);
     padding-left: 30px;
+    background: var(--guardian-background, #fff);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
 }
 
 .total-info {
@@ -906,7 +909,10 @@
 
 :host ::ng-deep .compare-record-accordion {
     .p-accordionpanel {
-        border-bottom: 1px solid var(--guardian-border-color, #d6dbe3);
+        margin-bottom: 8px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+        overflow: hidden;
     }
 
     .p-accordionheader {
