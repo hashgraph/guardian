@@ -11,7 +11,8 @@
     },
     "scripts": {
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
-        "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
+        "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\"",
+        "clean": "find . -type d \\( -name dist -o -name node_modules \\) -prune -exec rm -rf {} +"
     },
     "version": "3.6.0",
     "workspaces": [
