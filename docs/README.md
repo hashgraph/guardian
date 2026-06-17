@@ -85,8 +85,8 @@ Below are the universal software prerequisites, followed by network-specific ite
 
 ## **8. Feedback and Support**
 
-* For support, reach out via Hedera Discord Sustainability channel or email us at info@envisionblockchain.com.
-* Submit feedback or feature requests through the [GitHub repository](https://github.com/hashgraph/guardian/issues).
+* Please send feedback, feature, and support requests to [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request\&body=This%20is%20%5Bfeedback%20%7C%20support%20request%20%7C%20feature%20request%5D%0A%0A--%0A%0AAdd%20a%20summary%20here.)&#x20;
+* You can also open issues and feature requests in the [GitHub repository](https://github.com/hashgraph/guardian/issues).
 
 ## **9. Legal and Licensing**
 
