@@ -667,7 +667,7 @@
             "map": {
                 "title": "Ubicaciones de Proyectos",
                 "subtitle": "Distribución geográfica de proyectos en este registro",
-                "noProjects": "No hay datos de ubicación disponibles para este registro"
+                "noProjects": "No hay datos geográficos disponibles"
             },
             "topMethodologies": {
                 "title": "Principales Metodologías",
