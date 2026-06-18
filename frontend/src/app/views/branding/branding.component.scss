@@ -1,4 +1,10 @@
 .guardian-page {
+    // The shared .guardian-page is height: 100% + flex, so a plain padding-bottom
+    // can't reserve room for the fixed actions bar — overflowing content scrolls
+    // flush under it. Let the page grow with its content instead so the padding
+    // becomes real scroll space below the last card.
+    height: auto;
+    min-height: 100%;
     padding-bottom: 88px;
 }
 

@@ -1,7 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { getMenuItems, NavbarMenuItem } from './menu.model';
-import { getUserInitials } from '../../utils';
+import { formatBalance, getUserInitials } from '../../utils';
 import { MenuLayout, MenuLayoutService } from '../../services/menu-layout.service';
 import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from '../../services/auth-state.service';
@@ -96,8 +96,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
                 if (event.data && event.data.balance) {
-                    const b = parseFloat(event.data.balance);
-                    this.balance = `${b.toFixed(3)} ${event.data.unit}`;
+                    this.balance = formatBalance(event.data.balance);
                 } else {
                     this.balance = 'N\\A';
                     this.balanceType = '';
@@ -166,15 +165,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
-                if (b > 999) {
-                    this.balance = `${b.toFixed(0)} ${balance.unit}`;
-                } else if (b > 99) {
-                    this.balance = `${b.toFixed(2)} ${balance.unit}`;
-                } else if (b > 9) {
-                    this.balance = `${b.toFixed(3)} ${balance.unit}`;
-                } else {
-                    this.balance = `${b.toFixed(4)} ${balance.unit}`;
-                }
+                this.balance = formatBalance(b);
                 if (b > 100) {
                     this.balanceType = 'normal';
                 } else if (b > 20) {

@@ -4,3 +4,4 @@ export { EntityAccess, EntityGroup } from "./permissions-entity";
 export { PermissionsGroup } from "./permissions";
 export { MergeUtils } from "./merge-utils";
 export { getUserInitials } from "./user-initials";
+export { formatBalance } from "./balance";
