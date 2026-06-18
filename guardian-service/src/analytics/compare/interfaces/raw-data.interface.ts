@@ -77,7 +77,7 @@ export interface ISchemaDocument {
      * Properties
      */
     properties?: {
-        [x: string]: ISchemaDocument;
+        [x: string]: ISchemaDocument | false;
     }
     /**
      * Required fields

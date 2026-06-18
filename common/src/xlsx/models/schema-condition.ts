@@ -85,4 +85,15 @@ export class XlsxSchemaConditions {
             this.condition.thenFields.push(field);
         }
     }
+
+    public addTarget(field: SchemaField, targetFieldPath: string[], invert: boolean) {
+        const target = { field, fieldPath: targetFieldPath };
+        if (invert) {
+            if (!this.condition.elseTargets) { this.condition.elseTargets = []; }
+            this.condition.elseTargets.push(target);
+        } else {
+            if (!this.condition.thenTargets) { this.condition.thenTargets = []; }
+            this.condition.thenTargets.push(target);
+        }
+    }
 }

@@ -1008,25 +1008,29 @@ export class SchemaConfigurationComponent implements OnInit {
                 (typeof r?.field === 'string' ? r.field : undefined);
         };
 
+        const traverseFieldPath = (path: string[]): SchemaField | undefined => {
+            let current: SchemaField | undefined = fieldsBySchemaName.get(path[0]);
+            for (let i = 1; i < path.length; i++) {
+                if (!current?.fields) { return undefined; }
+                current = current.fields.find(f => f.name === path[i]);
+            }
+            return current;
+        };
+
         const resolveIfField = (opt: ConditionFieldOption | undefined): { field: SchemaField; fieldPath?: string[] } | null => {
             if (!opt?.fieldPath?.length) { return null; }
-            if (opt.fieldPath.length === 1) {
-                const sf = fieldsBySchemaName.get(opt.fieldPath[0]);
-                return sf ? { field: sf } : null;
-            }
-            const containerField = fieldsBySchemaName.get(opt.fieldPath[0]);
-            if (!containerField) { return null; }
-            const leafField = containerField.fields?.find(f => f.name === opt.fieldPath[opt.fieldPath.length - 1]);
-            return leafField ? { field: leafField, fieldPath: opt.fieldPath } : null;
+            const leaf = traverseFieldPath(opt.fieldPath);
+            if (!leaf) { return null; }
+            return opt.fieldPath.length === 1
+                ? { field: leaf }
+                : { field: leaf, fieldPath: opt.fieldPath };
         };
 
         const buildCrossTargets = (targets: ConditionFieldOption[]): SchemaConditionTarget[] =>
             targets.map(opt => {
-                const containerField = fieldsBySchemaName.get(opt.fieldPath[0]);
-                if (!containerField) { return null; }
-                const leafField = containerField.fields?.find(f => f.name === opt.fieldPath[opt.fieldPath.length - 1]);
-                if (!leafField) { return null; }
-                return { fieldPath: opt.fieldPath, field: leafField } as SchemaConditionTarget;
+                const leaf = traverseFieldPath(opt.fieldPath);
+                if (!leaf) { return null; }
+                return { fieldPath: opt.fieldPath, field: leaf } as SchemaConditionTarget;
             }).filter(Boolean) as SchemaConditionTarget[];
 
         const conditions: SchemaCondition[] = [];
