@@ -1490,21 +1490,23 @@ export class SchemaConfigurationComponent implements OnInit {
         return result;
     }
 
-    private collectNestedFieldOptions(
+    private collectNestedFieldGroups(
         fields: SchemaField[],
         prefix: string[],
         labelPrefix: string,
         alreadySelected?: Set<string>,
         maxDepth: number = 12,
-    ): ConditionFieldOption[] {
+    ): ConditionFieldGroup[] {
         if (prefix.length > maxDepth) { return []; }
-        const result: ConditionFieldOption[] = [];
+        const groups: ConditionFieldGroup[] = [];
+        const directItems: ConditionFieldOption[] = [];
+
         for (const f of fields) {
             if (f.readOnly) { continue; }
             if (f.isRef) {
                 const nestedSchema = this.subSchemas?.find(s => s.iri === f.type);
                 if (!nestedSchema?.fields?.length) { continue; }
-                result.push(...this.collectNestedFieldOptions(
+                groups.push(...this.collectNestedFieldGroups(
                     nestedSchema.fields,
                     [...prefix, f.name],
                     `${labelPrefix} > ${f.title || f.name}`,
@@ -1516,9 +1518,9 @@ export class SchemaConfigurationComponent implements OnInit {
                 if (!leafTypeKey || !this.schemaTypeMap[leafTypeKey]) { continue; }
                 const path = [...prefix, f.name];
                 if (alreadySelected?.has(path.join('.'))) { continue; }
-                result.push({
+                directItems.push({
                     key: path.join('.'),
-                    label: `${labelPrefix} > ${f.title || f.name}`,
+                    label: f.title || f.name,
                     shortLabel: f.title || f.name,
                     fieldPath: path,
                     typeKey: leafTypeKey,
@@ -1526,7 +1528,11 @@ export class SchemaConfigurationComponent implements OnInit {
                 });
             }
         }
-        return result;
+
+        if (directItems.length) {
+            groups.unshift({ label: labelPrefix, items: directItems });
+        }
+        return groups;
     }
 
     public getFieldOptionGroupsForCondition(condition: ConditionControl): ConditionFieldGroup[] {
@@ -1566,14 +1572,11 @@ export class SchemaConfigurationComponent implements OnInit {
             const subSchema = this.subSchemas?.find(s => s.iri === type.type);
             if (!subSchema?.fields?.length) { continue; }
             const groupLabel = fc.controlTitle.value || fc.controlKey.value;
-            const nestedItems = this.collectNestedFieldOptions(
+            groups.push(...this.collectNestedFieldGroups(
                 subSchema.fields,
                 [fc.controlKey.value],
                 groupLabel,
-            );
-            if (nestedItems.length) {
-                groups.push({ label: groupLabel, items: nestedItems });
-            }
+            ));
         }
 
         return groups;
@@ -1592,15 +1595,12 @@ export class SchemaConfigurationComponent implements OnInit {
             const subSchema = this.subSchemas?.find(s => s.iri === schemaType.type);
             if (!subSchema?.fields?.length) { continue; }
             const groupLabel = fc.controlTitle.value || fc.controlKey.value;
-            const items = this.collectNestedFieldOptions(
+            groups.push(...this.collectNestedFieldGroups(
                 subSchema.fields,
                 [fc.controlKey.value],
                 groupLabel,
                 alreadySelected,
-            );
-            if (items.length) {
-                groups.push({ label: groupLabel, items });
-            }
+            ));
         }
         return groups;
     }
