@@ -12,128 +12,45 @@
   }
 
   @if (result) {
-    <div class="merge-options">
-      <div class="merge-back">
+    <div class="compare-page-header">
+      <div class="compare-page-title">
         @if (parent) {
-          <div (click)="onBack()">
+          <button type="button" class="compare-back-button" (click)="onBack()">
             <i class="pi pi-chevron-left"></i>
             <span>Back</span>
-          </div>
+          </button>
         }
-      </div>
-      <div class="merge-lvl">
-        @if (isUUIDLvl) {
-          <div class="f1">
-            <div class="p-fluid">
-              <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
-              <p-select
-                id="uuidDropdown"
-                [(ngModel)]="idLvl"
-                [options]="uuidOptions"
-                placeholder="Select UUID Level"
-                (onChange)="onFilterChange()"
-                [appendTo]="'body'"
-                class="guardian-dropdown"
-                panelStyleClass="guardian-dropdown-panel"
-                >
-              </p-select>
+        <div class="compare-breadcrumb">{{ compareBreadcrumb }}</div>
+        <div class="compare-summary-row">
+          @if (showSummaryLine) {
+            <h1 class="compare-summary-title" [attr.total]="total">
+              {{ compareNoun }} are <span>{{ total }}%</span> the same
+            </h1>
+          }
+          @if (isMultiPolicies) {
+            <h1 class="compare-summary-title">Multiple Policies Comparison</h1>
+          }
+          @if (!showSummaryLine && !isMultiPolicies) {
+            <h1 class="compare-summary-title">{{ compareNoun }} Comparison</h1>
+          }
+          @if (isPolicies) {
+            <div class="compare-header-colorblind-toggle">
+              <label class="toggle-label">
+                <input type="checkbox" [checked]="policyColorBlindMode" (change)="togglePolicyColorBlindMode()">
+                <span class="toggle-text">Color-blind mode</span>
+              </label>
             </div>
-          </div>
-        }
-        @if (isPropertiesLvl) {
-          <div class="f1">
-            <div class="p-fluid">
-              <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
-              <p-select
-                id="propertiesDropdown"
-                [(ngModel)]="propLvl"
-                [options]="propertyOptions"
-                placeholder="Select Property Level"
-                (onChange)="onFilterChange()"
-                [appendTo]="'body'"
-                class="guardian-dropdown"
-                panelStyleClass="guardian-dropdown-panel"
-                >
-              </p-select>
-            </div>
-          </div>
-        }
-        @if (isEventsLvl) {
-          <div class="f1">
-            <div class="p-fluid">
-              <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
-              <p-select
-                id="eventsDropdown"
-                [(ngModel)]="eventsLvl"
-                [options]="eventOptions"
-                placeholder="Select Event Level"
-                (onChange)="onFilterChange()"
-                [appendTo]="'body'"
-                class="guardian-dropdown"
-                panelStyleClass="guardian-dropdown-panel"
-                >
-              </p-select>
-            </div>
-          </div>
-        }
-        @if (isChildrenLvl) {
-          <div class="f1">
-            <div class="p-fluid">
-              <label for="childrenDropdown" class="dropdown-border-label">Children:</label>
-              <p-select
-                id="childrenDropdown"
-                [(ngModel)]="childrenLvl"
-                [options]="childrenOptions"
-                placeholder="Select Children Level"
-                (onChange)="onFilterChange()"
-                [appendTo]="'body'"
-                class="guardian-dropdown"
-                panelStyleClass="guardian-dropdown-panel"
-                >
-              </p-select>
-            </div>
-          </div>
-        }
-      </div>
-      <div class="merge-lvl-apply">
-        @if (isApplyBtn) {
-          <button
-            (click)="onApply()"
-            class="guardian-button guardian-button-primary merge-lvl-btn"
-          [disabled]="!needApplyFilters">Apply</button>
-        }
-      </div>
-      <div>
-        <button
-          (click)="onExport()"
-          class="guardian-button guardian-button-secondary export-btn">
-          <div class="guardian-button-icon">
-            <svg-icon class="icon-btn svg-icon"
-              src="/assets/images/icons/export.svg"
-              svgClass="icon-color-primary">
-            </svg-icon>
-          </div>
-          <div class="guardian-button-label">Export</div>
-        </button>
-      </div>
-      <div class="merge-type">
-        <div class="f2">
-          <div class="p-fluid">
-            <label for="typeDropdown" class="dropdown-border-label">Type:</label>
-            <p-select
-              id="typeDropdown"
-              [(ngModel)]="visibleType"
-              [options]="typeOptions"
-              placeholder="Select Type"
-              [appendTo]="'body'"
-              class="guardian-dropdown"
-              panelStyleClass="guardian-dropdown-panel"
-              >
-            </p-select>
-          </div>
+          }
         </div>
       </div>
+      @if (!isPolicies && !isMultiPolicies && !isSchemas && !isModules && !isDocuments && !isTools) {
+        <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+      }
     </div>
+
+    @if (!isPolicies && !isMultiPolicies && !isSchemas && !isModules && !isDocuments && !isTools) {
+      <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+    }
   }
 
   @if (isPolicies) {
@@ -145,7 +62,13 @@
         [propLvl]="propLvl"
         [type]="visibleType"
         [value]="result"
-      (change)="onChange($event)"></app-compare-policy>
+        [colorBlindMode]="policyColorBlindMode"
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-policy>
     </div>
   }
 
@@ -155,7 +78,12 @@
         [type]="visibleType"
         [value]="result"
         [idLvl]="idLvl"
-      (change)="onChange($event)"></app-compare-schema>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-schema>
     </div>
   }
 
@@ -168,7 +96,12 @@
         [propLvl]="propLvl"
         [type]="visibleType"
         [value]="result"
-      (change)="onChange($event)"></app-compare-module>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-module>
     </div>
   }
 
@@ -181,7 +114,12 @@
         [propLvl]="propLvl"
         [type]="visibleType"
         [value]="result"
-      (change)="onChange($event)"></app-multi-compare-policy>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-multi-compare-policy>
     </div>
   }
 
@@ -194,7 +132,12 @@
         [propLvl]="propLvl"
         [type]="visibleType"
         [value]="result"
-      (change)="onChange($event)"></app-compare-document>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-document>
     </div>
   }
 
@@ -207,7 +150,128 @@
         [propLvl]="propLvl"
         [type]="visibleType"
         [value]="result"
-      (change)="onChange($event)"></app-compare-tool>
+      (change)="onChange($event)">
+        <div policyControls class="policy-compare-controls">
+          <ng-container *ngTemplateOutlet="compareActions"></ng-container>
+          <ng-container *ngTemplateOutlet="compareFilters"></ng-container>
+        </div>
+      </app-compare-tool>
     </div>
   }
 </div>
+
+<ng-template #compareActions>
+  <div class="compare-page-actions">
+    <div class="compare-type-select">
+      <div class="p-fluid">
+        <label for="typeDropdown" class="dropdown-border-label">Type</label>
+        <p-select
+          id="typeDropdown"
+          [(ngModel)]="visibleType"
+          [options]="typeOptions"
+          placeholder="Select Type"
+          [appendTo]="'body'"
+          class="guardian-dropdown"
+          panelStyleClass="guardian-dropdown-panel"
+          >
+        </p-select>
+      </div>
+    </div>
+    <button
+      (click)="onExport()"
+      class="guardian-button guardian-button-secondary export-btn">
+      <div class="guardian-button-icon">
+        <svg-icon class="icon-btn svg-icon"
+          src="/assets/images/icons/export.svg"
+          svgClass="icon-color-primary">
+        </svg-icon>
+      </div>
+      <div class="guardian-button-label">Export</div>
+    </button>
+  </div>
+</ng-template>
+
+<ng-template #compareFilters>
+  <div class="merge-options">
+    <div class="merge-lvl">
+      @if (isEventsLvl) {
+        <div class="f1 filter-events">
+          <div class="p-fluid">
+            <label for="eventsDropdown" class="dropdown-border-label">Events</label>
+            <p-select
+              id="eventsDropdown"
+              [(ngModel)]="eventsLvl"
+              [options]="eventOptions"
+              placeholder="Select Event Level"
+              (onChange)="onFilterChange()"
+              [appendTo]="'body'"
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              >
+            </p-select>
+          </div>
+        </div>
+      }
+      @if (isPropertiesLvl) {
+        <div class="f1 filter-properties">
+          <div class="p-fluid">
+            <label for="propertiesDropdown" class="dropdown-border-label">Properties</label>
+            <p-select
+              id="propertiesDropdown"
+              [(ngModel)]="propLvl"
+              [options]="propertyOptions"
+              placeholder="Select Property Level"
+              (onChange)="onFilterChange()"
+              [appendTo]="'body'"
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              >
+            </p-select>
+          </div>
+        </div>
+      }
+      @if (isChildrenLvl) {
+        <div class="f1 filter-children">
+          <div class="p-fluid">
+            <label for="childrenDropdown" class="dropdown-border-label">Children</label>
+            <p-select
+              id="childrenDropdown"
+              [(ngModel)]="childrenLvl"
+              [options]="childrenOptions"
+              placeholder="Select Children Level"
+              (onChange)="onFilterChange()"
+              [appendTo]="'body'"
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              >
+            </p-select>
+          </div>
+        </div>
+      }
+      @if (isUUIDLvl) {
+        <div class="f1 filter-uuid">
+          <div class="p-fluid">
+            <label for="uuidDropdown" class="dropdown-border-label">UUID</label>
+            <p-select
+              id="uuidDropdown"
+              [(ngModel)]="idLvl"
+              [options]="uuidOptions"
+              placeholder="Select UUID Level"
+              (onChange)="onFilterChange()"
+              [appendTo]="'body'"
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              >
+            </p-select>
+          </div>
+        </div>
+      }
+    </div>
+    @if (isApplyBtn) {
+      <button
+        (click)="onApply()"
+        class="guardian-button guardian-button-primary merge-lvl-btn"
+        [disabled]="!needApplyFilters">Apply</button>
+    }
+  </div>
+</ng-template>

@@ -4,8 +4,14 @@
     right: 0;
     bottom: 0;
     top: 0;
-    display: block;
-    min-width: 1600px;
+    display: flex;
+    flex-direction: column;
+    min-width: 1130px;
+    padding: 42px 48px 48px;
+    box-sizing: border-box;
+    background: var(--color-background);
+    color: var(--guardian-font-color);
+    overflow: auto;
 }
 
 .loading {
@@ -30,4 +36,83 @@
     transform: translate(-50%, -50%);
     font-size: 20px;
     color: darkgrey;
+}
+
+.content-result {
+    min-width: 1130px;
+    padding: 0 0 40px;
+    box-sizing: border-box;
+}
+
+.record-results-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--guardian-page-header-padding);
+    margin-bottom: var(--guardian-page-header-gap);
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    .header-row {
+        display: flex;
+        align-items: center;
+        padding: 0;
+    }
+
+    .record-breadcrumb {
+        display: flex;
+        align-items: center;
+        color: var(--guardian-primary-color, #3f51b5);
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+
+        .breadcrumb-item {
+            padding: 0;
+            color: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: 16px;
+            user-select: none;
+            cursor: default;
+        }
+
+        .breadcrumb-sep {
+            color: var(--guardian-grid-color, #848fa9);
+            font-size: 12px;
+            line-height: 16px;
+            padding: 0 4px;
+        }
+    }
+
+    .record-breadcrumb-clickable {
+        cursor: pointer;
+        width: max-content;
+
+        .breadcrumb-item {
+            cursor: pointer;
+        }
+    }
+
+    .record-total-info {
+        margin: 0;
+        font-family: var(--guardian-page-header-font-family);
+        font-size: var(--guardian-page-header-font-size);
+        font-weight: var(--guardian-page-header-font-weight);
+        color: var(--guardian-header-color, #000);
+
+        span {
+            color: var(--guardian-failure-color, #e70000);
+        }
+
+        &[total="100"] span {
+            color: var(--guardian-success-color, #008d0c);
+        }
+    }
+}
+
+app-compare-record {
+    display: block;
+    min-width: 100%;
+    width: 100%;
 }

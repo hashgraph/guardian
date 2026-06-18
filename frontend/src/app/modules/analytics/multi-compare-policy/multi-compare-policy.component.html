@@ -1,46 +1,24 @@
 <div class="content" [style.min-width.px]="minWidth">
-    <div *ngIf="headers && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
-        <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
-            <span class="item-header-name">
-                {{ item.name }}
-            </span>
-            <span class="item-header-rate item-header-color-{{item.color}}">
-                {{ item.rate }}
-            </span>
-        </div>
-    </div>
-
     <div *ngIf="policies && policies.length>2" class="list">
+
+        <section class="policy-description-section">
+            <div class="policy-description-title">Description</div>
+            <div class="policy-description-card" [style.grid-template-columns]="'repeat(' + size + ', minmax(0, 1fr))'">
+                <div class="policy-description-column" *ngFor="let context of policies">
+                    <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
+                </div>
+            </div>
+        </section>
+
+        <ng-content select="[policyControls]"></ng-content>
+
         <p-accordion
             class="multi-compare-policy-accordion"
             [multiple]="true"
-            [value]="['description', 'blocks']"
+            [value]="['blocks']"
             expandIcon="pi pi-chevron-down icon-start"
             collapseIcon="pi pi-chevron-up icon-start"
         >
-            <p-accordion-panel value="description">
-    <p-accordion-header>Description</p-accordion-header>
-    <p-accordion-content>
-                <div class="info-container" [style.grid-template-columns]="_gridStyle">
-                    <ng-container *ngFor="let context of policies">
-                        <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
-                            <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
-                        </div>
-                        <div class="middle-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index"
-                             [attr.open]="true">
-                        </div>
-                        <div class="right-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index + 1"
-                             [attr.open]="true">
-                            <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
-                        </div>
-                    </ng-container>
-                </div>
-                </p-accordion-content>
-</p-accordion-panel>
 
             <p-accordion-panel value="roles" *ngIf="roles.length">
     <p-accordion-header>Policy Roles</p-accordion-header>

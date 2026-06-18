@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostBinding, Input, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, HostBinding, Input, Output, SimpleChanges } from '@angular/core';
 import BlockIcons from '../../policy-engine/services/block-icons';
 import { CompareStorage } from 'src/app/services/compare-storage.service';
 
@@ -8,13 +8,14 @@ import { CompareStorage } from 'src/app/services/compare-storage.service';
     styleUrls: ['./compare-policy.component.scss'],
     standalone: false
 })
-export class ComparePolicyComponent implements OnInit {
+export class ComparePolicyComponent {
     @Input('value') value!: any;
     @Input() type: string = 'tree';
     @Input() eventsLvl: string = '1';
     @Input() propLvl: string = '2';
     @Input() childrenLvl: string = '2';
     @Input() idLvl: string = '1';
+    @Input() colorBlindMode: boolean = false;
 
     @Output() change = new EventEmitter<any>();
 
@@ -41,8 +42,6 @@ export class ComparePolicyComponent implements OnInit {
     public type3 = true;
     public type4 = true;
 
-    public colorBlindMode = false;
-
     @HostBinding('class.colorblind-mode')
     get colorBlindClass() {
         return this.colorBlindMode;
@@ -51,11 +50,6 @@ export class ComparePolicyComponent implements OnInit {
     public _pOffset = 30;
 
     constructor(private compareStorage: CompareStorage) {
-    }
-
-    ngOnInit() {
-        const saved = localStorage.getItem('compare-policy-colorblind');
-        this.colorBlindMode = saved === 'true';
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -174,8 +168,4 @@ export class ComparePolicyComponent implements OnInit {
         return value !== null && typeof value === 'object';
     }
 
-    toggleColorBlindMode() {
-        this.colorBlindMode = !this.colorBlindMode;
-        localStorage.setItem('compare-policy-colorblind', String(this.colorBlindMode));
-    }
 }
