@@ -448,32 +448,20 @@ export class JsonToXlsx {
         fieldCache: Map<string, IRowField>,
     ) {
         const baseFormula = JsonToXlsx.buildIfFormula(condition.ifCondition, fieldCache);
-
         const thenFormula = baseFormula;
         const elseFormula = `NOT(${baseFormula})`;
 
-        if (Array.isArray(condition.thenFields)) {
-            for (const field of condition.thenFields) {
-                const thenField = fieldCache.get(field.name);
-                if (!thenField) {
-                    continue;
-                }
-                worksheet
-                    .getCell(table.getCol(Dictionary.VISIBILITY), thenField.row)
-                    .setFormulae(thenFormula);
+        const writeCell = (key: string, formula: string) => {
+            const rowField = fieldCache.get(key);
+            if (rowField) {
+                worksheet.getCell(table.getCol(Dictionary.VISIBILITY), rowField.row).setFormulae(formula);
             }
-        }
-        if (Array.isArray(condition.elseFields)) {
-            for (const field of condition.elseFields) {
-                const elseField = fieldCache.get(field.name);
-                if (!elseField) {
-                    continue;
-                }
-                worksheet
-                    .getCell(table.getCol(Dictionary.VISIBILITY), elseField.row)
-                    .setFormulae(elseFormula);
-            }
-        }
+        };
+
+        for (const field of condition.thenFields || []) { writeCell(field.name, thenFormula); }
+        for (const field of condition.elseFields || []) { writeCell(field.name, elseFormula); }
+        for (const t of condition.thenTargets || []) { writeCell(t.fieldPath.join('.'), thenFormula); }
+        for (const t of condition.elseTargets || []) { writeCell(t.fieldPath.join('.'), elseFormula); }
     }
 
     public static writeSubFields(
