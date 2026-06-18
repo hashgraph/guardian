@@ -1902,6 +1902,7 @@ const issuanceTrendTotal = computed(() =>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.country') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.registry') }}</th>
                 <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.issuances') }}</th>
+                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.mintedAmount') }}</th>
                 <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.status') }}</th>
               </tr>
             </thead>
@@ -1931,6 +1932,9 @@ const issuanceTrendTotal = computed(() =>
                 <td class="py-3 px-4 text-right tabular-nums text-sm font-medium text-foreground">
                   {{ p.issuanceCount != null ? p.issuanceCount.toLocaleString() : '—' }}
                 </td>
+                <td class="py-3 px-4 text-right tabular-nums text-sm text-muted-foreground">
+                  {{ (p.totalIssued ?? 0) > 0 ? formatCredits(p.totalIssued!) : '—' }}
+                </td>
                 <td class="py-3 px-4">
                   <span
                     :class="[
@@ -1945,7 +1949,7 @@ const issuanceTrendTotal = computed(() =>
                 </td>
               </tr>
               <tr v-if="!linkedProjects.length">
-                <td colspan="5" class="py-8 text-center text-sm text-muted-foreground">
+                <td colspan="6" class="py-8 text-center text-sm text-muted-foreground">
                   {{ $t('methodologies.detail.linkedProjects.noProjects') }}
                 </td>
               </tr>

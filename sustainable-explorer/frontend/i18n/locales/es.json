@@ -519,6 +519,7 @@
                     "country": "País",
                     "registry": "Registro",
                     "issuances": "Emisiones",
+                    "mintedAmount": "Monto acuñado",
                     "status": "Estado"
                 },
                 "noProjects": "No se encontraron proyectos bajo esta política."
