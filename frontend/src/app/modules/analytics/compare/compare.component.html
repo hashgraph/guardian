@@ -28,10 +28,10 @@
             </h1>
           }
           @if (isMultiPolicies) {
-            <h1 class="compare-summary-title">Multiple Policies</h1>
+            <h1 class="compare-summary-title">Multiple Policies Comparison</h1>
           }
           @if (!showSummaryLine && !isMultiPolicies) {
-            <h1 class="compare-summary-title">Comparing {{ compareNoun }}</h1>
+            <h1 class="compare-summary-title">{{ compareNoun }} Comparison</h1>
           }
           @if (isPolicies) {
             <div class="compare-header-colorblind-toggle">

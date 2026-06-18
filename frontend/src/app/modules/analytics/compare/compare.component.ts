@@ -106,6 +106,14 @@ export class CompareComponent implements OnInit {
         return this.type === ItemType.Tool;
     }
 
+    public get isToolPair(): boolean {
+        return this.type === ItemType.Tool && this.items.length < 3;
+    }
+
+    public get isDocumentPair(): boolean {
+        return this.type === ItemType.Document && this.items.length < 3;
+    }
+
     public get compareNoun(): string {
         if (this.isPolicies || this.isMultiPolicies) {
             return 'Policies';
@@ -145,7 +153,7 @@ export class CompareComponent implements OnInit {
     }
 
     public get showSummaryLine(): boolean {
-        return this.isPolicies || this.isSchemas || this.isModules;
+        return this.isPolicies || this.isSchemas || this.isModules || this.isToolPair || this.isDocumentPair;
     }
 
     constructor(
