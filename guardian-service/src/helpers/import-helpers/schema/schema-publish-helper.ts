@@ -6,6 +6,7 @@ import {
     ISchemaDocument,
     ModuleStatus,
     Schema,
+    SchemaEntity,
     SchemaHelper,
     SchemaStatus,
     SentinelHubContext
@@ -52,7 +53,11 @@ export function generateSchemaContext(item: SchemaCollection) {
     checkSchemaProps(item, itemDocument);
     const defsArray = itemDocument.$defs ? Object.values(itemDocument.$defs) : [];
     const additionalContexts = getAdditionalContexts(itemDocument);
-    return schemasToContext([...defsArray, itemDocument], additionalContexts);
+    return schemasToContext([...defsArray, itemDocument], additionalContexts, {
+        // Sign GeoJSON geometry as an opaque @json literal (fast canonicalization) — but NOT for
+        // EVC schemas, where BBS+ selective-disclosure derive would flatten the revealed geometry.
+        geoJsonCoordinatesAsJson: item.entity !== SchemaEntity.EVC,
+    });
 }
 
 export function generatePackage(options: {
@@ -96,7 +101,10 @@ export function generatePackage(options: {
         Array.from(defsArray.values()),
         additionalContexts,
         {
-            vocab: 'https://w3id.org/traceability/#undefinedTerm'
+            vocab: 'https://w3id.org/traceability/#undefinedTerm',
+            // Only optimize GeoJSON-as-@json when NO packaged schema is EVC (selective disclosure),
+            // since the package shares one context and @json breaks BBS+ derive of geometry.
+            geoJsonCoordinatesAsJson: schemas.every((s) => s.entity !== SchemaEntity.EVC)
         }
     );
 
