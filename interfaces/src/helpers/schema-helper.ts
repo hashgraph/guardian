@@ -447,6 +447,9 @@ export class SchemaHelper {
             };
         };
 
+        const dedupeTargets = (targets: { field: SchemaField; fieldPath: string[] }[]) =>
+            [...new Map(targets.map(t => [t.fieldPath.join('.'), t])).values()];
+
         const parseArray = (arr: any[]): SchemaCondition[] => {
             const out: SchemaCondition[] = [];
             for (const n of arr || []) {
@@ -455,12 +458,18 @@ export class SchemaHelper {
                 }
                 const ifCondition = toIfCondition(n.if);
                 const { thenTargets, elseTargets, cleanNode: cleanThen } = extractCrossTargets(n.then);
-                const { cleanNode: cleanElse } = extractCrossTargets(n.else);
+                const {
+                    thenTargets: elseRequiredTargets,
+                    elseTargets: elseForbiddenTargets,
+                    cleanNode: cleanElse,
+                } = extractCrossTargets(n.else);
                 const thenFields = buildFields(cleanThen);
                 const elseFields = buildFields(cleanElse);
+                const allThenTargets = dedupeTargets([...thenTargets, ...elseForbiddenTargets]);
+                const allElseTargets = dedupeTargets([...elseTargets, ...elseRequiredTargets]);
                 const condition: any = { ifCondition, thenFields, elseFields };
-                if (thenTargets.length) { condition.thenTargets = thenTargets; }
-                if (elseTargets.length) { condition.elseTargets = elseTargets; }
+                if (allThenTargets.length) { condition.thenTargets = allThenTargets; }
+                if (allElseTargets.length) { condition.elseTargets = allElseTargets; }
                 out.push(condition as SchemaCondition);
             }
             return out;
@@ -520,6 +529,7 @@ export class SchemaHelper {
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
+            if (property === false) { continue; }
             if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
@@ -641,11 +651,7 @@ export class SchemaHelper {
                     : [p.field.name];
                 let node: any = { const: p.fieldValue };
                 for (let i = path.length - 1; i >= 0; i--) {
-                    const wrapper: any = { properties: { [path[i]]: node } };
-                    if (path.length > 1) {
-                        wrapper.required = [path[i]];
-                    }
-                    node = wrapper;
+                    node = { properties: { [path[i]]: node }, required: [path[i]] };
                 }
                 return node;
             };
@@ -702,12 +708,13 @@ export class SchemaHelper {
             return result;
         };
 
-        const buildCrossRequired = (targets?: { fieldPath: string[] }[]): any | undefined => {
+        const buildCrossRequired = (targets?: { field: SchemaField; fieldPath: string[] }[]): any | undefined => {
             if (!targets?.length) { return undefined; }
             const root: any = {};
             for (const t of targets) {
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
+                if (!t.field?.required) { continue; }
                 let node = root;
                 for (let i = 0; i < path.length - 1; i++) {
                     if (!node.properties) { node.properties = {}; }
@@ -740,6 +747,13 @@ export class SchemaHelper {
             return Object.keys(root).length ? root : undefined;
         };
 
+        const buildForbid = (sub?: SchemaField[]) => {
+            if (!sub?.length) { return undefined; }
+            const props: any = {};
+            for (const f of sub) { props[f.name] = false; }
+            return { properties: props };
+        };
+
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -758,10 +772,16 @@ export class SchemaHelper {
                 buildCrossForbidden(cond.elseTargets)
             );
             const elseObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
-                buildCrossForbidden(cond.thenTargets)
+                deepMergeSchemaObj(
+                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
+                    buildCrossForbidden(cond.thenTargets)
+                ),
+                buildForbid(cond.thenFields)
             );
 
+            if (!thenObj && !elseObj) {
+                return null;
+            }
             const obj: any = { if: ifNode };
             if (thenObj) {
                 obj.then = thenObj;
