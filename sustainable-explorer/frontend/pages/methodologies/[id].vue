@@ -810,6 +810,12 @@ const vintageTotal = computed(() => vintageByIssuance.value.reduce((s, v) => s +
 const issuanceTrendTotal = computed(() =>
   Math.round(issuanceTrend.value.data.reduce((s, d) => s + d.value, 0) * 10) / 10,
 );
+
+function getResolvedField(fieldKey: string) {
+  const fields = decodedData.value?.projectSchema?.resolvedFields;
+  if (!fields) return null;
+  return (fields as Record<string, { fieldKey: string; title: string; description?: string } | null>)[fieldKey] ?? null;
+}
 </script>
 
 <template>
@@ -1092,16 +1098,16 @@ const issuanceTrendTotal = computed(() =>
           </div>
 
           <!-- Vintage Distribution -->
-          <div>
+          <div class="flex flex-col">
             <div class="flex items-center justify-between px-5 py-4">
               <div>
                 <h3 class="text-sm font-semibold text-foreground">{{ $t('methodologies.detail.charts.vintageDistribution') }}</h3>
                 <p class="text-xs text-muted-foreground mt-0.5">{{ $t('methodologies.detail.charts.vintageDistributionSub') }}</p>
               </div>
             </div>
-            <div class="px-5 pb-5">
-              <div class="rounded-xl border bg-card p-5">
-                <div v-if="vintageByIssuance.length > 0" class="flex items-end gap-3 h-48">
+            <div class="px-5 pb-5 flex-1 flex flex-col">
+              <div class="rounded-xl border bg-card p-5 flex-1 flex flex-col">
+                <div v-if="vintageByIssuance.length > 0" class="flex items-end gap-3 flex-1 min-h-48">
                   <div
                     v-for="item in vintageByIssuance"
                     :key="item.label"
@@ -1115,7 +1121,7 @@ const issuanceTrendTotal = computed(() =>
                     <span class="text-[11px] text-muted-foreground">{{ item.label }}</span>
                   </div>
                 </div>
-                <div v-else class="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                <div v-else class="flex items-center justify-center flex-1 min-h-48 text-sm text-muted-foreground">
                   {{ $t('methodologies.detail.charts.noVintageData') }}
                 </div>
                 <div class="flex items-center justify-between mt-4 pt-3 border-t">
@@ -1533,16 +1539,16 @@ const issuanceTrendTotal = computed(() =>
                         </select>
                       </template>
                       <template v-else>
-                        <template v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]">
+                        <template v-if="getResolvedField(row.fieldKey)">
                           <div class="text-sm text-foreground font-medium">
-                            {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.title }}
-                            <span class="text-muted-foreground font-normal">({{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.fieldKey }})</span>
+                            {{ getResolvedField(row.fieldKey)?.title }}
+                            <span class="text-muted-foreground font-normal">({{ getResolvedField(row.fieldKey)?.fieldKey }})</span>
                           </div>
                           <div
-                            v-if="decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description"
+                            v-if="getResolvedField(row.fieldKey)?.description"
                             class="text-xs text-muted-foreground mt-0.5 leading-relaxed"
                           >
-                            {{ decodedData.projectSchema.resolvedFields[row.fieldKey as ResolvedFieldKey]!.description }}
+                            {{ getResolvedField(row.fieldKey)?.description }}
                           </div>
                         </template>
                         <span v-else class="text-sm text-muted-foreground">—</span>
