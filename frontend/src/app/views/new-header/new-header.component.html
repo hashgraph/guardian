@@ -110,7 +110,7 @@
     <i class="pi pi-bell item-icon"></i>
     @if (menuCollapsed && layout === 'vertical') {
       <div class="collapsed-notify-counter">
-        <app-notification></app-notification>
+        <app-notification [compact]="true"></app-notification>
       </div>
     }
     <div [class.hidden-logotype]="menuCollapsed && layout === 'vertical'" class="span-icon">

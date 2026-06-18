@@ -2,9 +2,10 @@
     <div
         *ngIf="unreadNotifications > 0"
         (click)="onMenuOpened($event, notificationMenu)"
-        class="badge"
+        [class.badge]="!compact"
+        [class.badge-dot]="compact"
     >
-        <span class="notification-counter">
+        <span *ngIf="!compact" class="notification-counter">
             {{ unreadNotifications }}
         </span>
     </div>
