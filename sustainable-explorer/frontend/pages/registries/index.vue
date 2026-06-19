@@ -364,36 +364,36 @@ function viewRegistry(r: RegistryDto) {
                 <div class="overflow-x-auto">
                 <table class="table-fixed text-sm" style="min-width: 1360px; width: 100%">
                     <colgroup>
-                        <col style="width: 160px" />
-                        <col style="width: 150px" />
-                        <col style="width: 90px" />
-                        <col style="width: 200px" />
-                        <col style="width: 110px" />
-                        <col style="width: 110px" />
-                        <col style="width: 80px" />
-                        <col style="width: 70px" />
-                        <col style="width: 90px" />
-                        <col style="width: 110px" />
-                        <col style="width: 90px" />
-                        <col style="width: 60px" />
+                        <col style="width: 11%" />
+                        <col style="width: 10%" />
+                        <col style="width: 6%" />
+                        <col style="width: 13%" />
+                        <col style="width: 6%" />
+                        <col style="width: 12%" />
+                        <col style="width: 8%" />
+                        <col style="width: 6%" />
+                        <col style="width: 8%" />
+                        <col style="width: 8%" />
+                        <col style="width: 7%" />
+                        <col style="width: 5%" />
                     </colgroup>
-                    <thead>
-                        <tr class="border-b bg-muted/30">
+                    <thead class="bg-muted/30">
+                        <tr class="border-b">
                             <SortableHeader :label="$t('registries.columns.name')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.id')" sort-key="relatedTopicId" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.geography')" sort-key="geography" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('registries.columns.website') }}</th>
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('registries.columns.website') }}</th>
                             <SortableHeader :label="$t('registries.columns.law')" sort-key="law" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader :label="$t('registries.columns.methodologies')" sort-key="policies" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader :label="$t('registries.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader :label="$t('registries.columns.users')" sort-key="users" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <SortableHeader :label="$t('registries.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.methodologies')" sort-key="policies" :active-sort-key="sortKey as string" :sort-dir="sortDir" class="!text-right" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" class="!text-right" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.users')" sort-key="users" :active-sort-key="sortKey as string" :sort-dir="sortDir" class="!text-right" @sort="toggleSort($event)" />
+                            <SortableHeader :label="$t('registries.columns.issuances')" sort-key="credits" :active-sort-key="sortKey as string" :sort-dir="sortDir" class="!text-right" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.tags')" sort-key="tags" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
                             <SortableHeader :label="$t('registries.columns.created')" sort-key="createdAt" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event)" />
-                            <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('common.rawData') }}</th>
+                            <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('common.rawData') }}</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y">
+                    <tbody class="divide-y bg-card">
                         <!-- Loading skeleton -->
                         <template v-if="pending && registries.length === 0">
                             <tr v-for="i in skeletonRows" :key="`sk-${i}`">

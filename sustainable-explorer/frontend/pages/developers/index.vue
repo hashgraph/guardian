@@ -61,12 +61,12 @@ const statusColor: Record<string, string> = {
                         <tr class="border-b bg-muted/30">
                             <SortableHeader :label="$t('developers.columns.developer')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('developers.columns.hq')" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('developers.columns.countries')" sort-key="countries" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('developers.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('developers.columns.issued')" sort-key="totalIssued" align="right" :tooltip="$t('developers.issuedTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('developers.columns.retired')" sort-key="totalRetired" align="right" :tooltip="$t('developers.retiredTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('developers.columns.categories') }}</th>
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('developers.columns.registries') }}</th>
+                            <SortableHeader :label="$t('developers.columns.countries')" sort-key="countries" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.issued')" sort-key="totalIssued" :tooltip="$t('developers.issuedTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.retired')" sort-key="totalRetired" :tooltip="$t('developers.retiredTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('developers.columns.categories') }}</th>
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('developers.columns.registries') }}</th>
                             <SortableHeader :label="$t('developers.columns.status')" sort-key="status" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                         </tr>
                     </thead>

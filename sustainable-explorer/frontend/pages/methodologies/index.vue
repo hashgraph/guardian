@@ -405,18 +405,18 @@ async function downloadMethodologies() {
     <div class="px-6 pb-6">
       <div class="rounded-xl border bg-card overflow-hidden">
         <div class="overflow-x-auto">
-        <table class="w-full text-sm table-fixed min-w-[1100px]">
+        <table class="w-full text-sm table-fixed">
           <colgroup>
-            <col class="w-[14%]" />
-            <col class="w-[12%]" />
-            <col class="w-[8%]" />
-            <col class="w-[6%]" />
-            <col class="w-[7%]" />
-            <col class="w-[6%]" />
-            <col class="w-[15%]" />
-            <col class="w-[12%]" />
-            <col class="w-[8%]" />
-            <col class="w-[12%]" />
+              <col style="width: 14%" />
+              <col style="width: 11%" />
+              <col style="width: 7%" />
+              <col style="width: 6%" />
+              <col style="width: 7%" />
+              <col style="width: 10%" />
+              <col style="width: 14%" />
+              <col style="width: 12%" />
+              <col style="width: 8%" />
+              <col style="width: 11%" />
           </colgroup>
           <thead>
             <tr class="border-b bg-muted/30">
@@ -434,31 +434,31 @@ async function downloadMethodologies() {
                 :sort-dir="sortDir"
                 @sort="toggleSort($event)"
               />
-              <th class="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <th class="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                 {{ $t('methodologies.columns.type') }}
               </th>
               <SortableHeader
                 :label="$t('methodologies.columns.projects')"
                 sort-key="projects"
-                align="right"
                 :active-sort-key="sortKey as string"
                 :sort-dir="sortDir"
+                class="!text-right"
                 @sort="toggleSort($event)"
               />
               <SortableHeader
                 :label="$t('methodologies.columns.issuance')"
                 sort-key="issuances"
-                align="right"
                 :active-sort-key="sortKey as string"
                 :sort-dir="sortDir"
+                class="!text-right"
                 @sort="toggleSort($event)"
               />
               <SortableHeader
                 :label="$t('methodologies.columns.schemaCount')"
                 sort-key="schemas"
-                align="right"
                 :active-sort-key="sortKey as string"
                 :sort-dir="sortDir"
+                class="!text-right"
                 @sort="toggleSort($event)"
               />
               <SortableHeader
@@ -475,8 +475,8 @@ async function downloadMethodologies() {
                 :sort-dir="sortDir"
                 @sort="toggleSort($event)"
               />
-              <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.columns.version') }}</th>
-              <th class="py-2.5 pl-4 pr-8 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('methodologies.columns.version') }}</th>
+              <th class="py-2.5 pl-4 pr-8 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                 {{ $t('methodologies.columns.decoded') }}
               </th>
             </tr>

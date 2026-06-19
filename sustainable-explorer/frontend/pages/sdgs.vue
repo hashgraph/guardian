@@ -58,14 +58,14 @@ function sdgIcon(id: number): string {
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="border-b bg-muted/30">
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('sdgs.columns.sdg') }}</th>
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('sdgs.columns.sdg') }}</th>
                             <SortableHeader :label="$t('sdgs.columns.goal')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.projects')" sort-key="projects" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="credits" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.developers')" sort-key="developers" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.countries')" sort-key="countries" align="right" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="credits" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.developers')" sort-key="developers" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.countries')" sort-key="countries" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('sdgs.columns.topMethodology')" sort-key="topMethodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1">
                                     {{ $t('sdgs.columns.coverage') }}
                                     <InfoTooltip :text="$t('sdgs.coverageTooltip')" />
