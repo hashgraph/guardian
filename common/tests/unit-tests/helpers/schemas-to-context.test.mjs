@@ -12,7 +12,7 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import { schemasToContext } from '../../../dist/helpers/schemas-to-context.js';
-import { schemasToContext as schemasToContextImpl } from '../../../dist/helpers/jsonld-schema/schemas-to-context-impl.js';
+import { schemasToContext as schemasToContextImpl } from '../../../dist/helpers/jsonld-schema/index.js';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../fixtures/credentials');
 const read = (file) => JSON.parse(readFileSync(join(fixtures, file), 'utf8'));

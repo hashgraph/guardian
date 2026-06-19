@@ -1,4 +1,4 @@
-import { schemasToContext as schemasToContextTransmute } from './jsonld-schema/schemas-to-context-impl.js';
+import { schemasToContext as schemasToContextTransmute } from './jsonld-schema/index.js';
 
 // tslint:disable-next-line:completed-docs
 export function schemasToContext(
