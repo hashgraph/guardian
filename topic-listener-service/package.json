@@ -46,7 +46,8 @@
         "dev": "tsc && (concurrently \"tsc -w\" \"tsc-alias -w\")",
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
-        "start": "node dist/index.js"
+        "start": "node dist/index.js",
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/topic-listener-service.xml --exit"
     },
     "type": "module",
     "types": "dist/index.d.ts",

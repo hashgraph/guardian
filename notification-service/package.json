@@ -38,6 +38,7 @@
         "dev:docker": "nodemon .",
         "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/notification-service.xml --exit",
         "watch": "nodemon src/index.ts"
     },
     "type": "module",
