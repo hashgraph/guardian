@@ -1,8 +1,13 @@
 # Table of contents
 
+## First Steps
+
+* [First steps with digital environmental assets (simplified)](README.md)
+* [First steps with digital environmental assets (complex)](first-steps/first-steps-with-digital-environmental-assets-complex.md)
+
 ## Guardian
 
-* [Getting Started](README.md)
+* [Getting Started](<README (1).md>)
   * [Discovering Environmental assets on Hedera](guardian/readme/discovering-esg-assets-on-hedera.md)
   * [Guardian Glossary](guardian/readme/guardian-glossary.md)
   * [Installation Guide](guardian/readme/getting-started/README.md)
@@ -45,7 +50,6 @@
   * [Security](guardian/readme/security.md)
   * [Meeco authentication](guardian/readme/security-1/README.md)
     * [How it works](guardian/readme/security-1/how-it-works.md)
-  * [First steps with digital environmental assets](guardian/readme/first-steps-with-digital-environmental-assets.md)
 * [Architecture](guardian/architecture/README.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)

@@ -1,13 +1,17 @@
 ---
 description: >-
   This page describes first steps with the Guardian and digital environmental
-  assets.
+  assets for all users.
 ---
 
-# First steps with digital environmental assets
+# First steps with digital environmental assets (complex)
 
 {% hint style="warning" %}
-This page is under developement.
+This page is under development and part of the **3.7 Getting Started Epic**&#x20;
+
+The purpose of this page is to create a friendly guide to help a new user take their first steps in the Hedera Guardian.&#x20;
+
+This page is introduce users of high level concepts and is also dependent upon some custom setup such as roles, permissions, or test data which are under discussion.
 {% endhint %}
 
 * #### Get set up • 0/5 steps
