@@ -1,13 +1,8 @@
 # Table of contents
 
-## First Steps
-
-* [First steps with digital environmental assets (simplified)](README.md)
-* [First steps with digital environmental assets (complex)](first-steps/first-steps-with-digital-environmental-assets-complex.md)
-
 ## Guardian
 
-* [Getting Started](<README (1).md>)
+* [Getting Started](README.md)
   * [Discovering Environmental assets on Hedera](guardian/readme/discovering-esg-assets-on-hedera.md)
   * [Guardian Glossary](guardian/readme/guardian-glossary.md)
   * [Installation Guide](guardian/readme/getting-started/README.md)
@@ -1101,6 +1096,11 @@
     * [🔗 VM0033 Integration](methodology-digitization-handbook/_shared/vm0033-integration/README.md)
     * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
     * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
+
+## First Steps
+
+* [First steps with digital environmental assets (simplified)](<README (1).md>)
+* [First steps with digital environmental assets (complex)](first-steps/first-steps-with-digital-environmental-assets-complex.md)
 
 ## AI-ToolKit
 
