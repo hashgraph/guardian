@@ -524,6 +524,7 @@
                     "country": "Country",
                     "registry": "Registry",
                     "issuances": "Issuances",
+                    "mintedAmount": "Minted Amount",
                     "status": "Status"
                 },
                 "noProjects": "No projects found under this policy."
