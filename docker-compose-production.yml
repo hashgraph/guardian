@@ -76,7 +76,7 @@ services:
       - '5005'
 
   cache:
-    image: registry.redict.io/redict:7.3.6-alpine
+    image: valkey/valkey:8.1-alpine
     restart: always
     expose:
       - '6379'

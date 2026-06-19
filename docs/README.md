@@ -15,7 +15,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 3. [MongoDB v6](https://www.mongodb.com/), [Node.js v16](https://nodejs.org/en), and [NATS 1.12.2](https://nats.io/) – auto-installed when using Docker-Compose
 4. [Web3.Storage account](https://web3.storage/) – IPFS pinning service
 5. [Filebase account](https://filebase.com/) – S3-compatible IPFS pinning
-6. [Redis 7.3.0](https://redict.io/) – in-memory cache & message broker (auto-provisioned by the Docker stack)
+6. [Valkey](https://valkey.io) – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 ### 2.2 Hedera network
 

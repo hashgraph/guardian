@@ -7,7 +7,7 @@
 * [MongoDB](https://www.mongodb.com/)[ V6](https://www.mongodb.com/) , [NodeJS](https://nodejs.org/)[ v16](https://nodejs.org/en) and [Nats](https://nats.io/)[ 1.12.2](https://nats.io/) (If you build with docker these components will be installed automatically)
 * [Web3.Storage Account](https://web3.storage/)
 * [Filebase Account](https://filebase.com/)
-* [Redict 7.3.0](https://redict.io/)
+* [Valkey](https://valkey.io)
 
 When building reference implementation, you can manually build every component or run a single command with Docker.
 
