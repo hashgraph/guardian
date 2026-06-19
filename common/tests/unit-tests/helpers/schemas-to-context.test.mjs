@@ -17,8 +17,7 @@ import { schemasToContext as schemasToContextImpl } from '../../../dist/helpers/
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../fixtures/credentials');
 const read = (file) => JSON.parse(readFileSync(join(fixtures, file), 'utf8'));
 
-// Class/property embeddings are encoded as a JSON-stringified { term, @id } under $comment,
-// matching the shape Guardian schemas emit (see fixtures/credentials/schema.json).
+// Embeddings are a JSON-stringified { term, @id } under $comment, as Guardian schemas emit.
 const embed = (term, id) => JSON.stringify({ term, '@id': id });
 
 describe('schemasToContext (vendored)', function () {
@@ -31,10 +30,8 @@ describe('schemasToContext (vendored)', function () {
 });
 
 describe('schemasToContext property embedding extraction', function () {
-    // handlePropertyEmbeddings extracts each property using its own embedding attribute.
-    // Guardian schemas use $comment at both class and property level; the mixed case
-    // ($linkedData property under a $comment class) is exercised here too because the
-    // @transmute original crashed on it (it extracted using the class attribute).
+    // Each property is extracted by its own embedding attribute. Guardian uses $comment
+    // throughout; the mixed case ($linkedData under a $comment class) crashed in @transmute.
     it('maps a property term under its class when both use $comment', function () {
         const schema = {
             $id: 'urn:test:Thing',

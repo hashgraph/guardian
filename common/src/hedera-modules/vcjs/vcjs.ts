@@ -542,8 +542,7 @@ export class VCJS {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<VpDocument> {
-        // signPresentation only attaches a proof; it expects an already-formed VP
-        // (verifiableCredential entries set via VpDocument), it does not build one.
+        // signPresentation attaches a proof to an already-formed VP; it does not build one.
         const vp = vpDocument.toJsonTree();
         const verifiablePresentation = await vcLib.signPresentation({
             presentation: vp,

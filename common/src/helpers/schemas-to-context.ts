@@ -26,9 +26,8 @@ export function schemasToContext(
     '@context': any;
 } {
     const context = schemasToContextTransmute(schemas, contextSettings);
-    // Plain-text properties (https://www.schema.org/text) must be emitted as `@type`, not
-    // `@id`. Rewrites that term on the serialized JSON; relies on the exact
-    // `"@id":"https://www.schema.org/text"` string, which the fidelity tests guard.
+    // Emit plain-text properties (https://www.schema.org/text) as @type, not @id.
+    // Relies on the exact serialized "@id":"..." string; guarded by the fidelity tests.
     let contextString = JSON.stringify(context) as string;
     contextString = contextString.replaceAll(
         `"@id":"https://www.schema.org/text"`,
