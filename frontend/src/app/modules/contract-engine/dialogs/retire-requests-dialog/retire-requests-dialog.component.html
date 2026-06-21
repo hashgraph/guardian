@@ -2,53 +2,52 @@
   (cancel)="onNoClick()" (close)="onNoClick()">
 
   @if (requests.length) {
-    <div>
+    <div class="requests">
       @for (request of requests; track request) {
         <div class="request">
           <div class="profile">
             <i class="pi pi-user profile__icon"></i>
-            <span class="profile__id">{{  request.displayUser }}</span>
+            <span class="profile__id">{{ request.displayUser }}</span>
           </div>
           <div class="tokens">
             @for (token of request.tokens; track token) {
               <div class="token-card">
-                <span class="token-card__token">
-                  <svg-icon src="/assets/images/icons/abc.svg" svgClass="icon-style-abc"></svg-icon>
-                  <span>{{ token.tokenSymbol }}</span>
-                </span>
-                <span class="token-card__token">
-                  <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token"></svg-icon>
-                  <span>{{ token.token }}</span>
-                </span>
+                <div class="token-card__row">
+                  <span class="token-card__label">NAME</span>
+                  <span class="token-card__value">{{ token.tokenSymbol }}</span>
+                </div>
+                <div class="token-card__row">
+                  <span class="token-card__label">TOKEN</span>
+                  <span class="token-card__value">{{ token.token }}</span>
+                </div>
                 @if (token.count > 0) {
-                  <span class="token-card__count">
-                    <svg-icon src="/assets/images/icons/calculate.svg" svgClass="icon-style-calculate"></svg-icon>
-                    <span>{{ token.count | tokenCount: token.decimals }}</span>
-                  </span>
+                  <div class="token-card__row">
+                    <span class="token-card__label">COUNT</span>
+                    <span class="token-card__value">{{ token.count | tokenCount: token.decimals }}</span>
+                  </div>
                 }
                 @if (token.serials?.length > 0) {
-                  <span class="token-card__serials"
-                    [title]="token.serials?.join(', ')">
-                    <svg-icon src="/assets/images/icons/123.svg" svgClass="icon-style-123"></svg-icon>
-                    <span>{{ token.serials?.join(', ') }}</span>
-                  </span>
+                  <div class="token-card__row">
+                    <span class="token-card__label">SERIALS</span>
+                    <span class="token-card__value" [title]="token.serials?.join(', ')">{{ token.serials?.join(', ') }}</span>
+                  </div>
                 }
               </div>
             }
           </div>
           <div class="request__actions">
-            <button (click)="approveRequest(request.id)"
-              pButton
+            <button type="button"
               class="btn btn--approve"
+              (click)="approveRequest(request.id)"
               [disabled]="!hasPermissions(contract.permissions, 1)"
               [pTooltip]="'You are not admin'"
               tooltipStyleClass="guardian-tooltip"
               [tooltipDisabled]="hasPermissions(contract.permissions, 1)">
               Approve
             </button>
-            <button (click)="unsetRetire(request.id)"
-              pButton
+            <button type="button"
               class="btn btn--reject"
+              (click)="unsetRetire(request.id)"
               [disabled]="!hasPermissions(contract.permissions, 1)"
               [pTooltip]="'You are not admin'"
               tooltipStyleClass="guardian-tooltip"
@@ -59,15 +58,18 @@
         </div>
       }
     </div>
-  } @else {
-    <div class="no-requests">Contract has no requests, try to sync.</div>
-  }
 
-  @if (length) {
-    <app-paginator
-      [length]="length"
-      [pageSize]="pageSize"
-      (page)="onPage($event)">
-    </app-paginator>
+    @if (length) {
+      <app-paginator
+        [length]="length"
+        [pageSize]="pageSize"
+        (page)="onPage($event)">
+      </app-paginator>
+    }
+  } @else {
+    <div class="no-requests">
+      <i class="pi pi-list no-requests__icon"></i>
+      <span class="no-requests__label">Contract has no requests, try to sync.</span>
+    </div>
   }
 </app-common-dialog>

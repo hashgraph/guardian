@@ -691,7 +691,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     openWipeRequests(contract: any) {
         this.dialog.open(WipeRequestsDialogComponent, {
-            width: contract.version === '1.0.0' ? '650px' : '850px',
+            width: '800px',
             styleClass: 'guardian-dialog',
             showHeader: false,
             modal: true,
