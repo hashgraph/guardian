@@ -644,7 +644,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                     .filter((token: Token) => !token.draftToken);
                 const dialogRef = this.dialog.open(SetPoolDialogComponent, {
                     width: '750px',
-                    styleClass: 'g-dialog set-pool-dialog',
+                    styleClass: 'guardian-dialog set-pool-dialog',
                     modal: true,
                     closable: false,
                     showHeader: false,
@@ -692,7 +692,8 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openWipeRequests(contract: any) {
         this.dialog.open(WipeRequestsDialogComponent, {
             width: contract.version === '1.0.0' ? '650px' : '850px',
-            styleClass: 'g-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
             data: contract,
@@ -702,7 +703,8 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openPools(contract: any) {
         this.dialog.open(RetirePoolsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog retire-pool-dialog',
+            styleClass: 'guardian-dialog retire-pool-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
             data: contract,
@@ -712,7 +714,8 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openRetireRequests(contract: any) {
         this.dialog.open(RetireRequestsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
             data: contract,

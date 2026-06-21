@@ -1,5 +1,5 @@
-<app-dialog-wrapper (cancel)="onNoClick()" title="Wiper requests" [confirmVisible]="false" [syncVisible]="false"
-  [loading]="loading">
+<app-common-dialog [loading]="loading" [confirmVisible]="false" cancelLabel="Close" title="Wiper requests"
+  (cancel)="onNoClick()" (close)="onNoClick()">
   @if (requests.length) {
     @for (request of requests; track request) {
       <div class="request">
@@ -53,4 +53,4 @@
   } @else {
     <div class="no-requests"><span class="no-requests__label">Contract has no requests, try to sync.</span></div>
   }
-</app-dialog-wrapper>
+</app-common-dialog>

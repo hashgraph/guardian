@@ -1,85 +1,45 @@
-::ng-deep .g-dialog.retire-pool-dialog {
+:host {
+    display: block;
+    height: 100%;
+}
+
+::ng-deep .guardian-dialog.retire-pool-dialog {
     min-width: 840px !important;
     height: 800px;
 }
 
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-header .g-dialog-actions {
-    flex: 7;
-}
-
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-header .refresh-action-btn {
-    outline: none !important;
-    box-shadow: none !important;
-    border: none;
-}
-
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-header .sync__date {
-    font-size: 14px;
-    margin-bottom: -4px;
-    margin-left: -10px;
-    color: var(--color-grey-4);
-}
-
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-header .g-dialog-cancel-btn {
-    width: 18px;
-    height: 18px;
-    overflow: hidden;
-    margin: -10px 0 0 36px;
-    border-radius: 6px;
-    cursor: pointer;
-    color: #969696;
-}
-
-::ng-deep .g-dialog.retire-pool-dialog .p-dialog-content {
+::ng-deep .guardian-dialog.retire-pool-dialog .p-dialog-content {
     border-radius: 10px;
     padding: 12px 10px 0;
 }
-::ng-deep .g-dialog.retire-pool-dialog > .p-dialog-header {
-    display: none;
-}
 
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-header {
-    position: relative;
-    padding-right: 48px;
+.pools-header {
     display: flex;
     align-items: center;
-    margin-top: 20px;
-}
+    gap: 16px;
 
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-title {
-    height: 46px;
-    flex: 1;
-    padding: 10px 0;
-    box-sizing: border-box;
-    color: var(--color-grey-black-1);
-    font-weight: 500;
-    font-size: 22px;
-    margin: 0;
-}
-
-::ng-deep .g-dialog.retire-pool-dialog .g-dialog-cancel {
-    position: absolute;
-    top: 24px;
-    right: 24px;
-}
-
-::ng-deep .g-dialog-cancel-btn {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.15s;
-    .pi {
-        font-size: 18px;
-        color: #6b6b6b;
+    .header-text {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--guardian-header-color);
     }
-    &:hover {
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 50%;
+}
+
+.sync {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    &__date {
+        font-size: 14px;
+        color: var(--guardian-disabled-color);
+        white-space: nowrap;
+    }
+
+    ::ng-deep .refresh-action-btn {
+        outline: none !important;
+        box-shadow: none !important;
+        border: none;
     }
 }
 
@@ -96,12 +56,12 @@
     color: var(--color-grey-black-1);
 }
 
-::ng-deep .g-dialog.retire-pool-dialog .p-multiselect {
+::ng-deep .guardian-dialog.retire-pool-dialog .p-multiselect {
     width: 250px;
     margin-top: 4px;
 }
 
-::ng-deep .g-dialog.retire-pool-dialog p-multiselect-item {
+::ng-deep .guardian-dialog.retire-pool-dialog p-multiselect-item {
     width: 250px;
 }
 
@@ -231,27 +191,6 @@ span.btn--remove {
     padding: 20px;
 }
 
-::ng-deep .g-dialog.retire-pool-dialog .table-paginator {
+::ng-deep .guardian-dialog.retire-pool-dialog .table-paginator {
     box-shadow: none !important;
-}
-
-:host ::ng-deep .g-dialog.retire-pool-dialog .g-dialog-body {
-    position: relative;
-    padding-bottom: 92px !important;
-}
-
-:host ::ng-deep .pools-dialog__footer {
-    position: absolute;
-    right: 32px;
-    bottom: 24px;
-    z-index: 3;
-    margin-bottom: 30px;
-    margin-top: 10px;
-}
-:host ::ng-deep .pools-dialog__close-btn {
-    min-width: 96px;
-    height: 42px;
-    border-radius: 8px;
-    font-size: 16px;
-    color: var(--guardian-primary-color);
 }

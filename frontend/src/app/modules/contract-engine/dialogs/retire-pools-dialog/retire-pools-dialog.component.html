@@ -1,16 +1,16 @@
-<app-dialog-wrapper
-  (cancel)="onNoClick()"
-  [confirmVisible]="false"
-  [syncVisible]="true"
-  [syncDate]="syncDate"
-  (sync)="sync($event)"
+<app-common-dialog
   [loading]="loading"
-  [title]="'Pools'"
-  [paginatorVisible]="true"
-  [length]="length"
-  [pageSize]="pageSize"
-  (page)="onPage($event)"
-  >
+  [confirmVisible]="false"
+  cancelLabel="Close"
+  (cancel)="onNoClick()"
+  (close)="onNoClick()">
+  <div appDialogHeader class="pools-header">
+    <span class="header-text">Pools</span>
+    <div class="sync">
+      <span class="sync__date">Last sync: {{ syncDate ? (syncDate | date:'medium') : 'Never' }}</span>
+      <app-refresh-btn (refresh)="sync($event)"></app-refresh-btn>
+    </div>
+  </div>
   <div class="action-buttons">
     <label for="tokens" class="action-field__label">Token</label>
     <p-multiSelect
@@ -96,15 +96,12 @@
   } @else {
     <div class="no-pools">There are no pools</div>
   }
-</app-dialog-wrapper>
 
-
-<div class="pools-dialog__footer">
-  <button
-    type="button"
-    pButton
-    label="Close"
-    class="p-button-outlined pools-dialog__close-btn"
-    (click)="onNoClick()"
-  ></button>
-</div>
+  @if (length) {
+    <app-paginator
+      [length]="length"
+      [pageSize]="pageSize"
+      (page)="onPage($event)">
+    </app-paginator>
+  }
+</app-common-dialog>

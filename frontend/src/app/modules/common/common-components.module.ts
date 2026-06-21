@@ -54,6 +54,8 @@ import { PluralizePipe } from './pipes/pluralize.pipe';
 import { PagesControl } from './pages-control/pages-control.component';
 import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
 import { ContentSearchComponent } from './content-search/content-search.component';
+import { CommonDialogComponent, DialogHeaderDirective, DialogFooterDirective } from './common-dialog/common-dialog.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
     declarations: [
@@ -95,6 +97,9 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ],
     imports: [
         CommonModule,
@@ -114,6 +119,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         TooltipModule,
         DynamicDialogModule,
         AgGridModule,
+        ProgressSpinnerModule,
     ],
     providers: [
         provideNgxMask(),
@@ -158,6 +164,9 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ]
 })
 export class CommonComponentsModule {
