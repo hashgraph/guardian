@@ -8,6 +8,14 @@
     height: 800px;
 }
 
+::ng-deep .guardian-dialog.retire-pool-dialog:has(.no-pools) {
+    height: auto;
+}
+
+::ng-deep .guardian-dialog.retire-pool-dialog:has(.no-pools) .dialog-body {
+    max-height: none;
+}
+
 ::ng-deep .guardian-dialog.retire-pool-dialog .p-dialog-content {
     border-radius: 10px;
     padding: 12px 10px 0;
@@ -40,6 +48,15 @@
         outline: none !important;
         box-shadow: none !important;
         border: none;
+    }
+
+    &.syncing {
+        ::ng-deep .pi-sync {
+            animation-name: spin;
+            animation-duration: 3000ms;
+            animation-iteration-count: infinite;
+            animation-timing-function: linear;
+        }
     }
 }
 
@@ -184,11 +201,32 @@ span.btn--remove {
     }
 }
 
+@keyframes spin {
+    from {
+        transform: rotate(360deg);
+    }
+    to {
+        transform: rotate(0deg);
+    }
+}
+
 .no-pools {
-    font-size: 18px;
-    color: #888;
-    text-align: center;
-    padding: 20px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    &__icon {
+        font-size: 32px;
+        color: var(--color-grey-5);
+    }
+
+    &__label {
+        font-size: 16px;
+        color: var(--color-grey-5);
+    }
 }
 
 ::ng-deep .guardian-dialog.retire-pool-dialog .table-paginator {
