@@ -15,14 +15,15 @@
       <div class="guardian-user-page-header">Retirement</div>
       <div class="actions actions--top">
         <div class="actions__tabs">
-          <p-selectButton
-            [(ngModel)]="type"
+          <guardian-tabs-switch
+            [value]="type"
+            [options]="[
+                        { label: 'Token Wiping Contracts', value: 'WIPE' },
+                        { label: 'Token Retirement Contracts', value: 'RETIRE' }
+                      ]"
+            (valueChange)="type = $event"
             (onChange)="onChangeType($event)"
-                        [options]="[
-                                    { label: 'Token Wiping Contracts', value: 'WIPE' },
-                                    { label: 'Token Retirement Contracts', value: 'RETIRE' }
-                                  ]"
-          ></p-selectButton>
+          ></guardian-tabs-switch>
         </div>
         <div class="actions__cta button-group">
           <button

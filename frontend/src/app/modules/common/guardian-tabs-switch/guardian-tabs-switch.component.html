@@ -1,0 +1,11 @@
+<div class="tabs-nav">
+  <p-tabs [value]="value">
+    <p-tablist>
+      @for (tab of options; track tab) {
+        <p-tab [value]="tab.value" (click)="onSelect(tab.value)">
+          <div class="tabview-label">{{ tab.label }}</div>
+        </p-tab>
+      }
+    </p-tablist>
+  </p-tabs>
+</div>
