@@ -1784,7 +1784,39 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/classic@npm:1.0.34, @langchain/classic@npm:^1.0.27":
+"@langchain/classic@npm:1.0.36":
+  version: 1.0.36
+  resolution: "@langchain/classic@npm:1.0.36"
+  dependencies:
+    "@langchain/openai": "npm:1.5.1"
+    "@langchain/textsplitters": "npm:1.0.1"
+    handlebars: "npm:^4.7.9"
+    js-yaml: "npm:^4.2.0"
+    jsonpointer: "npm:^5.0.1"
+    langsmith: "npm:>=0.4.0 <1.0.0"
+    openapi-types: "npm:^12.1.3"
+    yaml: "npm:^2.9.0"
+    zod: "npm:^3.25.76 || ^4"
+  peerDependencies:
+    "@langchain/core": ^1.2.0
+    cheerio: "*"
+    peggy: ^5.1.0
+    typeorm: "*"
+  dependenciesMeta:
+    langsmith:
+      optional: true
+  peerDependenciesMeta:
+    cheerio:
+      optional: true
+    peggy:
+      optional: true
+    typeorm:
+      optional: true
+  checksum: 10c0/a72ccb42209cbd6fdffe2483a75815b0de6381d6399c063d8a4d99cb6149e87d3aaceb3a94d644398936dd0c41611580ad00fb387bd483782568da3206ecd815
+  languageName: node
+  linkType: hard
+
+"@langchain/classic@npm:^1.0.27":
   version: 1.0.34
   resolution: "@langchain/classic@npm:1.0.34"
   dependencies:
@@ -2270,6 +2302,19 @@ __metadata:
   peerDependencies:
     "@langchain/core": ^1.1.48
   checksum: 10c0/f8ec5897603dee5c8ae482bc347f9fa904694def45f0ad32d569d35240237a5abb55a802f7a9f92f5a34d14e447355f3c8d61d26173985ef7ee9dcf650d5545f
+  languageName: node
+  linkType: hard
+
+"@langchain/openai@npm:1.5.1":
+  version: 1.5.1
+  resolution: "@langchain/openai@npm:1.5.1"
+  dependencies:
+    js-tiktoken: "npm:^1.0.12"
+    openai: "npm:^6.41.0"
+    zod: "npm:^3.25.76 || ^4"
+  peerDependencies:
+    "@langchain/core": ^1.2.0
+  checksum: 10c0/1c1d2e32c11f8d2c49e71963c4c5a4ca8ddb0c8972a00e31711fc5f5b9c890acb16f421f29fdd5be3435a5b7af8c2a14428b487cf24436e4fed687b579680c0a
   languageName: node
   linkType: hard
 
@@ -5280,7 +5325,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@langchain/classic": "npm:1.0.34"
+    "@langchain/classic": "npm:1.0.36"
     "@langchain/community": "npm:1.1.29"
     "@langchain/core": "npm:1.1.48"
     "@langchain/openai": "npm:1.4.7"
@@ -11480,7 +11525,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^4.1.0, js-yaml@npm:^4.1.1":
+"js-yaml@npm:^4.1.0, js-yaml@npm:^4.1.1, js-yaml@npm:^4.2.0":
   version: 4.2.0
   resolution: "js-yaml@npm:4.2.0"
   dependencies:
@@ -14082,6 +14127,21 @@ __metadata:
   bin:
     openai: bin/cli
   checksum: 10c0/cc3d07840795be58776b5a4b372d53d3acab88298022a1191cc9471bfd06401663488113ff3002b6c2b89011270969328608dccbf53100357461da71004cb385
+  languageName: node
+  linkType: hard
+
+"openai@npm:^6.41.0":
+  version: 6.44.0
+  resolution: "openai@npm:6.44.0"
+  peerDependencies:
+    ws: ^8.18.0
+    zod: ^3.25 || ^4.0
+  peerDependenciesMeta:
+    ws:
+      optional: true
+    zod:
+      optional: true
+  checksum: 10c0/745c5461e7d1316aac37303699b1fd7b14d50df0ae8c1b5cc7cc358f9c9d0a29e2af2cbf6009370a143387a19df61b9962b1a9fd20c4b19a6e257d03b4d878cb
   languageName: node
   linkType: hard
 
@@ -18431,7 +18491,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.9.0, yaml@npm:^2.8.3":
+"yaml@npm:2.9.0, yaml@npm:^2.8.3, yaml@npm:^2.9.0":
   version: 2.9.0
   resolution: "yaml@npm:2.9.0"
   bin:
