@@ -17,10 +17,7 @@
         <div class="actions__tabs">
           <guardian-tabs-switch
             [value]="type"
-            [options]="[
-                        { label: 'Token Wiping Contracts', value: 'WIPE' },
-                        { label: 'Token Retirement Contracts', value: 'RETIRE' }
-                      ]"
+            [options]="contractTypeOptions"
             (valueChange)="type = $event"
             (onChange)="onChangeType($event)"
           ></guardian-tabs-switch>

@@ -191,6 +191,11 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     ];
     type: ContractType = ContractType.WIPE;
 
+    public readonly contractTypeOptions = [
+        { label: 'Token Wiping Contracts', value: ContractType.WIPE },
+        { label: 'Token Retirement Contracts', value: ContractType.RETIRE },
+    ];
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,

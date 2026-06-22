@@ -3,10 +3,6 @@
     flex-direction: column;
 }
 
-:host ::ng-deep .dialog-body {
-    max-height: 740px !important;
-}
-
 .request {
     display: flex;
     align-items: center;
