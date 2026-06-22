@@ -34,6 +34,7 @@ import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomConfirmDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
+import { GuardianTabsSwitch } from './guardian-tabs-switch/guardian-tabs-switch.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../services/guardian-dialog.service';
@@ -53,6 +54,8 @@ import { PluralizePipe } from './pipes/pluralize.pipe';
 import { PagesControl } from './pages-control/pages-control.component';
 import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
 import { ContentSearchComponent } from './content-search/content-search.component';
+import { CommonDialogComponent, DialogHeaderDirective, DialogFooterDirective } from './common-dialog/common-dialog.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
     declarations: [
@@ -79,6 +82,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
+        GuardianTabsSwitch,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -93,6 +97,9 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ],
     imports: [
         CommonModule,
@@ -112,6 +119,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         TooltipModule,
         DynamicDialogModule,
         AgGridModule,
+        ProgressSpinnerModule,
     ],
     providers: [
         provideNgxMask(),
@@ -141,6 +149,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
+        GuardianTabsSwitch,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -155,6 +164,9 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ]
 })
 export class CommonComponentsModule {

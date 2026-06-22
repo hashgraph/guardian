@@ -1,49 +1,57 @@
-<app-dialog-wrapper (cancel)="onNoClick()" title="Wiper requests" [confirmVisible]="false" [syncVisible]="false"
-  [loading]="loading">
+<app-common-dialog [loading]="loading" [confirmVisible]="false" cancelLabel="Close" title="Wiper requests"
+  bodyMaxHeight="740px"
+  (cancel)="onNoClick()" (close)="onNoClick()">
   @if (requests.length) {
-    @for (request of requests; track request) {
-      <div class="request">
-        <div class="profile">
-          <i class="pi pi-user profile__icon"></i>
-          <span class="profile__id">{{ request.user }}</span>
-        </div>
-        @if (version !== '1.0.0') {
-          <div class="token">
-            <svg-icon src="/assets/images/icons/token.svg" svgClass="icon-style-token token__icon"></svg-icon>
-            <span class="token__id">{{ request.token }}</span>
+    <div class="requests">
+      @for (request of requests; track request) {
+        <div class="request">
+          <div class="profile">
+            <i class="pi pi-user profile__icon"></i>
+            <span class="profile__id">{{ request.user }}</span>
           </div>
-        }
-        <div class="request__actions">
-          <button (click)="approveRequest(request.id)"
-            pButton
-            class="btn btn--approve"
-            [disabled]="!hasPermissions(contract.permissions, 2)"
-            [pTooltip]="'You are not manager'"
-            tooltipStyleClass="guardian-tooltip"
-            [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
-            Approve
-          </button>
-          <button (click)="rejectRequest(request.id)"
-            pButton
-            class="btn btn--reject"
-            [disabled]="!hasPermissions(contract.permissions, 2)"
-            [pTooltip]="'You are not manager'"
-            tooltipStyleClass="guardian-tooltip"
-            [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
-            Reject
-          </button>
-          <button (click)="rejectRequest(request.id, true)"
-            pButton
-            class="btn btn--ban"
-            [disabled]="!hasPermissions(contract.permissions, 2)"
-            [pTooltip]="'You are not manager'"
-            tooltipStyleClass="guardian-tooltip"
-            [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
-            Ban
-          </button>
+          <div class="tokens">
+            @if (version !== '1.0.0') {
+              <div class="token-card">
+                <div class="token-card__row">
+                  <span class="token-card__label">TOKEN</span>
+                  <span class="token-card__value">{{ request.token }}</span>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="request__actions">
+            <button type="button"
+              class="btn btn--approve"
+              (click)="approveRequest(request.id)"
+              [disabled]="!hasPermissions(contract.permissions, 2)"
+              [pTooltip]="'You are not manager'"
+              tooltipStyleClass="guardian-tooltip"
+              [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+              Approve
+            </button>
+            <button type="button"
+              class="btn btn--reject"
+              (click)="rejectRequest(request.id)"
+              [disabled]="!hasPermissions(contract.permissions, 2)"
+              [pTooltip]="'You are not manager'"
+              tooltipStyleClass="guardian-tooltip"
+              [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+              Reject
+            </button>
+            <button type="button"
+              class="btn btn--ban"
+              (click)="rejectRequest(request.id, true)"
+              [disabled]="!hasPermissions(contract.permissions, 2)"
+              [pTooltip]="'You are not manager'"
+              tooltipStyleClass="guardian-tooltip"
+              [tooltipDisabled]="hasPermissions(contract.permissions, 2)">
+              Ban
+            </button>
+          </div>
         </div>
-      </div>
-    }
+      }
+    </div>
+
     <app-paginator
       [length]="length"
       [pageIndex]="pageIndex"
@@ -51,6 +59,9 @@
       (page)="onPage($event)">
     </app-paginator>
   } @else {
-    <div class="no-requests"><span class="no-requests__label">Contract has no requests, try to sync.</span></div>
+    <div class="no-requests">
+      <i class="pi pi-list no-requests__icon"></i>
+      <span class="no-requests__label">Contract has no requests, try to sync.</span>
+    </div>
   }
-</app-dialog-wrapper>
+</app-common-dialog>

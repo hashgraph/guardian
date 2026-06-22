@@ -1,54 +1,6 @@
 .actions__tabs {
     position: relative;
-    margin-bottom: 40px;
-
-    &::after {
-        content: "";
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 2px;
-        background: var(--color-grey-3);
-        z-index: 0;
-    }
-
-    ::ng-deep .p-selectbutton .p-button {
-        background: transparent !important;
-        border: none !important;
-        color: #848FA9 !important;
-        position: relative;
-        padding: 0.75rem 2rem 0.5rem 0 !important;
-        margin: 0 0.5rem 0 0 !important;
-        border-radius: 0 !important;
-    }
-
-    ::ng-deep .p-selectbutton .p-button.p-highlight {
-        color: var(--color-primary, #0b73f8) !important;
-        pointer-events: none !important;
-        cursor: default !important;
-    }
-
-    ::ng-deep .p-selectbutton .p-button.p-highlight::after {
-        display: none !important;
-    }
-
-    ::ng-deep .p-selectbutton .p-button .p-button-label {
-        position: relative;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    ::ng-deep .p-selectbutton .p-button.p-highlight .p-button-label::after {
-        content: "";
-        position: absolute;
-        bottom: -8px;
-        left: 0;
-        width: 100%;
-        height: 3px;
-        background: var(--color-primary, #0b73f8);
-        z-index: 2;
-    }
+    margin-bottom: 28px;
 }
 
 .button-group {

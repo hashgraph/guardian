@@ -14,6 +14,7 @@ export class RetirePoolsDialogComponent implements OnInit {
     pools: any[] = [];
     syncDate: string;
     loading: boolean = false;
+    syncLoading: boolean = false;
     pageIndex = 0;
     pageSize = 5;
     length = 0;
@@ -42,8 +43,10 @@ export class RetirePoolsDialogComponent implements OnInit {
         });
     }
 
-    loadPools() {
-        this.loading = true;
+    loadPools(showLoading: boolean = true, onComplete?: () => void) {
+        if (showLoading) {
+            this.loading = true;
+        }
         this.contractService
             .getRetirePools({
                 contractId: this.contract.contractId,
@@ -71,8 +74,12 @@ export class RetirePoolsDialogComponent implements OnInit {
                     const count = pools.headers.get('X-Total-Count');
                     this.length = (count && +count) || this.pools.length;
                     this.loading = false;
+                    onComplete?.();
                 },
-                () => (this.loading = false)
+                () => {
+                    this.loading = false;
+                    onComplete?.();
+                }
             );
     }
 
@@ -91,18 +98,25 @@ export class RetirePoolsDialogComponent implements OnInit {
         this.dialogRef.close(null);
     }
 
-    sync(event: any) {
-        event.target.classList.add('spin');
-        this.loading = true;
+    sync() {
+        const startedAt = Date.now();
+        const stopSyncLoading = () => {
+            const delay = Math.max(0, 800 - (Date.now() - startedAt));
+            setTimeout(() => {
+                this.syncLoading = false;
+            }, delay);
+        };
+
+        this.syncLoading = true;
         this.contractService.retireSyncPools(this.contract.id).subscribe(
             (result) => {
                 this.syncDate = result;
                 this.contract.syncPoolsDate = result;
-                this.loadPools();
+                this.loadPools(false, stopSyncLoading);
             },
-            () => (this.loading = false),
             () => {
-                event.target.classList.remove('spin');
+                this.loading = false;
+                stopSyncLoading();
             }
         );
     }
