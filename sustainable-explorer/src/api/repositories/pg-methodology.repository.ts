@@ -153,8 +153,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
         // 'success' includes policies whose schemas are imported even if a
         // recent retry flipped pds.status to 'failed'.
         // Supports pipe-separated multi-values (e.g. "success|failed").
-        if (query.decodeStatus) {
-            const statuses = String(query.decodeStatus).split('|').map(s => s.trim()).filter(Boolean);
+        if (query.decodeStatus?.length) {
+            const statuses = query.decodeStatus;
             const hasUnknown = statuses.includes('unknown');
             const otherStatuses = statuses.filter(s => s !== 'unknown');
 

@@ -1,4 +1,5 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsIn } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { MethodologyRow, MethodologyStatsRow } from '../repositories/methodology.repository';
@@ -26,8 +27,9 @@ export class MethodologyQueryDto extends PaginationQueryDto {
         example: 'success|failed',
     })
     @IsOptional()
-    @IsString()
-    decodeStatus?: string;
+    @Transform(({ value }) => String(value).split('|').filter(Boolean))
+    @IsIn(['success', 'failed', 'pending', 'unknown'], { each: true })
+    decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
 
     @ApiPropertyOptional({ description: 'Filter by exact registry DID' })
     @IsOptional()
