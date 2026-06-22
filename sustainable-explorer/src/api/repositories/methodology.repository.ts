@@ -16,7 +16,7 @@ export interface MethodologyListQuery {
     name?: string;
     id?: string;
     description?: string;
-    decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
+    decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
     registryDid?: string;
     registryName?: string;
     version?: string;

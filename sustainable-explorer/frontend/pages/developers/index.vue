@@ -22,6 +22,7 @@ const filters = computed<FilterOption[]>(() => [
     {
         key: 'status',
         label: t('developers.filters.status'),
+        multiSelect: true,
         options: filterOptions.value.statuses.map((s: string) => ({ value: s, label: s })),
     },
 ]);

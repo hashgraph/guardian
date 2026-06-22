@@ -123,6 +123,7 @@ const barFilters = computed<FilterOption[]>(() => [
     {
         key: 'decodeStatus',
         label: t('methodologies.filters.decoded'),
+        multiSelect: true,
         options: [
             { value: 'success', label: t('methodologies.decodeStatus.success') },
             { value: 'failed', label: t('methodologies.decodeStatus.failed') },

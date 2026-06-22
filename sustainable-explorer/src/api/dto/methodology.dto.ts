@@ -1,4 +1,5 @@
 import { IsOptional, IsString, IsIn } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { MethodologyRow, MethodologyStatsRow } from '../repositories/methodology.repository';
@@ -21,12 +22,14 @@ export class MethodologyQueryDto extends PaginationQueryDto {
     description?: string;
 
     @ApiPropertyOptional({
-        description: 'Filter by decode status',
+        description: 'Filter by decode status. Pipe-separate multiple values (e.g. "success|failed").',
         enum: ['success', 'failed', 'pending', 'unknown'],
+        example: 'success|failed',
     })
     @IsOptional()
-    @IsIn(['success', 'failed', 'pending', 'unknown'])
-    decodeStatus?: 'success' | 'failed' | 'pending' | 'unknown';
+    @Transform(({ value }) => String(value).split('|').filter(Boolean))
+    @IsIn(['success', 'failed', 'pending', 'unknown'], { each: true })
+    decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
 
     @ApiPropertyOptional({ description: 'Filter by exact registry DID' })
     @IsOptional()
