@@ -101,8 +101,8 @@
         "title": "Panel",
         "subtitle": "Resumen de la red de sostenibilidad de Hedera Guardian",
         "filterTooltip": "Filtra todos los datos del panel por desarrollador de proyecto y/o registro. Todas las tarjetas, gráficos, mapas y tablas se actualizan para mostrar solo los proyectos que coinciden.",
-        "allDevelopers": "Todos los desarrolladores",
-        "allRegistries": "Todos los registros",
+        "allDevelopers": "Desarrolladores",
+        "allRegistries": "Registros",
         "stats": {
             "registries": "Registros",
             "registriesSub": "Registros estándar",
@@ -391,7 +391,7 @@
             "namePlaceholder": "Buscar por nombre",
             "id": "ID",
             "description": "Descripción",
-            "decoded": "Decodificado",
+            "decoded": "Estado de Decode",
             "decodedAll": "Todos"
         },
         "stats": {

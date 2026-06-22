@@ -12,6 +12,7 @@ export interface FilterOption {
     multiSelect?: boolean;
     searchable?: boolean;
     type?: 'select' | 'daterange' | 'yearrange' | 'numrange';
+    emptyLabel?: string;
 }
 
 const props = defineProps<{
@@ -60,20 +61,20 @@ function selectFilter(key: string, value: string) {
 
 function toggleMultiSelect(key: string, value: string) {
     const current = props.activeFilters[key] || '';
-    const values = current ? current.split(',') : [];
+    const values = (current && current !== 'all') ? current.split('|') : [];
     const idx = values.indexOf(value);
     if (idx >= 0) {
         values.splice(idx, 1);
     } else {
         values.push(value);
     }
-    emit('filter', key, values.length > 0 ? values.join(',') : 'all');
+    emit('filter', key, values.length > 0 ? values.join('|') : 'all');
 }
 
 function isMultiSelected(key: string, value: string): boolean {
     const current = props.activeFilters[key] || '';
     if (!current || current === 'all') return false;
-    return current.split(',').includes(value);
+    return current.split('|').includes(value);
 }
 
 // ── Numeric range helpers ─────────────────────────────────────────────────
@@ -210,9 +211,9 @@ function getActiveLabel(filter: FilterOption): string {
         return `${t('common.to')} ${formatShortDate(to)}`;
     }
     const active = props.activeFilters[filter.key];
-    if (!active || active === 'all') return filter.multiSelect ? filter.label : t('common.all');
+    if (!active || active === 'all') return filter.emptyLabel ?? filter.label;
     if (filter.multiSelect) {
-        const count = active.split(',').length;
+        const count = active.split('|').length;
         return `${filter.label} (${count})`;
     }
     return filter.options.find(o => o.value === active)?.label ?? filter.label;

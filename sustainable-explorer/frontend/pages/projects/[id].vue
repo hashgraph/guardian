@@ -543,6 +543,10 @@ watch(project, async (p) => {
     countryCenterCoords.value = await nominatimCountryCenter(p.country);
 }, { immediate: true });
 
+// effectiveLocation is null while Nominatim is still fetching for zero-coord
+// projects.  The map component handles this "not yet ready" state internally
+// rather than relying on v-if to mount/unmount it — avoiding a Leaflet
+// initialisation race when the component mounts mid-hydration.
 const effectiveLocation = computed(() => {
     if (!project.value) return null;
     const hasCoords = project.value.lat !== 0 || project.value.lng !== 0;
@@ -659,16 +663,19 @@ const emissions = computed(() => {
                     </div>
                     <div class="h-[320px]">
                         <ClientOnly>
+                            <!--
+                                Mount on project (not effectiveLocation) so the component exists
+                                when ClientOnly activates.  It watches hasLocation internally and
+                                initialises Leaflet only once coordinates arrive — no mount/unmount
+                                cycle, no Leaflet size-detection race on reload.
+                            -->
                             <ProjectLocationMap
-                                v-if="effectiveLocation"
-                                :lat="effectiveLocation.lat"
-                                :lng="effectiveLocation.lng"
+                                :lat="effectiveLocation?.lat ?? 0"
+                                :lng="effectiveLocation?.lng ?? 0"
                                 :name="project.name"
-                                :approximate="effectiveLocation.approximate"
+                                :approximate="effectiveLocation?.approximate ?? false"
+                                :has-location="!!effectiveLocation"
                             />
-                            <div v-else class="h-full flex items-center justify-center text-sm text-muted-foreground">
-                                Location data unavailable
-                            </div>
                         </ClientOnly>
                     </div>
                 </div>

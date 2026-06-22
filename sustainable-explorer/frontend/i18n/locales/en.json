@@ -101,8 +101,8 @@
         "title": "Dashboard",
         "subtitle": "Overview of the Hedera Guardian sustainability network",
         "filterTooltip": "Filter all dashboard data by project developer and/or registry. All cards, charts, map, and tables update to show only matching projects.",
-        "allDevelopers": "All Developers",
-        "allRegistries": "All Registries",
+        "allDevelopers": "Developers",
+        "allRegistries": "Registries",
         "stats": {
             "registries": "Registries",
             "registriesSub": "Standard Registries",
@@ -396,7 +396,7 @@
             "namePlaceholder": "Search by name",
             "id": "ID",
             "description": "Description",
-            "decoded": "Decoded",
+            "decoded": "Decode Status",
             "decodedAll": "All"
         },
         "stats": {

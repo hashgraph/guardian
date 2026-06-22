@@ -152,11 +152,25 @@ export class PgMethodologyRepository extends MethodologyRepository {
         // decodeStatus filter — uses the EFFECTIVE status (CASE expression) so
         // 'success' includes policies whose schemas are imported even if a
         // recent retry flipped pds.status to 'failed'.
-        if (query.decodeStatus === 'unknown') {
-            builder.addClause(`(${EFFECTIVE_DECODE_STATUS}) IS NULL`);
-        } else if (query.decodeStatus) {
-            const p = builder.nextParam(query.decodeStatus);
-            builder.addClause(`(${EFFECTIVE_DECODE_STATUS}) = ${p}`);
+        // Supports pipe-separated multi-values (e.g. "success|failed").
+        if (query.decodeStatus) {
+            const statuses = String(query.decodeStatus).split('|').map(s => s.trim()).filter(Boolean);
+            const hasUnknown = statuses.includes('unknown');
+            const otherStatuses = statuses.filter(s => s !== 'unknown');
+
+            const clauses: string[] = [];
+            if (hasUnknown) clauses.push(`(${EFFECTIVE_DECODE_STATUS}) IS NULL`);
+            if (otherStatuses.length === 1) {
+                const p = builder.nextParam(otherStatuses[0]);
+                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ${p}`);
+            } else if (otherStatuses.length > 1) {
+                const p = builder.nextParam(otherStatuses);
+                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ANY(${p}::text[])`);
+            }
+
+            if (clauses.length > 0) {
+                builder.addClause(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
+            }
         }
 
         // Special: full-text search with ranking. The tsvector index covers
