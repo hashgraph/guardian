@@ -1,7 +1,6 @@
 {
   "author": "Hashgraph <guardian@hashgraph.com>",
   "dependencies": {
-    "@angular/animations": "^21.2.16",
     "@angular/cdk": "^21.2.14",
     "@angular/common": "^21.2.16",
     "@angular/compiler": "^21.2.16",
@@ -36,11 +35,10 @@
     "mathlive": "^0.103.0",
     "moment": "^2.29.2",
     "multiformats": "^13.4.2",
-    "ngx-colors": "3.6.0",
     "ngx-drag-drop": "^21.0.6",
     "ngx-file-drop": "^16.0.0",
     "ngx-mask": "^18.0.4",
-    "ngx-toastr": "^18.0.0",
+    "ngx-toastr": "^20.0.5",
     "ol": "^9.2.2",
     "pako": "2.1.0",
     "papaparse": "5.5.3",
