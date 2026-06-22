@@ -85,6 +85,26 @@ const EFFECTIVE_DECODE_STATUS = `
     END
 `;
 
+const SEARCH_TSVECTOR = `(
+    setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
+    setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
+    setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
+)`;
+
+const METHODOLOGY_CANONICAL_DEDUP = `
+    (
+        bv."relatedTopicId" IS NULL
+        OR bv.id = (
+            SELECT b2.id
+            FROM business_view b2
+            WHERE b2."viewType" = 'METHODOLOGY'
+              AND b2."relatedTopicId" = bv."relatedTopicId"
+            ORDER BY b2."sourceTimestamp"::numeric DESC, b2.id DESC
+            LIMIT 1
+        )
+    )
+`;
+
 /**
  * LATERAL subquery that computes totalIssued and totalRetired for each
  * methodology in the list. Mirrors the primary path used in findById:
@@ -136,6 +156,9 @@ export class PgMethodologyRepository extends MethodologyRepository {
 
         const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
         builder.addClause(`bv."viewType" = 'METHODOLOGY'`);
+        // Keep one row per methodology so duplicate-message rows (same
+        // relatedTopicId) don't surface as repeated list entries.
+        builder.addClause(METHODOLOGY_CANONICAL_DEDUP);
 
         // Generic filters: every filterable field defined in the schema
         // is wired automatically. To add a new filter, edit methodology.schema.ts.
@@ -172,14 +195,14 @@ export class PgMethodologyRepository extends MethodologyRepository {
             const simParam = builder.nextParam(term);
 
             builder.addClause(`(
-                bv."searchVector" @@ plainto_tsquery('english', ${tsParam})
+                ${SEARCH_TSVECTOR} @@ plainto_tsquery('english', ${tsParam})
                 OR bv."displayName" ILIKE ${likeParam}
                 OR bv."registryDid" ILIKE ${likeParam}
                 OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
             )`);
 
             rankExpr = `
-                ts_rank(bv."searchVector", plainto_tsquery('english', ${tsParam}))
+                ts_rank(${SEARCH_TSVECTOR}, plainto_tsquery('english', ${tsParam}))
                 + COALESCE(similarity(bv."displayName", ${simParam}), 0)
             `;
         }
@@ -271,7 +294,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             ${POLICY_DECODE_STATUS_JOIN}
             WHERE bv."viewType" = 'METHODOLOGY'
               AND bv."relatedTopicId" = $1
-            ORDER BY bv."createdAt" DESC NULLS LAST
+            ORDER BY bv."sourceTimestamp"::numeric DESC NULLS LAST, bv.id DESC
             LIMIT 1
             `,
             [id],

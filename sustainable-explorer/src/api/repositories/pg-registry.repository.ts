@@ -28,6 +28,26 @@ interface RawRow {
     user_count: string | null;
 }
 
+const SEARCH_TSVECTOR = `(
+    setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
+    setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
+    setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
+)`;
+
+const REGISTRY_CANONICAL_DEDUP = `
+    (
+        bv."registryDid" IS NULL
+        OR bv.id = (
+            SELECT b2.id
+            FROM business_view b2
+            WHERE b2."viewType" = 'REGISTRY'
+              AND b2."registryDid" = bv."registryDid"
+            ORDER BY b2."sourceTimestamp"::numeric DESC, b2.id DESC
+            LIMIT 1
+        )
+    )
+`;
+
 /**
  * PostgreSQL implementation of the RegistryRepository.
  *
@@ -50,6 +70,9 @@ export class PgRegistryRepository extends RegistryRepository {
 
         const builder = new QueryBuilder(REGISTRY_FIELD_SCHEMA);
         builder.addClause(`bv."viewType" = 'REGISTRY'`);
+        // Keep one row per registry so duplicate-message rows (same
+        // registryDid) don't surface as repeated list entries.
+        builder.addClause(REGISTRY_CANONICAL_DEDUP);
 
         // Generic filters: every filterable field defined in the schema
         // is wired automatically. To add a new filter, edit registry.schema.ts.
@@ -100,7 +123,7 @@ export class PgRegistryRepository extends RegistryRepository {
             const simParam = builder.nextParam(term);
 
             builder.addClause(`(
-                bv."searchVector" @@ plainto_tsquery('english', ${tsParam})
+                ${SEARCH_TSVECTOR} @@ plainto_tsquery('english', ${tsParam})
                 OR bv."displayName" ILIKE ${likeParam}
                 OR bv."registryDid" ILIKE ${likeParam}
                 OR bv."relatedTopicId" ILIKE ${likeParam}
@@ -118,7 +141,7 @@ export class PgRegistryRepository extends RegistryRepository {
             )`);
 
             rankExpr = `
-                ts_rank(bv."searchVector", plainto_tsquery('english', ${tsParam}))
+                ts_rank(${SEARCH_TSVECTOR}, plainto_tsquery('english', ${tsParam}))
                 + COALESCE(similarity(bv."displayName", ${simParam}), 0)
             `;
         }
@@ -196,6 +219,7 @@ export class PgRegistryRepository extends RegistryRepository {
                 ON s."registryDid" = bv."registryDid"
             WHERE bv."viewType" = 'REGISTRY'
               AND bv."registryDid" = $1
+            ORDER BY bv."sourceTimestamp"::numeric DESC NULLS LAST, bv.id DESC
             LIMIT 1
             `,
             [did],

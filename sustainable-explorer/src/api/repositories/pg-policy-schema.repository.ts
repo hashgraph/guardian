@@ -134,6 +134,7 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
                  FROM business_view bv
                  WHERE bv."viewType" = 'METHODOLOGY'
                    AND (bv."relatedTopicId" = $1 OR bv."businessData"->>'topicId' = $1)
+                 ORDER BY bv."sourceTimestamp"::numeric DESC NULLS LAST, bv.id DESC
                  LIMIT 1`,
                 [idFromUrl],
             );

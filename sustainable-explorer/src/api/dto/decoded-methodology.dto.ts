@@ -230,6 +230,22 @@ export class DecodedMethodologyResponseDto {
         const fieldMap = (config.fieldMap ?? {}) as Record<string, { title: string; description: string; isGeoJson?: boolean }>;
         const resolvedFields = (config.resolvedFields ?? {}) as Record<string, string | null>;
 
+        const globalFieldIndex = new Map<string, { title: string; description: string }>();
+        for (const s of dto.availableSchemas) {
+            for (const f of s.fields) {
+                if (!globalFieldIndex.has(f.fieldKey)) {
+                    globalFieldIndex.set(f.fieldKey, { title: f.title, description: f.description });
+                }
+            }
+        }
+        const lookupFieldDef = (fieldKey: string): { title: string; description: string } | null => {
+            const local = fieldMap[fieldKey];
+            if (local) return { title: local.title ?? fieldKey, description: local.description ?? '' };
+            const global = globalFieldIndex.get(fieldKey);
+            if (global) return { title: global.title || fieldKey, description: global.description || '' };
+            return null;
+        };
+
         // Build reverse map: fieldKey → resolvedAs name
         const fieldKeyToResolvedAs = new Map<string, string>();
         for (const [propName, fieldKey] of Object.entries(resolvedFields)) {
@@ -239,13 +255,13 @@ export class DecodedMethodologyResponseDto {
         }
 
         const geoKey = typeof config.geoKey === 'string' ? config.geoKey : '';
-        const geoFieldDef = fieldMap[geoKey];
+        const geoFieldDef = lookupFieldDef(geoKey);
 
         const buildResolvedField = (fieldKey: string | null | undefined): ResolvedFieldDto | null => {
             if (!fieldKey) return null;
-            const def = fieldMap[fieldKey];
+            const def = lookupFieldDef(fieldKey);
             if (!def) return null;
-            return { fieldKey, title: def.title ?? fieldKey, description: def.description ?? '' };
+            return { fieldKey, title: def.title, description: def.description };
         };
 
         dto.projectSchema = {
