@@ -284,10 +284,14 @@
             margin: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
-            padding: 10px 10px 10px 5px;
+            padding: 40px 10px;
             box-sizing: border-box;
             box-shadow: 3px 3px 6px 0px #00000020;
             overflow: hidden;
+
+            &:has(.rule-color-filter) {
+                padding: 20px 10px;
+            }
         }
 
         .rule-color-syntax {
@@ -301,8 +305,8 @@
         }
 
         .rule-description {
-            margin-top: 8px;
-            height: 50px;
+            margin-top: 40px;
+            height: 76px;
             width: 100%;
             display: grid;
             grid-template-columns: 100px auto 50px;
@@ -316,11 +320,12 @@
             .rule-description-text textarea {
                 max-width: 925px;
                 width: 100%;
-                height: 100%;
+                height: 76px;
+                box-sizing: border-box;
                 resize: none;
                 border: 1px solid #e0e0e0;
                 border-radius: 6px;
-                padding: 6px 12px;
+                padding: 9px 12px;
             }
         }
 
@@ -330,6 +335,7 @@
             display: grid;
             grid-template-columns: 100px 170px 70px auto 50px;
             align-items: center;
+            margin-bottom: 40px;
         }
 
         .rule-condition-header {
@@ -344,6 +350,18 @@
             box-sizing: border-box;
             margin-right: 10px;
             max-width: 420px;
+            display: flex;
+            align-items: center;
+
+            ::ng-deep .p-select,
+            ::ng-deep .p-multiselect {
+                width: 100%;
+                height: 100%;
+                align-items: center;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+            }
         }
 
         .rule-condition-label {
@@ -354,20 +372,18 @@
         }
 
         .rule-color-prev {
-            margin-top: 8px;
             min-height: 48px;
             width: 100%;
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            padding: 4px 0px;
+            align-items: center;
         }
 
         .rule-color-label {
             color: var(--pc-active-icon-color);
             font-weight: 500;
             width: 100px;
-            padding-top: 12px;
         }
 
         .rule-color-syntax-label {
@@ -402,49 +418,68 @@
 
         .rule-color-prop-value {
             width: 30px;
-            height: 42px;
+            height: 30px;
             margin-right: 12px;
-            padding-top: 4px; 
+            flex-shrink: 0;
+            border-radius: 8px;
+            overflow: hidden;
+
+            ::ng-deep p-colorpicker {
+                display: block;
+                width: 30px;
+                height: 30px;
+            }
         }
 
         .rule-color-prop-select {
             border: 1px solid #e0e0e0;
             border-radius: 6px;
-            padding: 7px 10px;
+            padding: 0 10px;
             height: 42px;
             box-sizing: border-box;
             margin-right: 10px;
             width: 125px;
+            display: flex;
+            align-items: center;
+
+            ::ng-deep .p-select {
+                width: 100%;
+                height: 100%;
+                border: none;
+                background: transparent;
+                box-shadow: none;
+                align-items: center;
+            }
         }
 
         .rule-color-delete {
-            margin-top: 14px;
+            align-self: start;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 50px;
         }
 
         .new-rule {
-            position: relative;
             height: 42px;
             box-sizing: border-box;
-            overflow: hidden;
-            padding: 7px 12px 7px 40px;
+            padding: 0 12px;
             display: flex;
             flex-direction: row;
+            align-items: center;
+            gap: 8px;
             user-select: none;
             cursor: pointer;
-            margin: 30px 10px 30px 0px;
+            margin: 30px 10px 30px 10px;
             border-radius: 6px;
             width: 140px;
-            margin-left: 10px;
             border: 1px solid #5a9af9;
 
             &:hover {
                 background: var(--guardian-grey-background, #f1f1f1);
             }
 
-            & .new-icon {
-                position: absolute;
-                left: 8px;
-                top: 4px;
+            & .pi {
                 color: #1274fb;
             }
 
@@ -458,10 +493,17 @@
             color: var(--pc-del-color);
             border-radius: 6px;
             user-select: none;
-            width: 30px;
-            height: 30px;
+            width: 45px;
+            height: 45px;
             padding: 3px;
             box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .pi {
+                font-size: 21px;
+            }
 
             &:hover {
                 background: var(--guardian-grey-background, #f1f1f1);
@@ -479,7 +521,6 @@
             grid-template-rows: 24px 18px 24px auto;
             text-align: center;
             margin-right: 14px;
-            margin-top: 14px;
         }
 
         .rule-up {
@@ -505,12 +546,8 @@
         min-width: 250px;
         cursor: pointer;
         user-select: none;
-        height: 51px;
         box-sizing: border-box;
         display: inline-block;
-        position: relative;
-        overflow: visible;
-        line-height: 51px;
 
         mat-form-field {
             width: 100%;
@@ -677,32 +714,44 @@
     height: 32px;
 }
 
-.settings-select,
-.settings-select ::ng-deep p-select .p-select {
-    height: 38px !important;
+.settings-select .dropdown-label {
+    position: absolute;
+    z-index: 1000;
+    font-size: 10px;
+    background: var(--guardian-background, white);
+    padding: 0 4px;
+    top: -6px;
+    left: 10px;
+    line-height: 1;
 }
 
 .settings-select .p-fluid {
     position: relative;
-    line-height: 0.2;
+    line-height: normal;
 }
 
-.settings-select .dropdown-label {
-    position: absolute;
-    z-index: 1000;
-    width: 36px;
-    font-size: 10px;
-    background: var(--guardian-background, white);
-    height: 5px;
-    left: 10px;
+.settings-select ::ng-deep .p-select-label {
+    display: flex;
+    align-items: center;
+    height: 100%;
+    padding: 0 16px;
+    box-sizing: border-box;
 }
 
-.settings-select ::ng-deep p-select .p-select-label {
-    padding: 18px;
+:host ::ng-deep .p-colorpicker-preview {
+    display: block;
+    width: 30px;
+    height: 30px;
+    border: none;
+    padding: 0;
+    cursor: pointer;
 }
 
 .rule-color-container {
-    height: 200px
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 ::ng-deep .new-rule {
@@ -718,17 +767,40 @@
 }
 
 .rule-color {
-    height: 350px
+    height: 250px;
 }
 
-.rule-color-prop-select {
-    position: relative;
+.rule-color:has(.rule-color-filter) {
+    height: 300px;
+}
 
-    p-select {
-        width: 123px;
-        left: 0px;
-        top: 0px;
-        position: absolute;
-        z-index: 2000;
+@media (max-width: 1600px) {
+    .rule-color {
+        height: 350px;
+    }
+
+    .rule-color:has(.rule-color-filter) {
+        height: 400px;
     }
 }
+
+@media (max-width: 1400px) {
+    .rule-color {
+        height: 400px;
+    }
+
+    .rule-color:has(.rule-color-filter) {
+        height: 450px;
+    }
+}
+
+@media (max-width: 1200px) {
+    .rule-color {
+        height: 450px;
+    }
+
+    .rule-color:has(.rule-color-filter) {
+        height: 500px;
+    }
+}
+

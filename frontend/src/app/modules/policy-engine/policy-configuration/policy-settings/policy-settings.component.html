@@ -184,22 +184,19 @@
                   </div>
                   <div class="rule-color-prop">
                     <div class="rule-color-prop-value">
-                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                      [palette]="colorPalette" [(ngModel)]="rule.text"></ngx-colors>
+                      <p-colorPicker [(ngModel)]="rule.text" [format]="'hex'" appendTo="body"></p-colorPicker>
                     </div>
                     <div class="rule-color-prop-name">Text</div>
                   </div>
                   <div class="rule-color-prop">
                     <div class="rule-color-prop-value">
-                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                      [palette]="colorPalette" [(ngModel)]="rule.background"></ngx-colors>
+                      <p-colorPicker [(ngModel)]="rule.background" [format]="'hex'" appendTo="body"></p-colorPicker>
                     </div>
                     <div class="rule-color-prop-name">Background</div>
                   </div>
                   <div class="rule-color-prop">
                     <div class="rule-color-prop-value">
-                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                      [palette]="colorPalette" [(ngModel)]="rule.border"></ngx-colors>
+                      <p-colorPicker [(ngModel)]="rule.border" [format]="'hex'" appendTo="body"></p-colorPicker>
                     </div>
                     <div class="rule-color-prop-name">Border</div>
                   </div>
@@ -268,28 +265,19 @@
                   </div>
                   <div class="rule-color-prop">
                     <div class="rule-color-prop-value">
-                      <ngx-colors
-                        ngx-colors-trigger
-                        [colorPickerControls]="colorPickerControls"
-                        [palette]="colorPalette"
-                        [(ngModel)]="theme.default.text">
-                      </ngx-colors>
+                      <p-colorPicker [(ngModel)]="theme.default.text" [format]="'hex'" appendTo="body"></p-colorPicker>
                     </div>
                     <div class="rule-color-prop-name">Text</div>
                   </div>
                   <div class="rule-color-prop">
                     <div class="rule-color-prop-value">
-                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                        [palette]="colorPalette"
-                      [(ngModel)]="theme.default.background"></ngx-colors>
+                      <p-colorPicker [(ngModel)]="theme.default.background" [format]="'hex'" appendTo="body"></p-colorPicker>
                     </div>
                     <div class="rule-color-prop-name">Background</div>
                   </div>
                   <div class="rule-color-prop">
                     <div class="rule-color-prop-value">
-                      <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                        [palette]="colorPalette"
-                      [(ngModel)]="theme.default.border"></ngx-colors>
+                      <p-colorPicker [(ngModel)]="theme.default.border" [format]="'hex'" appendTo="body"></p-colorPicker>
                     </div>
                     <div class="rule-color-prop-name">Border</div>
                   </div>
@@ -365,8 +353,7 @@
                 </div>
                 <div class="rule-color-prop">
                   <div class="rule-color-prop-value">
-                    <ngx-colors ngx-colors-trigger [colorPickerControls]="colorPickerControls"
-                    [palette]="colorPalette" [(ngModel)]="syntaxGroup.color"></ngx-colors>
+                    <p-colorPicker [(ngModel)]="syntaxGroup.color" [format]="'hex'" appendTo="body"></p-colorPicker>
                   </div>
                   <div class="rule-color-prop-name">Text Color</div>
                 </div>
