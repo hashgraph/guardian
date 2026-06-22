@@ -1420,9 +1420,9 @@ __metadata:
     "@hiero-ledger/sdk": "npm:2.85.0"
     "@mattrglobal/jsonld-signatures-bbs": "npm:^1.1.2"
     "@meeco/cryppo": "npm:^2.0.2"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/migrations-mongodb": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/migrations-mongodb": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -1574,9 +1574,9 @@ __metadata:
   resolution: "@indexer/common@workspace:indexer-common"
   dependencies:
     "@indexer/interfaces": "workspace:*"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/migrations-mongodb": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/migrations-mongodb": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -2468,44 +2468,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mikro-orm/core@npm:6.6.14":
-  version: 6.6.14
-  resolution: "@mikro-orm/core@npm:6.6.14"
+"@mikro-orm/core@npm:6.6.15":
+  version: 6.6.15
+  resolution: "@mikro-orm/core@npm:6.6.15"
   dependencies:
     dataloader: "npm:2.2.3"
     dotenv: "npm:17.3.1"
     esprima: "npm:4.0.1"
     fs-extra: "npm:11.3.3"
     globby: "npm:11.1.0"
-    mikro-orm: "npm:6.6.14"
+    mikro-orm: "npm:6.6.15"
     reflect-metadata: "npm:0.2.2"
-  checksum: 10c0/2eb34abc5f5d63771d49d2487c4f9551928a378d9ec71e3ddc1ea7ae2d1adb93f14eaade83fa07201f8d1e21bd77aa6c1c5774570ad1b136efe9adda4389cde0
+  checksum: 10c0/558322cf6d84209a44391b91ef2dd425b71ad26339717347f94b0cb25141b137c1571650a3b0e3cfe3934cf717c1b6817eedbad6dffe6f8bf4de559fd8aa891d
   languageName: node
   linkType: hard
 
-"@mikro-orm/migrations-mongodb@npm:6.6.14":
-  version: 6.6.14
-  resolution: "@mikro-orm/migrations-mongodb@npm:6.6.14"
+"@mikro-orm/migrations-mongodb@npm:6.6.15":
+  version: 6.6.15
+  resolution: "@mikro-orm/migrations-mongodb@npm:6.6.15"
   dependencies:
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     fs-extra: "npm:11.3.3"
     mongodb: "npm:6.21.0"
     umzug: "npm:3.8.2"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-  checksum: 10c0/bed5f5e7d5c99c6637da4ef34775940f6f25bf060287a138ccc2b1f5296ec7fda3c7aaae545da34b86026381144e935533846aa7d8b864a6d1ef942a0e147961
+  checksum: 10c0/6b4dd49f4ad093d29c5ec58070451ca1addad6bb0d77eebebdf3f9ea550b4a1f65c1ea31f5da8655be1faa8d041990f76fc71099f2f5c727a5c5d193d7dd7f32
   languageName: node
   linkType: hard
 
-"@mikro-orm/mongodb@npm:6.6.14":
-  version: 6.6.14
-  resolution: "@mikro-orm/mongodb@npm:6.6.14"
+"@mikro-orm/mongodb@npm:6.6.15":
+  version: 6.6.15
+  resolution: "@mikro-orm/mongodb@npm:6.6.15"
   dependencies:
     bson: "npm:^6.10.4"
     mongodb: "npm:6.21.0"
   peerDependencies:
     "@mikro-orm/core": ^6.0.0
-  checksum: 10c0/7f14f74f83d55f936baa83c436dd76bf6e6a2254491fc2a5164e6e11c3ee4364c4d3e26f6cd76f28e4848a2c24d903532c71a10fb5bc36d1253f4acf4ae7e10d
+  checksum: 10c0/108a2123ae5362b1a55bed4c86af7eb9fbb692313968388d1e2a8e973fe3d489f9fa1cf3b3f901f608dc2aee9cb328566104691fad19fdb49834d0ef5089dd40
   languageName: node
   linkType: hard
 
@@ -5285,8 +5285,8 @@ __metadata:
     "@langchain/core": "npm:1.1.48"
     "@langchain/openai": "npm:1.4.7"
     "@langchain/textsplitters": "npm:1.0.1"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@types/express": "npm:^5.0.1"
@@ -5903,8 +5903,8 @@ __metadata:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@meeco/cryppo": "npm:^2.0.2"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -9827,8 +9827,8 @@ __metadata:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/proto": "npm:2.31.0"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -10322,9 +10322,9 @@ __metadata:
   dependencies:
     "@indexer/common": "workspace:*"
     "@indexer/interfaces": "workspace:*"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/migrations-mongodb": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/migrations-mongodb": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -10360,9 +10360,9 @@ __metadata:
   dependencies:
     "@indexer/common": "workspace:*"
     "@indexer/interfaces": "workspace:*"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/migrations-mongodb": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/migrations-mongodb": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -12359,7 +12359,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@mikro-orm/core": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -12690,10 +12690,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mikro-orm@npm:6.6.14":
-  version: 6.6.14
-  resolution: "mikro-orm@npm:6.6.14"
-  checksum: 10c0/699858fb70de6bd9f97ada53f3facfffe49d95b13429ec655448f4058fa0e8892ef0ce9b8351f7cffe272c540feda4903dd8fb440e3f2be97612b6134d11aa81
+"mikro-orm@npm:6.6.15":
+  version: 6.6.15
+  resolution: "mikro-orm@npm:6.6.15"
+  checksum: 10c0/ed3697ff1022e19a421cd199938c03e12957645fe7683b19fdf9c99496d03fac61d8139c41cf67d36eb0734a993b0bfaaccd546a06358f96cd1e8ec0394060fb
   languageName: node
   linkType: hard
 
@@ -13801,8 +13801,8 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
@@ -14606,8 +14606,8 @@ __metadata:
     "@cortex-js/compute-engine": "npm:^0.27.0"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@mikro-orm/core": "npm:6.6.14"
-    "@mikro-orm/mongodb": "npm:6.6.14"
+    "@mikro-orm/core": "npm:6.6.15"
+    "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
