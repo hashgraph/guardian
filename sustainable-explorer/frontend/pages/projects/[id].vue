@@ -7,7 +7,6 @@ import {
     FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X, Download,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
-import { formatDate } from '~/lib/format';
 import { exportProject, type ExportFormat } from '~/lib/project-export';
 import { getSDG } from '~/lib/sdgs';
 import { getMethodologyName } from '~/lib/methodologies';
@@ -67,18 +66,22 @@ const tabs = [
 
 // ─── VC business data (lazy-loaded per schema) ───────────────────────────────
 
-const SYSTEM_KEYS = new Set(['@context', 'type', 'id', 'policyId', 'ref', 'uuid']);
-
 interface VcField { label: string; value: string; description?: string }
 interface VcTable { label: string; columns: string[]; rows: Record<string, string>[] }
 interface VcGroup { title: string; fields: VcField[]; tables: VcTable[] }
 interface VcDocData { fields: VcField[]; tables: VcTable[]; groups: VcGroup[] }
+
+// Shape of GET /projects/:id/additional-details — the backend now decodes the
+// VC "Detailed Information" once (at ingestion) and returns it grouped by schema.
+interface AdditionalDetailsSchema { schemaUuid: string; schemaName: string | null; docType: string; records: VcDocData[] }
 
 const vcDataBySchema = ref<Record<string, VcDocData[]>>({});
 const vcDataPending = ref<Record<string, boolean>>({});
 const vcSchemaOpen = ref<Record<string, boolean>>({});
 const vcRecordOpen = ref<Record<string, boolean>>({});
 const docSearchQuery = ref('');
+// Cache of the full additional-details payload — fetched once, sliced per schema.
+const allAdditionalDetails = ref<AdditionalDetailsSchema[] | null>(null);
 
 function filterDoc(doc: VcDocData, q: string): VcDocData | null {
     if (!q) return doc;
@@ -119,214 +122,11 @@ function bareUuid(schemaId: string): string {
     return schemaId.replace(/^#/, '').replace(/&.*$/, '');
 }
 
-const schemaFieldTitles = computed<Record<string, Record<string, string>>>(() => {
-    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
-    const map: Record<string, Record<string, string>> = {};
-    for (const s of schemas) {
-        const fieldMap: Record<string, string> = {};
-        for (const f of s.fields ?? []) {
-            if (SYSTEM_KEYS.has(f.fieldKey)) continue;
-            fieldMap[f.fieldKey] = f.title || f.fieldKey;
-        }
-        map[bareUuid(s.schemaId)] = fieldMap;
-        map[s.schemaId] = fieldMap;
-    }
-    return map;
-});
-
-// Schema field descriptions — surfaced as tooltips next to field labels. Some
-// methodologies define long descriptions for fields that only have terse
-// titles (e.g. "G373"), so showing them inline would crowd the layout.
-const schemaFieldDescriptions = computed<Record<string, Record<string, string>>>(() => {
-    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
-    const map: Record<string, Record<string, string>> = {};
-    for (const s of schemas) {
-        const fieldMap: Record<string, string> = {};
-        for (const f of s.fields ?? []) {
-            if (SYSTEM_KEYS.has(f.fieldKey)) continue;
-            if (f.description) fieldMap[f.fieldKey] = f.description;
-        }
-        map[bareUuid(s.schemaId)] = fieldMap;
-        map[s.schemaId] = fieldMap;
-    }
-    return map;
-});
-
-// Global fallback map: field key → description, merged across every schema in
-// the policy. Used when the per-schema lookup misses — typically when a
-// nested object lacks a `type` field, so structureVcData can't recover the
-// right sub-schema UUID. Within one policy, field keys like G6 / G373 are
-// effectively unique, so a flat merged lookup is safe.
-const allFieldDescriptions = computed<Record<string, string>>(() => {
-    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
-    const map: Record<string, string> = {};
-    for (const s of schemas) {
-        for (const f of s.fields ?? []) {
-            if (SYSTEM_KEYS.has(f.fieldKey)) continue;
-            if (!f.description) continue;
-            // First-seen wins so the top-level schema's description (more
-            // authoritative) isn't overwritten by a later duplicate.
-            if (!map[f.fieldKey]) map[f.fieldKey] = f.description;
-        }
-    }
-    return map;
-});
-
-const schemaNames = computed<Record<string, string>>(() => {
-    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
-    const map: Record<string, string> = {};
-    for (const s of schemas) {
-        if (s.schemaName) {
-            map[bareUuid(s.schemaId)] = s.schemaName;
-            map[s.schemaId] = s.schemaName;
-        }
-    }
-    return map;
-});
-
-// Reverse map: schema name (lowercase) → bare UUID, for resolving nested objects without a type field
-const schemaNameToUuid = computed<Record<string, string>>(() => {
-    const schemas = decodedMethodology.data.value?.availableSchemas ?? [];
-    const map: Record<string, string> = {};
-    for (const s of schemas) {
-        if (s.schemaName) {
-            map[s.schemaName.toLowerCase()] = bareUuid(s.schemaId);
-        }
-    }
-    return map;
-});
-
-function resolveTitle(key: string, schemaUuid: string): string {
-    const titles = schemaFieldTitles.value[schemaUuid]
-        ?? schemaFieldTitles.value[bareUuid(schemaUuid)];
-    if (titles?.[key]) return titles[key];
-    return key
-        .replace(/^field(\d+)$/, 'Field $1')
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/[_-]/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function resolveDescription(key: string, schemaUuid: string): string | undefined {
-    const descs = schemaFieldDescriptions.value[schemaUuid]
-        ?? schemaFieldDescriptions.value[bareUuid(schemaUuid)];
-    // Fall back to the policy-wide map so nested-group fields whose
-    // sub-schema we couldn't resolve still get tooltips.
-    return descs?.[key] ?? allFieldDescriptions.value[key];
-}
-
 function humanizeKey(key: string): string {
     return key
         .replace(/([a-z])([A-Z])/g, '$1 $2')
         .replace(/[_-]/g, ' ')
         .replace(/\b\w/g, c => c.toUpperCase());
-}
-
-function isArrayOfObjects(val: unknown): val is Record<string, any>[] {
-    return Array.isArray(val) && val.length > 0 && typeof val[0] === 'object' && val[0] !== null && !Array.isArray(val[0]);
-}
-
-function buildTable(label: string, arr: Record<string, any>[]): VcTable {
-    const colSet = new Set<string>();
-    for (const row of arr) {
-        for (const k of Object.keys(row)) {
-            if (!SYSTEM_KEYS.has(k)) colSet.add(k);
-        }
-    }
-    const columns = Array.from(colSet);
-    const rows = arr.map(row => {
-        const mapped: Record<string, string> = {};
-        for (const col of columns) {
-            mapped[col] = formatCellValue(row[col]);
-        }
-        return mapped;
-    });
-    return { label, columns, rows };
-}
-
-function formatCellValue(v: unknown): string {
-    if (v == null || v === '') return '—';
-    if (Array.isArray(v)) {
-        if (v.length === 0) return '—';
-        if (v.every(x => typeof x === 'number')) {
-            if (v.length <= 5) return v.map(n => Number(n.toFixed(4))).join(', ');
-            const first = Number(v[0].toFixed(4));
-            const last = Number(v[v.length - 1].toFixed(4));
-            return `${first} → ${last} (${v.length} values)`;
-        }
-        return v.map(x => typeof x === 'object' ? formatCellValue(x) : String(x)).join(', ');
-    }
-    if (typeof v === 'object') {
-        const obj = v as Record<string, unknown>;
-        const keys = Object.keys(obj).filter(k => !SYSTEM_KEYS.has(k));
-        if (keys.length === 0) return '—';
-        return keys.map(k => {
-            const val = obj[k];
-            const fv = Array.isArray(val)
-                ? (val.length <= 3 ? val.join(', ') : `[${val.length} items]`)
-                : String(val ?? '—');
-            return `${humanizeKey(k)}: ${fv}`;
-        }).join(' · ');
-    }
-    return String(v);
-}
-
-function isDateRange(val: Record<string, any>): boolean {
-    const keys = Object.keys(val).filter(k => !SYSTEM_KEYS.has(k));
-    return keys.length === 2 && 'from' in val && 'to' in val;
-}
-
-function isCoordinates(val: Record<string, any>): boolean {
-    return val['type'] === 'Point' && Array.isArray(val['coordinates']) && val['coordinates'].length >= 2;
-}
-
-function structureVcData(obj: Record<string, any>, schemaUuid: string): VcDocData {
-    const fields: VcField[] = [];
-    const tables: VcTable[] = [];
-    const groups: VcGroup[] = [];
-
-    for (const [key, val] of Object.entries(obj)) {
-        if (SYSTEM_KEYS.has(key)) continue;
-        if (val == null || val === '') continue;
-
-        const label = resolveTitle(key, schemaUuid);
-        const description = resolveDescription(key, schemaUuid);
-
-        if (isArrayOfObjects(val)) {
-            tables.push(buildTable(label, val));
-        } else if (typeof val === 'object' && !Array.isArray(val) && isDateRange(val)) {
-            const from = formatDate(val['from'] as string);
-            const to = formatDate(val['to'] as string);
-            fields.push({ label, value: `${from} → ${to}`, description });
-        } else if (typeof val === 'object' && !Array.isArray(val) && isCoordinates(val)) {
-            const coords = val['coordinates'] as number[];
-            fields.push({ label, value: `${coords[0]}, ${coords[1]}`, description });
-        } else if (typeof val === 'object' && !Array.isArray(val)) {
-            const nestedType = val['type'] as string | undefined;
-            let nestedId: string;
-            if (nestedType) {
-                nestedId = bareUuid(nestedType);
-            } else {
-                // No type field — try matching the parent field's title to a known schema name
-                nestedId = schemaNameToUuid.value[label.toLowerCase()] ?? schemaUuid;
-            }
-            const groupTitle = schemaNames.value[nestedId] ?? label;
-            const nested = structureVcData(val, nestedId);
-            const allFields = [...nested.fields];
-            for (const g of nested.groups) allFields.push(...g.fields);
-            if (allFields.length > 0 || nested.tables.length > 0) {
-                groups.push({ title: groupTitle, fields: allFields, tables: nested.tables });
-            }
-        } else if (Array.isArray(val)) {
-            const displayable = val.filter(v => v != null && v !== '');
-            if (displayable.length > 0) {
-                fields.push({ label, value: displayable.join(', '), description });
-            }
-        } else {
-            fields.push({ label, value: String(val), description });
-        }
-    }
-    return { fields, tables, groups };
 }
 
 function toggleSchema(schemaUuid: string) {
@@ -344,27 +144,28 @@ async function loadSchemaVcData(schemaUuid: string) {
     const schema = project.value.linkedSchemas?.find(s => s.schemaUuid === schemaUuid);
     if (!schema?.linkedVcs.length) return;
 
-    if (!decodedMethodology.loaded.value && methodologyMappingId.value) {
-        await decodedMethodology.fetch();
-    }
-
     vcDataPending.value[schemaUuid] = true;
-    const config = useRuntimeConfig();
-    const baseURL = config.public.apiBaseUrl as string;
-    const results: VcDocData[] = [];
-
-    for (const vc of schema.linkedVcs) {
-        try {
-            const data = await $fetch<Record<string, any>>(
-                `/api/v1/${network.value}/projects/${projectId.value}/linked-vcs/${vc.consensusTimestamp}`,
+    try {
+        // The detail payload is precomputed server-side and returned for every
+        // schema in one call — fetch it once, then slice the records for the
+        // requested schema on each toggle.
+        if (!allAdditionalDetails.value) {
+            const config = useRuntimeConfig();
+            const baseURL = config.public.apiBaseUrl as string;
+            allAdditionalDetails.value = await $fetch<AdditionalDetailsSchema[]>(
+                `/api/v1/${network.value}/projects/${projectId.value}/additional-details`,
                 { baseURL },
             );
-            const cs = data?.credentialSubject?.[0] ?? data?.credentialSubject ?? data ?? {};
-            results.push(structureVcData(cs, schemaUuid));
-        } catch {}
+        }
+        const entry = allAdditionalDetails.value?.find(
+            s => bareUuid(s.schemaUuid) === bareUuid(schemaUuid),
+        );
+        vcDataBySchema.value = { ...vcDataBySchema.value, [schemaUuid]: entry?.records ?? [] };
+    } catch {
+        vcDataBySchema.value = { ...vcDataBySchema.value, [schemaUuid]: [] };
+    } finally {
+        vcDataPending.value[schemaUuid] = false;
     }
-    vcDataBySchema.value = { ...vcDataBySchema.value, [schemaUuid]: results };
-    vcDataPending.value[schemaUuid] = false;
 }
 
 // ─── VC JSON Viewer modal ──────────────────────────────────────────────────────
