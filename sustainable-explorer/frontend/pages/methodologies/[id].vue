@@ -493,6 +493,45 @@ const mappingOptionGroups = computed<{ label: string; options: SelectOption[] }[
   return Array.from(map.entries()).map(([label, options]) => ({ label, options }));
 });
 
+// Geo row options are the INVERSE of the regular set: the "Project Location"
+// row maps to a GeoJSON geometry field, which mappingSelectOptions deliberately
+// excludes (and they're object-typed, so the object/array filter drops them too).
+// Without this, the currently-mapped geo field has no matching option — the
+// dropdown shows a raw "#schemaIri.fieldPath" value and the field can't be
+// reselected. So build a geo-specific list of the isGeoJson fields.
+const geoSelectOptions = computed<SelectOption[]>(() => {
+  if (!decodedData.value) return [];
+  const options: SelectOption[] = [];
+  const seen = new Set<string>();
+  const SKIP_KEYS = new Set(['@context', 'type', 'id', 'policyId', 'ref', 'uuid']);
+  for (const schema of decodedData.value.availableSchemas ?? []) {
+    if (!schema.fields?.length) continue;
+    const groupLabel = schema.schemaName || schema.schemaId;
+    for (const field of schema.fields) {
+      if (!field.isGeoJson) continue;
+      if (SKIP_KEYS.has(field.fieldKey)) continue;
+      const value = `${schema.schemaId}.${field.fieldKey}`;
+      if (seen.has(value)) continue;
+      seen.add(value);
+      options.push({
+        value,
+        label: `${field.title || field.fieldKey} (${field.fieldKey})`,
+        groupLabel,
+      });
+    }
+  }
+  return options;
+});
+
+const geoOptionGroups = computed<{ label: string; options: SelectOption[] }[]>(() => {
+  const map = new Map<string, SelectOption[]>();
+  for (const opt of geoSelectOptions.value) {
+    if (!map.has(opt.groupLabel)) map.set(opt.groupLabel, []);
+    map.get(opt.groupLabel)!.push(opt);
+  }
+  return Array.from(map.entries()).map(([label, options]) => ({ label, options }));
+});
+
 async function saveMapping() {
   if (!import.meta.client || !hasChanges.value) {
     if (!hasChanges.value) {
@@ -1445,15 +1484,12 @@ function getResolvedField(fieldKey: string) {
                     <!-- Geo row: dropdown in edit mode, geoKey display in view mode -->
                     <template v-if="row.fieldKey === 'geo'">
                       <template v-if="editingMapping">
-                        <select
+                        <MappingFieldSelect
                           v-model="formState['geo']"
-                          class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        >
-                          <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
-                          <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
-                            <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                          </optgroup>
-                        </select>
+                          :groups="geoOptionGroups"
+                          :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
+                          :placeholder="$t('common.searchEllipsis')"
+                        />
                       </template>
                       <template v-else>
                         <template v-if="decodedData.projectSchema.geoKey">
@@ -1471,27 +1507,21 @@ function getResolvedField(fieldKey: string) {
                         <div class="space-y-2">
                           <div>
                             <div class="text-[10px] text-muted-foreground mb-0.5">Start</div>
-                            <select
+                            <MappingFieldSelect
                               v-model="formState['creditingPeriodStart']"
-                              class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                            >
-                              <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
-                              <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
-                                <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                              </optgroup>
-                            </select>
+                              :groups="mappingOptionGroups"
+                              :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
+                              :placeholder="$t('common.searchEllipsis')"
+                            />
                           </div>
                           <div>
                             <div class="text-[10px] text-muted-foreground mb-0.5">End</div>
-                            <select
+                            <MappingFieldSelect
                               v-model="formState['creditingPeriodEnd']"
-                              class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                            >
-                              <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
-                              <optgroup v-for="group in mappingOptionGroups" :key="group.label" :label="group.label">
-                                <option v-for="opt in group.options" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
-                              </optgroup>
-                            </select>
+                              :groups="mappingOptionGroups"
+                              :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
+                              :placeholder="$t('common.searchEllipsis')"
+                            />
                           </div>
                         </div>
                       </template>
@@ -1518,25 +1548,12 @@ function getResolvedField(fieldKey: string) {
                     <!-- Regular fields — select in edit mode, text in view mode -->
                     <template v-else>
                       <template v-if="editingMapping">
-                        <select
+                        <MappingFieldSelect
                           v-model="formState[row.fieldKey as ResolvedFieldKey]"
-                          class="w-full max-w-sm rounded-md border border-input bg-background px-3 py-1.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
-                        >
-                          <option value="">{{ $t('methodologies.detail.decoded.actions.unmapped') }}</option>
-                          <optgroup
-                            v-for="group in mappingOptionGroups"
-                            :key="group.label"
-                            :label="group.label"
-                          >
-                            <option
-                              v-for="opt in group.options"
-                              :key="opt.value"
-                              :value="opt.value"
-                            >
-                              {{ opt.label }}
-                            </option>
-                          </optgroup>
-                        </select>
+                          :groups="mappingOptionGroups"
+                          :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
+                          :placeholder="$t('common.searchEllipsis')"
+                        />
                       </template>
                       <template v-else>
                         <template v-if="getResolvedField(row.fieldKey)">
