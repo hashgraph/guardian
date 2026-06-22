@@ -1,0 +1,5 @@
+localhost {
+    reverse_proxy web-proxy:80 {
+        header_up Host {host}
+    }
+}

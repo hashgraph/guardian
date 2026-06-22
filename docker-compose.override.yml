@@ -1,0 +1,24 @@
+name: guardian-quickstart
+
+services:
+    caddy:
+        image: caddy:latest
+        restart: unless-stopped
+        ports:
+            - "443:443"
+            - "80:80"
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile
+            - caddy_data:/data
+            - caddy_config:/config
+        depends_on:
+            - web-proxy
+
+    mongo:
+        volumes:
+            - mongo_data:/data/db
+
+volumes:
+    caddy_data:
+    caddy_config:
+    mongo_data:
