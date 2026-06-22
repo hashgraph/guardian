@@ -42,7 +42,7 @@
         "mongodb": "6.21.0",
         "nats": "^2.6.1",
         "node-vault": "^0.12.0",
-        "papaparse": "5.5.3",
+        "papaparse": "5.5.4",
         "prom-client": "^14.1.1",
         "reflect-metadata": "^0.2.2",
         "seq-logging": "^2.2.0",

@@ -1458,7 +1458,7 @@ __metadata:
     mongodb: "npm:6.21.0"
     nats: "npm:^2.6.1"
     node-vault: "npm:^0.12.0"
-    papaparse: "npm:5.5.3"
+    papaparse: "npm:5.5.4"
     prom-client: "npm:^14.1.1"
     reflect-metadata: "npm:^0.2.2"
     seq-logging: "npm:^2.2.0"
@@ -14331,10 +14331,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"papaparse@npm:5.5.3":
-  version: 5.5.3
-  resolution: "papaparse@npm:5.5.3"
-  checksum: 10c0/623aae6a35703308fd5a39d616fb3837231ebc70697346355ea508154d3f24df75b6554b736afc1924192205518a5db14e75f5e1cf35d154326050a37cdd9447
+"papaparse@npm:5.5.4":
+  version: 5.5.4
+  resolution: "papaparse@npm:5.5.4"
+  checksum: 10c0/8942ae45dcc171b720fd67953f825a544fdeeeadb85cf28a239d016fd6cff0c59650e667b3158a9a0153c6e1d7674c199603bcf360d854ce7edce822eb7f7bb6
   languageName: node
   linkType: hard
 
