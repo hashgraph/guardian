@@ -101,8 +101,8 @@
         "title": "Dashboard",
         "subtitle": "Overview of the Hedera Guardian sustainability network",
         "filterTooltip": "Filter all dashboard data by project developer and/or registry. All cards, charts, map, and tables update to show only matching projects.",
-        "allDevelopers": "All Developers",
-        "allRegistries": "All Registries",
+        "allDevelopers": "Developers",
+        "allRegistries": "Registries",
         "stats": {
             "registries": "Registries",
             "registriesSub": "Standard Registries",
@@ -396,7 +396,7 @@
             "namePlaceholder": "Search by name",
             "id": "ID",
             "description": "Description",
-            "decoded": "Decoded",
+            "decoded": "Decode Status",
             "decodedAll": "All"
         },
         "stats": {
@@ -699,7 +699,7 @@
     "developers": {
         "title": "Project Developers",
         "subtitle": "Organizations developing and managing carbon offset projects",
-        "searchPlaceholder": "Search developers, categories, registries...",
+        "searchPlaceholder": "Search developers...",
         "noMatch": "No developers match your filters",
         "issuedTooltip": "Total issuances across all projects by this developer.",
         "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",

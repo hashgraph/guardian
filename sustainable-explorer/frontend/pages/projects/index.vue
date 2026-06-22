@@ -193,6 +193,7 @@ const filters = computed<FilterOption[]>(() => [
   {
     key: "status",
     label: t("projects.filters.status"),
+    multiSelect: true,
     options: filterOptions.value.statuses.map((s) => ({ value: s, label: s })),
   },
   {
@@ -227,6 +228,7 @@ const filters = computed<FilterOption[]>(() => [
   {
     key: "sectoralScope",
     label: t("projects.filters.sectoralScope"),
+    multiSelect: true,
     options: filterOptions.value.sectoralScopes.map((s) => ({
       value: s,
       label: s,

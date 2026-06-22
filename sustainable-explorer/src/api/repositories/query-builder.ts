@@ -161,8 +161,8 @@ export class QueryBuilder {
     private buildOperatorClause(sql: string, op: FilterOperator, value: unknown): string | null {
         switch (op) {
             case 'eq': {
-                if (typeof value === 'string' && value.includes(',')) {
-                    const parts = value.split(',').map(s => s.trim()).filter(Boolean);
+                if (typeof value === 'string' && value.includes('|')) {
+                    const parts = value.split('|').map(s => s.trim()).filter(Boolean);
                     if (parts.length > 1) {
                         this.params.push(parts);
                         return `${sql} = ANY($${this.paramIdx++}::text[])`;
@@ -173,7 +173,7 @@ export class QueryBuilder {
             }
 
             case 'ilike': {
-                const parts = String(value).split(',').map(s => s.trim()).filter(Boolean);
+                const parts = String(value).split('|').map(s => s.trim()).filter(Boolean);
                 if (parts.length > 1) {
                     const clauses = parts.map(p => {
                         this.params.push(`%${p}%`);

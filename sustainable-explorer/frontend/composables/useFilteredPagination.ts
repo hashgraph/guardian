@@ -116,41 +116,46 @@ export function useFilteredPagination<T>(
         for (const [key, value] of Object.entries(activeFilters.value)) {
             if (value && value !== 'all') {
                 if (arrayFieldSet.has(key)) {
-                    const selectedValues = value.split(',');
+                    // Array field (e.g. sdgs): pipe-separated list of values to match
+                    const selectedValues = value.split('|').filter(Boolean);
                     result = result.filter((item) => {
                         const arr = item[key as keyof T];
                         if (!Array.isArray(arr)) return false;
                         return selectedValues.some(v => arr.map(String).includes(v));
                     });
                 } else if (value.includes('|')) {
-                    // Range filter: value format is "from|to"
-                    // Numeric range (digits only): numeric comparison — covers both year and supply ranges
-                    // Date range (YYYY-MM-DD strings): date comparison
-                    const [from, to] = value.split('|');
-                    const isNumericRange = [from, to].filter(Boolean).every(v => /^\d+(\.\d+)?$/.test(v));
-                    result = result.filter((item) => {
-                        const rawVal = item[key as keyof T];
-                        if (rawVal === null || rawVal === undefined || rawVal === '') return false;
-                        if (isNumericRange) {
-                            const itemNum = parseFloat(String(rawVal));
-                            if (isNaN(itemNum)) return false;
-                            if (from && itemNum < parseFloat(from)) return false;
-                            if (to && itemNum > parseFloat(to)) return false;
-                        } else {
-                            const d = new Date(String(rawVal));
-                            if (isNaN(d.getTime())) return false;
-                            if (from) {
-                                if (d < new Date(from + 'T00:00:00')) return false;
+                    const parts = value.split('|');
+                    const [from, to] = parts;
+                    // A range has exactly 2 parts that are both numeric or both ISO dates.
+                    // Anything else (e.g. "Issuing|Registered") is a multi-select list.
+                    const isNumericRange = parts.length === 2
+                        && parts.filter(Boolean).every(v => /^\d+(\.\d+)?$/.test(v));
+                    const isDateRange = parts.length === 2
+                        && parts.filter(Boolean).every(v => /^\d{4}-\d{2}-\d{2}$/.test(v));
+
+                    if (isNumericRange || isDateRange) {
+                        // Range filter: numeric (year / supply) or date comparison
+                        result = result.filter((item) => {
+                            const rawVal = item[key as keyof T];
+                            if (rawVal === null || rawVal === undefined || rawVal === '') return false;
+                            if (isNumericRange) {
+                                const itemNum = parseFloat(String(rawVal));
+                                if (isNaN(itemNum)) return false;
+                                if (from && itemNum < parseFloat(from)) return false;
+                                if (to && itemNum > parseFloat(to)) return false;
+                            } else {
+                                const d = new Date(String(rawVal));
+                                if (isNaN(d.getTime())) return false;
+                                if (from && d < new Date(from + 'T00:00:00')) return false;
+                                if (to && d > new Date(to + 'T23:59:59')) return false;
                             }
-                            if (to) {
-                                if (d > new Date(to + 'T23:59:59')) return false;
-                            }
-                        }
-                        return true;
-                    });
-                } else if (value.includes(',')) {
-                    const selectedValues = value.split(',');
-                    result = result.filter((item) => selectedValues.includes(String(item[key as keyof T])));
+                            return true;
+                        });
+                    } else {
+                        // Multi-select: pipe-separated list of exact string values
+                        const selectedValues = parts.filter(Boolean);
+                        result = result.filter((item) => selectedValues.includes(String(item[key as keyof T])));
+                    }
                 } else {
                     result = result.filter((item) => String(item[key as keyof T]) === value);
                 }

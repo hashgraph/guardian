@@ -101,8 +101,8 @@
         "title": "Panel",
         "subtitle": "Resumen de la red de sostenibilidad de Hedera Guardian",
         "filterTooltip": "Filtra todos los datos del panel por desarrollador de proyecto y/o registro. Todas las tarjetas, gráficos, mapas y tablas se actualizan para mostrar solo los proyectos que coinciden.",
-        "allDevelopers": "Todos los desarrolladores",
-        "allRegistries": "Todos los registros",
+        "allDevelopers": "Desarrolladores",
+        "allRegistries": "Registros",
         "stats": {
             "registries": "Registros",
             "registriesSub": "Registros estándar",
@@ -391,7 +391,7 @@
             "namePlaceholder": "Buscar por nombre",
             "id": "ID",
             "description": "Descripción",
-            "decoded": "Decodificado",
+            "decoded": "Estado de Decode",
             "decodedAll": "Todos"
         },
         "stats": {
@@ -691,7 +691,7 @@
     "developers": {
         "title": "Desarrolladores de proyectos",
         "subtitle": "Organizaciones que desarrollan y gestionan proyectos de compensación de carbono",
-        "searchPlaceholder": "Buscar desarrolladores, categorías, registros...",
+        "searchPlaceholder": "Buscar desarrolladores...",
         "noMatch": "Ningún desarrollador coincide con tus filtros",
         "issuedTooltip": "Emisiones totales en todos los proyectos de este desarrollador.",
         "retiredTooltip": "Emisiones retiradas permanentemente (usadas para compensación). Las emisiones retiradas no pueden comercializarse ni reutilizarse.",
