@@ -22,6 +22,7 @@ export class MethodologyQueryDto extends PaginationQueryDto {
 
     @ApiPropertyOptional({
         description: 'Filter by decode status. Pipe-separate multiple values (e.g. "success|failed").',
+        enum: ['success', 'failed', 'pending', 'unknown'],
         example: 'success|failed',
     })
     @IsOptional()
