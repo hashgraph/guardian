@@ -32,6 +32,12 @@ interface RawRow {
     total_retired: string | null;
 }
 
+const SEARCH_TSVECTOR = `(
+    setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
+    setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
+    setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
+)`;
+
 /**
  * LATERAL subquery joined into both findAll and findById to look up the
  * publishing registry's display name. Uses LATERAL so we can ORDER BY +
@@ -109,14 +115,14 @@ export class PgProjectRepository extends ProjectRepository {
             const simParam = builder.nextParam(term);
 
             builder.addClause(`(
-                bv."searchVector" @@ plainto_tsquery('english', ${tsParam})
+                ${SEARCH_TSVECTOR} @@ plainto_tsquery('english', ${tsParam})
                 OR bv."displayName" ILIKE ${likeParam}
                 OR bv."registryDid" ILIKE ${likeParam}
                 OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
             )`);
 
             rankExpr = `
-                ts_rank(bv."searchVector", plainto_tsquery('english', ${tsParam}))
+                ts_rank(${SEARCH_TSVECTOR}, plainto_tsquery('english', ${tsParam}))
                 + COALESCE(similarity(bv."displayName", ${simParam}), 0)
             `;
         }

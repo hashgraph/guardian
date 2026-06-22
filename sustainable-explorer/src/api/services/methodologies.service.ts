@@ -90,6 +90,7 @@ export class MethodologiesService {
                  LIMIT 1
              ) p ON TRUE
              WHERE bv."viewType" = 'METHODOLOGY' AND bv."relatedTopicId" = $1
+             ORDER BY bv."sourceTimestamp"::numeric DESC NULLS LAST, bv.id DESC
              LIMIT 1`,
             [id],
         );
