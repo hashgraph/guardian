@@ -12,7 +12,7 @@ import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.com
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
-import { NgxColorsModule } from 'ngx-colors';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
 import { StepTreeComponent } from './step-tree/step-tree.component';
@@ -99,7 +99,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         FormsModule,
         MaterialModule,
         NgxFileDropModule,
-        NgxColorsModule,
+        ColorPickerModule,
         NgxMaskDirective,
         DialogModule,
         InputTextModule,
@@ -128,7 +128,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         TokenConfigurationComponent,
         FileExplorer,
         ConfirmDialog,
-        NgxColorsModule,
+        ColorPickerModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
         NgxMaskDirective,

@@ -31,31 +31,6 @@ export class PolicySettingsComponent implements OnInit {
     public allBlocks!: any[];
     public roles: string[];
     public loading = false;
-    public colorPickerControls: any = 'no-alpha';
-    public colorPalette: Array<any> = [
-        '#ffffff',
-        '#efe5fc',
-        '#e2f9fe',
-        '#ffeeda',
-        '#bcffd9',
-
-        '#ffcadf',
-        '#c396fa',
-        '#7bd0e3',
-        '#f9b465',
-        '#8ed600',
-
-        '#ff4785',
-        '#d020ff',
-        '#00d0ff',
-        '#b36400',
-        '#1dd267',
-
-        '#db0065',
-        '#6f00c3',
-        '#0288d1',
-        '#000000',
-    ];
 
     public dropdownTypesOptions = [
         {label: 'Types', value: 'type'},
