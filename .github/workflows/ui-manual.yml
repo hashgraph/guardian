@@ -25,7 +25,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
@@ -107,7 +107,7 @@ jobs:
           until curl -s -X POST http://127.0.0.1:5001/api/v0/id >/dev/null 2>&1; do sleep 0.5; done
 
       - name: Start MongoDB
-        uses: step-security/mongodb-github-action@ca72004b9c8ad6d9ed996c3174edbe62f9f7424a
+        uses: step-security/mongodb-github-action@4c2640417c3e31ebd7439e64d47f9751bd782772
         with:
           mongodb-version: ${{ matrix.mongodb-version }}
 
@@ -153,10 +153,10 @@ jobs:
           PASSWORD_COMPLEXITY: easy
 
       - name: Set up Docker Buildx
-        uses: step-security/setup-buildx-action@f931205d68723ad9589fd2a7e2ece238bf9de341 # v4.0.0
+        uses: step-security/setup-buildx-action@6997872a55d77391e51b87609556578131f44402 # v4.1.0
 
       - name: Build Cypress Docker image
-        uses: step-security/docker-build-push-action@846549baaf047e867d038826129a64d81df0f704 # v7.1.0
+        uses: step-security/docker-build-push-action@9af9b5acc1751dcec2aa5375a068979fa526bc9a # v7.2.0
         with:
           context: ./e2e-tests
           tags: cypress-runner
@@ -187,7 +187,7 @@ jobs:
           docker rm -f cypress-test-run || true
 
       - name: Upload screenshots
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         if: failure()
         with:
           name: cypress-screenshots
