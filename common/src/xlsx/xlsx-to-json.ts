@@ -955,7 +955,7 @@ export class XlsxToJson {
                     throw new Error('Invalid trigger field');
                 }
                 const triggerPath = fieldPaths.get(result.fieldPath);
-                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue));
+                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue, triggerPath));
                 if (condition) {
                     addToCondition(condition, result.invert);
                     return null;

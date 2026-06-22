@@ -54,7 +54,7 @@ export class XlsxSchemaConditions {
         return this.condition;
     }
 
-    public equal(otherFieldOrGroup: any, otherValue?: any): boolean {
+    public equal(otherFieldOrGroup: any, otherValue?: any, otherFieldPath?: string[]): boolean {
         if (this.group) {
             if (!(otherFieldOrGroup?.op && Array.isArray(otherFieldOrGroup.items))) {
                 return false
@@ -65,16 +65,18 @@ export class XlsxSchemaConditions {
             if (this.group.items.length !== otherFieldOrGroup.items.length) {
                 return false
             };
-            const norm = (arr: any[]) =>
+            const toKey = (arr: any[]) =>
                 arr
-                    .map(i => `${i.field?.name}::${JSON.stringify(i.value)}`)
+                    .map(i => `${i.field?.name}::${JSON.stringify(i.value)}::${JSON.stringify(normalizePath(i.fieldPath))}`)
                     .sort()
                     .join('|');
 
-            return norm(this.group.items) === norm(otherFieldOrGroup.items);
+            return toKey(this.group.items) === toKey(otherFieldOrGroup.items);
         } else {
             const of = otherFieldOrGroup as SchemaField;
-            return of?.name === this.single.field.name && sameValue(otherValue, this.single.value);
+            const pathA = JSON.stringify(normalizePath(this.single.fieldPath));
+            const pathB = JSON.stringify(normalizePath(otherFieldPath));
+            return of?.name === this.single.field.name && sameValue(otherValue, this.single.value) && pathA === pathB;
         }
     }
 

@@ -688,8 +688,9 @@ export class SchemaHelper {
         };
 
         const deepMergeSchemaObj = (a: any, b: any): any => {
-            if (!a) { return b; }
-            if (!b) { return a; }
+            if (a === null || a === undefined) { return b; }
+            if (b === null || b === undefined) { return a; }
+            if (b === false || a === false) { return false; }
             const result: any = { ...a };
             for (const key of Object.keys(b)) {
                 if (key === 'properties') {
@@ -714,7 +715,6 @@ export class SchemaHelper {
             for (const t of targets) {
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                if (!t.field?.required) { continue; }
                 let node = root;
                 for (let i = 0; i < path.length - 1; i++) {
                     if (!node.properties) { node.properties = {}; }
@@ -1118,7 +1118,8 @@ export class SchemaHelper {
                 if (!path || path.length < 2) { continue; }
                 let iri: string | undefined = fieldNameToIRI.get(path[0]);
                 for (let i = 1; i < path.length - 1 && iri; i++) {
-                    iri = schemaMap[iri]?.properties?.[path[i]]?.['$ref'];
+                    const prop = schemaMap[iri]?.properties?.[path[i]];
+                    iri = prop?.['$ref'] ?? prop?.items?.['$ref'];
                 }
                 if (!iri) { continue; }
                 const leaf = path[path.length - 1];
