@@ -1238,12 +1238,12 @@ export class JsonToSchema {
             } as any;
         }
 
-        const fp = value?.if?.fieldPath;
-        const fieldName = value?.if?.field;
+        const ifFieldPath = value?.if?.fieldPath;
+        const ifField = value?.if?.field;
         const val = value?.if?.fieldValue;
-        const target = resolvePredicateField(fieldName, fp, ifCtx.add('field'));
+        const target = resolvePredicateField(ifField, ifFieldPath, ifCtx.add('field'));
         const single: any = { field: target, fieldValue: val };
-        if (fp?.length > 1) { single.fieldPath = fp; }
+        if (ifFieldPath?.length > 1) { single.fieldPath = ifFieldPath; }
         return single as any;
     }
 

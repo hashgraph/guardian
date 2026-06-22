@@ -359,13 +359,13 @@ export class SchemaHelper {
             refFieldsAtLevel: SchemaField[],
             pathPrefix: string[],
         ): {
-            thenTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
-            elseTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
+            thenTargets: { field: SchemaField; fieldPath: string[] }[];
+            elseTargets: { field: SchemaField; fieldPath: string[] }[];
             cleanProps: any;
             hasCrossKeys: boolean;
         } => {
-            const thenTargets: Array<{ field: SchemaField; fieldPath: string[] }> = [];
-            const elseTargets: Array<{ field: SchemaField; fieldPath: string[] }> = [];
+            const thenTargets: { field: SchemaField; fieldPath: string[] }[] = [];
+            const elseTargets: { field: SchemaField; fieldPath: string[] }[] = [];
             const cleanProps: any = {};
             let hasCrossKeys = false;
 
@@ -419,8 +419,8 @@ export class SchemaHelper {
         };
 
         const extractCrossTargets = (node: any): {
-            thenTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
-            elseTargets: Array<{ field: SchemaField; fieldPath: string[] }>;
+            thenTargets: { field: SchemaField; fieldPath: string[] }[];
+            elseTargets: { field: SchemaField; fieldPath: string[] }[];
             cleanNode: any;
         } => {
             if (!node?.properties) {
@@ -1119,7 +1119,7 @@ export class SchemaHelper {
                 let iri: string | undefined = fieldNameToIRI.get(path[0]);
                 for (let i = 1; i < path.length - 1 && iri; i++) {
                     const prop = schemaMap[iri]?.properties?.[path[i]];
-                    iri = prop?.['$ref'] ?? prop?.items?.['$ref'];
+                    iri = prop?.$ref ?? prop?.items?.$ref;
                 }
                 if (!iri) { continue; }
                 const leaf = path[path.length - 1];
