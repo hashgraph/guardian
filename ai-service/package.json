@@ -6,7 +6,7 @@
     "dependencies": {
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
-        "@langchain/classic": "1.0.34",
+        "@langchain/classic": "1.0.36",
         "@langchain/community": "1.1.29",
         "@langchain/core": "1.2.0",
         "@langchain/openai": "1.5.1",
