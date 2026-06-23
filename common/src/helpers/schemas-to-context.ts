@@ -1,4 +1,4 @@
-import { schemasToContext as schemasToContextTransmute } from '@transmute/jsonld-schema';
+import { schemasToContext as schemasToContextTransmute } from './jsonld-schema/index.js';
 
 // tslint:disable-next-line:completed-docs
 export function schemasToContext(
@@ -26,6 +26,8 @@ export function schemasToContext(
     '@context': any;
 } {
     const context = schemasToContextTransmute(schemas, contextSettings);
+    // Emit plain-text properties (https://www.schema.org/text) as @type, not @id.
+    // Relies on the exact serialized "@id":"..." string; guarded by the fidelity tests.
     let contextString = JSON.stringify(context) as string;
     contextString = contextString.replaceAll(
         `"@id":"https://www.schema.org/text"`,

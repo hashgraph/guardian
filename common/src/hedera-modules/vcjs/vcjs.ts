@@ -1,9 +1,10 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { ld as vcjs } from '@transmute/vc.js';
-import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
+import * as vcLib from '@digitalbazaar/vc';
+import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
+import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { CheckResult } from '@transmute/jsonld-schema';
+import { SchemaValidationResult } from './schema-validation-result.js';
 import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
@@ -11,6 +12,7 @@ import { VcSubject } from './vc-subject.js';
 import { TimestampUtils } from '../timestamp-utils.js';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function.js';
 import { DocumentLoader } from '../document-loader/document-loader.js';
+import { IDocumentFormat } from '../document-loader/document-format.js';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader.js';
 import { Issuer } from './issuer.js';
 import axios from 'axios';
@@ -193,12 +195,12 @@ export class VCJS {
      * @returns {boolean} - status
      */
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
-        let result;
+        let result: vcLib.VerificationResult;
         if (json.proof.type === SignatureType.Ed25519Signature2018) {
-            result = await vcjs.verifyVerifiableCredential({
+            result = await vcLib.verifyCredential({
                 credential: json,
                 suite: [new Ed25519Signature2018()],
-                documentLoader,
+                documentLoader: this.ed25519VerificationDocumentLoader(documentLoader),
             });
         } else {
             result = await verify(json, {
@@ -222,13 +224,57 @@ export class VCJS {
     }
 
     /**
+     * Adapt a document loader for @digitalbazaar/ed25519-signature-2018 verification.
+     *
+     * The digitalbazaar suite requires the resolved verification method to carry the
+     * suite context, and it authorizes the controller by absolute assertionMethod id.
+     * Guardian DID documents declare only the did/v1 context and use relative
+     * assertionMethod references, so this wrapper: serves the suite context, returns the
+     * requested verification method as a key node carrying that context, and rewrites the
+     * controller's relative assertionMethod references to absolute ids. Non-DID documents
+     * and non-Ed25519 verification methods pass through unchanged, so the BBS path that
+     * shares this loader is unaffected.
+     *
+     * @param {DocumentLoaderFunction} documentLoader - base document loader
+     *
+     * @returns {DocumentLoaderFunction} - wrapped document loader
+     */
+    private ed25519VerificationDocumentLoader(documentLoader: DocumentLoaderFunction): DocumentLoaderFunction {
+        const contextUrl = Ed25519Signature2018.CONTEXT_URL;
+        const context = Ed25519Signature2018.CONTEXT;
+        return async (iri: string): Promise<IDocumentFormat> => {
+            if (iri === contextUrl) {
+                return { documentUrl: iri, document: context };
+            }
+            const result = await documentLoader(iri);
+            const document = result?.document;
+            if (document && Array.isArray(document.verificationMethod)) {
+                if (iri.indexOf('#') !== -1) {
+                    const method = document.verificationMethod.find((item: any) => item?.id === iri);
+                    if (method && method.type === HederaEd25519Method.TYPE) {
+                        return { documentUrl: iri, document: { '@context': contextUrl, ...method } };
+                    }
+                } else if (Array.isArray(document.assertionMethod)) {
+                    const assertionMethod = document.assertionMethod.map((reference: any) =>
+                        (typeof reference === 'string' && reference.startsWith('#'))
+                            ? document.id + reference
+                            : reference
+                    );
+                    return { documentUrl: iri, document: { ...document, assertionMethod } };
+                }
+            }
+            return result;
+        };
+    }
+
+    /**
      * Verify Schema
      *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
      *
-     * @returns {CheckResult} - is verified
+     * @returns {SchemaValidationResult} - is verified
      */
-    public async verifySchema(vcDocument: VcDocument | any): Promise<CheckResult> {
+    public async verifySchema(vcDocument: VcDocument | any): Promise<SchemaValidationResult> {
         let vc: IVC;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();
@@ -269,7 +315,7 @@ export class VCJS {
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
 
-        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
     }
 
     /**
@@ -321,9 +367,9 @@ export class VCJS {
      *
      * @param {any} subject - subject
      *
-     * @returns {CheckResult} - is verified
+     * @returns {SchemaValidationResult} - is verified
      */
-    public async verifySubject(subject: any): Promise<CheckResult> {
+    public async verifySubject(subject: any): Promise<SchemaValidationResult> {
         if (!this.schemaLoader) {
             throw new Error('Schema Loader not found');
         }
@@ -345,7 +391,7 @@ export class VCJS {
 
         const valid = validate(subject);
 
-        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
     }
 
     /**
@@ -467,7 +513,7 @@ export class VCJS {
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
         ContextHelper.clearContext(vc);
-        const verifiableCredential = await vcjs.createVerifiableCredential({
+        const verifiableCredential = await vcLib.issue({
             credential: vc,
             suite,
             documentLoader,
@@ -496,8 +542,9 @@ export class VCJS {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<VpDocument> {
+        // signPresentation attaches a proof to an already-formed VP; it does not build one.
         const vp = vpDocument.toJsonTree();
-        const verifiablePresentation = await vcjs.createVerifiablePresentation({
+        const verifiablePresentation = await vcLib.signPresentation({
             presentation: vp,
             challenge: '123',
             suite,

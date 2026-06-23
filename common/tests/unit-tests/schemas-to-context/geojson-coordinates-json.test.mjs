@@ -5,7 +5,7 @@ const COORDS_ID = 'https://purl.org/geojson/vocab#coordinates';
 const BBOX_ID = 'https://purl.org/geojson/vocab#bbox';
 
 const { schemasToContext } = await esmock('../../../dist/helpers/schemas-to-context.js', {
-    '@transmute/jsonld-schema': {
+    '../../../dist/helpers/jsonld-schema/index.js': {
         schemasToContext: () => ({
             '@context': {
                 place: { '@id': 'https://example.org/place' },
