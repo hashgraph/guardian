@@ -6,6 +6,7 @@ import {
     CreateDateColumn,
     UpdateDateColumn,
 } from 'typeorm';
+import type { VcDocData } from '../vc-detail/vc-detail.types';
 
 @Entity('message')
 @Index(['type', 'action'])
@@ -62,6 +63,17 @@ export class Message {
 
     @Column({ type: 'jsonb', nullable: true })
     options: Record<string, unknown> | null;
+
+    // Precomputed "Detailed Information" payload for this VC, decoded with
+    // human-readable field titles at ingestion time. Null until a VC is
+    // (re)processed; the additional-details endpoint decodes on the fly as a
+    // fallback. See src/shared/vc-detail/vc-detail.decoder.ts.
+    @Column({ type: 'jsonb', nullable: true })
+    decodedDetails: VcDocData | null;
+
+    // Bare schema UUID the decodedDetails were computed against.
+    @Column({ type: 'varchar', length: 64, nullable: true })
+    decodedDetailsSchemaUuid: string | null;
 
     @Column({ type: 'text', array: true, nullable: true })
     topics: string[] | null;

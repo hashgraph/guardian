@@ -6,6 +6,7 @@ import { PgProjectRepository } from '../repositories/pg-project.repository';
 import { ProjectRepository } from '../repositories/project.repository';
 import { MappingReprocessService } from './mapping-reprocess.service';
 import { PolicyWorkflowGraph } from './policy-graph.builder';
+import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -100,6 +101,14 @@ export class ProjectsService {
         consensusTimestamp: string,
     ): Promise<{ document: Record<string, unknown>; fieldLabels: Record<string, string> }> {
         return this.mappingReprocessService.getLinkedVcEvidence(network, projectId, consensusTimestamp);
+    }
+
+    /**
+     * Returns the project's "Detailed Information" — decoded VC payloads grouped
+     * by schema. Delegates to MappingReprocessService.
+     */
+    async getAdditionalDetails(network: string, id: string): Promise<AdditionalDetailsSchemaDto[]> {
+        return this.mappingReprocessService.getAdditionalDetails(network, id);
     }
 
     /**

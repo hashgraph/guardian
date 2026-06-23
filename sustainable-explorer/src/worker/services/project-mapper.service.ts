@@ -18,6 +18,7 @@ import { isNonProjectCsType } from '../project-mapper/non-project-credential';
 import { ReverseGeoService } from './reverse-geo.service';
 import { ProjectKeyResolverChain } from '../project-mapper/resolvers/resolver-chain.service';
 import { PolicyMapping } from '../mapping/policy-pipeline.types';
+import { buildVcTitleMaps, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
 
 /**
  * Fields a "date-only" source VC (monitoring/verification report) is allowed to
@@ -136,6 +137,17 @@ export class ProjectMapperService {
         const policyRow = policyRows[0];
         const { policyTopicId, instanceTopicId } = policyRow;
         const policyMapping = (policyRow.policyMapping ?? {}) as PolicyMapping;
+
+        // Precompute and store this VC's "Detailed Information" payload (decoded
+        // with human-readable titles) so the API / frontend read it directly
+        // instead of decoding live. Done here — before the resolver-chain
+        // early-returns below — so project, monitoring and verification VCs all
+        // get their per-VC detail stored. Non-fatal: a failure never blocks the
+        // project upsert. Note this depends only on the policy's rawSchemaJson
+        // (field titles), not the editable policyMapping, so field-map edits
+        // don't change it; a redecode (which rewrites rawSchemaJson) does, and
+        // the reparse flow re-runs this method to refresh stored details.
+        await this.storeDecodedDetails(vc.consensusTimestamp, vc.policyId, cs, vcSchemaUuid);
 
         // Build the cross-schema field map from policyMapping entries.
         // For each project extract field, pick the highest-scoring entry whose
@@ -605,6 +617,37 @@ export class ProjectMapperService {
             }
         }
         return 'unknown';
+    }
+
+    /**
+     * Decode this VC's credentialSubject into the structured "Detailed
+     * Information" payload and persist it on the message row. Best-effort:
+     * swallows errors so it can never block project ingestion. `rawSchemaJson`
+     * is fetched lazily here (not in the hot queryPolicyByPolicyId path) because
+     * the schema JSON can be large and is only needed for the decode.
+     */
+    private async storeDecodedDetails(
+        consensusTimestamp: string,
+        policyId: string,
+        cs: Record<string, any>,
+        vcSchemaUuid: string,
+    ): Promise<void> {
+        try {
+            const rows: Array<{ rawSchemaJson: Record<string, any> | null }> = await this.dataSource.query(
+                `SELECT "rawSchemaJson" FROM policy WHERE "policyId" = $1 LIMIT 1`,
+                [policyId],
+            );
+            const maps = buildVcTitleMaps(rows[0]?.rawSchemaJson ?? null);
+            const decoded = structureVcData(cs, vcSchemaUuid, maps);
+            await this.dataSource.query(
+                `UPDATE message
+                 SET "decodedDetails" = $2::jsonb, "decodedDetailsSchemaUuid" = $3
+                 WHERE "consensusTimestamp" = $1`,
+                [consensusTimestamp, JSON.stringify(decoded), vcSchemaUuid],
+            );
+        } catch (err) {
+            this.logger.warn(`decodedDetails compute failed for vc=${consensusTimestamp}: ${err}`);
+        }
     }
 
     private async queryPolicyByPolicyId(policyId: string): Promise<Array<{

@@ -9,6 +9,9 @@ import { UpdateMappingDto } from '../dto/update-mapping.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
 import { buildPolicyWorkflowGraph, PolicyWorkflowGraph } from './policy-graph.builder';
+import { bareUuid, buildVcTitleMaps, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
+import type { VcDocData, VcTitleMaps } from '@shared/vc-detail/vc-detail.types';
+import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 
 // ---------------------------------------------------------------------------
 // Internal row shapes
@@ -810,6 +813,130 @@ export class MappingReprocessService {
         const ds = this.dataSources.getDataSource(network);
         const fieldLabels = await this.buildVcFieldLabels(ds, consensusTimestamp, document);
         return { document, fieldLabels };
+    }
+
+    /**
+     * Returns the project's "Detailed Information" — the decoded VC payloads
+     * (fields/tables/groups, with human-readable titles) grouped by schema.
+     *
+     * Reads the precomputed `message.decodedDetails` (written at VC ingestion /
+     * reparse). For VCs not yet backfilled (decodedDetails IS NULL) it decodes
+     * on the fly from the raw document so the response is always correct. The
+     * MintToken schema is excluded (issuance evidence is shown elsewhere).
+     */
+    async getAdditionalDetails(network: string, projectId: string): Promise<AdditionalDetailsSchemaDto[]> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const projectRows: Array<{ businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "businessData"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+        if (projectRows.length === 0) {
+            throw new NotFoundException(`Project with ID "${projectId}" not found on ${network}.`);
+        }
+
+        const businessData = projectRows[0].businessData ?? {};
+        const linkedVcsRaw = Array.isArray(businessData['linkedVcs'])
+            ? (businessData['linkedVcs'] as Array<Record<string, unknown>>)
+            : [];
+
+        // Normalise to { consensusTimestamp, schemaUuid (bare) }, preserving order
+        // and dropping MintToken / malformed entries.
+        const vcEntries = linkedVcsRaw
+            .map(v => ({
+                consensusTimestamp: typeof v['consensusTimestamp'] === 'string' ? v['consensusTimestamp'] : '',
+                schemaUuid: bareUuid(typeof v['schemaUuid'] === 'string' ? v['schemaUuid'] : ''),
+            }))
+            .filter(v => v.consensusTimestamp && v.schemaUuid && v.schemaUuid !== 'MintToken');
+        if (vcEntries.length === 0) return [];
+
+        // Resolve schema metadata (name + docType, keyed by bare UUID) and the
+        // title maps for the on-the-fly fallback — all from the project's policy.
+        const policyTopicId = typeof businessData['policyTopicId'] === 'string'
+            ? (businessData['policyTopicId'] as string)
+            : null;
+        const schemaNameByUuid = new Map<string, string | null>();
+        const docTypeByUuid = new Map<string, string>();
+        let titleMaps: VcTitleMaps | null = null;
+        if (policyTopicId) {
+            const policyRows: Array<{ rawSchemaJson: Record<string, unknown> | null; policyMapping: Record<string, unknown> | null }> =
+                await ds.query(
+                    `SELECT "rawSchemaJson", "policyMapping"
+                     FROM policy
+                     WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded'
+                     LIMIT 1`,
+                    [policyTopicId],
+                );
+            if (policyRows.length > 0) {
+                const rawSchemaJson = (policyRows[0].rawSchemaJson ?? {}) as Record<string, unknown>;
+                const policyMapping = (policyRows[0].policyMapping ?? {}) as Record<string, unknown>;
+
+                const docTypeByIri = new Map<string, string>();
+                for (const entries of Object.values(policyMapping)) {
+                    if (!Array.isArray(entries)) continue;
+                    for (const entry of entries) {
+                        if (!entry || typeof entry !== 'object') continue;
+                        const e = entry as Record<string, unknown>;
+                        if (typeof e['schemaIri'] === 'string' && typeof e['docType'] === 'string') {
+                            docTypeByIri.set(e['schemaIri'] as string, e['docType'] as string);
+                        }
+                    }
+                }
+                for (const [iri, schemaDoc] of Object.entries(rawSchemaJson)) {
+                    const uuid = bareUuid(iri);
+                    const doc = (schemaDoc ?? {}) as Record<string, unknown>;
+                    schemaNameByUuid.set(uuid, typeof doc['name'] === 'string' ? (doc['name'] as string) : null);
+                    const dt = docTypeByIri.get(iri);
+                    if (dt) docTypeByUuid.set(uuid, dt);
+                }
+                titleMaps = buildVcTitleMaps(rawSchemaJson);
+            }
+        }
+
+        // Batch-read the decoded payloads (and raw documents for the fallback).
+        const timestamps = vcEntries.map(v => v.consensusTimestamp);
+        const msgRows: Array<{ consensusTimestamp: string; decodedDetails: VcDocData | null; documents: Record<string, unknown> | null }> =
+            await ds.query(
+                `SELECT "consensusTimestamp", "decodedDetails", documents
+                 FROM message
+                 WHERE "consensusTimestamp" = ANY($1::varchar[])`,
+                [timestamps],
+            );
+        const byTs = new Map(msgRows.map(r => [r.consensusTimestamp, r]));
+
+        // Group records by schema, preserving linkedVcs order.
+        const groups = new Map<string, VcDocData[]>();
+        for (const entry of vcEntries) {
+            const row = byTs.get(entry.consensusTimestamp);
+            let record: VcDocData | null = row?.decodedDetails ?? null;
+            if (!record && row?.documents && titleMaps) {
+                // Fallback: decode live for un-backfilled VCs.
+                try {
+                    const credentialSubject = (row.documents as Record<string, unknown>)['credentialSubject'];
+                    const cs = Array.isArray(credentialSubject)
+                        ? (credentialSubject[0] as Record<string, any>)
+                        : (credentialSubject as Record<string, any> | undefined);
+                    if (cs) record = structureVcData(cs, entry.schemaUuid, titleMaps);
+                } catch {
+                    // ignore — fall through to empty record
+                }
+            }
+            if (!record) record = { fields: [], tables: [], groups: [] };
+            const existing = groups.get(entry.schemaUuid);
+            if (existing) existing.push(record);
+            else groups.set(entry.schemaUuid, [record]);
+        }
+
+        return Array.from(groups.entries()).map(([schemaUuid, records]) => ({
+            schemaUuid,
+            schemaName: schemaNameByUuid.get(schemaUuid) ?? null,
+            docType: docTypeByUuid.get(schemaUuid) ?? 'unknown',
+            records,
+        }));
     }
 
     /**

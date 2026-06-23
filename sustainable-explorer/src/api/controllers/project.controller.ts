@@ -9,6 +9,7 @@ import {
     PaginatedProjectsDto,
     ActivityEventDto,
 } from '../dto/project.dto';
+import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 
 const VALID_EXPORT_FORMATS = new Set<string>(['iwa', 'cadtrust', 'cdop']);
 
@@ -256,6 +257,26 @@ export class ProjectsController {
         @Param('id') id: string,
     ): Promise<Record<string, unknown> | null> {
         return this.projectsService.getPolicyJson(network, id);
+    }
+
+    @Get(':id/additional-details')
+    @ApiOperation({
+        summary: 'Get a project\'s decoded "Detailed Information"',
+        description:
+            'Returns the project\'s linked VC documents decoded into structured fields, tables ' +
+            'and groups with human-readable titles, grouped by schema (one record per linked VC). ' +
+            'Served from the precomputed message.decodedDetails; VCs not yet backfilled are decoded ' +
+            'on the fly. The MintToken schema is excluded.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
+    @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project' })
+    @ApiResponse({ status: 200, type: [AdditionalDetailsSchemaDto], description: 'Decoded details grouped by schema' })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async getAdditionalDetails(
+        @Param('network') network: string,
+        @Param('id') id: string,
+    ): Promise<AdditionalDetailsSchemaDto[]> {
+        return this.projectsService.getAdditionalDetails(network, id);
     }
 
     @Get(':id/export/:format')
