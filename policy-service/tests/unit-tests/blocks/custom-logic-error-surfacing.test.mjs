@@ -4,15 +4,8 @@ import { CustomLogicBlock } from '../../../dist/policy-engine/blocks/custom-logi
 import { PolicyComponentsUtils } from '../../../dist/policy-engine/policy-components-utils.js';
 import { PolicyOutputEventType } from '../../../dist/policy-engine/interfaces/index.js';
 
-/**
- * customLogicBlock must surface execution errors to the UI, not swallow them.
- *
- * runAction wraps execute() in a local try/catch. Previously that catch only called
- * ref.error() (server logger) and returned, pre-empting the @CatchErrors decorator
- * that broadcasts block errors to the frontend via BlockErrorFn — so failures (e.g.
- * an output VC failing schema validation) were logged server-side only and the user
- * saw nothing. The fix additionally calls BlockErrorFn(...) and triggers an ErrorEvent.
- */
+// customLogicBlock must surface execution errors to the UI (via BlockErrorFn / ErrorEvent),
+// not just log them server-side. See #6271.
 describe('@unit customLogicBlock error surfacing', () => {
     let origBlockErrorFn;
     let uiErrors;
@@ -35,7 +28,6 @@ describe('@unit customLogicBlock error surfacing', () => {
         });
         const events = [];
         block.triggerEvents = async (...a) => { events.push(a); };
-        // simulate execute() throwing the way verifySubject() does on schema failure
         block.execute = async () => {
             throw new Error('{"type":"JSON_SCHEMA_VALIDATION_ERROR","details":[{"message":"must be number"}]}');
         };
