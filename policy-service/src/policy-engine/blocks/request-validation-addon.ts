@@ -1,7 +1,7 @@
 import { LocationType } from '@guardian/interfaces';
 import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
-import { findOptions } from '../helpers/find-options.js';
+import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
@@ -201,7 +201,7 @@ export class RequestValidationAddon {
      * Resolve a field path from the submitted (input) document.
      */
     private resolveVariable(path: string, document: IPolicyDocument): any {
-        return findOptions(document, path);
+        return PolicyUtils.getObjectValue(document, path);
     }
 
     /**
@@ -211,9 +211,9 @@ export class RequestValidationAddon {
      */
     private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
         if (operator === 'in' || operator === 'not_in') {
-            return sourceDocuments.map((doc) => findOptions(doc, path));
+            return sourceDocuments.map((doc) => PolicyUtils.getObjectValue(doc, path));
         }
-        return findOptions(sourceDocuments[0], path);
+        return PolicyUtils.getObjectValue(sourceDocuments[0], path);
     }
 
     /**
@@ -260,8 +260,30 @@ export class RequestValidationAddon {
      * Build a MongoDB filter object from a validation item's filter array.
      * typeValue 'variable' resolves the value from the submitted document at runtime.
      */
-    private buildDbFilter(filters: any[], policyId: string, document: IPolicyDocument): Record<string, any> {
+    private buildDbFilter(
+        filters: any[],
+        policyId: string,
+        document: IPolicyDocument,
+        validation: any,
+        user: any
+    ): Record<string, any> {
         const filter: Record<string, any> = { policyId: { $eq: policyId } };
+
+        if (validation.schema) {
+            filter.schema = { $eq: validation.schema };
+        }
+        if (validation.onlyOwnDocuments && user?.did) {
+            filter.owner = { $eq: user.did };
+        }
+        if (validation.onlyOwnByGroupDocuments && user?.group) {
+            filter.group = { $eq: user.group };
+        }
+        if (validation.onlyAssignDocuments && user?.did) {
+            filter.assignedTo = { $eq: user.did };
+        }
+        if (validation.onlyAssignByGroupDocuments && user?.group) {
+            filter.assignedToGroup = { $eq: user.group };
+        }
 
         for (const f of (filters || [])) {
             const value = f.typeValue === 'variable'
@@ -287,9 +309,10 @@ export class RequestValidationAddon {
     private async runValidation(
         ref: IPolicyValidatorBlock,
         validation: any,
-        document: IPolicyDocument
+        document: IPolicyDocument,
+        user: any
     ): Promise<string | null> {
-        const filter = this.buildDbFilter(validation.filters, ref.policyId, document);
+        const filter = this.buildDbFilter(validation.filters, ref.policyId, document, validation, user);
 
         const sourceDocuments: any[] = validation.dbCollection === 'VpDocument'
             ? await ref.databaseServer.getVpDocuments(filter as any) as any[]
@@ -318,10 +341,11 @@ export class RequestValidationAddon {
     private async validateDocument(
         ref: IPolicyValidatorBlock,
         options: any,
-        document: IPolicyDocument
+        document: IPolicyDocument,
+        user: any
     ): Promise<string | null> {
         for (const validation of (options.validations || [])) {
-            const error = await this.runValidation(ref, validation, document);
+            const error = await this.runValidation(ref, validation, document, user);
             if (error) {
                 return error;
             }
@@ -337,6 +361,7 @@ export class RequestValidationAddon {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
         const options = await ref.getOptions(event.user);
         const document = event?.data?.data;
+        const user = event?.user;
 
         if (!document) {
             return 'Invalid document';
@@ -344,7 +369,7 @@ export class RequestValidationAddon {
 
         if (Array.isArray(document)) {
             for (const doc of document) {
-                const error = await this.validateDocument(ref, options, doc);
+                const error = await this.validateDocument(ref, options, doc, user);
                 if (error) {
                     return error;
                 }
@@ -352,7 +377,7 @@ export class RequestValidationAddon {
             return null;
         }
 
-        return this.validateDocument(ref, options, document);
+        return this.validateDocument(ref, options, document, user);
     }
 
     /**

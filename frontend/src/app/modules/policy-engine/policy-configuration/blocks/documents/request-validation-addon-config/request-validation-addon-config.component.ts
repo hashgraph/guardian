@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
-import { IModuleVariables, PolicyBlock } from '../../../../structures';
+import { PolicyBlock, SchemaVariables } from '../../../../structures';
 
 /**
- * Settings for block of 'requestValidationAddon' type.
+ * Settings for a block of the 'requestValidationAddon' type.
  */
 @Component({
     selector: 'request-validation-addon-config',
@@ -16,7 +16,6 @@ export class RequestValidationAddonConfigComponent implements OnInit {
     @Input('readonly') readonly!: boolean;
     @Output() onInit = new EventEmitter();
 
-    private moduleVariables!: IModuleVariables | null;
     private item!: PolicyBlock;
 
     propHidden: any = {
@@ -24,9 +23,12 @@ export class RequestValidationAddonConfigComponent implements OnInit {
         validations: {},
         filters: {},
         conditions: {},
+        filterItems: {},
+        conditionItems: {},
     };
 
     properties!: any;
+    schemas!: SchemaVariables[];
 
     collectionOptions = [
         { label: 'VC Document', value: 'VcDocument' },
@@ -61,6 +63,7 @@ export class RequestValidationAddonConfigComponent implements OnInit {
     ];
 
     ngOnInit(): void {
+        this.schemas = [];
         this.onInit.emit(this);
         this.load(this.currentBlock);
     }
@@ -70,27 +73,43 @@ export class RequestValidationAddonConfigComponent implements OnInit {
     }
 
     load(block: PolicyBlock) {
-        this.moduleVariables = block.moduleVariables;
         this.item = block;
         this.properties = block.properties;
         this.properties.validations = this.properties.validations || [];
+        this.schemas = block.moduleVariables?.schemas || [];
     }
 
     onHide(item: any, prop: any) {
         item[prop] = !item[prop];
     }
 
+    onHideNested(container: any, vi: number, fi: number) {
+        const key = `${vi}_${fi}`;
+        container[key] = !container[key];
+    }
+
+    isNestedHidden(container: any, vi: number, fi: number): boolean {
+        return !!container[`${vi}_${fi}`];
+    }
+
     addValidation() {
         this.properties.validations.push({
             dbCollection: 'VcDocument',
+            schema: null,
+            onlyOwnDocuments: false,
+            onlyOwnByGroupDocuments: false,
+            onlyAssignDocuments: false,
+            onlyAssignByGroupDocuments: false,
             filters: [],
             conditions: [],
             failMessage: 'Validation failed',
         });
+        this.onSave();
     }
 
     removeValidation(i: number) {
         this.properties.validations.splice(i, 1);
+        this.onSave();
     }
 
     addFilter(validation: any, vi: number) {
@@ -100,10 +119,12 @@ export class RequestValidationAddonConfigComponent implements OnInit {
             typeValue: 'value',
             value: '',
         });
+        this.onSave();
     }
 
     removeFilter(validation: any, fi: number) {
         validation.filters.splice(fi, 1);
+        this.onSave();
     }
 
     addCondition(validation: any, vi: number) {
@@ -114,10 +135,12 @@ export class RequestValidationAddonConfigComponent implements OnInit {
             value: '',
             valueSource: 'source',
         });
+        this.onSave();
     }
 
     removeCondition(validation: any, ci: number) {
         validation.conditions.splice(ci, 1);
+        this.onSave();
     }
 
     onSave() {
