@@ -138,10 +138,8 @@ export class CustomLogicBlock {
         } catch (error) {
             const message = PolicyUtils.getErrorMessage(error);
             ref.error(message);
-            // Surface the failure to the UI as well. This local try/catch otherwise
-            // pre-empts the @CatchErrors decorator, which is what normally broadcasts block
-            // errors to the frontend via BlockErrorFn / errorBlockEvent — so without this the
-            // error is logged server-side only and the user sees nothing.
+            // Also surface to the UI: this local catch pre-empts @CatchErrors, which would
+            // otherwise broadcast the failure via BlockErrorFn. Without it the error is logged only.
             PolicyComponentsUtils.BlockErrorFn(ref.blockType, message, event.user)
                 .catch((broadcastError) => ref.error(PolicyUtils.getErrorMessage(broadcastError)));
             ref.triggerEvents(PolicyOutputEventType.ErrorEvent, event.user, event.data, event.actionStatus);
