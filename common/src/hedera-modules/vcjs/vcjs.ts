@@ -20,9 +20,13 @@ import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPa
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
 
-import * as pkg from 'jsonld-signatures';
+import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
-const { verify, purposes } = pkg;
+// BbsBlsSignature2020 targets jsonld-signatures@7. Drive its sign/verify with the v7 alias
+// (jsonld-signatures@11, used by @digitalbazaar/vc for Ed25519, is incompatible with it).
+// Under ESM the CJS named exports live on `.default`, so resolve that before destructuring.
+const jsigV7: any = (jsigV7Module as any).default ?? jsigV7Module;
+const { sign: signV7, verify: verifyV7, purposes: purposesV7 } = jsigV7;
 
 /**
  * Suite interface
@@ -203,8 +207,8 @@ export class VCJS {
                 documentLoader: this.ed25519VerificationDocumentLoader(documentLoader),
             });
         } else {
-            result = await verify(json, {
-                purpose: new purposes.AssertionProofPurpose(),
+            result = await verifyV7(json, {
+                purpose: new purposesV7.AssertionProofPurpose(),
                 suite: [new BbsBlsSignature2020(), new BbsBlsSignatureProof2020()],
                 documentLoader,
             });
@@ -513,16 +517,24 @@ export class VCJS {
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
         ContextHelper.clearContext(vc);
-        const verifiableCredential = await vcLib.issue({
-            credential: vc,
-            suite,
-            documentLoader,
-        });
-        if (
-            suite instanceof BbsBlsSignature2020 &&
-            verifiableCredential.proof?.type
-        ) {
-            verifiableCredential.proof.type = SignatureType.BbsBlsSignature2020;
+        let verifiableCredential: any;
+        if (suite instanceof BbsBlsSignature2020) {
+            // BbsBlsSignature2020 must be signed with the v7 driver; @digitalbazaar/vc's
+            // issue() (jsonld-signatures@11) calls APIs the v7-era suite does not implement.
+            verifiableCredential = await signV7(vc, {
+                suite,
+                purpose: new purposesV7.AssertionProofPurpose(),
+                documentLoader,
+            });
+            if (verifiableCredential.proof?.type) {
+                verifiableCredential.proof.type = SignatureType.BbsBlsSignature2020;
+            }
+        } else {
+            verifiableCredential = await vcLib.issue({
+                credential: vc,
+                suite,
+                documentLoader,
+            });
         }
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;

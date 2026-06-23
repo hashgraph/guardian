@@ -4,6 +4,7 @@ import securityContexts from '@digitalbazaar/security-context';
 // Two URLs alias the same BBS context and @digitalbazaar/security-context ships neither,
 // so the vendored copy is served for both (see the has/get branches below).
 import { BBS_V1_URL, BLS12381_2020_V1_CONTEXT, BLS12381_2020_V1_URL } from './contexts/bls12381-2020-v1.js';
+import { JWS_2020_V1_CONTEXT, JWS_2020_V1_URL } from './contexts/jws-2020-v1.js';
 import { IDocumentFormat } from './document-format.js';
 import { DocumentLoader } from './document-loader.js';
 
@@ -27,6 +28,9 @@ export class DefaultDocumentLoader extends DocumentLoader {
             return true;
         }
         if (iri === BBS_V1_URL || iri === BLS12381_2020_V1_URL) {
+            return true;
+        }
+        if (iri === JWS_2020_V1_URL) {
             return true;
         }
         return false;
@@ -59,6 +63,12 @@ export class DefaultDocumentLoader extends DocumentLoader {
             return {
                 documentUrl: iri,
                 document: BLS12381_2020_V1_CONTEXT,
+            };
+        }
+        if (iri === JWS_2020_V1_URL) {
+            return {
+                documentUrl: iri,
+                document: JWS_2020_V1_CONTEXT,
             };
         }
         throw new Error('IRI not found: ' + iri);

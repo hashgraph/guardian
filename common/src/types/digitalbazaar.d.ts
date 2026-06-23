@@ -29,6 +29,20 @@ declare module '@digitalbazaar/ed25519-verification-key-2018' {
     }
 }
 
+declare module 'jsonld-signatures-v7' {
+    export interface VerificationResult {
+        verified: boolean;
+        results?: Array<{ verified: boolean; error?: { message?: string } }>;
+        error?: any;
+    }
+    export function sign(document: any, options: any): Promise<any>;
+    export function verify(document: any, options: any): Promise<VerificationResult>;
+    export const purposes: { AssertionProofPurpose: new (options?: any) => any; [key: string]: any };
+    export const suites: Record<string, any>;
+    export const SECURITY_CONTEXT_URL: string;
+    export const SECURITY_PROOF_URL: string;
+}
+
 declare module '@digitalbazaar/vc' {
     export interface VerificationResult {
         verified: boolean;
