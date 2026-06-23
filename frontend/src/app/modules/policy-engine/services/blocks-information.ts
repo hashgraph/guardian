@@ -61,6 +61,7 @@ import { MathConfigComponent } from '../policy-configuration/blocks/calculate/ma
 import { GlobalEventsReaderBlockComponent } from '../policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
 import { GlobalEventsWriterBlockComponent } from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
 import { IpfsTransformationUIAddonCode } from '../policy-viewer/code/ipfs-transformation-ui-addon';
+import { RequestValidationAddonConfigComponent } from '../policy-configuration/blocks/documents/request-validation-addon-config/request-validation-addon-config.component';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -305,6 +306,16 @@ const RequestBlockAddon: IBlockSetting = {
     header: BlockHeaders.Addons,
     factory: RequestDocumentBlockAddonComponent,
     property: RequestAddonConfigComponent,
+    code: null,
+}
+
+const RequestValidationAddon: IBlockSetting = {
+    type: BlockType.RequestValidationAddon,
+    icon: BlockIcons[BlockType.RequestValidationAddon],
+    group: BlockGroup.Documents,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: RequestValidationAddonConfigComponent,
     code: null,
 }
 
@@ -956,5 +967,6 @@ export default [
     IntegrationButtonBlock,
     HttpRequestUIAddon,
     TransformationUIAddon,
-    IpfsTransformationUIAddon
+    IpfsTransformationUIAddon,
+    RequestValidationAddon
 ];

@@ -1,6 +1,6 @@
 import { LocationType } from '@guardian/interfaces';
 import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
-import { CatchErrors } from '@policy-engine/helpers/decorators';
+import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { findOptions } from '../helpers/find-options.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { BlockActionError } from '../errors/index.js';
