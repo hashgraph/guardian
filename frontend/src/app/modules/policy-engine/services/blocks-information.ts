@@ -307,6 +307,10 @@ const RequestBlockAddon: IBlockSetting = {
     factory: RequestDocumentBlockAddonComponent,
     property: RequestAddonConfigComponent,
     code: null,
+    allowedChildren: [{
+        type: BlockType.RequestValidationAddon,
+        group: BlockGroup.UnGrouped,
+    }],
 }
 
 const RequestValidationAddon: IBlockSetting = {
