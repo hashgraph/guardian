@@ -24,7 +24,7 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "prepack": "npm run build",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/interfaces.xml --exit"
     },
     "type": "module",
     "version": "3.6.0"
