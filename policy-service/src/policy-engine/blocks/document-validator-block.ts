@@ -2,7 +2,7 @@ import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -34,96 +34,7 @@ import { LocationType } from '@guardian/interfaces';
             PolicyOutputEventType.RefreshEvent,
             PolicyOutputEventType.ErrorEvent
         ],
-        defaultEvent: true,
-        properties: [{
-            name: 'conditions',
-            label: 'Conditions',
-            title: 'Conditions',
-            type: PropertyType.Array,
-            editable: true,
-            items: {
-                label: 'Condition',
-                value: '',
-                properties: [
-                    {
-                        name: 'type',
-                        label: 'Type',
-                        title: 'Type',
-                        type: PropertyType.Select,
-                        items: [
-                            { label: 'Equal', value: 'equal' },
-                            { label: 'Not Equal', value: 'not_equal' },
-                            { label: 'In', value: 'in' },
-                            { label: 'Not In', value: 'not_in' }
-                        ],
-                        editable: true
-                    },
-                    {
-                        name: 'field',
-                        label: 'Field',
-                        title: 'Field',
-                        type: PropertyType.Input,
-                        editable: true
-                    },
-                    {
-                        name: 'value',
-                        label: 'Value',
-                        title: 'Value',
-                        type: PropertyType.Input,
-                        editable: true
-                    },
-                ]
-            }
-        },
-        {
-            name: 'documentType',
-            label: 'Document Type',
-            title: 'Document Type',
-            type: PropertyType.Select,
-            items: [
-                { label: 'VC Document', value: 'vc-document'},
-                { label: 'VP Document', value: 'vp-document'},
-                { label: 'Related VC Document', value: 'related-vc-document'},
-                { label: 'Related VP Document', value: 'related-vp-document'}
-            ],
-            editable: false
-        },
-        {
-            name: 'schema',
-            label: 'Check Schema',
-            title: 'Check Schema',
-            type: PropertyType.Schemas,
-            editable: true
-        },
-        {
-            name: 'checkOwnerDocument',
-            label: 'Check Owned by User',
-            title: 'Check Owned by User',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        {
-            name: 'checkOwnerByGroupDocument',
-            label: 'Check Owned by Group',
-            title: 'Check Owned by Group',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        {
-            name: 'checkAssignDocument',
-            label: 'Check Assigned to User',
-            title: 'Check Assigned to User',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        {
-            name: 'checkAssignByGroupDocument',
-            label: 'Check Assigned to Group',
-            title: 'Check Assigned to Group',
-            type: PropertyType.Checkbox,
-            editable: true
-        },
-        ]
+        defaultEvent: true
     },
     variables: [
         { path: 'options.schema', alias: 'schema', type: 'Schema' }

@@ -698,7 +698,7 @@ const DocumentValidatorBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: null,
+    property: DocumentValidatorConfigComponent,
     code: null
 }
 
