@@ -130,6 +130,155 @@ import { LocationType } from '@guardian/interfaces';
     ]
 })
 export class DocumentValidatorBlock {
+    private coerceValue(value: any): any {
+        if (typeof value !== 'string') { return value; }
+        if (value === 'null') { return null; }
+        if (value === 'true') { return true; }
+        if (value === 'false') { return false; }
+        const num = Number(value);
+        if (!isNaN(num) && value.trim() !== '') { return num; }
+        return value;
+    }
+
+    private resolveDocumentValue(path: string, document: IPolicyDocument): any {
+        return PolicyUtils.getObjectValue(document, path);
+    }
+
+    private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
+        if (operator === 'in' || operator === 'not_in') {
+            return sourceDocuments.map((doc) => PolicyUtils.getObjectValue(doc, path));
+        }
+        return PolicyUtils.getObjectValue(sourceDocuments[0], path);
+    }
+
+    private resolveConditionSide(
+        raw: string,
+        sourceType: 'value' | 'document' | 'source',
+        operator: string,
+        document: IPolicyDocument,
+        sourceDocuments: any[]
+    ): any {
+        switch (sourceType) {
+            case 'document': return this.resolveDocumentValue(raw, document);
+            case 'source':   return this.resolveSourceValue(raw, sourceDocuments, operator);
+            default:         return raw;
+        }
+    }
+
+    private evaluateCrossCondition(left: any, type: string, right: any): boolean {
+        switch (type) {
+            case 'not_equal': return left !== right;
+            case 'in':        return Array.isArray(right) ? right.includes(left) : right === left;
+            case 'not_in':    return Array.isArray(right) ? !right.includes(left) : right !== left;
+            case 'gt':        return left > right;
+            case 'gte':       return left >= right;
+            case 'lt':        return left < right;
+            case 'lte':       return left <= right;
+            default:          return left === right;
+        }
+    }
+
+    private describeCrossConditionFailure(type: string, left: any, right: any): string {
+        const l = JSON.stringify(left);
+        const r = JSON.stringify(right);
+        switch (type) {
+            case 'not_equal': return `value ${l} must not equal ${r}`;
+            case 'in':        return `value ${l} is not in ${r}`;
+            case 'not_in':    return `value ${l} must not be in ${r}`;
+            case 'gt':        return `value ${l} is not greater than ${r}`;
+            case 'gte':       return `value ${l} is not greater than or equal to ${r}`;
+            case 'lt':        return `value ${l} is not less than ${r}`;
+            case 'lte':       return `value ${l} is not less than or equal to ${r}`;
+            default:          return `got ${l}, expected ${r}`;
+        }
+    }
+
+    private buildSourceFilter(
+        sourceValidation: any,
+        ref: IPolicyValidatorBlock,
+        document: IPolicyDocument,
+        user: any
+    ): Record<string, any> {
+        const filter: Record<string, any> = { policyId: { $eq: ref.policyId } };
+
+        if (sourceValidation.schema) {
+            filter.schema = { $eq: sourceValidation.schema };
+        }
+        if (sourceValidation.onlyOwnDocuments && user?.did) {
+            filter.owner = { $eq: user.did };
+        }
+        if (sourceValidation.onlyOwnByGroupDocuments && user?.group) {
+            filter.group = { $eq: user.group };
+        }
+        if (sourceValidation.onlyAssignDocuments && user?.did) {
+            filter.assignedTo = { $eq: user.did };
+        }
+        if (sourceValidation.onlyAssignByGroupDocuments && user?.group) {
+            filter.assignedToGroup = { $eq: user.group };
+        }
+
+        for (const f of (sourceValidation.filters || [])) {
+            const raw = f.typeValue === 'variable'
+                ? this.resolveDocumentValue(f.value, document)
+                : f.value;
+            const value = this.coerceValue(raw);
+
+            switch (f.type) {
+                case 'not_equal': filter[f.field] = { $ne: value }; break;
+                case 'in':        filter[f.field] = { $in: Array.isArray(value) ? value : [value] }; break;
+                case 'not_in':    filter[f.field] = { $nin: Array.isArray(value) ? value : [value] }; break;
+                case 'gt':        filter[f.field] = { $gt: value }; break;
+                case 'gte':       filter[f.field] = { $gte: value }; break;
+                case 'lt':        filter[f.field] = { $lt: value }; break;
+                case 'lte':       filter[f.field] = { $lte: value }; break;
+                case 'exists':    filter[f.field] = { $exists: value !== false && value !== 'false' }; break;
+                case 'regex':     filter[f.field] = { $regex: value }; break;
+                default:          filter[f.field] = { $eq: value }; break;
+            }
+        }
+
+        return filter;
+    }
+
+    private async runSourceValidation(
+        ref: IPolicyValidatorBlock,
+        sourceValidation: any,
+        document: IPolicyDocument,
+        user: any
+    ): Promise<string | null> {
+        const filter = this.buildSourceFilter(sourceValidation, ref, document, user);
+
+        const sourceDocuments: any[] = sourceValidation.dbCollection === 'VpDocument'
+            ? await ref.databaseServer.getVpDocuments(filter as any) as any[]
+            : await ref.databaseServer.getVcDocuments(filter as any) as any[];
+
+        const title = sourceValidation.failMessage || ref.tag;
+
+        if (!sourceDocuments?.length) {
+            const filterSummary = (sourceValidation.filters || [])
+                .map((f: any) => `${f.field} ${f.type} "${f.value}"`)
+                .join(', ');
+            const detail = filterSummary
+                ? `no source documents matched filter(s): ${filterSummary}`
+                : 'no matching source documents found';
+            PolicyComponentsUtils.BlockErrorFn(title, detail, user).catch((_e) => undefined);
+            return `${title}: ${detail}`;
+        }
+
+        for (const condition of (sourceValidation.conditions || [])) {
+            const left  = this.coerceValue(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, sourceDocuments));
+            const right = this.coerceValue(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, sourceDocuments));
+
+            if (!this.evaluateCrossCondition(left, condition.type, right)) {
+                const detail = `field "${condition.field}" — ${this.describeCrossConditionFailure(condition.type, left, right)}`;
+                PolicyComponentsUtils.BlockErrorFn(title, detail, user).catch((_e) => undefined);
+                return `${title}: ${detail}`;
+            }
+        }
+
+        return null;
+    }
+
     /**
      * Before init callback
      */
@@ -244,6 +393,15 @@ export class DocumentValidatorBlock {
             for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     return `Invalid document`;
+                }
+            }
+        }
+
+        if (options.sourceValidations?.length) {
+            for (const sourceValidation of options.sourceValidations) {
+                const error = await this.runSourceValidation(ref, sourceValidation, document, event.user);
+                if (error) {
+                    return error;
                 }
             }
         }
