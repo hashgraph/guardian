@@ -147,6 +147,17 @@
     }
 }
 
+.dialog-header .header-container {
+    right: 165px;
+}
+
+.header-icon.nav-panel {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+}
+
 :host ::ng-deep {
     .version-dropdown {
         .p-select {

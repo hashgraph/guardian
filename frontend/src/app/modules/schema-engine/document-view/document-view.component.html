@@ -1,6 +1,6 @@
 <div class="content" #contentContainer>
   @if (type !== 'VP') {
-    <div class="schema-form-view-nav" #navContainer>
+    <div class="schema-form-view-nav" #navContainer [class.nav-collapsed]="navCollapsed">
       <app-schema-form-view-navigation #schemaNav
         [subjects]="subjects"
         [schemaMap]="schemaMap"

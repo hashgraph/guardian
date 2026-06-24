@@ -138,6 +138,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
                 viewDocument: true,
                 document: document.document,
                 type: 'VC',
+                canExport: true,
                 additionalOptions: [
                     { label: 'Integration Data', value: 'integration', icon: 'number' },
                 ],
