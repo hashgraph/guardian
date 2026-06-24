@@ -637,7 +637,7 @@ a {
 .text-search {
     position: relative;
     display: grid;
-    grid-template-columns: 140px auto;
+    grid-template-columns: 150px auto;
 
     &::ng-deep {
         .guardian-multiselect {
