@@ -231,8 +231,6 @@ export class DocumentValidatorBlock {
                 case 'gte':       filter[f.field] = { $gte: value }; break;
                 case 'lt':        filter[f.field] = { $lt: value }; break;
                 case 'lte':       filter[f.field] = { $lte: value }; break;
-                case 'exists':    filter[f.field] = { $exists: value !== false && value !== 'false' }; break;
-                case 'regex':     filter[f.field] = { $regex: value }; break;
                 default:          filter[f.field] = { $eq: value }; break;
             }
         }

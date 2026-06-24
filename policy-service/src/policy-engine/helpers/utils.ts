@@ -434,15 +434,17 @@ export class PolicyUtils {
                 case 'not_equal':
                     return filter.value !== value;
                 case 'in':
-                    if (Array.isArray(value)) {
-                        return value.indexOf(filter.value) > -1;
-                    }
-                    return false;
+                    return Array.isArray(value) ? value.indexOf(filter.value) > -1 : false;
                 case 'not_in':
-                    if (Array.isArray(value)) {
-                        return value.indexOf(filter.value) === -1;
-                    }
-                    return false;
+                    return Array.isArray(value) ? value.indexOf(filter.value) === -1 : false;
+                case 'gt':
+                    return value > filter.value;
+                case 'gte':
+                    return value >= filter.value;
+                case 'lt':
+                    return value < filter.value;
+                case 'lte':
+                    return value <= filter.value;
                 default:
                     return false;
             }
