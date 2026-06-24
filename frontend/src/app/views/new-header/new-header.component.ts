@@ -12,6 +12,7 @@ import { BrandingService } from '../../services/branding.service';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { Subscription } from 'rxjs';
 import { DocWidgetService } from '../../services/doc-widget.service';
+import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 
 @Component({
     selector: 'app-new-header',
@@ -58,7 +59,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         public headerProps: HeaderPropsService,
         private brandingService: BrandingService,
         private externalPoliciesService: ExternalPoliciesService,
-        private docWidgetService: DocWidgetService) {
+        private docWidgetService: DocWidgetService,
+        private appThemeService: AppThemeService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -280,6 +282,35 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             localStorage.setItem('MAIN_HEADER', String(this.smallMenuMode));
         } catch (error) {
             console.error(error);
+        }
+    }
+
+    public get currentTheme(): AppTheme {
+        return this.appThemeService.getCurrentTheme();
+    }
+
+    public get currentThemeOption(): AppThemeOption {
+        return this.appThemeService.themes.find(t => t.value === this.currentTheme)
+            || this.appThemeService.themes[0];
+    }
+
+    public get appThemes(): AppThemeOption[] {
+        return this.appThemeService.themes;
+    }
+
+    public onThemeChange(theme: AppTheme): void {
+        this.appThemeService.setTheme(theme);
+    }
+
+    public cycleTheme(): void {
+        const themes = this.appThemeService.themes;
+        const idx = themes.findIndex(t => t.value === this.currentTheme);
+        this.appThemeService.setTheme(themes[(idx + 1) % themes.length].value);
+    }
+
+    public onThemeIconClick(): void {
+        if (this.menuCollapsed) {
+            this.cycleTheme();
         }
     }
 

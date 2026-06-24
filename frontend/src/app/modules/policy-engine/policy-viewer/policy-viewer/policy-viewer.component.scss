@@ -1086,20 +1086,20 @@ a.go-back-link svg {
     .toggleSwitch::after {
         content: "";
         position: absolute;
-        height: 10px;
-        width: 10px;
-        left: 5px;
-        background-color: var(--guardian-background, #fff);
+        height: 18px;
+        width: 18px;
+        top: 50%;
+        left: 4px;
+        background-color: #fff;
         border-radius: 50%;
-        transition-duration: .2s;
-        box-shadow: 5px 2px 7px rgba(8, 8, 8, 0.26);
-        border: 5px solid #fff;
+        box-shadow: 2px 2px 5px rgba(8, 8, 8, 0.26);
+        transform: translateY(-50%);
+        transition: transform .2s;
     }
 
     input:checked+.toggleSwitch::after {
-        transform: translateX(100%);
-        transition-duration: .2s;
-        background-color: var(--guardian-background, white);
+        transform: translateY(-50%) translateX(24px);
+        background-color: #fff;
     }
 
     input:checked+.toggleSwitch {

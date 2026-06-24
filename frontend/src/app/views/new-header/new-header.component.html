@@ -167,6 +167,23 @@
       }
     </div>
 
+    <div class="item theme-switcher-item" (click)="onThemeIconClick()">
+      <i [class]="currentThemeOption.icon" class="theme-icon-current"></i>
+      <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
+        <span>Theme</span>
+        <div class="theme-icons">
+          @for (theme of appThemes; track theme.value) {
+            <i
+              [class]="theme.icon"
+              [class.theme-icon-active]="theme.value === currentTheme"
+              (click)="onThemeChange(theme.value); $event.stopPropagation()"
+              [title]="theme.label"
+            ></i>
+          }
+        </div>
+      </div>
+    </div>
+
     <div class="boundary-box">
       <div
         (click)="goToHomePage()"
