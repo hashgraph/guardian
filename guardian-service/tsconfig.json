@@ -1,59 +1,57 @@
 {
     "compilerOptions": {
-        "module": "ESNext",
-        "target": "es2022",
-        "lib": [
-            "es5",
-            "es6",
-            "ES2021.String"
-        ],
-        "moduleResolution": "node",
-        "sourceMap": true,
-        "outDir": "dist/",
-        "emitDecoratorMetadata": true,
-        "experimentalDecorators": true,
-        "esModuleInterop": true,
-        "skipLibCheck": true,
         "baseUrl": "./src",
+        "emitDecoratorMetadata": true,
+        "esModuleInterop": true,
+        "experimentalDecorators": true,
+        "lib": [
+            "ES2023"
+        ],
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
+        "outDir": "dist/",
         "paths": {
-            "@entity/*": [
-                "entity/*"
+            "@analytics": [
+                "./src/analytics/index"
             ],
             "@api/*": [
-                "api/*"
-            ],
-            "@subscribers/*": [
-                "subscribers/*"
-            ],
-            "@helpers/*": [
-                "helpers/*"
-            ],
-            "@policy-engine/*": [
-                "policy-engine/*"
+                "./src/api/*"
             ],
             "@auth/*": [
-                "auth/*"
-            ],
-            "@hedera-modules": [
-                "hedera-modules/index"
+                "./src/auth/*"
             ],
             "@database-modules": [
-                "database-modules/index"
+                "./src/database-modules/index"
             ],
             "@document-loader/*": [
-                "document-loader/*"
+                "./src/document-loader/*"
             ],
-            "@analytics": [
-                "analytics/index"
+            "@entity/*": [
+                "./src/entity/*"
+            ],
+            "@hedera-modules": [
+                "./src/hedera-modules/index"
+            ],
+            "@helpers/*": [
+                "./src/helpers/*"
+            ],
+            "@policy-engine/*": [
+                "./src/policy-engine/*"
+            ],
+            "@subscribers/*": [
+                "./src/subscribers/*"
             ]
-        }
+        },
+        "skipLibCheck": true,
+        "sourceMap": true,
+        "strict": false,
+        "target": "ES2023"
     },
-    "include": [
-        "src/**/*",
-        "../interfaces/src/type/TopicType.ts"
-    ],
     "exclude": [
         "node_modules"
     ],
-    "compileOnSave": true
+    "include": [
+        "src/**/*",
+        "../interfaces/src/type/TopicType.ts"
+    ]
 }

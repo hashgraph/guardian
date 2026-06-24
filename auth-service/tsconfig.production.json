@@ -1,40 +1,38 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
         "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
-        "resolveJsonModule": true,
         "experimentalDecorators": true,
-        "skipLibCheck": true,
-        "inlineSourceMap": false,
         "lib": [
-            "dom",
-            "es5",
-            "es6"
+            "ES2023"
         ],
-        "module": "ESNext",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "outDir": "dist/",
         "paths": {
             "@api/*": [
-                "api/*"
+                "./src/api/*"
             ],
             "@entity/*": [
-                "entity/*"
+                "./src/entity/*"
             ],
             "@helpers/*": [
-                "helpers/*"
+                "./src/helpers/*"
             ],
             "#constants": [
-                "constants/index.js"
+                "./src/constants/index.js"
             ],
             "#utils": [
-                "utils/index.js"
+                "./src/utils/index.js"
             ]
         },
-        "target": "es2022"
+        "resolveJsonModule": true,
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
     "exclude": [
         "node_modules",

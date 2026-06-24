@@ -2,6 +2,9 @@
     "devDependencies": {
         "detect-secrets": "^1.0.6"
     },
+    "engines": {
+        "node": ">=24.15.0"
+    },
     "name": "guardian",
     "packageManager": "yarn@4.16.0",
     "private": true,

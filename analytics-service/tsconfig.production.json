@@ -1,38 +1,37 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
         "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
-        "inlineSourceMap": false,
-        "skipLibCheck": true,
         "lib": [
-            "es5",
-            "es6"
+            "ES2023"
         ],
-        "module": "ESNext",
-        "moduleResolution": "node",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "outDir": "dist/",
         "paths": {
             "@api/*": [
-                "api/*"
+                "./src/api/*"
             ],
             "@entity/*": [
-                "entity/*"
+                "./src/entity/*"
             ],
             "@helpers/*": [
-                "helpers/*"
+                "./src/helpers/*"
             ],
             "@interfaces/*": [
-                "interfaces/*"
+                "./src/interfaces/*"
             ],
             "@middlewares/*": [
-                "middlewares/*"
+                "./src/middlewares/*"
             ]
         },
-        "target": "es2022"
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
     "exclude": [
         "node_modules",
