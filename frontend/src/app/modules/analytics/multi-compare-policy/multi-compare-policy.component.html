@@ -274,7 +274,7 @@
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + context.blockIcon"></i>
                                         </div>
-                                        <div class="block-type">{{ context.blockName }}</div>
+                                        <div class="block-type" [appOverflowTitle]="context.blockName">{{ context.blockName }}</div>
                                     </div>
                                 </div>
 
@@ -449,7 +449,7 @@
                     <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <i class="pi pi-search"></i>
                     </div>
-                    <span *ngIf="prop.propType" [title]="prop.value">
+                    <span *ngIf="prop.propType" [appOverflowTitle]="prop.value">
                         {{ prop.value }}
                     </span>
                 </div>
@@ -620,7 +620,7 @@
                     <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <i class="pi pi-search"></i>
                     </div>
-                    <span *ngIf="prop.propType" [title]="prop.value">
+                    <span *ngIf="prop.propType" [appOverflowTitle]="prop.value">
                         {{ prop.value }}
                     </span>
                 </div>
