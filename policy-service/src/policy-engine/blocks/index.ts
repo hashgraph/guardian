@@ -52,7 +52,6 @@ export { ExtractDataBlock } from './extract-data-block.js';
 export { ButtonBlockAddon } from './button-block-addon.js';
 export { DropdownBlockAddon } from './dropdown-block-addon.js';
 export { RequestVcDocumentBlockAddon } from './request-vc-document-block-addon.js';
-export { RequestValidationAddon } from './request-validation-addon.js';
 export { DataTransformationAddon } from './data-transformation-addon.js';
 export { HttpRequestUIAddon } from './http-request-ui-addon.js';
 export { TransformationUIAddon } from './transformation-ui-addon.js';

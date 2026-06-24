@@ -16,7 +16,6 @@ BlockIcons[BlockType.HttpRequest] = 'globe';
 BlockIcons[BlockType.DocumentsViewer] = 'table';
 BlockIcons[BlockType.Request] = 'file';
 BlockIcons[BlockType.RequestBlockAddon] = 'file';
-BlockIcons[BlockType.RequestValidationAddon] = 'check-circle';
 BlockIcons[BlockType.Upload] = 'upload';
 BlockIcons[BlockType.MultiSignBlock] = 'check-square';
 BlockIcons[BlockType.SendToGuardian] = 'send';
