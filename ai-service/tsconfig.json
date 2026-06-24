@@ -17,6 +17,7 @@
                 "./src/constants/*"
             ]
         },
+        "rootDir": "./src",
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": false,

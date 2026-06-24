@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
@@ -22,6 +21,7 @@
             ]
         },
         "resolveJsonModule": true,
+        "rootDir": "./src",
         "skipLibCheck": true,
         "sourceMap": false,
         "strict": false,

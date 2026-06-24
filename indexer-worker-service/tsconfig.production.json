@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
@@ -13,7 +12,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": false,
         "outDir": "dist/",
-        "paths": {},
+        "rootDir": "./src",
         "skipLibCheck": true,
         "sourceMap": false,
         "strict": false,

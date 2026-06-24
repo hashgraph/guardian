@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
@@ -21,6 +20,7 @@
                 "./src/dto/index.js"
             ]
         },
+        "rootDir": "./src",
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": false,

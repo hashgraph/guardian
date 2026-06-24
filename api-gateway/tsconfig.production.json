@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": "./src",
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
@@ -27,6 +26,7 @@
                 "./src/middlewares/index.js"
             ]
         },
+        "rootDir": "./src",
         "skipLibCheck": true,
         "sourceMap": false,
         "strict": false,

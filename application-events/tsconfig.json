@@ -1,6 +1,5 @@
 {
     "compilerOptions": {
-        "baseUrl": "src",
         "esModuleInterop": true,
         "experimentalDecorators": true,
         "isolatedModules": true,
@@ -14,6 +13,7 @@
                 "./src/constants/index.js"
             ]
         },
+        "rootDir": "./src",
         "skipLibCheck": true,
         "sourceMap": true,
         "strict": true,
