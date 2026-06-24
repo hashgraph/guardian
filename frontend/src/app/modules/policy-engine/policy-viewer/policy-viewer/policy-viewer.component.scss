@@ -404,8 +404,8 @@ a.go-back-link svg {
 }
 
 .dry-run-btn[action="true"] {
-    color: #3f51b5;
-    border-bottom: 2px solid #3f51b5;
+    color: var(--guardian-menu-color-2, #8259ef);
+    border-bottom: 2px solid var(--guardian-menu-color-2, #8259ef);
 }
 
 .dry-run-group-btn,
@@ -420,7 +420,7 @@ a.go-back-link svg {
     font-size: 12px;
     align-items: center;
     align-content: center;
-    color: var(--guardian-font-color);
+    color: var(--guardian-menu-color-2, #8259ef);
     cursor: pointer;
     padding-top: 4px;
     position: relative;
@@ -430,8 +430,9 @@ a.go-back-link svg {
     border: 1px solid var(--guardian-border-color);
     box-sizing: border-box;
 
-    .icon-style-restart_alt {
-        fill: #3f51b5;
+    .icon-style-restart_alt,
+    .icon-style-restart_alt * {
+        fill: var(--guardian-menu-color-2, #8259ef);
     }
 }
 
@@ -454,8 +455,8 @@ a.go-back-link svg {
 
 .dry-run-group-btn:hover,
 .dry-run-action-btn:hover {
-    background: rgb(63 81 181 / 3%);
-    border: 1px solid #3f51b5;
+    background: color-mix(in srgb, var(--guardian-menu-color-2, #8259ef) 3%, transparent);
+    border: 1px solid var(--guardian-menu-color-2, #8259ef);
 }
 
 .dry-run-group-btn[disabled="true"],
@@ -505,16 +506,16 @@ a.go-back-link svg {
     cursor: pointer;
     font-size: 13px;
     min-width: 160px;
-    color: #3f51b5;
+    color: var(--guardian-menu-color-2, #8259ef);
     border-radius: 4px;
     user-select: none;
 
     &:hover {
-        background: #3f51b50d;
+        background: color-mix(in srgb, var(--guardian-menu-color-2, #8259ef) 5%, transparent);
     }
 
     &[active="true"] {
-        background: #3f51b5;
+        background: var(--guardian-menu-color-2, #8259ef);
         color: #fff;
         font-weight: 500;
     }
