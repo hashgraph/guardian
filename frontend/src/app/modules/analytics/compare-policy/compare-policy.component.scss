@@ -187,7 +187,7 @@
     border: 1px solid var(--guardian-border-color, #8b8b8b);
     box-shadow: 1px 1px 3px 0px rgb(0 0 0 / 20%);
     cursor: pointer;
-    max-width: 400px;
+    max-width: 100%;
 }
 
 .fantom-tree .block-tree {
@@ -526,6 +526,7 @@
     padding-left: 8px;
     min-width: 240px;
     position: relative;
+    vertical-align: middle;
 }
 
 .prop-table-value .compare-btn {
@@ -543,18 +544,18 @@
 }
 
 .prop-table-value span {
-    position: absolute;
+    display: inline-block;
+    width: min(max-content, 100%);
     overflow: hidden;
     white-space: nowrap;
-    top: 4px;
-    bottom: 4px;
-    right: 36px;
-    left: 8px;
     text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .prop-table-body {
-    display: table;
+    display: block;
+    width: 100%;
+    max-width: 100%;
 }
 
 .prop-table-header {

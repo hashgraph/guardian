@@ -171,7 +171,7 @@
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
                                         </div>
-                                        <div class="block-type">{{ item.left_tag || item.left_type }}</div>
+                                        <div class="block-type" [appOverflowTitle]="item.left_tag || item.left_type">{{ item.left_tag || item.left_type }}</div>
                                     </div>
                                 </div>
                                 <div *ngIf="!item.right_type" [attr.offset]="item.lvl"
@@ -184,7 +184,7 @@
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.left_type]"></i>
                                         </div>
-                                        <div class="block-type">{{ item.left_tag || item.left_type }}</div>
+                                        <div class="block-type" [appOverflowTitle]="item.left_tag || item.left_type">{{ item.left_tag || item.left_type }}</div>
                                     </div>
                                 </div>
                             </ng-container>
@@ -199,7 +199,7 @@
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
                                         </div>
-                                        <div class="block-type">{{ item.right_tag || item.right_type }}</div>
+                                        <div class="block-type" [appOverflowTitle]="item.right_tag || item.right_type">{{ item.right_tag || item.right_type }}</div>
                                     </div>
                                 </div>
                                 <div *ngIf="!item.left_type" [attr.offset]="item.lvl"
@@ -212,7 +212,7 @@
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + icons[item.right_type]"></i>
                                         </div>
-                                        <div class="block-type">{{ item.right_tag || item.right_type }}</div>
+                                        <div class="block-type" [appOverflowTitle]="item.right_tag || item.right_type">{{ item.right_tag || item.right_type }}</div>
                                     </div>
                                 </div>
                             </ng-container>
@@ -375,7 +375,7 @@
                         <i class="pi pi-search"></i>
                     </div>
 
-                    <span *ngIf="prop.items[index]" [title]="prop.items[index].value">
+                    <span *ngIf="prop.items[index]" [appOverflowTitle]="prop.items[index].value">
                         {{ prop.items[index].value }}
                     </span>
                 </div>
