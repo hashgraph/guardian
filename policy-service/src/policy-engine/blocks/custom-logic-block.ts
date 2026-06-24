@@ -136,7 +136,13 @@ export class CustomLogicBlock {
             await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);
             ref.backup();
         } catch (error) {
-            ref.error(PolicyUtils.getErrorMessage(error));
+            const message = PolicyUtils.getErrorMessage(error);
+            ref.error(message);
+            // Also surface to the UI: this local catch pre-empts @CatchErrors, which would
+            // otherwise broadcast the failure via BlockErrorFn. Without it the error is logged only.
+            PolicyComponentsUtils.BlockErrorFn(ref.blockType, message, event.user)
+                .catch((broadcastError) => ref.error(PolicyUtils.getErrorMessage(broadcastError)));
+            ref.triggerEvents(PolicyOutputEventType.ErrorEvent, event.user, event.data, event.actionStatus);
         }
 
         return event.data;
