@@ -175,7 +175,7 @@
                                     </div>
                                 </div>
                                 <div *ngIf="!item.right_type" [attr.offset]="item.lvl"
-                                     [style.padding-left.px]="_pOffset*2*item.lvl"
+                                     [style.padding-left.px]="_pOffset*item.lvl"
                                      class="right-tree fantom-tree hidden-item">
                                     <div class="block-tree">
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
@@ -190,7 +190,7 @@
                             </ng-container>
 
                             <ng-container *ngIf="item.right_type">
-                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*2*item.lvl"
+                                <div [attr.offset]="item.lvl" [style.padding-left.px]="_pOffset*item.lvl"
                                      class="right-tree hidden-item">
                                     <div class="block-tree" (click)="item._open = !item._open">
                                         <div class="block-index" [attr.index-rate]="item.index_rate">
