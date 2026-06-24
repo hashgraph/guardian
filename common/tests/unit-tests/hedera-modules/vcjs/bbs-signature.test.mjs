@@ -158,11 +158,14 @@ describe('VCJS BbsBlsSignature2020 signing and verification', function () {
         assert.isTrue(await vcjs.verifyVC(legacyVc));
     });
 
-    it('derives a selectively disclosed credential that hides undisclosed fields', async function () {
+    it('derives a selectively disclosed credential that hides undisclosed fields and still verifies', async function () {
         // deriveProof is what VcHelper.vcDeriveProof calls; this exercises the same path
-        // through the default document loader. End-to-end verification of a derived proof
-        // is a separate concern: it fails identically on the pre-migration @transmute stack
-        // and is not addressed by this change.
+        // through the default document loader. The credentialSubject carries an `id`, as it
+        // always does in production: VcHelper.prepareSubject -> setNestedNodeIds assigns one
+        // to every BBS subject node before signing. That id keeps the subject from becoming a
+        // blank node, which is what makes the derived proof verify: @mattrglobal skolemizes a
+        // blank-node subject to `urn:bnid:_:c14n*`, and that form sorts differently from its
+        // `_:c14n*` form, scrambling the ascending reveal-index order blsVerifyProof requires.
         const did = 'did:example:bbs-derive';
         const vm = `${did}#bbs`;
         const key = await Bls12381G2KeyPair.generate({ id: vm, controller: did });
@@ -172,6 +175,11 @@ describe('VCJS BbsBlsSignature2020 signing and verification', function () {
             verificationMethod: [{ id: vm, type: 'Bls12381G2Key2020', controller: did, publicKeyBase58: key.publicKey }],
             assertionMethod: [vm],
         };
+        const vcjs = new VCJS();
+        vcjs.addDocumentLoader(new DefaultDocumentLoader());
+        vcjs.addDocumentLoader(new TestContextLoader());
+        vcjs.addDocumentLoader(new Bls12381DidLoader(didDocument));
+        vcjs.buildDocumentLoader();
         const documentLoader = DocumentLoader.build([
             new DefaultDocumentLoader(),
             new TestContextLoader(),
@@ -184,7 +192,7 @@ describe('VCJS BbsBlsSignature2020 signing and verification', function () {
             type: ['VerifiableCredential'],
             issuer: did,
             issuanceDate: '2024-01-01T00:00:00Z',
-            credentialSubject: { type: 'EvcTest', name: 'Alice', value: '42' },
+            credentialSubject: { id: 'urn:uuid:bbs-derive-subject', type: 'EvcTest', name: 'Alice', value: '42' },
         };
         const signed = await jsigV7.sign(credential, {
             suite: new BbsBlsSignature2020({ key }),
@@ -196,7 +204,7 @@ describe('VCJS BbsBlsSignature2020 signing and verification', function () {
         const reveal = {
             '@context': signed['@context'],
             type: ['VerifiableCredential'],
-            credentialSubject: { '@explicit': true, type: 'EvcTest', name: {} },
+            credentialSubject: { '@explicit': true, id: 'urn:uuid:bbs-derive-subject', type: 'EvcTest', name: {} },
         };
         const derived = await deriveProof(signed, reveal, {
             suite: new BbsBlsSignatureProof2020(),
@@ -206,6 +214,8 @@ describe('VCJS BbsBlsSignature2020 signing and verification', function () {
         assert.equal(derived.proof.type, 'BbsBlsSignatureProof2020');
         assert.equal(derived.credentialSubject.name, 'Alice', 'revealed field must be present');
         assert.isUndefined(derived.credentialSubject.value, 'undisclosed field must be absent');
+        // The derived proof must verify through the production verify() path.
+        assert.isTrue(await vcjs.verifyVC(derived), 'derived proof must verify');
     });
 
     it('serves the vendored jws-2020/v1 context from the default document loader', async function () {
