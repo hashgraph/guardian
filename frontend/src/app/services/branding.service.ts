@@ -97,6 +97,9 @@ export class BrandingService {
                 document.body.style.setProperty('--linear-gradient', gradientData);
                 // document.body.style.setProperty('--header-color-shadow', shadow);
             }
+            if (brandingData.headerColor1) {
+                document.body.style.setProperty('--guardian-menu-color-2', brandingData.headerColor1);
+            }
             if (brandingData.companyName) {
                 if (companyName) {
                     companyName.textContent = brandingData.companyName;
