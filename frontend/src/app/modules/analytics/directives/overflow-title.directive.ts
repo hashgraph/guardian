@@ -17,10 +17,28 @@ export class OverflowTitleDirective {
     @HostListener('mouseenter')
     public onMouseEnter(): void {
         const element = this.el.nativeElement;
-        if (this.text && element.scrollWidth > element.clientWidth) {
+        const overflowsParent = this.overflowsAncestor(element);
+        const overflowsSelf = element.scrollWidth > element.clientWidth;
+
+        if (this.text && (overflowsSelf || overflowsParent)) {
             element.setAttribute('title', this.text);
         } else {
             element.removeAttribute('title');
         }
+    }
+
+    private overflowsAncestor(element: HTMLElement): boolean {
+        const elementRect = element.getBoundingClientRect();
+        let parent = element.parentElement;
+
+        while (parent) {
+            const parentRect = parent.getBoundingClientRect();
+            if (elementRect.right > parentRect.right || elementRect.left < parentRect.left) {
+                return true;
+            }
+            parent = parent.parentElement;
+        }
+
+        return false;
     }
 }
