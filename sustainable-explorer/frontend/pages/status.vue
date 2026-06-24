@@ -35,6 +35,33 @@ const {
     available: syncAvailable,
 } = useSyncSummaryApi({ network });
 
+const {
+    data: guardianSync,
+    refresh: refreshGuardianSync,
+} = useGuardianSyncStatusApi({ network });
+
+const guardianEventSubject = ref('');
+const guardianEventPage = ref(1);
+const guardianEventPageSize = ref(10);
+const {
+    data: guardianEventsData,
+    refresh: refreshGuardianSyncEvents,
+} = useGuardianSyncEventsApi({
+    network,
+    page: guardianEventPage,
+    pageSize: guardianEventPageSize,
+    subject: guardianEventSubject,
+});
+watch(guardianEventSubject, () => { guardianEventPage.value = 1; });
+
+function onGuardianEventPageChange(page: number) {
+    guardianEventPage.value = page;
+}
+function onGuardianEventPageSizeChange(size: number) {
+    guardianEventPageSize.value = size;
+    guardianEventPage.value = 1;
+}
+
 const topicSearch = ref('');
 const topicStatusFilter = ref('');
 const topicPage = ref(1);
@@ -128,15 +155,22 @@ const { isConnected, liveCounts, recentFailures, recentEvents, lastEventAt } =
 // ─── Poll fallback (30s) ──────────────────────────────────────────────────────
 
 let pollTimer: ReturnType<typeof setInterval> | null = null;
+let guardianSyncTimer: ReturnType<typeof setInterval> | null = null;
 
 onMounted(() => {
     pollTimer = setInterval(() => {
         refreshQueues();
     }, 30_000);
+    // guardian-sync heartbeats every 10s — poll at the same cadence.
+    guardianSyncTimer = setInterval(() => {
+        refreshGuardianSync();
+        refreshGuardianSyncEvents();
+    }, 10_000);
 });
 
 onUnmounted(() => {
     if (pollTimer) clearInterval(pollTimer);
+    if (guardianSyncTimer) clearInterval(guardianSyncTimer);
 });
 
 // ─── Merged queue list ────────────────────────────────────────────────────────
@@ -174,6 +208,7 @@ onUnmounted(() => {
 // ─── Sync health ──────────────────────────────────────────────────────────────
 
 const syncPanelOpen = ref(true);
+const guardianSyncPanelOpen = ref(true);
 
 const lagColor = computed(() => {
     const lag = syncStatus.value?.lagSeconds ?? 0;
@@ -186,6 +221,17 @@ function formatRelativeTime(ts: string | null): string {
     if (!ts) return '—';
     const diff = Date.now() - new Date(ts).getTime();
     const s = Math.floor(diff / 1000);
+    if (s < 60) return `${s}s ago`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ago`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+}
+
+function formatRelativeMs(ms: number | null): string {
+    if (!ms) return 'never';
+    const s = Math.floor((Date.now() - ms) / 1000);
     if (s < 60) return `${s}s ago`;
     const m = Math.floor(s / 60);
     if (m < 60) return `${m}m ago`;
@@ -1182,6 +1228,148 @@ function formatTs(ts: number): string {
                             @update:pageSize="onSyncTokenPageSizeChange"
                         />
                     </div>
+                </div>
+            </Transition>
+        </div>
+
+        <!-- Section D2: Guardian Sync (only when a guardian-sync process is running) -->
+        <div v-if="guardianSync?.enabled" class="border-t">
+            <button
+                class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/20 transition-colors"
+                @click="guardianSyncPanelOpen = !guardianSyncPanelOpen"
+            >
+                <div class="flex items-center gap-2">
+                    <span
+                        class="inline-block h-2 w-2 rounded-full"
+                        :class="guardianSync.instances.some((i) => i.connected) ? 'bg-stat-green animate-pulse' : 'bg-stat-amber'"
+                    />
+                    <h2 class="text-base font-semibold text-foreground">Guardian Sync</h2>
+                    <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
+                        {{ guardianSync.instances.length }}
+                    </span>
+                </div>
+                <ChevronDown
+                    class="h-4 w-4 text-muted-foreground transition-transform"
+                    :class="{ 'rotate-180': guardianSyncPanelOpen }"
+                />
+            </button>
+
+            <Transition
+                enter-active-class="transition-all duration-200 ease-out"
+                enter-from-class="opacity-0 -translate-y-1"
+                enter-to-class="opacity-100 translate-y-0"
+                leave-active-class="transition-all duration-150 ease-in"
+                leave-from-class="opacity-100 translate-y-0"
+                leave-to-class="opacity-0 -translate-y-1"
+            >
+                <div v-if="guardianSyncPanelOpen" class="px-6 pb-6 space-y-4">
+                    <p class="text-xs text-muted-foreground">
+                        Guardian event stream — enqueues targeted fetches into the queues above instead of blind polling.
+                    </p>
+
+                    <!-- Instances table -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-sm font-semibold text-foreground">Instances</h3>
+                            <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
+                                {{ guardianSync.instances.length }}
+                            </span>
+                        </div>
+                        <div class="rounded-lg border bg-card overflow-hidden">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b bg-muted/30">
+                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Instance</th>
+                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">AEM Endpoint</th>
+                                    <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                    <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Events</th>
+                                    <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Event</th>
+                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Subject</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr v-if="guardianSync.instances.length === 0">
+                                    <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">No instances configured</td>
+                                </tr>
+                                <tr v-for="inst in guardianSync.instances" :key="inst.id" class="hover:bg-muted/20">
+                                    <td class="py-2 px-3 font-mono text-xs text-foreground">{{ inst.id }}</td>
+                                    <td class="py-2 px-3 font-mono text-xs text-muted-foreground">{{ inst.aemUrl }}</td>
+                                    <td class="py-2 px-3 text-center">
+                                        <span
+                                            class="inline-flex items-center gap-1 text-xs font-medium rounded-full px-2 py-0.5"
+                                            :class="inst.connected ? 'bg-stat-green/10 text-stat-green' : 'bg-stat-amber/10 text-stat-amber'"
+                                        >
+                                            <span class="inline-block h-1.5 w-1.5 rounded-full" :class="inst.connected ? 'bg-stat-green' : 'bg-stat-amber'" />
+                                            {{ inst.connected ? 'Connected' : 'Reconnecting' }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2 px-3 text-right tabular-nums">{{ inst.eventsProcessed.toLocaleString() }}</td>
+                                    <td class="py-2 px-3 text-right text-muted-foreground text-xs">{{ formatRelativeMs(inst.lastEventAt) }}</td>
+                                    <td class="py-2 px-3 font-mono text-[11px] text-muted-foreground">{{ inst.lastSubject ? inst.lastSubject.split('.').pop() : '—' }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent triggers table -->
+                    <div>
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-sm font-semibold text-foreground">Recent triggers</h3>
+                            <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
+                                {{ (guardianEventsData?.total ?? 0).toLocaleString() }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 flex-wrap mb-2">
+                            <select
+                                v-model="guardianEventSubject"
+                                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                            >
+                                <option value="">All events</option>
+                                <option value="block_complete">block_complete</option>
+                                <option value="token_minted">token_minted</option>
+                                <option value="ipfs_added_file">ipfs_added_file</option>
+                                <option value="block_event">block_event</option>
+                                <option value="policy-event-policy-ready">policy-ready</option>
+                                <option value="policy-engine-event-publish-policies">publish-policies</option>
+                            </select>
+                        </div>
+                        <div class="rounded-lg border bg-card overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="border-b bg-muted/30">
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">When</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Event</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Ref</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y">
+                                    <tr v-if="(guardianEventsData?.events ?? []).length === 0">
+                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">No triggers recorded</td>
+                                    </tr>
+                                    <tr v-for="(ev, i) in (guardianEventsData?.events ?? [])" :key="i" class="hover:bg-muted/20">
+                                        <td class="py-2 px-3 text-muted-foreground text-xs whitespace-nowrap">{{ formatRelativeMs(new Date(ev.createdAt).getTime()) }}</td>
+                                        <td class="py-2 px-3 font-mono text-[11px]">{{ ev.subject.split('.').pop() }}</td>
+                                        <td class="py-2 px-3 font-mono text-[11px] text-muted-foreground">{{ ev.refId ? (ev.refType ? ev.refType + ':' : '') + ev.refId : '—' }}</td>
+                                        <td class="py-2 px-3 text-xs">{{ ev.action }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <Pagination
+                            :currentPage="guardianEventPage"
+                            :totalPages="Math.ceil((guardianEventsData?.total ?? 0) / guardianEventPageSize)"
+                            :totalItems="guardianEventsData?.total ?? 0"
+                            :pageSize="guardianEventPageSize"
+                            @update:currentPage="onGuardianEventPageChange"
+                            @update:pageSize="onGuardianEventPageSizeChange"
+                        />
+                    </div>
+
+                    <p class="text-[11px] text-muted-foreground mt-2">
+                        Heartbeat {{ formatRelativeMs(guardianSync.updatedAt) }}.
+                    </p>
                 </div>
             </Transition>
         </div>

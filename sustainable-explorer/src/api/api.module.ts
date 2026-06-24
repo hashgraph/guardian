@@ -13,6 +13,7 @@ import { PoliciesController } from './controllers/policies.controller';
 import { ProjectsController } from './controllers/project.controller';
 import { CreditsController } from './controllers/credits.controller';
 import { QueueStatusController } from './controllers/queue-status.controller';
+import { GuardianSyncController } from './controllers/guardian-sync.controller';
 import { SdgsController } from './controllers/sdgs.controller';
 import { DevelopersController } from './controllers/developers.controller';
 import { DashboardController } from './controllers/dashboard.controller';
@@ -33,6 +34,7 @@ import { DashboardService } from './services/dashboard.service';
 // Queue management
 import { QueueRegistry } from './queues/queue.registry';
 import { QueueEventsBus } from './queues/queue-events-bus.service';
+import { GuardianSyncService } from './services/guardian-sync.service';
 
 @Module({
     imports: [
@@ -49,6 +51,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         ProjectsController,
         CreditsController,
         QueueStatusController,
+        GuardianSyncController,
         SdgsController,
         DevelopersController,
         DashboardController,
@@ -68,6 +71,7 @@ import { QueueEventsBus } from './queues/queue-events-bus.service';
         DashboardService,
         QueueRegistry,
         QueueEventsBus,
+        GuardianSyncService,
     ],
 })
 export class ApiModule {}

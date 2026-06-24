@@ -20,7 +20,12 @@ type ResolveFn = (c: ResolutionContext) => Promise<ResolutionOutcome>;
 const fake = (resolve: ResolveFn) => ({ resolve: jest.fn(resolve) });
 const pass: ResolveFn = async () => ({ status: 'pass' });
 
-const build = (r1: ReturnType<typeof fake>, r2: ReturnType<typeof fake>, r3: ReturnType<typeof fake>, r4: ReturnType<typeof fake>) =>
+const build = (
+    r1: ReturnType<typeof fake>,
+    r2: ReturnType<typeof fake>,
+    r3: ReturnType<typeof fake>,
+    r4: ReturnType<typeof fake>,
+) =>
     new ProjectKeyResolverChain(
         r1 as unknown as DynamicTopicResolver,
         r2 as unknown as CsRefResolver,

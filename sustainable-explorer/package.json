@@ -7,9 +7,11 @@
     "scripts": {
         "start:api": "node dist/src/api/main.js",
         "start:worker": "node dist/src/worker/main.js",
+        "start:guardian-sync": "node dist/src/guardian-sync/main.js",
         "build": "nest build",
         "dev:api": "nest start --watch --entryFile src/api/main",
         "dev:worker": "nest start --watch src/worker/main.ts",
+        "dev:guardian-sync": "nest start --watch --entryFile src/guardian-sync/main",
         "infra:up": "docker compose -f docker-compose-dev.yml up -d",
         "infra:down": "docker compose -f docker-compose-dev.yml down",
         "infra:reset": "docker compose -f docker-compose-dev.yml down -v && docker compose -f docker-compose-dev.yml up -d",

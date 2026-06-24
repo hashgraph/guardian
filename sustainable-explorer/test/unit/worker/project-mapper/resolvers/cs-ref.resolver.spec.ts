@@ -115,6 +115,74 @@ describe('CsRefResolver (M2)', () => {
         });
     });
 
+    it('anchors on the project-schema VC, NOT the shared developer/applicant root (sibling projects keep distinct keys)', async () => {
+        // A report VC refs its per-project "Project Listing" (project schema),
+        // which in turn refs the per-developer "Developer Application" root
+        // (NOT a project schema). The walk must stop at the listing so each
+        // project gets its own key instead of collapsing onto the developer.
+        const listingCsId = 'urn:uuid:listing-1';
+        const developerCsId = 'did:hedera:testnet:developer';
+        let hop = 0;
+        const query = jest.fn(async (sql: string) => {
+            if (sql.includes('AS ref')) return [{ ref: listingCsId }];
+            if (sql.includes('AS cs_id')) {
+                hop++;
+                return hop === 1
+                    ? [{ cs_id: listingCsId, next_ref: developerCsId, schema_type: '#abc-uuid&1.0.0' }] // project schema
+                    : [{ cs_id: developerCsId, next_ref: null, schema_type: '#dev-uuid&1.0.0' }];        // root, NOT project schema
+            }
+            if (sql.includes('AS schema_type')) return [{ schema_type: '#abc-uuid&1.0.0' }]; // isCsIdOnProjectSchema(listing) → true
+            if (sql.includes('AS ts')) return [{ ts: '1698000000.0' }];
+            return [];
+        });
+        const resolver = new CsRefResolver(
+            { query } as unknown as DataSource,
+            {} as unknown as TopicClassifierService,
+        );
+        const result = await resolver.resolve({
+            ...classifiedCtx,
+            csId: 'urn:uuid:report-1',
+            csRef: listingCsId,
+            policyMapping: policyMappingWithSchema,
+        });
+        expect(result).toEqual({
+            status: 'resolved',
+            projectKey: listingCsId,   // anchored on the listing, NOT developerCsId
+            method: 'csRef',
+            metadata: { rootVcTimestamp: '1698000000.0' },
+        });
+    });
+
+    it('a project-schema VC keys on its OWN cs.id, not its developer/applicant root', async () => {
+        // The "Project Listing" VC itself (isProjectSchemaVc=true) refs the
+        // shared developer root → it must key on its own cs.id.
+        const listingCsId = 'urn:uuid:listing-2';
+        const developerCsId = 'did:hedera:testnet:developer';
+        const query = jest.fn(async (sql: string) => {
+            if (sql.includes('AS ref')) return [{ ref: developerCsId }];
+            if (sql.includes('AS cs_id')) return [{ cs_id: developerCsId, next_ref: null, schema_type: '#dev-uuid&1.0.0' }];
+            if (sql.includes('AS ts')) return [{ ts: '1697000000.0' }];
+            return [];
+        });
+        const resolver = new CsRefResolver(
+            { query } as unknown as DataSource,
+            {} as unknown as TopicClassifierService,
+        );
+        const result = await resolver.resolve({
+            ...classifiedCtx,
+            isProjectSchemaVc: true,
+            csId: listingCsId,
+            csRef: developerCsId,
+            policyMapping: policyMappingWithSchema,
+        });
+        expect(result).toEqual({
+            status: 'resolved',
+            projectKey: listingCsId,   // own cs.id, NOT developerCsId
+            method: 'csRef',
+            metadata: { rootVcTimestamp: '1697000000.0' },
+        });
+    });
+
     it('rejects when root is neither on project schema nor a known PROJECT row', async () => {
         // resolveViaRef: start VC has no further ref → resolvedKey = ctx.csRef
         // isCsIdOnProjectSchema: schema_type does NOT match → false

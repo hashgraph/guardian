@@ -9,3 +9,4 @@ export { BusinessView } from './business-view.entity.js';
 export { Policy, PolicyDecodeStatus } from './policy.entity.js';
 export { SynchronizationTask } from './synchronization-task.entity.js';
 export { Log } from './log.entity.js';
+export { GuardianEventLog } from './guardian-event-log.entity.js';

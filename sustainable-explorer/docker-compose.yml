@@ -164,6 +164,43 @@ services:
             policy-zips-init:
                 condition: service_completed_successfully
 
+    # ─── Guardian event-sync (OPT-IN) ────────────────────────────────────────
+    # Consumes Guardian Application Events Module stream(s) and enqueues targeted
+    # jobs onto the paired worker's queues, reducing mirror-node polling load.
+    # Commented out by default — it does NOT auto-start.
+    #
+    # ONE guardian-sync process per HEDERA_NET. It activates every GUARDIAN_INSTANCES
+    # entry whose target network — GUARDIAN_<ID>_NETWORK, default = its Hedera net —
+    # equals HEDERA_NET, so SEVERAL Guardians on the same net feed ONE dataset.
+    # Pair it with the worker on the same HEDERA_NET (here: worker-testnet).
+    # For an ISOLATED dataset instead, set GUARDIAN_<ID>_NETWORK=<unique> and run a
+    # dedicated worker (with its own SEED_TOPIC_ID + HEDERA_MIRROR_NODE_URL) at it.
+    # guardian-sync-testnet:
+    #     build:
+    #         context: .
+    #         dockerfile: Dockerfile
+    #     container_name: se-guardian-sync-testnet
+    #     restart: unless-stopped
+    #     env_file:
+    #         - .env
+    #     environment:
+    #         HEDERA_NET: testnet
+    #         DB_HOST: postgres
+    #         DB_PORT: '5432'
+    #         REDICT_HOST: redict
+    #         REDICT_PORT: '6379'
+    #         # Two Guardians, both on Hedera testnet, feeding the shared testnet dataset:
+    #         GUARDIAN_INSTANCES: local-testnet,deploy-testnet
+    #         GUARDIAN_LOCAL_TESTNET_AEM_URL: http://guardian-aem:3012
+    #         GUARDIAN_DEPLOY_TESTNET_AEM_URL: http://34.194.124.200:3012
+    #         # GUARDIAN_DEPLOY_TESTNET_AUTH_HEADER: "Bearer ${DEPLOY_AEM_TOKEN}"
+    #     command: node dist/src/guardian-sync/main.js
+    #     depends_on:
+    #         postgres:
+    #             condition: service_healthy
+    #         redict:
+    #             condition: service_healthy
+
     # ─── API ────────────────────────────────────────────────────────────────
     api:
         build:
