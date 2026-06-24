@@ -30,11 +30,7 @@ declare module '@digitalbazaar/ed25519-verification-key-2018' {
 }
 
 declare module 'jsonld-signatures-v7' {
-    export interface VerificationResult {
-        verified: boolean;
-        results?: Array<{ verified: boolean; error?: { message?: string } }>;
-        error?: any;
-    }
+    import type { VerificationResult } from '@digitalbazaar/vc';
     export function sign(document: any, options: any): Promise<any>;
     export function verify(document: any, options: any): Promise<VerificationResult>;
     export const purposes: { AssertionProofPurpose: new (options?: any) => any; [key: string]: any };

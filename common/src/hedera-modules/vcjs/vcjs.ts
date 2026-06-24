@@ -200,7 +200,11 @@ export class VCJS {
      */
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
         let result: vcLib.VerificationResult;
-        if (json.proof.type === SignatureType.Ed25519Signature2018) {
+        const proof = Array.isArray(json?.proof) ? json.proof[0] : json?.proof;
+        if (!proof || !proof.type) {
+            throw new Error('Verification error: document is missing a proof');
+        }
+        if (proof.type === SignatureType.Ed25519Signature2018) {
             result = await vcLib.verifyCredential({
                 credential: json,
                 suite: [new Ed25519Signature2018()],

@@ -1,8 +1,6 @@
 import didContexts from 'did-context';
 import { contexts as credentialsContexts } from '@digitalbazaar/credentials-context';
 import securityContexts from '@digitalbazaar/security-context';
-// Two URLs alias the same BBS context and @digitalbazaar/security-context ships neither,
-// so the vendored copy is served for both (see the has/get branches below).
 import { BBS_V1_URL, BLS12381_2020_V1_CONTEXT, BLS12381_2020_V1_URL } from './contexts/bls12381-2020-v1.js';
 import { JWS_2020_V1_CONTEXT, JWS_2020_V1_URL } from './contexts/jws-2020-v1.js';
 import { IDocumentFormat } from './document-format.js';
@@ -13,6 +11,16 @@ import { DocumentLoader } from './document-loader.js';
  * Used for VC validation.
  */
 export class DefaultDocumentLoader extends DocumentLoader {
+    /**
+     * Vendored JSON-LD contexts the @digitalbazaar packages do not ship.
+     * The two BBS URLs alias the same context, so both map to it.
+     */
+    private static readonly vendoredContexts = new Map<string, object>([
+        [BBS_V1_URL, BLS12381_2020_V1_CONTEXT],
+        [BLS12381_2020_V1_URL, BLS12381_2020_V1_CONTEXT],
+        [JWS_2020_V1_URL, JWS_2020_V1_CONTEXT],
+    ]);
+
     /**
      * Has context
      * @param iri
@@ -27,13 +35,7 @@ export class DefaultDocumentLoader extends DocumentLoader {
         if ((securityContexts.contexts as Map<string, object>).has(iri)) {
             return true;
         }
-        if (iri === BBS_V1_URL || iri === BLS12381_2020_V1_URL) {
-            return true;
-        }
-        if (iri === JWS_2020_V1_URL) {
-            return true;
-        }
-        return false;
+        return DefaultDocumentLoader.vendoredContexts.has(iri);
     }
 
     /**
@@ -59,16 +61,10 @@ export class DefaultDocumentLoader extends DocumentLoader {
                 document: securityContexts.contexts.get(iri),
             };
         }
-        if (iri === BBS_V1_URL || iri === BLS12381_2020_V1_URL) {
+        if (DefaultDocumentLoader.vendoredContexts.has(iri)) {
             return {
                 documentUrl: iri,
-                document: BLS12381_2020_V1_CONTEXT,
-            };
-        }
-        if (iri === JWS_2020_V1_URL) {
-            return {
-                documentUrl: iri,
-                document: JWS_2020_V1_CONTEXT,
+                document: DefaultDocumentLoader.vendoredContexts.get(iri),
             };
         }
         throw new Error('IRI not found: ' + iri);
