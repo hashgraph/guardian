@@ -25,9 +25,9 @@ export class QueueService extends NatsService {
             await this.clearLongPendingTasks();
         }, this.clearInterval);
 
-        this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, (task: ITask) => {
+        this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, async (task: ITask) => {
             try {
-                this.addTaskToQueue(task);
+                await this.addTaskToQueue(task);
                 return new MessageResponse({
                     ok: true
                 });

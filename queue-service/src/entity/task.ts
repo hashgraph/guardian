@@ -1,6 +1,19 @@
-import { Entity, Index, Property } from '@mikro-orm/core';
+import {
+    AfterCreate,
+    AfterDelete,
+    AfterUpdate,
+    BeforeCreate,
+    BeforeUpdate,
+    Entity,
+    Index,
+    OnLoad,
+    Property,
+} from '@mikro-orm/core';
+import { ObjectId } from '@mikro-orm/mongodb';
 import { ITask, WorkerTaskType } from '@guardian/interfaces';
-import { BaseEntity } from '@guardian/common';
+import { BaseEntity, DataBaseHelper } from '@guardian/common';
+
+const TASK_DATA_GRIDFS_LIMIT = (+process.env.TASK_DATA_GRIDFS_LIMIT || 5 * 1024 * 1024);
 
 @Entity()
 @Index({ name: 'idx_status_createDate', properties: ['done', 'sent', 'createDate'], options: { createDate: -1 } })
@@ -27,8 +40,11 @@ export class TaskEntity extends BaseEntity implements ITask {
     @Property()
     type: WorkerTaskType;
 
-    @Property()
+    @Property({ nullable: true })
     data: any;
+
+    @Property({ nullable: true })
+    dataFileId?: ObjectId;
 
     @Property({ nullable: true })
     sent: boolean;
@@ -56,4 +72,51 @@ export class TaskEntity extends BaseEntity implements ITask {
 
     @Property({ nullable: true })
     interception: string | null;
+
+    @BeforeCreate()
+    async offloadDataOnCreate() {
+        await this.offloadData();
+    }
+
+    @BeforeUpdate()
+    async offloadDataOnUpdate() {
+        if (this.dataFileId) {
+            this.data = null;
+            return;
+        }
+        await this.offloadData();
+    }
+
+    @OnLoad()
+    @AfterCreate()
+    @AfterUpdate()
+    async restoreData() {
+        if (this.dataFileId && (this.data === null || this.data === undefined)) {
+            const buffer = await this._loadFile(this.dataFileId);
+            this.data = JSON.parse(buffer.toString());
+        }
+    }
+
+    @AfterDelete()
+    deleteDataFile() {
+        if (this.dataFileId) {
+            DataBaseHelper.gridFS
+                .delete(this.dataFileId)
+                .catch((reason) => {
+                    console.error(`AfterDelete: Task, ${this._id}, dataFileId`);
+                    console.error(reason);
+                });
+        }
+    }
+
+    private async offloadData(): Promise<void> {
+        if (this.data === null || this.data === undefined) {
+            return;
+        }
+        const json = JSON.stringify(this.data);
+        if (Buffer.byteLength(json) > TASK_DATA_GRIDFS_LIMIT) {
+            this.dataFileId = await this._createFile(json, 'Task');
+            this.data = null;
+        }
+    }
 }
