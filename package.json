@@ -28,6 +28,7 @@
         "api-gateway",
         "application-events",
         "auth-service",
+        "guardian-cli",
         "guardian-service",
         "logger-service",
         "mrv-sender",

@@ -1,4 +1,4 @@
-import {AccountId, Client, ContractExecuteTransaction, ContractFunctionParameters, PrivateKey, Status,} from '@hiero-ledger/sdk';
+import {Client, ContractExecuteTransaction, ContractFunctionParameters, PrivateKey, Status} from '@hiero-ledger/sdk';
 import {Network} from './contract-publisher.helper.js';
 
 export interface ContractCredentials {

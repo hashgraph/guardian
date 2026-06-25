@@ -3,9 +3,7 @@
     "version": "0.1.0",
     "description": "guardian-cli is a command line tool for management of the Guardian Application",
     "main": "dist/index.js",
-    "bin": {
-        "guardian-cli": "dist/index.js"
-    },
+    "bin": "dist/index.js",
     "scripts": {
         "build": "tsc",
         "lint": "tslint --config ../tslint.json --project ."
@@ -27,7 +25,7 @@
         "@hiero-ledger/sdk": "2.85.0",
         "axios": "^1.16.1",
         "commander": "^11.1.0",
-        "solc": "0.8.28",
+        "solc": "0.8.35",
         "ws": "^8.16.0"
     },
     "type": "module"
