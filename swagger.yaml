@@ -3205,6 +3205,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -3241,7 +3242,7 @@ paths:
   /artifacts:
     get:
       description: Returns all artifacts.
-      operationId: ArtifactApi_getArtifactsV2
+      operationId: ArtifactApi_getArtifactsV2_2
       parameters:
         - name: id
           required: false
@@ -3516,6 +3517,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -3620,6 +3622,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '400':
           description: Bad request.
           content:
@@ -3861,7 +3864,7 @@ paths:
       description: >-
         Create smart-contract. Only users with the Standard Registry role are
         allowed to make the request.
-      operationId: ContractsApi_createContractV2
+      operationId: ContractsApi_createContractV2_2
       parameters: []
       requestBody:
         required: true
@@ -4070,6 +4073,7 @@ paths:
             application/json:
               schema:
                 type: number
+              example: 0
         '401':
           description: Unauthorized request.
           content:
@@ -4124,6 +4128,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4262,6 +4267,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4316,6 +4322,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4370,6 +4377,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4431,6 +4439,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4485,6 +4494,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4546,6 +4556,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4607,6 +4618,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4667,6 +4679,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4728,6 +4741,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4788,6 +4802,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4850,6 +4865,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4911,6 +4927,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -4980,6 +4997,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5048,6 +5066,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5102,6 +5121,7 @@ paths:
             application/json:
               schema:
                 type: string
+              example: '2026-03-20T16:45:30.000Z'
         '401':
           description: Unauthorized request.
           content:
@@ -5357,6 +5377,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5411,6 +5432,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5527,6 +5549,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5581,6 +5604,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5662,6 +5686,13 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                retireRequestWithApproval:
+                  summary: Retire request with approval
+                  value: false
+                retireRequestWithoutApproval:
+                  summary: Retire request without approval
+                  value: true
         '400':
           description: Bad request.
           content:
@@ -5726,6 +5757,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5780,6 +5812,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5841,6 +5874,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -5901,6 +5935,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -6450,6 +6485,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '500':
           description: Internal server error.
           content:
@@ -6510,6 +6546,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '500':
           description: Internal server error.
           content:
@@ -7292,6 +7329,7 @@ paths:
             application/json:
               schema:
                 type: string
+              example: 46e0a5e4-6a27-46a6-adcc-a4608a4513e4
         '401':
           description: Unauthorized request.
           content:
@@ -7457,7 +7495,7 @@ paths:
       description: >-
         Returns all modules. Only users with the Standard Registry role are
         allowed to make the request.
-      operationId: ModulesApi_getModulesV2
+      operationId: ModulesApi_getModulesV2_2
       parameters:
         - name: pageIndex
           required: false
@@ -7912,6 +7950,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -9380,7 +9419,7 @@ paths:
         Returns all tools. Add Api-Version: 2 header to use search and tag
         filters. Only users with the Standard Registry role are allowed to make
         the request.
-      operationId: ToolsApi_getToolsV2
+      operationId: ToolsApi_getToolsV2_2
       parameters:
         - name: pageIndex
           required: false
@@ -9418,6 +9457,7 @@ paths:
           required: true
           schema:
             type: string
+            example: '2'
       responses:
         '200':
           description: >-
@@ -9596,6 +9636,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -10543,6 +10584,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -12895,6 +12937,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -13246,7 +13289,10 @@ paths:
         '204':
           description: ''
         '401':
-          description: Unauthorized request.
+          description: |-
+            Unauthorized request.
+
+            Unauthorized request.
           content:
             application/json:
               schema:
@@ -14184,6 +14230,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -14238,7 +14285,7 @@ paths:
         contains the group rows for that role; when the last active role is
         Administrator, userGroups is []. For regular users, userGroups usually
         show roles on published policies.
-      operationId: PolicyApi_getPoliciesV2
+      operationId: PolicyApi_getPoliciesV2_2
       parameters:
         - name: pageIndex
           required: false
@@ -14289,6 +14336,7 @@ paths:
           required: true
           schema:
             type: string
+            example: '2'
       responses:
         '200':
           description: >-
@@ -17441,6 +17489,8 @@ paths:
             application/json:
               schema:
                 type: object
+              example:
+                result: ok
         '401':
           description: Unauthorized request.
           content:
@@ -17770,6 +17820,7 @@ paths:
             application/json:
               schema:
                 type: string
+              example: string
         '401':
           description: Unauthorized request.
           content:
@@ -19143,7 +19194,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden. Only the policy owner can retry mint requests.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -21630,7 +21684,7 @@ paths:
         in the request body scopes creation to a specific savepoint context.
         Only users with the Standard Registry role are allowed to make the
         request.
-      operationId: PolicyApi_setDryRunUserV2
+      operationId: PolicyApi_setDryRunUserV2_2
       parameters:
         - name: policyId
           required: true
@@ -21647,6 +21701,7 @@ paths:
           required: true
           schema:
             type: string
+            example: '2'
       requestBody:
         required: false
         description: Optional savepoint context for virtual user creation.
@@ -22164,7 +22219,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -22256,7 +22314,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -22316,7 +22377,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -22397,7 +22461,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -22491,7 +22558,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -22578,7 +22648,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -22679,7 +22752,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Policy is not in Dry Run mode.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -23863,6 +23939,7 @@ paths:
             application/json:
               schema:
                 type: boolean
+              example: true
         '401':
           description: Unauthorized request.
           content:
@@ -25446,7 +25523,7 @@ paths:
         schemas of all categories matching the standard
         owner/non-system/non-readonly filters. Published tool schemas that do
         not match the current owner are only included when `category=TOOL`.
-      operationId: SchemaApi_getSchemasPageV2
+      operationId: SchemaApi_getSchemasPageV2_2
       parameters:
         - name: pageIndex
           required: false
@@ -28162,7 +28239,7 @@ paths:
       description: >-
         Returns all system schemas. Only users with the Standard Registry role
         are allowed to make the request.
-      operationId: SchemaApi_getSystemSchemaV2
+      operationId: SchemaApi_getSystemSchemaV2_2
       parameters:
         - name: username
           required: true
@@ -28197,6 +28274,7 @@ paths:
           required: true
           schema:
             type: string
+            example: '2'
       responses:
         '200':
           description: Successful operation.
@@ -28299,7 +28377,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -28470,7 +28551,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -29531,6 +29615,10 @@ paths:
             application/json:
               schema:
                 type: string
+              examples:
+                default:
+                  summary: Environment name
+                  value: testnet
         '401':
           description: Unauthorized request.
           content:
@@ -29841,6 +29929,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Tag deleted
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -29993,7 +30085,7 @@ paths:
       description: >-
         Returns all tag schemas. Only users with the Standard Registry role are
         allowed to make the request.
-      operationId: TagsApi_getSchemasV2
+      operationId: TagsApi_getSchemasV2_2
       parameters:
         - name: pageIndex
           required: false
@@ -30202,7 +30294,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden. Insufficient permissions.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -30211,6 +30306,13 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                default:
+                  summary: Forbidden
+                  value:
+                    statusCode: 403
+                    message: Forbidden resource
+                    error: Forbidden
         '500':
           description: Internal server error.
           content:
@@ -30285,7 +30387,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden. Insufficient permissions.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -30294,6 +30399,13 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                default:
+                  summary: Forbidden
+                  value:
+                    statusCode: 403
+                    message: Forbidden resource
+                    error: Forbidden
         '500':
           description: Internal server error.
           content:
@@ -30364,7 +30476,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden. Insufficient permissions.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -30373,6 +30488,13 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                default:
+                  summary: Forbidden
+                  value:
+                    statusCode: 403
+                    message: Forbidden resource
+                    error: Forbidden
         '500':
           description: Internal server error.
           content:
@@ -30570,7 +30692,7 @@ paths:
         list of tokens, for other users it also returns token balances as well
         as the KYC, Freeze, and Association statuses. Not allowed for the
         Auditor role.
-      operationId: TokensApi_getTokensV2
+      operationId: TokensApi_getTokensV2_2
       parameters:
         - name: policyId
           required: false
@@ -30869,7 +30991,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -30878,6 +31003,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                invalidCreator:
+                  summary: Not the token creator
+                  value:
+                    statusCode: 403
+                    message: Invalid creator.
+                cannotDelete:
+                  summary: Token linked to active policy
+                  value:
+                    statusCode: 403
+                    message: Token cannot be deleted.
         '404':
           description: Resource not found.
           content:
@@ -31132,7 +31268,10 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: |-
+            Forbidden.
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -31141,6 +31280,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                invalidCreator:
+                  summary: Not the token creator
+                  value:
+                    statusCode: 403
+                    message: Invalid creator.
+                cannotDelete:
+                  summary: Token linked to active policy
+                  value:
+                    statusCode: 403
+                    message: Token cannot be deleted.
         '404':
           description: Resource not found.
           content:
@@ -31229,7 +31379,12 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: >-
+            Token cannot be deleted by current user or token is used in a
+            published policy.
+
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -31238,6 +31393,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                invalidCreator:
+                  summary: Invalid creator
+                  value:
+                    statusCode: 403
+                    message: Invalid creator.
+                cannotDelete:
+                  summary: Token cannot be deleted
+                  value:
+                    statusCode: 403
+                    message: Token cannot be deleted.
         '404':
           description: Token does not exist.
           content:
@@ -31313,7 +31479,12 @@ paths:
                 statusCode: 401
                 message: Unauthorized request
         '403':
-          description: Forbidden
+          description: >-
+            One or more tokens cannot be deleted by current user or are used in
+            published policies.
+
+
+            Forbidden
           content:
             application/json:
               schema:
@@ -31322,6 +31493,17 @@ paths:
                 message: Forbidden resource
                 error: Forbidden
                 statusCode: 403
+              examples:
+                invalidCreator:
+                  summary: Invalid creator
+                  value:
+                    statusCode: 403
+                    message: Invalid creator.
+                cannotDelete:
+                  summary: Token cannot be deleted
+                  value:
+                    statusCode: 403
+                    message: Token <name> (<id>) cannot be deleted.
         '404':
           description: No tokens found for provided IDs.
           content:
@@ -32836,6 +33018,10 @@ paths:
                 type: array
                 items:
                   type: number
+              examples:
+                default:
+                  summary: Default example
+                  value: 0
         '401':
           description: Unauthorized request.
           content:
@@ -33796,6 +33982,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -35134,6 +35324,10 @@ paths:
             application/json:
               schema:
                 type: number
+              examples:
+                default:
+                  summary: Default example
+                  value: 0
         '401':
           description: Unauthorized request.
           content:
@@ -35242,7 +35436,7 @@ paths:
   /projects/compare/documents:
     post:
       description: Compare documents.
-      operationId: ProjectsAPI_compareDocumentsV2
+      operationId: ProjectsAPI_compareDocumentsV2_2
       parameters: []
       requestBody:
         required: true
@@ -35445,6 +35639,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -35679,6 +35877,10 @@ paths:
             application/json:
               schema:
                 type: string
+              examples:
+                default:
+                  summary: Default example
+                  value: string
         '401':
           description: Unauthorized request.
           content:
@@ -35748,6 +35950,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -36022,6 +36228,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -36091,6 +36301,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -36160,6 +36374,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -36687,6 +36905,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -38322,6 +38544,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -40072,6 +40298,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -41445,6 +41675,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -43079,6 +43313,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -43178,6 +43416,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -43291,6 +43533,10 @@ paths:
                 type: array
                 items:
                   type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -43365,6 +43611,10 @@ paths:
                 type: array
                 items:
                   type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -44675,6 +44925,10 @@ paths:
             application/json:
               schema:
                 type: boolean
+              examples:
+                default:
+                  summary: Default example
+                  value: true
         '401':
           description: Unauthorized request.
           content:
@@ -47452,6 +47706,10 @@ paths:
             application/json:
               schema:
                 type: string
+              examples:
+                default:
+                  summary: Default example
+                  value: bafkreihj7gclc4qgem27tre5je6a3t7tpdrk4li6oamdl6bnflwnoyfs5i
         '400':
           description: Bad request.
           content:
@@ -49675,7 +49933,7 @@ info:
     the heart of the Guardian solution is a sophisticated Policy Workflow Engine
     (PWE) that enables applications to offer a requirements-based tokenization
     implementation.
-  version: 3.6.0-rc
+  version: 3.6.0
   contact:
     name: API developer
     url: https://envisionblockchain.com
@@ -50463,6 +50721,7 @@ components:
           example: '2026-03-13T09:26:55.502Z'
         proof:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/ProofDTO'
       required:
@@ -51140,6 +51399,7 @@ components:
       properties:
         target:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/SearchPolicyDTO'
         result:
@@ -54509,10 +54769,12 @@ components:
           description: Whether the user account is local, remote, or custom.
         didDocument:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/ProfileDidDocumentRecordDTO'
         vcDocument:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/ProfileVcDocumentDTO'
       required:
@@ -54548,11 +54810,13 @@ components:
           description: >-
             VC credential subject fields (e.g. OrganizationName, Website, Tags)
             for Standard Registry.
+          type: object
           allOf:
             - $ref: '#/components/schemas/SubjectDTO'
         didDocument:
           nullable: true
           description: DID document to publish, or null to skip in this request.
+          type: object
           allOf:
             - $ref: '#/components/schemas/DidDocumentDTO'
         didKeys:
@@ -55425,6 +55689,7 @@ components:
       properties:
         schema:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/SchemaDTO'
         subSchemas:
@@ -55542,10 +55807,12 @@ components:
       properties:
         schema:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/SchemaDTO'
         blockingSchemas:
           nullable: true
+          type: object
           allOf:
             - $ref: '#/components/schemas/SchemaDTO'
       required:

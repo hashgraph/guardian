@@ -8,7 +8,7 @@ context("Policy Schema Creation", { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const schemaName = "UIPolicySchema";
-    const schemaMessageId = "1707910154.293808812";
+    const schemaMessageId = Cypress.env('schema_for_import');
     const schemaNameImportedIPFS = "Applicant Details";
     const schemaFileName = "exportedSchema.schema";
     const schemaNameImportedFile = "Lead User Details";

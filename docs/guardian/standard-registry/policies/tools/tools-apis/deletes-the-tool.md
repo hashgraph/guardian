@@ -1,24 +1,42 @@
 # Deletes the Tool
 
-{% swagger method="delete" path="" baseUrl="/tools/{id}" summary="Deletes the tool." %}
-{% swagger-description %}
-Deletes the tool with the provided tool ID. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`DELETE /api/v1/tools/{id}`**
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Tool ID
-{% endswagger-parameter %}
+Deletes the tool with the provided tool ID.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% endswagger-response %}
+**Permission:** `Permissions.TOOLS_TOOL_DELETE`
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Tool ID (MongoDB ObjectId) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns `true` on successful deletion.
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `id` is missing or invalid |
+| `500 Internal Server Error` | Unexpected server failure |

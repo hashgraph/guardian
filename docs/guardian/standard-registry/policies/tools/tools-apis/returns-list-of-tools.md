@@ -1,33 +1,53 @@
-# Returns list of tools
+# Returns List of Tools
 
-{% swagger method="get" path="" baseUrl="/tools" summary="Return a list of all tools." %}
-{% swagger-description %}
-Returns all tools. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`GET /api/v1/tools`**
 
-{% swagger-parameter in="query" name="pageSize" type="number" %}
-The numbers of items to return
-{% endswagger-parameter %}
+Returns a paginated list of all tools owned by the current Standard Registry user.
 
-{% swagger-parameter in="query" name="pageIndex" type="number" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.TOOLS_TOOL_READ`
+
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pageIndex` | number | No | 0 | The number of pages to skip before starting to collect the result set |
+| `pageSize` | number | No | 25 | The number of items to return |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of tool objects. The total item count is provided in the `X-Total-Count` response header.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "Example Tool",
+    "description": "A sample tool",
+    "status": "DRAFT",
+    "creator": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "topicId": "0.0.5000001",
+    "messageId": "1700000000.000000001"
+  }
+]
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ToolDTO'
-```
-{% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

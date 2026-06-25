@@ -124,7 +124,7 @@ When building the reference implementation, you can [manually build every compon
 
 - [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.19](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.20](https://nodejs.org), [Yarn](https://yarnpkg.com/getting-started/install) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
 
 ### Installation
 
@@ -407,8 +407,8 @@ If you want to manually build every component with debug information, then build
 ### Prerequisites for manual installation
 
 - [MongoDB V6](https://www.mongodb.com)
-- [Node.js v20.19](https://nodejs.org)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+- [Node.js v20.20](https://nodejs.org)
+- [Yarn](https://yarnpkg.com/getting-started/install)
 - [Nats 2.9.25](https://nats.io/)
 - [Redict](https://redict.io/)
 - [Seq 2025.2 - optional for logging](https://datalust.co/seq)
@@ -892,10 +892,10 @@ Please refer to <https://guardian.hedera.com/> for complete documentation about 
 
 ## Contact information
 
-For any questions, please reach out to the Envision Blockchain Solutions team at:
+For any questions, please reach out to the Hashgraph team at:
 
-- Website: <www.envisionblockchain.com>
-- Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
+* Website: [https://hashgraph.com](https://hashgraph.com)
+* Email: [guardian@hashgraph.com](mailto:guardian@hashgraph.com)
 
 ([back to top](#guardian))
 

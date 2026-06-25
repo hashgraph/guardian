@@ -10,31 +10,38 @@ jobs:
   runService:
     name: Run Service
     runs-on: guardian-linux-medium
+    env:
+      YARN_ENABLE_GLOBAL_CACHE: 'false'
     strategy:
       matrix:
         node-version: [ 20.20.2 ]
         mongodb-version: [ 7.0.21 ]
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ab7a9404c0f3da075243ca237b5fac12c98deaa5 # v2.19.3
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node-version }}
 
-      - name: Setup Yarn
-        uses: Borales/actions-yarn@3766bb1335b98fb13c60eaf358fe20811b730a88 # v5.0.0
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Cache yarn
+        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
         with:
-          cmd: install
+          path: .yarn/cache
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: ${{ runner.os }}-yarn-
 
       - name: Install dependencies
-        run: yarn install
+        run: yarn install --immutable
 
       - name: Start NatsMQ
         uses: step-security/nats-action@2254b4cc4958120e36da3a096e8200dac968be1c # v0.1.4
@@ -55,7 +62,6 @@ jobs:
 
       - name: Build
         run: |
-          yarn
           pushd interfaces
           yarn run build
           popd
@@ -91,7 +97,7 @@ jobs:
           pushd analytics-service
           yarn start &
           popd
-          sleep 30
+          sleep 20
         env:
           QM_VERIFICATION: false
 
@@ -100,9 +106,9 @@ jobs:
           rm -fv swagger.yaml
           rm -fv swagger-indexer.yaml
           rm -fv swagger-analytics.yaml
-          curl -o swagger.yaml http://localhost:3002/api-docs-yaml
-          curl -o swagger-indexer.yaml http://localhost:3021/api-docs-yaml
-          curl -o swagger-analytics.yaml http://localhost:3020/api-docs-yaml
+          curl -o swagger.yaml http://127.0.0.1:3002/api-docs-yaml
+          curl -o swagger-indexer.yaml http://127.0.0.1:3021/api-docs-yaml
+          curl -o swagger-analytics.yaml http://127.0.0.1:3020/api-docs-yaml
           git add swagger.yaml
           git add swagger-indexer.yaml
           git add swagger-analytics.yaml

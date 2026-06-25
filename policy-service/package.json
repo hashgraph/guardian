@@ -9,24 +9,24 @@
         "@database-modules": "dist/database-modules/index",
         "@analytics": "dist/analytics/index"
     },
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "resolutions": {
         "@azure/core-rest-pipeline": "1.12.1",
         "image-size": "1.0.2"
     },
     "dependencies": {
-        "@guardian/common": "3.6.0-rc",
-        "@guardian/interfaces": "3.6.0-rc",
+        "@cortex-js/compute-engine": "^0.27.0",
+        "@guardian/common": "workspace:*",
+        "@guardian/interfaces": "workspace:*",
         "@mikro-orm/core": "6.4.16",
         "@mikro-orm/mongodb": "6.4.16",
-        "@nestjs/common": "^11.0.11",
-        "@nestjs/core": "^11.0.11",
-        "@nestjs/microservices": "^11.0.11",
-        "@cortex-js/compute-engine": "^0.27.0",
+        "@nestjs/common": "^11.1.24",
+        "@nestjs/core": "^11.1.24",
+        "@nestjs/microservices": "^11.1.24",
         "cron": "^4.3.0",
         "deep-equal": "^2.0.5",
         "dotenv": "^16.0.0",
-        "express": "^5.1.0",
+        "express": "5.2.1",
         "lodash.get": "^4.4.2",
         "lodash.set": "^4.3.2",
         "mathjs": "^15.2.0",
@@ -41,8 +41,8 @@
     "devDependencies": {
         "@types/deep-equal": "^1.0.1",
         "@types/express": "^5.0.1",
-        "@types/node": "^22.15.19",
         "@types/glob": "^8.1.0",
+        "@types/node": "^22.15.19",
         "chai": "4.3.4",
         "mocha": "^9.2.0",
         "mocha-junit-reporter": "^2.0.2",
@@ -74,5 +74,5 @@
         "test:stability": "mocha tests/stability.test.js"
     },
     "type": "module",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }

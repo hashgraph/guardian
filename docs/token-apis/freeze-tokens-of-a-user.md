@@ -1,66 +1,48 @@
-# Freeze Tokens of a user
+# Freeze Tokens of a User
 
-### FREEZE TRANSFER OF TOKENS OF A USER
+**`PUT /tokens/{tokenId}/{username}/freeze`**
 
-{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/{username}/freeze" summary="Freeze transfers of the specified token for the user" %}
-{% swagger-description %}
-Freezes transfers of the specified token for the user. Only users with the Standard Registry role are allowed to make the request
-{% endswagger-description %}
+Freezes transfers of the specified Hedera token for the given user. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+**Permission:** `Permissions.TOKENS_TOKEN_EXECUTE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The Hedera token ID (e.g. `0.0.5000001`) |
+| `username` | string | Yes | The username of the target user |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenInfo'
+  "id": "63e3e5e8a01b3c001234abcd",
+  "tokenId": "0.0.5000001",
+  "associated": true,
+  "balance": "0",
+  "frozen": true,
+  "kyc": true
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="Bad Request" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `400 Bad Request` | Invalid token or username |
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

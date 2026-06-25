@@ -1,61 +1,48 @@
-# Returns the list of schemas for the target document
+# Returns the List of Schemas for the Target Document
 
-<mark style="color:green;">`GET`</mark> `/policy-comments/{policyId}/{documentId}/schemas`
+**`GET /api/v1/policy-comments/{policyId}/{documentId}/schemas`**
 
-Returns the list of schemas for the target document
+Returns the list of schemas applicable to the target document within the policy.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE`, `Permissions.POLICIES_POLICY_MANAGE`, or `Permissions.POLICIES_POLICY_AUDIT`
 
-**Body**
+---
 
-| Name       | Type   | Description         |
-| ---------- | ------ | ------------------- |
-| policyId   | string | Policy ID           |
-| documentId | string | Document Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-{
-   description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PolicyCommentUserDTO'
-}
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `policyId`   | string | Yes      | Policy identifier   |
+| `documentId` | string | Yes      | Document identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "Facility Schema",
+    "version": "1.0.0",
+    "iri": "#facility-schema"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-{
-   description: Unauthorized.
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
-
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid `policyId` value |
+| `500 Internal Server Error` | Unexpected server failure |

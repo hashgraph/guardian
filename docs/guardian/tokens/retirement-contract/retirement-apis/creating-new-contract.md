@@ -1,49 +1,53 @@
-# Creating new Contract
+# Creating a New Contract
 
-{% swagger method="post" path="" baseUrl="/contracts" summary="Creates new contract" %}
-{% swagger-description %}
-Creates new contract. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/contracts`**
 
-{% swagger-parameter in="body" type="String" required="true" %}
-Request Object Parameters.
-{% endswagger-parameter %}
+Creates a new smart contract. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="201: Created" description="Created Contract" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.CONTRACTS_CONTRACT_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ContractDTO'
+  "description": "Example retire contract",
+  "type": "RETIRE"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field         | Type   | Required | Description                                       |
+|---------------|--------|----------|---------------------------------------------------|
+| `description` | string | No       | Human-readable description of the contract        |
+| `type`        | string | Yes      | Contract type: `RETIRE` or `WIPE`                 |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
 {
-    // Response
+  "id": "63e3e5e8a01b3c001234abcd",
+  "contractId": "0.0.4532001",
+  "description": "Example retire contract",
+  "type": "RETIRE",
+  "owner": "example_user"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

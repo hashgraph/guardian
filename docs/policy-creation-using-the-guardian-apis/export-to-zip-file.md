@@ -1,51 +1,42 @@
-# Export to zip file
+# Export to Zip File
 
-### POLICY EXPORT FROM .ZIP
+**`GET /policies/{policyId}/export/file`**
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/export/file" summary="Return policy and its artifacts in a zip file format for the specified policy" %}
-{% swagger-description %}
-Returns a zip file containing the published policy and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Returns the policy and all associated artifacts (schemas, VCs) as a zip file.
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExportPolicy'
-}
-```
-{% endswagger-response %}
+**Permission:** `Permissions.POLICIES_POLICY_READ`
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+---
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+## Request
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns a binary zip file.
+
+**Headers:**
+- `Content-Disposition: attachment; filename=<policy-name>`
+- `Content-Type: application/zip`
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `500 Internal Server Error` | Unexpected server failure |

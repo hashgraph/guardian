@@ -1,64 +1,61 @@
-# Returns all Schemas related to the topic
+# Returns All Schemas Related to the Topic
 
-{% swagger method="get" path="" baseUrl=" /schemas/{topicId}" summary="Returns schemas related to the topic (policy)" %}
-{% swagger-description %}
-Returns all schemas by topicId.
-{% endswagger-description %}
+**`GET /api/v1/schemas/{topicId}`**
 
-{% swagger-parameter in="path" name="topicId" type="Integer" required="true" %}
-Topic ID
-{% endswagger-parameter %}
+Returns a paginated list of all schemas associated with the specified Hedera topic ID.
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="query" type="Integer" name="pageSize" %}
-The numbers of items to return
-{% endswagger-parameter %}
+**Permission:** `Permissions.SCHEMAS_SCHEMA_READ`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | string | Yes | The Hedera topic ID to filter schemas by (e.g. `0.0.1234567`) |
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pageIndex` | number | No | 0 | Zero-based page index (number of pages to skip) |
+| `pageSize` | number | No | 20 | Number of items to return per page |
+| `category` | string | No | — | Schema category filter (e.g. `POLICY`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The response includes an `X-Total-Count` header with the total number of matching schemas.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Carbon Offset Schema",
+    "description": "Schema for carbon offset reporting",
+    "entity": "VC",
+    "status": "PUBLISHED",
+    "version": "1.0.0",
+    "topicId": "0.0.1234567",
+    "owner": "example_user"
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

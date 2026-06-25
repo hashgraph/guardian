@@ -1,57 +1,50 @@
 # Schema Type
 
-<mark style="color:blue;">`GET`</mark> `/schemas/system/entity/{schemaEntity}`
+**`GET /schemas/system/entity/{schemaEntity}`**
 
-Finds the schema using Schema Type.
+Finds the schema using the schema entity type.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                           | Type   | Description |
-| ---------------------------------------------- | ------ | ----------- |
-| schemaEntity<mark style="color:red;">\*</mark> | String | Schema Type |
+**Permission:** No specific permission required (authentication only)
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaEntity` | String (enum) | Yes | Schema entity type. One of: `STANDARD_REGISTRY`, `USER`, `POLICY`, `MINT_TOKEN`, `INTEGRATION_DATA_V2`, `WIPE_TOKEN`, `MINT_NFTOKEN` |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Schema'
+  "id": "f3b2a9c1e4d5678901234567",
+  "uuid": "f3b2a9c1e4d5678901234567",
+  "name": "Schema name",
+  "entity": "string",
+  "iri": "string",
+  "status": "PUBLISHED",
+  "version": "1.0.0",
+  "document": {},
+  "context": {}
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="404: Not Found Not Found" %}
-```
-Schema not found.
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Schema not found |
+| `500 Internal Server Error` | Unexpected server failure |

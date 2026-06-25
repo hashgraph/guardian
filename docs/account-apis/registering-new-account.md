@@ -1,35 +1,53 @@
-# Registering new account
+# Registering a New Account
 
-### REGISTERING NEW ACCOUNT
+**`POST /accounts/register`**
 
-{% swagger method="post" path="" baseUrl="/accounts/register" summary="Registers a new user account" %}
-{% swagger-description %}
+Registers a new user account with a username, password, and optional role.
 
-{% endswagger-description %}
+**Authentication:** Bearer token required for non-demo mode (`Authorization: Bearer <token>`). Only a Standard Registry user may register new accounts outside of demo mode.
 
-{% swagger-parameter in="body" required="true" %}
-Object that contain username, password and role (optional) fields
-{% endswagger-parameter %}
+---
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
-```javascript
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Account'
+  "username": "example_user",
+  "password": "examplePassword123",
+  "role": "USER"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `username` | string | Yes | The new account username |
+| `password` | string | Yes | The account password |
+| `role` | string | No | User role: `STANDARD_REGISTRY`, `USER`, or `AUDITOR`. Defaults to `USER` |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
+  "username": "example_user",
+  "role": "USER",
+  "did": null,
+  "hederaAccountId": null
 }
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Caller is not authenticated (non-demo mode) |
+| `403 Forbidden` | Caller does not have Standard Registry role |
+| `409 Conflict` | Username already exists |
+| `500 Internal Server Error` | Unexpected server failure |

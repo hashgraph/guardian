@@ -1,25 +1,58 @@
-# Creating new tool asynchronously
+# Creating New Tool Asynchronously
 
-{% swagger method="post" path="" baseUrl="/tools/push" summary="Creates a new tool." %}
-{% swagger-description %}
-Creates a new tool. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/tools/push`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TaskDTO'
-```
-{% endswagger-response %}
+Creates a new tool asynchronously and returns a task ID for polling the result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "name": "My Tool",
+  "description": "Tool description",
+  "config": {
+    "blockType": "tool",
+    "children": []
+  }
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Human-readable name of the tool |
+| `description` | string | No | Brief description of the tool's purpose |
+| `config` | object | Yes | Tool configuration object; `blockType` must be `"tool"` |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
+{
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Create tool"
+}
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+Poll `GET /tasks/{taskId}` to retrieve the result.
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid tool config (e.g., missing or incorrect `blockType`) |
+| `500 Internal Server Error` | Unexpected server failure |
