@@ -95,6 +95,12 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     ];
     private publishErrorMenuOption = [
         {
+            id: 'Draft',
+            title: 'To Draft',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
+        {
             id: 'Publish',
             title: 'Publish',
             description: 'Release version into public domain.',
@@ -602,6 +608,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setToolVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draftTool(element);
         }
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
