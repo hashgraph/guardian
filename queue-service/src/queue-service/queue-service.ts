@@ -86,11 +86,13 @@ export class QueueService extends NatsService {
                         },
                         limit: pageSize,
                         offset: pageIndex * pageSize,
+                        exclude: ['data', 'dataFileId'],
                     }
                     : {
                         orderBy: {
                             processedTime: OrderDirection.DESC,
                         },
+                        exclude: ['data', 'dataFileId'],
                     };
             const filters: any = { userId, interception: { $ne: null } };
             if (status) {
@@ -112,14 +114,13 @@ export class QueueService extends NatsService {
             }
             const result = await new DatabaseServer().findAndCount(TaskEntity, filters, options);
             for (const task of result[0]) {
-                if (task.data) {
-                    delete task.data;
-                    delete task.userId;
-                    delete task.priority;
-                    delete task.attempt;
-                    delete task.attempts;
-                    delete task._id;
-                }
+                delete task.data;
+                delete task.dataFileId;
+                delete task.userId;
+                delete task.priority;
+                delete task.attempt;
+                delete task.attempts;
+                delete task._id;
             }
             return new MessageResponse(result);
         })
