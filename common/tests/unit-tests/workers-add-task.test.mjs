@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import { Workers } from '@guardian/common';
+// Load the package entry first so the module graph initializes in the right order
+// (importing workers.js directly otherwise hits a circular init: vc-helper -> VCJS).
+import '../../dist/index.js';
+import { Workers } from '../../dist/helpers/workers.js';
 
 // Build a Workers instance without running the NatsService constructor (and without
 // the @Singleton shared instance): we only need addTask + its dependencies.
