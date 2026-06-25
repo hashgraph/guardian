@@ -37,7 +37,7 @@
       <td class="propRowCell cellName">Check Owned by User</td>
       <td class="propRowCell">
         <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerDocument"
-          [attr.readonly]="readonly" (change)="onSave()">
+          [readonly]="readonly" (change)="onSave()">
       </td>
     </tr>
     <tr class="propRow">
@@ -45,7 +45,7 @@
       <td class="propRowCell cellName">Check Owned by Group</td>
       <td class="propRowCell">
         <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkOwnerByGroupDocument"
-          [attr.readonly]="readonly" (change)="onSave()">
+          [readonly]="readonly" (change)="onSave()">
       </td>
     </tr>
     <tr class="propRow">
@@ -53,7 +53,7 @@
       <td class="propRowCell cellName">Check Assigned to User</td>
       <td class="propRowCell">
         <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignDocument"
-          [attr.readonly]="readonly" (change)="onSave()">
+          [readonly]="readonly" (change)="onSave()">
       </td>
     </tr>
     <tr class="propRow">
@@ -61,7 +61,7 @@
       <td class="propRowCell cellName">Check Assigned to Group</td>
       <td class="propRowCell">
         <input class="prop-input" type="checkbox" [(ngModel)]="properties.checkAssignByGroupDocument"
-          [attr.readonly]="readonly" (change)="onSave()">
+          [readonly]="readonly" (change)="onSave()">
       </td>
     </tr>
 
@@ -177,7 +177,7 @@
         <td class="propRowCell cellName">Owned by User</td>
         <td class="propRowCell">
           <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyOwnDocuments"
-            [attr.readonly]="readonly" (change)="onSave()">
+            [readonly]="readonly" (change)="onSave()">
         </td>
       </tr>
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
@@ -185,7 +185,7 @@
         <td class="propRowCell cellName">Owned by Group</td>
         <td class="propRowCell">
           <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyOwnByGroupDocuments"
-            [attr.readonly]="readonly" (change)="onSave()">
+            [readonly]="readonly" (change)="onSave()">
         </td>
       </tr>
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
@@ -193,7 +193,7 @@
         <td class="propRowCell cellName">Assigned to User</td>
         <td class="propRowCell">
           <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyAssignDocuments"
-            [attr.readonly]="readonly" (change)="onSave()">
+            [readonly]="readonly" (change)="onSave()">
         </td>
       </tr>
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
@@ -201,7 +201,7 @@
         <td class="propRowCell cellName">Assigned to Group</td>
         <td class="propRowCell">
           <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyAssignByGroupDocuments"
-            [attr.readonly]="readonly" (change)="onSave()">
+            [readonly]="readonly" (change)="onSave()">
         </td>
       </tr>
 

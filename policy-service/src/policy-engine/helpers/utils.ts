@@ -313,7 +313,7 @@ export class PolicyUtils {
      */
     public static getSchemaContext(ref: AnyBlockType, schema: SchemaCollection): string {
         if (ref.dryRun) {
-            return `schema${schema.iri}`;
+            return `schema:${schema.iri.slice(1)}`;
         } else {
             return schema.contextURL;
         }

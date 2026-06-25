@@ -415,9 +415,6 @@ const Request: IBlockSetting = {
     }, {
         type: BlockType.DocumentValidatorBlock,
         group: BlockGroup.UnGrouped
-    }, {
-        type: BlockType.RequestValidationAddon,
-        group: BlockGroup.UnGrouped
     }]
 }
 
