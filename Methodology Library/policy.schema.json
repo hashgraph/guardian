@@ -1,0 +1,390 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://guardian.hedera.com/schemas/policy-manifest/v1.0.0/policy.schema.json",
+  "title": "Guardian Policy Manifest",
+  "description": "JSON Schema for validating policy.yml sidecar manifest files in the Guardian Methodology Library.",
+  "type": "object",
+
+  "required": [
+    "id",
+    "name",
+    "version",
+    "description",
+    "policy_type",
+    "status",
+    "license",
+    "category",
+    "authors",
+    "tags"
+  ],
+
+  "additionalProperties": false,
+
+  "properties": {
+
+    "id": {
+      "type": "string",
+      "description": "Globally unique kebab-case slug for this policy. Must be stable across versions.",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "examples": ["verra-vm0007-redd-plus", "gold-standard-mecd-v2"]
+    },
+
+    "name": {
+      "type": "string",
+      "description": "Human-readable display name shown in the catalog.",
+      "minLength": 3,
+      "maxLength": 120,
+      "examples": ["Verra VM0007 REDD+ Methodology Framework"]
+    },
+
+    "version": {
+      "type": "string",
+      "description": "Semantic version of this Guardian policy implementation (not the upstream methodology version).",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "examples": ["3.0.0", "1.0.0-rc.1"]
+    },
+
+    "description": {
+      "type": "string",
+      "description": "One-to-three sentence plain-English summary of what this policy does.",
+      "minLength": 20,
+      "maxLength": 600
+    },
+
+    "policy_type": {
+      "type": "string",
+      "description": "Classification of the policy's relationship to upstream standards.",
+      "enum": [
+        "standard-implementation",
+        "novel-methodology",
+        "mrv-template",
+        "proof-of-concept",
+        "toolkit"
+      ]
+    },
+
+    "status": {
+      "type": "string",
+      "description": "Lifecycle state of this Guardian implementation.",
+      "enum": [
+        "draft",
+        "candidate",
+        "active",
+        "deprecated",
+        "superseded"
+      ]
+    },
+
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier (e.g. Apache-2.0, MIT, CC-BY-4.0).",
+      "minLength": 2,
+      "examples": ["Apache-2.0", "MIT", "CC-BY-4.0"]
+    },
+
+    "category": {
+      "type": "string",
+      "description": "Broad domain this policy belongs to.",
+      "enum": [
+        "carbon-offsets",
+        "emission-reporting",
+        "supply-chain",
+        "biodiversity",
+        "payments",
+        "other"
+      ]
+    },
+
+    "authors": {
+      "type": "array",
+      "description": "Organizations or individuals primarily responsible for this Guardian implementation.",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name of the author.",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Author's website or profile URL."
+          },
+          "type": {
+            "type": "string",
+            "description": "Author classification.",
+            "enum": ["organization", "individual", "community"]
+          },
+          "github": {
+            "type": "string",
+            "description": "GitHub username or org handle (without @).",
+            "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$"
+          }
+        }
+      }
+    },
+
+    "tags": {
+      "type": "array",
+      "description": "Lowercase-hyphenated discovery tags. See TAG_TAXONOMY.md for guidance.",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+        "description": "A single lowercase-hyphenated tag."
+      }
+    },
+
+    "standard_body": {
+      "type": "string",
+      "description": "Name of the standards organization that owns the upstream methodology (e.g. Verra, Gold Standard). Omit for community-developed policies.",
+      "examples": ["Verra", "Gold Standard", "UNFCCC CDM", "ISO"]
+    },
+
+    "methodology_id": {
+      "type": "string",
+      "description": "Upstream methodology identifier as used by the standard body (e.g. VM0007, MECD, AMS-III.BA).",
+      "examples": ["VM0007", "MECD", "AMS-III.BA"]
+    },
+
+    "methodology_version": {
+      "type": "string",
+      "description": "Version of the upstream methodology this policy implements, verbatim as published by the standard body.",
+      "examples": ["7.0", "2.0", "3.1"]
+    },
+
+    "token_type": {
+      "type": "string",
+      "description": "Symbol or name of the token minted by this policy (e.g. VCU, VER, CER, EUDRT).",
+      "examples": ["VCU", "VER", "CER", "EUDRT", "LIT", "CRT"]
+    },
+
+    "token_standard": {
+      "type": "string",
+      "description": "Hedera token standard used.",
+      "enum": [
+        "fungible",
+        "HIP-412-NFT",
+        "none"
+      ]
+    },
+
+    "registry_status": {
+      "type": "string",
+      "description": "Status of this policy/project with the external registry body.",
+      "enum": [
+        "none",
+        "pending",
+        "validated",
+        "revoked"
+      ]
+    },
+
+    "registry_body": {
+      "type": "string",
+      "description": "Name of the registry body that validated this policy (only meaningful when registry_status is validated).",
+      "examples": ["Verra", "Gold Standard", "Gold Standard Foundation"]
+    },
+
+    "registry_reference": {
+      "type": "string",
+      "description": "Formal reference number assigned by the registry (e.g. a VCS project ID).",
+      "examples": ["VCS-1234", "GS-5678"]
+    },
+
+    "registry_accepted_date": {
+      "type": "string",
+      "description": "ISO 8601 date on which the registry formally accepted or validated this policy.",
+      "format": "date",
+      "examples": ["2024-03-15"]
+    },
+
+    "ipfs_timestamp": {
+      "type": "string",
+      "description": "IPFS timestamp of the most recent mainnet publication (or testnet if not yet on mainnet), as returned by Guardian's publish API. Full publication history — all networks and versions — is recorded in publications.json by the record-publication script; never edit that file by hand.",
+      "pattern": "^[0-9]+\\.[0-9]+$",
+      "examples": ["1707207286.119377003"]
+    },
+
+    "sdg_alignment": {
+      "type": "array",
+      "description": "UN Sustainable Development Goal numbers (1-17) that this policy directly supports.",
+      "uniqueItems": true,
+      "items": {
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 17
+      },
+      "examples": [[13, 15], [3, 7, 13]]
+    },
+
+    "sector": {
+      "type": "string",
+      "description": "Primary economic sector of the underlying project activity.",
+      "enum": [
+        "energy",
+        "transport",
+        "waste",
+        "land-use",
+        "industrial",
+        "agriculture",
+        "water",
+        "other"
+      ]
+    },
+
+    "guardian_version_min": {
+      "type": "string",
+      "description": "Minimum Guardian platform version required to run this policy.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-.+)?$",
+      "examples": ["2.20.0", "2.25.0"]
+    },
+
+    "roles": {
+      "type": "array",
+      "description": "Named roles defined in the policy workflow.",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "examples": [["Standard Registry", "Project Proponent", "VVB"]]
+    },
+
+    "dependencies": {
+      "type": "array",
+      "description": "Other Guardian modules or tool IDs this policy depends on.",
+      "items": {
+        "type": "object",
+        "required": ["id"],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "ID of the dependency module (must match that module's id field).",
+            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+          },
+          "version_min": {
+            "type": "string",
+            "description": "Minimum version of the dependency required."
+          }
+        }
+      }
+    },
+
+    "supersedes": {
+      "type": ["string", "null"],
+      "description": "ID of the policy this manifest replaces. Null or omit if this is the first version.",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "examples": ["gold-standard-mecd-v1"]
+    },
+
+    "superseded_by": {
+      "type": ["string", "null"],
+      "description": "ID of the policy that replaces this one (set when status becomes superseded).",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+
+    "resources": {
+      "type": "array",
+      "description": "External references relevant to this policy (methodology docs, regulatory texts, research papers).",
+      "items": {
+        "type": "object",
+        "required": ["type", "label"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "description": "Category of the resource.",
+            "enum": [
+              "methodology",
+              "regulation",
+              "research",
+              "demo-guide",
+              "api-docs",
+              "tool",
+              "dataset",
+              "other"
+            ]
+          },
+          "label": {
+            "type": "string",
+            "description": "Human-readable link label.",
+            "minLength": 1
+          },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the resource (optional if the resource is described by label alone)."
+          }
+        }
+      }
+    },
+
+    "contributors": {
+      "type": "array",
+      "description": "Individuals or organizations who contributed to this implementation but are not primary authors.",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "github": {
+            "type": "string",
+            "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$"
+          }
+        }
+      }
+    },
+
+    "maintainers": {
+      "type": "array",
+      "description": "Current maintainers responsible for keeping this policy up to date.",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          }
+        }
+      }
+    },
+
+    "thumbnail": {
+      "type": "string",
+      "description": "Relative path to a thumbnail image (from the policy.yml file location). Recommended: 400x300 PNG/JPEG.",
+      "examples": ["assets/thumbnail.png", "thumbnail.jpg"]
+    },
+
+    "homepage": {
+      "type": "string",
+      "format": "uri",
+      "description": "Canonical URL for the upstream methodology or project homepage."
+    },
+
+    "support": {
+      "type": "string",
+      "description": "URL (GitHub issues, forum) or email address for policy support.",
+      "examples": ["https://github.com/hashgraph/guardian/issues", "support@example.com"]
+    }
+  }
+}
