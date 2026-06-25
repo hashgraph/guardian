@@ -1,0 +1,36 @@
+:host {
+    display: block;
+}
+
+.dialog-body {
+    min-width: 520px;
+}
+
+.form-field {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.guardian-input-container,
+.guardian-textarea-container {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+textarea {
+    resize: vertical;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    user-select: none;
+
+    & > div {
+        margin-left: 15px;
+        margin-right: 0;
+    }
+}

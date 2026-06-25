@@ -8,7 +8,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'details-log-dialog',
     templateUrl: './details-log-dialog.component.html',
-    styleUrls: ['./details-log-dialog.component.scss']
+    styleUrls: ['./details-log-dialog.component.scss'],
+    standalone: false
 })
 export class DetailsLogDialog {
     dataForm = this.fb.group({

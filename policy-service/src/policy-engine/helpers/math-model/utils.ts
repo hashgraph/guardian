@@ -14,7 +14,7 @@ export function convertValue(value: any): any {
         const list: any = ['List'];
         for (const item of value) {
             const e = convertValue(item);
-            if (e) {
+            if (e !== null && e !== undefined) {
                 list.push(e);
             } else {
                 return null;

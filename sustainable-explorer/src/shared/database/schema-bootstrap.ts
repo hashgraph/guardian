@@ -142,4 +142,27 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         ON business_view USING GIN (("businessData" -> 'linkedVcs'))
         WHERE "viewType" = 'PROJECT'
     `);
+
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS guardian_event_log (
+            id           BIGSERIAL    PRIMARY KEY,
+            network      VARCHAR(60)  NOT NULL,
+            "instanceId" VARCHAR(120),
+            subject      VARCHAR(120) NOT NULL,
+            "refType"    VARCHAR(20),
+            "refId"      VARCHAR(120),
+            action       VARCHAR(200) NOT NULL,
+            "createdAt"  TIMESTAMPTZ  NOT NULL DEFAULT now()
+        )
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_guardian_event_log_network_created
+        ON guardian_event_log (network, "createdAt")
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_guardian_event_log_subject
+        ON guardian_event_log (subject)
+    `);
 }

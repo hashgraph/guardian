@@ -18,7 +18,8 @@ import {DialogService} from 'primeng/dynamicdialog';
 @Component({
     selector: 'policy-settings',
     templateUrl: './policy-settings.component.html',
-    styleUrls: ['./policy-settings.component.scss']
+    styleUrls: ['./policy-settings.component.scss'],
+    standalone: false
 })
 export class PolicySettingsComponent implements OnInit {
     @Output('update') update = new EventEmitter();
@@ -222,7 +223,7 @@ export class PolicySettingsComponent implements OnInit {
                 type,
                 theme: newTheme
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (r) => {
             if (r) {
                 if (r.name) {
@@ -251,7 +252,7 @@ export class PolicySettingsComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.loading = true;
@@ -272,12 +273,12 @@ export class PolicySettingsComponent implements OnInit {
     public importTheme() {
         const dialogRef = this.dialogService.open(ImportEntityDialog, {
             showHeader: false,
-            width: '720px',
+            width: '80%',
             styleClass: 'guardian-dialog',
             data: {
                 type: ImportEntityType.Theme,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 const {data} = result;
@@ -334,7 +335,7 @@ export class PolicySettingsComponent implements OnInit {
                 type: 'edit',
                 theme: theme
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 theme.name = result.name;

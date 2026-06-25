@@ -44,7 +44,7 @@ From the [AR Tool 14 PDF](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf), the t
 
 ## Guardian Tools Architecture
 
-![AR Tool 14 within policy editor](<../../../.gitbook/assets/image (90).png>)
+![AR Tool 14 within policy editor](<../../../.gitbook/assets/image (172).png>)
 
 ### Mini-Policy Pattern
 
@@ -402,7 +402,7 @@ function performCalculations(data) {
 
 Guardian Tools are designed to be called from parent methodology policies. Here's how VM0033 would integrate AR Tool 14:
 
-![Tool integration in new project submission flow](<../../../.gitbook/assets/image-1 (8).png>)
+![Tool integration in new project submission flow](<../../../.gitbook/assets/image-1 (9).png>)
 
 ### Tool Event Configuration
 

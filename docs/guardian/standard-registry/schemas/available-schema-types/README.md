@@ -58,6 +58,18 @@ The utilization of Schema Types is pivotal for the lifecycle of digital environm
 Each of the above field types can be marked as either Marked or optional by checking the Required Field checkbox.
 
 {% hint style="info" %}
+**Note: Auto Calculate fields**
+
+Any field can be set to "Auto Calculate" mode. When enabled, the field value is computed from a JavaScript expression that can reference sibling fields by name. The expression editor includes:
+
+* A help panel with available fields, operators, functions, and examples (click **?** to open)
+* Real-time validation that catches syntax errors and undefined references
+* Click-to-insert for field names and functions
+
+For details and the `table` helper, see [Table Data Input Field with AutoCalculate](table-data-input-field/table-data-input-field-with-autocalculate.md).
+{% endhint %}
+
+{% hint style="info" %}
 **Note: Important points to be noted when "Account" type is selected:**
 
 1. Account field type need to be referred in ‘tokenConfirmationBlock’ and ‘tokenActionBlock’. They can be present both in the parent and child documents.
@@ -100,7 +112,7 @@ For all fields of type string with different formats (e.g., `url`, `uri`, `file`
 * The validation is applied only for published policies. For draft policies, validation is disabled.
 {% endhint %}
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 For geoJSON fields :\\

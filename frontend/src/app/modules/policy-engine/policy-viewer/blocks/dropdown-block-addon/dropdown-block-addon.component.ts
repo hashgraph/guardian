@@ -10,6 +10,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     selector: 'dropdown-block-addon',
     templateUrl: './dropdown-block-addon.component.html',
     styleUrls: ['./dropdown-block-addon.component.scss'],
+    standalone: false
 })
 export class DropdownBlockAddonComponent implements OnInit {
     @Input('id') id!: string;

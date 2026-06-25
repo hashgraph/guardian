@@ -101,7 +101,9 @@ export class MintFT extends TypedMint {
                     },
                     {
                         priority: 1,
-                        attempts: 10
+                        attempts: 10,
+                        dryRun: null,
+                        mockId: null
                     }
                 );
 
@@ -139,7 +141,9 @@ export class MintFT extends TypedMint {
                         },
                         {
                             priority: 1,
-                            attempts: 10
+                            attempts: 10,
+                            dryRun: null,
+                            mockId: null
                         }
                     );
 
@@ -204,7 +208,9 @@ export class MintFT extends TypedMint {
                         priority: 1,
                         attempts: 10,
                         userId: options.userId,
-                        interception: options.interception
+                        interception: options.interception,
+                        dryRun: null,
+                        mockId: null
                     }
                 ).then(async startTransactions => {
                     try {
@@ -243,7 +249,9 @@ export class MintFT extends TypedMint {
                     priority: 10,
                     attempts: 0,
                     userId: options.userId,
-                    interception: options.interception
+                    interception: options.interception,
+                    dryRun: this._ref && this._ref.dryRun,
+                    mockId: null
                 }
             );
             transaction.mintStatus = MintTransactionStatus.SUCCESS;
@@ -299,7 +307,9 @@ export class MintFT extends TypedMint {
                         priority: 1,
                         attempts: 10,
                         userId: options.userId,
-                        interception: options.interception
+                        interception: options.interception,
+                        dryRun: null,
+                        mockId: null
                     }
                 ).then(async startTransactions => {
                     try {
@@ -340,7 +350,9 @@ export class MintFT extends TypedMint {
                     priority: 10,
                     attempts: 0,
                     userId: options.userId,
-                    interception: options.interception
+                    interception: options.interception,
+                    dryRun: this._ref && this._ref.dryRun,
+                    mockId: null
                 }
             );
 

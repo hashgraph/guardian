@@ -6,6 +6,7 @@ import { ExternalPoliciesService } from 'src/app/services/external-policy.servic
     selector: 'search-external-policy-dialog',
     templateUrl: './search-external-policy-dialog.component.html',
     styleUrls: ['./search-external-policy-dialog.component.scss'],
+    standalone: false
 })
 export class SearchExternalPolicyDialog {
     public loading = true;
@@ -44,7 +45,7 @@ export class SearchExternalPolicyDialog {
             }, (e) => {
                 this.loading = false;
                 this.step = 0;
-                this.error = 'error';
+                this.error = e?.error?.message;
             });
     }
 
@@ -58,7 +59,7 @@ export class SearchExternalPolicyDialog {
                     this.step = 2;
                 } else {
                     this.step = 0;
-                    this.error = 'error';
+                    this.error = 'Policy not found';
                 }
                 setTimeout(() => {
                     this.loading = false;
@@ -66,7 +67,7 @@ export class SearchExternalPolicyDialog {
             }, (e) => {
                 this.loading = false;
                 this.step = 0;
-                this.error = 'error';
+                this.error = e?.error?.message;
             });
     }
 

@@ -14,7 +14,13 @@ export class CsRefResolver extends BaseProjectKeyResolver {
 
     async resolve(ctx: ResolutionContext): Promise<ResolutionOutcome> {
         if (!ctx.csRef) return this.pass();
-        const refWalked = await this.resolveViaRef(ctx.consensusTimestamp, ctx.csId);
+        // Walk cs.ref, but anchor on the project-schema VC (unique per project)
+        // instead of climbing to a shared developer/applicant root that would
+        // collapse sibling projects onto one key.
+        const refWalked = await this.resolveViaRef(ctx.consensusTimestamp, ctx.csId, {
+            projectSchemaUuids: this.projectSchemaUuids(ctx.policyMapping),
+            startIsProjectSchema: ctx.isProjectSchemaVc,
+        });
         const resolvedKey = refWalked?.projectKey ?? ctx.csRef;
         // Classified policy + this VC isn't itself the project schema → the chain
         // terminus must land on a project-schema VC OR an already-known PROJECT row.

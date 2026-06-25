@@ -79,9 +79,7 @@ contract Wipe is Version, SafeHTS, Access {
     }
 
     function ban(address account) public role(MANAGER) {
-        if (account == address(this)) {
-            revert NoPermissions();
-        }
+        require(account != address(this), "Access: cannot ban contract");
         if (bans[account]) {
             revert AlreadyBanned();
         }

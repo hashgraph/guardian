@@ -1,164 +1,189 @@
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties" [attr.readonly]="readonly">
     <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">Tool</td>
-        <td class="propHeaderCell"></td>
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Tool</td>
+      <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Name</td>
-        <td class="propRowCell">
-            <span class="readonly-prop">{{ tool.name }}</span>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Name</td>
+      <td class="propRowCell">
+        <span class="readonly-prop">{{ tool.name }}</span>
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Description</td>
+      <td class="propRowCell">
+        <span class="readonly-prop">{{ tool.description }}</span>
+      </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Owner</td>
+      <td class="propRowCell">
+        <span class="readonly-prop">{{ tool.owner }}</span>
+      </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Message ID</td>
+      <td class="propRowCell">
+        <span class="readonly-prop">{{ tool.messageId }}</span>
+      </td>
+    </tr>
+    <tr class="propRow" [attr.collapse]="propHidden.tool">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Hash</td>
+      <td class="propRowCell">
+        <span class="readonly-prop">{{ tool.hash }}</span>
+      </td>
+    </tr>
+    <tr class="propHeader">
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Variables</td>
+      <td class="propHeaderCell"></td>
+    </tr>
+    @for (item of variables; track item; let i = $index) {
+      <tr class="propRow" [attr.collapse]="propHidden.main">
+        <td class="propRowCol cellCollapse" (click)="onHide(variablesHidden, i)"
+          [attr.collapse]="variablesHidden[i]">
+          <i class="pi pi-caret-down"></i>
+        </td>
+        <td class="propRowCell cellName">
+          {{ item.name }}
+        </td>
+        @if (item.type ==='Schema') {
+          <td class="propRowCell">
+            <select-schema
+              [schemas]="schemas"
+              [(value)]="properties[item.key]"
+              [disabled]="readonly"
+              (change)="onSave()"
+            ></select-schema>
+          </td>
+        }
+        @if (item.type ==='Token') {
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties[item.key]"
+              [options]="tokens"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              [appendTo]="'body'"
+              placeholder="Select Token"
+              optionLabel="name"
+              optionValue="value">
+            </p-select>
+          </td>
+        }
+        @if (item.type ==='Role') {
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties[item.key]"
+              [options]="roles"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              placeholder="Select Role"
+              optionLabel="name"
+              optionValue="value"
+              [appendTo]="'body'"
+              >
+            </p-select>
+          </td>
+        }
+        @if (item.type ==='Group') {
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties[item.key]"
+              [options]="groups"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              placeholder="Select Group"
+              optionLabel="name"
+              [appendTo]="'body'"
+              optionValue="value">
+            </p-select>
+          </td>
+        }
+        @if (item.type ==='TokenTemplate') {
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties[item.key]"
+              [options]="tokenTemplate"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              placeholder="Select Token"
+              optionLabel="name"
+              [appendTo]="'body'"
+              optionValue="value">
+            </p-select>
+          </td>
+        }
+        @if (item.type ==='Topic') {
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties[item.key]"
+              (onChange)="selectTopic($event.value, item)"
+              [disabled]="readonly"
+              [appendTo]="'body'"
+              placeholder="Select Topic">
+              <ng-template pTemplate="item" let-topic>
+                @if (topic.value !== 'root' && topic.value !== 'new') {
+                  <span
+                    pTooltip="{{ topic.description }}"
+                    tooltipPosition="top"
+                    tooltipStyleClass="guardian-tooltip small-guardian-tooltip">
+                    {{ topic.name }}
+                  </span>
+                }
+                @if (topic.value === 'root') {
+                  <span>Policy Instance</span>
+                }
+                @if (topic.value === 'new') {
+                  <span class="mat-option-link">
+                    <i class="pi pi-plus"></i>
+                    <span>Create new topic</span>
+                  </span>
+                }
+              </ng-template>
+              <ng-template pTemplate="selectedItem" let-topic>
+                @if (topic.value !== 'new' && topic.value !== 'root') {
+                  <span>{{ topic.name }}</span>
+                }
+                @if (topic.value === 'root') {
+                  <span>Policy Instance</span>
+                }
+                @if (topic.value === 'new') {
+                  <span>
+                    <i class="pi pi-plus"></i>
+                    Create new topic
+                  </span>
+                }
+              </ng-template>
+            </p-select>
+          </td>
+        }
+        @if (item.type ==='String') {
+          <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="properties[item.key]" [readonly]="readonly" (blur)="onSave()">
+          </td>
+        }
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Description</td>
         <td class="propRowCell">
-            <span class="readonly-prop">{{ tool.description }}</span>
+          <span class="readonly-prop">{{ item.description }}</span>
         </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.tool">
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Owner</td>
+        <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
-            <span class="readonly-prop">{{ tool.owner }}</span>
+          <span class="readonly-prop">{{ item.type }}</span>
         </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.tool">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Message ID</td>
-        <td class="propRowCell">
-            <span class="readonly-prop">{{ tool.messageId }}</span>
-        </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.tool">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Hash</td>
-        <td class="propRowCell">
-            <span class="readonly-prop">{{ tool.hash }}</span>
-        </td>
-    </tr>
-
-    <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">Variables</td>
-        <td class="propHeaderCell"></td>
-    </tr>
-    <ng-container *ngFor="let item of variables; let i=index">
-        <tr class="propRow" [attr.collapse]="propHidden.main">
-            <td class="propRowCol cellCollapse" (click)="onHide(variablesHidden, i)"
-                [attr.collapse]="variablesHidden[i]">
-                <i class="pi pi-caret-down"></i>
-            </td>
-            <td class="propRowCell cellName">
-                {{ item.name }}
-            </td>
-            <td *ngIf="item.type ==='Schema'" class="propRowCell">
-                <select-schema
-                    [schemas]="schemas"
-                    [(value)]="properties[item.key]"
-                    [disabled]="readonly"
-                    (change)="onSave()"
-                ></select-schema>
-            </td>
-            <td *ngIf="item.type ==='Token'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
-                            [options]="tokens"
-                            [disabled]="readonly"
-                            (onChange)="onSave()"
-                            [appendTo]="'body'"
-                            placeholder="Select Token"
-                            optionLabel="name"
-                            optionValue="value">
-                </p-dropdown>
-            </td>
-            <td *ngIf="item.type ==='Role'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
-                            [options]="roles"
-                            [disabled]="readonly"
-                            (onChange)="onSave()"
-                            placeholder="Select Role"
-                            optionLabel="name"
-                            optionValue="value"
-                            [appendTo]="'body'"
-                >
-                </p-dropdown>
-            </td>
-            <td *ngIf="item.type ==='Group'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
-                            [options]="groups"
-                            [disabled]="readonly"
-                            (onChange)="onSave()"
-                            placeholder="Select Group"
-                            optionLabel="name"
-                            [appendTo]="'body'"
-                            optionValue="value">
-                </p-dropdown>
-            </td>
-            <td *ngIf="item.type ==='TokenTemplate'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
-                            [options]="tokenTemplate"
-                            [disabled]="readonly"
-                            (onChange)="onSave()"
-                            placeholder="Select Token"
-                            optionLabel="name"
-                            [appendTo]="'body'"
-                            optionValue="value">
-                </p-dropdown>
-            </td>
-            <td *ngIf="item.type ==='Topic'" class="propRowCell">
-                <p-dropdown [(ngModel)]="properties[item.key]"
-                            (onChange)="selectTopic($event.value, item)"
-                            [disabled]="readonly"
-                            [appendTo]="'body'"
-                            placeholder="Select Topic">
-
-                    <ng-template pTemplate="item" let-topic>
-                            <span *ngIf="topic.value !== 'root' && topic.value !== 'new'"
-                                  pTooltip="{{ topic.description }}"
-                                  tooltipPosition="top"
-                                  tooltipStyleClass="guardian-tooltip small-guardian-tooltip">
-                                {{ topic.name }}
-                            </span>
-                        <span *ngIf="topic.value === 'root'">Policy Instance</span>
-                        <span *ngIf="topic.value === 'new'" class="mat-option-link">
-                                <i class="pi pi-plus"></i>
-                                <span>Create new topic</span>
-                            </span>
-                    </ng-template>
-
-                    <ng-template pTemplate="selectedItem" let-topic>
-                        <span *ngIf="topic.value !== 'new' && topic.value !== 'root'">{{ topic.name }}</span>
-                        <span *ngIf="topic.value === 'root'">Policy Instance</span>
-                        <span *ngIf="topic.value === 'new'">
-                                <i class="pi pi-plus"></i>
-                                Create new topic
-                            </span>
-                    </ng-template>
-                </p-dropdown>
-            </td>
-            <td *ngIf="item.type ==='String'" class="propRowCell">
-                <input class="prop-input" [(ngModel)]="properties[item.key]" [readonly]="readonly" (blur)="onSave()">
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Description</td>
-            <td class="propRowCell">
-                <span class="readonly-prop">{{ item.description }}</span>
-            </td>
-        </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main || variablesHidden[i]">
-            <td class="propRowCol"></td>
-            <td class="propRowCell cellName">Type</td>
-            <td class="propRowCell">
-                <span class="readonly-prop">{{ item.type }}</span>
-            </td>
-        </tr>
-    </ng-container>
-</table>
+      </tr>
+    }
+  </table>
+}

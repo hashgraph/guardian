@@ -18,6 +18,7 @@ context("Workflow iREC 5 Policy - with Groups(Approver/User)", { tags: ['ui'] },
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
     const user2Username = Cypress.env('User2');
+    const policyMessageId = Cypress.env('policy_for_compare2');
     const name = "iRec_5";
 
     beforeEach(() => {
@@ -29,7 +30,7 @@ context("Workflow iREC 5 Policy - with Groups(Approver/User)", { tags: ['ui'] },
         //Import and publish policy
         homePage.login(SRUsername);
         policiesPage.openPoliciesTab();
-        policiesPage.importPolicyFromIPFS("1707126709.066208559"); //iRec5
+        policiesPage.importPolicyFromIPFS(policyMessageId);
         policiesPage.backToPoliciesList();
         policiesPage.checkStatus(name, "Draft");
         policiesPage.publishPolicy(name);

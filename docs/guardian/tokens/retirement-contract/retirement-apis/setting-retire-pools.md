@@ -1,37 +1,72 @@
 # Setting Retire Pools
 
-{% swagger method="post" path="" baseUrl=" /contracts/retire/{contractId}/pools" summary="Set retire pool." %}
-{% swagger-description %}
-Set retire contract pool. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/contracts/retire/{contractId}/pools`**
 
-{% swagger-parameter in="path" name="contractId" type="String" %}
-Contract Identifier
-{% endswagger-parameter %}
+Sets a retire pool for the specified contract. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.CONTRACTS_POOL_UPDATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `contractId` | string | Yes      | Contract identifier |
+
+### Request Body
+
+```json
+{
+  "tokens": [
+    {
+      "token": "0.0.5000001",
+      "count": 100,
+      "serials": []
+    }
+  ],
+  "immediately": false
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RetirePoolDTO'
+
+| Field          | Type    | Required | Description                                           |
+|----------------|---------|----------|-------------------------------------------------------|
+| `tokens`       | array   | Yes      | List of token configurations for the pool             |
+| `tokens[].token` | string | Yes     | Hedera token identifier                               |
+| `tokens[].count` | number | Yes     | Number of tokens required for retirement              |
+| `tokens[].serials` | array | No     | Specific serial numbers (for non-fungible tokens)     |
+| `immediately`  | boolean | No      | Whether to immediately enable the pool                |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "contractId": "0.0.4532001",
+  "tokens": [
+    {
+      "token": "0.0.5000001",
+      "count": 100
+    }
+  ],
+  "enabled": true
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

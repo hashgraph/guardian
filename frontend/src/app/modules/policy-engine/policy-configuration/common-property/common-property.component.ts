@@ -3,6 +3,7 @@ import { RegisteredService } from '../../services/registered.service';
 import { PolicyBlock, RoleVariables, SchemaVariables, } from '../../structures';
 import { DialogService } from 'primeng/dynamicdialog';
 import { CodeEditorDialogComponent } from '../../dialogs/code-editor-dialog/code-editor-dialog.component';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 
 /**
  * common property
@@ -12,6 +13,7 @@ import { CodeEditorDialogComponent } from '../../dialogs/code-editor-dialog/code
     templateUrl: './common-property.component.html',
     styleUrls: ['./common-property.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class CommonPropertyComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -47,6 +49,7 @@ export class CommonPropertyComponent implements OnInit {
     loaded: boolean = false;
     schemas!: SchemaVariables[];
     roles!: RoleVariables[];
+    lastValue: any;
 
     constructor(
         private registeredService: RegisteredService,
@@ -121,15 +124,47 @@ export class CommonPropertyComponent implements OnInit {
                 }
             }
         }
+
+        this.lastValue = this.value;
     }
 
     customPropCollapse(property: any) {
         return this.collapse;
     }
 
+    openConfirmationDialog(config: any) {
+        const dialogRef = this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: config.title,
+                text: config.description,
+                buttons: [
+                    { name: 'No', class: 'secondary' },
+                    { name: 'Yes', class: 'primary' }
+                ]
+            }
+        })!;
+
+        dialogRef.onClose.subscribe(result => {
+            if (result !== 'Yes') {
+                this.value = this.lastValue;
+            }
+            this.lastValue = this.value;
+            this.needUpdate = true;
+            this.update.emit();
+        });
+    }
+
     onSave() {
-        this.needUpdate = true;
-        this.update.emit();
+        if (this.property.confirmation && this.property.confirmation.condition == this.value) {
+            this.openConfirmationDialog(this.property.confirmation);
+        } else {
+            this.lastValue = this.value;
+            this.needUpdate = true;
+            this.update.emit();
+        }
     }
 
     editCode($event: MouseEvent) {
@@ -142,7 +177,7 @@ export class CommonPropertyComponent implements OnInit {
                 expression: this.value,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.value = result.expression;

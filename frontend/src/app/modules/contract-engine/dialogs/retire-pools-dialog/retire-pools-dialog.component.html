@@ -1,105 +1,110 @@
 <app-dialog-wrapper
-    (cancel)="onNoClick()"
-    [confirmVisible]="false"
-    [syncVisible]="true"
-    [syncDate]="syncDate"
-    (sync)="sync($event)"
-    [loading]="loading"
-    [title]="'Pools'"
-    [paginatorVisible]="true"
-    [length]="length"
-    [pageSize]="pageSize"
-    (page)="onPage($event)"
->
-    <div class="action-buttons">
-        <label for="tokens" class="action-field__label">Token</label>
-        <p-multiSelect
-            id="tokens"
-            [(ngModel)]="selectedTokens"
-            [options]="getTransformedTokens()"
-            optionLabel="label"
-            optionValue="value"
-            [showHeader]="false"
-            defaultLabel="Not selected"
-            [filter]="true"
-            [appendTo]="'body'"
-            (onChange)="loadPools()"
-        >
-            <ng-template let-item pTemplate="item">
-                {{ item.label }}
-            </ng-template>
-        </p-multiSelect>
+  (cancel)="onNoClick()"
+  [confirmVisible]="false"
+  [syncVisible]="true"
+  [syncDate]="syncDate"
+  (sync)="sync($event)"
+  [loading]="loading"
+  [title]="'Pools'"
+  [paginatorVisible]="true"
+  [length]="length"
+  [pageSize]="pageSize"
+  (page)="onPage($event)"
+  >
+  <div class="action-buttons">
+    <label for="tokens" class="action-field__label">Token</label>
+    <p-multiSelect
+      id="tokens"
+      [(ngModel)]="selectedTokens"
+      [options]="getTransformedTokens()"
+      optionLabel="label"
+      optionValue="value"
+      [showHeader]="false"
+      defaultLabel="Not selected"
+      [filter]="true"
+      [appendTo]="'body'"
+      (onChange)="loadPools()"
+      >
+      <ng-template let-item pTemplate="item">
+        {{ item.label }}
+      </ng-template>
+    </p-multiSelect>
+  </div>
+  @if (pools.length) {
+    <div class="pools-head">
+      <div class="ph ph--tokens"></div>
+      <div class="ph wipe-permission">WIPE PERMISSION</div>
+      <div class="ph retire-request">RETIRE REQUEST</div>
+      <div class="ph ph--trash"></div>
     </div>
-    <div class="pools-head" *ngIf="pools?.length">
-        <div class="ph ph--tokens"></div>
-        <div class="ph wipe-permission">WIPE PERMISSION</div>
-        <div class="ph retire-request">RETIRE REQUEST</div>
-        <div class="ph ph--trash"></div>
-    </div>
-    <div *ngIf="pools?.length; else noPools" class="table-tokens">
-        <div class="pool" *ngFor="let pool of pools">
-            <div class="tokens tokens-scroll">
-                <div class="token-card" *ngFor="let token of pool.tokens">
-                    <div class="token-card__name">
-                        NAME<br/>
-                        <div class="token-card_value">{{ token.tokenSymbol }}</div>
-                    </div>
-                    <div class="token-card__token">
-                        TOKEN<br/>
-                        <div class="token-card_value">{{ token.token }}</div>
-                    </div>
-                    <div class="token-card__count">
-                        COUNT<br/>
-                        <div class="token-card_value">
-                            {{ token.count | tokenCount: token.decimals }}
-                        </div>
-                    </div>
+  }
+  @if (pools.length) {
+    <div class="table-tokens">
+      @for (pool of pools; track pool) {
+        <div class="pool">
+          <div class="tokens tokens-scroll">
+            @for (token of pool.tokens; track token) {
+              <div class="token-card">
+                <div class="token-card__name">
+                  NAME<br/>
+                  <div class="token-card_value">{{ token.tokenSymbol }}</div>
                 </div>
-            </div>
-
-            <div class="pool-permissions">
-                <div class="permission enabled">Enabled</div>
-                <div
-                    class="approval"
+                <div class="token-card__token">
+                  TOKEN<br/>
+                  <div class="token-card_value">{{ token.token }}</div>
+                </div>
+                <div class="token-card__count">
+                  COUNT<br/>
+                  <div class="token-card_value">
+                    {{ token.count | tokenCount: token.decimals }}
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          <div class="pool-permissions">
+            <div class="permission enabled">Enabled</div>
+            <div
+              class="approval"
                     [ngClass]="{
             'need-approval': !pool.immediately,
             'no-approval': pool.immediately
           }"
-                >
-                    {{ pool.immediately ? 'Without approval' : 'Need approval' }}
-                </div>
+              >
+              {{ pool.immediately ? 'Without approval' : 'Need approval' }}
             </div>
-
-            <span
-                [pTooltip]="hasPermissions(contract.permissions, 1) ? 'Remove' : 'You are not admin'"
-                tooltipStyleClass="guardian-tooltip"
-                tooltipPosition="top"
-                appendTo="body"
-                class="btn btn--remove"
+          </div>
+          <span
+            [pTooltip]="hasPermissions(contract.permissions, 1) ? 'Remove' : 'You are not admin'"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="top"
+            appendTo="body"
+            class="btn btn--remove"
             >
-                  <button
-                      class="btn btn--remove"
-                      aria-label="Remove"
-                      [disabled]="!hasPermissions(contract.permissions, 1)"
-                      (click)="removePool(pool)"
-                  >
-                    <i class="pi pi-trash"></i>
-                  </button>
-            </span>
+            <button
+              class="btn btn--remove"
+              aria-label="Remove"
+              [disabled]="!hasPermissions(contract.permissions, 1)"
+              (click)="removePool(pool)"
+              >
+              <i class="pi pi-trash"></i>
+            </button>
+          </span>
         </div>
+      }
     </div>
+  } @else {
+    <div class="no-pools">There are no pools</div>
+  }
 </app-dialog-wrapper>
 
-<ng-template #noPools>
-    <div class="no-pools">There are no pools</div>
-</ng-template>
 
 <div class="pools-dialog__footer">
-    <button
-        type="button"
-        pButton
-        label="Close"
-        class="p-button-outlined pools-dialog__close-btn"
-        (click)="onNoClick()"
-    ></button>
+  <button
+    type="button"
+    pButton
+    label="Close"
+    class="p-button-outlined pools-dialog__close-btn"
+    (click)="onNoClick()"
+  ></button>
 </div>

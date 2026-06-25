@@ -1,5 +1,56 @@
 import { TimeoutError } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+
+const TRANSIENT_STATUS_CODES = new Set<number>([502, 503, 504]);
+const TRANSIENT_ERROR_CODES = new Set<string>(['ECONNABORTED', 'ETIMEDOUT', 'ECONNRESET']);
+
+// Retry 5xx gateway errors and network timeouts, but not 4xx (e.g. 404 must fail fast).
+function isTransientError(error: any): boolean {
+    const status = error?.response?.status;
+    if (typeof status === 'number') {
+        return TRANSIENT_STATUS_CODES.has(status);
+    }
+    return !error?.response || TRANSIENT_ERROR_CODES.has(error?.code);
+}
+
+function delay(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Axios GET with exponential-backoff retry on transient failures. On final
+ * failure rethrows an error prefixed with `source` so the failing fetch is
+ * unambiguous in logs (e.g. 'Mirror node', 'IPFS gateway').
+ */
+export async function axiosGetWithRetry(
+    source: string,
+    url: string,
+    config?: AxiosRequestConfig,
+    options?: { attempts?: number; delay?: number }
+): Promise<AxiosResponse> {
+    const attempts = options?.attempts ??
+        (process.env.REST_API_RETRY_COUNT ? parseInt(process.env.REST_API_RETRY_COUNT, 10) : 3);
+    const baseDelay = options?.delay ??
+        (process.env.REST_API_RETRY_DELAY ? parseInt(process.env.REST_API_RETRY_DELAY, 10) : 500);
+
+    let lastError: any;
+    for (let attempt = 1; attempt <= attempts; attempt++) {
+        try {
+            return await axios.get(url, config);
+        } catch (error) {
+            lastError = error;
+            if (attempt >= attempts || !isTransientError(error)) {
+                break;
+            }
+            await delay(baseDelay * Math.pow(2, attempt - 1));
+        }
+    }
+    const reason = lastError?.message || 'Unknown error';
+    const wrapped = new Error(`${source} request failed: ${reason}`);
+    (wrapped as any).isTimeoutError = lastError?.isTimeoutError;
+    throw wrapped;
+}
 
 /**
  * Timeout decorator

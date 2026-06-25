@@ -96,6 +96,39 @@ export interface SyncTokensPageDto {
     tokens: SyncTokenDto[];
 }
 
+export interface GuardianSyncInstanceStatus {
+    id: string;
+    aemUrl: string;
+    connected: boolean;
+    eventsProcessed: number;
+    lastEventAt: number | null;
+    lastSubject: string | null;
+}
+
+export interface GuardianSyncStatusDto {
+    network: string;
+    enabled: boolean;
+    leader: boolean;
+    updatedAt: number | null;
+    instances: GuardianSyncInstanceStatus[];
+}
+
+export interface GuardianSyncEventDto {
+    subject: string;
+    refType: string | null;
+    refId: string | null;
+    action: string;
+    instanceId: string | null;
+    createdAt: string;
+}
+
+export interface GuardianSyncEventPageDto {
+    total: number;
+    page: number;
+    pageSize: number;
+    events: GuardianSyncEventDto[];
+}
+
 // ─── Empty factories ─────────────────────────────────────────────────────────
 
 const emptyFailedJobList = (): FailedJobListDto => ({ total: 0, items: [] });
@@ -341,6 +374,102 @@ export const useSyncTopicsApi = (opts: {
         {
             default: () => emptyTopicsPage(),
             watch: [opts.network, search, status, page, pageSize],
+        },
+    );
+
+    return { data, pending, error, refresh };
+};
+
+// ─── useGuardianSyncStatusApi ─────────────────────────────────────────────────
+
+const emptyGuardianSync = (): GuardianSyncStatusDto => ({
+    network: '',
+    enabled: false,
+    leader: false,
+    updatedAt: null,
+    instances: [],
+});
+
+export const useGuardianSyncStatusApi = (opts: { network: Ref<NetworkId | string> }) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const url = computed(() => `/api/v1/${opts.network.value}/guardian-sync/status`);
+    const key = computed(() => `guardian-sync-status:${opts.network.value}`);
+
+    const { data, pending, error, refresh } = useAsyncData<GuardianSyncStatusDto>(
+        () => key.value,
+        async () => {
+            try {
+                const res = await $fetch<GuardianSyncStatusDto>(url.value, { baseURL });
+                return res ?? emptyGuardianSync();
+            } catch (err: any) {
+                const msg: string = err?.message ?? String(err);
+                if (!msg.includes('ECONNREFUSED') && !msg.includes('no response')) {
+                    console.error('[useGuardianSyncStatusApi] fetch failed:', msg);
+                }
+                return emptyGuardianSync();
+            }
+        },
+        {
+            default: () => emptyGuardianSync(),
+            watch: [opts.network],
+        },
+    );
+
+    return { data, pending, error, refresh };
+};
+
+// ─── useGuardianSyncEventsApi ─────────────────────────────────────────────────
+
+const emptyEventsPage = (): GuardianSyncEventPageDto => ({ total: 0, page: 1, pageSize: 10, events: [] });
+
+export const useGuardianSyncEventsApi = (opts: {
+    network: Ref<NetworkId | string>;
+    page?: Ref<number>;
+    pageSize?: Ref<number>;
+    subject?: Ref<string>;
+}) => {
+    const config = useRuntimeConfig();
+    const baseURL = import.meta.server
+        ? (config.apiBaseUrl as string)
+        : (config.public.apiBaseUrl as string);
+
+    const page = opts.page ?? ref(1);
+    const pageSize = opts.pageSize ?? ref(10);
+    const subject = opts.subject ?? ref('');
+
+    const url = computed(() => `/api/v1/${opts.network.value}/guardian-sync/events`);
+    const key = computed(
+        () => `guardian-sync-events:${opts.network.value}:${subject.value}:${page.value}:${pageSize.value}`,
+    );
+
+    const { data, pending, error, refresh } = useAsyncData<GuardianSyncEventPageDto>(
+        () => key.value,
+        async () => {
+            try {
+                const res = await $fetch<GuardianSyncEventPageDto>(url.value, {
+                    baseURL,
+                    query: {
+                        page: page.value,
+                        pageSize: pageSize.value,
+                        subject: subject.value || undefined,
+                    },
+                });
+                return res ?? emptyEventsPage();
+            } catch (err: any) {
+                const msg: string = err?.message ?? String(err);
+                if (!msg.includes('ECONNREFUSED') && !msg.includes('no response')) {
+                    console.error('[useGuardianSyncEventsApi] fetch failed:', msg);
+                }
+                return emptyEventsPage();
+            }
+        },
+        {
+            default: () => emptyEventsPage(),
+            watch: [opts.network, subject, page, pageSize],
         },
     );
 

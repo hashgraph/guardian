@@ -1,10 +1,29 @@
 import { DocumentGenerator, ISchema, Permissions, Schema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus, StatusType, TaskAction } from '@guardian/interfaces';
 import { IAuthUser, PinoLogger, RunFunctionAsync, SchemaImportExport } from '@guardian/common';
-import { ApiBody, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiAcceptedResponse, ApiBody, ApiConsumes, ApiCreatedResponse, ApiExcludeEndpoint, ApiExtraModels, ApiForbiddenResponse, ApiHeader, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Req, Response, Version } from '@nestjs/common';
 import { Auth, AuthUser } from '#auth';
 import { Client, ClientProxy, Transport } from '@nestjs/microservices';
-import { Examples, ExportSchemaDTO, InternalServerErrorDTO, MessageSchemaDTO, pageHeader, SchemaDTO, SystemSchemaDTO, SchemaDeletionPreviewDTO, TaskDTO, VersionSchemaDTO } from '#middlewares';
+import { Examples,
+    ExportSchemaDTO,
+    InternalServerErrorDTO,
+    MessageSchemaDTO,
+    NotFoundErrorDTO,
+    ObjectExamples,
+    pageHeader,
+    SchemaDTO,
+    SchemaImportDuplicatesRequestDTO,
+    SchemaListAllItemDTO,
+    SchemaParentDTO,
+    SchemaPushCopyRequestDTO,
+    SchemaWithSubSchemasDTO,
+    SystemSchemaDTO,
+    SchemaDeletionPreviewDTO,
+    TaskDTO,
+    UnprocessableEntityErrorDTO,
+    VersionSchemaDTO,
+    ForbiddenErrorDTO
+} from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
 import process from 'process';
@@ -33,13 +52,23 @@ export class SingleSchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: ObjectExamples.SCHEMA_GET_BY_ID_RESPONSE
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO, NotFoundErrorDTO)
     @UseCache({ ttl: CACHE.SHORT_TTL })
     @HttpCode(HttpStatus.OK)
     async getSchema(
@@ -84,18 +113,21 @@ export class SingleSchemaApi {
         name: 'schemaId',
         type: String,
         description: 'Schema identifier',
-        required: true
+        required: true,
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaParentDTO,
+        example: ObjectExamples.SCHEMA_PARENTS_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaParentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async getSchemaParents(
         @AuthUser() user: IAuthUser,
@@ -129,7 +161,8 @@ export class SingleSchemaApi {
         name: 'schemaId',
         type: String,
         description: 'Schema identifier',
-        required: true
+        required: true,
+        example: Examples.DB_ID
     })
     @ApiOkResponse({
         description: 'Successful operation.',
@@ -149,11 +182,13 @@ export class SingleSchemaApi {
                     }
                 }
             }
-        }
+        },
+        example: ObjectExamples.SCHEMA_TREE_RESPONSE
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -165,6 +200,76 @@ export class SingleSchemaApi {
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
             return await guardians.getSchemaTree(schemaId, owner);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Returns schema tree in PlantUML format.
+     */
+    @Get('/:schemaId/tree/export/plantuml')
+    @Auth(
+        Permissions.SCHEMAS_SCHEMA_READ,
+    )
+    @ApiOperation({
+        summary: 'Returns schema tree in PlantUML format.',
+        description: 'Returns schema tree as exportable PlantUML code.',
+    })
+    @ApiParam({
+        name: 'schemaId',
+        type: String,
+        description: 'Schema identifier',
+        required: true
+    })
+    @ApiQuery({
+        name: 'includeFields',
+        type: Boolean,
+        description: 'Include field names and descriptions in classes',
+        required: false
+    })
+    @ApiQuery({
+        name: 'includeFormulas',
+        type: Boolean,
+        description: 'Include formula components and links',
+        required: false
+    })
+    @ApiQuery({
+        name: 'includeDependencies',
+        type: Boolean,
+        description: 'Include dependent formulas referenced by directly linked formulas',
+        required: false
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.',
+        schema: {
+            type: 'string'
+        }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO
+    })
+    @ApiExtraModels(InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getSchemaTreePlantUML(
+        @AuthUser() user: IAuthUser,
+        @Param('schemaId') schemaId: string,
+        @Response() res: any,
+        @Query('includeFields') includeFields?: string,
+        @Query('includeFormulas') includeFormulas?: string,
+        @Query('includeDependencies') includeDependencies?: string,
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const fields = includeFields !== 'false';
+            const formulas = includeFormulas === 'true';
+            const dependencies = includeDependencies === 'true';
+            const plantUML = await guardians.getSchemaTreePlantUML(schemaId, owner, fields, formulas, dependencies);
+            res.header('Content-Type', 'text/plain');
+            res.header('Content-Disposition', `attachment; filename="schema-tree-${schemaId}.puml"`);
+            return res.send(plantUML);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -188,10 +293,42 @@ export class SingleSchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    description: 'Generated document identifier'
+                },
+                type: {
+                    type: 'string',
+                    description: 'Schema type without the leading #'
+                },
+                '@context': {
+                    type: 'array',
+                    items: {
+                        type: 'string'
+                    },
+                    description: 'JSON-LD context; first item is the schema IRI'
+                }
+            },
+            required: ['id', 'type', '@context'],
+            additionalProperties: true
+        },
+        example: ObjectExamples.SCHEMA_SAMPLE_PAYLOAD_RESPONSE
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
     async getSampleSchemaPayload(
@@ -233,15 +370,22 @@ export class SchemaApi {
      * 'Return a list of all schemas.
      */
     @Get('/')
+    @ApiExcludeEndpoint()
     @Auth(
         Permissions.SCHEMAS_SCHEMA_READ,
         // UserRole.STANDARD_REGISTRY,
         // UserRole.AUDITOR ?,
         // UserRole.USER ?
     )
+    @ApiHeader({
+        name: 'Api-Version',
+        description: 'Use "2" for this endpoint (supports search and searchOptions filters).',
+        required: true,
+        example: '2'
+    })
     @ApiOperation({
         summary: 'Return a list of all schemas.',
-        description: 'Returns all schemas.',
+        description: 'Returns all schemas. Add Api-Version: 2 header to use search and searchOptions filters.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -262,7 +406,7 @@ export class SchemaApi {
         type: String,
         description: 'Schema category',
         required: false,
-        example: SchemaCategory.POLICY
+        example: 'POLICY'
     })
     @ApiQuery({
         name: 'policyId',
@@ -276,14 +420,14 @@ export class SchemaApi {
         type: String,
         description: 'Module id',
         required: false,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_2
     })
     @ApiQuery({
         name: 'toolId',
         type: String,
         description: 'Tool id',
         required: false,
-        example: Examples.DB_ID
+        example: Examples.DB_ID_3
     })
     @ApiQuery({
         name: 'topicId',
@@ -296,11 +440,28 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -359,7 +520,8 @@ export class SchemaApi {
     )
     @ApiOperation({
         summary: 'Return a list of all schemas.',
-        description: 'Returns all schemas.',
+        description:
+            'Returns all schemas. Add Api-Version: 2 header to use search and searchOptions filters. If `category` is omitted, the endpoint returns schemas of all categories matching the standard owner/non-system/non-readonly filters. Published tool schemas that do not match the current owner are only included when `category=TOOL`.',
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -378,9 +540,11 @@ export class SchemaApi {
     @ApiQuery({
         name: 'category',
         type: String,
-        description: 'Schema category',
+        description:
+            'Schema category. If omitted, schemas of all categories matching the standard owner/non-system/non-readonly filters are returned. Published tool schemas without owner match are only included when `category=TOOL`.',
         required: false,
-        example: SchemaCategory.POLICY
+        enum: SchemaCategory,
+        example: 'POLICY'
     })
     @ApiQuery({
         name: 'policyId',
@@ -406,7 +570,7 @@ export class SchemaApi {
     @ApiQuery({
         name: 'topicId',
         type: String,
-        description: 'Topic id',
+        description: 'Topic id. Use `not-binded` to return policy schemas not bound to any policy topic.',
         required: false,
         example: Examples.ACCOUNT_ID
     })
@@ -417,15 +581,41 @@ export class SchemaApi {
         required: false,
         example: 'text'
     })
+    @ApiQuery({
+        name: 'searchOptions',
+        type: String,
+        description: 'Search scopes. `uuid` searches by schema IRI, `name` by schema name, `description` by schema description, `references` by `$defs`, and `fields` by schema document fields excluding `$defs`. Supports repeated query params or comma-separated values. If omitted, search is performed across all scopes.',
+        required: false,
+        isArray: true,
+        enum: ['uuid', 'name', 'description', 'references', 'fields'],
+        example: ['name', 'description']
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -440,6 +630,7 @@ export class SchemaApi {
         @Query('toolId') toolId: string,
         @Query('topicId') topicId: string,
         @Query('search') search: string,
+        @Query('searchOptions') searchOptions: string[] | string,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         try {
@@ -468,6 +659,13 @@ export class SchemaApi {
             if (search) {
                 options.search = search;
             }
+            if (searchOptions) {
+                if (Array.isArray(searchOptions)) {
+                    options.searchOptions = searchOptions;
+                } else if (typeof searchOptions === 'string') {
+                    options.searchOptions = searchOptions.split(',');
+                }
+            }
             options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
 
             const { items, count } = await guardians.getSchemasByOwnerV2(options, owner);
@@ -492,7 +690,8 @@ export class SchemaApi {
     )
     @ApiOperation({
         summary: 'Return a list of all schemas.',
-        description: 'Returns all schemas.',
+        description:
+            'Returns schemas for the provided topic id. If `category` is omitted, the endpoint returns schemas of all categories for that topic within the standard owner/non-system/non-readonly filters.',
     })
     @ApiParam({
         name: 'topicId',
@@ -518,19 +717,38 @@ export class SchemaApi {
     @ApiQuery({
         name: 'category',
         type: String,
-        description: 'Schema category',
+        description:
+            'Schema category. If omitted, schemas of all categories matching the standard owner/non-system/non-readonly filters for the provided topic are returned. Published tool schemas without owner match are only included when `category=TOOL`.',
         required: false,
-        example: SchemaCategory.POLICY
+        enum: SchemaCategory,
+        example: 'POLICY'
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -571,22 +789,33 @@ export class SchemaApi {
     @Get('/type/:schemaType')
     @Auth()
     @ApiOperation({
-        summary: 'Finds the schema using the json document type.',
-        description: 'Finds the schema using the json document type.',
+        summary: 'Finds the schema by json document type across the whole database.',
+        description: 'Finds the schema by json document type across the whole database, without restricting the search to the current user.',
     })
     @ApiParam({
         name: 'schemaType',
         type: String,
-        description: 'Type',
-        required: true
+        description: 'Schema type without the leading `#`, usually in the form `uuid&version`.',
+        required: true,
+        example: Examples.SCHEMA_TYPE
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { value: ObjectExamples.SCHEMA_GET_BY_TYPE_RESPONSE }
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found: cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.5'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -629,22 +858,33 @@ export class SchemaApi {
     @Get('/type-by-user/:schemaType')
     @Auth()
     @ApiOperation({
-        summary: 'Finds the schema using the json document type.',
-        description: 'Finds the schema using the json document type.',
+        summary: 'Finds the schema by json document type for the current user only.',
+        description: 'Finds the schema by json document type only among schemas owned by the user on whose behalf the request is made.',
     })
     @ApiParam({
         name: 'schemaType',
         type: String,
-        description: 'Type',
-        required: true
+        description: 'Schema type without the leading `#`, usually in the form `uuid&version`.',
+        required: true,
+        example: Examples.SCHEMA_TYPE
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { value: ObjectExamples.SCHEMA_GET_BY_TYPE_RESPONSE }
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found: cfc8e34f-adae-4009-bb22-1f8c13364cb7&1.0.5'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -693,24 +933,31 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns a list of schemas.',
-        description: 'Returns a list of schemas.' + ONLY_SR,
+        summary: 'Returns the current user\'s short schema list.',
+        description: 'Returns a short list of non-system, non-readonly schemas owned by the current Standard Registry user, excluding TAG schemas.' + ONLY_SR,
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaListAllItemDTO,
+        examples: {
+            listAll: {
+                summary: 'Short schema list',
+                value: ObjectExamples.SCHEMA_LIST_ALL_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaListAllItemDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getAll(
         @AuthUser() user: IAuthUser
-    ): Promise<SchemaDTO[]> {
+    ): Promise<SchemaListAllItemDTO[]> {
         try {
             const guardians = new Guardians();
             if (user.did) {
@@ -736,31 +983,48 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns a list of schemas.',
-        description: 'Returns a list of schemas.' + ONLY_SR,
+        summary: 'Returns schemas for the selected topic and related tool topics.',
+        description: 'Returns schemas for the specified policy or tool topic, including related tool schemas discovered from that parent entity.' + ONLY_SR,
     })
     @ApiQuery({
         name: 'topicId',
         type: String,
-        description: 'Topic Id',
+        description: 'Topic ID used as the starting point for schema lookup and related tool topic resolution.',
         required: false,
-        example: '0.0.1'
+        example: Examples.ACCOUNT_ID
     })
     @ApiQuery({
         name: 'category',
-        type: String,
-        description: 'Schema category',
+        enum: [SchemaCategory.POLICY, SchemaCategory.TOOL],
+        description: 'Determines which parent entity type is used to resolve related tool topics. Does not directly filter the returned schemas by category. Supported values: POLICY, TOOL.',
         required: false,
         example: SchemaCategory.POLICY
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @UseCache()
@@ -794,41 +1058,54 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns a list of schemas.',
-        description: 'Returns a list of schemas.' + ONLY_SR,
+        summary: 'Returns the selected schema with sub schemas for the topic and related tool topics.',
+        description: 'Returns the selected schema by schemaId together with sub schemas resolved from the provided topicId. Related tool topics are resolved from the parent entity type specified by category.' + ONLY_SR,
     })
     @ApiQuery({
         name: 'topicId',
         type: String,
-        description: 'Topic Id',
+        description: 'Topic ID used as the starting point for sub-schema lookup and related tool topic resolution.',
         required: false,
-        example: '0.0.1'
+        example: Examples.ACCOUNT_ID
     })
     @ApiQuery({
         name: 'category',
-        type: String,
-        description: 'Schema category',
+        enum: [SchemaCategory.POLICY, SchemaCategory.TOOL],
+        description: 'Determines which parent entity type is used to resolve related tool topics. Does not directly filter the returned schemas by category. Supported values: POLICY, TOOL.',
         required: false,
         example: SchemaCategory.POLICY
     })
+    @ApiQuery({
+        name: 'schemaId',
+        type: String,
+        description: 'Optional schema ID of the primary schema to return in the schema field. If omitted, only subSchemas are resolved.',
+        required: false,
+        example: Examples.DB_ID
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: SchemaDTO
+        type: SchemaWithSubSchemasDTO,
+        examples: {
+            schemaWithSubSchemas: {
+                summary: 'Selected schema with sub schemas',
+                value: ObjectExamples.SCHEMA_WITH_SUB_SCHEMAS_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, SchemaWithSubSchemasDTO, InternalServerErrorDTO)
     @UseCache()
     @HttpCode(HttpStatus.OK)
     async getSchemaWithSubSchemas(
         @AuthUser() user: IAuthUser,
         @Query('category') category: string,
         @Query('topicId') topicId: string,
-        @Query('schemaId') schemaId: string,
-    ): Promise<{ schema: SchemaDTO, subSchemas: SchemaDTO[] } | {}> {
+        @Query('schemaId') schemaId?: string,
+    ): Promise<SchemaWithSubSchemasDTO | {}> {
         try {
             const guardians = new Guardians();
             if (!user.did) {
@@ -861,28 +1138,51 @@ export class SchemaApi {
     )
     @ApiOperation({
         summary: 'Creates a new schema.',
-        description: 'Creates a new schema.' + ONLY_SR,
+        description: 'Creates a new schema under the provided topic id.' + ONLY_SR,
     })
     @ApiParam({
         name: 'topicId',
         type: String,
-        description: 'Topic Id',
+        description: 'Target Hedera topic id for the created schema.',
         required: true,
         example: Examples.ACCOUNT_ID
     })
     @ApiBody({
-        description: 'Object that contains a valid schema.',
+        description: 'Object that contains a valid schema. The path `topicId` is used as the target topic id; if `category` is omitted, it defaults to `POLICY`.',
         required: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        examples: {
+            createSchema: {
+                summary: 'CreateSchema (VC, POLICY)',
+                value: ObjectExamples.SCHEMA_POST_TOPIC_ID_REQUEST
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -923,21 +1223,36 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Copy schema.',
-        description: 'Copy schema.' + ONLY_SR,
+        summary: 'Starts asynchronous schema copy.',
+        description: 'Starts asynchronous copying of a schema to the target topic using the provided source IRI, new name, and copyNested option, and returns a task.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Object that contains a valid schema.'
+        description: 'Target topic, new name, source schema IRI, and whether to copy nested schemas.',
+        required: true,
+        type: SchemaPushCopyRequestDTO,
+        examples: {
+            pushCopy: {
+                summary: 'Copy schema (async)',
+                value: ObjectExamples.SCHEMA_PUSH_COPY_REQUEST
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 6,
+            action: 'Create schema',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, SchemaPushCopyRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async copySchemaAsync(
         @AuthUser() user: IAuthUser,
@@ -973,28 +1288,41 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Creates a new schema.',
-        description: 'Creates a new schema.' + ONLY_SR,
+        summary: 'Creates a new schema asynchronously.',
+        description: 'Starts asynchronous creation of a new schema under the provided topic id and returns a task.' + ONLY_SR,
     })
     @ApiParam({
         name: 'topicId',
         type: String,
-        description: 'Topic Id',
+        description: 'Target Hedera topic id for the created schema.',
         required: true,
         example: Examples.ACCOUNT_ID
     })
     @ApiBody({
-        description: 'Object that contains a valid schema.',
+        description: 'Object that contains a valid schema. The path `topicId` is used as the target topic id; if `category` is omitted, it defaults to `POLICY`.',
         required: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        examples: {
+            createSchemaAsync: {
+                summary: 'CreateSchema (VC, POLICY)',
+                value: ObjectExamples.SCHEMA_POST_TOPIC_ID_REQUEST
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 8,
+            action: 'Create schema',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1044,18 +1372,54 @@ export class SchemaApi {
     @ApiBody({
         description: 'Object that contains a valid schema.',
         required: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        examples: {
+            updateSchema: {
+                summary: 'Draft policy schema (TestVC)',
+                value: ObjectExamples.SCHEMA_PUT_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async setSchema(
         @AuthUser() user: IAuthUser,
@@ -1123,13 +1487,33 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 2,
+            action: 'Delete schemas',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Cannot export schema 69ca28ae3c361aeff876bbe1' }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchema(
         @AuthUser() user: IAuthUser,
@@ -1215,13 +1599,46 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: InternalServerErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            statusCode: 422,
+            message: 'Schema is published.'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(VersionSchemaDTO, SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(VersionSchemaDTO, SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async publishSchema(
         @AuthUser() user: IAuthUser,
@@ -1287,8 +1704,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Publishes the schema with the provided schema ID.',
-        description: 'Publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
+        summary: 'Asynchronously publishes the schema with the provided schema ID.',
+        description: 'Asynchronously publishes the schema with the provided (internal) schema ID onto IPFS, sends a message featuring IPFS CID into the corresponding Hedera topic.' + ONLY_SR,
     })
     @ApiParam({
         name: 'schemaId',
@@ -1309,13 +1726,28 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 8,
+            action: 'Publish schemas',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: InternalServerErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(TaskDTO, VersionSchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1392,13 +1824,32 @@ export class SchemaApi {
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
+        examples: {
+            messagePreview: {
+                summary: 'Contact Details (message preview)',
+                value: ObjectExamples.SCHEMA_IMPORT_MESSAGE_PREVIEW_RESPONSE
+            }
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: {
+            message: [
+                'messageId should not be empty',
+                'messageId must be a string'
+            ],
+            error: 'Unprocessable Entity',
+            statusCode: 422
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromMessagePreview(
         @AuthUser() user: IAuthUser,
@@ -1441,13 +1892,20 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 4,
+            action: 'Preview schema message',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(MessageSchemaDTO, TaskDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -1481,23 +1939,40 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Previews the schema from a zip file.',
-        description: 'Previews the schema from a zip file.' + ONLY_SR,
+        summary: 'Previews schemas from an uploaded zip file.',
+        description: 'Parses the uploaded schema archive without persisting it to the local DB and returns the schemas found in the file. The response may include the main schema together with nested schemas bundled in the archive.' + ONLY_SR,
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A zip file containing schema to be imported.',
-        required: true
+        description: 'Schema archive as raw binary request body.',
+        required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        isArray: true,
+        examples: {
+            filePreview: {
+                summary: 'Project Details with nested schemas',
+                value: ObjectExamples.SCHEMA_IMPORT_FILE_PREVIEW_RESPONSE
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importFromFilePreview(
         @AuthUser() user: IAuthUser,
@@ -1528,23 +2003,36 @@ export class SchemaApi {
         description: 'Previews list of schemas duplicates.' + ONLY_SR,
     })
     @ApiBody({
-        description: 'Policy id and list of schema names.',
-        required: true
+        description: 'Target policy topic id and schema names from the imported package to check for replaceable duplicates.',
+        required: true,
+        type: SchemaImportDuplicatesRequestDTO,
+        examples: {
+            duplicatesCheck: {
+                summary: 'Check imported schema names against policy topic',
+                value: ObjectExamples.SCHEMA_IMPORT_DUPLICATES_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         type: SchemaDTO,
-        isArray: true
+        examples: {
+            duplicates: {
+                summary: 'Replaceable draft schemas',
+                value: ObjectExamples.SCHEMA_IMPORT_DUPLICATES_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, SchemaImportDuplicatesRequestDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
     async checkForDublicates(
         @AuthUser() user: IAuthUser,
-        @Body() body: any,
+        @Body() body: SchemaImportDuplicatesRequestDTO,
     ) {
         try {
             const guardians = new Guardians();
@@ -1587,17 +2075,39 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(MessageSchemaDTO, SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async importFromMessage(
         @AuthUser() user: IAuthUser,
@@ -1660,22 +2170,41 @@ export class SchemaApi {
             }
         }
     })
-    @ApiOkResponse({
-        description: 'Successful operation.',
-        type: TaskDTO
+    @ApiQuery({
+        name: 'schemas',
+        type: String,
+        required: false,
+        description: 'Optional comma-separated existing schema ids to replace during import. These ids usually come from `/schemas/import/schemas/duplicates` (`schemasCanBeReplaced[].id`).',
+        example: '69ca33323c361aeff876bd66,69ca33333c361aeff876bd8e'
     })
+    @ApiAcceptedResponse({
+        description: 'Successful operation.',
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 3,
+            action: 'Import schema message',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, MessageSchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, MessageSchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async importFromMessageAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Query('schemas') schemas: string,
         @Body() body: MessageSchemaDTO,
-        @Req() req
+        @Req() req,
+        @Query('schemas') schemas?: string,
     ): Promise<TaskDTO> {
         const messageId = body?.messageId;
         if (!messageId) {
@@ -1709,8 +2238,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new schema from a zip file into the local DB.',
-        description: 'Imports new schema from a zip file into the local DB.' + ONLY_SR,
+        summary: 'Imports schemas from an uploaded zip file into the local DB.',
+        description: 'Imports schemas from the uploaded archive into the local DB under the provided target topic id. The archive may contain the main schema together with nested schemas bundled in the file.' + ONLY_SR,
     })
     @ApiParam({
         name: 'topicId',
@@ -1719,21 +2248,48 @@ export class SchemaApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A zip file containing schema to be imported.',
-        required: true
+        description: 'Schema archive as raw binary request body.',
+        required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async importToTopicFromFile(
         @AuthUser() user: IAuthUser,
@@ -1774,8 +2330,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new schema from a zip file into the local DB.',
-        description: 'Imports new schema from a zip file into the local DB.' + ONLY_SR,
+        summary: 'Starts asynchronous schema import from an uploaded zip file.',
+        description: 'Starts asynchronous import of schemas from the uploaded archive into the local DB under the provided target topic id. The archive may contain the main schema together with nested schemas bundled in the file; the endpoint returns a task handle.' + ONLY_SR,
     })
     @ApiParam({
         name: 'topicId',
@@ -1784,26 +2340,50 @@ export class SchemaApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A zip file containing schema to be imported.',
-        required: true
+        description: 'Schema archive as raw binary request body.',
+        required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
-    @ApiOkResponse({
+    @ApiQuery({
+        name: 'schemas',
+        type: String,
+        required: false,
+        description: 'Optional comma-separated existing schema ids to replace during import. These ids usually come from `/schemas/import/schemas/duplicates` (`schemasCanBeReplaced[].id`).',
+        example: '69ca33323c361aeff876bd66,69ca33333c361aeff876bd8e'
+    })
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 3,
+            action: 'Import schema file',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async importToTopicFromFileAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Query('schemas') schemas: string,
         @Body() zip: any,
-        @Req() req
+        @Req() req,
+        @Query('schemas') schemas?: string,
     ): Promise<TaskDTO> {
         if (!zip) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -1849,13 +2429,27 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: ExportSchemaDTO
+        type: ExportSchemaDTO,
+        example: {
+            id: '69c8e13a81910b160912c704',
+            name: 'Project Details',
+            description: '',
+            version: '1.0.0',
+            messageId: '1774774558.160429342',
+            owner: 'did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8417999'
+        }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(ExportSchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(ExportSchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async exportMessage(
         @AuthUser() user: IAuthUser,
@@ -1891,8 +2485,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns schema files for the schema.',
-        description: 'Returns schema files for the schema.' + ONLY_SR,
+        summary: 'Returns the specified schema in a zip file format.',
+        description: 'Returns a zip file containing the specified schema and related export artifacts.' + ONLY_SR,
     })
     @ApiParam({
         name: 'schemaId',
@@ -1901,14 +2495,25 @@ export class SchemaApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation. Response zip file.'
+        description: 'Binary ZIP archive (`Content-Type: application/zip`, `Content-Disposition: attachment`). Not JSON.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async exportToFile(
         @AuthUser() user: IAuthUser,
@@ -1941,7 +2546,7 @@ export class SchemaApi {
                 },
                 platform: 'UNIX',
             });
-            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(name));
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
@@ -1964,19 +2569,53 @@ export class SchemaApi {
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'username',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when resolving the response; the returned system schemas are determined by the authenticated user and query parameters.',
         required: true,
-        example: 'username'
+        example: 'StandardRegistry'
     })
-    @ApiOkResponse({
+    @ApiBody({
+        description: 'System schema payload.',
+        required: true,
+        type: SystemSchemaDTO,
+        examples: {
+            createSystemSchema: {
+                summary: 'Create standard registry system schema',
+                value: ObjectExamples.SCHEMA_SYSTEM_POST_REQUEST
+            }
+        }
+    })
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: { id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SystemSchemaDTO, SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async postSystemSchema(
         @AuthUser() user: IAuthUser,
@@ -2020,6 +2659,7 @@ export class SchemaApi {
     /**
      * Get system schemas page
      */
+    @ApiExcludeEndpoint()
     @Get('/system/:username')
     @Auth(
         Permissions.SCHEMAS_SYSTEM_SCHEMA_READ,
@@ -2032,7 +2672,8 @@ export class SchemaApi {
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'username',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when resolving the response; the returned system schemas are determined by the authenticated user and query parameters.',
         required: true,
         example: 'username'
     })
@@ -2054,11 +2695,28 @@ export class SchemaApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2096,9 +2754,10 @@ export class SchemaApi {
     @ApiParam({
         name: 'username',
         type: String,
-        description: 'username',
+        description:
+            'Present for URL compatibility with existing clients. The server does not use this value when resolving the response; the returned system schemas are determined by the authenticated user and query parameters.',
         required: true,
-        example: 'username'
+        example: 'StandardRegistry'
     })
     @ApiQuery({
         name: 'pageIndex',
@@ -2114,15 +2773,38 @@ export class SchemaApi {
         required: false,
         example: 20
     })
+    @ApiHeader({
+        name: 'Api-Version',
+        required: true,
+        description: 'API version header. Use `2` for this endpoint variant.',
+        example: '2'
+    })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2156,8 +2838,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Deletes the system schema with the provided schema ID.',
-        description: 'Deletes the system schema with the provided schema ID.' + ONLY_SR,
+        summary: 'Deletes the specified system schema if the caller is its creator.',
+        description: 'Deletes the specified system schema. Access is restricted to the authenticated creator of that system schema; other Standard Registry users receive `403 Forbidden` with `message: "Invalid creator."`.' + ONLY_SR,
     })
     @ApiParam({
         name: 'schemaId',
@@ -2168,13 +2850,41 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 2,
+            action: 'Delete schemas',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
+    })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+        type: ForbiddenErrorDTO,
+        example: {
+            statusCode: 403,
+            message: 'Invalid creator.'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSystemSchema(
         @AuthUser() user: IAuthUser,
@@ -2223,31 +2933,75 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Updates the system schema.',
-        description: 'Updates the system schema.' + ONLY_SR,
+        summary: 'Updates the specified system schema if the caller is its creator.',
+        description: 'Updates the specified system schema. Access is restricted to the authenticated creator of that system schema; other Standard Registry users receive `403 Forbidden` with `message: "Invalid creator."`.' + ONLY_SR,
     })
     @ApiParam({
         name: 'schemaId',
         type: String,
         description: 'Schema ID',
         required: true,
-        example: Examples.ACCOUNT_ID
+        example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'Object that contains a valid schema.',
+        description: 'Updated system schema payload.',
         required: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        examples: {
+            updateSystemSchema: {
+                summary: 'Update standard registry system schema',
+                value: ObjectExamples.SCHEMA_SYSTEM_PUT_REQUEST
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         isArray: true,
-        type: SchemaDTO
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
     })
+    @ApiForbiddenResponse({
+        description: 'Forbidden.',
+        type: ForbiddenErrorDTO,
+        example: {
+            statusCode: 403,
+            message: 'Invalid creator.'
+        }
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async setSystemSchema(
         @AuthUser() user: IAuthUser,
@@ -2306,12 +3060,31 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
+        schema: {
+            type: 'object',
+            nullable: true,
+            example: null
+        }
     })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schema not found.'
+        }
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Schema is active.' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async activeSystemSchema(
         @AuthUser() user: IAuthUser,
@@ -2361,11 +3134,18 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: SchemaDTO
+        type: SchemaDTO,
+        examples: {
+            byEntity: {
+                summary: 'System schema resolved for the entity',
+                value: ObjectExamples.SCHEMA_SYSTEM_ENTITY_GET_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2403,8 +3183,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Return schemas in a xlsx file format for the specified policy.',
-        description: 'Returns a xlsx file containing schemas.' + ONLY_SR,
+        summary: 'Returns the specified schema in an XLSX export format.',
+        description: 'Returns an XLSX export file for the specified schema.' + ONLY_SR,
     })
     @ApiParam({
         name: 'schemaId',
@@ -2413,16 +3193,18 @@ export class SchemaApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Binary file download (`Content-Type: application/zip`, `Content-Disposition: attachment`). Not JSON.',
         schema: {
             type: 'string',
             format: 'binary'
-        },
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2436,8 +3218,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            const filename = FilenameSanitizer.sanitize(schema.name || '');
-            res.header('Content-disposition', `attachment; filename=${filename}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(schema.name || ''));
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
@@ -2454,8 +3235,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new schema from a xlsx file into the local DB.',
-        description: 'Imports new schema from a xlsx file into the local DB.' + ONLY_SR,
+        summary: 'Imports schemas from an XLSX file into the local DB.',
+        description: 'Imports one or more schemas parsed from the uploaded XLSX file into the local DB for the specified topic.' + ONLY_SR,
     })
     @ApiParam({
         name: 'topicId',
@@ -2464,22 +3245,48 @@ export class SchemaApi {
         required: true,
         example: Examples.ACCOUNT_ID
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A xlsx file containing schema config.',
+        description: 'Raw XLSX file bytes containing schema config. The Excel file is processed as a ZIP-based archive. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
-    })
-    @ApiOkResponse({
-        description: 'Successful operation.',
         schema: {
-            'type': 'object'
-        },
+            type: 'string',
+            format: 'binary'
+        }
     })
+    @ApiCreatedResponse({
+        description: 'Successful operation.',
+        isArray: true,
+        headers: pageHeader,
+        type: SchemaDTO,
+        example: [{ id: 'f3b2a9c1e4d5678901234567',
+            uuid: 'f3b2a9c1e4d5678901234567',
+            name: 'Schema name',
+            description: 'Description',
+            entity: 'string',
+            iri: 'string',
+            status: 'string',
+            topicId: 'f3b2a9c1e4d5678901234567',
+            version: '1.0.0',
+            owner: 'string',
+            messageId: 'f3b2a9c1e4d5678901234567',
+            category: 'string',
+            documentURL: 'https://example.com',
+            contextURL: 'https://example.com',
+            document: {},
+            context: {} }]
+    })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.CREATED)
     async importPolicyFromXlsx(
         @AuthUser() user: IAuthUser,
@@ -2519,8 +3326,8 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Imports new schema from a xlsx file into the local DB.',
-        description: 'Imports new schema from a xlsx file into the local DB.' + ONLY_SR,
+        summary: 'Starts asynchronous import of schemas from an XLSX file into the local DB.',
+        description: 'Queues asynchronous import of one or more schemas parsed from the uploaded XLSX file into the local DB for the specified topic.' + ONLY_SR,
     })
     @ApiParam({
         name: 'topicId',
@@ -2529,30 +3336,53 @@ export class SchemaApi {
         required: true,
         example: '0.0.1'
     })
-    @ApiBody({
-        description: 'A xlsx file containing schema config.',
-        required: true,
-        type: String
+    @ApiQuery({
+        name: 'schemas',
+        type: String,
+        required: false,
+        description: 'Optional comma-separated list of schema IDs to import from the uploaded XLSX file.',
+        example: '69c38f81462c9c1141de2df2,69c38f81462c9c1141de2df3'
     })
-    @ApiOkResponse({
+    @ApiConsumes('binary/octet-stream')
+    @ApiBody({
+        description: 'Raw XLSX file bytes containing schema config. The Excel file is processed as a ZIP-based archive. Send with `Content-Type: binary/octet-stream`.',
+        required: true,
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
+    })
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
         schema: {
             'type': 'object'
         },
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 3,
+            action: 'Import schema file',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
     async importPolicyFromXlsxAsync(
         @AuthUser() user: IAuthUser,
         @Param('topicId') topicId: string,
-        @Query('schemas') schemas: string,
         @Body() file: ArrayBuffer,
         @Response() res: any,
-        @Req() req
+        @Req() req,
+        @Query('schemas') schemas?: string
     ): Promise<any> {
         if (!file) {
             throw new HttpException('File in body is empty', HttpStatus.UNPROCESSABLE_ENTITY)
@@ -2587,22 +3417,38 @@ export class SchemaApi {
         summary: 'Previews the schema from a xlsx file.',
         description: 'Previews the schema from a xlsx file.' + ONLY_SR,
     })
+    @ApiConsumes('binary/octet-stream')
     @ApiBody({
-        description: 'A xlsx file containing schema config.',
+        description: 'Raw XLSX file bytes containing schema config. The Excel file is processed as a ZIP-based archive. Send with `Content-Type: binary/octet-stream`.',
         required: true,
-        type: String
+        schema: {
+            type: 'string',
+            format: 'binary'
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
         schema: {
             'type': 'object'
         },
+        examples: {
+            preview: {
+                summary: 'Preview of schemas and tools parsed from the XLSX file',
+                value: ObjectExamples.SCHEMA_IMPORT_XLSX_PREVIEW_RESPONSE
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async importPolicyFromXlsxPreview(
         @AuthUser() user: IAuthUser,
@@ -2629,19 +3475,20 @@ export class SchemaApi {
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
-        summary: 'Returns a list of schemas.',
-        description: 'Returns a list of schemas.' + ONLY_SR,
+        summary: 'Downloads the schema XLSX template file.',
+        description: 'Returns the XLSX template file used as a starting point for schema import/export workflows.' + ONLY_SR,
     })
     @ApiOkResponse({
-        description: 'Successful operation.',
+        description: 'Binary file download (`Content-Type: application/zip`, `Content-Disposition: attachment`). Not JSON.',
         schema: {
             type: 'string',
             format: 'binary'
-        },
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @UseCache({ isFastify: true })
@@ -2657,7 +3504,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.header('Content-disposition', `attachment; filename=` + FilenameSanitizer.sanitize(filename));
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(filename));
             res.header('Content-type', 'application/zip');
 
             req.locals = fileBuffer
@@ -2689,14 +3536,25 @@ export class SchemaApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        isArray: true,
-        type: SchemaDTO
+        schema: {
+            type: 'boolean',
+            example: true
+        }
+    })
+    @ApiNotFoundResponse({
+        description: 'Resource not found.',
+        type: NotFoundErrorDTO,
+        example: {
+            statusCode: 404,
+            message: 'Schemas not found'
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
+    @ApiExtraModels(InternalServerErrorDTO, NotFoundErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchemasByTopicId(
         @AuthUser() user: IAuthUser,
@@ -2735,21 +3593,36 @@ export class SchemaApi {
         summary: 'Returns all child schemas.',
         description: 'Returns all child schemas.',
     })
-    @ApiParam({
-        name: 'schemaIds',
-        type: [String],
-        description: 'Schema Ids',
+    @ApiBody({
+        description: 'Schema IDs to include into deletion preview.',
         required: true,
-        example: [Examples.DB_ID]
+        schema: {
+            type: 'object',
+            required: ['schemaIds'],
+            properties: {
+                schemaIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [Examples.DB_ID, Examples.DB_ID_2]
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Schema deletion preview.',
         isArray: true,
-        type: SchemaDeletionPreviewDTO
+        type: SchemaDeletionPreviewDTO,
+        examples: {
+            preview: {
+                summary: 'Deletable and blocked child schemas',
+                value: ObjectExamples.SCHEMA_DELETION_PREVIEW_RESPONSE
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
     @ApiExtraModels(SchemaDeletionPreviewDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -2780,28 +3653,50 @@ export class SchemaApi {
         summary: 'Deletes the schema with the provided schema ID.',
         description: 'Deletes the schema with the provided schema ID.' + ONLY_SR,
     })
-    @ApiParam({
-        name: 'schemaIds',
-        type: [String],
-        description: 'Schema Ids',
+    @ApiBody({
+        description: 'Schema IDs to delete.',
         required: true,
-        example: [Examples.DB_ID]
+        schema: {
+            type: 'object',
+            required: ['schemaIds'],
+            properties: {
+                schemaIds: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    example: [Examples.DB_ID, Examples.DB_ID_2]
+                }
+            }
+        }
     })
     @ApiQuery({
         name: 'includeChildren',
         type: Boolean,
         required: false,
         description: 'Include child schemas',
+        example: false
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: TaskDTO
+        type: TaskDTO,
+        example: {
+            taskId: '89e1e62a-7976-4e24-8dd3-997da02dc81e',
+            expectation: 3,
+            action: 'Delete schemas',
+            userId: '69c2cfc021d39e7b6d15e236'
+        }
     })
+    @ApiNotFoundResponse({ description: 'Resource not found.', type: InternalServerErrorDTO, example: { result: 'ok' }})
+    @ApiUnprocessableEntityResponse({
+        description: 'Unprocessable entity.',
+        type: UnprocessableEntityErrorDTO,
+        example: { statusCode: 422, message: 'Error message', error: 'Unprocessable Entity' }
+        })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        example: { code: 500, message: 'Error message' }
     })
-    @ApiExtraModels(TaskDTO, InternalServerErrorDTO)
+    @ApiExtraModels(TaskDTO, InternalServerErrorDTO, UnprocessableEntityErrorDTO)
     @HttpCode(HttpStatus.OK)
     async deleteSchemas(
         @AuthUser() user: IAuthUser,

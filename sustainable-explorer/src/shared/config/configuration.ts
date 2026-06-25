@@ -18,6 +18,99 @@ export function getDefaultMirrorNodeUrl(network: string): string {
     return urls[network] || urls['testnet'];
 }
 
+/**
+ * Configuration for a single Guardian instance whose Application Events Module
+ * (AEM) HTTP stream is consumed by the guardian-sync process.
+ */
+export interface GuardianInstanceConfig {
+    /** Unique instance label as provided in GUARDIAN_INSTANCES (e.g. "local-testnet"). */
+    id: string;
+    /**
+     * SE dataset / queue namespace this instance feeds. guardian-sync activates
+     * an instance only when this equals the process's HEDERA_NET. Defaults to
+     * hederaNet, so multiple instances on the same Hedera net (e.g. local-testnet
+     * + deploy-testnet) share one "testnet" dataset; set GUARDIAN_<ID>_NETWORK to
+     * give an instance its own isolated dataset instead.
+     */
+    network: string;
+    /** Base URL of the Guardian Application Events Module, e.g. https://guardian.example.com */
+    aemUrl: string;
+    /** Hedera network this Guardian instance runs on (e.g. "mainnet", "testnet"). */
+    hederaNet: string;
+    /** Optional HTTP Authorization header value sent with AEM requests. */
+    authHeader?: string;
+    /** Optional allowlist of event types to process; undefined means all events. */
+    eventFilter?: string[];
+}
+
+/**
+ * Parses GUARDIAN_INSTANCES (comma-separated composite ids) and returns a
+ * GuardianInstanceConfig for each id that has a valid AEM_URL configured.
+ *
+ * Instances with no AEM_URL are silently skipped — this is intentional so that
+ * partially-configured environments do not crash the guardian-sync process.
+ *
+ * Mirrors the CSV split/trim/lowercase/filter idiom used by getConfiguredNetworks()
+ * in database.config.ts.
+ */
+export function getGuardianInstances(): GuardianInstanceConfig[] {
+    const raw = process.env.GUARDIAN_INSTANCES || '';
+    if (!raw.trim()) {
+        return [];
+    }
+
+    const ids = raw
+        .split(',')
+        .map((s) => s.trim().toLowerCase())
+        .filter((s) => s.length > 0);
+
+    const results: GuardianInstanceConfig[] = [];
+
+    for (const id of ids) {
+        const prefix = `GUARDIAN_${id.toUpperCase().replace(/-/g, '_')}_`;
+
+        const aemUrl = process.env[`${prefix}AEM_URL`] || '';
+        if (!aemUrl) {
+            // Required — skip instance without AEM_URL, do not throw
+            continue;
+        }
+
+        // Hedera network: explicit env var or infer from the last '-'-delimited segment of id
+        const envHederaNet = process.env[`${prefix}HEDERA_NET`] || '';
+        let hederaNet: string;
+        if (envHederaNet) {
+            hederaNet = envHederaNet;
+        } else {
+            const dashIdx = id.lastIndexOf('-');
+            hederaNet = dashIdx !== -1 ? id.slice(dashIdx + 1) : id;
+        }
+
+        // SE dataset / queue namespace this instance feeds. Defaults to hederaNet
+        // so several instances on the same Hedera net share one dataset (e.g.
+        // local-testnet + deploy-testnet → "testnet"); override for isolation.
+        const network = (process.env[`${prefix}NETWORK`] || hederaNet)
+            .trim()
+            .toLowerCase();
+
+        const rawAuthHeader = process.env[`${prefix}AUTH_HEADER`] || '';
+        const authHeader: string | undefined = rawAuthHeader || undefined;
+
+        const rawEvents = process.env[`${prefix}EVENTS`] || '';
+        let eventFilter: string[] | undefined;
+        if (rawEvents.trim()) {
+            const parsed = rawEvents
+                .split(',')
+                .map((e) => e.trim())
+                .filter((e) => e.length > 0);
+            eventFilter = parsed.length > 0 ? parsed : undefined;
+        }
+
+        results.push({ id, network, aemUrl, hederaNet, authHeader, eventFilter });
+    }
+
+    return results;
+}
+
 export default registerAs('app', () => {
     // Worker uses HEDERA_NET (single network). For the API, see
     // getConfiguredNetworks() in database.config.ts which reads HEDERA_NETWORKS.

@@ -8,16 +8,15 @@ import { IntegrationDataTypes, ParseTypes } from '@guardian/interfaces';
 import csvParse from 'papaparse';
 import { fromArrayBuffer } from 'geotiff';
 
-type ServiceConfig = {
-    token?: string;
-}
-
 export class GlobalForestWatchService extends BaseIntegrationService {
     private readonly token: string;
     private readonly client: AxiosInstance;
     static readonly baseUrl: string = 'https://data-api.globalforestwatch.org';
 
-    constructor({ token = process.env.GLOBAL_FOREST_WATCH_API_KEY || '' }: ServiceConfig = {}) {
+    constructor(token?: string) {
+        if (!token) {
+            token = process.env.GLOBAL_FOREST_WATCH_API_KEY || '';
+        }
         super();
         if (!token || token.length < 5) {
             throw new Error('API token is required.');

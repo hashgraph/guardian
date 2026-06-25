@@ -60,6 +60,7 @@ import { WipeConfigComponent } from '../policy-configuration/blocks/tokens/wipe-
 import { MathConfigComponent } from '../policy-configuration/blocks/calculate/math-config/math-config.component';
 import { GlobalEventsReaderBlockComponent } from '../policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
 import { GlobalEventsWriterBlockComponent } from "../policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
+import { IpfsTransformationUIAddonCode } from '../policy-viewer/code/ipfs-transformation-ui-addon';
 
 const Container: IBlockSetting = {
     type: BlockType.Container,
@@ -67,7 +68,7 @@ const Container: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: ContainerBlockComponent,
-    property: ContainerConfigComponent,
+    property: null,
     code: null,
     allowedChildren: [
         { type: BlockType.Information },
@@ -181,7 +182,7 @@ const GroupManagerBlock: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: GroupManagerBlockComponent,
-    property: GroupManagerConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -191,7 +192,7 @@ const container: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.UIComponents,
     factory: InformationBlockComponent,
-    property: InformationConfigComponent,
+    property: null,
     code: null
 }
 
@@ -313,7 +314,7 @@ const Switch: IBlockSetting = {
     group: BlockGroup.Main,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: SwitchConfigComponent,
+    property: null,
     code: null,
     about: {
         output: (value: any, block: PolicyBlock) => {
@@ -456,7 +457,7 @@ const ExternalData: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: ExternalDataConfigComponent,
+    property: null,
     code: null,
     allowedChildren: [{
         type: BlockType.DocumentValidatorBlock,
@@ -544,7 +545,7 @@ const ReassigningBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.ServerBlocks,
     factory: null,
-    property: ReassigningConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -612,7 +613,7 @@ const DocumentsSourceAddon: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: SourceAddonConfigComponent,
+    property: null,
     code: null,
     allowedChildren: [{
         type: BlockType.FiltersAddon,
@@ -639,7 +640,7 @@ const DataTransformationAddon: IBlockSetting = {
     group: BlockGroup.UnGrouped,
     header: BlockHeaders.Addons,
     factory: null,
-    property: DataTransformationConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -679,7 +680,7 @@ const DocumentValidatorBlock: IBlockSetting = {
     group: BlockGroup.Documents,
     header: BlockHeaders.Addons,
     factory: null,
-    property: DocumentValidatorConfigComponent,
+    property: null,
     code: null
 }
 
@@ -800,7 +801,7 @@ const CalculateMathAddon: IBlockSetting = {
     group: BlockGroup.Calculate,
     header: BlockHeaders.Addons,
     factory: null,
-    property: CalculateMathConfigComponent,
+    property: null,
     code: null,
 }
 
@@ -888,6 +889,16 @@ const TransformationUIAddon: IBlockSetting = {
     code: TransformationUIAddonCode,
 }
 
+const IpfsTransformationUIAddon: IBlockSetting = {
+    type: BlockType.IpfsTransformationUIAddon,
+    icon: BlockIcons[BlockType.IpfsTransformationUIAddon],
+    group: BlockGroup.Main,
+    header: BlockHeaders.Addons,
+    factory: null,
+    property: null,
+    code: IpfsTransformationUIAddonCode,
+}
+
 export default [
     Container,
     Step,
@@ -944,5 +955,6 @@ export default [
     TransformationButtonBlock,
     IntegrationButtonBlock,
     HttpRequestUIAddon,
-    TransformationUIAddon
+    TransformationUIAddon,
+    IpfsTransformationUIAddon
 ];

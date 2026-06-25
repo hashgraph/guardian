@@ -9,7 +9,8 @@ import { MultiPolicyType } from '@guardian/interfaces';
 @Component({
     selector: 'multi-policy-dialog',
     templateUrl: './multi-policy-dialog.component.html',
-    styleUrls: ['./multi-policy-dialog.component.scss']
+    styleUrls: ['./multi-policy-dialog.component.scss'],
+    standalone: false
 })
 export class MultiPolicyDialogComponent implements OnInit, AfterContentInit {
     loading = false;

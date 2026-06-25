@@ -16,7 +16,7 @@ The GPS proposal process involves several stages:
 
 **Idea:** A proposer conceives an idea for a new policy that they believe will benefit the Guardian ecosystem.
 
-**Draft:** The proposer drafts a GPS proposal following the requirements outlined above and submits it to the Guardian repository for review. In the case of a policy revision, release notes must be provided that detail the differences between the prior version of the policy and the new proposer.
+**Draft:** The proposer drafts a GPS proposal following the requirements outlined above and submits it to the Guardian repository for review. In the case of a policy revision, release notes must be provided that detail the differences between the prior version of the policy and the new proposal.
 
 **Review:** The responsibility lies with the proposer to drive community review and acceptance. The proposer should solicit feedback and address any questions or concerns raised by the community.
 

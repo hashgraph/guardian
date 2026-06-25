@@ -37,4 +37,8 @@ export interface RecordItem {
      * Document
      */
     document?: any,
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string,
 }

@@ -15,6 +15,7 @@ import { SchemaService } from '../../../../services/schema.service';
     selector: 'app-policy-wizard-dialog',
     templateUrl: './policy-wizard-dialog.component.html',
     styleUrls: ['./policy-wizard-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     @ViewChild(SeparateStepperComponent) matTree!: SeparateStepperComponent;
@@ -440,7 +441,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     }
 
     setParents(root: any) {
-        root.children?.forEach((child: any) => {
+        root?.children?.forEach((child: any) => {
             child.parent = root;
             this.setParents(child);
         });

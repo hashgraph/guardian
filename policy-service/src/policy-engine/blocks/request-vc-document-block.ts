@@ -1,4 +1,4 @@
-import { CheckResult, LocationType, removeObjectProperties, Schema, SchemaHelper } from '@guardian/interfaces';
+import { CheckResult, LocationType, removeObjectProperties, Schema, SchemaEntity, SchemaHelper } from '@guardian/interfaces';
 import { PolicyUtils } from '../helpers/utils.js';
 import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, StateField } from '../helpers/decorators/index.js';
@@ -22,6 +22,7 @@ import { RecordActionStep } from '../record-action-step.js';
     blockType: 'requestVcDocumentBlock',
     commonBlock: false,
     actionType: LocationType.REMOTE,
+    canMock: false,
     about: {
         label: 'Request',
         title: `Add 'Request' Block`,
@@ -150,6 +151,7 @@ export class RequestVcDocumentBlock {
             presetFields: options.presetFields,
             editType: options.editType || 'new',
             relayerAccount: !!options.relayerAccount,
+            enableAdditionalData: !!options.enableAdditionalData,
             uiMetaData: options.uiMetaData || {},
             hideFields: options.hideFields || [],
             data: sources && sources.length && sources[0] || null,
@@ -193,13 +195,15 @@ export class RequestVcDocumentBlock {
 
     private async setBlockData(user: PolicyUser, data: IPolicyDocument, actionStatus: RecordActionStep) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
+        const options = await ref.getOptions(user);
         try {
+            const actionStatusId = actionStatus?.id ?? (ref.dryRun ? data?.recordActionId ?? null : null);
             //Prepare data
             const document = await this.prepareDocument(data);
             const draft = data.draft;
             const draftId = data.draftId;
-            const editType = ref.options.editType;
-            const forceRelayerAccount = ref.options.forceRelayerAccount;
+            const editType = options.editType;
+            const forceRelayerAccount = options.forceRelayerAccount;
             const inheritRelayerAccount = PolicyComponentsUtils.IsInheritRelayerAccount(ref.policyId, forceRelayerAccount);
 
             const documentRef = await this.getRelationships(ref, data.ref);
@@ -209,7 +213,7 @@ export class RequestVcDocumentBlock {
                 = await PolicyUtils.getRelayerAccountAndOwner(ref, user, data.relayerAccount, documentRef, inheritRelayerAccount);
 
             //Prepare Credential Subject
-            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatus?.id);
+            const credentialSubject = await this.createCredentialSubject(user, relayerAccount, document, actionStatusId);
 
             //Get relationships
             if (documentRef) {
@@ -220,7 +224,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Validate preset
-            const presetCheck = await this.checkPreset(ref, document, documentRef)
+            const presetCheck = await this.checkPreset(ref, document, documentRef, user);
             if (!presetCheck.valid) {
                 throw new BlockActionError(
                     JSON.stringify(presetCheck.error),
@@ -239,7 +243,7 @@ export class RequestVcDocumentBlock {
             }
 
             //Create Verifiable Credential
-            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatus?.id);
+            const item = await this.createVerifiableCredential(user, documentOwner, relayerAccount, credentialSubject, actionStatusId, data.evidence);
             PolicyUtils.setDocumentRef(item, documentRef);
 
             //Update metadata
@@ -325,14 +329,17 @@ export class RequestVcDocumentBlock {
     private async checkPreset(
         ref: AnyBlockType,
         document: any,
-        documentRef: VcDocumentCollection
+        documentRef: VcDocumentCollection,
+        user?: PolicyUser
     ): Promise<CheckResult> {
+        const options = await ref.getOptions(user);
+
         if (
-            ref.options.presetFields &&
-            ref.options.presetFields.length &&
-            ref.options.presetSchema
+            options.presetFields &&
+            options.presetFields.length &&
+            options.presetSchema
         ) {
-            const readonly = ref.options.presetFields.filter(
+            const readonly = options.presetFields.filter(
                 (item: any) => item.readonly && item.value
             );
             if (!readonly.length || !document || !documentRef) {
@@ -398,11 +405,11 @@ export class RequestVcDocumentBlock {
         actionStatusId: string,
     ): Promise<any> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
-
+        const options = await ref.getOptions(user);
         SchemaHelper.updateObjectContext(this._schema, document);
 
         const _vcHelper = new VcHelper();
-        const idType = ref.options.idType;
+        const idType = options.idType;
 
         const credentialSubject = document;
         credentialSubject.policyId = ref.policyId;
@@ -432,21 +439,33 @@ export class RequestVcDocumentBlock {
         owner: PolicyUser,
         relayerAccount: string,
         credentialSubject: any,
-        actionStatusId: string
+        actionStatusId: string,
+        evidence?: { dataType: string; data: string }[]
     ): Promise<IPolicyDocument> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyRequestBlock>(this);
 
         const groupContext = await PolicyUtils.getGroupContext(ref, issuer);
         const uuid = await ref.components.generateUUID(actionStatusId);
 
+        let evidenceOptions: { evidence?: { type: string[]; dataType: string; data: string }[]; evidenceContext?: string } = {};
+        if (ref.options.enableAdditionalData && evidence?.length) {
+            const evidenceSchema = await PolicyUtils.loadSchemaByType(ref, SchemaEntity.EVIDENCE_ATTACHMENTS);
+            const evidenceContext = PolicyUtils.getSchemaContext(ref, evidenceSchema);
+            evidenceOptions = {
+                evidence: evidence.map(e => ({ type: ['Evidence'], dataType: e.dataType, data: e.data })),
+                evidenceContext,
+            };
+        }
+
         const vc = await PolicyActionsUtils.signVC({
             ref,
             subject: credentialSubject,
             issuer: issuer.did,
             relayerAccount,
-            options: { uuid, group: groupContext },
+            options: { uuid, group: groupContext, ...evidenceOptions },
             userId: issuer.userId
         });
+
         const item = PolicyUtils.createVC(ref, owner, vc, actionStatusId);
 
         const tags = await PolicyUtils.getBlockTags(ref);

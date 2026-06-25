@@ -7,7 +7,8 @@ In Guardian schemas usually exist within a Policy, a Tool or embedded into anoth
 When schemas are exported, they are packaged into a single Excel file formatted like the template mentioned above. It is recommended to experiment with exporting your existing policies and reviewing the resulting excel files so you can familiarize yourself with the format and the content.
 
 1. [Step By Step Process](import-and-export-excel-file-user-guide.md#id-1.-step-by-step-process)
-2. [Demo Video](import-and-export-excel-file-user-guide.md#id-2.-demo-video)
+2. [Validation Rules](import-and-export-excel-file-user-guide.md#id-2.-validation-rules)
+3. [Demo Video](import-and-export-excel-file-user-guide.md#id-3.-demo-video)
 
 ## 1. Step By Step Process
 
@@ -92,7 +93,7 @@ All schemas created for importing into Guardian must follow the design of the te
   * Auto-Calculate
   * **Sub-schema name** – the name of the embedded schema (or the name of the tag in the spreadsheet)
 * _**Parameter**_ – additional field for information relevant for some data types
-  * Enum – name of the enumeration (or the name of the tab in the spreadsheet) - list of possible options
+  * Enum – unique name of the enumeration as listed in the shared **Enums** tab - list of possible options
   * Pattern – regular expression
   * Help Text – text style
   * Prefix – symbol
@@ -101,12 +102,12 @@ All schemas created for importing into Guardian must follow the design of the te
   * No – always hidden
   * EXACT({FieldName},{Value}) – only shown when the condition is true
   * NOT(EXACT({FieldName},{Value})) – only shown when the condition is not true
-* _**Question**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
+* _**Description**_ – Description of the field. This is the text which users would see when filling out the form in Guardian.
 * _**Allow Multiple Answers**_ – Determines if the data is an array or a single item (Yes/No)
-* _**Answer**_ – example of the valid data
+* _**Test Value**_ – example of the valid data
 
 {% hint style="info" %}
-**Note:** Currently only expression containing simple arithmetic operations are supported for **Auto-Calculate** in the _**Answer.**_ When specified it would result an the generation of the function template as shown on the example below.
+**Note:** Currently only expression containing simple arithmetic operations are supported for **Auto-Calculate** in the _**Test Value.**_ When specified it would result an the generation of the function template as shown on the example below.
 {% endhint %}
 
 ![](<../../../.gitbook/assets/8 (15).png>)
@@ -129,11 +130,11 @@ For math expressions in Excel schema documents to be recognised by Guardian the 
 
 <figure><img src="../../../.gitbook/assets/image (466).png" alt=""><figcaption></figcaption></figure>
 
-2. The expression specified in the corresponding cell in the “Answer” column
+2. The expression specified in the corresponding cell in the “Test Value” column
 
 <figure><img src="../../../.gitbook/assets/image (467).png" alt=""><figcaption></figcaption></figure>
 
-Expressions can contain references to cells in the ‘Answer’ column from the current schema (as shown above) and all embedded schemas. To use fields from embedded schemas these fields need to be added to the parent (current) schema as shown below.
+Expressions can contain references to cells in the ‘Test Value’ column from the current schema (as shown above) and all embedded schemas. To use fields from embedded schemas these fields need to be added to the parent (current) schema as shown below.
 
 <figure><img src="../../../.gitbook/assets/image (465).png" alt=""><figcaption></figcaption></figure>
 
@@ -143,13 +144,13 @@ These field from embedded schemas must be grouped to ‘fold’ under the main f
 
 Only the fields that are used in the expression need to be brought into the parent schema, all the others don’t need to be mentioned.
 
-The fields from embedded schema definition tab (e.g. titled as ‘Production Device’ on the screenshot below) and their duplicates in the parent schema where they used for calculations expression must be identical at all times as best observed via values in the ‘Question' column.'
+The fields from embedded schema definition tab (e.g. titled as ‘Production Device’ on the screenshot below) and their duplicates in the parent schema where they used for calculations expression must be identical at all times as best observed via values in the ‘Description’ column.’
 
 <figure><img src="../../../.gitbook/assets/image (463).png" alt=""><figcaption></figcaption></figure>
 
 2. **How they are processed by Guardian on import**
 
-On import for each VC schema imported Guardian will create basic scaffolding of Policy block, which includes  “_requestVcDocumentBlock” and a “customLogicBlock”_ if the imported schema contained’Auto-Calculate’ fields.
+On import for each VC schema imported Guardian will create basic scaffolding of Policy block, which includes  “_requestVcDocumentBlock” and a “customLogicBlock”_ if the imported schema contained ’Auto-Calculate’ fields.
 
 <figure><img src="../../../.gitbook/assets/image (462).png" alt=""><figcaption></figcaption></figure>
 
@@ -193,7 +194,7 @@ If the Excel contains unsupported function Guardian would generate the comment a
 
 4. Main calculations
 
-The main body of the script is incapsulated into the ‘main’ function and consist of the following main sections:\
+The main body of the script is encapsulated into the ‘main’ function and consist of the following main sections:\
 \
 \- Declaration of the used variables
 
@@ -215,6 +216,55 @@ If Guardian was unable to parse the expression for any reason the following erro
 
 <figure><img src="../../../.gitbook/assets/image (477).png" alt=""><figcaption></figcaption></figure>
 
-## 2. Demo Video
+## 2. Validation Rules
+
+The following rules are enforced by the import engine. When a rule is violated the error message shown in the import dialog will describe what went wrong and how to fix it.
+
+### Schema sheet
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Schema name must not be empty | Cell A1 of the schema sheet is blank | Enter the schema name in cell A1 |
+| Column headers must match the template | A required column header (e.g. `Field Type`, `Required Field`) is missing or misspelled in the header row | Compare the header row against the downloaded template and correct any mismatches |
+
+### Field rows
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Field Type must not be empty | The `Field Type` cell for a row is blank | Set a valid type: `Number`, `Integer`, `String`, `Boolean`, `Date`, `Time`, `DateTime`, `Duration`, `URL`, `URI`, `Email`, `Image`, `File`, `Pattern`, `Help Text`, `GeoJSON`, `HederaAccount`, `Prefix`, `Postfix`, `Auto-Calculate`, `Enum`, `Sub-Schema` |
+| `Help Text` cannot be required | A `Help Text` field has `Required Field` = Yes | Set `Required Field` to No for all Help Text fields |
+| `Auto-Calculate` must have an expression | An `Auto-Calculate` field has an empty `Parameter` cell | Enter a math expression referencing other field cells (e.g. `G6 + G7`) in the `Parameter` column |
+| Field key cannot contain dots | The `Key` column value contains a `.` character | Remove dots from the key — dots are reserved as path separators |
+| Field keys must be unique per schema | Two fields on the same sheet share the same key value | Rename one of the fields in the `Key` column so every key is unique within the sheet |
+
+### Visibility column
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Visibility formula must be valid | The `Visibility` cell contains an unsupported formula | Use one of the supported formats: blank (always visible), `TRUE`, `FALSE`, `Hidden`, `EXACT(Gn,"value")`, `NOT(EXACT(Gn,"value"))`, `OR(EXACT(...), EXACT(...))`, `AND(EXACT(...), EXACT(...))` — where `Gn` is a cell reference in the `Test Value` column |
+| Visibility references a non-existent field | The cell reference inside `EXACT(...)` does not correspond to any field defined above | Make sure the cell reference points to the `Test Value` cell of a field that exists in the same sheet |
+
+### Enum fields
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Enum must exist in the Enums tab | An `Enum` field has no matching entry in the `Enums` tab | Add an entry to the `Enums` tab where `Schema name` exactly matches the owner schema name — the top-level schema name (cell A1) for root fields, or the sub-schema name (the `Parameter` value of the parent `Sub-Schema` field, or its `Description` if Parameter is empty) for nested fields — and `Field name` exactly matches the `Description` value of the enum field |
+| Enum must have at least one value | An enum entry in the `Enums` tab has no values | Add at least one value in the `Value` column for the enum group |
+| Enum values must be unique | The same value appears more than once in an enum list | Remove or rename the duplicate entry in the `Enums` tab |
+| Enum must upload successfully | `Loaded to IPFS` is `Yes` but the upload failed | Check your IPFS configuration, or set `Loaded to IPFS` to `No` to store the enum inline instead |
+
+### Enums tab (shared enum sheet)
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Column headers must match exactly | Any of the four header cells in the `Enums` sheet does not match the expected value | The headers must be exactly: column A — `Schema name`, column B — `Field name`, column C — `Loaded to IPFS`, column D — `Value` |
+
+### Sub-schemas (inline)
+
+| Rule | What triggers it | How to fix |
+|---|---|---|
+| Sub-schema defined multiple times with different fields | The same sub-schema name (the `Parameter` value of a `Sub-Schema` field, or its `Description` if Parameter is empty) appears more than once in the sheet with different child fields | Ensure all occurrences of the sub-schema have the same field structure, or set a different `Parameter` value on one of them to treat them as separate sub-schemas |
+
+## 3. Demo Video
 
 [Youtube](https://www.youtube.com/watch?v=o-4NHLREyBo\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=14\&t=1s)

@@ -14,7 +14,7 @@ Prometheus is an open-source monitoring system that excels at collecting and sto
 
 With Prometheus, you can instrument your Guardian application to expose various metrics, such as request latency, error rates, resource utilization, and custom application-specific metrics. Prometheus stores this data in a time-series database, allowing you to query historical metrics and generate meaningful insights. Additionally, Prometheus offers a flexible querying language called PromQL, which enables advanced data analysis and aggregation.
 
-Grafana is a popular open-source data visualization and analytics platform that complements Prometheus by providing a feature-rich dashboarding solution. It allows you to create visually appealing and customizable dashboards to monitor and analyze metrics collected by Prometheus. Grafana supports a wide range of visualization options, including graphs, tables, heatmaps, and alerts.
+Grafana is a popular open-source data visualization and analytics platform that complements Prometheus by providing a feature-rich dashboard solution. It allows you to create visually appealing and customizable dashboards to monitor and analyze metrics collected by Prometheus. Grafana supports a wide range of visualization options, including graphs, tables, heatmaps, and alerts.
 
 We have integrated Prometheus with Grafana, allowing you to create real-time dashboards that display critical metrics and provide a holistic view of your Guardian application's performance. These dashboards can help you identify bottlenecks, track trends, and troubleshoot issues promptly. Grafana also allows you to set up alerts based on predefined thresholds or complex rules, ensuring that you receive notifications when important metrics cross certain boundaries.
 

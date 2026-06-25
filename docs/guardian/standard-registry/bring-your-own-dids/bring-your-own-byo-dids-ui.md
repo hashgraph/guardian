@@ -36,9 +36,9 @@ Example:
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-Selecting ‘Custom DID document’ option enables the dialogue text window where the externally-generated/controlled DID document can be pasted from the clip-board. The document must contain Ed25519VerificationKey2018 and Bls12381G2Key2020 verification methods to be useable by Guardian.
+Selecting ‘Custom DID document’ option enables the dialogue text window where the externally-generated/controlled DID document can be pasted from the clip-board. The document must contain Ed25519VerificationKey2018 and Bls12381G2Key2020 verification methods to be usable by Guardian.
 
 ### 1.3 Keys
 
@@ -56,7 +56,7 @@ Final step of the registration presents a form, based on the corresponding syste
 
 ### 2.1. Select the Standard Registry to be associated with
 
-<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (8) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ### 2.2 User Hedera Account
 
@@ -86,4 +86,4 @@ For more details, please refer to section [1.3](bring-your-own-byo-dids-ui.md#id
 
 ## 2. Demo Video
 
-[Youtube](https://youtu.be/VVwHSu4LJ_w?si=warN7AxOVopv85G4\&t=117)
+[YouTube](https://youtu.be/VVwHSu4LJ_w?si=warN7AxOVopv85G4\&t=117)

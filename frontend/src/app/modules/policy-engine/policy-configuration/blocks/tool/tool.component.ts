@@ -27,7 +27,8 @@ import {
     selector: 'tool',
     templateUrl: './tool.component.html',
     styleUrls: ['./tool.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ToolComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

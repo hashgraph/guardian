@@ -19,13 +19,14 @@
     * [Summary of the Organizational Representative Flow](#summary-of-the-organizational-representative-flow)
     * [Assurance Provider Flow](#assurance-provider-flow)
     * [Summary of the Assurance Provider Flow](#summary-of-the-assurance-provider-flow)
+* [Cross-Schema Dependencies & Technical Input Requirements](#cross-schema-dependencies--technical-input-requirements)
 * [Futureproofing (Automated GHG Inventories)](#futureproofing-automated-ghg-inventories)
 * [TODO](#todo)
 * [Technical Development Guide](#technical-development-guide)
 
 ## Introduction
 
-The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. As of 2023, approximately 97% of S&P 500 companies responding to the CDP an investor led effort to increase corporate carbon disclosures referenced the used the GHG Protocol to conduct their GHG inventories.[^1] Also, many other GHG-related frameworks and regulations such as the Corporate Sustainability Reporting Directive (CSRD) and the Science Based Targets Initiative (SBTi) point to the Greenhouse Gas Protocol as the default standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they are likely to either prescribe or encourage the use of Greenhouse Gas Protocol standards.
+The GHG Protocol Corporate Accounting and Reporting Standard (GHGP Corporate Standard) is the world’s leading standard outlining requirements and guidance for corporate-level and organizational-level GHG emission inventories. As of 2023, approximately 97% of S&P 500 companies responding to the CDP an investor led effort to increase corporate carbon disclosures referenced the used GHG Protocol to conduct their GHG inventories.[^1] Also, many other GHG-related frameworks and regulations such as the Corporate Sustainability Reporting Directive (CSRD) and the Science Based Targets Initiative (SBTi) point to the Greenhouse Gas Protocol as the default standard for the quantification and accounting of corporate GHG emissions. As future regulations and standards are developed and implemented, they are likely to either prescribe or encourage the use of Greenhouse Gas Protocol standards.
 
 The GHGP Guardian Policy mints Carbon Emission Tokens (CETs) in accordance with the GHGP Corporate Standard, including the Scope 2 Guidance, which was later published as an amendment to the GHGP Corporate Standard. The policy and methodologies are designed to calculate emissions based on MRV data that can either be provided manually by the organization or automatically sourced via API from sources such as ERP systems and IoT-enabled meters.
 
@@ -274,7 +275,6 @@ It is generally best practice to set targets in alignment with the _Science Base
   - Entities: Manually type the specific entity or multiple entities included in the target.
   - Scope: Specify which emission scopes apply.
   - Greenhouse Gases: Select the specific gases covered by the goal.
-
 ![13](Screenshots/13.%20OF%20step%205.png)
 ![14](Screenshots/14.%20OF%20step%205.png)
 ![15](Screenshots/15.%20OF%20step%205.png)
@@ -453,6 +453,49 @@ Transparency is key. All historical audit data is preserved for future reference
 * **Documentation**: Utilize the <kbd> <br> Create Statement Report <br> </kbd>  button to issue a formal audit statement.
 * **Record Keeping**: Access all finalized statements in the Statement Report section.
 
+## Cross-Schema Dependencies & Technical Input Requirements
+
+The schemas within this policy are architected as an interconnected network. Specific fields serve as **Calculative Anchors**; the data entered here triggers automated calculations and filters the final output in the Primary GHG Report.
+
+### 1. Organization Profile Schema
+* **Consolidation Approach**
+    * **Logic:** If `Equity Share` is selected, the system will look for the `Equity Share % (Decimal)` field in the Entity Profile.
+    * **Calculation:** All associated activity data will be multiplied by the decimal value provided (e.g., `0.50` for 50%).
+* **Scope 2 Performance Calculation Approach**
+    * **Logic:** If `Market-based` is selected, the Primary Report will prioritize market-based totals, and emissions allocated to products will follow market-based logic.
+* **Base Year(s) Section**
+    * **Logic:** If a GHG report has not yet been generated for a specific year, the system pulls base year values directly from this profile for comparative analysis.
+
+### 2. Entity & Facility Schemas
+* **Entity Name & Type**
+    * **Requirement:** Required for the `Break down emissions by business entity` toggle in the GHG Report.
+* **Equity Share % (Decimal)**
+    * **Technical Requirement:** Must be entered as a decimal (e.g., `1` for 100%). This acts as a multiplier if the Organization Profile is set to Equity Share.
+* **Facility/Asset Name & Category**
+    * **Requirement:** Required for the `Break down emissions by facility or asset` reporting feature.
+* **Countries or Areas**
+    * **Requirement:** Populates the `Break down emissions by country or area` section of the final report.
+
+### 3. GHG Source & Calculation Tools
+These fields determine whether data is included in the inventory and which emission factors are applied.
+
+#### Common Logic (Scope 1, 2, & 3)
+* **Included in Inventory:** If set to `No`, all assigned activity data for this source is excluded from final totals.
+* **Hierarchical Double Counting Avoidance:** If `Activity data overlapped with parent` is selected, the system omits these values to prevent inflationary errors.
+
+#### Scope 2: Purchased Electricity Specifics
+* **EPA eGRID Tool:** You must select a subregion in the `Select Subregion Name` field. Without this, the system cannot fetch the correct emission factor.
+* **Supplier/Product Specific Electricity Data:** If `Yes`, the system requires a selection in the `Secondary Data Tool for Emission Factor` field.
+* **Green-e® Residual Mix:** If selected, you must ensure the `Subregion Name` is selected and the CO2 factor is **manually entered** (proprietary data).
+* **Defra (UK):** Ensure the tool is explicitly added to enable UK-specific grid calculations.
+
+#### Scope 3: Purchased Goods and Services
+* **Referenced Digital PCF:** If selected, you must:
+    1.  Add the `Secondary Data: PACT v3 PCF Database` tool to the source.
+    2.  Input the correct **PCF ID** for the selected products.
+* **User-specified PCF:** If selected, the `User-specified PCF` tool must be added with all custom data fields completed.
+
+
 ## Futureproofing (Automated GHG Inventories)
 
 Due to several factors such as lack of expertise, absent third-party assurance, and methodologies that leave significant room for error, corporate GHG inventories are often inaccurate and unreliable. In addition, manually collecting monitoring and activity data each year can be a cumbersome task. By automating and digitizing the collection of monitoring data, GHG quantification calculations, and (optionally) third-party verification of devices, data, and calculations, GHG inventories can be automated and streamlined to enhance trust, transparency, and efficiency.
@@ -500,9 +543,66 @@ The following tools are planned for future development:
 Where specific use cases may call for calculation approaches, reporting requirements, data sources, etc. that may not be captured by existing tools, guardian community members are encouraged to develop and publish additional tools that support their use case.
 
 ## Technical Development Guide
-*(This section will cover the specifications and methodology for developing custom calculation and reporting tools for GHGP policy)*
 
-> 🗓️ Coming Soon
+Developing tools within this policy is a multi-stage process involving conceptual design, schema architecture, and integration into the Hedera Guardian ecosystem. 
+
+This guide uses **Scope 1: Stationary Combustion** as the primary example to demonstrate how to build a source calculation tool that integrates secondary data and activity data collection.
+
+### 1. Conceptual Design & Discovery Questions
+Before building the schema, define the parameters that drive the tool's logic. For a Scope 1 tool, the following fields are required:
+
+* **Source Identity:** `Source Name` (String) and `Source ID` (String).
+* **Classification:** `Scope` (Hardcoded: Scope 1) and `Source Category` (Hardcoded: Stationary Combustion).
+* **Methodology Selection:** `Emissions Calculation Methodology` (Enum: "Spend-based" or "Fuel-based").
+* **Inventory Logic:** * `Included in Inventory` (Enum: Yes/No).
+    * **Hierarchical Double Counting Avoidance:** (Enum: "Independent Activity Data" or "Activity Data Overlapped with Parent").
+    * > **Note:** If "Overlapped with Parent" is selected, the tool must include `Parent Name` and `Parent ID` fields. The system uses a technical rule to exclude these values from the final GHG aggregation to prevent data inflation.
+* **Included in Aggregation:** A hidden formula field (Output: Yes/No) that triggers based on the inclusion and double-counting logic above.
+
+### 2. Building the Secondary Data Tool (Emission Factors)
+The source structure must link to a **Secondary Data Tool** for emission factors (e.g., EPA GHG Emission Factors Hub).
+
+**Key Requirements for EPA Scope 1 Tool:**
+* **Fuel Type:** (Enum) User selects the specific fuel (e.g., Natural Gas, Diesel).
+* **Factor Mapping:** Formulas must fetch the following based on the Fuel Type:
+    * $CO_2, CH_4,$ and $N_2O$ Factors.
+    * **Specific Unit of Measure (UoM):** Hardcoded based on the dataset.
+* **Global Warming Potentials (GWP):** A secondary tool for GWPs must be added to enable the conversion of $CH_4$ and $N_2O$ into $CO_2e$.
+
+### 3. Activity Data Collection Tools
+Activity tools allow users to input actual consumption. For Stationary Combustion, we utilize three specialized tools:
+1.  **Fuel Utility Invoice (Basic)**
+2.  **Fuel Meter Data (Basic)**
+3.  **Fuel Spend (Basic)**
+
+**Common Connection Fields:**
+All activity tools must include hardcoded fields for `Scope` (Scope 1) and `Source Category` (Stationary Combustion) to maintain the relational link.
+
+**Specific Input Requirements (Example: Utility Invoice):**
+* **Administrative:** Invoice/Account/Meter numbers, Utility provider, and Billing period (Start/End dates).
+* **Calculation Keys:** `Fuel Quantity` (Required Numeric) and `Fuel Units of Measure` (Required Enum).
+
+### 4. Automated Calculation & Product Attribution
+The final stage converts raw activity data into reportable metric tons.
+
+#### Conversion Logic
+The system employs an **EF Unit Conversion Module**. This module uses a multiplier to align the Activity Data Units with the Emission Factor Units.
+* **Output Fields:** Individual emissions for $CO_2, CH_4,$ and $N_2O$ (Metric Tons).
+* **Calculated $CO_2e$:** For $CH_4$ and $N_2O$ using GWP values.
+* **Total GHG Emissions:** Metric Tons of $CO_2e$.
+
+#### Product Attribution (The "Anchor" for PCFs)
+To support Product Carbon Footprints (PCFs), the tool includes an attribution section:
+* **Product Name & ID:** The `Product ID` acts as the primary anchor for later PCF generation.
+* **Allocation Percentage:** (Decimal) Defines how much of the source's total emissions are assigned to a specific product.
+* **Calculated Output:** The system automatically calculates attributed emissions for each gas type based on the allocation percentage.
+
+### 5. Critical Requirements for Reporting
+For the tool to function within a report, the following are strictly required:
+
+* **Dates:** Every activity entry **must** have an end date or date range to be captured by the reporting engine.
+* **Required Values:** Any field involved in a multiplication formula (Quantity, Factors, Allocation) must be marked as **"Required"** in the schema to prevent errors in the final report.
+
 
 [^1]: https://ghgprotocol.org/about-us#:~:text=GHG%20Protocol%20supplies%20the%20world's,reporting%20program%20in%20the%20world.&text=In%202023%2C%2097%25%20of%20disclosing,to%20CDP%20using%20GHG%20Protocol.
 [^2]: https://sciencebasedtargets.org/news/sbti-celebrates-10000-company-validations#:~:text=The%20number%20of%20companies%20with,has%20accelerated%20in%20recent%20years.

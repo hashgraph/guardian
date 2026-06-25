@@ -10,7 +10,8 @@ import { DialogService } from 'primeng/dynamicdialog';
     selector: 'request-config',
     templateUrl: './request-config.component.html',
     styleUrls: ['./request-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class RequestConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -77,6 +78,9 @@ export class RequestConfigComponent implements OnInit {
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.uiMetaData.type = this.properties.uiMetaData.type || 'page';
         this.properties.presetFields = this.properties.presetFields || [];
+        if (this.properties.enableAdditionalData === undefined) {
+            this.properties.enableAdditionalData = false;
+        }
 
         this.schemas = this.moduleVariables?.schemas || [];
 

@@ -1,54 +1,76 @@
-# Creation of Schema related to the topic
+# Creation of Schema Related to the Topic
 
-{% swagger method="post" path="" baseUrl="/schemas/{topicId}" summary="Creates a schema related to the topic (policy)" %}
-{% swagger-description %}
-Creates new schema. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/schemas/{topicId}`**
 
-{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
-Topic ID
-{% endswagger-parameter %}
+Creates a new schema under the specified Hedera topic. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="body" required="true" type="Object" %}
-Object that contains a valid schema
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | string | Yes | The Hedera topic ID under which to create the schema (e.g. `0.0.1234567`) |
+
+### Request Body
+
+```json
 {
-    // Response
+  "name": "Carbon Offset Schema",
+  "description": "Schema for carbon offset reporting",
+  "entity": "VC",
+  "category": "POLICY",
+  "document": {
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {}
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Human-readable name of the schema |
+| `description` | string | No | Description of the schema |
+| `entity` | string | Yes | Schema entity type (e.g. `VC`) |
+| `category` | string | No | Schema category — defaults to `POLICY` |
+| `document` | object | Yes | Valid JSON Schema document |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Carbon Offset Schema",
+    "description": "Schema for carbon offset reporting",
+    "entity": "VC",
+    "status": "DRAFT",
+    "version": "",
+    "topicId": "0.0.1234567",
+    "owner": "example_user"
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid schema structure or duplicate key |
+| `500 Internal Server Error` | Unexpected server failure |

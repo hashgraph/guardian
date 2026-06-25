@@ -47,6 +47,7 @@ import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-d
     selector: 'vc-fullscreen-dialog',
     templateUrl: './vc-fullscreen-dialog.component.html',
     styleUrls: ['./vc-fullscreen-dialog.component.scss'],
+    standalone: false
 })
 export class VCFullscreenDialog {
     @ViewChild('discussionComponent', { static: false })
@@ -100,6 +101,7 @@ export class VCFullscreenDialog {
     public versionOptions: { label: string; value: number }[] = [];
     public selectedVersionIndex: number = 0;
     public tags: any[] = [];
+    public disconnected: boolean = false;
 
     private _destroy$ = new Subject<void>();
     private _subscription?: Subscription | null;
@@ -188,6 +190,7 @@ export class VCFullscreenDialog {
             this.messageId = row.messageId;
             this.schemaId = row.schema;
             this.relayerAccount = row.relayerAccount;
+            this.disconnected = !!row.disconnected;
         }
 
         this.id = id;
@@ -536,7 +539,7 @@ export class VCFullscreenDialog {
                 modal: true,
                 closable: true,
             }
-        );
+        )!;
 
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
@@ -551,7 +554,7 @@ export class VCFullscreenDialog {
 
             await this.tablePersist.persistTablesInDocument(data, false);
             prepareVcData(data);
-            
+
             this.policyEngineService
                 .createNewVersionVcDocument(this.policyId!, {
                     documentId: this.lastVersionVcDoc.id ?? this.documentId,
@@ -664,6 +667,7 @@ export class VCFullscreenDialog {
                 title: 'Tag',
                 type: 'JSON',
                 value: tag,
+                dryRun: this.dryRun
             }
         });
     }

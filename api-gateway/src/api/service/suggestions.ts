@@ -1,7 +1,7 @@
 import { Permissions } from '@guardian/interfaces';
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
 import { ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO } from '#middlewares';
+import { Examples, SuggestionsConfigDTO, SuggestionsConfigItemDTO, SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO } from '#middlewares';
 import { IAuthUser } from '@guardian/common';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, ONLY_SR } from '#helpers';
@@ -25,14 +25,32 @@ export class SuggestionsApi {
     @ApiBody({
         description: 'Data.',
         type: SuggestionsInputDTO,
+        examples: {
+            default: {
+                summary: 'Get block suggestions',
+                value: { blockType: 'interfaceContainerBlock' }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation. Suggested next and nested block types respectively.',
-        type: SuggestionsOutputDTO
+        type: SuggestionsOutputDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { next: 'string', nested: 'string' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(SuggestionsInputDTO, SuggestionsOutputDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -59,14 +77,32 @@ export class SuggestionsApi {
     @ApiBody({
         description: 'Suggestions config.',
         type: SuggestionsConfigDTO,
+        examples: {
+            default: {
+                summary: 'Update config',
+                value: { items: [{ id: '69aeb71ef8c5b278e3bab4e5', type: 'block', index: 0 }] }
+            }
+        }
     })
     @ApiCreatedResponse({
-        description: 'Successful operation. Response setted suggestions config.',
-        type: SuggestionsConfigDTO
+        description: 'Successful operation. Returns the updated suggestions config.',
+        type: SuggestionsConfigDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { items: [{ id: Examples.DB_ID, type: 'string', index: 0 }] }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -92,11 +128,23 @@ export class SuggestionsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation. Response suggestions config.',
-        type: SuggestionsConfigDTO
+        type: SuggestionsConfigDTO,
+        examples: {
+            default: {
+                summary: 'Default example',
+                value: { items: [{ id: Examples.DB_ID, type: 'string', index: 0 }] }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            default: {
+                summary: 'Internal server error',
+                value: { statusCode: 500, message: 'Something went wrong' }
+            }
+        }
     })
     @ApiExtraModels(SuggestionsConfigItemDTO, SuggestionsConfigDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

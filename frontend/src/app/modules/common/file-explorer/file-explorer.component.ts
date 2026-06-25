@@ -7,7 +7,8 @@ import { SettingsService } from 'src/app/services/settings.service';
 @Component({
     selector: 'file-explorer',
     templateUrl: './file-explorer.component.html',
-    styleUrls: ['./file-explorer.component.css']
+    styleUrls: ['./file-explorer.component.css'],
+    standalone: false
 })
 export class FileExplorer {
     url: string;

@@ -1,0 +1,20 @@
+<div class="dialog-body">
+  <div>If you lose access to your authentication app, use your recovery codes to restore your Guardian
+  account. Each code can be used only once!</div>
+  <div class="codes">
+    @for (code of codes; track code) {
+      <div>{{code}}</div>
+    }
+  </div>
+  <div class="download-actions">
+    <button class="button secondary" label="Copy" pButton [cdkCopyToClipboard]="codesText" (click)="onCopy()"><i
+    class="pi pi-copy"></i></button>
+    <button class="button secondary" label="Download" pButton (click)="saveToFile()"><i
+    class="pi pi-download"></i></button>
+  </div>
+</div>
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <button (click)="onOkClick()" class="button" label="Continue" pButton></button>
+  </div>
+</div>

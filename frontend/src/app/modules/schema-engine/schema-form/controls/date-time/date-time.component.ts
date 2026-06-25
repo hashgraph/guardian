@@ -9,6 +9,7 @@ type InputType = 'default' | 'test' | 'suggest';
     selector: 'date-time-control',
     templateUrl: './date-time.component.html',
     styleUrls: ['./date-time.component.scss'],
+    standalone: false
 })
 export class DateTimeComponent implements OnInit, AfterViewInit, OnChanges, OnDestroy {
     @Input('control') control: UntypedFormControl;

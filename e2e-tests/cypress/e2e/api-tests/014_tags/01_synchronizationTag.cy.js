@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { STATUS_CODE, METHOD } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -5,8 +6,8 @@ import * as Authorization from "../../../support/authorization";
 
 context("Tags", { tags: ['tags', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-    const tagName = "contractTagAPI" + Math.floor(Math.random() * 999999);
-    const contactName = "contractNameAPI" + Math.floor(Math.random() * 999999);
+    const tagName = "contractTagAPI" + randomInt(999999);
+    const contactName = "contractNameAPI" + randomInt(999999);
     let contractId;
 
     before(() => {

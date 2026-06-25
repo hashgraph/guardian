@@ -1,49 +1,50 @@
-# Returning Schema by SchemaID
+# Returning Schema by Schema ID
 
-{% swagger method="get" path="" baseUrl="/schema/{schemaId}" summary="Returns schema by schema ID" %}
-{% swagger-description %}
-Returns schema by schema ID
-{% endswagger-description %}
+**`GET /api/v1/schema/{schemaId}`**
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-Schema ID
-{% endswagger-parameter %}
+Returns a single schema object identified by its internal database ID.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | string | Yes | The internal database ID of the schema |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-      content:
-            application/json:
-              schema:
-                  $ref: '#/components/schemas/Schema'
+  "id": "63e3e5e8a01b3c001234abcd",
+  "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "name": "Carbon Offset Schema",
+  "description": "Schema for carbon offset reporting",
+  "entity": "VC",
+  "status": "PUBLISHED",
+  "version": "1.0.0",
+  "topicId": "0.0.1234567",
+  "owner": "example_user",
+  "document": {},
+  "context": {}
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Schema does not exist or is not accessible |
+| `500 Internal Server Error` | Unexpected server failure |

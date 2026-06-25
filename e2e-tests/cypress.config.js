@@ -8,7 +8,6 @@ module.exports = defineConfig({
     defaultCommandTimeout: 10000,
     e2e: {
         experimentalRunAllSpecs: true,
-        //described to fix spec order via CI
         specPattern: [
             "cypress/e2e/api-tests/000_accounts_creating/*.cy.js",
             "cypress/e2e/api-tests/000_accounts_tests/*.cy.js",
@@ -57,7 +56,27 @@ module.exports = defineConfig({
             configFile: 'reporter-config.js',
         },
         setupNodeEvents(on, config) {
-            require('@cypress/grep/src/plugin')(config);
+            // Normalize `grepTags` / `grepFilterSpecs` from CLI / Docker env.
+            if (typeof config.env.grepTags === 'string') {
+                config.env.grepTags = config.env.grepTags
+                    .replace(/,/g, ' ')
+                    .replace(/\s+/g, ' ')
+                    .trim();
+            }
+            if (typeof config.env.grepFilterSpecs === 'string') {
+                config.env.grepFilterSpecs = config.env.grepFilterSpecs.toLowerCase() === 'true';
+            }
+
+            // @cypress/grep v6 reads its options from `config.expose`, not `config.env`.
+            // CI/Docker still pass them via CYPRESS_grepTags/--env, so forward them here.
+            config.expose = {
+                ...config.expose,
+                grepTags: config.env.grepTags,
+                grepFilterSpecs: config.env.grepFilterSpecs,
+                grepOmitFiltered: config.env.grepOmitFiltered,
+            };
+
+            require('@cypress/grep/plugin').plugin(config);
             require('cypress-mochawesome-reporter/plugin')(on);
             on('task', verifyDownloadTasks);
             on('task', {

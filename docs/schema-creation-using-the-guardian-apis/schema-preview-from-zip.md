@@ -1,53 +1,54 @@
 # Schema Preview from Zip
 
-### PREVIEWING SCHEMA FROM ZIP FILE
+**`POST /schemas/import/file/preview`**
 
-{% swagger method="post" path="" baseUrl="/schemas/import/file/preview" summary="Schema preview from a zip file" %}
-{% swagger-description %}
-Previews the schema from a zip file. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Previews the schema from a zip file without importing it into the local database.
 
-{% swagger-parameter in="body" name="" type="" required="true" %}
-A zip file containing the schema to be viewed
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+The request body must be the raw binary content of a `.zip` file containing schema files.
+
+**Content-Type:** `application/octet-stream`
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Carbon Offset Schema",
+    "entity": "VC",
+    "version": "1.0.0",
+    "document": {
+      "$id": "#CarbonOffset",
+      "$schema": "http://json-schema.org/draft-07/schema",
+      "type": "object",
+      "properties": {}
+    }
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | File is missing or empty |
+| `500 Internal Server Error` | Unexpected server failure |

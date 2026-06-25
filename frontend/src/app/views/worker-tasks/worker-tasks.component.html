@@ -1,107 +1,118 @@
-<div class="container">
-    <ng-container [ngTemplateOutlet]="header"></ng-container>
-    <div class="page-filters">
-        <p-dropdown
-            (onChange)="onFilter($event)"
-            [options]="statuses"
-            [(ngModel)]="currentStatus"
-            optionLabel="name"
-            optionValue="value"
-            appendTo="body"
-            class="guardian-dropdown"
-            placeholder="Status"
-        ></p-dropdown>
+<div class="guardian-page">
+  <ng-container [ngTemplateOutlet]="header"></ng-container>
+  <div class="actions-container">
+    <div class="dropdown-block">
+      <p-select
+        (onChange)="onFilter($event)"
+        [options]="statuses"
+        [(ngModel)]="currentStatus"
+        optionLabel="name"
+        optionValue="value"
+        appendTo="body"
+        class="guardian-dropdown"
+        placeholder="Status"
+      ></p-select>
     </div>
-    <ng-container *ngIf="!loading">
-        <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
-    </ng-container>
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  </div>
+  @if (!loading) {
+    <ng-container [ngTemplateOutlet]="tableContainer"></ng-container>
+  }
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 </div>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Worker Tasks</h1>
-    </div>
+  <div class="guardian-user-page-header">Worker Tasks</div>
 </ng-template>
 
 <ng-template #tableContainer>
-    <ng-container *ngIf="workerTasks && workerTasks.length > 0 else noData">
-        <div class="table-container">
-            <table>
-                <colgroup>
-                    <col/>
-                    <col/>
-                    <col/>
-                    <col/>
-                    <col style="width: 100px;"/>
-                </colgroup>
-                <tr class="row-header">
-                    <th class="col-CREATED">CREATED</th>
-                    <th class="col-STARTED">STARTED</th>
-                    <th class="col-TYPE">TYPE</th>
-                    <th class="col-STATUS">STATUS</th>
-                    <th class="col-COMMENTS">COMMENTS</th>
-                    <th class="col-ACTION"></th>
-                </tr>
-                <ng-container *ngFor="let task of workerTasks">
-                    <tr class="row-item">
-                        <td class="col-CREATED">
-                            {{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}
-                        </td>
-                        <td *ngIf="task.processedTime" class="col-STARTED">
-                            {{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}
-                        </td>
-                        <td *ngIf="!task.processedTime" class="col-STARTED">
-                            Not started yet
-                        </td>
-                        <td class="col-TYPE">
-                            <div>{{ task.type }}</div>
-                        </td>
-                        <td class="col-STATUS">
-                            <div>{{ task.status }}</div>
-                        </td>
-                        <td class="col-COMMENTS">
-                            <div *ngIf="task.status === 'ERROR'">{{ task.errorReason }}</div>
-                        </td>
-                        <td class="col-ACTION">
-                            <div class="operations-container">
-                                <button 
-                                    (click)="restartTask(task)" 
-                                    [disabled]="!(task.isError && task.isRetryableTask)"
-                                    class="p-button-raised p-button-rounded p-button-text" 
-                                    icon="pi pi-undo"
-                                    pButton type="button"></button>
-                                <button 
-                                    (click)="deleteTask(task)" 
-                                    [disabled]="!task.isError" 
-                                    class="p-button-raised p-button-rounded p-button-text" 
-                                    icon="pi pi-minus"
-                                    pButton 
-                                    type="button"></button>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-container>
-            </table>
-
-            <app-paginator
-                    (page)="onPage($event)"
-                    [length]="workerTasksCount"
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-            ></app-paginator>
-
+  @if (workerTasks && workerTasks.length > 0) {
+    <div class="table-container">
+      <div class="guardian-grid-container">
+        <p-table
+          [value]="workerTasks"
+          class="guardian-grid-table"
+          [scrollable]="true"
+          >
+          <ng-template pTemplate="header">
+            <tr class="guardian-grid-header">
+              <th class="header-cell-text" style="min-width: 200px; width: 200px;">Created</th>
+              <th class="header-cell-text" style="min-width: 200px; width: 200px;">Started</th>
+              <th class="header-cell-text" style="min-width: 250px;">Type</th>
+              <th class="header-cell-text" style="min-width: 200px; width: 200px;">Status</th>
+              <th class="header-cell-text" style="min-width: 250px;">Comments</th>
+              <th class="header-cell-text" style="min-width: 140px; width: 140px;"></th>
+            </tr>
+          </ng-template>
+          <ng-template let-task pTemplate="body">
+            <tr class="guardian-grid-row">
+              <td class="row-cell-text" style="min-width: 200px; width: 200px;">
+                <span class="text-truncate">{{ task.createDate | date: 'yyyy-MM-dd h:mm a' }}</span>
+              </td>
+              <td class="row-cell-text" style="min-width: 200px; width: 200px;">
+                <span class="text-truncate">
+                  @if (task.processedTime) {
+                    {{ task.processedTime | date: 'yyyy-MM-dd h:mm a' }}
+                  }
+                  @if (!task.processedTime) {
+                    Not started yet
+                  }
+                </span>
+              </td>
+              <td class="row-cell-text" style="min-width: 250px;" pTooltip="{{ task.type }}" tooltipPosition="top">
+                <span class="text-truncate">{{ task.type }}</span>
+              </td>
+              <td class="row-cell-text" style="min-width: 200px; width: 200px;">
+                <span class="text-truncate">{{ task.status }}</span>
+              </td>
+              <td class="row-cell-text" style="min-width: 250px;" pTooltip="{{ task.errorReason }}" [tooltipDisabled]="task.status !== 'ERROR'" tooltipPosition="top">
+                @if (task.status === 'ERROR') {
+                  <span class="text-truncate">{{ task.errorReason }}</span>
+                }
+              </td>
+              <td class="row-cell-text" style="min-width: 140px; width: 140px;">
+                <div class="operations-container">
+                  @if (user.WORKER_TASKS_EXECUTE) {
+                    <button
+                      (click)="restartTask(task)"
+                      [disabled]="!(task.isError && task.isRetryableTask)"
+                      class="p-button-raised p-button-rounded p-button-text"
+                      icon="pi pi-undo"
+                    pButton type="button"></button>
+                  }
+                  @if (user.WORKER_TASKS_DELETE) {
+                    <button
+                      (click)="deleteTask(task)"
+                      [disabled]="!task.isError"
+                      class="p-button-raised p-button-rounded p-button-text"
+                      icon="pi pi-minus"
+                      pButton
+                    type="button"></button>
+                  }
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+        <div class="guardian-grid-paginator">
+          <app-paginator
+            (page)="onPage($event)"
+            [length]="workerTasksCount"
+            [pageIndex]="pageIndex"
+            [pageSize]="pageSize"
+          ></app-paginator>
         </div>
-    </ng-container>
-</ng-template>
-
-<ng-template #noData>
-    <div class="not-exist">
-        <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
-        </svg-icon>
-        <span class="info-text-strong">No active tasks</span>
-        <span class="info-text"></span>
+      </div>
     </div>
+  } @else {
+    <div class="not-exist">
+      <svg-icon class="svg-icon-32" src="/assets/images/icons/32/list.svg" svgClass="disabled-color">
+      </svg-icon>
+      <span class="info-text-strong">No active tasks</span>
+      <span class="info-text"></span>
+    </div>
+  }
 </ng-template>

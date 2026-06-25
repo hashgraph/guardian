@@ -1,184 +1,213 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 
-    <div *ngIf="error" class="error-message">
-        <div>{{ error }}</div>
+  @if (error) {
+    <div class="error-message">
+      <div>{{ error }}</div>
     </div>
+  }
 
-    <div *ngIf="result" class="merge-options">
-        <div class="merge-back">
-            <div *ngIf="parent" (click)="onBack()">
-                <i class="pi pi-chevron-left"></i>
-                <span>Back</span>
+  @if (result) {
+    <div class="merge-options">
+      <div class="merge-back">
+        @if (parent) {
+          <div (click)="onBack()">
+            <i class="pi pi-chevron-left"></i>
+            <span>Back</span>
+          </div>
+        }
+      </div>
+      <div class="merge-lvl">
+        @if (isUUIDLvl) {
+          <div class="f1">
+            <div class="p-fluid">
+              <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
+              <p-select
+                id="uuidDropdown"
+                [(ngModel)]="idLvl"
+                [options]="uuidOptions"
+                placeholder="Select UUID Level"
+                (onChange)="onFilterChange()"
+                [appendTo]="'body'"
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel"
+                >
+              </p-select>
             </div>
+          </div>
+        }
+        @if (isPropertiesLvl) {
+          <div class="f1">
+            <div class="p-fluid">
+              <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
+              <p-select
+                id="propertiesDropdown"
+                [(ngModel)]="propLvl"
+                [options]="propertyOptions"
+                placeholder="Select Property Level"
+                (onChange)="onFilterChange()"
+                [appendTo]="'body'"
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel"
+                >
+              </p-select>
+            </div>
+          </div>
+        }
+        @if (isEventsLvl) {
+          <div class="f1">
+            <div class="p-fluid">
+              <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
+              <p-select
+                id="eventsDropdown"
+                [(ngModel)]="eventsLvl"
+                [options]="eventOptions"
+                placeholder="Select Event Level"
+                (onChange)="onFilterChange()"
+                [appendTo]="'body'"
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel"
+                >
+              </p-select>
+            </div>
+          </div>
+        }
+        @if (isChildrenLvl) {
+          <div class="f1">
+            <div class="p-fluid">
+              <label for="childrenDropdown" class="dropdown-border-label">Children:</label>
+              <p-select
+                id="childrenDropdown"
+                [(ngModel)]="childrenLvl"
+                [options]="childrenOptions"
+                placeholder="Select Children Level"
+                (onChange)="onFilterChange()"
+                [appendTo]="'body'"
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel"
+                >
+              </p-select>
+            </div>
+          </div>
+        }
+      </div>
+      <div class="merge-lvl-apply">
+        @if (isApplyBtn) {
+          <button
+            (click)="onApply()"
+            class="guardian-button guardian-button-primary merge-lvl-btn"
+          [disabled]="!needApplyFilters">Apply</button>
+        }
+      </div>
+      <div>
+        <button
+          (click)="onExport()"
+          class="guardian-button guardian-button-secondary export-btn">
+          <div class="guardian-button-icon">
+            <svg-icon class="icon-btn svg-icon"
+              src="/assets/images/icons/export.svg"
+              svgClass="icon-color-primary">
+            </svg-icon>
+          </div>
+          <div class="guardian-button-label">Export</div>
+        </button>
+      </div>
+      <div class="merge-type">
+        <div class="f2">
+          <div class="p-fluid">
+            <label for="typeDropdown" class="dropdown-border-label">Type:</label>
+            <p-select
+              id="typeDropdown"
+              [(ngModel)]="visibleType"
+              [options]="typeOptions"
+              placeholder="Select Type"
+              [appendTo]="'body'"
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              >
+            </p-select>
+          </div>
         </div>
-        <div class="merge-lvl">
-            <div *ngIf="isUUIDLvl" class="f1">
-                <div class="p-fluid">
-                    <label for="uuidDropdown" class="dropdown-border-label">UUID:</label>
-                    <p-dropdown
-                        id="uuidDropdown"
-                        [(ngModel)]="idLvl"
-                        [options]="uuidOptions"
-                        placeholder="Select UUID Level"
-                        (onChange)="onFilterChange()"
-                        [appendTo]="'body'"
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                    >
-                    </p-dropdown>
-                </div>
-            </div>
-            <div *ngIf="isPropertiesLvl" class="f1">
-                <div class="p-fluid">
-                    <label for="propertiesDropdown" class="dropdown-border-label">Properties:</label>
-                    <p-dropdown
-                        id="propertiesDropdown"
-                        [(ngModel)]="propLvl"
-                        [options]="propertyOptions"
-                        placeholder="Select Property Level"
-                        (onChange)="onFilterChange()"
-                        [appendTo]="'body'"
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                    >
-                    </p-dropdown>
-                </div>
-            </div>
-            <div *ngIf="isEventsLvl" class="f1">
-                <div class="p-fluid">
-                    <label for="eventsDropdown" class="dropdown-border-label">Events:</label>
-                    <p-dropdown
-                        id="eventsDropdown"
-                        [(ngModel)]="eventsLvl"
-                        [options]="eventOptions"
-                        placeholder="Select Event Level"
-                        (onChange)="onFilterChange()"
-                        [appendTo]="'body'"
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                    >
-                    </p-dropdown>
-                </div>
-            </div>
-            <div *ngIf="isChildrenLvl" class="f1">
-                <div class="p-fluid">
-                    <label for="childrenDropdown" class="dropdown-border-label">Children:</label>
-                    <p-dropdown
-                        id="childrenDropdown"
-                        [(ngModel)]="childrenLvl"
-                        [options]="childrenOptions"
-                        placeholder="Select Children Level"
-                        (onChange)="onFilterChange()"
-                        [appendTo]="'body'"
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                    >
-                    </p-dropdown>
-                </div>
-            </div>
-        </div>
-        <div class="merge-lvl-apply">
-            <button 
-                *ngIf="isApplyBtn"
-                (click)="onApply()" 
-                class="guardian-button guardian-button-primary merge-lvl-btn"
-                [disabled]="!needApplyFilters">Apply</button>
-        </div>
-        <div>
-            <button 
-                (click)="onExport()" 
-                class="guardian-button guardian-button-secondary export-btn">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/export.svg"
-                        svgClass="icon-color-primary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Export</div>
-            </button>
-        </div>
-        <div class="merge-type">
-            <div class="f2">
-                <div class="p-fluid">
-                    <label for="typeDropdown" class="dropdown-border-label">Type:</label>
-                    <p-dropdown
-                        id="typeDropdown"
-                        [(ngModel)]="visibleType"
-                        [options]="typeOptions"
-                        placeholder="Select Type"
-                        [appendTo]="'body'"
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                    >
-                    </p-dropdown>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+  }
 
-    <div *ngIf="isPolicies" class="content-result">
-        <app-compare-policy
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
-            [value]="result"
-            (change)="onChange($event)"></app-compare-policy>
+  @if (isPolicies) {
+    <div class="content-result">
+      <app-compare-policy
+        [childrenLvl]="childrenLvl"
+        [eventsLvl]="eventsLvl"
+        [idLvl]="idLvl"
+        [propLvl]="propLvl"
+        [type]="visibleType"
+        [value]="result"
+      (change)="onChange($event)"></app-compare-policy>
     </div>
+  }
 
-    <div *ngIf="isSchemas" class="content-result">
-        <app-compare-schema
-            [type]="visibleType"
-            [value]="result"
-            [idLvl]="idLvl"
-            (change)="onChange($event)"></app-compare-schema>
+  @if (isSchemas) {
+    <div class="content-result">
+      <app-compare-schema
+        [type]="visibleType"
+        [value]="result"
+        [idLvl]="idLvl"
+      (change)="onChange($event)"></app-compare-schema>
     </div>
+  }
 
-    <div *ngIf="isModules" class="content-result">
-        <app-compare-module
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
-            [value]="result"
-            (change)="onChange($event)"></app-compare-module>
+  @if (isModules) {
+    <div class="content-result">
+      <app-compare-module
+        [childrenLvl]="childrenLvl"
+        [eventsLvl]="eventsLvl"
+        [idLvl]="idLvl"
+        [propLvl]="propLvl"
+        [type]="visibleType"
+        [value]="result"
+      (change)="onChange($event)"></app-compare-module>
     </div>
+  }
 
-    <div *ngIf="isMultiPolicies" class="content-result">
-        <app-multi-compare-policy
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
-            [value]="result"
-            (change)="onChange($event)"></app-multi-compare-policy>
+  @if (isMultiPolicies) {
+    <div class="content-result">
+      <app-multi-compare-policy
+        [childrenLvl]="childrenLvl"
+        [eventsLvl]="eventsLvl"
+        [idLvl]="idLvl"
+        [propLvl]="propLvl"
+        [type]="visibleType"
+        [value]="result"
+      (change)="onChange($event)"></app-multi-compare-policy>
     </div>
+  }
 
-    <div *ngIf="isDocuments" class="content-result">
-        <app-compare-document
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
-            [value]="result"
-            (change)="onChange($event)"></app-compare-document>
+  @if (isDocuments) {
+    <div class="content-result">
+      <app-compare-document
+        [childrenLvl]="childrenLvl"
+        [eventsLvl]="eventsLvl"
+        [idLvl]="idLvl"
+        [propLvl]="propLvl"
+        [type]="visibleType"
+        [value]="result"
+      (change)="onChange($event)"></app-compare-document>
     </div>
+  }
 
-    <div *ngIf="isTools" class="content-result">
-        <app-compare-tool
-            [childrenLvl]="childrenLvl"
-            [eventsLvl]="eventsLvl"
-            [idLvl]="idLvl"
-            [propLvl]="propLvl"
-            [type]="visibleType"
-            [value]="result"
-            (change)="onChange($event)"></app-compare-tool>
+  @if (isTools) {
+    <div class="content-result">
+      <app-compare-tool
+        [childrenLvl]="childrenLvl"
+        [eventsLvl]="eventsLvl"
+        [idLvl]="idLvl"
+        [propLvl]="propLvl"
+        [type]="visibleType"
+        [value]="result"
+      (change)="onChange($event)"></app-compare-tool>
     </div>
+  }
 </div>

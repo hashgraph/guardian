@@ -53,6 +53,21 @@
     --guardian-header-4-font-size: 22px;
     --guardian-header-5-font-size: 24px;
 
+    /* Page layout — canonical main-page skeleton; visual etalon = Tools page.
+       Single source of truth for the page title font, outer padding, header band,
+       and the toolbar-to-grid gap. Per-page alignment iterations target these. */
+    --guardian-page-padding: 56px 48px 48px 48px;
+    --guardian-page-header-font-family: var(--font-family-poppins);
+    --guardian-page-header-font-size: 32px;
+    --guardian-page-header-font-weight: 600;
+    --guardian-page-header-height: auto;
+    --guardian-page-header-padding: 0px;
+    --guardian-page-header-gap: 40px;
+    --guardian-page-tabs-gap: 40px;
+    --guardian-page-toolbar-height: 56px;
+    --guardian-page-toolbar-gap: 40px;
+    --guardian-page-content-padding: 0px;
+
     --guardian-entity-color: #DA9B22;
     --guardian-warning-color: #DA9B22;
     --guardian-warning-background: #FFF6E3;

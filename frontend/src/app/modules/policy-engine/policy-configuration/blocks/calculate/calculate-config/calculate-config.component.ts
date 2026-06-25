@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../struct
     selector: 'calculate-config',
     templateUrl: './calculate-config.component.html',
     styleUrls: ['./calculate-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class CalculateConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

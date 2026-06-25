@@ -1,18 +1,74 @@
-version: "3.3"
 services:
-  cypress-container:
+  cypress-api:
     build:
       context: .
-      dockerfile: Dockerfile-test
-    image: cypress-build
-
-  cypress-tests:
-    image: cypress-build
-    depends_on:
-      - cypress-container
+      dockerfile: Dockerfile
+    image: cypress-runner
+    shm_size: "2gb"
+    env_file:
+      - .env
+      - ../guardian-service/configs/.env.guardian
     environment:
-      - PORT=${PORT}
-      - CYPRESS_baseUrl=http://localhost:4200
-      - TAG=${TAG}
-    network_mode: "host"
-    command: "./entrypoint.sh"
+      - CYPRESS_portApi=${CYPRESS_portApi:-3002}
+      - CYPRESS_baseUrl=
+      - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
+      - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
+      - CYPRESS_grepTags=${CYPRESS_grepTags:-all}
+      - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
+      - CYPRESS_SPEC=${CYPRESS_SPEC:-cypress/e2e/api-tests/**/*.cy.js}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./cypress/reports:/e2e/cypress/reports
+      - ./cypress/test_results:/e2e/cypress/test_results
+      - ./cypress/screenshots:/e2e/cypress/screenshots
+      - ./cypress/videos:/e2e/cypress/videos
+      - ./cypress/downloads:/e2e/cypress/downloads
+
+  ui:
+    image: gcr.io/hedera-registry/frontend-demo:${GUARDIAN_VERSION:-latest}
+    environment:
+      - GATEWAY_HOST=${UI_GATEWAY_HOST:-host.docker.internal}
+      - GATEWAY_PORT=${UI_GATEWAY_PORT:-3002}
+      - GATEWAY_CLIENT_MAX_BODY_SIZE=${UI_GATEWAY_CLIENT_MAX_BODY_SIZE:-1024m}
+      - MRV_SENDER_HOST=${UI_MRV_SENDER_HOST:-host.docker.internal}
+      - MRV_SENDER_PORT=${UI_MRV_SENDER_PORT:-3005}
+      - TOPIC_VIEWER_HOST=${UI_TOPIC_VIEWER_HOST:-host.docker.internal}
+      - TOPIC_VIEWER_PORT=${UI_TOPIC_VIEWER_PORT:-3006}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    expose:
+      - "80"
+
+  cypress-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: cypress-runner
+    shm_size: "2gb"
+    depends_on:
+      - ui
+    env_file:
+      - .env
+      - ../guardian-service/configs/.env.guardian
+    environment:
+      - CYPRESS_portApi=${CYPRESS_portApi:-3002}
+      - CYPRESS_baseUrl=http://ui
+      - CYPRESS_apiServer=${CYPRESS_apiServer:-http://host.docker.internal:3002/}
+      - CYPRESS_BROWSER=${CYPRESS_BROWSER:-chromium}
+      - CYPRESS_VERIFY_TIMEOUT=${CYPRESS_VERIFY_TIMEOUT:-300000}
+      - CYPRESS_grepTags=${CYPRESS_grepTags:-ui}
+      - CYPRESS_grepFilterSpecs=${CYPRESS_grepFilterSpecs:-true}
+      - CYPRESS_SPEC=${CYPRESS_SPEC:-cypress/e2e/ui-tests/specs/**/*.cy.js}
+      - CYPRESS_UI_WAIT_TIMEOUT=${CYPRESS_UI_WAIT_TIMEOUT:-180}
+      - CYPRESS_operatorId=${CYPRESS_operatorId:-}
+      - CYPRESS_operatorKey=${CYPRESS_operatorKey:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./cypress/reports:/e2e/cypress/reports
+      - ./cypress/test_results:/e2e/cypress/test_results
+      - ./cypress/screenshots:/e2e/cypress/screenshots
+      - ./cypress/videos:/e2e/cypress/videos
+      - ./cypress/downloads:/e2e/cypress/downloads

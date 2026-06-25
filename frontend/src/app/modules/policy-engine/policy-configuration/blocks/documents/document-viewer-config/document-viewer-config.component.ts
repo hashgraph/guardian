@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'document-viewer-config',
     templateUrl: './document-viewer-config.component.html',
     styleUrls: ['./document-viewer-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class DocumentSourceComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

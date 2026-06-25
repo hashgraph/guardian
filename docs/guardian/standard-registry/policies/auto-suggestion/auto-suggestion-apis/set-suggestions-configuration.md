@@ -1,42 +1,71 @@
-# Set suggestions configuration
+# Set Suggestions Configuration
 
-{% swagger method="post" path="" baseUrl="/suggestions/config" summary="Set suggestions config" %}
-{% swagger-description %}
-Set suggestions config. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/suggestions/config`**
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains suggestions priority order array.
-{% endswagger-parameter %}
+Sets the auto-suggestion priority order configuration. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="201: Created" description="Successful operation. Response set suggestions priority order array." %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SUGGESTIONS_SUGGESTIONS_UPDATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "items": [
+    {
+      "blockType": "requestVcDocumentBlock",
+      "order": 1
+    },
+    {
+      "blockType": "sendToGuardianBlock",
+      "order": 2
+    }
+  ]
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/SuggestionsOrderPriority"
+
+| Field               | Type   | Required | Description                                         |
+|---------------------|--------|----------|-----------------------------------------------------|
+| `items`             | array  | Yes      | List of suggestion priority configuration entries   |
+| `items[].blockType` | string | Yes      | Block type for this priority entry                  |
+| `items[].order`     | number | Yes      | Priority order (lower number = higher priority)     |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "items": [
+    {
+      "id": "63e3e5e8a01b3c001234abcd",
+      "blockType": "requestVcDocumentBlock",
+      "order": 1
+    }
+  ]
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field               | Type   | Description                                         |
+|---------------------|--------|-----------------------------------------------------|
+| `items`             | array  | The saved suggestion priority configuration         |
+| `items[].id`        | string | Unique identifier of the configuration entry        |
+| `items[].blockType` | string | Block type for this priority entry                  |
+| `items[].order`     | number | Priority order (lower number = higher priority)     |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

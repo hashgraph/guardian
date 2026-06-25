@@ -9,7 +9,8 @@ import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 @Component({
     selector: 'search-label-dialog',
     templateUrl: './search-label-dialog.component.html',
-    styleUrls: ['./search-label-dialog.component.scss']
+    styleUrls: ['./search-label-dialog.component.scss'],
+    standalone: false
 })
 export class SearchLabelDialog {
     public loading = false;

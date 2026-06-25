@@ -1,8 +1,8 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { Permissions, TaskAction } from '@guardian/interfaces';
-import { ApiBody, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiTags, ApiQuery, ApiExtraModels, ApiParam } from '@nestjs/swagger';
-import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO, TaskDTO } from '#middlewares';
+import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiExtraModels, ApiInternalServerErrorResponse, ApiNotFoundResponse, ApiOkResponse, ApiOperation, ApiParam, ApiProduces, ApiQuery, ApiTags, ApiUnprocessableEntityResponse } from '@nestjs/swagger';
+import { Examples, InternalServerErrorDTO, PolicyLabelDocumentDTO, PolicyLabelDTO, PolicyLabelRelationshipsDTO, UnprocessableEntityErrorDTO, VcDocumentDTO, pageHeader, PolicyLabelDocumentRelationshipsDTO, PolicyLabelComponentsDTO, PolicyLabelFiltersDTO, TaskDTO } from '#middlewares';
 import { Guardians, InternalException, EntityOwner, TaskManager, ServiceError } from '#helpers';
 import { AuthUser, Auth } from '#auth';
 
@@ -23,15 +23,62 @@ export class PolicyLabelsApi {
     @ApiBody({
         description: 'Configuration.',
         type: PolicyLabelDTO,
-        required: true
+        required: true,
+        examples: {
+            createLabel: {
+                summary: 'Create a new policy label',
+                value: {
+                    name: 'Carbon Label',
+                    description: 'Label for carbon credits',
+                    policyId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -85,11 +132,44 @@ export class PolicyLabelsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    status: 'DRAFT',
+                    config: {} }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -130,11 +210,48 @@ export class PolicyLabelsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -173,15 +290,63 @@ export class PolicyLabelsApi {
     @ApiBody({
         description: 'Object that contains a configuration.',
         required: true,
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            updateLabel: {
+                summary: 'Update a policy label',
+                value: {
+                    name: 'Updated Carbon Label',
+                    description: 'Updated label description',
+                    policyId: '69aeb71ef8c5b278e3bab4e5'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } } }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -224,11 +389,36 @@ export class PolicyLabelsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: Boolean
+        type: Boolean,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: true
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -266,11 +456,49 @@ export class PolicyLabelsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } } }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -310,13 +538,51 @@ export class PolicyLabelsApi {
         description: 'policy label Identifier',
         example: Examples.DB_ID,
     })
-    @ApiOkResponse({
+    @ApiAcceptedResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
+    @ApiNotFoundResponse({ description: 'Item not found.', type: InternalServerErrorDTO, examples: { default: { summary: 'Default example', value: { statusCode: 404, message: 'Item not found.' } } }})
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(TaskDTO, PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.ACCEPTED)
@@ -368,11 +634,146 @@ export class PolicyLabelsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelRelationshipsDTO
+        type: PolicyLabelRelationshipsDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { policy: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Policy name',
+                    description: 'Description',
+                    topicDescription: 'Description',
+                    policyTag: 'Tag',
+                    status: 'DRAFT',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    codeVersion: '1.0.0',
+                    createDate: Examples.DATE,
+                    version: '1.0.0',
+                    originalChanged: true,
+                    config: {},
+                    userRole: 'Installer',
+                    userRoles: ['Installer'],
+                    userGroup: {
+                    uuid: Examples.UUID,
+                    role: 'Installer',
+                    groupLabel: 'Label',
+                    groupName: 'Name',
+                    active: true
+                }, userGroups: [{
+                    uuid: Examples.UUID,
+                    role: 'Installer',
+                    groupLabel: 'Label',
+                    groupName: 'Name',
+                    active: true
+                }], policyRoles: ['Registrant'], policyNavigation: [{
+                    role: 'Registrant',
+                    steps: [{
+                        block: 'Block tag',
+                        level: 1,
+                        name: 'Step name'
+                    }]
+                }], policyTopics: [{
+                    name: 'Project',
+                    description: 'Project',
+                    memoObj: 'topic',
+                    static: false,
+                    type: 'any'
+                }], policyTokens: [{
+                    tokenName: 'Token name',
+                    tokenSymbol: 'Token symbol',
+                    tokenType: 'non-fungible',
+                    decimals: '',
+                    changeSupply: true,
+                    enableAdmin: true,
+                    enableFreeze: true,
+                    enableKYC: true,
+                    enableWipe: true,
+                    templateTokenTag: 'token_template_0'
+                }], policyGroups: [{
+                    name: 'Group name',
+                    creator: 'Registrant',
+                    groupAccessType: 'Private',
+                    groupRelationshipType: 'Multiple',
+                    members: ['Registrant']
+                }],
+                categories: ['string'],
+                projectSchema: Examples.UUID,
+                tests: [{ id: Examples.DB_ID,
+                uuid: Examples.UUID,
+                name: 'Test Name',
+                policyId: Examples.DB_ID,
+                owner: Examples.DID,
+                status: 'NEW',
+                date: Examples.DATE,
+                duration: 0,
+                progress: 0,
+                resultId: Examples.UUID,
+                result: {} }],
+                ignoreRules: [{ code: 'string',
+                blockType: 'string',
+                property: 'string',
+                contains: 'string',
+                severity: 'warning' }] },
+                policySchemas: [{ id: Examples.DB_ID,
+                uuid: Examples.UUID,
+                name: 'Schema name',
+                description: 'Description',
+                entity: 'POLICY',
+                iri: Examples.UUID,
+                status: 'DRAFT',
+                topicId: Examples.ACCOUNT_ID,
+                version: '1.0.0',
+                owner: Examples.DID,
+                messageId: Examples.MESSAGE_ID,
+                category: 'POLICY',
+                documentURL: Examples.IPFS,
+                contextURL: Examples.IPFS,
+                document: {},
+                context: {} }],
+                documentsSchemas: [{ id: Examples.DB_ID,
+                uuid: Examples.UUID,
+                name: 'Schema name',
+                description: 'Description',
+                entity: 'POLICY',
+                iri: Examples.UUID,
+                status: 'DRAFT',
+                topicId: Examples.ACCOUNT_ID,
+                version: '1.0.0',
+                owner: Examples.DID,
+                messageId: Examples.MESSAGE_ID,
+                category: 'POLICY',
+                documentURL: Examples.IPFS,
+                contextURL: Examples.IPFS,
+                document: {},
+                context: {} }] }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelRelationshipsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -409,16 +810,52 @@ export class PolicyLabelsApi {
         example: Examples.DB_ID
     })
     @ApiBody({
-        description: 'A zip file containing labels to be imported.',
+        description: 'A binary/zip file containing labels to be imported.',
         required: true
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -452,12 +889,41 @@ export class PolicyLabelsApi {
         required: true,
         example: Examples.DB_ID
     })
+    @ApiProduces('application/zip')
     @ApiOkResponse({
-        description: 'Successful operation. Response zip file.'
+        description: 'Successful operation. Response zip file.',
+        schema: {
+            type: 'string',
+            format: 'binary'
+        },
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { result: 'ok' }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
-        type: InternalServerErrorDTO
+        type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -488,15 +954,51 @@ export class PolicyLabelsApi {
         description: 'Imports a zip file containing labels.',
     })
     @ApiBody({
-        description: 'File.',
+        description: 'A binary/zip file containing labels to preview.',
     })
     @ApiOkResponse({
         description: 'policy label preview.',
-        type: PolicyLabelDTO
+        type: PolicyLabelDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -525,14 +1027,87 @@ export class PolicyLabelsApi {
     @ApiBody({
         description: 'Filters.',
         required: true,
-        type: PolicyLabelFiltersDTO
+        type: PolicyLabelFiltersDTO,
+        examples: {
+            searchAll: {
+                summary: 'Search all components',
+                value: {
+                    text: 'Carbon',
+                    components: 'all'
+                }
+            },
+            searchLabels: {
+                summary: 'Search labels only',
+                value: {
+                    text: 'Carbon',
+                    components: 'label'
+                }
+            },
+            searchStatistics: {
+                summary: 'Search statistics only',
+                value: {
+                    text: 'Emissions',
+                    components: 'statistic'
+                }
+            }
+        }
     })
     @ApiOkResponse({
         description: 'A list of labels ans statistics.',
+        type: PolicyLabelComponentsDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { statistics: [{ id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }],
+                    labels: [{ id: Examples.DB_ID,
+                    uuid: Examples.UUID,
+                    name: 'Carbon Label',
+                    description: 'Description',
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    topicId: Examples.ACCOUNT_ID,
+                    messageId: Examples.MESSAGE_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    status: 'DRAFT',
+                    config: {} }] }
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelFiltersDTO, PolicyLabelComponentsDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -583,11 +1158,54 @@ export class PolicyLabelsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: VcDocumentDTO
+        type: VcDocumentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    hash: Examples.HASH,
+                    signature: 0,
+                    status: 'NEW',
+                    tag: 'Block tag',
+                    type: 'Document type',
+                    createDate: Examples.DATE,
+                    updateDate: Examples.DATE,
+                    owner: Examples.DID,
+                    document: { id: Examples.DB_ID,
+                    type: ['string'],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: 'string',
+                    created: Examples.DATE,
+                    verificationMethod: 'string',
+                    proofPurpose: 'string',
+                    jws: 'string' } } }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -635,11 +1253,54 @@ export class PolicyLabelsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: VcDocumentDTO
+        type: VcDocumentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    hash: Examples.HASH,
+                    signature: 0,
+                    status: 'NEW',
+                    tag: 'Block tag',
+                    type: 'Document type',
+                    createDate: Examples.DATE,
+                    updateDate: Examples.DATE,
+                    owner: Examples.DID,
+                    document: { id: Examples.DB_ID,
+                    type: ['string'],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: 'string',
+                    created: Examples.DATE,
+                    verificationMethod: 'string',
+                    proofPurpose: 'string',
+                    jws: 'string' } } }]
+            }
+        }
     })
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(VcDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -676,15 +1337,62 @@ export class PolicyLabelsApi {
     @ApiBody({
         description: 'Configuration.',
         type: PolicyLabelDocumentDTO,
-        required: true
+        required: true,
+        examples: {
+            createDocument: {
+                summary: 'Create a new label document',
+                value: {
+                    definitionId: '69aeb71ef8c5b278e3bab4e5',
+                    policyId: '69aeb71ef8c5b278e3bab4e5',
+                    target: '69aeb71ef8c5b278e3bab4e5',
+                    document: {}
+                }
+            }
+        }
     })
-    @ApiOkResponse({
+    @ApiCreatedResponse({
         description: 'Successful operation.',
         type: PolicyLabelDocumentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    definitionId: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    topicId: Examples.ACCOUNT_ID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    messageId: Examples.MESSAGE_ID,
+                    target: 'string',
+                    relationships: [Examples.MESSAGE_ID],
+                    document: {} }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.CREATED)
@@ -742,11 +1450,47 @@ export class PolicyLabelsApi {
         description: 'Successful operation.',
         isArray: true,
         headers: pageHeader,
-        type: PolicyLabelDocumentDTO
+        type: PolicyLabelDocumentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: [{ id: Examples.DB_ID,
+                    definitionId: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    topicId: Examples.ACCOUNT_ID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    messageId: Examples.MESSAGE_ID,
+                    target: 'string',
+                    relationships: [Examples.MESSAGE_ID],
+                    document: {} }]
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -795,11 +1539,47 @@ export class PolicyLabelsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDocumentDTO
+        type: PolicyLabelDocumentDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { id: Examples.DB_ID,
+                    definitionId: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    policyTopicId: Examples.ACCOUNT_ID,
+                    policyInstanceTopicId: Examples.ACCOUNT_ID,
+                    topicId: Examples.ACCOUNT_ID,
+                    creator: Examples.DID,
+                    owner: Examples.DID,
+                    messageId: Examples.MESSAGE_ID,
+                    target: 'string',
+                    relationships: [Examples.MESSAGE_ID],
+                    document: {} }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
@@ -845,11 +1625,73 @@ export class PolicyLabelsApi {
     })
     @ApiOkResponse({
         description: 'Successful operation.',
-        type: PolicyLabelDocumentRelationshipsDTO
+        type: PolicyLabelDocumentRelationshipsDTO,
+        examples: {
+            default: {
+                    summary: 'Default example',
+                value: { target: { id: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    hash: Examples.HASH,
+                    signature: 0,
+                    status: 'NEW',
+                    tag: 'Block tag',
+                    type: 'Document type',
+                    createDate: Examples.DATE,
+                    updateDate: Examples.DATE,
+                    owner: Examples.DID,
+                    document: [{ id: Examples.DB_ID,
+                    type: [{}],
+                    verifiableCredential: [{}],
+                    proof: { type: {},
+                    created: {},
+                    verificationMethod: {},
+                    proofPurpose: {},
+                    jws: {} } }] },
+                    relationships: [{ id: Examples.DB_ID,
+                    policyId: Examples.DB_ID,
+                    hash: Examples.HASH,
+                    signature: 0,
+                    status: 'NEW',
+                    tag: 'Block tag',
+                    type: 'Document type',
+                    createDate: Examples.DATE,
+                    updateDate: Examples.DATE,
+                    owner: Examples.DID,
+                    document: { id: Examples.DB_ID,
+                    type: [{}],
+                    credentialSubject: {},
+                    issuer: {},
+                    issuanceDate: Examples.DATE,
+                    proof: { type: {},
+                    created: {},
+                    verificationMethod: {},
+                    proofPurpose: {},
+                    jws: {} } } }] }
+            }
+        }
     })
+    @ApiUnprocessableEntityResponse({ description: 'Unprocessable entity.', type: UnprocessableEntityErrorDTO, examples: { invalidId: { summary: 'Missing or invalid ID', value: { statusCode: 422, message: 'Invalid ID.' } }, invalidConfig: { summary: 'Missing or invalid config', value: { statusCode: 422, message: 'Invalid config.' } } }})
     @ApiInternalServerErrorResponse({
         description: 'Internal server error.',
         type: InternalServerErrorDTO,
+        examples: {
+            invalidParams: {
+                summary: 'Invalid parameters',
+                value: { statusCode: 500, message: 'Invalid parameters.' }
+            },
+            itemNotFound: {
+                summary: 'Item does not exist',
+                value: { statusCode: 500, message: 'Item does not exist.' }
+            },
+            alreadyPublished: {
+                summary: 'Item is already published or not published',
+                value: { statusCode: 500, message: 'Item is already published.' }
+            },
+            generic: {
+                summary: 'Unexpected error',
+                value: { statusCode: 500, message: 'Error message' }
+            }
+        }
     })
     @ApiExtraModels(PolicyLabelDocumentDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)

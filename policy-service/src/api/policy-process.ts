@@ -2,7 +2,6 @@ import '../config.js'
 import {
     COMMON_CONNECTION_CONFIG,
     DatabaseServer,
-    entities,
     Environment,
     ExternalEventChannel,
     GenerateTLSOptionsNats,
@@ -11,6 +10,7 @@ import {
     LargePayloadContainer,
     MessageBrokerChannel,
     MessageServer,
+    MockService,
     mongoForLoggingInitialization,
     NotificationService,
     OldSecretManager,
@@ -21,6 +21,7 @@ import {
     Wallet,
     Workers
 } from '@guardian/common';
+import { entities } from '@guardian/common/dist/entities.js';
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { BlockTreeGenerator } from '../policy-engine/block-tree-generator.js';
@@ -45,7 +46,8 @@ const {
     policyId,
     policyServiceName,
     skipRegistration,
-    policyOwnerId
+    policyOwnerId,
+    enableMock
 } = JSON.parse(process.env.POLICY_START_OPTIONS);
 
 process.env.SERVICE_CHANNEL = policyServiceName;
@@ -88,40 +90,48 @@ Promise.all([
     JwtServicesValidator.setServiceName(jwtServiceName);
 
     await new OldSecretManager().setConnection(cn).init();
+    await new MockService().setConnection(cn).init();
 
     const policyConfig = await DatabaseServer.getPolicyById(policyId);
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
 
-    if (process.env.HEDERA_CUSTOM_NODES) {
-        try {
-            const nodes = JSON.parse(process.env.HEDERA_CUSTOM_NODES);
-            Environment.setNodes(nodes);
-        } catch (error) {
-            await logger.warn(
-                'HEDERA_CUSTOM_NODES field in settings: ' + error.message,
-                ['POLICY', policyConfig.name, policyId.toString()],
-                policyOwnerId
-            );
-            console.warn(error);
+    if (process.env.OVERRIDE_NETWORK_CONFIGURATION === 'true') {
+        if (process.env.OVERRIDE_HEDERA_CONSENSUS_NODES) {
+            try {
+                const nodes = JSON.parse(process.env.OVERRIDE_HEDERA_CONSENSUS_NODES);
+                Environment.setNodes(nodes);
+            } catch (error) {
+                await logger.warn(
+                    'OVERRIDE_HEDERA_CONSENSUS_NODES field in settings: ' + error.message,
+                    ['POLICY', policyConfig.name, policyId.toString()],
+                    policyOwnerId
+                );
+                console.warn(error);
+            }
+        }
+        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES) {
+            try {
+                const mirrorNodes = JSON.parse(
+                    process.env.OVERRIDE_HEDERA_MIRROR_NODES
+                );
+                Environment.setMirrorNodes(mirrorNodes);
+            } catch (error) {
+                await logger.warn(
+                    'OVERRIDE_HEDERA_MIRROR_NODES field in settings: ' +
+                    error.message,
+                    ['POLICY', policyConfig.name, policyId.toString()],
+                    policyOwnerId
+                );
+                console.warn(error);
+            }
+        }
+
+        if (process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API) {
+            Environment.setMirrorNodesBaseApi(process.env.OVERRIDE_HEDERA_MIRROR_NODES_BASE_API);
         }
     }
-    if (process.env.HEDERA_CUSTOM_MIRROR_NODES) {
-        try {
-            const mirrorNodes = JSON.parse(
-                process.env.HEDERA_CUSTOM_MIRROR_NODES
-            );
-            Environment.setMirrorNodes(mirrorNodes);
-        } catch (error) {
-            await logger.warn(
-                'HEDERA_CUSTOM_MIRROR_NODES field in settings: ' +
-                error.message,
-                ['POLICY', policyConfig.name, policyId.toString()],
-                policyOwnerId
-            );
-            console.warn(error);
-        }
-    }
+
     Environment.setNetwork(process.env.HEDERA_NET);
     MessageServer.setLang(process.env.MESSAGE_LANG);
 
@@ -145,7 +155,14 @@ Promise.all([
     const generator = new BlockTreeGenerator();
     const policyValidator = new PolicyValidator(policyConfig);
 
-    const policyModel = await generator.generate(policyConfig, skipRegistration, policyValidator, logger, policyOwnerId);
+    const policyModel = await generator.generate(
+        policyConfig,
+        skipRegistration,
+        policyValidator,
+        logger,
+        policyOwnerId,
+        enableMock
+    );
     if ((policyModel as { type: 'error', message: string }).type === 'error') {
         await generator.publish(PolicyEvents.POLICY_READY, {
             policyId: policyId.toString(),
@@ -158,8 +175,8 @@ Promise.all([
     const synchronizationService = new SynchronizationService(policyConfig, logger, policyOwnerId);
     synchronizationService.start();
 
-    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: {policyOwnerId: string | null}) => {
-        await generator.destroyModel(policyId, logger, payload.policyOwnerId)
+    generator.getPolicyMessages(PolicyEvents.DELETE_POLICY, policyId, async (payload: { policyOwnerId: string | null }) => {
+        await generator.destroyModel(policyId, logger, payload.policyOwnerId);
         synchronizationService.stop();
         process.exit(0);
     });

@@ -24,7 +24,8 @@ import { Subject } from 'rxjs';
             state('expanded', style({ height: '*' })),
             transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
         ]),
-    ]
+    ],
+    standalone: false
 })
 export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -290,7 +291,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     policyId: this.policyId,
                     dryRun: this.dryRun
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
@@ -311,7 +312,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     openComments: comments,
                     destroy: this._destroy$
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         }
@@ -466,7 +467,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 type: 'TEXT',
                 viewDocument: false
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -496,8 +497,9 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 title: field.title,
                 type: 'LINK',
                 value: links,
+                dryRun: this.dryRun
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

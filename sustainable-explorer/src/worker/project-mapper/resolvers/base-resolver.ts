@@ -87,20 +87,36 @@ export abstract class BaseProjectKeyResolver {
      * Follows `credentialSubject[0].ref` (a DID pointing to the project's
      * identity VC) to find the canonical project key. Each hop: find the VC
      * whose `cs.id` equals the current ref, take ITS `cs.id` as the new
-     * candidate, and if THAT VC also carries a ref, recurse. Stops at the
-     * first VC without a `ref` (the project root).
+     * candidate, and if THAT VC also carries a ref, recurse.
      *
-     * Returns null when:
-     *   - The starting VC has no `ref` (caller falls back to the HCS walk),
-     *   - The ref points to a cs.id that hasn't been ingested yet (defer to
-     *     HCS walk so we still produce *some* projectKey).
+     * STOP-AT-PROJECT-SCHEMA: when `opts.projectSchemaUuids` is given, the walk
+     * anchors on the project-schema VC instead of continuing to a higher,
+     * SHARED root. Some methodologies nest the per-project doc (e.g. "Project
+     * Listing Application", unique per project) under a per-developer root (e.g.
+     * "Project Developer Application", one per registrant). Walking to that root
+     * collapses every sibling project onto one key. We therefore return the
+     * cs.id of the project-schema VC and stop as soon as the next ancestor is
+     * NOT a project schema. `opts.startIsProjectSchema` seeds the anchor with the
+     * start VC so a project-schema VC keys on its own cs.id rather than its root.
      *
-     * Loop guard via visited refs; capped at 8 hops.
+     * Without `opts.projectSchemaUuids` the behaviour is unchanged: walk to the
+     * first VC without a `ref` (the chain root).
+     *
+     * Returns null when the starting VC has no `ref`, or the ref points to a
+     * cs.id not yet ingested (and no project-schema anchor was found) — the
+     * caller then falls back to the HCS walk. Loop guard via visited refs;
+     * capped at 8 hops.
      */
     protected async resolveViaRef(
         startTs: string,
         startCsId: string,
+        opts: { projectSchemaUuids?: Set<string>; startIsProjectSchema?: boolean } = {},
     ): Promise<{ projectKey: string } | null> {
+        const stopAtProjectSchema = !!opts.projectSchemaUuids && opts.projectSchemaUuids.size > 0;
+        const isProjectSchema = (rawType: string | null): boolean =>
+            stopAtProjectSchema &&
+            opts.projectSchemaUuids!.has((rawType ?? '').split('&')[0].trim().replace(/^#/, ''));
+
         const startRow: Array<{ ref: string | null }> = await this.dataSource.query(
             `SELECT documents->'credentialSubject'->0->>'ref' AS ref
              FROM message
@@ -114,12 +130,16 @@ export abstract class BaseProjectKeyResolver {
 
         let currentRef = startRef;
         const visited = new Set<string>([startCsId, currentRef]);
+        // The deepest project-schema cs.id seen so far. Seeded with the start VC
+        // when it is itself the project schema (so it never keys on its root).
+        let anchorCsId: string | null = opts.startIsProjectSchema ? startCsId : null;
 
         for (let i = 0; i < 8; i++) {
-            const targetRow: Array<{ cs_id: string | null; next_ref: string | null }> =
+            const targetRow: Array<{ cs_id: string | null; next_ref: string | null; schema_type: string | null }> =
                 await this.dataSource.query(
-                    `SELECT documents->'credentialSubject'->0->>'id'  AS cs_id,
-                            documents->'credentialSubject'->0->>'ref' AS next_ref
+                    `SELECT documents->'credentialSubject'->0->>'id'   AS cs_id,
+                            documents->'credentialSubject'->0->>'ref'  AS next_ref,
+                            documents->'credentialSubject'->0->>'type' AS schema_type
                      FROM message
                      WHERE type = 'VC-Document'
                        AND documents->'credentialSubject'->0->>'id' = $1
@@ -128,19 +148,27 @@ export abstract class BaseProjectKeyResolver {
                     [currentRef],
                 );
             if (targetRow.length === 0 || !targetRow[0].cs_id) {
-                // Ref doesn't resolve to any ingested VC. Let the HCS walk
-                // produce a fallback projectKey rather than returning a
-                // dangling ref.
-                return null;
+                // Ref doesn't resolve to any ingested VC. Prefer a project-schema
+                // anchor already found; else let the HCS walk produce a fallback.
+                return anchorCsId ? { projectKey: anchorCsId } : null;
             }
-            const { cs_id, next_ref } = targetRow[0];
+            const { cs_id, next_ref, schema_type } = targetRow[0];
+
+            if (stopAtProjectSchema) {
+                if (isProjectSchema(schema_type)) {
+                    anchorCsId = cs_id;                  // climb through project-schema VCs
+                } else if (anchorCsId) {
+                    return { projectKey: anchorCsId };   // left the project level → stop
+                }
+            }
+
             if (!next_ref || typeof next_ref !== 'string' || visited.has(next_ref)) {
-                return { projectKey: cs_id };
+                return { projectKey: anchorCsId ?? cs_id };
             }
             visited.add(next_ref);
             currentRef = next_ref;
         }
-        return { projectKey: currentRef };
+        return { projectKey: anchorCsId ?? currentRef };
     }
 
     /**

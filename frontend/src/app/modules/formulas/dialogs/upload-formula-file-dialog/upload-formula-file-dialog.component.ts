@@ -8,10 +8,12 @@ import { IPFSService } from 'src/app/services/ipfs.service';
     selector: 'upload-formula-file-dialog',
     templateUrl: './upload-formula-file-dialog.component.html',
     styleUrls: ['./upload-formula-file-dialog.component.scss'],
+    standalone: false
 })
 export class UploadFormulaFileDialog {
     public loading = true;
     public importType: string = 'file';
+    public tabIndex: number = 0;
     public dataForm = this.fb.group({
         name: ['', Validators.required],
         url: ['', Validators.required],
@@ -44,8 +46,9 @@ export class UploadFormulaFileDialog {
     ngOnDestroy(): void {
     }
 
-    public setImportType(event: any): void {
-        this.importType = event.index === 0 ? 'file' : 'url';
+    public setImportType(index: string | number | undefined): void {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.importType = tabIndex === 0 ? 'file' : 'url';
         this.step = 0;
         this.dataForm.setValue({
             name: '',

@@ -1,26 +1,27 @@
-import {Component, OnDestroy, OnInit, AfterViewChecked, QueryList, ViewChildren, ElementRef} from '@angular/core';
-import {Router} from '@angular/router';
-import {AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators,} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
-import {UserCategory, UserRole} from '@guardian/interfaces';
-import {AuthStateService} from 'src/app/services/auth-state.service';
-import {Observable, Subject, Subscription} from 'rxjs';
-import {noWhitespaceValidator} from 'src/app/validators/no-whitespace-validator';
-import {WebSocketService} from 'src/app/services/web-socket.service';
-import {QrCodeDialogComponent} from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
-import {MeecoVCSubmitDialogComponent} from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
-import {environment} from 'src/environments/environment';
-import {takeUntil} from 'rxjs/operators';
-import {BrandingService} from '../../services/branding.service';
-import {DialogService, DynamicDialogRef} from 'primeng/dynamicdialog';
+import { Component, OnDestroy, OnInit, AfterViewChecked, QueryList, ViewChildren, ElementRef } from '@angular/core';
+import { Router } from '@angular/router';
+import { AbstractControl, UntypedFormControl, UntypedFormGroup, ValidationErrors, Validators, } from '@angular/forms';
+import { AuthService } from '../../services/auth.service';
+import { UserCategory, UserRole } from '@guardian/interfaces';
+import { AuthStateService } from 'src/app/services/auth-state.service';
+import { Observable, Subject, Subscription } from 'rxjs';
+import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
+import { WebSocketService } from 'src/app/services/web-socket.service';
+import { QrCodeDialogComponent } from 'src/app/components/qr-code-dialog/qr-code-dialog.component';
+import { MeecoVCSubmitDialogComponent } from 'src/app/components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
+import { environment } from 'src/environments/environment';
+import { takeUntil } from 'rxjs/operators';
+import { BrandingService } from '../../services/branding.service';
+import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import {
     AccountTypeSelectorDialogComponent
 } from './register-dialogs/account-type-selector-dialog/account-type-selector-dialog.component';
-import {ForgotPasswordDialogComponent} from './forgot-password-dialog/forgot-password-dialog.component';
-import {RegisterDialogComponent} from './register-dialogs/register-dialog/register-dialog.component';
-import {DemoService} from '../../services/demo.service';
-import {ChangePasswordComponent} from './change-password/change-password.component';
+import { ForgotPasswordDialogComponent } from './forgot-password-dialog/forgot-password-dialog.component';
+import { RegisterDialogComponent } from './register-dialogs/register-dialog/register-dialog.component';
+import { DemoService } from '../../services/demo.service';
+import { ChangePasswordComponent } from './change-password/change-password.component';
 import { InformService } from 'src/app/services/inform.service';
+import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
 
 /**
  * Login page.
@@ -29,6 +30,7 @@ import { InformService } from 'src/app/services/inform.service';
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
+    standalone: false
 })
 export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     testUsers$: Observable<any[]>;
@@ -145,18 +147,34 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
     }
 
-    private login(login: string, password: string) {
+    private login(login: string, password: string, otp?: string) {
         this.loading = true;
         this.wrongNameOrPassword = false;
-        this.auth.login(login, password)
+        this.auth.login(login, password, otp)
             .subscribe((result) => {
-                this.auth.setRefreshToken(result.refreshToken);
-                this.auth.setUsername(login);
-                this.auth.updateAccessToken().subscribe(_result => {
-                    this.authState.updateState(true);
-                    const home = this.auth.home(result.role);
-                    this.router.navigate([home]);
-                });
+                if (result.otprequired) {
+                    this.dialogService.open(OtpDialogComponent, {
+                        header: 'Enter Verification Code',
+                        width: '40vw',
+                        closable: false,
+                    })!.onClose.subscribe(token => {
+                        if (token) {
+                            this.login(login, password, token);
+                        }
+                        else {
+                            this.loading = false;
+                        }
+                    });
+                }
+                else {
+                    this.auth.setRefreshToken(result.refreshToken);
+                    this.auth.setUsername(login);
+                    this.auth.updateAccessToken().subscribe(_result => {
+                        this.authState.updateState(true);
+                        const home = this.auth.home(result.role);
+                        this.router.navigate([home]);
+                    });
+                }
 
                 if (result.weakPassword) {
                     this.informService.shortWarnMessage(
@@ -164,6 +182,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                         'Weak Password',
                     );
                 }
+
             }, (error) => {
                 this.loading = false;
                 this.errorMessage = error.message;
@@ -195,7 +214,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     return;
                 }
                 this.login(userData.username, userData.password);
-            }, ({error}) => {
+            }, ({ error }) => {
                 this.error = error.message;
                 this.loading = false;
                 this.brandingLoading = false;
@@ -205,9 +224,9 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part3 = (userRole: UserRole) => {
             this.dialogService.open(RegisterDialogComponent, {
                 header: 'Sign Up Request',
-                width: '640px',
+                width: '80%',
                 modal: true,
-            }).onClose.subscribe((userData) => {
+            })!.onClose.subscribe((userData) => {
                 if (userData) {
                     registerAccount(userRole, userData);
                 }
@@ -217,9 +236,9 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part2 = () => {
             this.dialogService.open(AccountTypeSelectorDialogComponent, {
                 header: 'Select Account Type',
-                width: '640px',
+                width: '80%',
                 modal: true,
-            }).onClose.subscribe((userRole) => {
+            })!.onClose.subscribe((userRole) => {
                 if (userRole) {
                     part3(userRole);
                 }
@@ -285,12 +304,12 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     forgotPasswordInit() {
         this.dialogService.open(ForgotPasswordDialogComponent, {
             header: 'Request Password Reset',
-            width: '640px',
+            width: '80%',
             modal: true,
             data: {
                 login: this.loginControl.value,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             if (data) {
                 console.log(data);
             }
@@ -300,13 +319,13 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     changePassword(login: string) {
         this.dialogService.open(ChangePasswordComponent, {
             header: 'Please change user password',
-            width: '640px',
+            width: '80%',
             modal: true,
             data: {
                 message: 'Please update your password to comply with hardened Guardian security protocols.',
                 login,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
         });
     }
 
@@ -344,14 +363,14 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                         data: {
                             document: event.vc,
                             presentationRequestId:
-                            event.presentation_request_id,
+                                event.presentation_request_id,
                             submissionId: event.submission_id,
                             userRole: event.role,
                         },
                     }
                 );
 
-                this.vcSubmitDialogRef.onClose.subscribe(() => {
+                this.vcSubmitDialogRef!.onClose.subscribe(() => {
                     this.vcSubmitDialogRef = null;
                 });
             }
@@ -368,7 +387,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     data: {
                         qrCodeData: event.redirectUri,
                     },
-                });
+                })!;
             }
 
             this.qrCodeDialogRef.onClose.subscribe(() => {

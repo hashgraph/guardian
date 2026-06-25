@@ -1,6 +1,6 @@
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
 import { fileURLToPath } from 'url';
 import { Worker } from 'node:worker_threads';
@@ -17,6 +17,7 @@ const filename = fileURLToPath(import.meta.url);
     blockType: 'dataTransformationAddon',
     commonBlock: true,
     actionType: LocationType.LOCAL,
+    canMock: false,
     about: {
         label: 'Data Transformation Addon',
         title: `Add 'Data Transformation' Addon`,
@@ -29,6 +30,13 @@ const filename = fileURLToPath(import.meta.url);
         ],
         output: null,
         defaultEvent: false,
+        properties: [{
+            name: 'expression',
+            label: 'Expression',
+            title: 'Expression',
+            type: PropertyType.Code,
+            editable: true,
+        }]
     },
     variables: []
 })
@@ -49,23 +57,39 @@ export class DataTransformationAddon {
                 },
             });
 
+            // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+            const cleanup = () => {
+                worker.terminate().catch(() => {
+                    // Ignore errors during worker termination
+                });
+            };
+            worker.on('exit', (code) => {
+                cleanup();
+                if (code !== 0 && code !== null) {
+                    reject(new Error(`Data transformation worker exited with code ${code}`));
+                }
+            });
             const done = async (result: any | any[], final: boolean) => {
                 if (!result) {
                     if (final) {
+                        cleanup();
                         resolve(null);
                     }
                     return;
                 }
+                if (final) { cleanup(); }
                 resolve(result);
             }
 
             worker.on('error', (error) => {
+                cleanup();
                 reject(error);
             });
             worker.on('message', async (result: any) => {
                 try {
                     await done(result.result, result.final);
                 } catch (error) {
+                    cleanup();
                     reject(error);
                 }
             });

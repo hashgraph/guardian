@@ -1,38 +1,45 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{ title }}</div>
-    </div>
-    <div class="header-icon" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClick()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{ title }}</div>
+  </div>
+  <div class="header-icon" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClick()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div class="content">
-        <div class="links" *ngIf="type === 'LINK'">
-            <hedera-explorer
-                *ngFor="let link of links"
-                [type]="link.type"
-                [params]="link.params"
-                [subType]="link.subType"
-                [subParams]="link.subParams">{{link.value}}</hedera-explorer>
-        </div>
-        <div class="text" *ngIf="type === 'TEXT'">
-            {{text}}
-        </div>
-        <div class="json" *ngIf="type === 'JSON'">
-            {{json}}
-        </div>
-    </div>
+  <div class="content">
+    @if (type === 'LINK') {
+      <div class="links" [class.dryRun]="dryRun">
+        @for (link of links; track link) {
+          <hedera-explorer
+            [type]="link.type"
+            [params]="link.params"
+            [subType]="link.subType"
+          [subParams]="link.subParams">{{link.value}}</hedera-explorer>
+        }
+      </div>
+    }
+    @if (type === 'TEXT') {
+      <div class="text">
+        {{text}}
+      </div>
+    }
+    @if (type === 'JSON') {
+      <div class="json">
+        {{json}}
+      </div>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button 
-                (click)="onClick()" 
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClick()"
+      class="guardian-button guardian-button-secondary">Close</button>
     </div>
+  </div>
 </div>

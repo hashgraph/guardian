@@ -1,53 +1,51 @@
-# Importing Schema from .zip
+# Importing Schema from Zip (Async)
 
-{% swagger method="post" path="" baseUrl=" /schemas/push/{topicId}/import/file" summary="Imports new schema from a zip file." %}
-{% swagger-description %}
-Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /schemas/push/{topicId}/import/file`**
 
-{% swagger-parameter in="body" type="String" required="true" %}
-A zip file containing schema to be imported
-{% endswagger-parameter %}
+Imports a new schema from a zip file into the local database asynchronously. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-parameter in="path" name="topicId" type="String" required="true" %}
-topic ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="202: Accepted" description="Accepted" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | string | Yes | The Hedera topic ID to import the schema under (e.g. `0.0.4532001`) |
+
+### Request Body
+
+The request body must be the raw binary content of a `.zip` file exported from Guardian.
+
+**Content-Type:** `application/octet-stream`
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Import schema file"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-   content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | File is missing or empty |
+| `500 Internal Server Error` | Unexpected server failure |

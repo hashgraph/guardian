@@ -1,0 +1,39 @@
+@if (navTree && navTree.length) {
+  <div class="schema-nav" [class.viewer-context]="dialogContext === 'viewer'">
+    <div class="schema-nav-tree">
+      @for (node of navTree; track node) {
+        <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: node, level: 0 }"></ng-container>
+      }
+    </div>
+    <ng-template #nodeTpl let-node let-level="level">
+      <div class="nav-node" [style.paddingLeft.px]="level * 30">
+        @if (node.children?.length) {
+          <button
+            class="nav-toggle"
+            (click)="toggle(node.accordionId); $event.stopPropagation();"
+            type="button"
+            >
+            <span class="chev" [class.open]="isExpanded(node.accordionId)">▾</span>
+          </button>
+        }
+        <button
+          class="nav-label"
+          (click)="onSelect(node)"
+          [pTooltip]="node.title"
+          >
+          <span class="nav-title">{{ node.title }}</span>
+          @if (node.count) {
+            <span class="nav-count">{{ node.count }}</span>
+          }
+        </button>
+      </div>
+      @if (node.children?.length && isExpanded(node.accordionId)) {
+        <div class="nav-children">
+          @for (c of node.children; track c) {
+            <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: c, level: level + 1 }"></ng-container>
+          }
+        </div>
+      }
+    </ng-template>
+  </div>
+}

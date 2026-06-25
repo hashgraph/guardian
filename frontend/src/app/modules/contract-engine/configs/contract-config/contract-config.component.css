@@ -1,28 +1,6 @@
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: var(--container-margin);
-}
-
-.container > .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.container > .header > h1 {
-    width: 100%;
-    color: #000;
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
-}
-
 .actions__tabs {
     position: relative;
-    margin-bottom: 1.5rem;
+    margin-bottom: 40px;
 
     &::after {
         content: "";
@@ -85,7 +63,7 @@
 }
 
 .table-container {
-    margin-top: 16px;
+    margin-top: 40px;
     overflow: hidden;
 }
 

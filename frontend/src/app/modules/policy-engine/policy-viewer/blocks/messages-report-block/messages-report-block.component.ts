@@ -191,7 +191,8 @@ class Line {
 @Component({
     selector: 'app-messages-report-block',
     templateUrl: './messages-report-block.component.html',
-    styleUrls: ['./messages-report-block.component.scss']
+    styleUrls: ['./messages-report-block.component.scss'],
+    standalone: false
 })
 export class MessagesReportBlockComponent implements OnInit {
     private _topics1!: any[];
@@ -905,7 +906,7 @@ export class MessagesReportBlockComponent implements OnInit {
                     type: 'JSON',
                     viewDocument: false
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
@@ -922,13 +923,13 @@ export class MessagesReportBlockComponent implements OnInit {
                     viewDocument: true,
                     schema: message.__schema,
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         }
     }
 
-    @HostListener('window:resize', ['$event'])
+    @HostListener('window:resize')
     onResize() {
         const container = this.element?.nativeElement?.children[0];
         if (container) {

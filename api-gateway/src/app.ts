@@ -23,18 +23,22 @@ import fastifyMultipart from '@fastify/multipart';
 
 const PORT = process.env.PORT || 3002;
 
-const BODY_LIMIT = 1024 * 1024 * 1024
+const BODY_LIMIT = 1024 * 1024 * 1024;
+const MAX_PARAM_LENGTH = 4096;
 
 Promise.all([
     NestFactory.create<NestFastifyApplication>(AppModule,
         new FastifyAdapter({
-            ignoreTrailingSlash: true,
             bodyLimit: BODY_LIMIT,
-            maxParamLength: BODY_LIMIT
-        }), {
-        rawBody: true,
-        bodyParser: false,
-    }),
+            routerOptions: {
+                ignoreTrailingSlash: true,
+                maxParamLength: MAX_PARAM_LENGTH,
+            },
+        }),
+        {
+            rawBody: true
+        }
+    ),
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
     try {
@@ -63,7 +67,6 @@ Promise.all([
 
         const logger: PinoLogger = app.get(PinoLogger);
 
-        app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
 
         await app.register(fastifyFormbody, {
@@ -82,7 +85,7 @@ Promise.all([
         await new ProjectService().setConnection(cn).init();
 
         await new MeecoAuth().setConnection(cn).init();
-        await new MeecoAuth().registerListeners();
+        new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
         const wsService = new WebSocketsService(logger);
@@ -101,8 +104,6 @@ Promise.all([
                 }
             }) as any
         });
-        // Object.assign(document.paths, SwaggerPaths)
-        // Object.assign(document.components.schemas, SwaggerModels.schemas);
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);

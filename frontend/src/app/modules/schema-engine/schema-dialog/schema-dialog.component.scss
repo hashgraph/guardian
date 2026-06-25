@@ -12,9 +12,11 @@
     max-height: calc(100vh - 340px) !important;
     display: flex !important;
     flex-direction: column !important;
-    height: auto !important;
+    height: calc(100vh - 340px) !important;
 
     .g-dialog-body {
+        flex: 1 1 auto;
+        min-height: 0;
         overflow: auto;
     }
 }
@@ -24,7 +26,7 @@
 }
 
 :host ::ng-deep {
-    .p-tabview-nav-link {
+    .p-tab {
         padding: 0 !important;
     }
 }

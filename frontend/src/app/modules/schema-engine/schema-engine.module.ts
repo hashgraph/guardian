@@ -23,16 +23,17 @@ import { VCFullscreenDialog } from './vc-fullscreen-dialog/vc-fullscreen-dialog.
 import { GeoImageComponent } from './geo-image/geo-image.component';
 import { SchemaViewDialog } from './schema-view-dialog/schema-view-dialog.component';
 import { ExportSchemaDialog } from './export-schema-dialog/export-schema-dialog.component';
+import { ExportPlantUMLDialog } from './export-plantuml-dialog/export-plantuml-dialog.component';
 import { SchemaFieldConfigurationComponent } from './schema-field-configuration/schema-field-configuration.component';
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 import { ButtonModule } from 'primeng/button';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
-import { DropdownModule } from 'primeng/dropdown';
-import { CalendarModule } from 'primeng/calendar';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
@@ -46,12 +47,15 @@ import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 import {TableFieldComponent} from './table-field/table-field.component';
 import {TableViewerComponent} from "./table-viewer/table-viewer.component";
 import { SchemaDeleteWarningDialogComponent } from './schema-delete-warning-dialog/schema-delete-warning-dialog.component';
 import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delete-dialog.component';
+import { SchemaFormNavigationComponent } from './schema-form-navigation/schema-form-navigation.component';
+import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation/schema-form-view-navigation.component';
 
 @NgModule({
     declarations: [
@@ -68,6 +72,7 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         GeoImageComponent,
         SchemaViewDialog,
         ExportSchemaDialog,
+        ExportPlantUMLDialog,
         SchemaFieldConfigurationComponent,
         EnumEditorDialog,
         CompareSchemaDialog,
@@ -82,7 +87,9 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         DateTimeComponent,
         SchemaFormRootComponent,
         TableFieldComponent,
-        TableViewerComponent
+        TableViewerComponent,
+        SchemaFormNavigationComponent,
+        SchemaFormViewNavigationComponent
     ],
     imports: [
         CommonModule,
@@ -93,12 +100,12 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         CodemirrorModule,
         ArtifactEngineModule,
         ButtonModule,
-        TabViewModule,
+        TabsModule,
         InputTextModule,
         InputTextareaModule,
         CheckboxModule,
-        DropdownModule,
-        CalendarModule,
+        SelectModule,
+        DatePickerModule,
         TooltipModule,
         RadioButtonModule,
         SelectButtonModule,
@@ -121,10 +128,12 @@ import { SchemaDeleteDialogComponent } from './schema-delete-dialog/schema-delet
         ExportSchemaDialog,
         SchemaFieldConfigurationComponent,
         SchemaFormDialog,
-        SchemaFormRootComponent
+        SchemaFormRootComponent,
+        SchemaFormNavigationComponent,
+        SchemaFormViewNavigationComponent
     ],
     providers: [
-        DialogService
+        { provide: DialogService, useClass: GuardianDialogService }
     ],
 })
 export class SchemaEngineModule {

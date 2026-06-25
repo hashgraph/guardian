@@ -228,7 +228,7 @@
                 font-size: var(--pc-row-font-size);
                 min-height: var(--pc-row-height);
 
-                p-dropdown,
+                p-select,
                 p-multiselect,
                 select-schema {
                     position: absolute;
@@ -247,10 +247,10 @@
                     padding-right: 6px;
 
                     &::ng-deep {
-                        .p-dropdown {
+                        .p-select {
                             height: 48px;
 
-                            .p-dropdown-label {
+                            .p-select-label {
                                 padding-top: 11px;
                             }
                         }

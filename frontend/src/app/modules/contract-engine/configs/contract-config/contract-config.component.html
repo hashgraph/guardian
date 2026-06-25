@@ -1,115 +1,116 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <p-progressSpinner></p-progressSpinner>
+  @if (loading) {
+    <div class="loading">
+      <p-progressSpinner></p-progressSpinner>
     </div>
-    <ng-container *ngIf="!isConfirmed">
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
-        </div>
-    </ng-container>
+  }
+  @if (!isConfirmed) {
+    <div class="not-exist">
+      Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+    </div>
+  }
 
-    <ng-container *ngIf="isConfirmed && contracts">
-        <div class="container">
-            <div class="header">
-                <h1>Retirement</h1>
-            </div>
-
-
-            <div class="actions actions--top">
-                <div class="actions__tabs">
-                    <p-selectButton
-                        [(ngModel)]="type"
-                        (onChange)="onChangeType($event)"
+  @if (isConfirmed && contracts) {
+    <div class="guardian-page">
+      <div class="guardian-user-page-header">Retirement</div>
+      <div class="actions actions--top">
+        <div class="actions__tabs">
+          <p-selectButton
+            [(ngModel)]="type"
+            (onChange)="onChangeType($event)"
                         [options]="[
                                     { label: 'Token Wiping Contracts', value: 'WIPE' },
                                     { label: 'Token Retirement Contracts', value: 'RETIRE' }
                                   ]"
-                    ></p-selectButton>
-                </div>
-
-                <div class="actions__cta button-group">
-
-                    <button
-                        pButton
-                        class="button"
-                        icon="pi pi-plus"
-                        label="Create Contract"
-                        type="button"
-                        (click)="createContract()"
-                    ></button>
-
-                    <button
-                        pButton
-                        class="button"
-                        icon="pi pi-file-import"
-                        label="Import"
-                        type="button"
-                        (click)="importContract()"
-                    ></button>
-                </div>
-            </div>
-
-            <div class="table-container">
-                <p-table [value]="contracts" class="table" [scrollable]="true">
-                    <ng-template pTemplate="header">
-                        <tr class="header">
-                            <th>HEDERA CONTRACT ID</th>
-                            <th>DESCRIPTION</th>
-                            <th>TAGS</th>
-                            <th>PERMISSIONS</th>
-                            <th>OPERATIONS</th>
-                        </tr>
-                    </ng-template>
-
-                    <ng-template pTemplate="body" let-element>
-                        <tr class="card-row">
-                            <td class="contract-column">
-                                <hedera-explorer type="contracts"
-                                                 [params]="element.contractId">{{ element.contractId }}
-                                </hedera-explorer>
-                            </td>
-                            <td class="description-column">{{ element.description }}</td>
-                            <td class="tags-column">
-                                <tags-explorer [user]="user" [data]="element._tags" [owner]="owner"
-                                               [target]="element.id" [entity]="tagEntity" [schemas]="tagSchemas"
-                                               [service]="tagsService"></tags-explorer>
-                            </td>
-                            <td class="permissions-column">
-                                <div class="permissions">
-                                    <div class="permissions__roles">
-                                        <span class="badge owner"
-                                              *ngIf="hasPermissions(element.permissions,0)">Owner</span>
-                                        <span class="badge admin"
-                                              *ngIf="hasPermissions(element.permissions,1)">Admin</span>
-                                        <span class="badge manager"
-                                              *ngIf="type==='WIPE' && hasPermissions(element.permissions,2)">Manager</span>
-                                        <span class="badge wiper"
-                                              *ngIf="type==='WIPE' && element.version==='1.0.0' && hasPermissions(element.permissions,3)">Wiper</span>
-                                    </div>
-                                    <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
-                                </div>
-                            </td>
-                            <td class="operations-column">
-                                <select-menu-button (action)="onOperationAction($event, element)"
-                                                    [options]="type === 'WIPE' ? wipeOperations : retireOperations"
-                                                    [permissions]="element.permissions">
-                                    <i class="pi pi-ellipsis-h"></i>
-                                </select-menu-button>
-                            </td>
-                        </tr>
-                    </ng-template>
-                </p-table>
-            </div>
-            <div class="table-paginator">
-                <app-paginator
-                    [pageIndex]="pageIndex"
-                    [pageSize]="pageSize"
-                    [length]="contractsCount"
-                    (page)="onPage($event)"
-                    class="table-paginator"
-                >
-                </app-paginator>
-            </div>
+          ></p-selectButton>
         </div>
-    </ng-container>
+        <div class="actions__cta button-group">
+          <button
+            pButton
+            class="button"
+            icon="pi pi-plus"
+            label="Create Contract"
+            type="button"
+            (click)="createContract()"
+          ></button>
+          <button
+            pButton
+            class="button"
+            icon="pi pi-file-import"
+            label="Import"
+            type="button"
+            (click)="importContract()"
+          ></button>
+        </div>
+      </div>
+      <div class="table-container">
+        <p-table [value]="contracts" class="table" [scrollable]="true">
+          <ng-template pTemplate="header">
+            <tr class="header">
+              <th>HEDERA CONTRACT ID</th>
+              <th>DESCRIPTION</th>
+              <th>TAGS</th>
+              <th>PERMISSIONS</th>
+              <th>OPERATIONS</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-element>
+            <tr class="card-row">
+              <td class="contract-column">
+                <hedera-explorer type="contracts"
+                  [params]="element.contractId">{{ element.contractId }}
+                </hedera-explorer>
+              </td>
+              <td class="description-column">{{ element.description }}</td>
+              <td class="tags-column">
+                <tags-explorer [user]="user" [data]="element._tags" [owner]="owner"
+                  [target]="element.id" [entity]="tagEntity" [schemas]="tagSchemas"
+                [service]="tagsService"></tags-explorer>
+              </td>
+              <td class="permissions-column">
+                <div class="permissions">
+                  <div class="permissions__roles">
+                    @if (hasPermissions(element.permissions,0)) {
+                      <span class="badge owner"
+                      >Owner</span>
+                    }
+                    @if (hasPermissions(element.permissions,1)) {
+                      <span class="badge admin"
+                      >Admin</span>
+                    }
+                    @if (type==='WIPE' && hasPermissions(element.permissions,2)) {
+                      <span class="badge manager"
+                      >Manager</span>
+                    }
+                    @if (type==='WIPE' && element.version==='1.0.0' && hasPermissions(element.permissions,3)) {
+                      <span class="badge wiper"
+                      >Wiper</span>
+                    }
+                  </div>
+                  <app-refresh-btn (refresh)="checkStatus(element, $event)"></app-refresh-btn>
+                </div>
+              </td>
+              <td class="operations-column">
+                <select-menu-button (action)="onOperationAction($event, element)"
+                  [options]="type === 'WIPE' ? wipeOperations : retireOperations"
+                  [permissions]="element.permissions">
+                  <i class="pi pi-ellipsis-h"></i>
+                </select-menu-button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      <div class="table-paginator">
+        <app-paginator
+          [pageIndex]="pageIndex"
+          [pageSize]="pageSize"
+          [length]="contractsCount"
+          (page)="onPage($event)"
+          class="table-paginator"
+          >
+        </app-paginator>
+      </div>
+    </div>
+  }
 </div>

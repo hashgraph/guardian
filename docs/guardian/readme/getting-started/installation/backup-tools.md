@@ -355,7 +355,7 @@ Finally, we use the child\_process.spawn method to run the duplicity command as 
 Backups are an important part of application development. In order to ensure this feature in the Guardian application the following steps could be taken if you want to save the backups in the Amazon S3. This [repository](https://github.com/IntellectEU/nodejs-app-backup) contains an example of how to simulate in detail the process to backup the mongodb collections and .env files. The same could be applied to the Guardian application.
 
 1. Create a new folder called backup in the root folder of the Guardian Application.
-2. Change the current docker-compose.yml addin this service:
+2. Change the current docker-compose.yml in this service:
 
 ```
 backup:

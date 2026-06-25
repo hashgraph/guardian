@@ -323,6 +323,38 @@
     cursor: pointer;
 }
 
+:host ::ng-deep .compare-policy-accordion {
+    .p-accordionpanel {
+        border-bottom: 1px solid #d6dbe3;
+    }
+
+    .p-accordionheader {
+        gap: 8px;
+        width: 100%;
+        min-height: 48px;
+        padding: 0 10px;
+        background: #fff;
+        border: 0;
+        color: #172033;
+        font-weight: 600;
+        text-align: left;
+        box-shadow: none;
+    }
+
+    .p-accordionheader-toggle-icon {
+        flex: 0 0 auto;
+        width: 14px;
+        height: 14px;
+        margin: 0;
+    }
+
+    .p-accordioncontent-content {
+        padding: 0;
+        background: #fff;
+        border: 0;
+    }
+}
+
 // .content::ng-deep *[type="FULL"] {
 //     // background: #d0ffd6;
 //     // background: linear-gradient(90deg, #ffffff 29px, #b5b5b5 29px, #b5b5b5 30px, #d0ffd6 30px);

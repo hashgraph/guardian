@@ -378,7 +378,11 @@ export async function tagsAPI(logger: PinoLogger): Promise<void> {
                 if (targetObject) {
                     if (targetObject.topicId) {
                         const messageServer = new MessageServer(null);
-                        const messages = await messageServer.getMessages<TagMessage>(targetObject.topicId, owner.id, MessageType.Tag);
+                        const messages = await messageServer.getMessages<TagMessage>({
+                            topicId: targetObject.topicId,
+                            type: MessageType.Tag,
+                            userId: owner.id,
+                        });
 
                         filter.status = 'Published';
 

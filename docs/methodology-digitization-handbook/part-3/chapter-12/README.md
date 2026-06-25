@@ -14,7 +14,7 @@ Add values to help users and enable testing. These are helpful but not mandatory
 * **Suggested Value**: Recommended value shown to guide users
 * **Test Value**: Value used for testing schema functionality
 
-![Schema edit interface showing test, suggested and default values](<../../../.gitbook/assets/image (37).png>)
+![Schema edit interface showing test, suggested and default values](<../../../.gitbook/assets/image (61).png>)
 
 **Example Values Setup**:
 
@@ -44,7 +44,7 @@ Use Guardian's preview feature to test your schema before deployment.
 5. Test sub-schema loading and visibility
 6. Check file upload fields accept appropriate formats
 
-![alt text](<../../../.gitbook/assets/image-1 (1).png>)
+![alt text](<../../../.gitbook/assets/image-1 (3).png>)
 
 **Test These Elements**:
 

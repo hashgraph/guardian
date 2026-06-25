@@ -57,7 +57,8 @@ import {
     PolicyPreviewDTO,
     ProfileDTO,
     PolicyKeyDTO,
-    ToolVersionDTO
+    ToolVersionDTO,
+    OnboardingDTO
 } from '#middlewares';
 
 /**
@@ -477,6 +478,55 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Transfer token
+     * @param tokenId
+     * @param body
+     * @param owner
+     */
+    public async transferToken(
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.TRANSFER_TOKEN, {
+            tokenId,
+            body,
+            owner,
+        });
+    }
+
+    /**
+     * Async transfer token
+     * @param tokenId
+     * @param body
+     * @param owner
+     * @param task
+     */
+    public async transferTokenAsync(
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.TRANSFER_TOKEN_ASYNC, {
+            tokenId,
+            body,
+            owner,
+            task,
+        });
+    }
+
+    /**
      * Get token info
      * @param tokenId
      * @param username
@@ -557,6 +607,20 @@ export class Guardians extends NatsService {
         task: NewTask
     ): Promise<NewTask> {
         return await this.sendMessage(MessageAPI.CREATE_USER_PROFILE_COMMON_ASYNC, { user, username, profile, task });
+    }
+
+    /**
+     * Onboard a new user in a single async call.
+     * @param parentUser - the authenticated parent (Standard Registry) or null in demo mode
+     * @param payload    - OnboardingDTO fields
+     * @param task       - task tracking object
+     */
+    public async onboardUserAsync(
+        parentUser: IAuthUser | null,
+        payload: OnboardingDTO,
+        task: NewTask
+    ): Promise<NewTask> {
+        return await this.sendMessage(MessageAPI.ONBOARD_USER_ASYNC, { parentUser, payload, task });
     }
 
     /**
@@ -698,6 +762,24 @@ export class Guardians extends NatsService {
      */
     public async getSchemaTree(id: string, owner: IOwner): Promise<SchemaNode> {
         return await this.sendMessage(MessageAPI.GET_SCHEMA_TREE, { id, owner });
+    }
+
+    /**
+     * Get schema tree in PlantUML format
+     * @param id Id
+     * @param owner Owner
+     * @returns PlantUML string
+     */
+    public async getSchemaTreePlantUML(
+        id: string,
+        owner: IOwner,
+        includeFields: boolean = true,
+        includeFormulas: boolean = false,
+        includeDependencies: boolean = false
+    ): Promise<string> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TREE_PLANTUML, {
+            id, owner, includeFields, includeFormulas, includeDependencies
+        });
     }
 
     /**
@@ -2267,10 +2349,10 @@ export class Guardians extends NatsService {
      * Publish tool
      * @param id
      * @param owner
-     * @param tool
+     * @param body
      */
-    public async publishTool(id: string, owner: IOwner, tool: ToolVersionDTO): Promise<any> {
-        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, tool });
+    public async publishTool(id: string, owner: IOwner, body: ToolVersionDTO): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_TOOL, { id, owner, body });
     }
 
     /**
@@ -2841,6 +2923,14 @@ export class Guardians extends NatsService {
      */
     public async getRecordDetails(policyId: string, owner: IOwner): Promise<any> {
         return await this.sendMessage<any>(MessageAPI.GET_RECORD_DETAILS, { policyId, owner });
+    }
+
+    public async getRecordActionDocuments(
+        policyId: string,
+        recordActionId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage<any>(MessageAPI.GET_RECORD_ACTION_DOCUMENTS, { policyId, recordActionId, owner });
     }
 
     /**
@@ -3844,18 +3934,6 @@ export class Guardians extends NatsService {
     }
 
     /**
-     * Return external policies
-     *
-     * @param filters
-     * @param owner
-     *
-     * @returns {ResponseAndCount<PolicyLabelDTO>}
-     */
-    public async getExternalPolicyRequests(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
-        return await this.sendMessage(MessageAPI.GET_EXTERNAL_POLICY_REQUESTS, { filters, owner });
-    }
-
-    /**
      * Return external policy
      *
      * @param messageId
@@ -3941,6 +4019,26 @@ export class Guardians extends NatsService {
      */
     public async groupExternalPolicyRequests(filters: { full: boolean, pageIndex: any, pageSize: any }, owner: IOwner): Promise<ResponseAndCount<PolicyLabelDTO>> {
         return await this.sendMessage(MessageAPI.GROUP_EXTERNAL_POLICY_REQUESTS, { filters, owner });
+    }
+
+    /**
+     * Disconnect policy
+     *
+     * @param messageId
+     * @param owner
+     */
+    public async disconnectPolicy(messageId: string, full: boolean, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DISCONNECT_EXTERNAL_POLICY, { messageId, full, owner });
+    }
+
+    /**
+     * Delete policy
+     *
+     * @param messageId
+     * @param owner
+     */
+    public async deletePolicy(messageId: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_EXTERNAL_POLICY, { messageId, owner });
     }
 
     /**
@@ -4045,4 +4143,50 @@ export class Guardians extends NatsService {
     ): Promise<ResponseAndCount<any>> {
         return await this.sendMessage(MessageAPI.GET_RELAYER_ACCOUNT_RELATIONSHIPS, { relayerAccountId, user, filters });
     }
+
+    /**
+     * Set credential
+     */
+    public async setCredential(
+        user: IAuthUser,
+        policyId: string | null,
+        body: any
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.SET_CREDENTIAL, {
+            user,
+            policyId,
+            serviceType: body.serviceType,
+            dryRun: !!body.dryRun,
+            fields: body.fields,
+        });
+    }
+
+    /**
+     * Get credentials
+     */
+    public async getCredentials(
+        user: IAuthUser,
+        policyId: string | null,
+        ownerId?: string
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.GET_CREDENTIALS, { user, policyId, ownerId });
+    }
+
+    /**
+     * Delete credential
+     */
+    public async deleteCredential(
+        user: IAuthUser,
+        policyId: string | null,
+        serviceType: string,
+        dryRun: boolean = false
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DELETE_CREDENTIAL, {
+            user,
+            policyId,
+            serviceType,
+            dryRun,
+        });
+    }
+
 }

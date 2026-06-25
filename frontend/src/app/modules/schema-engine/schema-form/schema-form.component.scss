@@ -190,8 +190,8 @@ form {
                     }
                 }
 
-                p-dropdown::ng-deep {
-                    .p-dropdown {
+                p-select::ng-deep {
+                    .p-select {
                         border-color: var(--guardian-warning-color, #DA9B22);
                     }
                 }
@@ -210,8 +210,8 @@ form {
                     }
                 }
 
-                p-dropdown::ng-deep {
-                    .p-dropdown {
+                p-select::ng-deep {
+                    .p-select {
                         border-color: var(--guardian-warning-color, #19BE47);
                     }
                 }
@@ -292,7 +292,7 @@ form {
         border-color: #f44336;
     }
 
-    .form-field-enum ::ng-deep p-dropdown .p-dropdown {
+    .form-field-enum ::ng-deep p-select .p-select {
         border-color: #f44336 !important;
     }
 

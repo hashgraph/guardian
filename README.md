@@ -124,7 +124,7 @@ When building the reference implementation, you can [manually build every compon
 
 - [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.19](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.20](https://nodejs.org), [Yarn](https://yarnpkg.com/getting-started/install) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
 
 ### Installation
 
@@ -292,7 +292,7 @@ Alternatively, you can create a single key pair and, instead of adding the publi
 
    ```text
    IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://localhost:5001"
-   IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/${cid}'
+   IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='https://localhost:8080/ipfs/{cid}'
    IPFS_PROVIDER="local"
    ```
 
@@ -407,8 +407,8 @@ If you want to manually build every component with debug information, then build
 ### Prerequisites for manual installation
 
 - [MongoDB V6](https://www.mongodb.com)
-- [Node.js v20.19](https://nodejs.org)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+- [Node.js v20.20](https://nodejs.org)
+- [Yarn](https://yarnpkg.com/getting-started/install)
 - [Nats 2.9.25](https://nats.io/)
 - [Redict](https://redict.io/)
 - [Seq 2025.2 - optional for logging](https://datalust.co/seq)
@@ -726,6 +726,119 @@ VAULT_PROVIDER = "hashicorp"
 
 3. Access local development using <http://localhost:3000> or <http://localhost:4200>
 
+### Running with HTTPS (required for GitBook widget)
+
+The GitBook assistant widget requires HTTPS to function properly. There are two ways to run the project with HTTPS:
+
+#### Option A: Docker with HTTPS
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert):
+
+   **Linux (Ubuntu / Debian):** Open a terminal and run:
+
+   ```shell
+   sudo apt install libnss3-tools
+   sudo apt install mkcert
+   ```
+
+   **macOS:** Open a terminal and run:
+
+   ```shell
+   brew install mkcert
+   ```
+
+   **Windows:**
+
+   Open **Command Prompt (cmd)** and run:
+
+   ```shell
+   choco install mkcert
+   ```
+
+   Alternatively, using Scoop:
+
+   ```shell
+   scoop bucket add extras
+   scoop install mkcert
+   ```
+
+   > **Note:** If the commands do not work as Administrator, try running them without Administrator privileges.
+
+2. Generate trusted local certificates:
+
+   **Windows:** Open **PowerShell**, navigate to the project root directory and run:
+
+   ```shell
+   mkcert -install
+   cd certs
+   mkcert localhost 127.0.0.1 ::1
+   ```
+
+   > **Note:** If the commands do not work as Administrator, try running them without Administrator privileges.
+
+   **Linux / macOS:** Run from the project root directory:
+
+   ```shell
+   mkcert -install
+   cd certs
+   mkcert localhost 127.0.0.1 ::1
+   ```
+
+3. **Important:** Before starting with HTTPS, it is recommended to clean up existing Guardian Docker containers, images, and volumes to avoid conflicts:
+
+   ```shell
+   docker compose down -v --rmi all
+   ```
+
+   This will stop and remove all Guardian containers, their images, and associated volumes. Other Docker projects on your machine will not be affected.
+
+4. Start with the SSL overlay by adding `-f docker-compose.ssl.yml` to any of the Docker Compose configurations:
+
+   ```shell
+   # Demo mode with pre-built images
+   docker compose -f docker-compose.yml -f docker-compose.ssl.yml up -d --build --pull always
+
+   # Build from source (demo mode)
+   docker compose -f docker-compose-build.yml -f docker-compose.ssl.yml up -d --build
+
+   # Production with pre-built images
+   docker compose -f docker-compose-production.yml -f docker-compose.ssl.yml up -d --build --pull always
+
+   # Quickstart
+   docker compose -f docker-compose-quickstart.yml -f docker-compose.ssl.yml up -d --pull always
+   ```
+
+5. Access the application at <https://localhost/>
+
+#### Troubleshooting certificate permission issues
+
+If Docker containers cannot read the certificate files, you may encounter SSL errors on startup. To fix this, grant read permissions to the certificate files:
+
+**Linux / macOS:**
+
+```shell
+chmod 644 certs/localhost+2.pem certs/localhost+2-key.pem
+```
+
+**Windows (PowerShell as Administrator):**
+
+```powershell
+icacls certs\localhost+2.pem /grant Everyone:R
+icacls certs\localhost+2-key.pem /grant Everyone:R
+```
+
+#### Option B: Local frontend with HTTPS (without Docker)
+
+1. Start all backend services as usual.
+2. Start the frontend with SSL enabled:
+
+   ```shell
+   cd frontend
+   npm run start:ssl
+   ```
+
+3. Access the application at <https://localhost:4200>
+
 ## Troubleshoot
 
 ### Delete all the containers
@@ -779,10 +892,10 @@ Please refer to <https://guardian.hedera.com/> for complete documentation about 
 
 ## Contact information
 
-For any questions, please reach out to the Envision Blockchain Solutions team at:
+For any questions, please reach out to the Hashgraph team at:
 
-- Website: <www.envisionblockchain.com>
-- Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
+* Website: [https://hashgraph.com](https://hashgraph.com)
+* Email: [guardian@hashgraph.com](mailto:guardian@hashgraph.com)
 
 ([back to top](#guardian))
 

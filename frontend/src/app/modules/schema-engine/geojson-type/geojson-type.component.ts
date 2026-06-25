@@ -252,6 +252,7 @@ function importedStyleFunction(feature: any) {
     selector: 'app-geojson-type',
     templateUrl: './geojson-type.component.html',
     styleUrls: ['./geojson-type.component.scss'],
+    standalone: false
 })
 export class GeojsonTypeComponent implements OnChanges {
     @ViewChild('map', { static: false }) mapElementRef!: ElementRef;

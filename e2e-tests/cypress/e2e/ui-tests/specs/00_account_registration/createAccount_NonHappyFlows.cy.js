@@ -1,3 +1,4 @@
+import { randomInt } from "../../../../support/random";
 import { HomePage } from "../../pages/homePage";
 const homepage = new HomePage();
 
@@ -5,8 +6,8 @@ context("Create User Accounts_Non Happy Scenarios", { tags: ['ui'] }, () => {
 
     const SRUsername = Cypress.env('SRUser');
     const userUsername = Cypress.env('User');
-    const SRNameNew = "TestSRUI" + Math.floor(Math.random() * 9999);
-    const userNameNew = "TestUserUI" + Math.floor(Math.random() * 9999);
+    const SRNameNew = "TestSRUI" + randomInt(9999);
+    const userNameNew = "TestUserUI" + randomInt(9999);
 
     beforeEach(() => {
         cy.viewport(1920, 1080);

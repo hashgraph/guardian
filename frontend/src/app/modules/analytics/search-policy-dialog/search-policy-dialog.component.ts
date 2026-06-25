@@ -13,7 +13,8 @@ import { ToolsService } from 'src/app/services/tools.service';
 @Component({
     selector: 'search-policy-dialog',
     templateUrl: './search-policy-dialog.component.html',
-    styleUrls: ['./search-policy-dialog.component.scss']
+    styleUrls: ['./search-policy-dialog.component.scss'],
+    standalone: false
 })
 export class SearchPolicyDialog {
     public loading = false;
@@ -232,7 +233,8 @@ export class SearchPolicyDialog {
                 vpDocuments: false,
                 tokensCount: 1,
                 vcDocumentsCount: 1,
-                vpDocumentsCount: 1
+                vpDocumentsCount: 1,
+                toolMessageIds: []
             })
             this.load();
         }, 0);

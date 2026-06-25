@@ -2,7 +2,7 @@
 icon: head-side-virus
 ---
 
-# First\_Ingestion\_And\_Semantic\_Search
+# First Ingestion and Semantic Search
 
 ## First Ingestion & Semantic Search
 
@@ -21,7 +21,7 @@ You will complete the end-to-end workflow in five steps.
 
 {% stepper %}
 {% step %}
-### Step 1 — Add Your Documents
+#### Step 1 — Add Your Documents
 
 Place your methodology files into:
 
@@ -44,23 +44,23 @@ Each file will be processed independently and indexed into the vector database.
 {% endstep %}
 
 {% step %}
-### Step 2 — Run Document Ingestion
+#### Step 2 — Run Document Ingestion
 
 From the root of the repository:
 
-#### Standard profile:
+**Standard profile:**
 
 ```
 docker compose run --rm document-ingestion-worker
 ```
 
-#### GPU profile (if configured):
+**GPU profile (if configured):**
 
 ```
 docker compose -f docker-compose.yml -f docker-compose.gpu.yml run --rm document-ingestion-worker
 ```
 
-#### Low-memory profile:
+**Low-memory profile:**
 
 ```
 docker compose -f docker-compose.yml -f docker-compose.low-memory.yml run --rm document-ingestion-worker
@@ -68,7 +68,7 @@ docker compose -f docker-compose.yml -f docker-compose.low-memory.yml run --rm d
 {% endstep %}
 
 {% step %}
-### Step 3 — Verify Ingestion
+#### Step 3 — Verify Ingestion
 
 Once ingestion completes:
 
@@ -90,7 +90,7 @@ Each stored record contains:
 {% endstep %}
 
 {% step %}
-### Step 4 — Connect Your MCP Client
+#### Step 4 — Connect Your MCP Client
 
 Your MCP Server should already be running at:
 
@@ -111,7 +111,7 @@ You should see available tools including:
 {% endstep %}
 
 {% step %}
-### Step 5 — Perform Your First Semantic Search
+#### Step 5 — Perform Your First Semantic Search
 
 Using an MCP-compatible AI client (e.g., Claude Desktop):
 

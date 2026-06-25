@@ -88,6 +88,15 @@ export class PolicyRoles extends RestoreEntity {
     userId?: string;
 
     /**
+     * User disconnected
+     */
+    @Property({
+        nullable: true,
+        index: true,
+    })
+    disconnected?: boolean;
+
+    /**
      * Create document
      */
     @BeforeCreate()

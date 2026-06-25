@@ -1,0 +1,20 @@
+<div class="dialog-body">
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+  }
+  <div class="export-options">
+    <p-checkbox [(ngModel)]="includeFields" [binary]="true" inputId="includeFields"></p-checkbox>
+    <label class="p-checkbox-label" for="includeFields">Include Fields</label>
+    <p-checkbox [(ngModel)]="includeFormulas" [binary]="true" inputId="includeFormulas"></p-checkbox>
+    <label class="p-checkbox-label" for="includeFormulas">Include Formulas</label>
+    <p-checkbox [(ngModel)]="includeDependencies" [binary]="true" [disabled]="!includeFormulas" inputId="includeDependencies"></p-checkbox>
+    <label class="p-checkbox-label" for="includeDependencies">Include Dependencies</label>
+  </div>
+</div>
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <button (click)="download()" [disabled]="loading" class="button" label="Download" pButton></button>
+  </div>
+</div>

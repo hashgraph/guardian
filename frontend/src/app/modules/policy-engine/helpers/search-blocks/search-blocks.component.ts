@@ -39,7 +39,8 @@ interface IBlock {
 @Component({
     selector: 'search-blocks',
     templateUrl: './search-blocks.component.html',
-    styleUrls: ['./search-blocks.component.scss']
+    styleUrls: ['./search-blocks.component.scss'],
+    standalone: false
 })
 export class SearchBlocksComponent implements OnInit {
     @Input('config') config!: any;

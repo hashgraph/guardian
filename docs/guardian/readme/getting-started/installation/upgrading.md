@@ -287,7 +287,7 @@ The Data mapping document describes the model for the data migration. The docume
 * **Data reduction and filtering** (splitting to several collections).
 * **Data views:** to allow the maintenance of DAO contracts during Data reduction.
 
-The canvas Itself provides the framework in which the data belongs. Overmore the document should:
+The canvas Itself provides the framework in which the data belongs. Furthermore, the document should:
 
 * Map every data to User Functionality (Rest API) that involves that data.
 * Map every data to message data flows to realize the functionality.
@@ -338,7 +338,7 @@ The following information is contained in the table:
 
 Architects recommend the use of “separation of concerns”: strong internal cohesion in each microservice and loose coupling microservices should be grouped according to their problem domain.
 
-Architects need to have a strong understanding of the relation between impacted use cases and backend data flows in a way to always map use case modification in backend microservices upgrading and know how data modification impacts interservices messages between consumer and produced services and their APIs.
+Architects need to have a strong understanding of the relation between impacted use cases and backend data flows in a way to always map use case modification in backend microservices upgrading and know how data modification impacts inter-service messages between consumer and produced services and their APIs.
 
 A service here has the sole authority over its data and exposes operations to other services.
 
@@ -346,7 +346,7 @@ A service here has the sole authority over its data and exposes operations to ot
 
 Guardian migration consists of a small script that runs as the first step of every first time installation performing a one-time load. Is it possible to write a small function to read and save data in batch into the database running these scripts offline.
 
-Guardian already deals with this problem: Due to the long-term nature of some sustainability projects, Policy Engine (PE) maintains unlimited ‘read’ backward compatibility with 'old’ schema definition language elements. In other words, new PE versions will recognize and be able to process all existing valid policies with schemas defined starting from the beginning of Guardian existence. ([https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy))
+Guardian already deals with this problem: Due to the long-term nature of some sustainability projects, Policy Engine (PE) maintains unlimited ‘read’ backward compatibility with 'old’ schema definition language elements. In other words, new PE versions will recognize and be able to process all existing valid policies with schemas defined starting from the beginning of Guardian existence. ([https://guardian.hedera.com/guardian/standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy](https://guardian.hedera.com/guardian/standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy))
 
 **Guardian dials with Schema breaking changes**
 
@@ -359,7 +359,7 @@ Deprecation Notice:
 * Release Notes;
 * VC revocation notice is issued into the corresponding Hedera Topic.
 
-[https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-versioning-and-deprecation-policy](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-versioning-and-deprecation-policy)
+[https://guardian.hedera.com/guardian/standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy](https://guardian.hedera.com/guardian/standard-registry/policies/versioning-and-deprecation-policy/policy-versioning-and-deprecation-policy)
 
 **Guardian dials with Policy Breaking changes**
 
@@ -368,7 +368,7 @@ Deprecation Notice:
 * Changing workflow sequence, dependencies or bind block.
 * Introducing new, or changing existing external data sources.
 
-[https://docs.hedera.com/guardian/guardian/standard-registry/policies/api-versioning-and-deprecation-policy](https://docs.hedera.com/guardian/guardian/standard-registry/policies/api-versioning-and-deprecation-policy)
+[https://guardian.hedera.com/guardian/standard-registry/policies/versioning-and-deprecation-policy/api-versioning-and-deprecation-policy](https://guardian.hedera.com/guardian/standard-registry/policies/versioning-and-deprecation-policy/api-versioning-and-deprecation-policy)
 
 **Guardian dials with Breaking changes in general**
 

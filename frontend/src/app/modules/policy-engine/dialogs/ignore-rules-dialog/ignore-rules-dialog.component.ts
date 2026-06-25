@@ -23,6 +23,7 @@ interface PresetRuleOption {
     selector: 'app-ignore-rules-dialog',
     templateUrl: './ignore-rules-dialog.component.html',
     styleUrls: ['./ignore-rules-dialog.component.scss'],
+    standalone: false
 })
 export class IgnoreRulesDialog implements OnInit {
     public form!: FormGroup;

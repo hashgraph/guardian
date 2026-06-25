@@ -1,7 +1,8 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
-    name: 'tokenCount'
+    name: 'tokenCount',
+    standalone: false
 })
 export class TokenCount implements PipeTransform {
   transform(value: number, decimals: number = 0): string {

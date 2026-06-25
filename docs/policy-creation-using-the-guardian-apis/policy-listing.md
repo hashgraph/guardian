@@ -1,69 +1,54 @@
 # Policy Listing
 
-### **POLICY LISTING**
+**`GET /api/v1/policies`**
 
-{% swagger method="get" path="" baseUrl="/policies" summary="Return a list of all policies" %}
-{% swagger-description %}
-Returns all policies. Only users with the Standard Registry and Installer role are allowed to make the request
-{% endswagger-description %}
+Returns all policies accessible to the authenticated user.
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
-The numbers of items to return
-{% endswagger-parameter %}
+**Permission:** `Permissions.POLICIES_POLICY_READ`, `Permissions.POLICIES_POLICY_EXECUTE`, `Permissions.POLICIES_POLICY_MANAGE`, or `Permissions.POLICIES_POLICY_AUDIT`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  allOf:
-                    - $ref: '#/components/schemas/PolicyConfig'
-                    - type: object
-                      properties:
-                        userRoles:
-                          type: array
-                          items:
-                            type: string
-}
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pageIndex` | number | No | 0 | The number of pages to skip before starting to collect the result set |
+| `pageSize` | number | No | 20 | The number of items to return |
+| `type` | string | No | — | Filter by policy type (e.g. `local`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The `X-Total-Count` response header contains the total number of matching policies.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "iREC Policy",
+    "version": "1.0.0",
+    "description": "iREC renewable energy certificate policy",
+    "status": "PUBLISH",
+    "topicId": "0.0.4532001",
+    "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "userRoles": ["OWNER"]
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

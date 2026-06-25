@@ -10,7 +10,8 @@ import { RecordService } from 'src/app/services/record.service';
 @Component({
     selector: 'app-record-results',
     templateUrl: './record-results.component.html',
-    styleUrls: ['./record-results.component.scss']
+    styleUrls: ['./record-results.component.scss'],
+    standalone: false
 })
 export class RecordResultsComponent implements OnInit {
     public loading: boolean = true;

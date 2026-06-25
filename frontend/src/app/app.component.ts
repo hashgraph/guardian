@@ -19,6 +19,7 @@ import {DomSanitizer} from '@angular/platform-browser';
         './app.component.scss',
         './themes/guardian/index.scss'
     ],
+    standalone: false
 })
 export class AppComponent implements OnInit {
     public title = 'guardian';

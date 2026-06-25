@@ -7,7 +7,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'dialog-block',
     templateUrl: './dialog-block.component.html',
-    styleUrls: ['./dialog-block.component.scss']
+    styleUrls: ['./dialog-block.component.scss'],
+    standalone: false
 })
 export class DialogBlock {
     title: string = '';

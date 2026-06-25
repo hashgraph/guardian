@@ -10,7 +10,8 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'timer-config',
     templateUrl: './timer-config.component.html',
     styleUrls: ['./timer-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class TimerConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -71,7 +72,7 @@ export class TimerConfigComponent implements OnInit {
                 },
                 modal: true,
                 closable: false,
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
                 if (result) {
                     this.properties.periodMask = result.mask;

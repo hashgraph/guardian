@@ -48,7 +48,8 @@ export class PolicyImportExportHelper {
             DatabaseServer.getSystemSchema(SchemaEntity.TOKEN_DATA_SOURCE),
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY_COMMENT),
             DatabaseServer.getSystemSchema(SchemaEntity.POLICY_DISCUSSION),
-            DatabaseServer.getSystemSchema(SchemaEntity.POLICY_EXPORT_PROOF)
+            DatabaseServer.getSystemSchema(SchemaEntity.POLICY_EXPORT_PROOF),
+            DatabaseServer.getSystemSchema(SchemaEntity.EVIDENCE_ATTACHMENTS)
         ]);
 
         for (const schema of schemas) {
@@ -263,6 +264,9 @@ export class PolicyImportExportHelper {
                 userId,
                 interception: null
             });
+        if (!message) {
+            throw new Error('Invalid Message');
+        }
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

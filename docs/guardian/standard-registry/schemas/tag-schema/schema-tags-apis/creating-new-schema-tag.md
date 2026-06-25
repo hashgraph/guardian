@@ -1,37 +1,53 @@
 # Creating new Schema Tag
 
-{% swagger method="post" path="" baseUrl="/tags/schemas" summary="Creates new schema tag" %}
-{% swagger-description %}
-Creates new schema. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /tags/schemas`**
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains a valid schema.
-{% endswagger-parameter %}
+Creates new tag schema. Only users with the Standard Registry role are allowed to make the request.
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+A valid schema object.
+
+```json
+{
+  "name": "Tag Schema name",
+  "description": "Description",
+  "entity": "TAG",
+  "document": {}
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Schema"
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "id": "f3b2a9c1e4d5678901234567",
+  "uuid": "f3b2a9c1e4d5678901234567",
+  "name": "Tag Schema name",
+  "entity": "TAG",
+  "status": "DRAFT",
+  "version": "1.0.0"
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

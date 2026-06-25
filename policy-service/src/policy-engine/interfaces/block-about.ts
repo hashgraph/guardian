@@ -77,6 +77,14 @@ export interface BlockProperties {
      * Visible expression
      */
     visible?: string;
+
+    editable?: boolean;
+
+    confirmation?: {
+        title: string,
+        description: string,
+        condition: any
+    }
 }
 
 /**
@@ -107,6 +115,8 @@ export interface CheckboxProperties extends BlockProperties {
      * Property type
      */
     type: PropertyType.Checkbox;
+
+    text?: string;
 }
 
 /**

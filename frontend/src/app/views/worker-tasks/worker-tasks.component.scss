@@ -17,28 +17,6 @@
     justify-content: center;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: var(--container-margin);
-}
-
-.container>.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.container>.header>h1 {
-    width: 100%;
-    color: #000;
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
-}
-
 .tokenId {
     display: flex;
     white-space: nowrap;
@@ -68,15 +46,16 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-dropdown {
-    width: 400px;
+:host ::ng-deep .dropdown-block .p-select {
+    height: 40px;
+    min-width: 200px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
     background: #FFF;
@@ -122,77 +101,11 @@
 }
 
 .table-container {
-    margin-top: 16px;
-}
-
-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0 8px;
-    overflow: visible;
-}
-
-.row-header {
-    border-radius: 8px 8px 0 0;
-}
-
-th {
-    color: var(--color-grey-5);
-    font-family: Inter, serif;
-    font-size: 12px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: normal;
-    text-align: left;
-    padding: 0 20px 0 24px;
-    text-transform: uppercase;
-}
-
-.table-paginator {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    column-gap: 24px;
-    padding: 0 16px 0 0;
-
-    color: var(--color-grey-black-2, #23252E);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    /* 114.286% */
+    margin-top: 40px;
 }
 
 .color-grey-6 {
     color: var(--color-grey-5, #848FA9);
-}
-
-.row-item,
-.table-paginator {
-    height: 64px !important;
-    border-radius: 8px !important;
-    background: #FFF;
-    box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
-}
-
-td {
-    color: var(--color-grey-black-1);
-    font-family: Inter, serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 16px;
-    text-align: left;
-    padding: 0 20px 0 24px;
-}
-
-td:first-child {
-    border-radius: 8px 0 0 8px;
-}
-
-td:last-child {
-    border-radius: 0 8px 8px 0;
 }
 
 .disabled-color {
@@ -356,13 +269,6 @@ button[disabled] {
     align-content: center;
 }
 
-:host ::ng-deep .p-dropdown {
-    width: 100px;
-    border-radius: 8px;
-    border: 1px solid var(--color-grey-3);
-    background: #FFF;
-}
-
 .cursor-pointer {
     cursor: pointer;
 }
@@ -373,38 +279,7 @@ button[disabled] {
     gap: 10px;
 }
 
-.col-CREATED {
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-}
-
-.col-STARTED {
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-}
-
-.col-TYPE {
-    min-width: 250px;
-}
-
-.col-STATUS {
-    width: 200px;
-    min-width: 200px;
-    max-width: 200px;
-}
-
-.col-COMMENTS {
-    width: 100%;
-}
-
-.col-ACTION {
-    width: 140px;
-    min-width: 140px;
-    max-width: 140px;
-}
-
-.page-filters {
-    width: 200px;
+:host ::ng-deep .guardian-grid-container .guardian-grid-row td:has(.operations-container) {
+    padding-top: 11px;
+    padding-bottom: 11px;
 }

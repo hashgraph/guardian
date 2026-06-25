@@ -3,6 +3,8 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import {
     BinaryMessageResponse,
     DatabaseServer,
+    VcDocument as VcDocumentCollection,
+    VpDocument as VpDocumentCollection,
     IRecordResult,
     MessageError,
     MessageResponse, PinoLogger,
@@ -19,12 +21,54 @@ import { GuardiansService } from '../helpers/guardians.js';
 import { FilterObject } from '@mikro-orm/core';
 
 const MIN_SPACING_MS = 3000;
+const COMMON_CREDENTIAL_CONTEXT = 'https://www.w3.org/2018/credentials/v1';
+
+function getResultKey(result: IRecordResult): string {
+    if (result.type === 'schema') {
+        return result.id;
+    }
+
+    const context = result.document?.['@context'];
+    const contexts = Array.isArray(context) ? context : [context];
+    const businessContext = contexts.find((item) => {
+        return typeof item === 'string' && item !== COMMON_CREDENTIAL_CONTEXT;
+    });
+
+    return typeof businessContext === 'string' ? businessContext : result.type;
+}
+
+function isSameResultKind(expected: IRecordResult, actual: IRecordResult): boolean {
+    return expected.type === actual.type && getResultKey(expected) === getResultKey(actual);
+}
 
 /**
  * Compare results
  * @param policyId
  * @param owner
  */
+function filterGeneratedToSelected(
+    documents: IRecordResult[],
+    recorded: IRecordResult[],
+    outputActions?: Record<string, string> | null
+): IRecordResult[] {
+    const seen = new Set<IRecordResult>();
+    const result: IRecordResult[] = [];
+    for (const expected of recorded) {
+        const expectedLink = RecordImportExport.resultLink(expected);
+        const expectedActionId = outputActions?.[expectedLink];
+        const candidates = documents.filter((document) => isSameResultKind(expected, document));
+        const filtered = expectedActionId
+            ? candidates.filter((document) => document.recordActionId === expectedActionId)
+            : candidates;
+        const match = filtered.find((doc) => !seen.has(doc));
+        if (match) {
+            seen.add(match);
+            result.push(match);
+        }
+    }
+    return result;
+}
+
 export async function compareResults(details: any): Promise<any> {
     if (details) {
         const options = new CompareOptions(
@@ -36,8 +80,14 @@ export async function compareResults(details: any): Promise<any> {
             IRefLvl.Default,
             null
         );
-        const documents: IRecordResult[] = details.documents;
         const recorded: IRecordResult[] = details.recorded;
+        const documents: IRecordResult[] = details.selectedOutputs
+            ? filterGeneratedToSelected(
+                details.documents,
+                recorded,
+                details.policyTest?.outputActions
+            )
+            : details.documents;
         const comparator = new RecordComparator(options);
         const loader = new RecordLoader(options);
         const recordedModel = await loader.createModel(recorded);
@@ -121,7 +171,7 @@ export async function syncPolicyCopiedRecords(
 
         for (const msg of messages) {
             try {
-                await MessageServer.loadDocument(msg);
+                await MessageServer.loadDocument(msg, null, {});
             } catch (e: any) {
                 await logger.error(
                     `Failed to load copied record from IPFS for recordId=${msg.recordId}: ${e?.message || e}`,
@@ -790,7 +840,7 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                 const items = await DatabaseServer.getRecord({ policyId, method: 'STOP' });
                 const uuid = items[items.length - 1]?.uuid;
 
-                const zip = await RecordImportExport.generate(uuid);
+                const zip = await RecordImportExport.generate(uuid, options?.policyTest || null);
                 const file = await zip.generateAsync({
                     type: 'arraybuffer',
                     compression: 'DEFLATE',
@@ -856,7 +906,9 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     const zip = file;
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip.data));
                     records = recordToImport.records;
-                    results = recordToImport.results;
+                    results = RecordImportExport.getComparisonResults(recordToImport);
+                    options.selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    options.policyTest = recordToImport.policyTest;
                 } else if (fromPolicyId) {
                     const dbData = await loadImportedRecordsFromDb(fromPolicyId, policy.owner);
                     records = dbData.records;
@@ -967,6 +1019,47 @@ export async function recordAPI(logger: PinoLogger): Promise<void> {
                     .sendPolicyMessage(PolicyEvents.GET_RECORD_RESULTS, policyId, null);
 
                 const result = await compareResults(details);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], userId);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_RECORD_ACTION_DOCUMENTS,
+        async (msg: { policyId: string, recordActionId: string, owner: IOwner, userId: string | null }) => {
+            const userId = msg?.userId;
+            try {
+                if (!msg) {
+                    throw new Error('Invalid parameters');
+                }
+                const { policyId, recordActionId, owner } = msg;
+                await checkPolicy(policyId, owner);
+                const db = new DatabaseServer(policyId);
+                const vcs = await db.getVcDocuments<VcDocumentCollection>(
+                    { recordActionId } as FilterObject<VcDocumentCollection>
+                ) as VcDocumentCollection[];
+                const vps = await db.getVpDocuments<VpDocumentCollection>(
+                    { recordActionId } as FilterObject<VpDocumentCollection>
+                ) as VpDocumentCollection[];
+                const result = [
+                    ...vcs.map((vc) => ({
+                        id: vc.document?.id,
+                        type: 'vc' as const,
+                        tag: vc.tag,
+                        schema: vc.schema,
+                        document: vc.document,
+                        recordActionId: vc.recordActionId,
+                    })),
+                    ...vps.map((vp) => ({
+                        id: vp.document?.id,
+                        type: 'vp' as const,
+                        tag: vp.tag,
+                        schema: null,
+                        document: vp.document,
+                        recordActionId: vp.recordActionId,
+                    })),
+                ];
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], userId);
