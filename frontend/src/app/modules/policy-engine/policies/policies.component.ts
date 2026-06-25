@@ -276,6 +276,12 @@ export class PoliciesComponent implements OnInit {
     ];
     private publishErrorMenuOption = [
         {
+            id: 'Draft',
+            title: 'To Draft',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
+        {
             id: 'Publish',
             title: 'Publish',
             description: 'Release version into public domain.',
@@ -1569,10 +1575,9 @@ export class PoliciesComponent implements OnInit {
     private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draft(element);
         }
-        // else if (event.id === 'Draft') {
-        //     this.draft(element);
-        // }
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
