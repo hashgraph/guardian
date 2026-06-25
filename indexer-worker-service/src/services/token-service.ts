@@ -4,7 +4,7 @@ import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, Job, NftCache, NFT, TokenCache, Utils, IndexerMessageAPI } from '@indexer/common';
 import { TopicService } from './topic-service.js';
 import { PriorityStatus } from '@indexer/interfaces';
-import { ChannelService } from 'api/channel.service.js';
+import { ChannelService } from '../api/channel.service.js';
 
 export class TokenService {
     public static CYCLE_TIME: number = 0;
