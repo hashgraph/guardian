@@ -57,7 +57,7 @@ export class DocumentValidatorBlock {
 
     private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
         if (operator === 'in' || operator === 'not_in') {
-            return sourceDocuments.map((doc) => PolicyUtils.getObjectValue(doc, path));
+            return sourceDocuments.map((doc) => PolicyUtils.getObjectValue(doc, path)).flat();
         }
         return PolicyUtils.getObjectValue(sourceDocuments[0], path);
     }
@@ -170,7 +170,6 @@ export class DocumentValidatorBlock {
             const detail = filterSummary
                 ? `no source documents matched filter(s): ${filterSummary}`
                 : 'no matching source documents found';
-            PolicyComponentsUtils.BlockErrorFn(title, detail, user).catch((_e) => undefined);
             return `${title}: ${detail}`;
         }
 
@@ -179,8 +178,7 @@ export class DocumentValidatorBlock {
             const right = this.coerceValue(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, sourceDocuments));
 
             if (!this.evaluateCrossCondition(left, condition.type, right)) {
-                const detail = `field "${condition.field}" — ${this.describeCrossConditionFailure(condition.type, left, right)}`;
-                PolicyComponentsUtils.BlockErrorFn(title, detail, user).catch((_e) => undefined);
+                const detail = `field "${condition.field}" - ${this.describeCrossConditionFailure(condition.type, left, right)}`;
                 return `${title}: ${detail}`;
             }
         }
