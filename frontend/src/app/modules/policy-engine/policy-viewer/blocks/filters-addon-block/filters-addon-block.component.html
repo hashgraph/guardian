@@ -3,10 +3,10 @@
 </div> -->
 
 <div class="content" [attr.readonly-block]="readonly">
-  <div class="content-name">
-    {{content}}
-  </div>
   <div class="grouped-content">
+    <div class="content-name" [title]="content">
+      {{content}}
+    </div>
     @if (queryType === 'user_defined') {
       <div class="type-select user-defined-select">
         <p-select
@@ -15,7 +15,7 @@
           optionValue="value"
           [(ngModel)]="currentType"
           [appendTo]="'body'"
-          [style]="{'width':'100%', 'border-radius': '8px 0 0 8px'}"
+          [style]="{'width':'100%', 'border-radius': '0 8px 8px 0'}"
           class="w-full"
           (onChange)="onType($event)">
           <ng-template pTemplate="selectedItem" let-selectedOption>
