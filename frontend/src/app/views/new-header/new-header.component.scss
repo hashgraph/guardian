@@ -385,34 +385,3 @@
     max-width: none !important;
 }
 
-.theme-switcher-item {
-    cursor: pointer;
-
-    &:hover {
-        background: rgba(255, 255, 255, 0.15);
-    }
-}
-
-.theme-icon-current {
-    font-size: 16px;
-    color: rgba(255, 255, 255, 0.8);
-    flex-shrink: 0;
-    min-width: 16px;
-}
-
-.theme-icons {
-    display: flex;
-    column-gap: 10px;
-
-    i {
-        font-size: 14px;
-        color: rgba(255, 255, 255, 0.5);
-        cursor: pointer;
-
-        &:hover,
-        &.theme-icon-active {
-            color: #fff;
-        }
-    }
-}
-
