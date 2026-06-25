@@ -1,7 +1,7 @@
 ---
 description: >-
   This page describes first steps with the Guardian and digital environmental
-  assets for all users.
+  assets for new users.
 ---
 
 # First steps with digital environmental assets (simplified)
@@ -12,20 +12,55 @@ This page is under development and part of the **3.7 Getting Started Epic**&#x20
 The purpose of this page is to create a friendly guide to help a new user take their first steps in the Hedera Guardian. This page is descriptive only and will introduce all users of high level concepts without relying upon custom setuup, roles, permissions, or test data.
 {% endhint %}
 
+## Dependencies
+
+This page has internal and external dependencies which are listed here.
+
+EXTERNAL LINKS
+
+* Hedera Developer Portal
+* Methodology Library (Github)
+* First Steps Policy (to be created)
+
+INTERNAL LINKS
+
+* Admin > Settings
+* Manage Policies
+
+INTERNAL ACTIONS
+
+* Import Policy
+* Publish Policy
+
+***
+
+#### First Steps with Hedera Guardian {VERSION} and Digital Environmental Assets
+
+The Hedera Guardian is an open source platform for issuing, verifying, and managing digital environmental assets. Follow the First Steps below. If you are not an admin were invited by a which may depend upon the roles and permissions if you joined via an invitation. &#x20;
+
+
+
 * #### Get set up • 0/5 steps
 
 {% stepper %}
 {% step %}
-### Set up your Hedera account
+### Create a Hedera testnet account
+
+The Hedera Guardian operates on the Hedera network with a testnet or mainnet account. Setup the Guardian with a testnet account.
 
 <details>
 
-<summary>Details on setting up a Hedera account</summary>
+<summary>Create a Hedera testnet account and add to the Guardian</summary>
 
-1. Create a Testnet account via the [Hedera Developer Portal](https://portal.hedera.com/login).
-2. Record your **Account ID** (`0.0.x`).
-3. Download the **ED25519** private key (ignore **ECDSA**)
-   * Select **DER Encoded** — _do not_ choose _HEX Encoded_.
+1. Visit the [Hedera Developer Portal](https://portal.hedera.com/login).
+2. Create a testnet account&#x20;
+3. Note the **Account ID** (`0.0.x`).
+4. Note the **ED25519 DER Encoded Private Key** (ignore **ECDSA**)
+5. Navigate to \[Admin > Settings | Open Link in new Tab]
+6. Copy **Account ID** (`0.0.x`) from the developer portal
+7. Paste into the Operator ID field&#x20;
+8. Copy **ED25519 DER Encoded Private Key** from the developer portal
+9. Paste into the Operator Key field
 
 </details>
 {% endstep %}
@@ -33,11 +68,16 @@ The purpose of this page is to create a friendly guide to help a new user take t
 {% step %}
 ### Import a policy
 
+Policy's are digital workflows at the heart of the Hedera Guardian. Import a sample policy from the methodology library.
+
 <details>
 
 <summary>Import a policy from the methodology library</summary>
 
-Policy's are digital workflows and are at the heart of the Guardian. Visit \[LINK: AUTHOR] to import a sample policy from the methodology library.
+1. Visit the \[Methodology Library | Open Link in new Tab]&#x20;
+2. Download the \[Hello World Policy | Direct Download Link Github] policy file
+3. Navigate to \[Manage Policies | Open Link in new Tab]
+4. Click the Import icon and select the `FirstSteps-HelloWorld.policy` file
 
 </details>
 {% endstep %}
@@ -45,15 +85,18 @@ Policy's are digital workflows and are at the heart of the Guardian. Visit \[LIN
 {% step %}
 ### Publish a policy to testnet
 
+Publish a policy on testnet so that project proponents or stakeholders can submit data to the policy.
+
 <details>
 
 <summary>Publish your first policy to the Hedera testnet  </summary>
 
-Visit the \[LINK: REGISTRY] to publish your first policy. This is how registry operators would publish policies and begin accepting submissions.&#x20;
+1. Navigate to \[Manage Policies | Open Link in new Tab]&#x20;
+2. Click the dropdown in the status column and select publish.
+3. Set the Version to 1.0.0 and Availability to Public
+4. Click Publish
 
 </details>
-
-
 {% endstep %}
 
 {% step %}
@@ -83,7 +126,7 @@ Visit the \[LINK: AUDIT] interface to inspect the documents created after data w
 
 ### Go further
 
-* LINK Digitizing Methodology Guide
-* LINK Subscribe to community calendar
-* LINK Feedback & Support
+* Digitizing Methodology Guide
+* [Subscribe to community calendar](https://lu.ma/guardian)
+* [Share your feedback or request support](https://tiny.cc/grd-feedback)
 * LINK Contributing
