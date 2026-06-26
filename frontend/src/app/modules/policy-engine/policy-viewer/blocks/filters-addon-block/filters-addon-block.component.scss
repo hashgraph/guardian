@@ -43,11 +43,11 @@
     line-height: 16px;
     background-color: var(--guardian-background, white);
     border: 1px solid var(--guardian-grid-color, #ced4da);
-    border-right: 0;
+    border-right: 1px solid var(--guardian-grid-color, #ced4da);
     border-top-left-radius: 8px;
     border-bottom-left-radius: 8px;
     box-sizing: border-box;
-    padding: 0 6px 0 12px;
+    padding: 2px 4.5px 0 12px;
 }
 
 .content-select {
@@ -105,7 +105,7 @@ p-datepicker {
     align-items: center;
     height: 40px;
     border: 1px solid var(--guardian-grid-color, #ced4da);
-    padding: 0 6px 0 0;
+    padding: 2px 6px 0 4.5px;
     color: var(--color-grey-5);
     font-family: Inter, serif;
     font-size: 14px;
