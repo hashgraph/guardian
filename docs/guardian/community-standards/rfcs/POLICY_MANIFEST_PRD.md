@@ -1,12 +1,18 @@
+---
+description: PRD for the policy.yml sidecar manifest — structured, machine-readable metadata for every policy in the Guardian Methodology Library.
+tags:
+  - rfc
+---
+
 # Product Requirements Document: Guardian Policy Manifest (`policy.yml`)
 
 | Field | Value |
 |-------|-------|
 | **Status** | Draft — for stakeholder review |
-| **Author** | Guardian Platform Team |
+| **Author** | Guardian Platform Team, Hashgraph |
 | **Date** | 2026-06-11 |
 | **Version** | 0.1 |
-| **Related docs** | [MANIFEST_SPEC.md](./MANIFEST_SPEC.md), [policy.schema.json](./policy.schema.json), [TAG_TAXONOMY.md](./TAG_TAXONOMY.md) |
+| **Related docs** | MANIFEST_SPEC.md, policy.schema.json, TAG_TAXONOMY.md — see Methodology Library/ at repo root |
 
 ---
 
@@ -222,7 +228,7 @@ Methodology Library/
 | `policy_type` | enum | See Section 7 | Classification relative to upstream standards. | `standard-implementation` |
 | `status` | enum | `draft\|candidate\|active\|deprecated\|superseded` | Implementation lifecycle state. | `active` |
 | `license` | string | SPDX identifier | Open source license. | `Apache-2.0` |
-| `category` | enum | `carbon-offsets\|emission-reporting\|supply-chain\|biodiversity\|payments\|other` | Primary domain. | `carbon-offsets` |
+| `category` | enum | `carbon-credits\|emission-reporting\|renewable-energy\|supply-chain\|sustainable-agriculture\|water\|biodiversity\|waste\|other` | Primary domain. | `carbon-credits` |
 | `authors` | array | See 6.3 | Primary authors/organizations. | `[{name: Envision Blockchain}]` |
 | `tags` | array | `^[a-z0-9]+(?:-[a-z0-9]+)*$` each | Discovery tags. | `[verra, redd-plus, forest]` |
 
@@ -230,6 +236,8 @@ Methodology Library/
 
 | Field | Type | Pattern / Enum | Description | Example |
 |-------|------|---------------|-------------|---------|
+| `category_note` | string | — | Required when `category` is `other`. Short label describing the actual category — used to identify candidates for future enum promotion. | `parametric insurance` |
+| `policy_type_note` | string | — | Required when `policy_type` is `other`. Short label describing the actual policy type — used to identify candidates for future enum promotion. | `registry bridge` |
 | `standard_body` | string | — | Standards organization owning the upstream methodology. | `Verra` |
 | `methodology_id` | string | — | Upstream methodology identifier. | `VM0007` |
 | `methodology_version` | string | — | Upstream version verbatim as published. | `7.0` |
@@ -239,14 +247,14 @@ Methodology Library/
 | `registry_body` | string | — | Registry that validated. | `Verra` |
 | `registry_reference` | string | — | Formal registry reference number. | `VCS-1234` |
 | `registry_accepted_date` | string | ISO 8601 date | Date of registry acceptance. | `2024-03-15` |
-| `ipfs_timestamp` | string | `^[0-9]+\.[0-9]+$` | Most recent mainnet IPFS timestamp (testnet if not yet on mainnet). Full history in `publications.json`. | `"1707207286.119377003"` |
+| `hedera_timestamp` | string | `^[0-9]+\.[0-9]+$` | Hedera consensus timestamp of the most recent mainnet publication (testnet if not yet on mainnet). Full history in `publications.json`. | `"1707207286.119377003"` |
 | `sdg_alignment` | array | integers 1–17 | UN SDG numbers supported. | `[13, 15]` |
 | `sector` | enum | `energy\|transport\|waste\|land-use\|industrial\|agriculture\|water\|other` | Primary economic sector. | `land-use` |
 | `guardian_version_min` | string | semver | Minimum Guardian platform version. | `2.20.0` |
 | `roles` | array | strings | Named workflow roles. | `["Standard Registry", "VVB"]` |
 | `dependencies` | array | See 6.5 | Required Guardian modules. | |
-| `supersedes` | string\|null | kebab-case | ID of policy this replaces. | `gold-standard-mecd-v1` |
-| `superseded_by` | string\|null | kebab-case | ID of policy that replaces this. | |
+| `supersedes` | string | kebab-case | ID of policy this replaces. Omit if this is the first version. | `gold-standard-mecd-v1` |
+| `superseded_by` | string | kebab-case | ID of policy that replaces this. Omit until superseded. | `gold-standard-mecd-v2` |
 | `resources` | array | See 6.6 | External reference links. | |
 | `contributors` | array | See 6.7 | Non-author contributors. | |
 | `maintainers` | array | See 6.8 | Current maintainers. | |
@@ -269,9 +277,9 @@ maintainers:
   url:     string  optional  website URL
 ```
 
-### 6.4 ipfs_timestamp
+### 6.4 hedera_timestamp
 
-A nanosecond-precision Unix epoch string returned by Guardian's publish API. Stored as a quoted string to preserve decimal precision. Points to the most recent mainnet publication; use the testnet timestamp if the policy has not yet reached mainnet. Full multi-network history is in `publications.json` — see Section 12.
+A nanosecond-precision Hedera consensus timestamp returned by Guardian's publish API. Stored as a quoted string to preserve decimal precision. This is the timestamp of the Hedera message that carries the IPFS CID. Points to the most recent mainnet publication; use the testnet timestamp if the policy has not yet reached mainnet. Full multi-network history is in `publications.json` — see Section 12.
 
 ### 6.5 dependencies array items
 
@@ -309,6 +317,7 @@ The `policy_type` field classifies the policy's fundamental relationship to upst
 | `mrv-template` | A reusable template or scaffolding for a class of MRV projects. Not a complete policy on its own — designed to be forked, parameterized, and specialized by downstream implementors. | None strictly required; `methodology_id` may be present | DOVU generic dMRV template, MMCM |
 | `proof-of-concept` | Exploratory or demonstration policy. Typically created during hackathons or bounty programs. Not intended for production use. | None | Hackathon submissions, Work In Progress entries |
 | `toolkit` | A collection of schemas, modules, or Guardian configuration utilities that support policy development but are not stand-alone policy workflows. | None | Modules/ entries, reusable schema packs |
+| `other` | Does not fit any of the above types. `policy_type_note` is required — describe the actual type in plain English. | `policy_type_note` required | |
 
 ### Disambiguation notes
 
@@ -389,7 +398,7 @@ Notes:
 
 ## 9. Tag Taxonomy Guidance
 
-Tags drive catalog filtering and search. The full taxonomy lives in [TAG_TAXONOMY.md](./TAG_TAXONOMY.md). Key principles:
+Tags drive catalog filtering and search. The full taxonomy lives in TAG_TAXONOMY.md. Key principles:
 
 ### Naming convention
 All tags must be lowercase and hyphenated: `redd-plus`, `land-use`, `south-asia`. No uppercase, no underscores, no dots, no spaces.
@@ -495,18 +504,18 @@ Publication history is split across two files with different ownership and updat
 
 | File | Owned by | Updated how | Contents |
 |------|----------|-------------|----------|
-| `policy.yml` (`ipfs_timestamp`) | Policy author | Manually | Single convenience timestamp — most recent mainnet (or testnet if not yet on mainnet) |
+| `policy.yml` (`hedera_timestamp`) | Policy author | Manually | Single convenience timestamp — most recent mainnet (or testnet if not yet on mainnet) |
 | `publications.json` | `record-publication` script | Automatically | Full append-only log of every network × version publication event |
 
-This separation exists because **the IPFS timestamp is generated by Guardian at publish time** — the contributor cannot know it before publishing. Asking contributors to manually maintain a structured YAML array inside `policy.yml` after every publish action is error-prone and will not be done consistently. The script removes the manual step entirely.
+This separation exists because **the Hedera timestamp is generated by Guardian at publish time** — the contributor cannot know it before publishing. Asking contributors to manually maintain a structured YAML array inside `policy.yml` after every publish action is error-prone and will not be done consistently. The script removes the manual step entirely.
 
-### `ipfs_timestamp` in `policy.yml`
+### `hedera_timestamp` in `policy.yml`
 
 A single string field. Update it by hand whenever a new mainnet version is published (copy-paste from the Guardian publish confirmation screen). For testnet-only policies, use the testnet timestamp.
 
 ```yaml
-# Most recent mainnet IPFS timestamp. Full history in publications.json.
-ipfs_timestamp: "1707207286.119377003"
+# Most recent Hedera consensus timestamp. Full history in publications.json.
+hedera_timestamp: "1707207286.119377003"
 ```
 
 ### `publications.json` — the append-only log
@@ -522,17 +531,17 @@ Validated against `publications.schema.json`. Written exclusively by `scripts/re
     {
       "network": "testnet",
       "version": "1.1.0",
-      "ipfs_timestamp": "1707207018.434778003",
-      "published_by": "Envision Blockchain",
+      "hedera_timestamp": "1707207018.434778003",
+      "published_by": "Knowhere",
       "recorded_at": "2024-02-06T10:00:00Z",
       "notes": "Initial demonstration"
     },
     {
       "network": "mainnet",
       "version": "3.0.0",
-      "ipfs_timestamp": "1707207286.119377003",
+      "hedera_timestamp": "1707207286.119377003",
       "hedera_topic_id": "0.0.5678901",
-      "published_by": "Envision Blockchain",
+      "published_by": "Knowhere",
       "recorded_at": "2024-02-06T14:00:00Z"
     }
   ]
@@ -546,26 +555,26 @@ node scripts/record-publication.js \
   --policy verra-vm0007-redd-plus \
   --network mainnet \
   --version 3.0.0 \
-  --ipfs-timestamp 1707207286.119377003 \
+  --hedera-timestamp 1707207286.119377003 \
   --topic-id 0.0.5678901
 ```
 
-The script appends one entry and commits the file. The contributor also updates `ipfs_timestamp` in `policy.yml` if this is a mainnet publication.
+The script appends one entry and commits the file. The contributor also updates `hedera_timestamp` in `policy.yml` if this is a mainnet publication.
 
 ### Testnet-only signal
 
 A policy whose `publications.json` contains no mainnet entry has never been published to production. Catalog tooling surfaces this as the absence of a "Live on mainnet" badge — the missing entry is itself an informative signal, not a gap.
 
-### ipfs_timestamp format
+### hedera_timestamp format
 
-Nanosecond-precision Unix epoch string as returned by Guardian's publish API. Stored as a quoted YAML/JSON string — not a number — to preserve decimal precision: `"1707207149.487956003"`, not `1707207149.487956003`.
+Nanosecond-precision Hedera consensus timestamp as returned by Guardian's publish API. Stored as a quoted YAML/JSON string — not a number — to preserve decimal precision: `"1707207149.487956003"`, not `1707207149.487956003`.
 
 ### File placement example
 
 ```
 Verra/Verified Carbon Standard (VCS)/VM0007/
-  policy.yml           ← ipfs_timestamp: "1707207286.119377003"  (author-maintained)
-  publications.json    ← full 4-entry history across 3 versions  (script-maintained)
+  policy.yml           ← hedera_timestamp: "1707207286.119377003"  (author-maintained)
+  publications.json    ← full 4-entry history across 3 versions    (script-maintained)
   readme.md
   Policies/
     Verra VM0007 (3.0.0 - groups).policy
@@ -653,7 +662,7 @@ Deliverables:
   - Renders a filterable card grid (filter by category, sector, SDG, token type, network, status).
   - Renders individual policy detail pages with full manifest data and links to README.
   - Embeds publications table with IPFS timestamps and Hedera topic links.
-- Hosted at `https://methodologies.hedera.com` (or Guardian docs subdomain).
+- Hosted at a Guardian docs subdomain (TBD).
 - Search (static — lunr.js or pagefind).
 
 Success criteria: Catalog publicly accessible; 3+ filters working; all active policies rendered.
@@ -684,7 +693,7 @@ Success criteria: Policy import by manifest ID works end-to-end on testnet; Guar
 | 4 | **registry_status ownership**: Who is authorized to set `registry_status: validated`? | (a) Anyone (honor system). (b) Only maintainers (via CODEOWNERS). (c) Registry body sign-off via GPG. | Governance | High |
 | 5 | **Thumbnail IP**: Do we need a formal IP policy for thumbnails using standards body logos? | (a) Require original artwork only. (b) Allow with attribution. | Legal | Medium |
 | 6 | **Closed vs open tag set**: Should we eventually move to a closed tag enum in the schema? | (a) Keep open (warning-only). (b) Harden to error after Phase 2. | Platform team | Low |
-| 7 | **ipfs_timestamp as string vs number**: YAML parsers can truncate float precision. Is quoting convention sufficient? | (a) String (current). (b) Add schema `type: string` with note. | Platform team | Medium |
+| 7 | **hedera_timestamp as string vs number**: YAML parsers can truncate float precision. Is quoting convention sufficient? | (a) String (current). (b) Add schema `type: string` with note. | Platform team | Medium |
 | 8 | **Guardian version compatibility matrix**: Should `guardian_version_min` be checked programmatically? | (a) Documentation only. (b) CI reads Guardian release tags and warns. | Tooling team | Low |
 | 9 | **Internationalization**: Should `description` and `name` support i18n keys or localized variants? | (a) English-only (current). (b) `description_i18n: {fr: "...", es: "..."}` optional fields. | Platform team | Low |
 | 10 | **Manifest signing**: Should published manifests be cryptographically signed? | (a) No — trust the Git history. (b) Yes — GPG sign merged manifests. (c) Hedera DID signature in manifest. | Governance | Medium |

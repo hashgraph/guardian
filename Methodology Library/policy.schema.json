@@ -59,8 +59,16 @@
         "novel-methodology",
         "mrv-template",
         "proof-of-concept",
-        "toolkit"
+        "toolkit",
+        "other"
       ]
+    },
+
+    "policy_type_note": {
+      "type": "string",
+      "description": "Required when policy_type is 'other'. A short plain-English label for the actual policy type. Used to identify candidates for future enum promotion.",
+      "minLength": 1,
+      "examples": ["registry bridge", "compliance reporting tool", "data oracle"]
     },
 
     "status": {
@@ -86,13 +94,23 @@
       "type": "string",
       "description": "Broad domain this policy belongs to.",
       "enum": [
-        "carbon-offsets",
+        "carbon-credits",
         "emission-reporting",
+        "renewable-energy",
         "supply-chain",
+        "sustainable-agriculture",
+        "water",
         "biodiversity",
-        "payments",
+        "waste",
         "other"
       ]
+    },
+
+    "category_note": {
+      "type": "string",
+      "description": "Required when category is 'other'. A short plain-English label for the actual category. Used to identify candidates for future enum promotion.",
+      "minLength": 1,
+      "examples": ["parametric insurance", "product passport", "water rights trading"]
     },
 
     "authors": {
@@ -125,7 +143,8 @@
             "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$"
           }
         }
-      }
+      },
+      "examples": [[{"name": "Knowhere", "type": "organization", "url": "https://guardian.hedera.com/knowhere"}]]
     },
 
     "tags": {
@@ -137,7 +156,8 @@
         "type": "string",
         "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
         "description": "A single lowercase-hyphenated tag."
-      }
+      },
+      "examples": [["verra", "redd-plus", "forest"]]
     },
 
     "standard_body": {
@@ -204,9 +224,9 @@
       "examples": ["2024-03-15"]
     },
 
-    "ipfs_timestamp": {
+    "hedera_timestamp": {
       "type": "string",
-      "description": "IPFS timestamp of the most recent mainnet publication (or testnet if not yet on mainnet), as returned by Guardian's publish API. Full publication history — all networks and versions — is recorded in publications.json by the record-publication script; never edit that file by hand.",
+      "description": "Hedera consensus timestamp of the most recent mainnet publication (or testnet if not yet on mainnet), as returned by Guardian's publish API. This is the timestamp of the Hedera message that carries the IPFS CID. Full publication history — all networks and versions — is recorded in publications.json by the record-publication script; never edit that file by hand.",
       "pattern": "^[0-9]+\\.[0-9]+$",
       "examples": ["1707207286.119377003"]
     },
@@ -214,6 +234,7 @@
     "sdg_alignment": {
       "type": "array",
       "description": "UN Sustainable Development Goal numbers (1-17) that this policy directly supports.",
+      "minItems": 1,
       "uniqueItems": true,
       "items": {
         "type": "integer",
@@ -248,6 +269,7 @@
     "roles": {
       "type": "array",
       "description": "Named roles defined in the policy workflow.",
+      "uniqueItems": true,
       "items": {
         "type": "string",
         "minLength": 1
@@ -273,20 +295,22 @@
             "description": "Minimum version of the dependency required."
           }
         }
-      }
+      },
+      "examples": [[{"id": "guardian-schema-pack", "version_min": "1.0.0"}]]
     },
 
     "supersedes": {
-      "type": ["string", "null"],
-      "description": "ID of the policy this manifest replaces. Null or omit if this is the first version.",
+      "type": "string",
+      "description": "ID of the policy this manifest replaces. Omit if this is the first version.",
       "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
       "examples": ["gold-standard-mecd-v1"]
     },
 
     "superseded_by": {
-      "type": ["string", "null"],
+      "type": "string",
       "description": "ID of the policy that replaces this one (set when status becomes superseded).",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$",
+      "examples": ["gold-standard-mecd-v2"]
     },
 
     "resources": {
@@ -322,7 +346,8 @@
             "description": "URL to the resource (optional if the resource is described by label alone)."
           }
         }
-      }
+      },
+      "examples": [[{"type": "methodology", "label": "Verra VM0007 REDD+ Methodology Framework", "url": "https://verra.org/methodologies/vm0007-redd-methodology-framework-redd-mf/"}]]
     },
 
     "contributors": {
@@ -337,12 +362,23 @@
             "type": "string",
             "minLength": 1
           },
+          "url": {
+            "type": "string",
+            "format": "uri",
+            "description": "Contributor's website or profile URL."
+          },
+          "type": {
+            "type": "string",
+            "description": "Contributor classification.",
+            "enum": ["organization", "individual", "community"]
+          },
           "github": {
             "type": "string",
             "pattern": "^[a-zA-Z0-9]([a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$"
           }
         }
-      }
+      },
+      "examples": [[{"name": "Rocket Raccoon", "type": "individual", "github": "rocket-raccoon"}]]
     },
 
     "maintainers": {
@@ -366,12 +402,14 @@
             "format": "uri"
           }
         }
-      }
+      },
+      "examples": [[{"name": "Groot", "email": "groot@hashgraph.com", "url": "https://guardian.hedera.com/knowhere"}]]
     },
 
     "thumbnail": {
       "type": "string",
       "description": "Relative path to a thumbnail image (from the policy.yml file location). Recommended: 400x300 PNG/JPEG.",
+      "pattern": "^(?!/).*\\.(png|jpg|jpeg)$",
       "examples": ["assets/thumbnail.png", "thumbnail.jpg"]
     },
 
@@ -386,5 +424,26 @@
       "description": "URL (GitHub issues, forum) or email address for policy support.",
       "examples": ["https://github.com/hashgraph/guardian/issues", "support@example.com"]
     }
-  }
+  },
+
+  "allOf": [
+    {
+      "if": {
+        "properties": { "category": { "const": "other" } },
+        "required": ["category"]
+      },
+      "then": {
+        "required": ["category_note"]
+      }
+    },
+    {
+      "if": {
+        "properties": { "policy_type": { "const": "other" } },
+        "required": ["policy_type"]
+      },
+      "then": {
+        "required": ["policy_type_note"]
+      }
+    }
+  ]
 }

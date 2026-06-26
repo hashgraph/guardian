@@ -1052,6 +1052,8 @@
       * [Task Template](guardian/community-standards/documentation-standards/page-templates/task-template.md)
       * [Reference Template](guardian/community-standards/documentation-standards/page-templates/reference-template.md)
       * [Guide Template](guardian/community-standards/documentation-standards/page-templates/guide-template.md)
+  * [RFCs](guardian/community-standards/rfcs/README.md)
+    * [Policy Manifest (policy.yml)](guardian/community-standards/rfcs/POLICY_MANIFEST_PRD.md)
 
 ## Methodology Digitization
 

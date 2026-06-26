@@ -1,7 +1,7 @@
 # Guardian Policy Manifest Specification
 
 > **Audience**: policy contributors and methodology authors adding or updating a policy in the Guardian Methodology Library.
-> **Full PRD**: see [POLICY_MANIFEST_PRD.md](./POLICY_MANIFEST_PRD.md).
+> [See PRD for additional context](../docs/guardian/community-standards/rfcs/POLICY_MANIFEST_PRD.md).
 > **Schema**: [policy.schema.json](./policy.schema.json)
 
 ---
@@ -20,7 +20,7 @@ description: >
 policy_type: standard-implementation   # see policy_type guide below
 status: active                         # draft | candidate | active | deprecated | superseded
 license: Apache-2.0                    # SPDX identifier
-category: carbon-offsets               # see category enum below
+category: carbon-credits               # see category enum below
 authors:
   - name: Your Organization
 tags:
@@ -45,7 +45,7 @@ That is the complete minimum. Everything else is optional but strongly encourage
 | `policy_type` | enum | See [policy_type guide](#policy_type-guide). | `standard-implementation` |
 | `status` | enum | `draft` \| `candidate` \| `active` \| `deprecated` \| `superseded` | `active` |
 | `license` | string | SPDX license identifier. | `Apache-2.0` |
-| `category` | enum | `carbon-offsets` \| `emission-reporting` \| `supply-chain` \| `biodiversity` \| `payments` \| `other` | `carbon-offsets` |
+| `category` | enum | `carbon-credits` \| `emission-reporting` \| `renewable-energy` \| `supply-chain` \| `sustainable-agriculture` \| `water` \| `biodiversity` \| `waste` \| `other` | `carbon-credits` |
 | `authors` | array | One or more `{name, url?, type?, github?}` objects. | See below |
 | `tags` | array | Lowercase-hyphenated strings. See [TAG_TAXONOMY.md](./TAG_TAXONOMY.md). | `[verra, redd-plus, forest]` |
 
@@ -53,6 +53,8 @@ That is the complete minimum. Everything else is optional but strongly encourage
 
 | Field | Type | Description | Example |
 |-------|------|-------------|---------|
+| `category_note` | string | **Required when `category: other`.** Short label for the actual category — used to identify candidates for future enum promotion. | `parametric insurance` |
+| `policy_type_note` | string | **Required when `policy_type: other`.** Short label for the actual policy type — used to identify candidates for future enum promotion. | `registry bridge` |
 | `standard_body` | string | Standards organization owning the upstream methodology. | `Verra` |
 | `methodology_id` | string | Upstream methodology identifier. | `VM0007` |
 | `methodology_version` | string | Upstream version verbatim. | `7.0` |
@@ -62,7 +64,7 @@ That is the complete minimum. Everything else is optional but strongly encourage
 | `registry_body` | string | Registry that validated (when `registry_status: validated`). | `Verra` |
 | `registry_reference` | string | Formal registry reference number. | `VCS-1234` |
 | `registry_accepted_date` | string | ISO 8601 date of registry acceptance. | `2024-03-15` |
-| `ipfs_timestamp` | string | IPFS timestamp of the most recent mainnet publication (testnet if not yet on mainnet). Full history lives in `publications.json`. | `"1707207286.119377003"` |
+| `hedera_timestamp` | string | Hedera consensus timestamp of the most recent mainnet publication (testnet if not yet on mainnet). Full history lives in `publications.json`. | `"1707207286.119377003"` |
 | `sdg_alignment` | array | UN SDG numbers 1–17. | `[13, 15]` |
 | `sector` | string | `energy` \| `transport` \| `waste` \| `land-use` \| `industrial` \| `agriculture` \| `water` \| `other` | `land-use` |
 | `guardian_version_min` | string | Minimum Guardian platform version required. | `2.20.0` |
@@ -71,7 +73,7 @@ That is the complete minimum. Everything else is optional but strongly encourage
 | `supersedes` | string \| null | ID of the policy this replaces. | `gold-standard-mecd-v1` |
 | `superseded_by` | string \| null | ID of policy that replaces this one. | |
 | `resources` | array | External links. See [resources array](#resources-array). | |
-| `contributors` | array | `{name, github?}` contributors beyond primary authors. | |
+| `contributors` | array | `{name, url?, type?, github?}` contributors beyond primary authors. | |
 | `maintainers` | array | `{name, email?, url?}` current maintainers. | |
 | `thumbnail` | string | Relative path to thumbnail image. See [thumbnails](#thumbnail-conventions). | `assets/thumbnail.png` |
 | `homepage` | string | Upstream methodology or project homepage URL. | |
@@ -88,6 +90,7 @@ That is the complete minimum. Everything else is optional but strongly encourage
 | `mrv-template` | A reusable skeleton or scaffolding policy for a class of MRV projects. Not a complete policy on its own — intended to be forked and parameterized. | DOVU MMCM, generic dMRV templates |
 | `proof-of-concept` | An exploratory or demonstration policy, not intended for production use. Typically found in Hackathon/ or Work In Progress/. | Hackathon submissions |
 | `toolkit` | A set of schemas, modules, or utilities that support policy development but do not constitute a stand-alone policy workflow. | Modules/, reusable schema packs |
+| `other` | Does not fit any of the above. `policy_type_note` is required — describe the actual type in plain English. | |
 
 ---
 
@@ -156,16 +159,16 @@ Publication history is split across two files with different ownership:
 
 | File | Who writes it | How |
 |---|---|---|
-| `policy.yml` (`ipfs_timestamp`) | Policy author | Manually — paste the most recent mainnet timestamp (or testnet if not yet on mainnet) |
+| `policy.yml` (`hedera_timestamp`) | Policy author | Manually — paste the most recent mainnet timestamp (or testnet if not yet on mainnet) |
 | `publications.json` | The `record-publication` script | Automatically — run once after each Guardian publish action |
 
-### `ipfs_timestamp` in `policy.yml`
+### `hedera_timestamp` in `policy.yml`
 
 A single convenience field for the most recent mainnet publication — used by Guardian's one-click import. Update it whenever a new mainnet version is published.
 
 ```yaml
-# Most recent mainnet IPFS timestamp. Full history in publications.json.
-ipfs_timestamp: "1707207286.119377003"
+# Most recent Hedera consensus timestamp. Full history in publications.json.
+hedera_timestamp: "1707207286.119377003"
 ```
 
 For testnet-only policies, use the testnet timestamp. The absence of a mainnet entry in `publications.json` is itself a visible signal in the catalog (no "Live on mainnet" badge).
@@ -179,7 +182,7 @@ node scripts/record-publication.js \
   --policy verra-vm0007-redd-plus \
   --network mainnet \
   --version 3.0.0 \
-  --ipfs-timestamp 1707207286.119377003 \
+  --hedera-timestamp 1707207286.119377003 \
   --topic-id 0.0.5678901
 ```
 
