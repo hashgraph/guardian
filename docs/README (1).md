@@ -100,13 +100,29 @@ Publish a policy on testnet so that project proponents or stakeholders can submi
 {% endstep %}
 
 {% step %}
+### Conclusion
+
+You have now published your first policy which users will be able to interact with. Next you will&#x20;
+{% endstep %}
+
+{% step %}
 ### Submit data
+
+REQUIRES USER ACCOUNT TO SUBMIT DATA
+
+* SR Account
+* User
 
 <details>
 
 <summary>Project proponents submit data </summary>
 
 Visit a \[LINK: PROJECT] to view your policy running on testnet and submit data. This is how a project proponents would submit their project for verification and validation.&#x20;
+
+1. Log Out
+2. Sign up as regular user
+3. Generate Hedera Testnet Account
+4. Create New DID
 
 </details>
 {% endstep %}
