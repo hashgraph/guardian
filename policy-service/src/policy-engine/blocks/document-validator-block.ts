@@ -173,17 +173,29 @@ export class DocumentValidatorBlock {
             return `${title}: ${detail}`;
         }
 
-        for (const condition of (sourceValidation.conditions || [])) {
-            const left  = this.coerceValue(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, sourceDocuments));
-            const right = this.coerceValue(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, sourceDocuments));
-
-            if (!this.evaluateCrossCondition(left, condition.type, right)) {
-                const detail = `field "${condition.field}" - ${this.describeCrossConditionFailure(condition.type, left, right)}`;
-                return `${title}: ${detail}`;
-            }
+        const conditions = sourceValidation.conditions || [];
+        if (!conditions.length) {
+            return null;
         }
 
-        return null;
+        const sourceFailures = new Set<string>();
+        for (const sourceDoc of sourceDocuments) {
+            let firstFailure: string | null = null;
+            for (const condition of conditions) {
+                const left  = this.coerceValue(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
+                const right = this.coerceValue(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
+                if (!this.evaluateCrossCondition(left, condition.type, right)) {
+                    firstFailure = `field "${condition.field}" - ${this.describeCrossConditionFailure(condition.type, left, right)}`;
+                    break;
+                }
+            }
+            if (firstFailure === null) {
+                return null;
+            }
+            sourceFailures.add(firstFailure);
+        }
+
+        return `${title}: ${Array.from(sourceFailures).join('; ')}`;
     }
 
     /**
