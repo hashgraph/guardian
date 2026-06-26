@@ -905,6 +905,7 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                             [value]="item.open ? 0 : null"
+                            [motionOptions]="{ disabled: true }"
                             (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
                             >
                             <p-accordion-panel [value]="0">
@@ -1100,6 +1101,7 @@
                         item.control?.invalid ? 'guardian-accordion-error' : ''
                     }}"
                                 [value]="item.open ? 0 : null"
+                                [motionOptions]="{ disabled: true }"
                                 (valueChange)="item.open = ($event === 0); onAccordionSelectEvent(item.open, item)"
                                 >
                                 <p-accordion-panel [value]="0">
@@ -1199,6 +1201,7 @@
                                             : ''
                                     }}"
                                                 [value]="listItem.open ? 0 : null"
+                                                [motionOptions]="{ disabled: true }"
                                                 (valueChange)="listItem.open = ($event === 0); onAccordionSelectEvent(listItem.open, item, listItem.index2)"
                                                 >
                                                 <p-accordion-panel [value]="0">
