@@ -59,6 +59,7 @@ export class VCViewerDialog {
     public selectedVersionIndex: number = 0;
 
     public isLargeSize: boolean = true;
+    public navPanelCollapsed: boolean = false;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
 
     constructor(
@@ -107,7 +108,7 @@ export class VCViewerDialog {
         this.documentId = row?.id;
         this.schemaId = row?.schema;
         this.messageId = row?.messageId;
-        this.canExport = !(canExport === false);
+        this.canExport = canExport === true;
 
         this.getByUser = getByUser;
         this.id = id;
@@ -293,6 +294,10 @@ export class VCViewerDialog {
                 dryRun: this.dryRun
             }
         });
+    }
+
+    public toggleNavPanel(): void {
+        this.navPanelCollapsed = !this.navPanelCollapsed;
     }
 
     public toggleSize(): void {

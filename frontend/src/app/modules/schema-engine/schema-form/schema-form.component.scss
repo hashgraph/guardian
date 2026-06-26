@@ -192,10 +192,8 @@ form {
                     }
                 }
 
-                p-select::ng-deep {
-                    .p-select {
-                        border-color: var(--guardian-warning-color, #DA9B22);
-                    }
+                p-select.p-select {
+                    border-color: var(--guardian-warning-color, #DA9B22);
                 }
             }
 
@@ -212,10 +210,8 @@ form {
                     }
                 }
 
-                p-select::ng-deep {
-                    .p-select {
-                        border-color: var(--guardian-warning-color, #19BE47);
-                    }
+                p-select.p-select {
+                    border-color: var(--guardian-warning-color, #19BE47);
                 }
             }
         }
@@ -294,7 +290,7 @@ form {
         border-color: #f44336;
     }
 
-    .form-field-enum ::ng-deep p-select .p-select {
+    .form-field-enum ::ng-deep p-select.p-select {
         border-color: #f44336 !important;
     }
 
@@ -433,17 +429,11 @@ form {
 }
 
 form::ng-deep {
-    .guardian-accordion-error>.p-accordion>p-accordiontab>.p-accordion-tab {
-        &>.p-accordion-header {
-            &>.p-accordion-header-link {
-                border-color: #f44336;
-            }
-        }
+    .guardian-accordion-error>p-accordion-panel.p-accordionpanel {
+        border-color: #f44336;
 
-        &>.p-toggleable-content {
-            &>.p-accordion-content {
-                border-color: #f44336;
-            }
+        >p-accordion-content .p-accordioncontent-content {
+            border-top-color: #f44336;
         }
     }
 }
@@ -496,4 +486,20 @@ form::ng-deep {
 
 .form-field-input {
     height: auto !important;
+}
+
+:host ::ng-deep .guardian-accordion {
+
+    .p-accordionpanel,
+    .p-accordioncontent,
+    .p-motion,
+    .p-accordioncontent-wrapper,
+    .p-accordioncontent-content {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .p-accordioncontent-content {
+        overflow-x: auto;
+    }
 }

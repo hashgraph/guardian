@@ -20,15 +20,34 @@
 
 .content {
     flex-wrap: nowrap;
-    background: var(--guardian-grey-background, #f9fafc);
+    background: var(--guardian-background, #ffffff);
     display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+    margin-left: 14px;
 }
 
 .content-name {
     display: inline-flex;
-    margin-right: 10px;
     align-items: center;
-    color: var(--guardian-font-color, #23252E);
+    height: 40px;
+    max-width: clamp(88px, 22vw, 220px);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-grey-5);
+    font-family: Inter, serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    background-color: var(--guardian-background, white);
+    border: 1px solid var(--guardian-grid-color, #ced4da);
+    border-right: 1px solid var(--guardian-grid-color, #ced4da);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    box-sizing: border-box;
+    padding: 2px 4.5px 0 12px;
 }
 
 .content-select {
@@ -62,6 +81,8 @@
 .grouped-content {
     display: flex;
     align-items: flex-start;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .type-select {
@@ -80,16 +101,22 @@ p-datepicker {
 
 .common-prefix-dropdown {
     background-color: var(--guardian-background, white);
-    display: block;
+    display: inline-flex;
+    align-items: center;
     height: 40px;
     border: 1px solid var(--guardian-grid-color, #ced4da);
-    padding: 9px 6px 9px 12px;
-    color: var(--guardian-font-color, #848FA9);
+    padding: 2px 6px 0 4.5px;
+    color: var(--color-grey-5);
+    font-family: Inter, serif;
     font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
     box-sizing: border-box;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-left: 0;
     border-right: 0;
+    max-width: clamp(80px, 20vw, 180px);
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
@@ -106,15 +133,20 @@ p-datepicker {
     box-shadow: none;
 }
 
-.content ::ng-deep .filter-dropdown .p-select {
+.content ::ng-deep .filter-dropdown.p-select {
     border-radius: 0 8px 8px 0;
     border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
 
     .p-select-label {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        font-family: Inter, serif;
         font-size: 14px;
-        color: var(--guardian-font-color, #23252E);
-        height: 36px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-grey-black-2);
     }
 
     .p-select-dropdown-icon {
@@ -126,15 +158,20 @@ p-datepicker {
     }
 }
 
-.content ::ng-deep .filter-dropdown .p-multiselect {
+.content ::ng-deep .filter-dropdown.p-multiselect {
     border-radius: 0 8px 8px 0;
     border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
 
     .p-multiselect-label {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        font-family: Inter, serif;
         font-size: 14px;
-        color: var(--guardian-font-color, #23252E);
-        height: 36px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-grey-black-2);
     }
 
     .p-multiselect-dropdown-icon {

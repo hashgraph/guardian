@@ -21,6 +21,7 @@ import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigatio
 })
 export class DocumentViewComponent implements OnInit {
     @Input() dialogContext?: 'fullscreen' | 'viewer';
+    @Input() navCollapsed: boolean = false;
     @Input('getByUser') getByUser: boolean = false;
     @Input('document') document: any;
     @Input('formulas') formulas: FormulasTree | null;

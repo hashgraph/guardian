@@ -73,6 +73,7 @@
                 @if (!column.canDisplay || column.canDisplay()) {
                   <td
                     class="row-cell-{{column.type}} col-{{column.size}}"
+                    [class.balance-cell-container]="column.id === 'balance' || column.id === 'refresh'"
                     pTooltip="{{row[column.id]}}"
                     [tooltipDisabled]="!column.tooltip"
                     tooltipPosition="top"

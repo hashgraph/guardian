@@ -24,6 +24,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
+import { OverflowTitleDirective } from './directives/overflow-title.directive';
 
 @NgModule({
     declarations: [
@@ -36,7 +37,8 @@ import { TooltipModule } from 'primeng/tooltip';
         SearchPolicyDialog,
         CompareDocumentComponent,
         CompareToolComponent,
-        CompareRecordComponent
+        CompareRecordComponent,
+        OverflowTitleDirective
     ],
     imports: [
         CommonModule,

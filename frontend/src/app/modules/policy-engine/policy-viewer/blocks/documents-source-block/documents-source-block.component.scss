@@ -28,9 +28,10 @@
 .grid-filters {
     display: flex;
     gap: 16px;
-    background-color: var(--guardian-grey-background, #f9fafc);
+    background-color: var(--guardian-background, #ffffff);
     flex-wrap: wrap;
     height: 40px;
+    margin: var(--guardian-page-header-gap) 0;
 }
 
 // .table-container {

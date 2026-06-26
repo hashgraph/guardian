@@ -667,6 +667,22 @@ button[disabled] {
     margin-bottom: 24px;
 }
 
+.input-field-container.checkbox-field {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+
+    p-checkbox {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .p-checkbox-label {
+        margin: 0;
+        line-height: 1;
+    }
+}
+
 .form-label {
     color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
@@ -738,11 +754,13 @@ mat-radio-button {
     min-width: 140px;
 }
 
-.guardian-user-page-toolbar {
+.guardian-page .guardian-user-page-toolbar {
     display: flex;
+    align-items: center;
     height: 40px;
     justify-content: flex-end;
-    margin: 24px 0px 18px 0px;
+    margin: 0;
+    padding: 0;
 
     .guardian-user-page-filters {
         width: 100%;
@@ -804,6 +822,7 @@ mat-radio-button {
     min-height: calc(100vh - 500px);
     width: 100%;
     position: relative;
+    margin-top: 40px;
 }
 
 .guardian-user-page-buttons {

@@ -50,8 +50,13 @@
 
 .balance-cell {
     display: flex;
+    align-items: center;
 
     .balance-container {
+        display: flex;
+        align-items: center;
+        line-height: 24px;
+        padding-top: 4px;
         width: 132px;
         height: 24px;
         white-space: nowrap;
@@ -61,12 +66,28 @@
     }
 
     .last-update {
+        display: flex;
+        align-items: center;
+        line-height: 24px;
+        padding-top: 4px;
         width: 132px;
         height: 24px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         margin-left: 8px;
+    }
+}
+
+.guardian-grid-row td.balance-cell-container {
+    vertical-align: middle;
+
+    .balance-cell {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        right: 16px;
+        transform: translateY(-50%);
     }
 }
 

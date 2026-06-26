@@ -18,7 +18,7 @@ import { SchemaService } from '../../../../services/schema.service';
     standalone: false
 })
 export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
-    @ViewChild(SeparateStepperComponent) matTree!: SeparateStepperComponent;
+    @ViewChild(SeparateStepperComponent) matTree?: SeparateStepperComponent;
     @ViewChild('policyDescriptionForm', { read: TemplateRef }) policyDescriptionFormTemp: any;
     @ViewChild('policyRoles', { read: TemplateRef }) policyRoles: any;
     @ViewChild('policySchemas', { read: TemplateRef }) policySchemas: any;
@@ -433,11 +433,11 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
     }
 
     handlePrevClick() {
-        this.matTree.onPrevClick();
+        this.matTree?.onPrevClick();
     }
 
     handleNextClick() {
-        this.matTree.onNextClick();
+        this.matTree?.onNextClick();
     }
 
     setParents(root: any) {
@@ -503,7 +503,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         }
 
         options.displayedInRoles = roles;
-        this.matTree.refreshTree();
+        this.matTree?.refreshTree();
     }
 
     onSchemaRoleConfigChange(
@@ -575,7 +575,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                     dependencySchemaListener.unsubscribe();
                     isApproveEnableListener.unsubscribe();
                     initialRolesForListener.unsubscribe();
-                    this.matTree.refreshTree();
+                    this.matTree?.refreshTree();
                     rolesSubscription.unsubscribe();
                 }
             });
@@ -703,7 +703,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
 
         Promise.all(schemaPromises).then(() => {
             this.selectedSchemas = value;
-            this.matTree.refreshTree();
+            this.matTree?.refreshTree();
         });
     }
 
@@ -785,7 +785,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
         }
 
         this.selectedTrustChainRoles = value;
-        this.matTree.refreshTree();
+        this.matTree?.refreshTree();
     }
 
     onSelectedTrustChainRoleChange(trustChainRole: string, node: any) {
@@ -819,7 +819,7 @@ export class PolicyWizardDialogComponent implements OnInit, AfterViewInit {
                     this.selectedTrustChainRoles = this.selectedTrustChainRoles.filter(
                         (displayedRole: string) => value.includes(displayedRole)
                     );
-                    this.matTree.refreshTree();
+                    this.matTree?.refreshTree();
                     rolesSubscription.unsubscribe();
                 }
             });

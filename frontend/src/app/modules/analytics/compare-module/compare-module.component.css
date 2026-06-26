@@ -686,24 +686,24 @@
     height: 1px;
 }
 
-.merge-table-content::ng-deep mat-row[type="FULL"]:not([rate="100%"]) {
+.merge-table-content::ng-deep .mat-row[type="FULL"]:not([rate="100%"]) {
     background: var(--partly-color);
 }
 
-.merge-table-content::ng-deep mat-row[type="FULL"] {
+.merge-table-content::ng-deep .mat-row[type="FULL"] {
     background: var(--full-color);
 }
 
-.merge-table-content::ng-deep mat-row[type="PARTLY"] {
+.merge-table-content::ng-deep .mat-row[type="PARTLY"] {
     background: var(--partly-color);
 }
 
-.merge-table-content::ng-deep mat-row[type="LEFT"],
-.merge-table-content::ng-deep mat-row[type="RIGHT"] {
+.merge-table-content::ng-deep .mat-row[type="LEFT"],
+.merge-table-content::ng-deep .mat-row[type="RIGHT"] {
     background: var(--left-right-color);
 }
 
-.merge-table-content::ng-deep mat-row[type="PARTLY"][rate="100%"] {
+.merge-table-content::ng-deep .mat-row[type="PARTLY"][rate="100%"] {
     background: linear-gradient(45deg, var(--full-color) 48%, var(--partly-color) 52%);
 }
 

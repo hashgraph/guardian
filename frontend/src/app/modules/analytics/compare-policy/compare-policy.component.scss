@@ -187,7 +187,7 @@
     border: 1px solid var(--guardian-border-color, #8b8b8b);
     box-shadow: 1px 1px 3px 0px rgb(0 0 0 / 20%);
     cursor: pointer;
-    max-width: 400px;
+    max-width: 100%;
 }
 
 .fantom-tree .block-tree {
@@ -502,7 +502,9 @@
 }
 
 .prop-table-row {
-    display: table-row;
+    display: table;
+    width: 100%;
+    table-layout: fixed;
 }
 
 .prop-table-name {
@@ -514,6 +516,7 @@
     padding-bottom: 2px;
     box-sizing: border-box;
     min-width: 175px;
+    width: 175px;
     height: 30px;
 }
 
@@ -526,6 +529,7 @@
     padding-left: 8px;
     min-width: 240px;
     position: relative;
+    vertical-align: middle;
 }
 
 .prop-table-value .compare-btn {
@@ -543,18 +547,18 @@
 }
 
 .prop-table-value span {
-    position: absolute;
+    display: inline-block;
+    width: 100%;
     overflow: hidden;
     white-space: nowrap;
-    top: 4px;
-    bottom: 4px;
-    right: 36px;
-    left: 8px;
     text-overflow: ellipsis;
+    vertical-align: middle;
 }
 
 .prop-table-body {
-    display: table;
+    display: block;
+    width: 100%;
+    max-width: 100%;
 }
 
 .prop-table-header {
@@ -899,6 +903,27 @@
 
 .mat-row {
     display: table-row;
+}
+
+.merge-table-content::ng-deep .mat-row[type="FULL"]:not([rate="100%"]) {
+    background: var(--guardian-warning-background, #fffada);
+}
+
+.merge-table-content::ng-deep .mat-row[type="FULL"] {
+    background: var(--guardian-success-background, #d0ffd6);
+}
+
+.merge-table-content::ng-deep .mat-row[type="PARTLY"] {
+    background: var(--guardian-warning-background, #fffada);
+}
+
+.merge-table-content::ng-deep .mat-row[type="LEFT"],
+.merge-table-content::ng-deep .mat-row[type="RIGHT"] {
+    background: var(--guardian-failure-background, #ffc5c6);
+}
+
+.merge-table-content::ng-deep .mat-row[type="PARTLY"][rate="100%"] {
+    background: linear-gradient(45deg, var(--guardian-success-background, #d0ffd6) 48%, var(--guardian-warning-background, #fffada) 52%);
 }
 
 .mat-header-cell {

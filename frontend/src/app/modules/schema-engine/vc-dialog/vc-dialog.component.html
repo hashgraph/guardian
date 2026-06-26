@@ -18,6 +18,11 @@
       </div>
     }
   </div>
+  @if (viewDocument === true && isVcDocument) {
+    <div class="header-icon nav-panel" (click)="toggleNavPanel()" [title]="navPanelCollapsed ? 'Expand panel' : 'Collapse panel'">
+      <i [class]="navPanelCollapsed ? 'pi pi-chevron-right' : 'pi pi-chevron-left'"></i>
+    </div>
+  }
   <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
     <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
   </div>
@@ -92,6 +97,7 @@
             [getByUser]="getByUser"
             [schema]="schema"
             [type]="type"
+            [navCollapsed]="navPanelCollapsed"
           [dialogContext]="'viewer'"></app-document-view>
         }
       }

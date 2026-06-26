@@ -457,7 +457,8 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 document: text,
                 title: field.title,
                 type: 'TEXT',
-                viewDocument: false
+                viewDocument: false,
+                canExport: true
             }
         })!;
         dialogRef.onClose.subscribe(async (result) => {

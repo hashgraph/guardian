@@ -259,15 +259,26 @@ form {
 }
 
 .schema-form-view-nav {
-    width: 25%; 
-    min-width: 0%; 
-    max-width: 75%; 
+    width: 25%;
+    min-width: 0%;
+    max-width: 75%;
     align-self: flex-start;
     position: sticky;
     top: 0;
     max-height: calc(100vh - 230px);
     overflow-y: auto;
     box-sizing: border-box;
+    transition: width 0.2s ease;
+
+    &.nav-collapsed {
+        width: 0 !important;
+        min-width: 0 !important;
+        overflow: hidden;
+    }
+}
+
+.schema-form-view-nav.nav-collapsed + .resize-handler {
+    display: none;
 }
 
 .schema-form-content {

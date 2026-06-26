@@ -56,6 +56,23 @@
         }
     }
 
+    // PrimeNG 21: p-selectbutton host carries both .guardian-select-button and
+    // .p-selectbutton on the same element, so togglebuttons are direct children.
+    .p-togglebutton {
+        outline: none;
+        box-shadow: none;
+
+        &:focus,
+        &:focus-visible {
+            outline: none;
+            box-shadow: none;
+        }
+    }
+
+    .p-togglebutton-checked .p-togglebutton-content {
+        box-shadow: none;
+    }
+
     .guardian-select-button-item {
         display: flex;
         height: 22px;
