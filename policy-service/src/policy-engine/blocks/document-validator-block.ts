@@ -108,7 +108,7 @@ export class DocumentValidatorBlock {
         if (matched === total) { return 'Matches all sources - not blocking'; }
         const m = detail.match(/^value (.+?) (?:is|must)/) ?? detail.match(/^got (.+?),/);
         const raw = m ? m[1].replace(/^"|"$/g, '') : null;
-        const val = raw != null ? `"${raw}"` : null;
+        const val = raw !== null ? `"${raw}"` : null;
         if (matched === 0) {
             return val ? `${val} not found in any source` : 'Not found in any source';
         }
