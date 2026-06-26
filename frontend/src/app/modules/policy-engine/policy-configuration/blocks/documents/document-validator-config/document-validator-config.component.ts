@@ -103,7 +103,6 @@ export class DocumentValidatorConfigComponent implements OnInit {
     // Same-doc conditions
     addCondition() {
         this.properties.conditions.push({ value: '', field: '', type: 'equal' });
-        this.onSave();
     }
 
     removeCondition(i: number) {
@@ -134,7 +133,6 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     addFilter(validation: any) {
         validation.filters.push({ field: '', type: 'equal', typeValue: 'value', value: '' });
-        this.onSave();
     }
 
     removeFilter(validation: any, fi: number) {
@@ -150,7 +148,6 @@ export class DocumentValidatorConfigComponent implements OnInit {
             value: '',
             valueSource: 'source',
         });
-        this.onSave();
     }
 
     removeCrossCondition(validation: any, ci: number) {
@@ -159,6 +156,11 @@ export class DocumentValidatorConfigComponent implements OnInit {
     }
 
     onSave() {
+        this.properties.conditions = this.properties.conditions.filter((c: any) => !!c.field);
+        for (const sv of (this.properties.sourceValidations || [])) {
+            sv.filters = (sv.filters || []).filter((f: any) => !!f.field);
+            sv.conditions = (sv.conditions || []).filter((c: any) => !!c.field);
+        }
         this.item.changed = true;
     }
 }

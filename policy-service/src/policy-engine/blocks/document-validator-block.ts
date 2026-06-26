@@ -104,6 +104,17 @@ export class DocumentValidatorBlock {
         }
     }
 
+    private buildSourceHint(detail: string, matched: number, total: number): string {
+        if (matched === total) { return 'Matches all sources - not blocking'; }
+        const m = detail.match(/^value (.+?) (?:is|must)/) ?? detail.match(/^got (.+?),/);
+        const raw = m ? m[1].replace(/^"|"$/g, '') : null;
+        const val = raw != null ? `"${raw}"` : null;
+        if (matched === 0) {
+            return val ? `${val} not found in any source` : 'Not found in any source';
+        }
+        return val ? `${val} valid in some sources` : 'Valid in some sources';
+    }
+
     private buildSourceFilter(
         sourceValidation: any,
         ref: IPolicyValidatorBlock,
@@ -165,7 +176,12 @@ export class DocumentValidatorBlock {
 
         if (!sourceDocuments?.length) {
             const filterSummary = (sourceValidation.filters || [])
-                .map((f: any) => `${f.field} ${f.type} "${f.value}"`)
+                .map((f: any) => {
+                    const v = f.typeValue === 'variable'
+                        ? this.resolveDocumentValue(f.value, document)
+                        : f.value;
+                    return `${f.field} ${f.type} ${JSON.stringify(v)}`;
+                })
                 .join(', ');
             const detail = filterSummary
                 ? `no source documents matched filter(s): ${filterSummary}`
@@ -178,24 +194,45 @@ export class DocumentValidatorBlock {
             return null;
         }
 
-        const sourceFailures = new Set<string>();
+        const failureMap = new Map<string, { field: string, detail: string, count: number }>();
         for (const sourceDoc of sourceDocuments) {
-            let firstFailure: string | null = null;
+            let failed = false;
+            const counted = new Set<string>();
             for (const condition of conditions) {
                 const left  = this.coerceValue(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
                 const right = this.coerceValue(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
                 if (!this.evaluateCrossCondition(left, condition.type, right)) {
-                    firstFailure = `field "${condition.field}" - ${this.describeCrossConditionFailure(condition.type, left, right)}`;
-                    break;
+                    if (!failureMap.has(condition.field)) {
+                        failureMap.set(condition.field, { field: condition.field, detail: this.describeCrossConditionFailure(condition.type, left, right), count: 0 });
+                    }
+                    if (!counted.has(condition.field)) {
+                        failureMap.get(condition.field).count++;
+                        counted.add(condition.field);
+                    }
+                    failed = true;
                 }
             }
-            if (firstFailure === null) {
+            if (!failed) {
                 return null;
             }
-            sourceFailures.add(firstFailure);
         }
 
-        return `${title}: ${Array.from(sourceFailures).join('; ')}`;
+        const total = sourceDocuments.length;
+        const schema = sourceValidation.schema
+            ? await PolicyUtils.loadSchemaByID(ref, sourceValidation.schema)
+            : null;
+        const schemaName = schema?.name ?? null;
+
+        const N = failureMap.size;
+        let msg = `Checked ${N} field${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}`;
+        for (const { field, detail, count } of Array.from(failureMap.values())) {
+            const matched = total - count;
+            const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
+            const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
+            const hint = this.buildSourceHint(detail, matched, total);
+            msg += `\n\n${label}\n(${hint})`;
+        }
+        return msg;
     }
 
     /**
@@ -311,7 +348,9 @@ export class DocumentValidatorBlock {
         if (options.conditions) {
             for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
-                    return `Invalid document`;
+                    const actual = PolicyUtils.getObjectValue(document, filter.field);
+                    const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
+                    return `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}`;
                 }
             }
         }
