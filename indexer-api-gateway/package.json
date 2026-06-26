@@ -7,10 +7,6 @@
         "#dto": "./dist/dto/index.js",
         "#decorators": "./dist/decorators/index.js"
     },
-    "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
-    },
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
         "@indexer/common": "workspace:*",

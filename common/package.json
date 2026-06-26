@@ -81,10 +81,6 @@
         "./dist/entity/**/*.js"
     ],
     "name": "@guardian/common",
-    "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
-    },
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
