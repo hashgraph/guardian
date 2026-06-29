@@ -14,6 +14,7 @@
           [attr.showMobileField]="showPage(item, i)"
           class="form-field-container"
           >
+          @defer (on viewport; prefetch on idle) {
           <!-- simple field -->
           @if (ifSimpleField(item)) {
             <div class="form-field">
@@ -1358,6 +1359,9 @@
                                   </p-accordion>
                                 </div>
                               }
+                          } @placeholder {
+                            <div class="form-field-container-placeholder"></div>
+                          }
                             </div>
                           }
                           <!-- <ng-container *ngIf="getConditions(item) as conditions">
