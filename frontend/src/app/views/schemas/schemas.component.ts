@@ -1144,7 +1144,7 @@ export class SchemaConfigComponent implements OnInit {
     public onOpenForm(schema: Schema, example: boolean): void {
         this.dialog.open(SchemaFormDialog, {
             showHeader: false,
-            header: 'Dry run with test data',
+            header: example ? 'Dry run with test data' : 'Preview',
             width: '90%',
             styleClass: 'guardian-dialog',
             data: {
