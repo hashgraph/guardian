@@ -421,6 +421,20 @@ export class PolicyUtils {
     }
 
     /**
+     * Coerce a value to the best comparable type: number → ISO Date → string.
+     * Strings that don't start with YYYY-MM-DD are never passed to new Date(),
+     * so free-form strings like "Jan 1 2024" are left as-is.
+     */
+    private static coerceComparable(v: any): any {
+        if (typeof v !== 'string') { return v; }
+        const n = Number(v);
+        if (!isNaN(n) && v.trim() !== '') { return n; }
+        const d = new Date(v);
+        if (!isNaN(d.getTime())) { return d; }
+        return v;
+    }
+
+    /**
      * Check Document Field
      * @param document
      * @param filter
@@ -433,18 +447,22 @@ export class PolicyUtils {
                     return filter.value === value;
                 case 'not_equal':
                     return filter.value !== value;
-                case 'in':
-                    return Array.isArray(value) ? value.indexOf(filter.value) > -1 : false;
-                case 'not_in':
-                    return Array.isArray(value) ? value.indexOf(filter.value) === -1 : false;
+                case 'in': {
+                    const list = String(filter.value).split(',').map((v: string) => v.trim());
+                    return list.includes(String(value));
+                }
+                case 'not_in': {
+                    const list = String(filter.value).split(',').map((v: string) => v.trim());
+                    return !list.includes(String(value));
+                }
                 case 'gt':
-                    return value > filter.value;
+                    return PolicyUtils.coerceComparable(value) > PolicyUtils.coerceComparable(filter.value);
                 case 'gte':
-                    return value >= filter.value;
+                    return PolicyUtils.coerceComparable(value) >= PolicyUtils.coerceComparable(filter.value);
                 case 'lt':
-                    return value < filter.value;
+                    return PolicyUtils.coerceComparable(value) < PolicyUtils.coerceComparable(filter.value);
                 case 'lte':
-                    return value <= filter.value;
+                    return PolicyUtils.coerceComparable(value) <= PolicyUtils.coerceComparable(filter.value);
                 default:
                     return false;
             }

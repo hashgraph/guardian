@@ -51,4 +51,72 @@ describe('DocumentValidatorBlock.validate', () => {
         // not required → returns null → checkBlockError called with null → not pushed
         assert.deepEqual(v.checked, []);
     });
+
+    describe('sourceValidations', () => {
+        it('accepts a valid sourceValidations array', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'VcDocument', filters: [], conditions: [] }]
+            }));
+            assert.deepEqual(v.errors, []);
+        });
+
+        it('rejects sourceValidations that is not an array', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({ sourceValidations: 'bad' }));
+            assert.ok(v.errors.some(e => e.includes('sourceValidations')));
+        });
+
+        it('rejects an entry with an invalid dbCollection', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'UnknownCollection' }]
+            }));
+            assert.ok(v.errors.some(e => e.includes('dbCollection')));
+        });
+
+        it('accepts VpDocument as dbCollection', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'VpDocument' }]
+            }));
+            assert.deepEqual(v.errors, []);
+        });
+
+        it('rejects filters that is not an array', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'VcDocument', filters: 'bad' }]
+            }));
+            assert.ok(v.errors.some(e => e.includes('filters')));
+        });
+
+        it('rejects conditions that is not an array', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'VcDocument', conditions: 'bad' }]
+            }));
+            assert.ok(v.errors.some(e => e.includes('conditions')));
+        });
+
+        it('accepts undefined filters and conditions', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [{ dbCollection: 'VcDocument' }]
+            }));
+            assert.deepEqual(v.errors, []);
+        });
+
+        it('validates multiple entries independently', async () => {
+            const v = new FakeValidator();
+            await DocumentValidatorBlock.validate(v, refWith({
+                sourceValidations: [
+                    { dbCollection: 'VcDocument' },
+                    { dbCollection: 'Bad' },
+                    { dbCollection: 'VpDocument', filters: 'x' },
+                ]
+            }));
+            assert.equal(v.errors.length, 2);
+        });
+    });
 });

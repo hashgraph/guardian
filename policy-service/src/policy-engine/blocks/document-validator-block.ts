@@ -48,6 +48,8 @@ export class DocumentValidatorBlock {
         if (value === 'false') { return false; }
         const num = Number(value);
         if (!isNaN(num) && value.trim() !== '') { return num; }
+        const d = new Date(value);
+        if (!isNaN(d.getTime())) { return d; }
         return value;
     }
 
@@ -350,7 +352,7 @@ export class DocumentValidatorBlock {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     const actual = PolicyUtils.getObjectValue(document, filter.field);
                     const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
-                    return `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}`;
+                    return `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, this.coerceValue(filter.value))}`;
                 }
             }
         }
