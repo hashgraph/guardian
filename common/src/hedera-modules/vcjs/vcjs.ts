@@ -322,8 +322,9 @@ export class VCJS {
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
+        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
     }
 
     /**
@@ -354,6 +355,8 @@ export class VCJS {
      * @param schema Schema
      */
     private prepareSchema(schema: any) {
+        this.stripIfOnly(schema);
+
         const defsObj = schema.$defs;
         if (!defsObj) {
             return;
@@ -362,12 +365,121 @@ export class VCJS {
         const defsKeys = Object.keys(defsObj);
         for (const key of defsKeys) {
             const nestedSchema = defsObj[key];
+            this.stripIfOnly(nestedSchema);
             const required = nestedSchema.required;
             if (!required || required.length === 0) {
                 continue;
             }
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
+
+        if (!Array.isArray(schema.allOf)) {
+            return;
+        }
+        const rootProperties = schema.properties || {};
+        const conditionalByRef = new Map<string, Set<string>>();
+        for (const condEntry of schema.allOf) {
+            if (!condEntry?.if) { continue; }
+            for (const branch of [condEntry.then, condEntry.else]) {
+                if (!branch?.properties) { continue; }
+                for (const propKey of Object.keys(branch.properties)) {
+                    const constraint = branch.properties[propKey];
+                    if (!constraint || typeof constraint !== 'object') { continue; }
+                    const ref = rootProperties[propKey]?.$ref;
+                    if (!ref || !defsObj[ref]) { continue; }
+                    if (!conditionalByRef.has(ref)) { conditionalByRef.set(ref, new Set()); }
+                    const conditionalFields = conditionalByRef.get(ref)!;
+                    if (Array.isArray(constraint.required)) {
+                        for (const fieldName of constraint.required) { conditionalFields.add(fieldName); }
+                    }
+                    if (constraint.properties) {
+                        for (const [fieldName, val] of Object.entries(constraint.properties)) {
+                            if (val === false) { conditionalFields.add(fieldName); }
+                        }
+                    }
+                }
+            }
+        }
+        for (const [ref, conditionalFields] of conditionalByRef) {
+            const defsEntry = defsObj[ref];
+            if (Array.isArray(defsEntry?.required) && conditionalFields.size) {
+                defsEntry.required = defsEntry.required.filter((r: string) => !conditionalFields.has(r));
+            }
+        }
+    }
+
+    private stripIfOnly(schema: any) {
+        if (!Array.isArray(schema?.allOf)) {
+            return;
+        }
+        schema.allOf = schema.allOf.filter(
+            (entry: any) => !entry?.if || entry.then !== undefined || entry.else !== undefined
+        );
+        if (schema.allOf.length === 0) {
+            delete schema.allOf;
+        }
+    }
+
+    /**
+     * Converts the nested JSON Schema `if` node into a readable condition string
+     */
+    private describeIfCondition(node: any): string {
+        if (!node) { return ''; }
+        if (Array.isArray(node.anyOf)) {
+            return node.anyOf.map((b: any) => this.describeIfCondition(b)).filter(Boolean).join(' OR ');
+        }
+        if (Array.isArray(node.allOf)) {
+            return node.allOf.map((b: any) => this.describeIfCondition(b)).filter(Boolean).join(' AND ');
+        }
+        if (node.properties) {
+            return Object.entries(node.properties as Record<string, any>)
+                .map(([key, val]) => this.describeIfConditionLeaf(val, key))
+                .filter(Boolean)
+                .join(', ');
+        }
+        return '';
+    }
+
+    private describeIfConditionLeaf(node: any, leafKey: string): string {
+        if (!node) { return ''; }
+        if (node.const !== undefined) {
+            return `${leafKey} = '${node.const}'`;
+        }
+        if (node.properties) {
+            return Object.entries(node.properties as Record<string, any>)
+                .map(([key, val]) => this.describeIfConditionLeaf(val, key))
+                .filter(Boolean)
+                .join(', ');
+        }
+        if (Array.isArray(node.anyOf)) {
+            return node.anyOf.map((b: any) => this.describeIfConditionLeaf(b, leafKey)).filter(Boolean).join(' OR ');
+        }
+        if (Array.isArray(node.allOf)) {
+            return node.allOf.map((b: any) => this.describeIfConditionLeaf(b, leafKey)).filter(Boolean).join(' AND ');
+        }
+        return '';
+    }
+
+    /**
+     * Replaces AJV messages with a human-readable description
+     */
+    private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
+        if (!errors?.length || !Array.isArray(schema?.allOf)) {
+            return errors;
+        }
+        return errors.map(error => {
+            if (error.keyword !== 'false schema') { return error; }
+            const match = (error.schemaPath as string)?.match(/^#\/allOf\/(\d+)\/(then|else)\//);
+            if (!match) { return error; }
+            const condEntry = schema.allOf[parseInt(match[1], 10)];
+            if (!condEntry?.if) { return error; }
+            const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
+            const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
+            return {
+                ...error,
+                message: `Field '${fieldName}' is not allowed unless: ${condition}`,
+            };
+        });
     }
 
     /**
@@ -396,10 +508,10 @@ export class VCJS {
         this.prepareSchema(schema);
 
         const validate = await ajv.compileAsync(schema);
-
         const valid = validate(subject);
+        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
     }
 
     /**
