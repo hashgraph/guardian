@@ -1115,7 +1115,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const notifier = NewNotifier.empty();
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const root = await users.getHederaAccount(owner.owner, owner?.id);
                 const item = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.complete();
                 return new MessageResponse(item);
@@ -1174,7 +1174,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('The tool already exists');
                 }
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const root = await users.getHederaAccount(owner.owner, owner?.id);
                 const { tool, errors } = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.complete();
                 if (errors?.length) {
