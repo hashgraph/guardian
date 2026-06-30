@@ -379,7 +379,7 @@
             "totalMinted": "Total Minted",
             "totalMintedAll": "Total Minted (All)",
             "totalMintedAllTooltip": "Total number of tokens minted across all projects to this token.",
-            "totalMintedProject": "Total Minted (Projects)",
+            "totalMintedProject": "Total Minted (Project)",
             "totalMintedProjectTooltip": "Total number of tokens minted specifically to this project.",
             "relatedIssuances": "Related Token Issuances",
             "relatedIssuancesSubtitle": "Other issuances for this token ID",

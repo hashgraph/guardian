@@ -374,7 +374,7 @@
             "totalMinted": "Total acuñado",
             "totalMintedAll": "Total acuñado (Todos)",
             "totalMintedAllTooltip": "Número total de tokens acuñados en todos los proyectos para este token.",
-            "totalMintedProject": "Total acuñado (Proyectos)",
+            "totalMintedProject": "Total acuñado (Proyecto)",
             "totalMintedProjectTooltip": "Número total de tokens acuñados específicamente para este proyecto.",
             "relatedIssuances": "Emisiones de token relacionadas",
             "relatedIssuancesSubtitle": "Otras emisiones para este ID de token",
