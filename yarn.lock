@@ -1815,7 +1815,7 @@ __metadata:
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/sdk": "npm:2.85.0"
     "@mattrglobal/jsonld-signatures-bbs": "npm:1.2.0"
-    "@meeco/cryppo": "npm:^2.0.2"
+    "@meeco/cryppo": "npm:^3.0.1"
     "@mikro-orm/core": "npm:6.6.15"
     "@mikro-orm/migrations-mongodb": "npm:6.6.15"
     "@mikro-orm/mongodb": "npm:6.6.15"
@@ -2854,15 +2854,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@meeco/cryppo@npm:^2.0.2":
-  version: 2.0.2
-  resolution: "@meeco/cryppo@npm:2.0.2"
+"@meeco/cryppo@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "@meeco/cryppo@npm:3.0.1"
   dependencies:
-    bson: "npm:^4.0.4"
-    buffer: "npm:^5.1.0"
-    node-forge: "npm:0.10.0"
-    yaml: "npm:^1.6.0"
-  checksum: 10c0/0f8f01f2139def1f734fa2a631b45b96272e20aa476335b9e254c421395e28e8f61a0280f73ca1a0104c5e59094a0ea9571f21397cb97d0007c0e30c8e193d0e
+    bson: "npm:^7.2.0"
+    buffer: "npm:^6.0.3"
+    node-forge: "npm:^1.3.1"
+    yaml: "npm:^2.8.2"
+  checksum: 10c0/27b8e8529f327294a6b0d66ec3b477a30e15d2885d8a0c876b25588ec50962a71eaa36b3e21e99ee2bcaed2e96b8fb88c8445cd181c82f12ffdbf219ea3bd504
   languageName: node
   linkType: hard
 
@@ -6026,7 +6026,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@meeco/cryppo": "npm:^2.0.2"
+    "@meeco/cryppo": "npm:^3.0.1"
     "@mikro-orm/core": "npm:6.6.15"
     "@mikro-orm/mongodb": "npm:6.6.15"
     "@nestjs/common": "npm:^11.1.24"
@@ -6538,19 +6538,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"bson@npm:^4.0.4":
-  version: 4.7.2
-  resolution: "bson@npm:4.7.2"
-  dependencies:
-    buffer: "npm:^5.6.0"
-  checksum: 10c0/ce97286239f1cc8bbc61214cee5f6a64a306a1a0c6b529b80993205738cd0287931cd09a396213ea358f886bbad6b304ca8faf8519ea73726eb467f1750f3d6f
-  languageName: node
-  linkType: hard
-
 "bson@npm:^6.10.3, bson@npm:^6.10.4":
   version: 6.10.4
   resolution: "bson@npm:6.10.4"
   checksum: 10c0/6c6819ce642516901349f42c5d9d131d5a4e84352a3859c814d4abf6b2b9249e3685b57fc4cf7b5737fb5c71252f65900a41826c1429815a93e43f0f5bb3c173
+  languageName: node
+  linkType: hard
+
+"bson@npm:^7.2.0":
+  version: 7.3.1
+  resolution: "bson@npm:7.3.1"
+  checksum: 10c0/1fead90b1081704a1844c959320a81669a85aa896eb654913c81ee6f3001c5645cd33f88b37538e3359432129d1b73a98edd8ba2b146e9c82a7f9269f1e73a06
   languageName: node
   linkType: hard
 
@@ -6609,7 +6607,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^5.1.0, buffer@npm:^5.5.0, buffer@npm:^5.6.0":
+"buffer@npm:^5.5.0":
   version: 5.7.1
   resolution: "buffer@npm:5.7.1"
   dependencies:
@@ -12765,10 +12763,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:0.10.0, node-forge@npm:^0.10.0, node-forge@npm:~0.10.0":
+"node-forge@npm:^0.10.0, node-forge@npm:~0.10.0":
   version: 0.10.0
   resolution: "node-forge@npm:0.10.0"
   checksum: 10c0/9cbf9ac8fc3889a5a46b0248f7238ee4014770bf31d22e04c0c7f04ed91c8be4584c5f534cdf6037e99f236c636c925cba960501ed2b850e077512e152760663
+  languageName: node
+  linkType: hard
+
+"node-forge@npm:^1.3.1":
+  version: 1.4.0
+  resolution: "node-forge@npm:1.4.0"
+  checksum: 10c0/67330a5f1f95257a4c8a93b7d555abe87b5f15e350123aa396c97a21a8ca94f9c6549008eb2c73668a91e0d7e3a905785acbd8f8bd0751c29401292011f8f8e1
   languageName: node
   linkType: hard
 
@@ -17225,19 +17230,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yaml@npm:2.9.0, yaml@npm:^2.8.3, yaml@npm:^2.9.0":
+"yaml@npm:2.9.0, yaml@npm:^2.8.2, yaml@npm:^2.8.3, yaml@npm:^2.9.0":
   version: 2.9.0
   resolution: "yaml@npm:2.9.0"
   bin:
     yaml: bin.mjs
   checksum: 10c0/f340718df45e97a9551b9bf9dac61c80050bc464513b710debfb5067c380c8472e3b67809cffacb4ab5ffb5e66ef9310816c88b05f371cec60abfedd8c88e0a2
-  languageName: node
-  linkType: hard
-
-"yaml@npm:^1.6.0":
-  version: 1.10.2
-  resolution: "yaml@npm:1.10.2"
-  checksum: 10c0/5c28b9eb7adc46544f28d9a8d20c5b3cb1215a886609a2fd41f51628d8aaa5878ccd628b755dbcd29f6bb4921bd04ffbc6dcc370689bb96e594e2f9813d2605f
   languageName: node
   linkType: hard
 
