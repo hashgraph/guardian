@@ -37,7 +37,7 @@ export function xlsxToFont(value: any): any {
             result.color = value?.color?.argb?.scale(2) || ''
         }
         return {};
-    } catch (error) {
+    } catch {
         return {};
     }
 }
@@ -130,7 +130,7 @@ export function anyToXlsx(value: any): string | number | boolean {
                 && item !== null
                 && item !== ''
             )
-            .join();
+            .join(',');
     }
     if (typeof value === 'object') {
         return JSON.stringify(value);

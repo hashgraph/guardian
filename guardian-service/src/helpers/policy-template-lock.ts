@@ -86,7 +86,7 @@ export async function withPolicyTemplateLock<T>(
         col.updateOne(
             { _id: policyId as any, holder: token },
             { $set: { expiresAt: new Date(Date.now() + TTL_MS) } }
-        ).catch(() => undefined);
+        ).catch(() => {});
     }, HEARTBEAT_MS);
     heartbeat.unref?.();
 
@@ -99,6 +99,6 @@ export async function withPolicyTemplateLock<T>(
         await col.updateOne(
             { _id: policyId as any, holder: token },
             { $set: { holder: null, expiresAt: new Date(0) } }
-        ).catch(() => undefined);
+        ).catch(() => {});
     }
 }

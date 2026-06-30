@@ -12,7 +12,7 @@ const ENABLE_IPFS_ENCRYPTION = false;
 
 const algorithm = 'aes-256-ctr';
 let key = 'MySuperSecretKey';
-key = crypto.createHash('sha256').update(String(key)).digest('base64').substr(0, 32);
+key = crypto.createHash('sha256').update(String(key)).digest('base64').slice(0, 32);
 
 const encrypt = (buffer: Buffer) => {
     console.log('Encrypting content')

@@ -742,7 +742,7 @@ export class MessageServer {
                 return item;
             }
             return null;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -844,7 +844,7 @@ export class MessageServer {
                 return topicId;
             }
             return null;
-        } catch (error) {
+        } catch {
             return null;
         }
     }

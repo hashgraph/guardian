@@ -35,11 +35,11 @@ export function ActionCallback(config: {
         if (config.output) {
             if (Array.isArray(config.output)) {
                 for (const output of config.output) {
-                    if (target.outputActions.indexOf(output) === -1) {
+                    if (!target.outputActions.includes(output)) {
                         target.outputActions.push(output);
                     }
                 }
-            } else if (target.outputActions.indexOf(config.output) === -1) {
+            } else if (!target.outputActions.includes(config.output)) {
                 target.outputActions.push(config.output);
             }
         }

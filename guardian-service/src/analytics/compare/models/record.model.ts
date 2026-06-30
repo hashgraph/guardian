@@ -111,7 +111,7 @@ export class RecordModel implements IWeightModel {
             } else {
                 return 0;
             }
-        } catch (error) {
+        } catch {
             return 0;
         }
     }

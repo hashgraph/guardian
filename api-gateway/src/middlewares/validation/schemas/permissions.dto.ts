@@ -3,7 +3,7 @@ import { PermissionCategories, Permissions, PermissionsArray, PermissionEntities
 import { ApiProperty } from '@nestjs/swagger';
 import { IsArray, IsBoolean, IsOptional } from 'class-validator';
 
-const permission = PermissionsArray.filter((p) => !p.disabled)[0];
+const permission = PermissionsArray.find((p) => !p.disabled);
 const permissions = PermissionsArray.filter((p) => !p.disabled).map((p) => p.name);
 
 export class PermissionsDTO {

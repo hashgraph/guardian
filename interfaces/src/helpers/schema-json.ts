@@ -511,7 +511,7 @@ export class JsonToSchema {
         if (typeof value === 'string') {
             return value;
         }
-        if (typeof value === 'undefined') {
+        if (value === undefined) {
             return undefined;
         }
         throw JsonToSchema.createErrorWithValue(
@@ -1035,9 +1035,9 @@ export class JsonToSchema {
         suggest: any[] | undefined,
         default: any[] | undefined,
     } {
-        let examplesValue: any[] | undefined = undefined;
-        let suggestValue: any[] | undefined = undefined;
-        let defaultValue: any[] | undefined = undefined;
+        let examplesValue: any[] | undefined;
+        let suggestValue: any[] | undefined;
+        let defaultValue: any[] | undefined;
 
         if (value.example) {
             if (value.isArray) {
@@ -1519,7 +1519,7 @@ export class JsonToSchema {
                 _value = _value.slice(0, 20) + '...';
             }
             return _value
-        } catch (error) {
+        } catch {
             return '';
         }
     }

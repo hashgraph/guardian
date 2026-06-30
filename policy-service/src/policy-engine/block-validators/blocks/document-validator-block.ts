@@ -24,7 +24,7 @@ export class DocumentValidatorBlock {
                 'related-vc-document',
                 'related-vp-document'
             ];
-            if (types.indexOf(ref.options.documentType) === -1) {
+            if (!types.includes(ref.options.documentType)) {
                 validator.addError('Option "documentType" must be one of ' + types.join(','));
             }
 

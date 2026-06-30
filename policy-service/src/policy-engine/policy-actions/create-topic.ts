@@ -177,7 +177,7 @@ export class CreateTopic {
             }
 
             return false;
-        } catch (error) {
+        } catch {
             return false;
         }
     }

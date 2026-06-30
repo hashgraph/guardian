@@ -43,7 +43,7 @@ export async function withMigrationLock<T>(db: Db, fn: () => Promise<T>): Promis
 
     const deadline = Date.now() + MAX_WAIT_MS;
     // Atomically take the lock only if it is free or its lease has expired.
-    // eslint-disable-next-line no-constant-condition
+
     while (true) {
         const acquired = await col.findOneAndUpdate(
             {

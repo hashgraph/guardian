@@ -224,8 +224,8 @@ export function getTokenContractId(wipeKey: { _type: string; key: string }) {
         return '';
     }
     const key = wipeKey.key;
-    const normalizedInput = key.replace(/\s/g, '');
-    const normalizedHexInput = normalizedInput.replace(/0x/g, '').toLowerCase();
+    const normalizedInput = key.replaceAll(/\s/g, '');
+    const normalizedHexInput = normalizedInput.replaceAll('0x', '').toLowerCase();
     const keyProto = Buffer.from(normalizedHexInput, 'hex');
     const out = proto.Key.decode(keyProto);
     const id =
@@ -300,11 +300,11 @@ async function setPool(
     }) as Contract & { wipeTokenIds: string[] };
 
     pool.enabled =
-        pool.tokens.findIndex(
+        !pool.tokens.some(
             (token) =>
                 !contract.wipeContractIds.includes(token.contract) &&
                 !contract.wipeTokenIds.includes(token.token)
-        ) < 0;
+        ) ;
 
     const tokenIds = options.tokens.map((item) => item.token);
 
@@ -383,10 +383,10 @@ async function setContractWiperPermissions(
                 }) as Contract & { wipeTokenIds: string[] };
 
                 pool.enabled =
-                    pool.tokens.findIndex(
+                    !pool.tokens.some(
                         (poolToken) =>
                             !contract.wipeContractIds.includes(poolToken.contract) && !contract.wipeTokenIds.includes(poolToken.token)
-                    ) < 0;
+                    ) ;
                 return pool;
             })
         )
@@ -502,7 +502,7 @@ export async function syncWipeContracts(
 
     const contractVersions = new Map<string, string>();
     const maxTimestamps = new Map<string, string>();
-    contracts.forEach((contract) => {
+    for (const contract of contracts) {
         contractVersions.set(contract.contractId, contract.version);
         const maxTimestamp = maxTimestamps.get(contract.contractId) || '';
         const timestamp = contract.lastSyncEventTimeStamp || '';
@@ -521,7 +521,7 @@ export async function syncWipeContracts(
                 contract.lastSyncEventTimeStamp
             );
         }
-    });
+    }
 
     //A contract whose events cannot be decoded throws out of this loop and takes the rest of the
     //pass with it, so one contract left over from an incompatible bytecode generation stops wipe
@@ -813,7 +813,7 @@ export async function syncWipeContract(
             }
         }
 
-        lastTimeStamp = result[result.length - 1].timestamp;
+        lastTimeStamp = result.at(-1).timestamp;
         timestamps.push(lastTimeStamp);
     }
 
@@ -959,8 +959,7 @@ export async function syncRetireContract(
                         await users.getUsersBySrId(contractOwnerDid, userId)
                 )
             );
-            const allOwnersUsersIds = []
-                .concat(...allOwnersUsers)
+            const allOwnersUsersIds = allOwnersUsers.flat()
                 .map((item) => item.id);
 
             switch (eventName) {
@@ -1079,7 +1078,7 @@ export async function syncRetireContract(
                         data[1].map((item) => ({
                             token: TokenId.fromEvmAddress(0, 0, item[0]).toString(),
                             count: Number(item[1]),
-                            serials: item[2].map((serial) => Number(serial)),
+                            serials: item[2].map(Number),
                         })),
                         userId,
                         userAccountId
@@ -1245,7 +1244,7 @@ export async function syncRetireContract(
                     break;
             }
         }
-        lastTimeStamp = result[result.length - 1].timestamp;
+        lastTimeStamp = result.at(-1).timestamp;
         timestamps.push(lastTimeStamp);
     }
 
@@ -1345,7 +1344,7 @@ async function isContractWiper(
             }
         }
 
-        timestamps.push(result[result.length - 1].timestamp);
+        timestamps.push(result.at(-1).timestamp);
     }
     return false;
 }
@@ -2910,10 +2909,10 @@ export async function contractAPI(
                     }) as Contract & { wipeTokenIds: string[] };
 
                     pool.enabled =
-                        pool.tokens.findIndex(
+                        !pool.tokens.some(
                             (token) =>
                                 !contract.wipeContractIds.includes(token.contract) && !contract.wipeTokenIds.includes(token.token)
-                        ) < 0;
+                        ) ;
                 }
 
                 await dataBaseServer.update(RetirePool, null, pools);

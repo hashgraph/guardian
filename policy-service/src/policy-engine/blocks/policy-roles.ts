@@ -379,7 +379,7 @@ export class PolicyRolesBlock {
         const policyGroups = PolicyUtils.getGroupTemplates<IGroupConfig>(ref);
         const groupMap = {};
         for (const item of policyGroups) {
-            if (groups.indexOf(item.name) > -1) {
+            if (groups.includes(item.name)) {
                 groupMap[item.name] = {
                     groupAccessType: item.groupAccessType,
                     groupRelationshipType: item.groupRelationshipType

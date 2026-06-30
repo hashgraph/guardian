@@ -192,7 +192,7 @@ export class RevocationBlock {
             item.option.status = RevokedStatus;
             item.comment = doc.option.comment;
             if (Array.isArray(item.comment)) {
-                item.comment = item.comment[item.comment.length - 1];
+                item.comment = item.comment.at(-1);
             }
             if (item.option.comment) {
                 if (Array.isArray(item.option.comment)) {
@@ -205,7 +205,7 @@ export class RevocationBlock {
 
         if (options.updatePrevDoc && doc.relationships) {
             const prevDocs = await this.findDocumentByMessageIds(doc.relationships);
-            const prevDocument = prevDocs[prevDocs.length - 1];
+            const prevDocument = prevDocs.at(-1);
             if (prevDocument) {
                 prevDocument.option.status = options.prevDocStatus;
                 await PolicyUtils.updateVC(ref, prevDocument, userId);

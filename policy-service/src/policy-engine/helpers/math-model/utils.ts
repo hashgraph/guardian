@@ -50,7 +50,7 @@ export function getDocumentValueByPath(doc: any, path: string): any {
         }
         const keys = path.split('.');
         return getValueByPath(doc, keys, 0);
-    } catch (error) {
+    } catch {
         return null;
     }
 }
@@ -97,7 +97,7 @@ export function createComputeEngine() {
                         });
                     }
                 }
-                return evaluate.apply(this, arguments);
+                return Reflect.apply(evaluate, this, arguments);
             }
         }
         const Range = lib.getStandardLibrary().find((t: any) => !!t.Range)?.Range;
@@ -134,7 +134,7 @@ export function createComputeEngine() {
                         });
                     }
                 }
-                return size.apply(this, arguments);
+                return Reflect.apply(size, this, arguments);
             }
         }
         lib.__updated = true;
@@ -153,14 +153,14 @@ export function setValueByPath(
         const key = keys[index];
         const field = fields.find((f) => f.name === key);
         if (!field || !field.isRef) {
-            throw Error('Invalid path');
+            throw new Error('Invalid path');
         }
         if (field.isArray) {
             if (!parent[key]) {
                 parent[key] = [];
             }
             if (!Array.isArray(parent[key]) || !Array.isArray(value)) {
-                throw Error('Invalid path');
+                throw new TypeError('Invalid path');
             }
             for (let i = 0; i < value.length; i++) {
                 if (!parent[key][i]) {
@@ -189,14 +189,14 @@ export function setDocumentValueByPath(
     value: any
 ): any {
     if (!doc || !path) {
-        throw Error('Invalid path');
+        throw new Error('Invalid path');
     }
     try {
         const keys = path.split('.');
         const fields = schema.fields;
         setValueByPath(doc, fields, keys, 0, value);
-    } catch (error) {
-        throw Error('Invalid path');
+    } catch {
+        throw new Error('Invalid path');
     }
     return doc;
 }

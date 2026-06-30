@@ -1715,7 +1715,7 @@ export class SchemaApi {
         if (schema.status === SchemaStatus.DEMO) {
             throw new HttpException('Schema imported in demo mode.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
-        if (allVersion.findIndex(s => s.version === version) !== -1) {
+        if (allVersion.some(s => s.version === version) ) {
             throw new HttpException('Version already exists.', HttpStatus.UNPROCESSABLE_ENTITY)
         }
         try {
@@ -1818,7 +1818,7 @@ export class SchemaApi {
                 return;
             }
             const allVersion = await guardians.getSchemasByUUID(owner, schema.uuid);
-            if (allVersion.findIndex(s => s.version === version) !== -1) {
+            if (allVersion.some(s => s.version === version) ) {
                 taskManager.addError(task.taskId, { code: 500, message: 'Version already exists.' });
                 return;
             }

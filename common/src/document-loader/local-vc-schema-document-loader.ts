@@ -53,7 +53,7 @@ export class LocalVcSchemaDocumentLoader extends SchemaLoader {
             }
             return null;
         }
-        catch (error) {
+        catch {
             return null;
         }
     }

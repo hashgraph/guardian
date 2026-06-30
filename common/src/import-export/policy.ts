@@ -500,7 +500,7 @@ export class PolicyImportExport {
             if (!Array.isArray(parsedMetaData)) {
                 metaDataFault = 'is not a list';
             }
-        } catch (error) {
+        } catch {
             metaDataFault = 'is not valid JSON';
         }
         const metaDataUsable = !metaDataFault;
@@ -777,7 +777,7 @@ export class PolicyImportExport {
     }
 
     private static removeIpfsFromJson(json: string): string {
-        return json.replace(/ipfs:\/\/[^\s"#&]+/g, '');
+        return json.replaceAll(/ipfs:\/\/[^\s"#&]+/g, '');
     }
 
     /**
@@ -799,7 +799,7 @@ export class PolicyImportExport {
         const g8 = new Map<string, string>(); // ${uuid}
         const tokenIds = new Map<string, string>();
 
-        schemas.forEach((schema, index) => {
+        for (const [index, schema] of schemas.entries()) {
             const tag = `@${index}`;
             g1.set(`schema:${schema.uuid}#${schema.uuid}`, tag);
             g2.set(`schema:${schema.uuid}&${schema.version}`, tag);
@@ -809,11 +809,11 @@ export class PolicyImportExport {
             g6.set(`#${schema.uuid}`, tag);
             g7.set(`${schema.uuid}&${schema.version}`, tag);
             g8.set(`${schema.uuid}`, tag);
-        });
+        }
 
-        tokens.forEach((token, index) => {
+        for (const [index, token] of tokens.entries()) {
             tokenIds.set(token.tokenId, `@token${index}`);
-        });
+        }
 
         return { groups: [g1, g2, g3, g4, g5, g6, g7, g8], tokenIds };
     }

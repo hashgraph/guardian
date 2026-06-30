@@ -209,10 +209,7 @@ export class LabelValidators {
     }
 
     public getResult(): any[] {
-        const documents: any[] = [];
-        for (const item of this.list) {
-            documents.push(item.getResult());
-        }
+        const documents: any[] = Array.from(this.list, item => item.getResult());
         return documents;
     }
 

@@ -220,7 +220,7 @@ export class FileHelper {
         const cursor = new Cursor();
         const version = FileHelper._readString(FileHeaders.VERSION, lines, cursor);
         if (!version) {
-            throw Error('Invalid version');
+            throw new Error('Invalid version');
         }
 
         const lastUpdate = FileHelper._readDate(FileHeaders.DATE, lines, cursor);
@@ -229,7 +229,7 @@ export class FileHelper {
         const type = FileHelper._readString(FileHeaders.TYPE, lines, cursor);
 
         if (type !== 'backup' && type !== 'diff' && type !== 'keys') {
-            throw Error('Invalid type');
+            throw new Error('Invalid type');
         }
 
         const diff: IPolicyDiff = {
@@ -246,7 +246,7 @@ export class FileHelper {
         } else if (diff.type === 'keys') {
             FileHelper.decryptKeysFile(diff, lines, cursor);
         } else {
-            throw Error('Invalid type');
+            throw new Error('Invalid type');
         }
 
         return diff;
@@ -289,7 +289,7 @@ export class FileHelper {
         for (let index = start; index < end; index++) {
             const action = FileHelper._decryptAction<T>(lines[index]);
             if (!action) {
-                throw Error('Invalid action');
+                throw new Error('Invalid action');
             }
             actions.push(action);
         }
@@ -324,7 +324,7 @@ export class FileHelper {
 
     private static _readString(header: FileHeaders, lines: string[], cursor: Cursor): string {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            return FileHelper._flat(lines[cursor.index++].substring(header.length));
+            return FileHelper._flat(lines[cursor.index++].slice(header.length));
         } else {
             return null;
         }
@@ -332,7 +332,7 @@ export class FileHelper {
 
     private static _readNumber(header: FileHeaders, lines: string[], cursor: Cursor): number {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            const _number = lines[cursor.index++].substring(header.length);
+            const _number = lines[cursor.index++].slice(header.length);
             return Number(_number);
         } else {
             return null;
@@ -340,7 +340,7 @@ export class FileHelper {
     }
     private static _readDate(header: FileHeaders, lines: string[], cursor: Cursor): Date {
         if (lines[cursor.index] && lines[cursor.index].startsWith(header)) {
-            const _date = lines[cursor.index++].substring(header.length);
+            const _date = lines[cursor.index++].slice(header.length);
             return _date ? (new Date(_date)) : null;
         } else {
             return null;

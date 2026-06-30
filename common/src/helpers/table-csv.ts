@@ -126,7 +126,7 @@ export function parseCsvToTable(
     const requestedColumns = window && Array.isArray(window.columns) ? window.columns : [];
     const filterColumns = requestedColumns.length > 0;
     const wantedColumns: string[] = filterColumns
-        ? columnKeys.filter((key) => requestedColumns.indexOf(key) !== -1)
+        ? columnKeys.filter((key) => requestedColumns.includes(key))
         : columnKeys;
 
     const offset = Math.max(0, Math.trunc(window?.offset ?? 0));
@@ -154,7 +154,7 @@ export function parseCsvToTable(
 
         for (let columnIndex = 0; columnIndex < columnKeys.length; columnIndex++) {
             const headerKey = columnKeys[columnIndex] || String(columnIndex);
-            if (filterColumns && wantedColumns.indexOf(headerKey) === -1) {
+            if (filterColumns && !wantedColumns.includes(headerKey)) {
                 continue;
             }
             const rawValue = row[columnIndex] ?? '';
@@ -177,8 +177,8 @@ export async function decodeGridFileText(
 ): Promise<string> {
     const isGzip =
         fileBuffer.length >= 2 &&
-        fileBuffer[0] === 0x1f &&
-        fileBuffer[1] === 0x8b;
+        fileBuffer[0] === 0x1F &&
+        fileBuffer[1] === 0x8B;
 
     if (isGzip) {
         const uncompressed = await gunzipBuffer(fileBuffer);

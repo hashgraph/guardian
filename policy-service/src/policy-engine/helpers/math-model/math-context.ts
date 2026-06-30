@@ -341,7 +341,7 @@ export class MathContext {
                     }
                 }
             }
-        } catch (error) {
+        } catch {
             this.valid = false;
             throw error;
         }
@@ -535,7 +535,7 @@ export class MathContext {
                     }
                 }
             }
-        } catch (error) {
+        } catch {
             this.valid = false;
         }
     }
@@ -548,7 +548,7 @@ export class MathContext {
             }
             const keys = path.split('.');
             return getValueByPath(doc, keys, 0);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -601,7 +601,7 @@ export class MathContext {
             const latex = `\\operatorname{${context.name}}(${list.join(',')})`;
             const result = context.ce.parse(latex).evaluate();
             return __parseValue(result);
-        } catch (error) {
+        } catch {
             return NaN;
         }
     }

@@ -42,7 +42,7 @@ export class MintBlock {
             }
 
             const accountType = ['default', 'custom', 'custom-value'];
-            if (accountType.indexOf(ref.options.accountType) === -1) {
+            if (!accountType.includes(ref.options.accountType)) {
                 validator.addError('Option "accountType" must be one of ' + accountType.join(','));
             }
             if (ref.options.accountType === 'custom' && !ref.options.accountId) {

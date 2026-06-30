@@ -257,7 +257,7 @@ export class Running {
                 }
             }
             return false;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -277,7 +277,7 @@ export class Running {
             } else {
                 return false;
             }
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -298,7 +298,7 @@ export class Running {
             } else {
                 return false;
             }
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -360,7 +360,7 @@ export class Running {
                     this.tree.sendMessage(PolicyEvents.TEST_UPDATE_BROADCAST, status);
                 }
             }
-        } catch (error) {
+        } catch {
             return;
         }
     }
@@ -584,7 +584,7 @@ export class Running {
                     return document;
                 }
             }
-        } catch (error) {
+        } catch {
             return action.document;
         }
     }

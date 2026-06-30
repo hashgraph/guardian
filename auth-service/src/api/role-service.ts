@@ -448,7 +448,7 @@ export class RoleService extends NatsService {
                     }
 
                     target.permissionsGroup = [];
-                    for (const [roleId, [roleOwner, roleName, uuid]] of roleMap.entries()) {
+                    for (const [roleId, [roleOwner, roleName, uuid]] of roleMap) {
                         target.permissionsGroup.push({
                             uuid,
                             roleId,

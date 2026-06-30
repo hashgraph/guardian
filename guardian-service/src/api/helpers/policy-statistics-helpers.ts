@@ -193,7 +193,7 @@ export async function generateVcDocument(document: any, schema: Schema, owner: I
     const vcHelper = new VcHelper();
     const res = await vcHelper.verifySubject(document);
     if (!res.ok) {
-        throw Error(JSON.stringify(res.error));
+        throw new Error(JSON.stringify(res.error));
     }
     const didDocument = await vcHelper.loadDidDocument(owner.creator, owner.id);
     const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);
@@ -211,7 +211,7 @@ export async function getOrCreateTopic(item: PolicyStatistic, userId: string | n
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
     if (!policy || policy.status !== PolicyStatus.PUBLISH) {
-        throw Error('Item does not exist.');
+        throw new Error('Item does not exist.');
     }
 
     const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true, userId);

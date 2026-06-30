@@ -280,7 +280,7 @@ export class PolicyLabelImportExport {
      */
     private static validateTag(data: string): string {
         if (typeof data === 'string') {
-            return data.trim().replace(/\s/ig, '_');
+            return data.trim().replaceAll(/\s/ig, '_');
         } else {
             return '';
         }

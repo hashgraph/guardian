@@ -39,7 +39,7 @@ export class CommentsKeysBackup {
         if (discussion.privacy === 'public') {
             return users
                 .map((u) => u.did)
-                .filter((u) => u);
+                .filter(Boolean);
         } else if (discussion.privacy === 'users') {
             if (Array.isArray(discussion.users)) {
                 return users
@@ -50,7 +50,7 @@ export class CommentsKeysBackup {
             }
         } else if (discussion.privacy === 'roles') {
             if (Array.isArray(discussion.roles)) {
-                const userIds = users.map((u) => u.did).filter((u) => u);
+                const userIds = users.map((u) => u.did).filter(Boolean);
                 const groups = await DatabaseServer.getPolicyGroups({
                     policyId: this.policyId,
                     role: { $in: discussion.roles },
@@ -58,7 +58,7 @@ export class CommentsKeysBackup {
                 });
                 return groups
                     .map((u) => u.did)
-                    .filter((u) => u);
+                    .filter(Boolean);
             } else {
                 return [];
             }

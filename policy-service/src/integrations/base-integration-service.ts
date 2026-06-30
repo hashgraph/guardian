@@ -50,7 +50,7 @@ export abstract class BaseIntegrationService {
       throw new Error(`Unsupported method`);
     }
 
-    let endpoint = method.endpoint.replace(/:([a-zA-Z_]+)/g, (_, key) => {
+    let endpoint = method.endpoint.replaceAll(/:([a-zA-Z_]+)/g, (_, key) => {
       if (!params[key] && method.parameters?.path?.[key]?.required) {
         throw new Error(`Missing required path parameter: "${key}"`);
       }

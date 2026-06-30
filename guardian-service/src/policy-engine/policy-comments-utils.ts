@@ -12,7 +12,7 @@ export class PolicyCommentsUtils {
         if (policy.status === PolicyStatus.DRY_RUN || policy.status === PolicyStatus.DEMO) {
             return policy.id?.toString();
         } else {
-            return undefined;
+            return;
         }
     }
 
@@ -280,7 +280,7 @@ export class PolicyCommentsUtils {
         map.delete(vc.messageId);
 
         const relationships: any[] = [];
-        for (const [messageId, schemaIRI] of map.entries()) {
+        for (const [messageId, schemaIRI] of map) {
             const schema = await DatabaseServer.getSchema({ iri: schemaIRI });
             if (schema) {
                 relationships.push({

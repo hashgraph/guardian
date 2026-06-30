@@ -232,7 +232,7 @@ export class AggregateBlock {
             if (formulaResult === 'Incorrect formula') {
                 ref.error(`expression: ${expression.value}, ${formulaResult}, ${JSON.stringify(scope)}`);
             }
-            result[expression.name] = parseFloat(formulaResult);
+            result[expression.name] = Number.parseFloat(formulaResult);
         }
         return result;
     }
@@ -293,10 +293,7 @@ export class AggregateBlock {
 
         let rawEntities = await ref.databaseServer.getAggregateDocuments(ref.policyId, ref.uuid, filters);
 
-        const scopes: any[] = [];
-        for (const doc of rawEntities) {
-            scopes.push(this.expressions(ref, expressions, doc));
-        }
+        const scopes: any[] = Array.from(rawEntities, doc => this.expressions(ref, expressions, doc));
         const scope = this.aggregateScope(scopes);
         const result = PolicyUtils.evaluateFormula(condition, scope);
 

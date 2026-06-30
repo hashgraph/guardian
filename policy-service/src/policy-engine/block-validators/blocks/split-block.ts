@@ -22,8 +22,8 @@ export class SplitBlock {
                 validator.addError('Option "threshold" is not set');
             } else {
                 try {
-                    parseFloat(ref.options.threshold);
-                } catch (error) {
+                    Number.parseFloat(ref.options.threshold);
+                } catch {
                     validator.addError('Option "threshold" must be a Number');
                 }
             }

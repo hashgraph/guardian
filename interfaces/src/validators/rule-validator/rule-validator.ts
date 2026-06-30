@@ -129,7 +129,7 @@ export class RuleValidator {
                 return FieldRuleResult.Success;
             }
             return FieldRuleResult.Error;
-        } catch (error) {
+        } catch {
             return FieldRuleResult.Error;
         }
     }

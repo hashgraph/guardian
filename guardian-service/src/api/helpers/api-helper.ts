@@ -34,5 +34,5 @@ export function getPageOptions(msg: {
 }
 
 export function escapeRegExp(text) {
-    return text.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
+    return text.replaceAll(/[.*+?^=!:${}()|\[\]\/\\]/g, '\\$&');
 }
