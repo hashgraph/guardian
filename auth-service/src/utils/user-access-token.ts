@@ -62,7 +62,7 @@ export class UserAccessTokenService {
         expireAt: number
     }> {
         try {
-            return await util.promisify<string, any, Object, any>(verify)(refreshToken, this.JWT_PUBLIC_KEY, {
+            return await util.promisify<string, any, object, any>(verify)(refreshToken, this.JWT_PUBLIC_KEY, {
                 algorithms: ['RS256']
             });
         } catch (err) {
@@ -109,7 +109,7 @@ export class UserAccessTokenService {
         expireAt?: number
     }> {
         try {
-            return await util.promisify<string, any, Object, any>(verify)(accessToken, this.JWT_PUBLIC_KEY, {
+            return await util.promisify<string, any, object, any>(verify)(accessToken, this.JWT_PUBLIC_KEY, {
                 algorithms: ['RS256']
             });
         } catch (err) {

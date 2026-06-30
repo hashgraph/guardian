@@ -1147,7 +1147,7 @@ export class SchemaHelper {
         try {
             const { type } = SchemaHelper.parseRef(item.iri);
             return {
-                'type': type,
+                type,
                 '@context': [item.contextURL]
             };
         } catch (error) {

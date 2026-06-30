@@ -1,0 +1,1758 @@
+{
+  "api-gateway/src/api/service/logger.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/api/service/policy.ts": {
+    "@stylistic/max-len": {
+      "count": 2
+    }
+  },
+  "api-gateway/src/api/service/schema.ts": {
+    "@typescript-eslint/no-empty-object-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/api/service/tokens.ts": {
+    "@stylistic/max-len": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/api/service/tool.ts": {
+    "@stylistic/max-len": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 12
+    }
+  },
+  "api-gateway/src/api/service/websockets.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-case-declarations": {
+      "count": 7
+    }
+  },
+  "api-gateway/src/auth/authorization-helper.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/auth/roles-guard.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/helpers/decorators/inject.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/helpers/filename-sanitizer.ts": {
+    "no-useless-escape": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/helpers/service-requests-base.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/helpers/task-manager.ts": {
+    "@typescript-eslint/no-this-alias": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/helpers/users.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/helpers/utils.ts": {
+    "no-prototype-builtins": {
+      "count": 4
+    }
+  },
+  "api-gateway/src/middlewares/validation/examples.ts": {
+    "@stylistic/max-len": {
+      "count": 3
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/accounts.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/analytics.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/analytics.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/artifacts.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/blocks.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/contracts.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/demo.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/document.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/errors.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/external-policies.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/formulas.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/logs.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/messages.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/mock.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/modules.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/notifications.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/permissions.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/policies.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/policies.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/policy-comments.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/policy-labels.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/policy-statistics.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/profiles.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/profiles.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/projects.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/record.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/relayer-account.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/schema-deletion.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/schema-rules.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/schemas.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/settings.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/suggestions.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/tag.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/task.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/theme.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/token.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/tool.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/schemas/wizard.dto.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "api-gateway/src/middlewares/validation/string-or-number.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "api-gateway/src/middlewares/validation/string-or-object.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "auth-service/src/api/role-service.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "auth-service/src/helpers/credentials-validation/bitstring.ts": {
+    "no-bitwise": {
+      "count": 2
+    }
+  },
+  "auth-service/src/helpers/credentials-validation/status-list.ts": {
+    "@typescript-eslint/prefer-for-of": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "auth-service/src/meeco/meeco-api.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/database-modules/database-server.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/document-loader/local-schema-document-loader.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/document-loader/local-vc-schema-document-loader.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/environment.ts": {
+    "no-case-declarations": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/memo-mappings/memo-map.ts": {
+    "no-useless-escape": {
+      "count": 3
+    }
+  },
+  "common/src/hedera-modules/message/contract-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/message/label-document-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/message/registration-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/message/statistic-assessment-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/message/synchronization-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/message/token-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/message/topic-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/transaction-logger.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 6
+    }
+  },
+  "common/src/hedera-modules/utils.ts": {
+    "prefer-rest-params": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/vcjs/did/components/did-url.ts": {
+    "no-useless-escape": {
+      "count": 6
+    }
+  },
+  "common/src/hedera-modules/vcjs/issuer.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/vcjs/vc-document.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "@typescript-eslint/unified-signatures": {
+      "count": 3
+    },
+    "no-useless-assignment": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/vcjs/vc-subject.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/vcjs/vcjs.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/hedera-modules/vcjs/vp-document.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/console-transport.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/db-helper.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-useless-catch": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/fix-connection-string.ts": {
+    "no-useless-escape": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/insert-variables.ts": {
+    "no-useless-escape": {
+      "count": 3
+    }
+  },
+  "common/src/helpers/logger.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/mock-service.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/schema-converter-utils.ts": {
+    "no-useless-escape": {
+      "count": 8
+    }
+  },
+  "common/src/helpers/service-requests-base.ts": {
+    "@typescript-eslint/no-unnecessary-type-constraint": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/helpers/utils.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    },
+    "no-prototype-builtins": {
+      "count": 11
+    }
+  },
+  "common/src/import-export/record.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/integrations/services/firms-service.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/interfaces/database-server.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 205
+    }
+  },
+  "common/src/interfaces/db-helper.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 15
+    }
+  },
+  "common/src/models/message-response.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "prefer-rest-params": {
+      "count": 1
+    }
+  },
+  "common/src/mq/nats-service.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-async-promise-executor": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 1
+    },
+    "no-useless-catch": {
+      "count": 3
+    }
+  },
+  "common/src/mq/serialization.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/mq/zip-codec.ts": {
+    "no-prototype-builtins": {
+      "count": 1
+    }
+  },
+  "common/src/notification/empty-notifier.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 19
+    }
+  },
+  "common/src/notification/notification-events.ts": {
+    "no-fallthrough": {
+      "count": 1
+    }
+  },
+  "common/src/notification/notification-step.ts": {
+    "no-self-assign": {
+      "count": 1
+    }
+  },
+  "common/src/notification/notifier.ts": {
+    "no-self-assign": {
+      "count": 1
+    }
+  },
+  "common/src/secret-manager/aws/aws-secret-manager.ts": {
+    "no-useless-catch": {
+      "count": 2
+    }
+  },
+  "common/src/secret-manager/azure/azure-secret-manager.ts": {
+    "no-useless-catch": {
+      "count": 1
+    }
+  },
+  "common/src/secret-manager/gcp/gcp-secret-manager.ts": {
+    "no-useless-catch": {
+      "count": 2
+    }
+  },
+  "common/src/secret-manager/hashicorp/hcp-vault-secret-manager.ts": {
+    "preserve-caught-error": {
+      "count": 2
+    }
+  },
+  "common/src/secret-manager/old-style/old-secret-manager.ts": {
+    "no-case-declarations": {
+      "count": 6
+    }
+  },
+  "common/src/security/jwt-services-validator.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/topic-listener/topic-listener.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/types/digitalbazaar.d.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/xlsx/models/dictionary.ts": {
+    "no-useless-escape": {
+      "count": 4
+    }
+  },
+  "common/src/xlsx/models/enum-table.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "common/src/xlsx/models/expression.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "common/src/xlsx/models/sheet-name.ts": {
+    "no-useless-assignment": {
+      "count": 2
+    },
+    "no-useless-escape": {
+      "count": 5
+    }
+  },
+  "common/src/xlsx/models/table.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "common/src/xlsx/models/value-converters.ts": {
+    "no-useless-escape": {
+      "count": 8
+    }
+  },
+  "common/src/xlsx/models/workbook.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-useless-escape": {
+      "count": 1
+    },
+    "prefer-const": {
+      "count": 1
+    }
+  },
+  "common/src/xlsx/models/xlsx-expressions.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "common/src/xlsx/models/xlsx-schema.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/hash/utils.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/artifact.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/block.model.ts": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/document-fields.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-dupe-else-if": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/document.model.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/event.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/field.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/file.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/group.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/properties.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/property.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/record.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/role.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    },
+    "prefer-const": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/schema-document.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/schema.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/template-token.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/template-tool.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/models/token.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/analytics/compare/models/topic.model.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/blocks-rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/fields-rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/object-rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/permissions-rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/properties-rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "guardian-service/src/analytics/compare/rates/record-rate.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    }
+  },
+  "guardian-service/src/analytics/compare/utils/multi-compare-utils.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/compare/utils/rate-map.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/analytics/loaders/schema-cache.ts": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/api/analytics.service.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/config.service.ts": {
+    "preserve-caught-error": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/api/contract.service.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 5
+    },
+    "no-empty": {
+      "count": 2
+    },
+    "prefer-const": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/api/demo.service.ts": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/helpers/api-helper.ts": {
+    "no-useless-escape": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/api/helpers/api-response.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/helpers/contract-api.ts": {
+    "no-useless-catch": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/helpers/default-schemas.ts": {
+    "no-prototype-builtins": {
+      "count": 12
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/helpers/formulas-helpers.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/helpers/profile-helper.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 3
+    }
+  },
+  "guardian-service/src/api/policy-labels.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/profile.service.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-useless-assignment": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/api/record.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/schema.service.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 3
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/suggestions.service.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 6
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/api/tag.service.ts": {
+    "@typescript-eslint/ban-ts-comment": {
+      "count": 1
+    },
+    "no-constant-binary-expression": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/tool.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/api/wizard.service.ts": {
+    "prefer-const": {
+      "count": 6
+    }
+  },
+  "guardian-service/src/helpers/decorators/inject.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/guardians.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-async-promise-executor": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/artifact/artifact-import-helper.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/common/load-helper.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/policy/policy-converter-utils.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 24
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/policy/policy-import.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "no-self-assign": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/schema/schema-import.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-self-assign": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/tag/tag-import-helper.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/token/token-import-helper.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/import-helpers/tool/tool-import-helper.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/helpers/restore-data-from-hedera.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/helpers/synchronization-task.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/migrations/v2-16-0.ts": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "guardian-service/src/policy-engine/helpers/policy-data-migrator.ts": {
+    "no-prototype-builtins": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/policy-engine/policy-engine.service.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "prefer-const": {
+      "count": 1
+    },
+    "prefer-spread": {
+      "count": 3
+    }
+  },
+  "guardian-service/src/policy-engine/policy-engine.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    },
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "guardian-service/src/utils/formula.ts": {
+    "eqeqeq": {
+      "count": 1
+    },
+    "prefer-spread": {
+      "count": 1
+    }
+  },
+  "interfaces/src/helpers/field-types-dictionary.ts": {
+    "eqeqeq": {
+      "count": 5
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-useless-escape": {
+      "count": 4
+    }
+  },
+  "interfaces/src/helpers/generate-document.ts": {
+    "no-useless-escape": {
+      "count": 2
+    }
+  },
+  "interfaces/src/helpers/permissions-helper.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "interfaces/src/helpers/policy-editable-field.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "interfaces/src/helpers/schema-json.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 6
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-useless-escape": {
+      "count": 1
+    }
+  },
+  "interfaces/src/index.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "interfaces/src/models/schema.ts": {
+    "no-prototype-builtins": {
+      "count": 1
+    }
+  },
+  "interfaces/src/validators/label-validator/item-node-validator.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "logger-service/src/api/logger.service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 3
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "logger-service/src/app.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "notification-service/src/api/notification.service.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "policy-service/src/helpers/decorators/inject.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/actions-service.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 4
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/block-engine/block-engine.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/block-engine/debug-components-service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 9
+    }
+  },
+  "policy-service/src/policy-engine/block-service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/block-tree-generator.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 9
+    }
+  },
+  "policy-service/src/policy-engine/block-validators/block-validator.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/block-validators/blocks/calculate-block.ts": {
+    "no-prototype-builtins": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/block-validators/blocks/http-request-block.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/aggregate-block.ts": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/calculate-block.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-duplicate-imports": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/create-token-block.ts": {
+    "no-prototype-builtins": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/custom-logic-block.ts": {
+    "no-async-promise-executor": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/data-transformation-addon.ts": {
+    "no-async-promise-executor": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/documents-source.ts": {
+    "@typescript-eslint/no-shadow": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-case-declarations": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/filters-addon-block.ts": {
+    "eqeqeq": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/blocks/global-events-reader-block.ts": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/global-events-writer-block.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/math-block.ts": {
+    "no-async-promise-executor": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/messages-report-block.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/multi-sign-block.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/blocks/notification.block.ts": {
+    "no-duplicate-case": {
+      "count": 2
+    },
+    "no-fallthrough": {
+      "count": 3
+    }
+  },
+  "policy-service/src/policy-engine/blocks/report-block.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/request-vc-document-block.ts": {
+    "no-prototype-builtins": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/blocks/step-block.ts": {
+    "no-prototype-builtins": {
+      "count": 3
+    }
+  },
+  "policy-service/src/policy-engine/blocks/switch-block.ts": {
+    "no-useless-assignment": {
+      "count": 3
+    }
+  },
+  "policy-service/src/policy-engine/blocks/tag-manager.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/timer-block.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/blocks/tool.ts": {
+    "no-unsafe-optional-chaining": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/approve-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/comment-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/comments-keys-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/did-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/discussion-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/doc-state-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/external-doc-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/invitation-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/mint-request-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/mint-transaction-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/multi-doc-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/role-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/state-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/tag-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/token-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/topic-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 4
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/vc-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/backup/vp-collection-backup.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/approve-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/comment-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/did-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/discussion-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/doc-state-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/external-doc-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/invitation-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/mint-request-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/mint-transaction-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/multi-doc-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/role-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/state-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/tag-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/token-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/topic-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/vc-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/collections/restore/vp-collection-restore.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/db-restore/file-helper.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/helpers/components-service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 5
+    }
+  },
+  "policy-service/src/policy-engine/helpers/decorators/basic-block.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 5
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/helpers/decorators/data-source-block.ts": {
+    "no-useless-catch": {
+      "count": 1
+    },
+    "prefer-const": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/decorators/event-callback.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/helpers/decorators/state-field.ts": {
+    "no-prototype-builtins": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/helpers/get-other-options.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 8
+    }
+  },
+  "policy-service/src/policy-engine/helpers/math-model/field-link.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/math-model/math-context.ts": {
+    "@typescript-eslint/no-this-alias": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/math-model/math-formula.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/math-model/math-group.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/math-model/math.interface.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/math-model/utils.ts": {
+    "prefer-rest-params": {
+      "count": 4
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/helpers/utils.ts": {
+    "no-useless-assignment": {
+      "count": 1
+    },
+    "no-useless-escape": {
+      "count": 8
+    },
+    "preserve-caught-error": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/helpers/workers/custom-logic-python-docker-worker.ts": {
+    "no-useless-escape": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/helpers/workers/custom-logic-python-worker.ts": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/interfaces/block-options.ts": {
+    "@typescript-eslint/no-empty-object-type": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/multi-policy-service/synchronization-service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/associate-token.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/create-topic.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/dissociate-token.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/generate-did.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/policy-disconnect.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/send-message.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/send-messages.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/sign-and-send-role.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-actions/sign-vc.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 2
+    }
+  },
+  "policy-service/src/policy-engine/policy-components-utils.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 3
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-engine.interface.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-user.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/policy-vc-documents-utils.ts": {
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/record/utils.ts": {
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "policy-service/src/policy-engine/restore-service.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "max-classes-per-file": {
+      "count": 1
+    }
+  },
+  "queue-service/src/global.d.ts": {
+    "@typescript-eslint/no-empty-object-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "topic-listener-service/src/global.d.ts": {
+    "@typescript-eslint/no-empty-object-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  },
+  "worker-service/src/api/helpers/hedera-sdk-helper.ts": {
+    "@typescript-eslint/no-unsafe-function-type": {
+      "count": 2
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 6
+    },
+    "max-classes-per-file": {
+      "count": 1
+    },
+    "no-prototype-builtins": {
+      "count": 5
+    },
+    "no-useless-assignment": {
+      "count": 2
+    },
+    "preserve-caught-error": {
+      "count": 5
+    }
+  },
+  "worker-service/src/api/helpers/utils.ts": {
+    "prefer-rest-params": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "worker-service/src/api/ipfs-client-class.ts": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "worker-service/src/api/worker.ts": {
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    },
+    "no-async-promise-executor": {
+      "count": 1
+    },
+    "preserve-caught-error": {
+      "count": 1
+    }
+  },
+  "worker-service/src/global.d.ts": {
+    "@typescript-eslint/no-empty-object-type": {
+      "count": 1
+    },
+    "@typescript-eslint/no-unused-vars": {
+      "count": 1
+    }
+  }
+}
