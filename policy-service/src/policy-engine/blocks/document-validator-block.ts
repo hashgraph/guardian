@@ -359,7 +359,7 @@ export class DocumentValidatorBlock {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     const actual = PolicyUtils.getObjectValue(document, filter.field);
                     const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
-                    return `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, this.coerceValue(filter.value))}`;
+                    return `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}`;
                 }
             }
         }
