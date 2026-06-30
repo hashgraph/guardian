@@ -155,8 +155,20 @@ export class DocumentValidatorBlock {
 
             switch (f.type) {
                 case 'not_equal': filter[f.field] = { $ne: value }; break;
-                case 'in':        filter[f.field] = { $in: Array.isArray(value) ? value : [value] }; break;
-                case 'not_in':    filter[f.field] = { $nin: Array.isArray(value) ? value : [value] }; break;
+                case 'in': {
+                    const arr = f.typeValue === 'variable'
+                        ? (Array.isArray(raw) ? raw.map((e: any) => this.coerceValue(e)) : [value])
+                        : String(f.value).split(',').map((v: string) => this.coerceValue(v.trim()));
+                    filter[f.field] = { $in: arr };
+                    break;
+                }
+                case 'not_in': {
+                    const arr = f.typeValue === 'variable'
+                        ? (Array.isArray(raw) ? raw.map((e: any) => this.coerceValue(e)) : [value])
+                        : String(f.value).split(',').map((v: string) => this.coerceValue(v.trim()));
+                    filter[f.field] = { $nin: arr };
+                    break;
+                }
                 case 'gt':        filter[f.field] = { $gt: value }; break;
                 case 'gte':       filter[f.field] = { $gte: value }; break;
                 case 'lt':        filter[f.field] = { $lt: value }; break;
