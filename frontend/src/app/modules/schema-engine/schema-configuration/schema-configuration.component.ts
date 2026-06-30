@@ -1677,21 +1677,21 @@ export class SchemaConfigurationComponent implements OnInit {
         if (!event?.value) { return; }
         if (type === 'then') {
             condition.addCrossThenTarget(event.value);
+            this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
         } else {
             condition.addCrossElseTarget(event.value);
+            this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
         }
-        this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
-        this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
     }
 
     public onCrossTargetRemove(condition: ConditionControl, type: 'then' | 'else', target: ConditionFieldOption): void {
         if (type === 'then') {
             condition.removeCrossThenTarget(target);
+            this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
         } else {
             condition.removeCrossElseTarget(target);
+            this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
         }
-        this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
-        this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
     }
 
     public drop(event: CdkDragDrop<any[]>) {
