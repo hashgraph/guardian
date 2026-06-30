@@ -428,7 +428,7 @@ export class PolicyDataMigrator {
                 ).get({
                     schema: '#UserRole',
                 });
-                srcVPs = await await new VpDocumentLoader(
+                srcVPs = await new VpDocumentLoader(
                     srcModel.id,
                     srcModel.topicId,
                     srcModel.instanceTopicId,
@@ -742,7 +742,7 @@ export class PolicyDataMigrator {
                     const stepStateMap = new Map<string, number>();
                     const stepBlockStates: BlockState[] = [];
 
-                    states.forEach(state => {
+                    for (const state of states) {
                         const srcBlock = this.findBlockById(srcBlockTree, state.blockId);
                         if (srcBlock?.blockType === BlockType.Step && srcBlock.children?.length > 0) {
                             srcBlock.children.forEach((child, index) => {
@@ -757,8 +757,8 @@ export class PolicyDataMigrator {
                                 stepStateMap.set(child.tag, index)
                             });
                         }
-                    });
-                    stepBlockStates.forEach(stepState => {
+                    }
+                    for (const stepState of stepBlockStates) {
                         const blockState = JSON.parse(stepState.blockState);
                         if (blockState && blockState.state) {
                             const currentState = blockState.state;
@@ -776,7 +776,7 @@ export class PolicyDataMigrator {
                             }
                         }
                         stepState.blockState = JSON.stringify(blockState);
-                    });
+                    }
                 }
 
                 await this._migratePolicyStates(
@@ -1232,7 +1232,7 @@ export class PolicyDataMigrator {
 
             const flushed = await this.flushMappingsToDb(pendingMappings);
 
-            const lastPool = writeBatch[writeBatch.length - 1];
+            const lastPool = writeBatch.at(-1);
             const lastCursor = getSourceId(lastPool);
 
             await this.saveRunProgressAfterWriteBatch(
@@ -1749,7 +1749,7 @@ export class PolicyDataMigrator {
 
             await Promise.all(tasks);
 
-            const lastDocument = writeBatch[writeBatch.length - 1];
+            const lastDocument = writeBatch.at(-1);
             const lastCursor = PolicyDataMigrator.extractSourceKeys(entityType, lastDocument).srcEntityId;
 
             const flushed = await this.flushMappingsToDb(pendingMappings);
@@ -2146,7 +2146,7 @@ export class PolicyDataMigrator {
 
             const flushedMappings = await this.flushMappingsToDb(mappingBuffer);
 
-            const lastState = writeBatch[writeBatch.length - 1];
+            const lastState = writeBatch.at(-1);
             const lastCursor = getSourceId(lastState);
             if (lastCursor) {
                 stateSummary.cursorLastId = lastCursor;
@@ -2328,7 +2328,7 @@ export class PolicyDataMigrator {
 
             await Promise.all(tasks);
 
-            const lastRole = writeBatch[writeBatch.length - 1];
+            const lastRole = writeBatch.at(-1);
             const cursor = getSourceId(lastRole);
 
             const flushed = await this.flushMappingsToDb(pendingMappings);
@@ -2691,7 +2691,7 @@ export class PolicyDataMigrator {
 
             const flushed = await this.flushMappingsToDb(requestMappingBuffer);
 
-            const lastRequest = writeBatch[writeBatch.length - 1];
+            const lastRequest = writeBatch.at(-1);
             const lastRequestCursor = getRequestSourceId(lastRequest);
 
             await this.saveRunProgressAfterWriteBatch(
@@ -2810,7 +2810,7 @@ export class PolicyDataMigrator {
 
             const flushed = await this.flushMappingsToDb(txMappingBuffer);
 
-            const lastTransaction = writeBatch[writeBatch.length - 1];
+            const lastTransaction = writeBatch.at(-1);
             const lastTransactionCursor = getTransactionSourceId(lastTransaction);
 
             await this.saveRunProgressAfterWriteBatch(
@@ -3026,7 +3026,7 @@ export class PolicyDataMigrator {
                             String(republishedDocument.messageId)
                         );
                     }
-                } catch (error) {
+                } catch {
                     doc.relationships.splice(i, 1);
                     i--;
                 }
@@ -3436,7 +3436,7 @@ export class PolicyDataMigrator {
             return itemKey === mappingKey;
         });
 
-        if (existingIndex >= 0) {
+        if (existingIndex !== -1) {
             buffer[existingIndex] = mapping;
             return;
         }
@@ -3555,7 +3555,7 @@ export class PolicyDataMigrator {
             return id === cursorLastId;
         });
 
-        if (index < 0) {
+        if (index === -1) {
             return 0;
         }
 

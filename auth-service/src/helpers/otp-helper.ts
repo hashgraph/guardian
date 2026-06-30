@@ -53,7 +53,7 @@ export class OtpHelper {
             temp.enabled = true;
             await new DataBaseHelper(OtpSecret).save(temp);
 
-        } catch (e) {
+        } catch {
             return false;
         }
         return true;
@@ -107,7 +107,7 @@ export class OtpHelper {
             const isValid = OtpHelper.isValidToken(user, token);
             return isValid;
         }
-        catch (e) {
+        catch {
             return false;
         }
     }

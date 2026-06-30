@@ -60,7 +60,7 @@ export function checkPermission(...roles: string[]) {
     return async (user: IAuthUser): Promise<void> => {
         if (user) {
             if(user.role) {
-                if(roles.indexOf(user.role) !== -1) {
+                if(roles.includes(user.role)) {
                     return;
                 }
             }
@@ -79,7 +79,7 @@ export function permissionHelper(...roles: string[]) {
     return async (req: AuthenticatedRequest, res: Response, next: Function): Promise<void> => {
         if (req.user) {
             if(req.user.role) {
-                if(roles.indexOf(req.user.role) !== -1) {
+                if(roles.includes(req.user.role)) {
                     next();
                     return;
                 }

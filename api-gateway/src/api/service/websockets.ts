@@ -572,7 +572,7 @@ export class WebSocketsService {
                     data: message,
                 };
             }
-        } catch (error) {
+        } catch {
             return {
                 type: message,
                 data: null,

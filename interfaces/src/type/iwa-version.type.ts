@@ -131,7 +131,7 @@ export function mapIwaPathV1ToV3(path: string): string | null {
         return IWA_PATH_RENAMES[path];
     }
     const separator = path.indexOf('.');
-    if (separator < 0) {
+    if (separator === -1) {
         return path;
     }
     const entity = path.slice(0, separator);

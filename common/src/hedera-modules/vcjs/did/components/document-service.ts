@@ -46,10 +46,7 @@ export class DocumentService {
      * @static
      */
     public static fromArray(services: IService[]): DocumentService[] {
-        const result: DocumentService[] = [];
-        for (const service of services) {
-            result.push(DocumentService.from(service));
-        }
+        const result: DocumentService[] = Array.from(services, service => DocumentService.from(service));
         return result;
     }
 

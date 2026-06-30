@@ -140,13 +140,13 @@ export class Worksheet {
 
     public checkColumnRange(c: number) {
         if (this.outColumnRange(c)) {
-            throw Error(`Invalid column range ${c}`);
+            throw new Error(`Invalid column range ${c}`);
         }
     }
 
     public checkRowRange(r: number) {
         if (this.outRowRange(r)) {
-            throw Error(`Invalid row range ${r}`);
+            throw new Error(`Invalid row range ${r}`);
         }
     }
 
@@ -343,7 +343,7 @@ export class Cell {
                 return formulae.slice(1, formulae.length - 1).split(',')
             }
             return null;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -418,7 +418,7 @@ export class Hyperlink {
                 }
             }
             return null;
-        } catch (error) {
+        } catch {
             return null;
         }
     }

@@ -259,7 +259,7 @@ export class VCJS {
             const result = await documentLoader(iri);
             const document = result?.document;
             if (document && Array.isArray(document.verificationMethod)) {
-                if (iri.indexOf('#') !== -1) {
+                if (iri.includes('#')) {
                     const method = document.verificationMethod.find((item: any) => item?.id === iri);
                     if (method && method.type === HederaEd25519Method.TYPE) {
                         return { documentUrl: iri, document: { '@context': contextUrl, ...method } };
@@ -473,7 +473,7 @@ export class VCJS {
             return;
         }
         const rootProperties = container.properties || {};
-        const scopeKey = String(scope).replace(/[^A-Za-z0-9_-]/g, '');
+        const scopeKey = String(scope).replaceAll(/[^A-Za-z0-9_-]/g, '');
 
         // Collect fields to strip keyed by container dot-path (not by IRI).
         // Multiple conditions targeting the same container accumulate into one Set.
@@ -579,7 +579,7 @@ export class VCJS {
             } else {
                 const parentPathKey = pathArr.slice(0, -1).join('.');
                 const parentCloneKey = cloneKeys.get(parentPathKey);
-                const leafProp = pathArr[pathArr.length - 1];
+                const leafProp = pathArr.at(-1);
                 if (parentCloneKey && defsObj[parentCloneKey]?.properties?.[leafProp]) {
                     defsObj[parentCloneKey].properties[leafProp] = withRef(
                         defsObj[parentCloneKey].properties[leafProp],
@@ -790,7 +790,7 @@ export class VCJS {
             if (!Array.isArray(owner?.allOf)) { return error; }
             const condEntry = owner.allOf[parseInt(idx, 10)];
             if (!condEntry?.if) { return error; }
-            const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
+            const fieldName = (error.instancePath as string).split('/').findLast(Boolean) || 'field';
             const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
             return {
                 ...error,
@@ -939,7 +939,7 @@ export class VCJS {
         try {
             const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema?.$comment);
             return Array.isArray(arrayDependencies) ? arrayDependencies : [];
-        } catch (error) {
+        } catch {
             return [];
         }
     }
@@ -1018,7 +1018,7 @@ export class VCJS {
                 response = (await axios.get(uri)).data;
             }
             return response;
-        } catch (err) {
+        } catch {
             throw new Error('Can not resolve reference: ' + uri);
         }
     }

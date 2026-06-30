@@ -228,7 +228,7 @@ export class ToolValidator {
                 }
             }
         }
-        for (const [name, count] of events.entries()) {
+        for (const [name, count] of events) {
             if (count > 1) {
                 this.errors.push(`Event '${name}' already exist`);
             }
@@ -264,7 +264,7 @@ export class ToolValidator {
     public permissionsNotExist(permissions: string[]): string | null {
         if (permissions) {
             for (const permission of permissions) {
-                if (this.permissions.indexOf(permission) === -1) {
+                if (!this.permissions.includes(permission)) {
                     return permission;
                 }
             }
@@ -362,7 +362,7 @@ export class ToolValidator {
      * @param permission
      */
     public getPermission(permission: string): string {
-        if (this.permissions.indexOf(permission) !== -1) {
+        if (this.permissions.includes(permission)) {
             return permission;
         }
         return null
@@ -373,7 +373,7 @@ export class ToolValidator {
      * @param iri
      */
     public getGroup(group: string): any {
-        if (this.groups.indexOf(group) === -1) {
+        if (!this.groups.includes(group)) {
             return null;
         } else {
             return {};
@@ -466,7 +466,7 @@ export class ToolValidator {
      * @param templateName
      */
     public getTokenTemplate(templateName: string): any {
-        if (this.tokenTemplates.indexOf(templateName) === -1) {
+        if (!this.tokenTemplates.includes(templateName)) {
             return null;
         } else {
             return {};
@@ -478,7 +478,7 @@ export class ToolValidator {
      * @param tokenId
      */
     public async getToken(tokenId: string): Promise<any> {
-        if (this.tokens.indexOf(tokenId) === -1) {
+        if (!this.tokens.includes(tokenId)) {
             return null;
         } else {
             return {};
@@ -490,7 +490,7 @@ export class ToolValidator {
      * @param topicName
      */
     public getTopicTemplate(topicName: string): any {
-        if (this.topics.indexOf(topicName) === -1) {
+        if (!this.topics.includes(topicName)) {
             return null;
         } else {
             return {};

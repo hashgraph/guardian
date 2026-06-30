@@ -84,7 +84,7 @@ export class IntegrationButtonBlock {
             }
         })
 
-        const methodName = requestNameSplited[requestNameSplited.length - 1];
+        const methodName = requestNameSplited.at(-1);
 
         const dataForRequest = IntegrationServiceFactory.getDataForRequest(
             options.integrationType,
@@ -120,7 +120,7 @@ export class IntegrationButtonBlock {
         let token: string | undefined;
         try {
             token = await PolicyUtils.getIntegrationUserCredentials(ref, user, ref.options.integrationType) || undefined;
-        } catch (e) {
+        } catch {
             // No credentials found — let service use its own default (env-var in constructor)
         }
 

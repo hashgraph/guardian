@@ -12,7 +12,7 @@ export class DraftSchemaDocumentLoader extends LocalSchemaDocumentLoader {
     ): Promise<ISchema[]> {
         try {
             return await this.dataBaseServer.find(Schema, { iri });
-        } catch (error) {
+        } catch {
             return null;
         }
     }

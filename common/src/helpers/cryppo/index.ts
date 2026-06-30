@@ -103,11 +103,11 @@ function encodeSafe64(bytes: Uint8Array): string {
         binary += String.fromCharCode(byte);
     }
     // Padding is kept deliberately - see the format note above.
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_');
+    return btoa(binary).replaceAll('+', '-').replaceAll('/', '_');
 }
 
 function decodeSafe64(text: string): Uint8Array {
-    const binary = atob(text.replace(/-/g, '+').replace(/_/g, '/'));
+    const binary = atob(text.replaceAll('-', '+').replaceAll('_', '/'));
     const bytes = new Uint8Array(binary.length);
     for (let i = 0; i < binary.length; i++) {
         bytes[i] = binary.charCodeAt(i);
@@ -195,7 +195,7 @@ function writeBsonDocument(fields: [string, BsonValue][]): Uint8Array {
 /** Exported so the test suite can assert the artifact codec is byte-exact. */
 export function readArtifacts(segment: string, versionByte: string): BsonDocument {
     const raw = decodeSafe64(segment);
-    if (raw[0] === 0x2d && raw[1] === 0x2d && raw[2] === 0x2d) {
+    if (raw[0] === 0x2D && raw[1] === 0x2D && raw[2] === 0x2D) {
         throw new Error('Unsupported legacy cryppo serialization format: YAML artifacts');
     }
     if (raw[0] !== versionByte.charCodeAt(0)) {

@@ -19,7 +19,7 @@ export abstract class FormulaEngine {
         return (function (_mathjs: any, _formula: string, _scope: any) {
             try {
                 return _mathjs.evaluate(_formula, _scope);
-            } catch (error) {
+            } catch {
                 return 'Incorrect formula';
             }
         }).call(null, FormulaEngine.mathjs, ex, scope);

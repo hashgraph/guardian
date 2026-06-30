@@ -11,7 +11,7 @@ function execute(): void {
 
     const { execFunc, user, documents, artifacts } = workerData;
 
-    const func = Function(execFunc);
+    const func = new Function(execFunc);
     func.apply(documents, [done, user, documents, mathjs, artifacts]);
 }
 

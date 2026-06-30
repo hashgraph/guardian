@@ -149,7 +149,7 @@ export class Workers extends NatsService {
      */
     public static isNotRetryableError(error: any) {
         return typeof error === 'string'
-            && NON_RETRYABLE_HEDERA_ERRORS.some(code => error.indexOf(code) !== -1);
+            && NON_RETRYABLE_HEDERA_ERRORS.some(code => error.includes(code));
     }
 
     /**
@@ -304,7 +304,7 @@ export class Workers extends NatsService {
      * @private
      */
     private async searchAndUpdateTasks(): Promise<void> {
-        if ([...this.queue.values()].filter(i => !i.sent).length > 0) {
+        if ([...this.queue.values()].some(i => !i.sent)) {
             for (const worker of await this.getFreeWorkers()) {
                 const queue = [...this.queue.values()];
                 const itemIndex = queue.findIndex(_item => {

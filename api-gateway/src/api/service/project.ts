@@ -257,7 +257,7 @@ export class ProjectsAPI {
             } else {
                 policyIds.push(null);
             }
-            if (policyIds.length > 1 && policyIds[policyIds.length - 2] !== policyIds[policyIds.length - 1]) {
+            if (policyIds.length > 1 && policyIds.at(-2) !== policyIds.at(-1)) {
                 samePolicy = false;
             }
         }

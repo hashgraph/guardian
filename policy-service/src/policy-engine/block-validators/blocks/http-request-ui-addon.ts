@@ -26,7 +26,7 @@ export class HttpRequestUIAddon {
             }
 
             const t = ['get', 'post', 'put'];
-            if (t.indexOf(ref.options.method) === -1) {
+            if (!t.includes(ref.options.method)) {
                 validator.addError(`Option "method" must be one of ${t.join('|')}`);
             }
         } catch (error) {
@@ -39,7 +39,7 @@ export class HttpRequestUIAddon {
             // tslint:disable-next-line:no-unused-expression
             new URL(url);
             return true;
-        } catch (_) {
+        } catch {
             return false;
         }
     }

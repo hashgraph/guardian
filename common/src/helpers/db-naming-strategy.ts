@@ -10,6 +10,6 @@ export class DataBaseNamingStrategy extends MongoNamingStrategy {
      * @returns Table name
      */
     classToTableName(entityName: string): string {
-        return entityName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
+        return entityName.replaceAll(/([a-z])([A-Z])/g, '$1_$2').toLowerCase();
     }
 }

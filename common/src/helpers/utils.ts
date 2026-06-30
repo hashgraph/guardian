@@ -239,7 +239,7 @@ export function findOptions(document: any, field: any) {
         value = document;
         for (const key of keys) {
             if (key === 'L' && Array.isArray(value)) {
-                value = value[value.length - 1];
+                value = value.at(-1);
             } else {
                 value = value[key];
             }
@@ -268,8 +268,8 @@ export function replaceValueRecursive(document: any, replaceMap: Map<string, str
             throw new Error('Unknown type')
     }
 
-    for (const [oldVal, newVal] of replaceMap.entries()) {
-        str = str.replace(new RegExp(oldVal, 'g'), newVal);
+    for (const [oldVal, newVal] of replaceMap) {
+        str = str.replaceAll(new RegExp(oldVal, 'g'), newVal);
     }
     return JSON.parse(str);
 }

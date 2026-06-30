@@ -40,7 +40,7 @@ export function CalculateAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                 return (function (_formula: string, _scope: any) {
                     try {
                         return this.evaluate(_formula, _scope);
-                    } catch (error) {
+                    } catch {
                         return 'Incorrect formula';
                     }
                 }).call(mathjs, formula, scope);
@@ -55,7 +55,7 @@ export function CalculateAddon(options: Partial<PolicyBlockDecoratorOptions>) {
                     try {
                         this.parse(_formula);
                         return true;
-                    } catch (error) {
+                    } catch {
                         return false;
                     }
                 }).call(mathjs, formula);

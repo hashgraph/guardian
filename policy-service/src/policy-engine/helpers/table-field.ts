@@ -200,8 +200,8 @@ export function collectTablesPack(
             };
         }
 
-        for (const key of Object.keys(obj)) {
-            visit((obj as any)[key]);
+        for (const value of Object.values(obj as any)) {
+            visit(value);
         }
     };
 

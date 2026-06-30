@@ -325,7 +325,7 @@ export class VpDocument {
      * @param uuid
      */
     private static convertUUID(uuid: string): string {
-        if (uuid && uuid.indexOf(':') === -1) {
+        if (uuid && !uuid.includes(':')) {
             return `urn:uuid:${uuid}`;
         }
         return uuid;

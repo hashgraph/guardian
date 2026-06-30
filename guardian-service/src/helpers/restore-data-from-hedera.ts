@@ -119,7 +119,7 @@ export class RestoreDataFromHedera {
      */
     private async readTopicMessages(topicId: string, userId: string | null): Promise<Message[]> {
         if (typeof topicId !== 'string') {
-            throw new Error('Bad topicId');
+            throw new TypeError('Bad topicId');
         }
 
         const messages = await this.workers.addRetryableTask(
@@ -144,7 +144,7 @@ export class RestoreDataFromHedera {
                 r.setTopicId(topicId);
                 r.setId(m.id);
                 result.push(r);
-            } catch (e) {
+            } catch {
                 ++errors;
             }
         }
@@ -156,7 +156,7 @@ export class RestoreDataFromHedera {
 
     private async readTokenMessages(topicId, userId) {
         if (typeof topicId !== 'string') {
-            throw new Error('Bad topicId');
+            throw new TypeError('Bad topicId');
         }
 
         const fullTokenInfo = await this.workers.addRetryableTask(
@@ -183,7 +183,7 @@ export class RestoreDataFromHedera {
             console.log(`Load file: ${message.type}.`);
             return await MessageServer.loadIPFS(message, null, {});
         } catch (error) {
-            console.error('Error: ', error);
+            console.error('Error:', error);
         }
     }
 
@@ -555,7 +555,7 @@ export class RestoreDataFromHedera {
                 const vpTransactionMap = new Map<string, any[]>();
 
                 for (const transaction of mintTransactions) {
-                    const vpTimestamp = atob(transaction.memo_base64).substring(0, 20);
+                    const vpTimestamp = atob(transaction.memo_base64).slice(0, 20);
 
                     const transactionSerials = transaction.nft_transfers.map((nft: any) => nft.serial_number);
 
@@ -566,7 +566,7 @@ export class RestoreDataFromHedera {
                     vpTransactionMap.set(vpTimestamp, trans);
                 }
 
-                for (const [vpMessageId, serials] of vpTransactionMap.entries()) {
+                for (const [vpMessageId, serials] of vpTransactionMap) {
                     const request = {
                         vpMessageId,
                         tokenId,
@@ -775,7 +775,7 @@ export class RestoreDataFromHedera {
                 return {
                     did: m.did,
                     topicId: registrantTopicId,
-                    timestamp: Math.floor(parseFloat(m.id) * 1000),
+                    timestamp: Math.floor(Number.parseFloat(m.id) * 1000),
                 };
             });
     }

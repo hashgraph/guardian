@@ -114,7 +114,7 @@ export class NotificationsApi {
     ): Promise<NotificationDTO> {
         try {
             if (!user.id) {
-                throw Error('User is not registered');
+                throw new Error('User is not registered');
             }
             return await this.notifier.getNewNotifications(user.id);
         } catch (error) {
@@ -163,7 +163,7 @@ export class NotificationsApi {
     ): Promise<ProgressDTO> {
         try {
             if (!user.id) {
-                throw Error('User is not registered');
+                throw new Error('User is not registered');
             }
             return await this.notifier.getProgresses(user.id);
         } catch (error) {
@@ -212,7 +212,7 @@ export class NotificationsApi {
     ): Promise<NotificationDTO> {
         try {
             if (!user.id) {
-                throw Error('User is not registered');
+                throw new Error('User is not registered');
             }
             return await this.notifier.readAll(user.id);
         } catch (error) {

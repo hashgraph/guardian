@@ -265,7 +265,7 @@ export function profileAPI(logger: PinoLogger) {
                 let publicKey: string | null = null;
                 try {
                     publicKey = PrivateKey.fromString(hederaAccountKey).publicKey.toString();
-                } catch (_) {
+                } catch {
                     publicKey = null;
                 }
 
@@ -392,7 +392,7 @@ export function profileAPI(logger: PinoLogger) {
                     } else {
                         did = (await HederaDid.generate(Environment.network, hederaAccountKey, null)).toString();
                     }
-                } catch (error) {
+                } catch {
                     throw new Error('Invalid DID Document.')
                 }
 
@@ -457,7 +457,7 @@ export function profileAPI(logger: PinoLogger) {
                         result.valid = false;
                         result.error = `${HederaBBSMethod.TYPE} method not found.`;
                     }
-                } catch (error) {
+                } catch {
                     result.valid = false;
                     result.error = 'Invalid DID Document.';
                 }
@@ -492,7 +492,7 @@ export function profileAPI(logger: PinoLogger) {
                         }
                     }
                     return new MessageResponse(keys);
-                } catch (error) {
+                } catch {
                     return new MessageResponse(keys);
                 }
             } catch (error) {

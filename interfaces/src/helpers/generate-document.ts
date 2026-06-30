@@ -61,7 +61,7 @@ export class DocumentGenerator {
         // Generate default GeoJSON based on type
         const getDefaultCoordinates = (geoType) => {
             const defaults = {
-                'Point': [0.0, 0.0],
+                'Point': [0, 0],
                 'Polygon': [
                     [
                         [

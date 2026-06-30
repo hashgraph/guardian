@@ -141,7 +141,7 @@ export class VcHelper extends VCJS {
                 }
             }
             return null;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -267,7 +267,7 @@ export class VcHelper extends VCJS {
             });
             credentialSubject.setField('@explicit', true);
             return newVC;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -293,7 +293,7 @@ export class VcHelper extends VCJS {
             );
             delete derivedProofVc['sec:proof'];
             return VcDocument.fromJsonTree(derivedProofVc);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -463,7 +463,7 @@ export class VcHelper extends VCJS {
             const verifier = keyPair.verifier();
             const signature = await signer.sign({ data: singleMessage });
             return await verifier.verify({ data: singleMessage, signature });
-        } catch (error) {
+        } catch {
             return false;
         }
     }

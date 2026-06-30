@@ -142,7 +142,7 @@ export class PolicyImportExportHelper {
         for (const item of schemasMapping) {
             FormulaImportExport.replaceIds(formula.config, item.oldIRI, item.newIRI);
         }
-        for (const [oldId, newId] of toolsMapping.entries()) {
+        for (const [oldId, newId] of toolsMapping) {
             FormulaImportExport.replaceIds(formula.config, oldId, newId);
         }
     }
@@ -223,7 +223,7 @@ export class PolicyImportExportHelper {
         PolicyImportExportHelper.findTools(policy.config, toolIds);
         const tools = await DatabaseServer.getTools({
             status: { $in: [ModuleStatus.PUBLISHED, ModuleStatus.DRY_RUN]},
-            messageId: { $in: Array.from(toolIds.values()) }
+            messageId: { $in: Array.from(toolIds) }
         }, { fields: ['name', 'version', 'topicId', 'messageId', 'tools'] });
         const list = [];
         for (const row of tools) {

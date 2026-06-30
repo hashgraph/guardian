@@ -12,7 +12,7 @@ export class DraftVcSchemaDocumentLoader extends LocalVcSchemaDocumentLoader {
     ): Promise<ISchema[]> {
         try {
             return await this.dataBaseServer.find(Schema, { iri });
-        } catch (error) {
+        } catch {
             return null;
         }
     }

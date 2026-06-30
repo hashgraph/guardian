@@ -34,10 +34,7 @@ export class MergeUtils {
             max = Math.max(max, array.length);
         }
         for (let i = 0; i < max; i++) {
-            const rowItems: IWeightModel[] = [];
-            for (const array of items) {
-                rowItems.push(array[i]);
-            }
+            const rowItems: IWeightModel[] = Array.from(items, array => array[i]);
             result.push({
                 key: MergeUtils.getMultiKey(rowItems),
                 items: rowItems

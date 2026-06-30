@@ -93,7 +93,7 @@ export class Message {
                 }
             }
             return data;
-        } catch (error) {
+        } catch {
             return null;
         }
     }

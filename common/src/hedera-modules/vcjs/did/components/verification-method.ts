@@ -207,7 +207,7 @@ export class VerificationMethod {
                 json.publicKeyJwk === current.publicKeyJwk &&
                 json.publicKeyMultibase === current.publicKeyMultibase
             );
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -233,17 +233,17 @@ export class VerificationMethod {
         if (typeof id === 'string') {
             result.id = id;
         } else {
-            throw new Error('Invalid method format');
+            throw new TypeError('Invalid method format');
         }
         if (typeof controller === 'string') {
             result.controller = controller;
         } else {
-            throw new Error('Invalid method format');
+            throw new TypeError('Invalid method format');
         }
         if (typeof type === 'string') {
             result.type = type;
         } else {
-            throw new Error('Invalid method format');
+            throw new TypeError('Invalid method format');
         }
         if (publicKeyJwk) {
             result.publicKeyJwk = publicKeyJwk;

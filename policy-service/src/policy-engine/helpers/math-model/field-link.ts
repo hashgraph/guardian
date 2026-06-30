@@ -54,7 +54,7 @@ export class FieldLink {
                 this.validName = false;
             } else {
                 if ((/^[A-Za-z]\w*(?:,\w+)*$/).test(text)) {
-                    this.variableName = text.replace(/,/g, '_');
+                    this.variableName = text.replaceAll(',', '_');
                     this.validName = true;
                 } else {
                     this.validName = false;
@@ -74,7 +74,7 @@ export class FieldLink {
             } else {
                 this.error = '';
             }
-        } catch (error) {
+        } catch {
             this.validName = false;
             this.error = 'Invalid name';
         }
@@ -131,7 +131,7 @@ export class FieldLink {
             link.description = json.description || '';
             link.empty = false;
             return link;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
