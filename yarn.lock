@@ -2149,11 +2149,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/classic@npm:1.0.36":
-  version: 1.0.36
-  resolution: "@langchain/classic@npm:1.0.36"
+"@langchain/classic@npm:1.0.38":
+  version: 1.0.38
+  resolution: "@langchain/classic@npm:1.0.38"
   dependencies:
-    "@langchain/openai": "npm:1.5.1"
+    "@langchain/openai": "npm:1.5.3"
     "@langchain/textsplitters": "npm:1.0.1"
     handlebars: "npm:^4.7.9"
     js-yaml: "npm:^4.2.0"
@@ -2163,7 +2163,7 @@ __metadata:
     yaml: "npm:^2.9.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.0
+    "@langchain/core": ^1.2.1
     cheerio: "*"
     peggy: ^5.1.0
     typeorm: "*"
@@ -2177,7 +2177,7 @@ __metadata:
       optional: true
     typeorm:
       optional: true
-  checksum: 10c0/a72ccb42209cbd6fdffe2483a75815b0de6381d6399c063d8a4d99cb6149e87d3aaceb3a94d644398936dd0c41611580ad00fb387bd483782568da3206ecd815
+  checksum: 10c0/74a9a68ff790d589c65bcca1cb6b9676d13c6048c6e45716f7c50d9bffb202c5e447d66ad162cc282c78a03a8c5a8e9253729833f6ef08a91f97f4965359e715
   languageName: node
   linkType: hard
 
@@ -2676,6 +2676,19 @@ __metadata:
   peerDependencies:
     "@langchain/core": ^1.2.0
   checksum: 10c0/1c1d2e32c11f8d2c49e71963c4c5a4ca8ddb0c8972a00e31711fc5f5b9c890acb16f421f29fdd5be3435a5b7af8c2a14428b487cf24436e4fed687b579680c0a
+  languageName: node
+  linkType: hard
+
+"@langchain/openai@npm:1.5.3":
+  version: 1.5.3
+  resolution: "@langchain/openai@npm:1.5.3"
+  dependencies:
+    js-tiktoken: "npm:^1.0.12"
+    openai: "npm:^6.41.0"
+    zod: "npm:^3.25.76 || ^4"
+  peerDependencies:
+    "@langchain/core": ^1.2.1
+  checksum: 10c0/56948c30a9fcddcb30f1fd779fe451db253f2bbb058973aad8fdbf7b934e3db3d18af3fa44aea2f40dbf9e4980aa58ab7d609fe422a35e4951d65c7b83ea4009
   languageName: node
   linkType: hard
 
@@ -5450,7 +5463,7 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@langchain/classic": "npm:1.0.36"
+    "@langchain/classic": "npm:1.0.38"
     "@langchain/community": "npm:1.1.29"
     "@langchain/core": "npm:1.2.1"
     "@langchain/openai": "npm:1.5.1"
