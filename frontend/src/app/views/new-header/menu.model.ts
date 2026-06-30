@@ -15,48 +15,44 @@ export interface NavbarMenuItem {
 
 const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
     {
-        title: 'Policies',
+        title: 'Manage',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         icon: 'pi pi-objects-column',
         section: 'Workspace',
         active: false,
         childItems: [
             {
-                title: 'Manage Schemas',
-                routerLink: '/schemas'
-            },
-            {
-                title: 'Manage Artifacts',
-                routerLink: '/artifacts'
-            },
-            {
-                title: 'Manage Modules',
-                routerLink: '/modules'
-            },
-            {
-                title: 'Manage Policies',
+                title: 'Policies',
                 routerLink: '/policy-viewer'
             },
             {
-                title: 'Manage Tools',
-                routerLink: '/tools'
+                title: 'Schemas',
+                routerLink: '/schemas'
             },
             {
-                title: 'Manage Formulas',
-                routerLink: '/formulas'
-            },
-            {
-                title: 'Manage Schema Rules',
+                title: 'Schema Rules',
                 routerLink: '/schema-rules'
             },
             {
-                title: 'Remote Policy Request',
-                routerLink: '/external-policies'
+                title: 'Artifacts',
+                routerLink: '/artifacts'
+            },
+            {
+                title: 'Tools',
+                routerLink: '/tools'
+            },
+            {
+                title: 'Modules',
+                routerLink: '/modules'
+            },
+            {
+                title: 'Formulas',
+                routerLink: '/formulas'
             },
         ],
     },
     {
-        title: 'Tokens',
+        title: 'Tokens & Contracts',
         icon: 'icon-hbar',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
@@ -66,7 +62,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/tokens'
             },
             {
-                title: 'Manage Contracts',
+                title: 'Retirement Contracts',
                 routerLink: '/contracts'
             },
         ],
@@ -94,20 +90,24 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/user-management'
             },
             {
-                title: 'Settings',
-                routerLink: '/admin/settings'
+                title: 'Application Branding',
+                routerLink: '/branding'
+            },
+            {
+                title: 'Remote Policy Request',
+                routerLink: '/external-policies'
             },
             {
                 title: 'Worker Tasks',
                 routerLink: '/worker-tasks'
             },
             {
-                title: 'Application Branding',
-                routerLink: '/branding'
-            },
-            {
                 title: 'Logs',
                 routerLink: '/admin/logs'
+            },
+            {
+                title: 'Settings',
+                routerLink: '/admin/settings'
             },
             {
                 title: 'Status',
@@ -147,10 +147,10 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         user.TOOLS_TOOL_READ
     ) {
         const childItems: any = [];
-        if (user.POLICIES_POLICY_READ ||
+        const canReadPolicies = user.POLICIES_POLICY_READ ||
             user.POLICIES_POLICY_EXECUTE ||
-            user.POLICIES_POLICY_MANAGE
-        ) {
+            user.POLICIES_POLICY_MANAGE;
+        if (canReadPolicies) {
             if (
                 user.POLICIES_POLICY_CREATE ||
                 user.POLICIES_POLICY_UPDATE ||
@@ -159,7 +159,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 user.POLICIES_POLICY_MANAGE
             ) {
                 childItems.push({
-                    title: 'Manage Policies',
+                    title: 'Policies',
                     routerLink: '/policy-viewer'
                 });
             } else {
@@ -172,66 +172,60 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                     routerLink: '/policy-viewer'
                 });
             }
-            if (user.STATISTICS_STATISTIC_READ) {
-                childItems.push({
-                    title: 'Statistics',
-                    routerLink: '/policy-statistics'
-                });
-            }
-            if (user.SCHEMAS_RULE_READ) {
-                childItems.push({
-                    title: 'Schema Rules',
-                    routerLink: '/schema-rules'
-                });
-            }
-            if (user.STATISTICS_LABEL_READ) {
-                childItems.push({
-                    title: 'Policy Labels',
-                    routerLink: '/policy-labels'
-                });
-            }
-            if (user.FORMULAS_FORMULA_READ) {
-                childItems.push({
-                    title: 'Formulas',
-                    routerLink: '/formulas'
-                });
-            }
-            if (user.POLICIES_EXTERNAL_POLICY_READ) {
-                childItems.push({
-                    title: 'Remote Policy Request',
-                    routerLink: '/external-policies'
-                });
-            }
         }
         if (
             user.SCHEMAS_SCHEMA_READ ||
             user.SCHEMAS_SYSTEM_SCHEMA_READ
         ) {
             childItems.push({
-                title: 'Manage Schemas',
+                title: 'Schemas',
                 routerLink: '/schemas'
+            });
+        }
+        if (canReadPolicies && user.SCHEMAS_RULE_READ) {
+            childItems.push({
+                title: 'Schema Rules',
+                routerLink: '/schema-rules'
             });
         }
         if (user.ARTIFACTS_FILE_READ) {
             childItems.push({
-                title: 'Manage Artifacts',
+                title: 'Artifacts',
                 routerLink: '/artifacts'
-            });
-        }
-        if (user.MODULES_MODULE_READ) {
-            childItems.push({
-                title: 'Manage Modules',
-                routerLink: '/modules'
             });
         }
         if (user.TOOLS_TOOL_READ) {
             childItems.push({
-                title: 'Manage Tools',
+                title: 'Tools',
                 routerLink: '/tools'
             });
         }
+        if (user.MODULES_MODULE_READ) {
+            childItems.push({
+                title: 'Modules',
+                routerLink: '/modules'
+            });
+        }
+        if (canReadPolicies && user.FORMULAS_FORMULA_READ) {
+            childItems.push({
+                title: 'Formulas',
+                routerLink: '/formulas'
+            });
+        }
+        if (canReadPolicies && user.STATISTICS_STATISTIC_READ) {
+            childItems.push({
+                title: 'Statistics',
+                routerLink: '/policy-statistics'
+            });
+        }
+        if (canReadPolicies && user.STATISTICS_LABEL_READ) {
+            childItems.push({
+                title: 'Policy Labels',
+                routerLink: '/policy-labels'
+            });
+        }
         menu.push({
-            title: 'Policies',
+            title: 'Manage',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
             icon: 'pi pi-objects-column',
             section: 'Workspace',
@@ -279,13 +273,13 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 user.CONTRACTS_CONTRACT_MANAGE
             ) {
                 childItems.push({
-                    title: 'Manage Contracts',
+                    title: 'Retirement Contracts',
                     routerLink: '/contracts'
                 });
             }
         }
         menu.push({
-            title: 'Tokens',
+            title: 'Tokens & Contracts',
             icon: 'icon-hbar',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
             active: false,
@@ -300,6 +294,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         user.PERMISSIONS_ROLE_UPDATE ||
         user.PERMISSIONS_ROLE_DELETE ||
         user.SETTINGS_SETTINGS_READ ||
+        user.POLICIES_EXTERNAL_POLICY_READ ||
         user.LOG_LOG_READ
     ) {
         const childItems: any = [];
@@ -324,10 +319,16 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             });
         }
 
-        if (user.SETTINGS_SETTINGS_READ) {
+        if (user.BRANDING_CONFIG_UPDATE) {
             childItems.push({
-                title: 'Settings',
-                routerLink: '/admin/settings'
+                title: 'Application Branding',
+                routerLink: '/branding'
+            });
+        }
+        if (user.POLICIES_EXTERNAL_POLICY_READ) {
+            childItems.push({
+                title: 'Remote Policy Request',
+                routerLink: '/external-policies'
             });
         }
         if (user.WORKER_TASKS_READ) {
@@ -336,16 +337,16 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
                 routerLink: '/worker-tasks'
             });
         }
-        if (user.BRANDING_CONFIG_UPDATE) {
-            childItems.push({
-                title: 'Application Branding',
-                routerLink: '/branding'
-            });
-        }
         if (user.LOG_LOG_READ) {
             childItems.push({
                 title: 'Logs',
                 routerLink: '/admin/logs'
+            });
+        }
+        if (user.SETTINGS_SETTINGS_READ) {
+            childItems.push({
+                title: 'Settings',
+                routerLink: '/admin/settings'
             });
         }
         menu.push({
