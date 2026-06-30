@@ -292,7 +292,7 @@ async function downloadCredits() {
 
                         <!-- Data rows -->
                         <template v-else>
-                            <tr v-for="c in paginated" :key="c.tokenId" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(`/credits/${encodeURIComponent(c.tokenId)}`)">
+                            <tr v-for="c in paginated" :key="c.tokenId" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo({ path: `/credits/${encodeURIComponent(c.tokenId)}`, query: c.projectId ? { projectId: c.projectId } : {} })">
                                 <td class="py-3 px-4 whitespace-nowrap">
                                     <div class="font-medium text-foreground">{{ c.name ?? '-' }}</div>
                                     <div class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId ?? '-' }}</div>
