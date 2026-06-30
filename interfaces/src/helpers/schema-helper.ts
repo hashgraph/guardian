@@ -768,8 +768,11 @@ export class SchemaHelper {
             };
 
             const thenObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
-                buildCrossForbidden(cond.elseTargets)
+                deepMergeSchemaObj(
+                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
+                    buildCrossForbidden(cond.elseTargets)
+                ),
+                buildForbid(cond.elseFields)
             );
             const elseObj = deepMergeSchemaObj(
                 deepMergeSchemaObj(
