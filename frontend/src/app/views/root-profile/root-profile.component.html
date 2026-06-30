@@ -190,6 +190,17 @@
 
             <div class="config-row">
               <div class="config-row-label">
+                <span class="config-row-title">Next Generation UI</span>
+                <span class="config-row-desc">Enable next generation user interface.</span>
+              </div>
+              <p-toggleswitch
+                [ngModel]="nextGenUiEnabled"
+                (onChange)="onNextGenUiToggle($event.checked)">
+              </p-toggleswitch>
+            </div>
+
+            <div class="config-row">
+              <div class="config-row-label">
                 <span class="config-row-title">Two-factor authentication</span>
                 <span class="config-row-desc">Require an authenticator code at sign-in</span>
               </div>

@@ -25,6 +25,7 @@ import moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
+import { FeatureFlagsService } from '../../services/feature-flags.service';
 
 enum OperationMode {
     None,
@@ -126,6 +127,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private docWidgetService: DocWidgetService,
+        private featureFlagsService: FeatureFlagsService,
         private appThemeService: AppThemeService,
         private toastr: ToastrService
     ) {
@@ -917,6 +919,10 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         return this.docWidgetService.isEnabled();
     }
 
+    get nextGenUiEnabled(): boolean {
+        return this.featureFlagsService.isNextGenUiEnabled();
+    }
+
     get docWidgetAvailable(): boolean {
         return this.docWidgetService.available;
     }
@@ -927,6 +933,10 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     onDocWidgetToggle(checked: boolean): void {
         this.docWidgetService.setEnabled(checked);
+    }
+
+    onNextGenUiToggle(checked: boolean): void {
+        this.featureFlagsService.setNextGenUiEnabled(checked);
     }
 
     onToggle2fa(checked: boolean): void {
