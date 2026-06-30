@@ -1491,6 +1491,7 @@ export class SchemaConfigurationComponent implements OnInit {
         const add = (fc: FieldControl) => {
             const typeKey = fc.controlType?.value;
             if (!this.schemaTypeMap[typeKey]?.isRef) { return; }
+            if (fc.controlArray?.value) { return; }
             const key = fc.controlKey?.value;
             if (!key || seen.has(key)) { return; }
             seen.add(key);
