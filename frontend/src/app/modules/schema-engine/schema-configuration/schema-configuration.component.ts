@@ -20,7 +20,7 @@ import {
     UnitSystem,
 } from '@guardian/interfaces';
 import moment from 'moment';
-import { Subject } from 'rxjs';
+import { merge, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { ConditionControl, ConditionFieldGroup, ConditionFieldOption, IfOperator } from '../condition-control';
 import { FieldControl } from '../field-control';
@@ -380,6 +380,7 @@ export class SchemaConfigurationComponent implements OnInit {
             control.append(this.fieldsForm);
             control.refreshType(this.types);
             this.fields.push(control);
+            this.watchFieldControl(control);
         }
     }
 
@@ -407,6 +408,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 );
                 fc.refreshType(this.types);
                 cc.addThenControl(fc);
+                this.watchFieldControl(fc);
             });
 
             condition.elseFields?.forEach(field => {
@@ -417,6 +419,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 );
                 fc.refreshType(this.types);
                 cc.addElseControl(fc);
+                this.watchFieldControl(fc);
             });
 
             (condition.thenTargets || []).forEach(target => {
@@ -758,6 +761,7 @@ export class SchemaConfigurationComponent implements OnInit {
             this.getFieldName()
         );
         condition.addControl(type, field);
+        this.watchFieldControl(field);
         this.rebuildOptionCaches();
     }
 
@@ -787,6 +791,7 @@ export class SchemaConfigurationComponent implements OnInit {
         control.append(this.fieldsForm);
         this.fields.push(control);
         this.fields = this.fields.slice();
+        this.watchFieldControl(control);
         this.rebuildOptionCaches();
     }
 
@@ -1028,8 +1033,25 @@ export class SchemaConfigurationComponent implements OnInit {
             return current;
         };
 
+        const startsWithArrayRefContainer = (path: string[]): boolean => {
+            if (path.length <= 1) { return false; }
+            const key = path[0];
+            const isArrayRef = (fc: FieldControl) =>
+                fc.controlKey?.value === key &&
+                !!fc.controlArray?.value &&
+                !!this.schemaTypeMap[fc.controlType?.value]?.isRef;
+            if (this.fields.some(isArrayRef)) { return true; }
+            for (const cond of this.conditions) {
+                if ([...(cond.thenControls || []), ...(cond.elseControls || [])].some(isArrayRef)) {
+                    return true;
+                }
+            }
+            return false;
+        };
+
         const resolveIfField = (opt: ConditionFieldOption | undefined): { field: SchemaField; fieldPath?: string[] } | null => {
             if (!opt?.fieldPath?.length) { return null; }
+            if (startsWithArrayRefContainer(opt.fieldPath)) { return null; }
             const leaf = traverseFieldPath(opt.fieldPath);
             if (!leaf) { return null; }
             return opt.fieldPath.length === 1
@@ -1039,6 +1061,7 @@ export class SchemaConfigurationComponent implements OnInit {
 
         const buildCrossTargets = (targets: ConditionFieldOption[]): SchemaConditionTarget[] =>
             targets.map(opt => {
+                if (startsWithArrayRefContainer(opt.fieldPath)) { return null; }
                 const leaf = traverseFieldPath(opt.fieldPath);
                 if (!leaf) { return null; }
                 return { fieldPath: opt.fieldPath, field: leaf } as SchemaConditionTarget;
@@ -1531,6 +1554,7 @@ export class SchemaConfigurationComponent implements OnInit {
                     maxDepth,
                 ));
             } else {
+                if (f.isArray) { continue; }
                 const leafTypeKey = this.getType(f);
                 if (!leafTypeKey || !this.schemaTypeMap[leafTypeKey]) { continue; }
                 const path = [...prefix, f.name];
@@ -1620,6 +1644,12 @@ export class SchemaConfigurationComponent implements OnInit {
             ));
         }
         return groups;
+    }
+
+    private watchFieldControl(fc: FieldControl): void {
+        merge(fc.controlType.valueChanges, fc.controlArray.valueChanges)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(() => this.rebuildOptionCaches());
     }
 
     private rebuildOptionCaches(): void {
