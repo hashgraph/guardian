@@ -55,10 +55,6 @@
     "main": "dist/index.js",
     "module": "dist/index.js",
     "name": "auth-service",
-    "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
-    },
     "scripts": {
         "build": "cp environments/environment.demo.ts src/environment.ts && tsc",
         "build:demo": "cp environments/environment.demo.ts src/environment.ts && tsc",
