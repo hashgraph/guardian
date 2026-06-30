@@ -81,8 +81,14 @@ export class DocumentValidatorBlock {
     private evaluateCrossCondition(left: any, type: string, right: any): boolean {
         switch (type) {
             case 'not_equal': return left !== right;
-            case 'in':        return Array.isArray(right) ? right.includes(left) : right === left;
-            case 'not_in':    return Array.isArray(right) ? !right.includes(left) : right !== left;
+            case 'in':
+                if (Array.isArray(right)) { return right.includes(left); }
+                if (Array.isArray(left)) { return left.includes(right); }
+                return String(right).split(',').map((v: string) => v.trim()).includes(String(left));
+            case 'not_in':
+                if (Array.isArray(right)) { return !right.includes(left); }
+                if (Array.isArray(left)) { return !left.includes(right); }
+                return !String(right).split(',').map((v: string) => v.trim()).includes(String(left));
             case 'gt':        return left > right;
             case 'gte':       return left >= right;
             case 'lt':        return left < right;
@@ -201,8 +207,9 @@ export class DocumentValidatorBlock {
             let failed = false;
             const counted = new Set<string>();
             for (const condition of conditions) {
-                const left  = this.coerceValue(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
-                const right = this.coerceValue(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
+                const coerceDeep = (v: any) => Array.isArray(v) ? v.map((e: any) => this.coerceValue(e)) : this.coerceValue(v);
+                const left  = coerceDeep(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
+                const right = coerceDeep(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
                 if (!this.evaluateCrossCondition(left, condition.type, right)) {
                     if (!failureMap.has(condition.field)) {
                         failureMap.set(condition.field, { field: condition.field, detail: this.describeCrossConditionFailure(condition.type, left, right), count: 0 });

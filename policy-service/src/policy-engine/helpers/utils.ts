@@ -448,10 +448,16 @@ export class PolicyUtils {
                 case 'not_equal':
                     return filter.value !== value;
                 case 'in': {
+                    if (Array.isArray(value)) {
+                        return value.indexOf(filter.value) > -1;
+                    }
                     const list = String(filter.value).split(',').map((v: string) => v.trim());
                     return list.includes(String(value));
                 }
                 case 'not_in': {
+                    if (Array.isArray(value)) {
+                        return value.indexOf(filter.value) === -1;
+                    }
                     const list = String(filter.value).split(',').map((v: string) => v.trim());
                     return !list.includes(String(value));
                 }
