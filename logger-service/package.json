@@ -28,10 +28,6 @@
     "license": "Apache-2.0",
     "main": "dist/index.js",
     "name": "logger-service",
-    "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
-    },
     "scripts": {
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
