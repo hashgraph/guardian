@@ -12,7 +12,7 @@ Get the Hedera Guardian AI Toolkit running and perform your first semantic searc
 |-------------|---------|----------|
 | Docker Desktop | 20.10+ | [docker.com](https://www.docker.com/products/docker-desktop/) |
 | Git | any | [git-scm.com](https://git-scm.com/downloads) |
-| Node.js | 22+ | [nodejs.org](https://nodejs.org/) |
+| Node.js | 24.15+ | [nodejs.org](https://nodejs.org/) |
 | Python + Poetry *(local dev only)* | 3.11+ / 2.0+ | [python.org](https://www.python.org/downloads/) / [poetry docs](https://python-poetry.org/docs/#installation) |
 
 For installation details, see [Prerequisites](USER-GUIDE.md#prerequisites) in the User Guide.

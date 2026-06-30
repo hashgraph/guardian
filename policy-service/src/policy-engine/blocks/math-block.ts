@@ -11,9 +11,9 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { DocumentMap, IMathDocument } from '../helpers/math-model/index.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
-import path from 'path'
+import path from 'node:path'
 
 const filename = fileURLToPath(import.meta.url);
 

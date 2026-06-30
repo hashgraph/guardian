@@ -19,8 +19,8 @@
 //   const r = await handlers['SET_TOKEN']({ ... });   // r.body / r.error
 
 import esmock from 'esmock';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import * as Interfaces from '@guardian/interfaces';
 
 const __filename = fileURLToPath(import.meta.url);

@@ -12,9 +12,9 @@
  */
 import { assert } from 'chai';
 import '../../../../dist/index.js'; // warm the module graph (avoids the barrel init cycle when run in isolation)
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SignatureType } from '@guardian/interfaces';
 import { VCJS } from '../../../../dist/hedera-modules/vcjs/vcjs.js';

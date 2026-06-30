@@ -10,7 +10,6 @@ import {
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
 } from '@meeco/cryppo';
-import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
 import { IPFS } from '../../helpers/index.js';
 import { PolicyComment } from '../../entity/index.js';
 
@@ -92,8 +91,7 @@ export class CommentMessage extends Message {
         const encryptedDocument = await encryptWithKeyDerivedFromString({
             passphrase: key,
             data: utf8ToBytes(document),
-            strategy: CipherStrategy.AES_GCM,
-            serializationVersion: SerializationFormat.latest_version,
+            strategy: CipherStrategy.AES_GCM
         });
         document = encryptedDocument.serialized;
         const buffer = Buffer.from(document) as any;
