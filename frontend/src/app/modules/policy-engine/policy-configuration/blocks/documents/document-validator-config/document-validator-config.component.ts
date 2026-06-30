@@ -156,11 +156,6 @@ export class DocumentValidatorConfigComponent implements OnInit {
     }
 
     onSave() {
-        this.properties.conditions = this.properties.conditions.filter((c: any) => !!c.field);
-        for (const sv of (this.properties.sourceValidations || [])) {
-            sv.filters = (sv.filters || []).filter((f: any) => !!f.field);
-            sv.conditions = (sv.conditions || []).filter((c: any) => !!c.field);
-        }
         this.item.changed = true;
     }
 }
