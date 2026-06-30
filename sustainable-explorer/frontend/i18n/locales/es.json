@@ -837,7 +837,11 @@
     },
     "vcViewer": {
         "rawDataOnBlockchain": "Datos brutos en la blockchain",
-        "searchInJson": "Buscar en JSON..."
+        "searchInJson": "Buscar en JSON...",
+        "matchCount": "{current} de {total}",
+        "noMatches": "0 resultados",
+        "prevMatch": "Coincidencia anterior",
+        "nextMatch": "Coincidencia siguiente"
     },
     "relationshipDiagram": {
         "registry": "Registro",
