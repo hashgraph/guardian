@@ -39,7 +39,7 @@ import {
     DidDocument as DidDocumentCollection
 } from '../entity/index.js';
 import { IDocumentOptions } from '../hedera-modules/vcjs/vcjs.js';
-import { KeyType, Users, Wallet } from '../helpers/index.js';
+import { KeyType, TTLCache, Users, Wallet } from '../helpers/index.js';
 import { IAuthUser } from '../interfaces/index.js';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { bls12_381 } from '@noble/curves/bls12-381';
@@ -51,6 +51,12 @@ import { DatabaseServer } from '../database-modules/index.js';
  */
 @Singleton
 export class VcHelper extends VCJS {
+    /**
+     * Schema lookups by context + type. Resolved per VC on the sign path;
+     * published schemas are immutable so a short TTL is safe.
+     */
+    private static readonly schemaByContextCache = new TTLCache<string, Schema>(500, 5 * 60 * 1000);
+
     dataBaseServer: DatabaseServer
 
     constructor() {
@@ -115,6 +121,27 @@ export class VcHelper extends VCJS {
             if (!type) {
                 throw new Error('Type is not defined');
             }
+            const cacheKey = `${context.join('|')}::${type}`;
+            return await VcHelper.schemaByContextCache.getOrLoad(
+                cacheKey,
+                () => VcHelper.loadSchemaByContext(context as string[], type)
+            );
+        } catch (error) {
+            return null;
+        }
+    }
+
+    /**
+     * Load schema by context + type from the database.
+     * @param context context
+     * @param type type
+     * @returns Schema
+     */
+    private static async loadSchemaByContext(
+        context: string[],
+        type: string
+    ): Promise<Schema> {
+        try {
             const iri = '#' + type?.split('&')[0];
 
             const dataBaseServer = new DatabaseServer();

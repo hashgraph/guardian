@@ -1,12 +1,19 @@
 import { DidDocument } from '../entity/index.js';
 import { DidURL, DocumentLoader, IDocumentFormat } from '../hedera-modules/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
+import { TTLCache } from '../helpers/index.js';
 
 /**
  * DID Documents Loader
  * Used for signatures validation.
  */
 export class LocalDidLoader extends DocumentLoader {
+    /**
+     * Resolved local DID documents, keyed by controller DID. `has` and `get`
+     * share this cache, so validating a batch hits the DB once per DID.
+     */
+    private static readonly cache = new TTLCache<string, any>(500, 5 * 60 * 1000);
+
     dataBaseServer: DatabaseServer
 
     constructor(filters?: string | string[]) {
@@ -15,7 +22,7 @@ export class LocalDidLoader extends DocumentLoader {
     }
 
     public async has(iri: string): Promise<boolean> {
-        return (await super.has(iri)) && (await this._hasDocument(iri));
+        return (await super.has(iri)) && !!(await this.resolve(iri));
     }
 
     /**
@@ -34,23 +41,22 @@ export class LocalDidLoader extends DocumentLoader {
      * @param iri
      */
     public async getDocument(iri: string): Promise<any> {
-        const did = DidURL.getController(iri);
-        const didDocuments = await this.dataBaseServer.findOne(DidDocument, {
-            did,
-        });
-        if (didDocuments) {
-            return didDocuments.document;
+        const document = await this.resolve(iri);
+        if (document) {
+            return document;
         }
         throw new Error(`DID not found: ${iri}`);
     }
 
     /**
-     * Document exists
+     * Resolve a DID document (cached).
      * @param iri IRI
-     * @returns Document exists flag
      */
-    private async _hasDocument(iri: string): Promise<boolean> {
+    private async resolve(iri: string): Promise<any> {
         const did = DidURL.getController(iri);
-        return !!(await this.dataBaseServer.findOne(DidDocument, { did }));
+        return LocalDidLoader.cache.getOrLoad(did, async () => {
+            const row = await this.dataBaseServer.findOne(DidDocument, { did });
+            return row ? row.document : null;
+        });
     }
 }
