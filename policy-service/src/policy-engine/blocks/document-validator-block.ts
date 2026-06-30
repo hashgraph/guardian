@@ -49,7 +49,7 @@ export class DocumentValidatorBlock {
         const num = Number(value);
         if (!isNaN(num) && value.trim() !== '') { return num; }
         const d = new Date(value);
-        if (!isNaN(d.getTime())) { return d; }
+        if (!isNaN(d.getTime())) { return d.getTime(); }
         return value;
     }
 
