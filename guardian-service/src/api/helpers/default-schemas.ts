@@ -1,5 +1,5 @@
 import { SchemaEntity } from '@guardian/interfaces';
-import path from 'path';
+import path from 'node:path';
 import { DatabaseServer } from '@guardian/common';
 import fs from 'fs-extra';
 

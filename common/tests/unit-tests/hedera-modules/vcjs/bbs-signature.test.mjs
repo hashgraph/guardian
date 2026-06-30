@@ -10,9 +10,9 @@
  */
 import { assert } from 'chai';
 import '../../../../dist/index.js'; // warm the module graph (avoids the barrel init cycle when run in isolation)
-import { readFileSync } from 'fs';
-import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { readFileSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
 import bbs from '@mattrglobal/jsonld-signatures-bbs';
 import jsigV7Module from 'jsonld-signatures-v7';
 import { PrivateKey } from '@hiero-ledger/sdk';

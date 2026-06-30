@@ -1,4 +1,4 @@
-import { ISchema } from '../details';
+import { ISchema } from '../details/schema.details.js';
 
 /**
  * Schema tree node data

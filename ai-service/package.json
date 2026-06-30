@@ -15,16 +15,12 @@
         "@mikro-orm/mongodb": "6.6.15",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
-        "@types/express": "^5.0.1",
-        "@types/node": "^22.15.19",
-        "dotenv": "^16.3.1",
+        "dotenv": "^16.6.1",
         "express": "5.2.1",
         "faiss-node": "0.5.1",
         "langchain": "1.5.0",
-        "module-alias": "2.2.3",
         "prebuild": "13.0.1",
-        "rxjs": "^7.8.1",
-        "typescript": "^5.8.3"
+        "rxjs": "7.8.2"
     },
     "imports": {
         "#constants": "./dist/constants/index.js"
@@ -39,8 +35,14 @@
         "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ai-service.xml --exit"
     },
     "devDependencies": {
+        "@types/express": "5.0.6",
         "@types/glob": "^8.1.0",
-        "nodemon": "^3.0.1"
+        "@types/node": "24.13.2",
+        "nodemon": "3.1.11",
+        "typescript": "^5.8.3"
+    },
+    "engines": {
+        "node": ">=24.15.0"
     },
     "type": "module"
 }

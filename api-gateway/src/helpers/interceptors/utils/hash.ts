@@ -1,4 +1,4 @@
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 //types and interfaces
 import {IAuthUser} from '@guardian/common';

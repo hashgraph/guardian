@@ -7,7 +7,7 @@ import { HederaService } from '../loaders/hedera-service.js';
 import { DataBaseHelper, IndexerMessageAPI, Job, MessageCache, TopicCache, TopicMessage, Utils } from '@indexer/common';
 import { TokenService } from './token-service.js';
 import { MessageStatus, PriorityOptions, PriorityStatus } from '@indexer/interfaces';
-import { ChannelService } from 'api/channel.service.js';
+import { ChannelService } from '../api/channel.service.js';
 
 export class TopicService {
     public static CYCLE_TIME: number = 0;

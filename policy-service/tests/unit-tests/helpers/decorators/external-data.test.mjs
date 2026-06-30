@@ -1,5 +1,3 @@
-import 'module-alias/register.js';
-
 import { assert } from 'chai';
 
 import { ExternalData } from '../../../../dist/policy-engine/helpers/decorators/external-data.js';

@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.20.2-alpine
+ARG NODE_VERSION=24.18.0-alpine
 
 # JS compile: run on the builder's native arch (fast, output is arch-agnostic)
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base

@@ -2,7 +2,7 @@ import { ApplicationState, GenerateTLSOptionsNats, JwtServicesValidator, LargePa
 import { Worker } from './api/worker.js';
 import { HederaSDKHelper } from './api/helpers/hedera-sdk-helper.js';
 import { ApplicationStates, GenerateUUIDv4 } from '@guardian/interfaces';
-import * as process from 'process';
+import * as process from 'node:process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

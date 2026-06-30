@@ -1,5 +1,4 @@
-import path from 'path';
-import fs from 'fs';
+import fs from 'node:fs';
 import solc from 'solc';
 import {
     Client,
@@ -29,25 +28,6 @@ export class ContractPublisher {
     public static readonly CHUNK_SIZE = 4096;
 
     /**
-     * Split contract bytecode
-     * @param bytecode Contract bytecode
-     * @returns Chunks
-     */
-    private static _splitContractBytecode(bytecode: string) {
-        const chunks = [];
-        let chuckedSize = 0;
-        while (chuckedSize < bytecode.length) {
-            const chunk = bytecode.slice(
-                chuckedSize,
-                chuckedSize + ContractPublisher.CHUNK_SIZE
-            );
-            chunks.push(chunk);
-            chuckedSize += chunk.length;
-        }
-        return chunks;
-    }
-
-    /**
      * Split contract bytecode Buffer into chunks
      * @param buffer Contract bytecode buffer
      * @returns Chunks array (Buffer[])
@@ -67,7 +47,7 @@ export class ContractPublisher {
      * Deploy contract file
      * @param bytecode Bytecode
      * @param credentials Credentials
-     * @param network Nework
+     * @param network Network
      * @returns Contract file identifier
      */
     public static async deployContractFile(
