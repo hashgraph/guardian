@@ -91,6 +91,9 @@ export class SchemaConfigurationComponent implements OnInit {
     private _schema: Schema;
     private _topicId: string;
     private _id: string | undefined;
+    private _fieldOptionGroupsCache = new Map<ConditionControl, ConditionFieldGroup[]>();
+    private _crossThenGroupsCache = new Map<ConditionControl, ConditionFieldGroup[]>();
+    private _crossElseGroupsCache = new Map<ConditionControl, ConditionFieldGroup[]>();
 
     public get isSystem(): boolean {
         return this.schemaType === SchemaType.System;
@@ -256,6 +259,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 field.type = '';
             }
         }
+        this.rebuildOptionCaches();
     }
 
     public build() {
@@ -355,6 +359,7 @@ export class SchemaConfigurationComponent implements OnInit {
         this.updateFieldControls(fields, conditionsFields);
         this.updateConditionControls(conditions);
         this.errors = errors;
+        this.rebuildOptionCaches();
     }
 
 
@@ -740,6 +745,7 @@ export class SchemaConfigurationComponent implements OnInit {
         type: 'then' | 'else'
     ) {
         condition.removeControl(type, conditionField);
+        this.rebuildOptionCaches();
     }
 
     public onConditionFieldAdd(condition: ConditionControl, type: 'then' | 'else') {
@@ -752,17 +758,20 @@ export class SchemaConfigurationComponent implements OnInit {
             this.getFieldName()
         );
         condition.addControl(type, field);
+        this.rebuildOptionCaches();
     }
 
     public onConditionAdd() {
         const condition = new ConditionControl(undefined, '', 'SINGLE');
         this.conditions.push(condition);
         this.conditionsForm.addControl(condition.name, condition.createGroup());
+        this.rebuildOptionCaches();
     }
 
     public onConditionRemove(condition: ConditionControl) {
         this.conditions = this.conditions.filter((e) => e != condition);
         this.conditionsForm.removeControl(condition.name);
+        this.rebuildOptionCaches();
     }
 
     public onAdd(event: MouseEvent) {
@@ -778,12 +787,14 @@ export class SchemaConfigurationComponent implements OnInit {
         control.append(this.fieldsForm);
         this.fields.push(control);
         this.fields = this.fields.slice();
+        this.rebuildOptionCaches();
     }
 
     public onRemove(item: FieldControl) {
         this.removeConditionsByField(item);
         this.fields = this.fields.filter((e) => e != item);
         item.remove(this.fieldsForm);
+        this.rebuildOptionCaches();
     }
 
     private removeConditionsByField(field: FieldControl) {
@@ -1508,6 +1519,7 @@ export class SchemaConfigurationComponent implements OnInit {
         for (const f of fields) {
             if (f.readOnly) { continue; }
             if (f.isRef) {
+                if (f.isArray) { continue; }
                 const nestedSchema = this.subSchemas?.find(s => s.iri === f.type);
                 if (!nestedSchema?.fields?.length) { continue; }
                 groups.push(...this.collectNestedFieldGroups(
@@ -1539,7 +1551,7 @@ export class SchemaConfigurationComponent implements OnInit {
         return groups;
     }
 
-    public getFieldOptionGroupsForCondition(condition: ConditionControl): ConditionFieldGroup[] {
+    private computeFieldOptionGroups(condition: ConditionControl): ConditionFieldGroup[] {
         const groups: ConditionFieldGroup[] = [];
 
         const topItems: ConditionFieldOption[] = [];
@@ -1586,7 +1598,7 @@ export class SchemaConfigurationComponent implements OnInit {
         return groups;
     }
 
-    public getCrossTargetGroupsForCondition(condition: ConditionControl, type: 'then' | 'else'): ConditionFieldGroup[] {
+    private computeCrossGroups(condition: ConditionControl, type: 'then' | 'else'): ConditionFieldGroup[] {
         const alreadySelected = new Set<string>(
             (type === 'then' ? condition.crossThenTargets : condition.crossElseTargets)
                 .map(t => t.fieldPath.join('.'))
@@ -1609,6 +1621,27 @@ export class SchemaConfigurationComponent implements OnInit {
         return groups;
     }
 
+    private rebuildOptionCaches(): void {
+        this._fieldOptionGroupsCache.clear();
+        this._crossThenGroupsCache.clear();
+        this._crossElseGroupsCache.clear();
+        if (!this.conditions) { return; }
+        for (const condition of this.conditions) {
+            this._fieldOptionGroupsCache.set(condition, this.computeFieldOptionGroups(condition));
+            this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
+            this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
+        }
+    }
+
+    public getFieldOptionGroupsForCondition(condition: ConditionControl): ConditionFieldGroup[] {
+        return this._fieldOptionGroupsCache.get(condition) ?? [];
+    }
+
+    public getCrossTargetGroupsForCondition(condition: ConditionControl, type: 'then' | 'else'): ConditionFieldGroup[] {
+        const cache = type === 'then' ? this._crossThenGroupsCache : this._crossElseGroupsCache;
+        return cache.get(condition) ?? [];
+    }
+
     public onCrossTargetAdd(condition: ConditionControl, type: 'then' | 'else', event: any): void {
         if (!event?.value) { return; }
         if (type === 'then') {
@@ -1616,6 +1649,8 @@ export class SchemaConfigurationComponent implements OnInit {
         } else {
             condition.addCrossElseTarget(event.value);
         }
+        this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
+        this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
     }
 
     public onCrossTargetRemove(condition: ConditionControl, type: 'then' | 'else', target: ConditionFieldOption): void {
@@ -1624,6 +1659,8 @@ export class SchemaConfigurationComponent implements OnInit {
         } else {
             condition.removeCrossElseTarget(target);
         }
+        this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
+        this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
     }
 
     public drop(event: CdkDragDrop<any[]>) {
