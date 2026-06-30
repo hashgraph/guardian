@@ -4814,6 +4814,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/emscripten@npm:^1.41.4":
+  version: 1.41.5
+  resolution: "@types/emscripten@npm:1.41.5"
+  checksum: 10c0/ae816da716f896434e59df7a71b67c71ae7e85ca067a32aef1616572fc4757459515d42ade6f5b8fd8d69733a9dbd0cf23010fec5b2f41ce52c09501aa350e45
+  languageName: node
+  linkType: hard
+
 "@types/express-fileupload@npm:1.5.1":
   version: 1.5.1
   resolution: "@types/express-fileupload@npm:1.5.1"
@@ -13774,7 +13781,7 @@ __metadata:
     mongodb: "npm:6.21.0"
     nodemon: "npm:3.1.11"
     prom-client: "npm:15.1.3"
-    pyodide: "npm:0.26.4"
+    pyodide: "npm:0.29.4"
     reflect-metadata: "npm:0.2.2"
     rxjs: "npm:7.8.2"
     tslint: "npm:^6.1.3"
@@ -14116,12 +14123,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pyodide@npm:0.26.4":
-  version: 0.26.4
-  resolution: "pyodide@npm:0.26.4"
+"pyodide@npm:0.29.4":
+  version: 0.29.4
+  resolution: "pyodide@npm:0.29.4"
   dependencies:
+    "@types/emscripten": "npm:^1.41.4"
     ws: "npm:^8.5.0"
-  checksum: 10c0/7ad7a9b99ea060f769dc14fd5ec110d75651626b3b3d01bbc1d24b76e5fb26fc46c11086336911f3112fcbcfab63e99902abccc4b3b38ba9c14a85059d54079b
+  checksum: 10c0/46663db835971ca467672da4d95d47526ad31e23ea54e9cd3f8d8b27db15afa971b32e4832b920a8d139f70fc4f25db34349a2bb2f2f2758dc17893fc9962fb9
   languageName: node
   linkType: hard
 
