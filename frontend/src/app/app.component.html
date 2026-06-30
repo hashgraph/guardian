@@ -11,6 +11,9 @@
     <app-new-header [remoteContainerMethod]="resizeMenu"></app-new-header>
   }
   <div class="content" id="main-content">
+    @if (url !== 'login') {
+      <app-next-gen-banner></app-next-gen-banner>
+    }
     <router-outlet></router-outlet>
   </div>
 </div>

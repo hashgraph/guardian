@@ -1,0 +1,11 @@
+@if (enabled) {
+  <div class="next-gen-banner">
+    <span class="next-gen-banner-text">
+      Next Generation UI is enabled.
+    </span>
+    <div class="next-gen-banner-actions">
+      <a class="next-gen-banner-link" [href]="feedbackMailto" target="_blank" rel="noopener noreferrer">Send feedback</a>
+      <button type="button" class="next-gen-banner-disable" (click)="disableNewUi()">Turn off</button>
+    </div>
+  </div>
+}

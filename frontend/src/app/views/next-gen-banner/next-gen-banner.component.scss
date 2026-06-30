@@ -1,0 +1,33 @@
+.next-gen-banner {
+    position: fixed;
+    top: var(--header-height);
+    right: 0;
+    left: var(--header-width, var(--header-width-expand));
+    z-index: 90;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--color-secondary);
+    color: var(--color-primary);
+}
+
+.next-gen-banner-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.next-gen-banner-link,
+.next-gen-banner-disable {
+    color: var(--color-primary);
+    cursor: pointer;
+}
+
+.next-gen-banner-disable {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    font: inherit;
+}
