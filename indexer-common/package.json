@@ -21,7 +21,6 @@
         "@types/express": "5.0.6",
         "@types/glob": "^8.1.0",
         "@types/node": "24.13.2",
-        "tslint": "^6.1.3",
         "typescript": "^5.8.3"
     },
     "exports": {
@@ -44,7 +43,6 @@
         "build": "tsc",
         "build:prod": "tsc --project tsconfig.production.json",
         "dev": "tsc -w",
-        "lint": "tslint --config ../tslint.json --project .",
         "prepack": "npm run build:prod",
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/indexer-common.xml --exit",
         "test:local": "mocha tests/**/*.test.js --exit",
