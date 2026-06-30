@@ -51,121 +51,72 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
             });
     });
 
-    //If SR doesn't have hedera credentials, creating them
-    it("Generate hedera credentials for SR, if there're no creds", () => {
-        Authorization.getAccessToken(SRUsername).then((authorization) => {
+    // Set hedera credentials for a Standard Registry, if there're no creds
+    const generateSRCredentials = (username) => {
+        Authorization.getAccessToken(username).then((authorization) => {
             cy.request({
                 method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + SRUsername,
+                url: API.ApiServer + "profiles/" + username,
                 headers: {
                     authorization,
                 },
             }).then((response) => {
-                if (!response.body.confirmed) {
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.RandomKey,
-                        headers: { authorization },
-                        timeout: 600000
-                    }).then((response) => {
-                        cy.wait(3000)
-                        let hederaAccountId = response.body.id
-                        let hederaAccountKey = response.body.key
-                        cy.request({
-                            method: METHOD.PUT,
-                            url: API.ApiServer + "profiles/" + SRUsername,
-                            headers: {
-                                authorization,
-                            },
-                            body: {
-                                didDocument: null,
-                                useFireblocksSigning: false,
-                                fireblocksConfig:
-                                {
-                                    fireBlocksVaultId: "",
-                                    fireBlocksAssetId: "",
-                                    fireBlocksApiKey: "",
-                                    fireBlocksPrivateiKey: ""
-                                },
-                                didKeys: [],
-                                hederaAccountId: hederaAccountId,
-                                hederaAccountKey: hederaAccountKey,
-                                vcDocument: {
-                                    geography: "testGeography",
-                                    law: "testLaw",
-                                    tags: "testTags",
-                                    type: "StandardRegistry",
-                                    "@context": [],
-                                },
-                            },
-                            timeout: 400000,
-                        }).then(() => {
-                            cy.log("hedera credentials was created");
-                        });
-                    })
-                } else {
+                if (response.body.confirmed) {
                     cy.log("User has hedera credentials");
+                    return;
                 }
+                cy.request({
+                    method: METHOD.GET,
+                    url: API.ApiServer + API.RandomKey,
+                    headers: { authorization },
+                    timeout: 600000
+                }).then((response) => {
+                    let hederaAccountId = response.body.id
+                    let hederaAccountKey = response.body.key
+                    cy.request({
+                        method: METHOD.PUT,
+                        url: API.ApiServer + "profiles/" + username,
+                        headers: {
+                            authorization,
+                        },
+                        body: {
+                            didDocument: null,
+                            useFireblocksSigning: false,
+                            fireblocksConfig:
+                            {
+                                fireBlocksVaultId: "",
+                                fireBlocksAssetId: "",
+                                fireBlocksApiKey: "",
+                                fireBlocksPrivateiKey: ""
+                            },
+                            didKeys: [],
+                            hederaAccountId: hederaAccountId,
+                            hederaAccountKey: hederaAccountKey,
+                            vcDocument: {
+                                geography: "testGeography",
+                                law: "testLaw",
+                                tags: "testTags",
+                                type: "StandardRegistry",
+                                "@context": [],
+                            },
+                        },
+                        timeout: 400000,
+                    }).then(() => {
+                        cy.log("hedera credentials was created");
+                    });
+                })
             });
         })
+    };
+
+    //If SR doesn't have hedera credentials, creating them
+    it("Generate hedera credentials for SR, if there're no creds", () => {
+        generateSRCredentials(SRUsername);
     });
 
     //If SR2 doesn't have hedera credentials, creating them
     it("Generate hedera credentials for SR2, if there're no creds", () => {
-        Authorization.getAccessToken(SR2Username).then((authorization) => {
-            cy.request({
-                method: METHOD.GET,
-                url: API.ApiServer + "profiles/" + SR2Username,
-                headers: {
-                    authorization,
-                },
-            }).then((response) => {
-                if (!response.body.confirmed) {
-                    cy.request({
-                        method: METHOD.GET,
-                        url: API.ApiServer + API.RandomKey,
-                        headers: { authorization },
-                    }).then((response) => {
-                        cy.wait(3000)
-                        let hederaAccountId = response.body.id
-                        let hederaAccountKey = response.body.key
-                        cy.request({
-                            method: METHOD.PUT,
-                            url: API.ApiServer + "profiles/" + SR2Username,
-                            headers: {
-                                authorization,
-                            },
-                            body: {
-                                didDocument: null,
-                                useFireblocksSigning: false,
-                                fireblocksConfig:
-                                {
-                                    fireBlocksVaultId: "",
-                                    fireBlocksAssetId: "",
-                                    fireBlocksApiKey: "",
-                                    fireBlocksPrivateiKey: ""
-                                },
-                                didKeys: [],
-                                hederaAccountId: hederaAccountId,
-                                hederaAccountKey: hederaAccountKey,
-                                vcDocument: {
-                                    geography: "testGeography",
-                                    law: "testLaw",
-                                    tags: "testTags",
-                                    type: "StandardRegistry",
-                                    "@context": [],
-                                },
-                            },
-                            timeout: 400000,
-                        }).then(() => {
-                            cy.log("hedera credentials was created");
-                        });
-                    })
-                } else {
-                    cy.log("User has hedera credentials");
-                }
-            });
-        })
+        generateSRCredentials(SR2Username);
     });
 
     //If User doesn't have hedera credentials, creating them
@@ -194,8 +145,8 @@ context("Prepare accounts for future tests", { tags: ['preparing', 'smoke', 'all
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
                             headers: { authorization },
+                            timeout: 600000
                         }).then((response) => {
-                            cy.wait(3000)
                             let hederaAccountId = response.body.id
                             let hederaAccountKey = response.body.key
                             cy.request({

@@ -66,7 +66,6 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                         headers: { authorization },
                         timeout: 600000
                     }).then((response) => {
-                        cy.wait(3000)
                         let hederaAccountId = response.body.id
                         let hederaAccountKey = response.body.key
                         cy.request({
@@ -131,8 +130,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                             method: METHOD.GET,
                             url: API.ApiServer + API.RandomKey,
                             headers: { authorization },
+                            timeout: 600000
                         }).then((response) => {
-                            cy.wait(3000)
                             let hederaAccountId = response.body.id
                             let hederaAccountKey = response.body.key
                             cy.request({
@@ -224,8 +223,8 @@ context("Policies", { tags: ['remote_policy', 'secondPool', 'all'] }, () => {
                                 method: METHOD.GET,
                                 url: API.ApiServer + API.RandomKey,
                                 headers: { authorization },
+                                timeout: 600000
                             }).then((response) => {
-                                cy.wait(3000)
                                 let hederaAccountId = response.body.id
                                 let hederaAccountKey = response.body.key
                                 Authorization.getAccessTokenMGS(MainSRUsername, tenantId).then((authorization) => {
