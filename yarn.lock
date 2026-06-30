@@ -5465,7 +5465,7 @@ __metadata:
     dotenv: "npm:^16.6.1"
     express: "npm:5.2.1"
     faiss-node: "npm:0.5.1"
-    langchain: "npm:1.5.0"
+    langchain: "npm:1.5.2"
     nodemon: "npm:3.1.11"
     prebuild: "npm:13.0.1"
     rxjs: "npm:7.8.2"
@@ -11418,17 +11418,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langchain@npm:1.5.0":
-  version: 1.5.0
-  resolution: "langchain@npm:1.5.0"
+"langchain@npm:1.5.2":
+  version: 1.5.2
+  resolution: "langchain@npm:1.5.2"
   dependencies:
     "@langchain/langgraph": "npm:^1.4.4"
     "@langchain/langgraph-checkpoint": "npm:^1.1.2"
     langsmith: "npm:>=0.5.0 <1.0.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.0
-  checksum: 10c0/6b6a3f388a5712db6cabae7ca32b990325cee50e835d9141a8d80874899a0f4d3edfae6065ad8615ff274287bc1554a41073cf38293126892cd5c85176cc581d
+    "@langchain/core": ^1.2.1
+  checksum: 10c0/af8020a1c2f7b7a4fda544de284f22f507b7c09079b62714ea906146395de582331d4e19eb85ca47fcd6c27b0a85c6f1caf57c4428247e3ece61ea6d2b83f240
   languageName: node
   linkType: hard
 
