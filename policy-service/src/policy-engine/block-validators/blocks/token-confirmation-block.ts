@@ -19,11 +19,11 @@ export class TokenConfirmationBlock {
         try {
             await CommonBlock.validate(validator, ref);
             const accountType = ['default', 'custom'];
-            if (accountType.indexOf(ref.options.accountType) === -1) {
+            if (!accountType.includes(ref.options.accountType)) {
                 validator.addError('Option "accountType" must be one of ' + accountType.join(','));
             }
             const types = ['associate', 'dissociate'];
-            if (types.indexOf(ref.options.action) === -1) {
+            if (!types.includes(ref.options.action)) {
                 validator.addError('Option "action" must be one of ' + types.join(','));
             }
             if (ref.options.useTemplate) {

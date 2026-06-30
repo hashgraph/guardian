@@ -243,7 +243,7 @@ export class GenerateBlocks {
             try {
                 expression.parse();
                 expression.validated = true;
-            } catch (error) {
+            } catch {
                 expression.validated = false;
                 xlsxResult.addError({
                     type: 'error',

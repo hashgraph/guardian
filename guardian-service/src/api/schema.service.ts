@@ -240,7 +240,7 @@ function normalizeSchemaReference(value: unknown): string[] {
     }
     const result = new Set<string>([value]);
     if (value.startsWith('#')) {
-        result.add(value.substring(1));
+        result.add(value.slice(1));
     } else {
         result.add(`#${value}`);
     }
@@ -408,7 +408,7 @@ async function applyPolicySchemaGridFilters(
 
     const usedIds = new Set<string>();
     if (options.unusedInPolicyOnly) {
-        for (const [topicId, topicSchemas] of schemasByTopic.entries()) {
+        for (const [topicId, topicSchemas] of schemasByTopic) {
             const topicUsedIds = await getUsedPolicySchemaIds(topicId, topicSchemas);
             for (const id of topicUsedIds) {
                 usedIds.add(id);
@@ -765,7 +765,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         }
 
                         if (allPolicySchemas?.length > 0) {
-                            allPolicySchemas.forEach(policySchema => {
+                            for (const policySchema of allPolicySchemas) {
                                 if (schema.iri !== policySchema.iri
                                     && !childSchemas.has(policySchema.iri)
                                     && !schemas.some(item => item.iri === policySchema.iri)) {
@@ -806,7 +806,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                         }
                                     }
                                 }
-                            })
+                            }
                         }
                     }
                 }
@@ -912,7 +912,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         const schema = await DatabaseServer.getSchema({
                             iri: type
                         });
-                        if (schema && result.findIndex(item => item.type === schema.iri) === -1) {
+                        if (schema && !result.some(item => item.type === schema.iri) ) {
                             result.push(await createNode(schema));
                         }
                     }
@@ -966,11 +966,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const iriToAlias = new Map<string, string>();
 
                 const sanitizeAlias = (name: string): string => {
-                    return name.replace(/[^a-zA-Z0-9_]/g, '_');
+                    return name.replaceAll(/[^a-zA-Z0-9_]/g, '_');
                 };
 
                 const sanitizeFieldName = (name: string): string => {
-                    return name.replace(/\./g, '_');
+                    return name.replaceAll('.', '_');
                 };
 
                 const buildSchemaClass = (schemaDoc: any, alias: string): string => {
@@ -981,7 +981,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                             (f: any) => f.type !== '#GeoJSON' && f.type !== '#SentinelHUB' && f.type !== null
                         );
                         for (const field of fields) {
-                            const desc = (field.description || '').replace(/[\r\n]+/g, ' ').trim();
+                            const desc = (field.description || '').replaceAll(/[\r\n]+/g, ' ').trim();
                             const fieldName = sanitizeFieldName(field.name);
                             classBlock += `  {field} ${fieldName} (${desc})\n`;
                         }
@@ -1027,7 +1027,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         currentIri = refField.type;
                     }
                     const alias = await resolveSchemaAlias(currentIri, addMissing);
-                    return alias ? { alias, field: sanitizeFieldName(parts[parts.length - 1]) } : null;
+                    return alias ? { alias, field: sanitizeFieldName(parts.at(-1)) } : null;
                 };
 
                 const buildPlantUML = async (schemaDoc: any): Promise<void> => {
@@ -1153,8 +1153,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                             for (const item of items) {
                                 const compAlias = sanitizeAlias(`${formula.name}_${item.name}`);
                                 const stereotype = item.type || 'unknown';
-                                const desc = (item.description || '').replace(/[\r\n]+/g, ' ').trim();
-                                const val = item.value !== null && item.value !== undefined && item.value !== '' ? String(item.value).replace(/[\r\n]+/g, ' ').trim() : '';
+                                const desc = (item.description || '').replaceAll(/[\r\n]+/g, ' ').trim();
+                                const val = item.value !== null && item.value !== undefined && item.value !== '' ? String(item.value).replaceAll(/[\r\n]+/g, ' ').trim() : '';
 
                                 packageLines.push(`  class "${item.name}" as ${compAlias} <<${stereotype}>> {`);
                                 packageLines.push(`    description : ${desc || 'Empty'}`);
@@ -1505,7 +1505,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (options.search) {
                     let search = options.search.toLowerCase();
                     if (search.startsWith('@') || search.startsWith('#')) {
-                        search = search.substring(1);
+                        search = search.slice(1);
                     }
                     const searchOptions = options.searchOptions || ['uuid', 'name', 'description', 'references', 'fields'];
                     const fields = ['_id'];
@@ -1665,7 +1665,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         }
                     }
                 }
-                const topicIds = Array.from(topicMaps.values());
+                const topicIds = Array.from(topicMaps);
                 const schemas = await DatabaseServer.getSchemas({
                     $or: [{
                         owner: owner.owner,
@@ -1850,7 +1850,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         }
 
                         if (allPolicySchemas?.length > 0) {
-                            allPolicySchemas.forEach(policySchema => {
+                            for (const policySchema of allPolicySchemas) {
                                 if (schema.iri !== policySchema.iri
                                     && !childSchemas.has(policySchema.iri)
                                     && !schemas.some(item => item.iri === policySchema.iri)) {
@@ -1893,7 +1893,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                         }
                                     }
                                 }
-                            })
+                            }
                         }
                     }
                 }

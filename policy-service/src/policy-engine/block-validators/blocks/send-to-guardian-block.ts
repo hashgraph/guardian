@@ -20,7 +20,7 @@ export class SendToGuardianBlock {
             await CommonBlock.validate(validator, ref);
             if (ref.options.dataType) {
                 const t = ['vc-documents', 'did-documents', 'approve', 'hedera'];
-                if (t.indexOf(ref.options.dataType) === -1) {
+                if (!t.includes(ref.options.dataType)) {
                     validator.addError(`Option "dataType" must be one of ${t.join('|')}`);
                 }
             } else if (ref.options.dataSource === 'auto') {

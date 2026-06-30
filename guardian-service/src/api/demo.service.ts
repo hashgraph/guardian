@@ -46,7 +46,7 @@ async function generateDemoKey(
         } else {
             initialBalance = parseInt(process.env.INITIAL_BALANCE, 10);
         }
-    } catch (error) {
+    } catch {
         initialBalance = null;
     }
     notifier.completeStep(STEP_RESOLVE_SETTINGS);

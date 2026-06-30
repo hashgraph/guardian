@@ -62,7 +62,7 @@ export class ApproveCollectionBackup extends CollectionBackup<ApprovalDocument> 
                 }
             }
             return row;
-        } catch (error) {
+        } catch {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);
         }

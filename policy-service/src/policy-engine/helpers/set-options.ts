@@ -13,13 +13,13 @@ export function setOptions(data: any, field: any, value: any) {
             const key = keys[i];
             if (key === 'L' && Array.isArray(result)) {
                 if (result.length > 0) {
-                    if (result[result.length - 1] === undefined) {
+                    if (result.at(-1) === undefined) {
                         result[result.length - 1] = {};
                     }
                 } else {
                     result.push({});
                 }
-                result = result[result.length - 1];
+                result = result.at(-1);
             } else {
                 if (result[key] === undefined) {
                     result[key] = {};
@@ -32,7 +32,7 @@ export function setOptions(data: any, field: any, value: any) {
             throw new Error('Can not set property on non object type');
         }
 
-        const lastKey = keys[keys.length - 1];
+        const lastKey = keys.at(-1);
         result[lastKey] = value;
     }
     return data;

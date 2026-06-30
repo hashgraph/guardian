@@ -13,7 +13,7 @@ export async function setDefaultSchema() {
     let fileContent: any;
     try {
         fileContent = await readJSON(fileConfig);
-    } catch (error) {
+    } catch {
         throw new Error('you need to create a file \'system-schemas.json\'');
     }
 

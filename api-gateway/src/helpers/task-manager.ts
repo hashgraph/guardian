@@ -463,7 +463,7 @@ class TaskCollection {
     constructor(delay: number = 1000 * 60 * 60 * 24 /* One day */) {
         const self = this;
         setInterval(() => {
-            const old = new Date(new Date().valueOf() - delay);
+            const old = new Date(Date.now() - delay);
             Object.keys(self)
                 .filter((key) => self[key].date < old)
                 .forEach((key) => {

@@ -40,10 +40,7 @@ export class DocumentValidators {
     }
 
     private validate(iri: string | undefined, list: Map<string, any>): any {
-        const results: { [x: string]: FieldRuleResult; }[] = [];
-        for (const validator of this.validators) {
-            results.push(validator.validate(iri, list));
-        }
+        const results: { [x: string]: FieldRuleResult; }[] = Array.from(this.validators, validator => validator.validate(iri, list));
 
         const statuses: SchemaRuleValidateResult = {};
         for (let i = 0; i < results.length; i++) {

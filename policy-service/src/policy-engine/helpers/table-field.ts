@@ -123,8 +123,8 @@ export async function decodeGridFileText(
 ): Promise<string> {
     const isGzip =
         fileBuffer.length >= 2 &&
-        fileBuffer[0] === 0x1f &&
-        fileBuffer[1] === 0x8b;
+        fileBuffer[0] === 0x1F &&
+        fileBuffer[1] === 0x8B;
 
     if (isGzip) {
         const uncompressed = await gunzipBuffer(fileBuffer);
@@ -376,8 +376,8 @@ export function collectTablesPack(
             };
         }
 
-        for (const key of Object.keys(obj)) {
-            visit((obj as any)[key]);
+        for (const value of Object.values(obj as any)) {
+            visit(value);
         }
     };
 

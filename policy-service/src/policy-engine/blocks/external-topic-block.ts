@@ -221,7 +221,7 @@ export class ExternalTopicBlock {
             }
             const schemaCache = new Map<string, any>();
             return SchemaHelper.parseFields(document, null, schemaCache, null, false);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -289,7 +289,7 @@ export class ExternalTopicBlock {
                 }
             }
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -334,7 +334,7 @@ export class ExternalTopicBlock {
             const extension = this.getSchemaFields(document);
             const verified = this.ifExtendFields(extension, base);
             item.status = verified ? SchemaStatus.Compatible : SchemaStatus.Incompatible;
-        } catch (error) {
+        } catch {
             item.status = SchemaStatus.Incompatible;
             return;
         }
@@ -363,7 +363,7 @@ export class ExternalTopicBlock {
             } else {
                 return document;
             }
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -668,7 +668,7 @@ export class ExternalTopicBlock {
                 }
             }
             return false;
-        } catch (error) {
+        } catch {
             return false;
         }
     }
@@ -704,7 +704,7 @@ export class ExternalTopicBlock {
                 verify = await VCHelper.verifyVC(document);
             }
             verify = await VCHelper.verifyVC(document);
-        } catch (error) {
+        } catch {
             verify = false;
         }
 
@@ -901,7 +901,7 @@ export class ExternalTopicBlock {
 
                     try {
                         TopicId.fromString(value);
-                    } catch (error) {
+                    } catch {
                         throw new BlockActionError('Invalid value format', ref.blockType, ref.uuid);
                     }
 

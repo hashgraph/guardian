@@ -379,7 +379,7 @@ export async function createUserProfile({
             interception: user.id.toString(),
             userId: user.id.toString()
         });
-    } catch (error) {
+    } catch {
         throw new Error(`Invalid Hedera account or key.`);
     }
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
@@ -655,7 +655,7 @@ export async function createRemoteUserProfile({
             userId: user.id.toString(),
             interception: null
         });
-    } catch (error) {
+    } catch {
         throw new Error(`Invalid Hedera account or key.`);
     }
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
@@ -971,7 +971,7 @@ export async function createDefaultRoles({
 export async function validateCommonDid(json: string | any, keys: IDidKey[]): Promise<CommonDidDocument> {
     const vcHelper = new VcHelper();
     if (!Array.isArray(keys)) {
-        throw new Error(`Invalid did document or keys.`);
+        throw new TypeError(`Invalid did document or keys.`);
     }
     const document = CommonDidDocument.from(json);
     for (const item of keys) {
@@ -1021,7 +1021,7 @@ export async function validateVc(json: string | any): Promise<VcDocumentDefiniti
         }
         const vc = VcDocumentDefinition.fromJsonTree(json);
         return vc;
-    } catch (error) {
+    } catch {
         throw new Error(`Invalid vc document.`);
     }
 }

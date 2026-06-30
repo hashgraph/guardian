@@ -47,10 +47,7 @@ export class DocumentMap {
     }
 
     public toJson() {
-        const relationships: any = {};
-        for (const [schema, document] of this._map.entries()) {
-            relationships[schema] = document;
-        }
+        const relationships: any = Object.fromEntries(this._map.entries());
         return {
             target: this._current,
             relationships

@@ -43,7 +43,7 @@ export async function getOrCreateTopic(item: PolicyLabel, userId: string | null)
 
     const policy = await DatabaseServer.getPolicyById(item.policyId);
     if (!policy || policy.status !== PolicyStatus.PUBLISH) {
-        throw Error('Item does not exist.');
+        throw new Error('Item does not exist.');
     }
 
     const rootTopic = await TopicConfig.fromObject(await DatabaseServer.getTopicById(policy.instanceTopicId), true, userId);
@@ -208,7 +208,7 @@ export async function generateVcDocument(
 
     const res = await vcHelper.verifySubject(document);
     if (!res.ok) {
-        throw Error(JSON.stringify(res.error));
+        throw new Error(JSON.stringify(res.error));
     }
 
     const vcObject = await vcHelper.createVerifiableCredential(document, didDocument, null, null);

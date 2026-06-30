@@ -275,10 +275,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     public create(entities: (FilterObject<T>)[]): T[];
     public create(entity: FilterObject<T> | FilterObject<T>[]): T | T[] {
         if (Array.isArray(entity)) {
-            const arrResult = [];
-            for (const item of entity) {
-                arrResult.push(this.create(item));
-            }
+            const arrResult = Array.from(entity, item => this.create(item));
             return arrResult;
         }
         const entityWithId = entity as FilterObject<T> & { _id?: ObjectId };
@@ -791,7 +788,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         if (filter) {
             existingEntityByFilter = await repository.findOne(filter);
         } else {
-            const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+            const ids = entities.map(entity => entity.id || entity._id).filter(Boolean);
             if (ids.length > 0) {
                 existingEntitiesById = await repository.find({ id: { $in: ids } });
             }
@@ -902,7 +899,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         if (filter) {
             existingEntityByFilter = await repository.find(filter);
         } else {
-            const ids = entities.map(entity => entity.id || entity._id).filter(id => id);
+            const ids = entities.map(entity => entity.id || entity._id).filter(Boolean);
             if (ids.length > 0) {
                 existingEntitiesById = await repository.find({ id: { $in: ids } });
             }
@@ -911,9 +908,7 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
         for (const entity of entities) {
             const id = entity.id || entity._id;
 
-            const filterId = typeof id === 'string'
-                ? (ObjectId.isValid(id) ? new ObjectId(id) : id)
-                : id;
+            const filterId = (typeof id === 'string') && ObjectId.isValid(id) ? new ObjectId(id) : id;
 
             if (!filter && !id) {
                 continue;

@@ -78,7 +78,7 @@ export class LoggerServiceTransport extends Writable {
         try {
             const response: T = await this.channel.sendMessage(entity, params);
             if (!response) {
-                throw Error('Server is not available');
+                throw new Error('Server is not available');
             }
             return response;
         } catch (error) {

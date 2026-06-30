@@ -479,7 +479,7 @@ export class WebSocketsService {
                     const userProvider = {
                         role: data.role || UserRole.STANDARD_REGISTRY as UserRole,
                         username: `${meecoUser.firstName}${meecoUser.familyName}${generateNumberFromString(meecoUser.id)
-                            }`.toLowerCase().replace(/\s+/g, ''),
+                            }`.toLowerCase().replaceAll(/\s+/g, ''),
                         providerId: meecoUser.id,
                         provider: ExternalProviders.MEECO,
                     };
@@ -584,7 +584,7 @@ export class WebSocketsService {
                     data: message,
                 };
             }
-        } catch (error) {
+        } catch {
             return {
                 type: message,
                 data: null,

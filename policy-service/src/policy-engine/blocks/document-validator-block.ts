@@ -53,7 +53,7 @@ export class DocumentValidatorBlock {
 
     private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
         if (operator === 'in' || operator === 'not_in') {
-            return sourceDocuments.map((doc) => PolicyUtils.resolveFieldPath(doc, path)).flat();
+            return sourceDocuments.flatMap((doc) => PolicyUtils.resolveFieldPath(doc, path));
         }
         return PolicyUtils.resolveFieldPath(sourceDocuments[0], path);
     }
@@ -225,7 +225,7 @@ export class DocumentValidatorBlock {
         const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}:`;
         const conditionResults: IDocumentValidatorBlockError['conditions'] = [];
         for (const { field, type, leftValue, rightValue, count } of Array.from(failureMap.values())) {
-            const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
+            const rawLabel = field.split('.').findLast(p => p !== 'document' && !/^\d+$/.test(p)) || field;
             const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
             let hint: string;
             if (count < total) {
@@ -384,7 +384,7 @@ export class DocumentValidatorBlock {
                         ? PolicyUtils.resolveFieldPath(document, filter.value)
                         : filter.value;
                     const [displayActual, displayExpected] = PolicyUtils.firstFailingPair(actual, filter.type, expected);
-                    const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
+                    const label = String(filter.field).split('.').findLast((p: string) => p !== 'document' && !/^\d+$/.test(p)) || filter.field;
                     return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, displayActual, displayExpected)}` };
                 }
             }

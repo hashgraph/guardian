@@ -63,7 +63,7 @@ export class ValidateNamespace {
     }
 
     public getField(schema: string, path: string): any {
-        const fullPath = [...(path || '').split('.')];
+        const fullPath = (path || '').split('.');
         const document = this.documents?.find((doc) => doc.schema === schema);
         if (!document) {
             return undefined;

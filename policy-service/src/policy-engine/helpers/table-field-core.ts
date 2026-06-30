@@ -151,7 +151,7 @@ export function buildTableHelper(
 
         if (typeof value === 'string') {
             const normalized = value.replace(',', '.');
-            const parsed = parseFloat(normalized);
+            const parsed = Number.parseFloat(normalized);
             return Number.isFinite(parsed) ? parsed : 0;
         }
 

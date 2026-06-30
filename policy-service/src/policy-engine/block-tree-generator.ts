@@ -168,7 +168,7 @@ export class BlockTreeGenerator extends NatsService {
         } else {
             return new MessageResponse({
                 trackingId: actionstep.id,
-                ...(res.body ?? {}),
+                ...res.body,
             }, res.code);
         }
     }

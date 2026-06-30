@@ -591,7 +591,7 @@ export class PolicyEngineService {
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
                     const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
-                    const waitRemotePolicy = !(msg.waitRemotePolicy === false);
+                    const waitRemotePolicy = msg.waitRemotePolicy !== false;
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA, policyId, {
                             user,
@@ -626,7 +626,7 @@ export class PolicyEngineService {
                     await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
 
                     const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
-                    const waitRemotePolicy = !(msg.waitRemotePolicy === false);
+                    const waitRemotePolicy = msg.waitRemotePolicy !== false;
                     const blockData = await new GuardiansService()
                         .sendBlockMessage(PolicyEvents.SET_BLOCK_DATA_BY_TAG, policyId, {
                             user,
@@ -3915,7 +3915,7 @@ export class PolicyEngineService {
                         vps = vps.filter(vp => {
                             return vp.document.verifiableCredential.find(vc =>
                                 vc.credentialSubject.some(subject =>
-                                    tokens.some(tokenId => subject.tokenId === tokenId)
+                                    tokens.includes(subject.tokenId)
                                 )
                             )
                         });
@@ -4017,7 +4017,7 @@ export class PolicyEngineService {
                         vps = vps.filter(vp => {
                             return vp.document.verifiableCredential.find(vc =>
                                 vc.credentialSubject.some(subject =>
-                                    tokens.some(tokenId => subject.tokenId === tokenId)
+                                    tokens.includes(subject.tokenId)
                                 )
                             )
                         });

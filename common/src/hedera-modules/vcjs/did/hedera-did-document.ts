@@ -53,7 +53,7 @@ export class HederaDidDocument extends CommonDidDocument {
             result = new HederaDidDocument();
             result = CommonDidDocument._from(JSON.parse(document), result);
         } else {
-            throw new Error('Invalid document format');
+            throw new TypeError('Invalid document format');
         }
         if (result.did instanceof HederaDid) {
             result.setDidTopicId(result.did.getDidTopicId());

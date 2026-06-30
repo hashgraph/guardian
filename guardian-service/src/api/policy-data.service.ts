@@ -23,7 +23,7 @@ import {
  *  e.g. "document.credentialSubject[0].field3" → "document.credentialSubject.0.field3"
  */
 function normalisePath(field: string): string {
-    return field.replace(/\[(\d+)\]/g, '.$1');
+    return field.replaceAll(/\[(\d+)\]/g, '.$1');
 }
 
 type FilterOperator = PolicyDataFilterOperator;
@@ -96,7 +96,7 @@ export function buildMongoFilter(
 
         if (entry.op === 'contains') {
             if (typeof entry.value !== 'string') {
-                throw new Error(`Operator "contains" requires a string value for field "${field}".`);
+                throw new TypeError(`Operator "contains" requires a string value for field "${field}".`);
             }
             if (entry.value.length > POLICY_DATA_MAX_CONTAINS_LENGTH) {
                 throw new Error(

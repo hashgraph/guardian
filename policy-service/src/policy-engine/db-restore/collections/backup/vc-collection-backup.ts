@@ -69,7 +69,7 @@ export class VcCollectionBackup extends CollectionBackup<VcDocument> {
                 }
             }
             return row;
-        } catch (error) {
+        } catch {
             const newRow = await this.findDocument(row);
             return await this.loadFile(newRow, i + 1);
         }

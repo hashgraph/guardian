@@ -53,7 +53,7 @@ export class SchemaImportExportHelper {
                 return [];
             }
             return Object.keys(document.$defs);
-        } catch (error) {
+        } catch {
             return [];
         }
     }
@@ -72,7 +72,7 @@ export class SchemaImportExportHelper {
                 return Object.values(document.$defs);
             }
             return [];
-        } catch (error) {
+        } catch {
             return [];
         }
     }

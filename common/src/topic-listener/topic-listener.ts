@@ -58,13 +58,13 @@ export class TopicListener {
 
     public setStartMessage(sequenceNumber: number): TopicListener {
         if (typeof sequenceNumber === 'number') {
-            if (isFinite(sequenceNumber) && sequenceNumber > -2) {
+            if (Number.isFinite(sequenceNumber) && sequenceNumber > -2) {
                 this._startNumber = sequenceNumber;
             } else {
                 throw new Error('Invalid arguments');
             }
         } else {
-            throw new Error('Invalid arguments');
+            throw new TypeError('Invalid arguments');
         }
         return this;
     }
@@ -82,7 +82,7 @@ export class TopicListener {
                 await this._start();
             }
         } else {
-            throw new Error('Invalid arguments');
+            throw new TypeError('Invalid arguments');
         }
         return this;
     }
@@ -110,7 +110,7 @@ export class TopicListener {
             await TopicListener.channel.publish(`${ListenerEvents.CONFIRM_LISTENER_MESSAGE}.${this._listenerId}`, index);
 
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     }

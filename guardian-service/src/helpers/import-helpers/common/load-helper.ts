@@ -23,7 +23,7 @@ export class SchemaCache {
         try {
             const value = SchemaCache.map.get(id);
             return JSON.parse(value);
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -37,7 +37,7 @@ export class SchemaCache {
         try {
             const value = JSON.stringify(schema);
             SchemaCache.map.set(id, value)
-        } catch (error) {
+        } catch {
             return;
         }
     }

@@ -24,7 +24,7 @@ export async function GetConditionsPoliciesByCategories(categoryIds: string[], t
             id: { $in: categoryIds },
         });
         const groupedCategories = GetGroupedCategories(currentCategories);
-        conditions.push(...Object.keys(groupedCategories).map((categoryKey) => { return { categories: { $in: groupedCategories[categoryKey] } } }));
+        conditions.push(...Object.values(groupedCategories).map((value) => { return { categories: { $in: value } } }));
     }
 
     return conditions;

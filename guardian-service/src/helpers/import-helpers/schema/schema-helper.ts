@@ -48,13 +48,13 @@ export async function updateSchemaDefs(schemaId: string, oldSchemaId?: string) {
     for (const rSchema of relatedSchemas) {
         if (oldSchemaId) {
             let document = JSON.stringify(rSchema.document) as string;
-            document = document.replaceAll(oldSchemaId.substring(1), schemaId.substring(1));
+            document = document.replaceAll(oldSchemaId.slice(1), schemaId.slice(1));
             rSchema.document = JSON.parse(document);
         }
         rSchema.document.$defs[schemaId] = schemaDocument;
         if (schemaDefs) {
-            for (const def of Object.keys(schemaDefs)) {
-                rSchema.document.$defs[def] = schemaDefs[def];
+            for (const [def, value] of Object.entries(schemaDefs)) {
+                rSchema.document.$defs[def] = value;
             }
         }
     }
@@ -317,8 +317,8 @@ export async function copySchemaAsync(
 
     let document = JSON.stringify(item.document) as string;
 
-    for (const [oldId, newSchema] of copiedSchemas.entries()) {
-        document = document.replaceAll(oldId.substring(1), newSchema.iri.substring(1));
+    for (const [oldId, newSchema] of copiedSchemas) {
+        document = document.replaceAll(oldId.slice(1), newSchema.iri.slice(1));
     }
 
     item.document = JSON.parse(document);

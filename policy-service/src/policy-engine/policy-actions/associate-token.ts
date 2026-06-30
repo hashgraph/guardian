@@ -96,7 +96,7 @@ export class AssociateToken {
                 return true;
             }
             return false;
-        } catch (error) {
+        } catch {
             return false;
         }
     }

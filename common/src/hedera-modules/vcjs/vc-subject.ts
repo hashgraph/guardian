@@ -82,13 +82,13 @@ export class VcSubject {
             let result = this.document;
             for (const it of f) {
                 if (it === 'L' && Array.isArray(result)) {
-                    result = result[result.length - 1];
+                    result = result.at(-1);
                 } else {
                     result = result[it];
                 }
             }
             return result;
-        } catch (error) {
+        } catch {
             return null;
         }
     }
@@ -116,7 +116,7 @@ export class VcSubject {
      * @private
      */
     private _addContext(context: string): void {
-        if (this.context.indexOf(context) === -1) {
+        if (!this.context.includes(context)) {
             this.context.push(context)
         }
     }
@@ -184,7 +184,7 @@ export class VcSubject {
      * @param uuid
      */
     private static convertUUID(uuid: string): string {
-        if (uuid && uuid.indexOf(':') === -1) {
+        if (uuid && !uuid.includes(':')) {
             return `urn:uuid:${uuid}`;
         }
         return uuid;

@@ -879,14 +879,14 @@ export class PolicyComponentsUtils {
         const map: PolicyNavigationMap = new Map<string, IPolicyNavigationStep[]>();
         PolicyComponentsUtils.NavigationMapByPolicyId.set(policyId, map);
         if (Array.isArray(navigation)) {
-            navigation.forEach(nav => {
+            for (const nav of navigation) {
                 if (Array.isArray(nav.steps)) {
                     nav.steps.forEach((step: IPolicyNavigationStep) => {
                         step.uuid = PolicyComponentsUtils.TagMapByPolicyId.get(policyId).get(step.block);
                     });
                 }
                 map.set(nav.role, nav.steps);
-            });
+            }
         }
     }
 
@@ -1240,10 +1240,10 @@ export class PolicyComponentsUtils {
                 }
             }
             if (value) {
-                const lastKey = keys[keys.length - 1];
+                const lastKey = keys.at(-1);
                 value[lastKey] = newValue(value[lastKey]);
             }
-        } catch (error) {
+        } catch {
             return;
         }
     }

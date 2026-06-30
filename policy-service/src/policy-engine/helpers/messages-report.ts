@@ -264,7 +264,7 @@ export class MessagesReport {
             try {
                 const { topicId } = HederaDid.parse(did);
                 topics.add(topicId);
-            } catch (error) {
+            } catch {
                 continue;
             }
         }
@@ -287,7 +287,7 @@ export class MessagesReport {
                         this.users.set(document.did, document.toJson());
                     }
                 }
-            } catch (error) {
+            } catch {
                 continue;
             }
         }
@@ -317,7 +317,7 @@ export class MessagesReport {
                 mockId: ref.mockId,
             });
             return info;
-        } catch (error) {
+        } catch {
             return null;
         }
     }

@@ -286,7 +286,7 @@ export async function updateToolConfig(tool: PolicyTool): Promise<PolicyTool> {
     findSubTools(tool.config, toolIds, true);
     const tools = await DatabaseServer.getTools({
         status: ModuleStatus.PUBLISHED,
-        messageId: { $in: Array.from(toolIds.values()) }
+        messageId: { $in: Array.from(toolIds) }
     }, { fields: ['name', 'version', 'topicId', 'messageId', 'tools'] });
     const list = [];
     for (const row of tools) {

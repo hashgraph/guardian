@@ -38,7 +38,7 @@ export async function suggestionsAPI(): Promise<void> {
             const i = srcNodes.findIndex(
                 (srcNode) => srcNode?.blockType === destNodes[0].blockType
             );
-            if (i < 0) {
+            if (i === -1) {
                 continue;
             }
             let notMatch = false;
@@ -57,13 +57,13 @@ export async function suggestionsAPI(): Promise<void> {
             if (notMatch) {
                 if (srcNodes.length > i + 1) {
                     stack.push({
-                        srcNodes: srcNodes.slice(i + 1, srcNodes.length),
+                        srcNodes: srcNodes.slice(i + 1),
                         destNodes,
                     });
                 }
                 continue;
             }
-            if (!destNodes[destNodes.length - 1].children?.length) {
+            if (!destNodes.at(-1).children?.length) {
                 return [
                     (srcNodes && srcNodes[i + destNodes.length]?.blockType) ||
                     null,
@@ -75,7 +75,7 @@ export async function suggestionsAPI(): Promise<void> {
             }
             stack.push({
                 srcNodes: srcNodes[i + destNodes.length - 1].children,
-                destNodes: destNodes[destNodes.length - 1].children,
+                destNodes: destNodes.at(-1).children,
             });
         }
         return [null, null];
@@ -217,7 +217,7 @@ export async function suggestionsAPI(): Promise<void> {
                     throw new Error('Invalid user did');
                 }
                 if (!Array.isArray(items)) {
-                    throw new Error('Invalid items for suggestions config');
+                    throw new TypeError('Invalid items for suggestions config');
                 }
                 const config = await DatabaseServer.setSuggestionsConfig({
                     user: user.did,

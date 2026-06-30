@@ -287,7 +287,7 @@ export class HederaDid extends CommonDid {
      */
     public static getTopicId(did: string): string {
         const splittedDid = did.split(HederaDid.DID_TOPIC_SEPARATOR);
-        const topicId = splittedDid[splittedDid.length - 1];
+        const topicId = splittedDid.at(-1);
         return topicId;
     }
 }

@@ -152,7 +152,7 @@ export class MessagesReportBlock {
             if (messageId) {
                 const status = await ref.getCache<string>(this.USER_REPORT_STATUS, user);
                 if (status === 'STARTED') {
-                    throw Error('The report is already being calculated');
+                    throw new Error('The report is already being calculated');
                 }
                 const old = await ref.getCache<string>(this.USER_FILTER_VALUE, user);
                 if (messageId === old && status !== 'FAILED') {
@@ -170,7 +170,7 @@ export class MessagesReportBlock {
                 await ref.setShortCache<string>(this.USER_FILTER_VALUE, null, user);
                 await ref.setLongCache<IReport>(this.USER_REPORT, null, user);
                 await ref.setShortCache<string>(this.USER_REPORT_STATUS, null, user);
-                throw Error('Invalid MessageId/HASH');
+                throw new Error('Invalid MessageId/HASH');
             }
             ref.backup();
         } catch (error) {

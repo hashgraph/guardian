@@ -521,7 +521,7 @@ export class DocumentPropertyModel extends PropertyModel<any> {
                 }
             }
             return false;
-        } catch (error) {
+        } catch {
             return false;
         }
     }

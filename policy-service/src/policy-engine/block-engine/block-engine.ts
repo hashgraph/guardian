@@ -199,8 +199,8 @@ export class BlockEngine {
                     walk(item, depth + 1);
                 }
             } else {
-                for (const key of Object.keys(node as Record<string, unknown>)) {
-                    walk((node as Record<string, unknown>)[key], depth + 1);
+                for (const value_ of Object.values(node as Record<string, unknown>)) {
+                    walk(value_, depth + 1);
                 }
             }
         };

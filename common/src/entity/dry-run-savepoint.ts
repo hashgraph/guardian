@@ -38,11 +38,11 @@ export class DryRunSavepoint extends BaseEntity {
 
         if (this.parentSavepointId === null) {
             this.parentSavepointId = this.savepointPath.length
-                ? this.savepointPath[this.savepointPath.length - 1]
+                ? this.savepointPath.at(-1)
                 : null;
         }
 
-        if (this.savepointPath[this.savepointPath.length - 1] !== savepointId) {
+        if (this.savepointPath.at(-1) !== savepointId) {
             this.savepointPath = [...this.savepointPath, savepointId];
         }
     }

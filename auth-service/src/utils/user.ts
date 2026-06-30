@@ -192,7 +192,7 @@ export class UserUtils {
             } else {
                 return null;
             }
-        } catch (error) {
+        } catch {
             return null;
         }
     }

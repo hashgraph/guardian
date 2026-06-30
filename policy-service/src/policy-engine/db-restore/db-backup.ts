@@ -87,7 +87,7 @@ export class PolicyBackup {
         if (policy) {
             await this._loadBackup(policy);
         } else {
-            throw Error('Invalid policy');
+            throw new Error('Invalid policy');
         }
     }
 

@@ -198,7 +198,7 @@ export class CommonDidDocument {
             const result = new CommonDidDocument();
             return CommonDidDocument._from(JSON.parse(document), result);
         } else {
-            throw new Error('Invalid document format');
+            throw new TypeError('Invalid document format');
         }
     }
 
@@ -447,7 +447,7 @@ export class CommonDidDocument {
                 }
             }
             return true;
-        } catch (error) {
+        } catch {
             return false;
         }
     }

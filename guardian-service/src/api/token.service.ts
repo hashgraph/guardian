@@ -155,7 +155,7 @@ function getTokenInfo(info: any, token: any, serials?: any[]) {
                     result.balance / Math.pow(10, result.decimals)
                 ).toFixed(result.decimals)
             }
-        } catch (error) {
+        } catch {
             result.balance = 'N/A';
         }
     }
@@ -1377,10 +1377,7 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
                     })
                 ])
 
-                const result: any[] = [];
-                for (const token of tokens) {
-                    result.push(getTokenInfo(info, token, serials?.[token.tokenId]));
-                }
+                const result: any[] = Array.from(tokens, token => getTokenInfo(info, token, serials?.[token.tokenId]));
 
                 return new ArrayMessageResponse(result, count);
             } catch (error) {
