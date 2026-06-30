@@ -299,7 +299,7 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
         return items.map((item) => {
             const menuItem: MenuItem = {
                 label: item.title,
-                icon: item.icon ? `pi ${item.icon}` : undefined
+                icon: item.icon || undefined
             };
             if (item.childItems?.length) {
                 menuItem.items = this.buildHorizontalModel(item.childItems);

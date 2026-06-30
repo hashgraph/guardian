@@ -52,7 +52,7 @@
           class="item clickable"
           >
           @if (barItem.icon) {
-            <i class="pi {{ barItem.icon }} item-icon"></i>
+            <i class="{{ barItem.icon }} item-icon"></i>
           }
           <div [class.hidden-logotype]="menuCollapsed" class="span-icon">
             <span [class.without-icon]="!barItem.icon">{{ barItem.title }}</span>

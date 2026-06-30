@@ -3,7 +3,8 @@ import { UserPermissions, UserRole } from '@guardian/interfaces';
 export interface NavbarMenuItem {
     title: string;
     childItems?: NavbarMenuItem[];
-    /** PrimeIcons class for the item, e.g. 'pi-wallet'. Inherits currentColor. */
+    /** Full icon class for the item, e.g. 'pi pi-wallet' or a custom mask icon
+     * like 'icon-hbar'. Inherits currentColor. */
     icon?: string;
     /** Optional uppercase group label rendered above this item (vertical layout). */
     section?: string;
@@ -16,7 +17,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
     {
         title: 'Policies',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
-        icon: 'pi-objects-column',
+        icon: 'pi pi-objects-column',
         section: 'Workspace',
         active: false,
         childItems: [
@@ -56,7 +57,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
     },
     {
         title: 'Tokens',
-        icon: 'pi-bitcoin',
+        icon: 'icon-hbar',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
         childItems: [
@@ -72,7 +73,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
     },
     {
         title: 'Relayer Accounts',
-        icon: 'pi-wallet',
+        icon: 'pi pi-wallet',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
         routerLink: '/relayer-accounts'
@@ -81,7 +82,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         title: 'Administration',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
-        icon: 'pi-sliders-h',
+        icon: 'pi pi-sliders-h',
         section: 'Administration',
         childItems: [
             {
@@ -121,12 +122,12 @@ const NAVBAR_MENU_AUDITOR: NavbarMenuItem[] = [
         title: 'Audit',
         allowedUserRoles: [UserRole.AUDITOR],
         active: false,
-        icon: 'pi-shield',
+        icon: 'pi pi-shield',
         routerLink: '/audit'
     },
     {
         title: 'Trust Chain',
-        icon: 'pi-sitemap',
+        icon: 'pi pi-sitemap',
         allowedUserRoles: [UserRole.AUDITOR],
         active: false,
         routerLink: '/trust-chain'
@@ -232,7 +233,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         menu.push({
             title: 'Policies',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
-            icon: 'pi-objects-column',
+            icon: 'pi pi-objects-column',
             section: 'Workspace',
             active: false,
             childItems
@@ -285,7 +286,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
         }
         menu.push({
             title: 'Tokens',
-            icon: 'pi-bitcoin',
+            icon: 'icon-hbar',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
             active: false,
             childItems
@@ -351,7 +352,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             title: 'Administration',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
             active: false,
-            icon: 'pi-sliders-h',
+            icon: 'pi pi-sliders-h',
             section: 'Administration',
             childItems
         });

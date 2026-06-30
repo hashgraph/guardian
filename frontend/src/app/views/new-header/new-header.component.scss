@@ -493,6 +493,27 @@
     column-gap: 4px;
 }
 
+/* Match the horizontal menu item labels to the vertical rail items. */
+::ng-deep .topbar .guardian-menubar .p-menubar-item-label {
+    font-family: var(--font-family-inter, Inter, sans-serif);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+/* Custom Hedera mark for the Tokens item. Rendered via a mask filled with
+   currentColor so it tints with the item state and inverts in dark mode,
+   exactly like the PrimeIcons around it. */
+::ng-deep #navbar .icon-hbar,
+::ng-deep .guardian-menubar .icon-hbar {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: currentColor;
+    -webkit-mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
+    mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
+}
+
 ::ng-deep .topbar .guardian-menubar .p-menubar-end {
     margin-left: auto;
     display: flex;
