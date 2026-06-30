@@ -2658,19 +2658,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.5.1":
-  version: 1.5.1
-  resolution: "@langchain/openai@npm:1.5.1"
-  dependencies:
-    js-tiktoken: "npm:^1.0.12"
-    openai: "npm:^6.41.0"
-    zod: "npm:^3.25.76 || ^4"
-  peerDependencies:
-    "@langchain/core": ^1.2.0
-  checksum: 10c0/1c1d2e32c11f8d2c49e71963c4c5a4ca8ddb0c8972a00e31711fc5f5b9c890acb16f421f29fdd5be3435a5b7af8c2a14428b487cf24436e4fed687b579680c0a
-  languageName: node
-  linkType: hard
-
 "@langchain/openai@npm:1.5.3":
   version: 1.5.3
   resolution: "@langchain/openai@npm:1.5.3"
@@ -5458,7 +5445,7 @@ __metadata:
     "@langchain/classic": "npm:1.0.38"
     "@langchain/community": "npm:1.1.29"
     "@langchain/core": "npm:1.2.1"
-    "@langchain/openai": "npm:1.5.1"
+    "@langchain/openai": "npm:1.5.3"
     "@langchain/textsplitters": "npm:1.0.1"
     "@mikro-orm/core": "npm:6.6.15"
     "@mikro-orm/mongodb": "npm:6.6.15"
