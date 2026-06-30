@@ -44,7 +44,7 @@ export class Users extends NatsService {
         if (!target) {
             return null;
         }
-        if (!!(target as IAuthUser).username) {
+        if ((target as IAuthUser).username) {
             user = target as IAuthUser;
         } else {
             if (!(target as AuthenticatedRequest).user || !(target as AuthenticatedRequest).user.username) {

@@ -1394,7 +1394,7 @@ export class PolicyEngine extends NatsService {
                 notifier.completeStep(STEP_CREATE_SYNC_TOPIC);
             }
             if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                if (!!model.synchronizationTopicId) {
+                if (model.synchronizationTopicId) {
                     await createSynchronizationTopic();
                 } else {
                     notifier.skipStep(STEP_CREATE_SYNC_TOPIC);
@@ -1424,7 +1424,7 @@ export class PolicyEngine extends NatsService {
             }
             if (model.availability === PolicyAvailability.PUBLIC) {
                 if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                    if (!!model.restoreTopicId) {
+                    if (model.restoreTopicId) {
                         await createDiffTopic();
                     } else {
                         notifier.skipStep(STEP_CREATE_RESTORE_TOPIC);
@@ -1457,7 +1457,7 @@ export class PolicyEngine extends NatsService {
             }
             if (model.availability === PolicyAvailability.PUBLIC) {
                 if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                    if (!!model.actionsTopicId) {
+                    if (model.actionsTopicId) {
                         await createActionsTopic();
                     } else {
                         notifier.skipStep(STEP_CREATE_ACTION_TOPIC);
@@ -1489,7 +1489,7 @@ export class PolicyEngine extends NatsService {
                 notifier.completeStep(STEP_CREATE_RECORD_TOPIC);
             }
             if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                if (!!model.recordsTopicId) {
+                if (model.recordsTopicId) {
                     await createRecordsTopic();
                 } else {
                     notifier.skipStep(STEP_CREATE_RECORD_TOPIC);
@@ -1518,7 +1518,7 @@ export class PolicyEngine extends NatsService {
                 notifier.completeStep(STEP_CREATE_COMMENTS_TOPIC);
             }
             if (model.status === PolicyStatus.PUBLISH_ERROR) {
-                if (!!model.commentsTopicId) {
+                if (model.commentsTopicId) {
                     await createCommentsTopic();
                 } else {
                     notifier.skipStep(STEP_CREATE_COMMENTS_TOPIC);

@@ -166,8 +166,8 @@ export class ReleaseMigration extends Migration {
                 { _id: policy._id },
                 {
                     $set: {
-                        'hash': hash,
-                        'hashMapFileId': hashMapFileId
+                        hash,
+                        hashMapFileId
                     },
                 },
                 { session: this.ctx, upsert: false }
