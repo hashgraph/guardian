@@ -30,7 +30,7 @@
         "@meeco/cryppo": "^2.0.2",
         "chart.js": "^4.4.3",
         "cids": "^1.1.9",
-        "echarts": "^5.5.0",
+        "echarts": "^6.1.0",
         "mathlive": "^0.103.0",
         "ngx-echarts": "^17.1.0",
         "ol": "^9.2.2",
