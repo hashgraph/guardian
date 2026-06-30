@@ -10,6 +10,7 @@ import {
     BarChart3,
     Activity,
     CheckCircle2,
+    Briefcase,
 } from 'lucide-vue-next';
 
 const { t, locale } = useI18n();
@@ -33,6 +34,7 @@ const lastSyncTime = computed(() => {
 
 const navItems = computed(() => [
     { label: t('nav.dashboard'), icon: LayoutDashboard, to: '/' },
+    { label: t('nav.portfolio'), icon: Briefcase, to: '/portfolio' },
     { label: t('nav.projects'), icon: FolderKanban, to: '/projects' },
     { label: t('nav.issuances'), icon: Coins, to: '/credits' },
     { label: t('nav.methodologies'), icon: BookOpen, to: '/methodologies' },

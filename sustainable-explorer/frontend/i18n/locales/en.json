@@ -70,6 +70,7 @@
     },
     "nav": {
         "dashboard": "Dashboard",
+        "portfolio": "Portfolio",
         "projects": "Projects",
         "issuances": "Issuances",
         "methodologies": "Methodologies",
@@ -862,5 +863,130 @@
         "copyDid": "Copy DID",
         "copyId": "Copy ID",
         "viewRawData": "Raw Data on the blockchain"
+    },
+    "portfolio": {
+        "title": "My Portfolio",
+        "subtitle": "{count} watchlist items · widgets reflect your watchlist selection",
+        "addCustomChart": "Add Custom Chart",
+        "widgetLibrary": "Widget Library",
+        "manageWatchlist": "Manage Watchlist",
+        "watchlist": "Watchlist",
+        "addItems": "Add items",
+        "watchlistEmpty": "No items yet.",
+        "addItemsCta": "Add projects, registries or tokens →",
+        "removeWidget": "Remove widget",
+        "noData": "No data available",
+        "lastFive": "Last 5",
+        "chartLimitReached": "Chart limit reached (5/5)",
+        "syncedLabel": "Synced —",
+        "syncedSub": "Hedera Mainnet · {projects} projects indexed",
+        "kpi": {
+            "totalIssued": {
+                "label": "Total Credits Issued",
+                "sub": "Issued on-chain (mainnet)",
+                "footer": "On-chain verified"
+            },
+            "activeSupply": {
+                "label": "Active Supply",
+                "sub": "Issued − retired",
+                "footer": "Retirement rate: 0%"
+            },
+            "totalRetired": {
+                "label": "Total Credits Retired",
+                "sub": "Permanently retired",
+                "footer": "No retirements yet"
+            },
+            "activeProjects": {
+                "label": "Active Projects",
+                "sub": "Verified on mainnet",
+                "footer": "{n} in watchlist"
+            }
+        },
+        "sections": {
+            "issuanceTrend": "Issuance Trend",
+            "vintageDist": "Vintage Distribution",
+            "breakdowns": "Project Breakdowns",
+            "projectsBySector": "Projects by Sector",
+            "projectsByRegistry": "Projects by Registry",
+            "sdgCoverage": "SDG Coverage",
+            "topCountries": "Top Host Countries by Credits",
+            "topCountriesSub": "Countries ranked by total credits issued",
+            "topRegistries": "Top Registries",
+            "recentIssuances": "Recent Issuances",
+            "topSdgs": "Top SDGs by Project Count",
+            "networkActivity": "Network Activity",
+            "retirementTrend": "Retirement Trend",
+            "syncStatus": "Last Sync Timestamp",
+            "customCharts": "Custom Charts"
+        },
+        "widgetGroups": {
+            "kpis": "KPI Cards",
+            "trends": "Trend Charts",
+            "breakdowns": "Breakdowns",
+            "tables": "Tables & Lists",
+            "system": "System"
+        },
+        "widgetDesc": {
+            "issuanceTrend": "Credit issuance over time with period toggle",
+            "retirementTrend": "Credit retirement volume over time",
+            "vintageDist": "Credits grouped by vintage year",
+            "projectsSector": "Donut chart of projects or credits by sector",
+            "projectsByRegistry": "Donut chart of projects or credits by registry",
+            "sdgRadar": "Coverage bars across all 17 SDG goals",
+            "topCountries": "Host countries ranked by total credits",
+            "topRegistries": "Most active registries by policy and project count",
+            "recentIssuances": "The 5 most recently minted tokens",
+            "sdgTopList": "Top SDGs ranked by project count",
+            "networkActivity": "Recent changes across the Guardian network",
+            "syncStatus": "Last successful data sync from Hedera Guardian"
+        },
+        "modal": {
+            "watchlist": {
+                "title": "Manage Watchlist",
+                "subtitle": "Add or remove projects, methodologies, registries, and tokens to track",
+                "tabs": {
+                    "project": "Projects",
+                    "methodology": "Methodologies",
+                    "registry": "Registries",
+                    "token": "Tokens"
+                },
+                "add": "Add",
+                "remove": "Remove",
+                "done": "Done",
+                "footer": "{count} items total · duplicates are prevented"
+            },
+            "widgets": {
+                "title": "Widget Library",
+                "subtitle": "Toggle widgets on or off — active widgets appear on your portfolio dashboard",
+                "apply": "Apply Changes"
+            },
+            "chartBuilder": {
+                "title": "Add Custom Chart",
+                "subtitle": "{used}/5 custom charts used — choose type and data source",
+                "chartTitle": "Chart Title",
+                "titlePlaceholder": "e.g. Credits by Sector",
+                "chartType": "Chart Type",
+                "xAxis": "X-Axis (Categories)",
+                "yAxis": "Y-Axis (Metric)",
+                "types": {
+                    "line": "Line",
+                    "bar": "Bar",
+                    "donut": "Donut"
+                },
+                "axes": {
+                    "month": "Time — Month",
+                    "vintage": "Vintage Year",
+                    "sector": "Sector",
+                    "country": "Country",
+                    "registry": "Registry",
+                    "sdg": "SDG Goal",
+                    "credits": "Credits Issued",
+                    "projects": "Project Count",
+                    "retirements": "Retirement Volume"
+                },
+                "note": "Charts reflect your active watchlist. Up to 5 custom charts total.",
+                "add": "Add Chart"
+            }
+        }
     }
 }
