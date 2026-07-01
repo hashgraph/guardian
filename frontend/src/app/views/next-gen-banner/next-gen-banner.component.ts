@@ -3,7 +3,7 @@ import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { SettingsService } from '../../services/settings.service';
 
 const FEEDBACK_MAILTO_TEMPLATE =
-    'mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request' +
+    'mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request%20-%20{ORIGIN}' +
     '&body=This%20is%20%5Bfeedback%20/%20support%20request%20/%20feature%20request%5D%0A%0A--%0A%0A' +
     'Add%20a%20summary%20here.%0A%0A%0AVersion:%20%5B{VERSION}%5D%0AOrigin:%20%5B{ORIGIN}%5D%0A---%0A';
 
@@ -31,8 +31,8 @@ export class NextGenBannerComponent {
 
     get feedbackMailto(): string {
         return FEEDBACK_MAILTO_TEMPLATE
-            .replace('{VERSION}', encodeURIComponent(this.guardianVersion))
-            .replace('{ORIGIN}', encodeURIComponent(window.location.href));
+            .replaceAll('{VERSION}', encodeURIComponent(this.guardianVersion))
+            .replaceAll('{ORIGIN}', encodeURIComponent(window.location.href));
     }
 
     turnOff(): void {
