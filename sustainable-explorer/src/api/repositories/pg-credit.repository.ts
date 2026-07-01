@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { CreditRepository, CreditListQuery, CreditListResult, CreditRow, CreditRawDetail } from './credit.repository';
+import { CreditRepository, CreditListQuery, CreditListResult, CreditRow, CreditRawDetail, CreditProjectLink } from './credit.repository';
 import { QueryBuilder } from './query-builder';
 import { CREDIT_FIELD_SCHEMA } from './schemas/credit.schema';
 
@@ -58,18 +58,26 @@ const PROJECT_JOIN = `
 `;
 
 /**
- * LATERAL: resolve methodology from the project's instance topic.
+ * LATERAL: resolve methodology from the project's instance topic, with a
+ * displayName fallback for cases where relatedTopicId chain is not yet linked.
+ * Emits relatedTopicId as methodology_id so links match the methodology detail route.
  * Returns NULL when no project was resolved (unattributed mints).
  */
 const METHODOLOGY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            bv_meth."sourceTimestamp" AS methodology_id,
-            bv_meth."displayName"     AS methodology_name
+            bv_meth."relatedTopicId" AS methodology_id,
+            bv_meth."displayName"    AS methodology_name
         FROM business_view bv_meth
-        WHERE bv_meth."viewType"       = 'METHODOLOGY'
-          AND bv_meth."relatedTopicId" = proj.proj_topic_id
-        ORDER BY bv_meth."createdAt" DESC NULLS LAST
+        WHERE bv_meth."viewType" = 'METHODOLOGY'
+          AND (
+              bv_meth."relatedTopicId" = proj.proj_topic_id
+              OR bv_meth."displayName" = proj.proj_methodology_name
+          )
+        ORDER BY
+            (bv_meth."relatedTopicId" = proj.proj_topic_id) DESC,
+            bv_meth."sourceTimestamp"::numeric DESC NULLS LAST,
+            bv_meth."createdAt" DESC NULLS LAST
         LIMIT 1
     ) meth ON true
 `;
@@ -347,12 +355,18 @@ export class PgCreditRepository extends CreditRepository {
              ) proj ON true
              LEFT JOIN LATERAL (
                  SELECT
-                     bv_meth."sourceTimestamp" AS methodology_id,
-                     bv_meth."displayName"     AS methodology_name
+                     bv_meth."relatedTopicId" AS methodology_id,
+                     bv_meth."displayName"    AS methodology_name
                  FROM business_view bv_meth
                  WHERE bv_meth."viewType" = 'METHODOLOGY'
-                   AND bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")
-                 ORDER BY bv_meth."createdAt" DESC NULLS LAST
+                   AND (
+                       bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")
+                       OR bv_meth."displayName" = proj.proj_methodology_name
+                   )
+                 ORDER BY
+                     (bv_meth."relatedTopicId" = COALESCE(proj.proj_topic_id, bv."relatedTopicId")) DESC,
+                     bv_meth."sourceTimestamp"::numeric DESC NULLS LAST,
+                     bv_meth."createdAt" DESC NULLS LAST
                  LIMIT 1
              ) meth ON true
              WHERE bv."viewType" = 'CREDIT' AND bv."businessData"->>'tokenId' = $1
@@ -395,27 +409,55 @@ export class PgCreditRepository extends CreditRepository {
             amount: string | null;
             date: string | null;
             document: Record<string, unknown> | null;
+            projectKey: string | null;
+            type: string | null;
         }> = await this.dataSource.query(
             `SELECT
-                "consensusTimestamp",
-                "topicId",
-                documents->'credentialSubject'->0->>'amount' AS amount,
-                documents->'credentialSubject'->0->>'date'   AS date,
-                documents                                    AS document
-             FROM message
-             WHERE type = 'VC-Document'
-               AND documents IS NOT NULL
-               AND documents->'credentialSubject'->0->>'type'    LIKE 'MintToken%'
-               AND documents->'credentialSubject'->0->>'tokenId' = $1
-             ORDER BY "consensusTimestamp" ASC
+                m."consensusTimestamp",
+                m."topicId",
+                m.documents->'credentialSubject'->0->>'amount' AS amount,
+                m.documents->'credentialSubject'->0->>'date'   AS date,
+                m.documents                                    AS document,
+                pml.project_key                                AS "projectKey",
+                m.documents->'credentialSubject'->0->>'type'  AS type
+             FROM message m
+             LEFT JOIN project_mint_link pml
+                 ON pml.mint_consensus_timestamp = m."consensusTimestamp"
+                AND pml.token_id = $1
+             WHERE m.type = 'VC-Document'
+               AND m.documents IS NOT NULL
+               AND m.documents->'credentialSubject'->0->>'type'    LIKE 'MintToken%'
+               AND m.documents->'credentialSubject'->0->>'tokenId' = $1
+             ORDER BY m."consensusTimestamp" ASC
              LIMIT 200`,
             [tokenId],
         );
 
-        if (!credit && !tokenMessage && mintRows.length === 0) return null;
+        // 4. All distinct projects linked to this tokenId (not just the most recent).
+        const projectRows: Array<{ project_id: string | null; project_name: string | null }> =
+            await this.dataSource.query(
+                `SELECT DISTINCT
+                     bv_proj."projectKey"  AS project_id,
+                     bv_proj."displayName" AS project_name
+                 FROM project_mint_link pml
+                 JOIN business_view bv_proj
+                     ON bv_proj."projectKey" = pml.project_key
+                    AND bv_proj."viewType" = 'PROJECT'
+                 WHERE pml.token_id = $1
+                 ORDER BY bv_proj."displayName" ASC NULLS LAST`,
+                [tokenId],
+            );
+
+        const projects: CreditProjectLink[] = projectRows.map(r => ({
+            projectId: r.project_id ?? null,
+            project: r.project_name ?? null,
+        }));
+
+        if (!credit && !tokenMessage && mintRows.length === 0 && projects.length === 0) return null;
 
         return {
             credit,
+            projects,
             tokenMessage,
             mintEvents: mintRows,
         };
