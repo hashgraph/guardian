@@ -413,6 +413,10 @@
     color: var(--pc-del-color, #FF432A);
 }
 
+.add-child-action {
+    color: var(--color-primary, #4169E2);
+}
+
 .move-actions-container {
     display: none;
     align-items: center;
@@ -681,6 +685,22 @@
 }
 
 .block-body
+.block-event-mark {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-warning, #E0A800);
+
+    i {
+        font-size: 13px;
+    }
+}
+
+.block-event-mark ~ .block-selected-mark {
+    margin-left: 8px;
+}
+
 .block-selected-mark {
     margin-top: 4px;
     margin-left: auto;

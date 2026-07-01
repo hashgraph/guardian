@@ -58,6 +58,7 @@ export class PolicyTreeComponent implements OnInit {
     @Output('currentBlockChange') currentBlockChange = new EventEmitter();
     @Output('search') search = new EventEmitter();
     @Output('test') test = new EventEmitter();
+    @Output('addChild') addChild = new EventEmitter<MouseEvent>();
 
     @ViewChild('parent') parentRef!: ElementRef<HTMLCanvasElement>;
     @ViewChild('canvas') canvasRef!: ElementRef<HTMLCanvasElement>;
@@ -200,6 +201,9 @@ export class PolicyTreeComponent implements OnInit {
             this.selectedNode = this.data.find(
                 (item) => item.node === changes.currentBlock.currentValue
             );
+            if (this.active === 'Selected') {
+                this.render();
+            }
             return;
         }
         this.errorsTree = {};
@@ -260,6 +264,7 @@ export class PolicyTreeComponent implements OnInit {
     private rebuildTree(data: PolicyBlock[]) {
         this.root = data[0];
         this.data = this.convertToArray([], data, 0, null);
+        this.markEvents();
 
         if (this.currentBlock) {
             this.selectedNode = this.data.find(
@@ -267,6 +272,28 @@ export class PolicyTreeComponent implements OnInit {
             );
         }
         this.render(true);
+    }
+
+    private markEvents() {
+        const tags = new Set<string>();
+        for (const node of this.data) {
+            const events = node.node?.events;
+            if (events) {
+                for (const event of events) {
+                    if (!event.disabled) {
+                        if (event.sourceTag) {
+                            tags.add(event.sourceTag);
+                        }
+                        if (event.targetTag) {
+                            tags.add(event.targetTag);
+                        }
+                    }
+                }
+            }
+        }
+        for (const node of this.data) {
+            node.hasEvents = !!node.node?.tag && tags.has(node.node.tag);
+        }
     }
 
     private getCollapsed(node: FlatBlockNode): boolean {
@@ -753,6 +780,13 @@ export class PolicyTreeComponent implements OnInit {
         if (this.active === 'All') {
             return true;
         }
+        if (this.active === 'Selected') {
+            const tag = this.currentBlock?.tag;
+            if (!tag) {
+                return false;
+            }
+            return item.sourceTag === tag || item.targetTag === tag;
+        }
         if (this.active === 'Action') {
             return item.input !== 'RefreshEvent' && item.output !== 'RefreshEvent';
         }
@@ -828,6 +862,13 @@ export class PolicyTreeComponent implements OnInit {
         event.preventDefault();
         event.stopPropagation();
         this.search.emit(this.currentBlock);
+        return false;
+    }
+
+    public onAddChild(event: MouseEvent) {
+        event.preventDefault();
+        event.stopPropagation();
+        this.addChild.emit(event);
         return false;
     }
 
