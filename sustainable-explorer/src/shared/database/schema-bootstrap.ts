@@ -1,4 +1,6 @@
-import { DataSource } from 'typeorm';
+import { DataSource, DataSourceOptions } from 'typeorm';
+import { getSystemDatabaseConfig } from '@shared/config/database.config';
+import { hashPasswordRaw } from '@shared/security/password-hash.util';
 
 /**
  * Post-TypeORM schema modifications that can't be expressed via decorators.
@@ -165,4 +167,352 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_guardian_event_log_subject
         ON guardian_event_log (subject)
     `);
+}
+
+/**
+ * Idempotent schema bootstrap for the system (auth/identity) database.
+ *
+ * Same pattern as bootstrapSchema() above — plain `CREATE ... IF NOT EXISTS`
+ * raw SQL run at startup, NOT a versioned migration framework. The system DB
+ * uses synchronize:false, so this function is the single source of truth for
+ * its schema. Forward changes are made by appending idempotent
+ * `ALTER TABLE ... ADD COLUMN IF NOT EXISTS` / `CREATE INDEX IF NOT EXISTS` here.
+ *
+ * Tables (in FK-dependency order):
+ *   users, refresh_tokens, api_keys, rate_limit_requests,
+ *   user_dashboards, quick_filters, audit_log, auth_email_tokens
+ *
+ * camelCase identifiers are double-quoted so Postgres preserves the exact
+ * casing the TypeORM entities expect. Text columns that hold user/admin input
+ * are length-bounded (varchar) to cap payload size; server-generated hashes are
+ * bounded to a safe ceiling across argon2id/bcrypt output.
+ */
+export async function bootstrapSystemSchema(dataSource: DataSource): Promise<void> {
+    // ── Extensions ──────────────────────────────────────────────────────────
+    // gen_random_uuid() backs the UUID primary-key defaults. It is built into
+    // Postgres core since v13; pgcrypto provides it on older versions. Creating
+    // the extension is best-effort so a missing/locked-down pgcrypto never blocks
+    // boot on PG13+ (where it is unnecessary). Email uniqueness uses a
+    // lower(email) functional index — no citext extension required.
+    try {
+        await dataSource.query(`CREATE EXTENSION IF NOT EXISTS "pgcrypto"`);
+    } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.warn(`[SystemBootstrap] pgcrypto extension not created (ok on PG13+): ${msg}`);
+    }
+
+    // ── Table: users ────────────────────────────────────────────────────────
+    // emailVerifiedAt null = unverified (self-signup cannot sign in until set).
+    // mustChangePassword = true for admin-created accounts.
+    // tokenVersion bumped on password change / forced logout to invalidate JWTs.
+    // failedLoginCount / lockedUntil back the brute-force lockout.
+    // apiQuotaPerHour null = use the role default (GLOBAL per user, not per-network).
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "users" (
+            "id"                 uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "email"              varchar(320) NOT NULL,
+            "passwordHash"       varchar(255) NOT NULL,
+            "role"               varchar(20)  NOT NULL DEFAULT 'system_user',
+            "isActive"           boolean      NOT NULL DEFAULT true,
+            "emailVerifiedAt"    timestamptz           DEFAULT NULL,
+            "mustChangePassword" boolean      NOT NULL DEFAULT false,
+            "firstName"          varchar(120)          DEFAULT NULL,
+            "lastName"           varchar(120)          DEFAULT NULL,
+            "username"           varchar(60)           DEFAULT NULL,
+            "organisation"       varchar(200)          DEFAULT NULL,
+            "jobTitle"           varchar(120)          DEFAULT NULL,
+            "country"            varchar(100)          DEFAULT NULL,
+            "tokenVersion"       int          NOT NULL DEFAULT 0,
+            "apiQuotaPerHour"    int                   DEFAULT NULL,
+            "failedLoginCount"   int          NOT NULL DEFAULT 0,
+            "lockedUntil"        timestamptz           DEFAULT NULL,
+            "createdAt"          timestamptz  NOT NULL DEFAULT now(),
+            "updatedAt"          timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_users" PRIMARY KEY ("id")
+        )
+    `);
+
+    // ── Table: refresh_tokens ───────────────────────────────────────────────
+    // Session store-of-record. tokenHash = sha256(pepper||token); bounded ceiling.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "refresh_tokens" (
+            "id"           uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "userId"       uuid         NOT NULL,
+            "familyId"     uuid         NOT NULL,
+            "tokenHash"    varchar(255) NOT NULL,
+            "sessionId"    uuid         NOT NULL,
+            "status"       varchar(20)  NOT NULL DEFAULT 'active',
+            "replacedById" uuid                  DEFAULT NULL,
+            "userAgent"    varchar(512)          DEFAULT NULL,
+            "ip"           varchar(64)           DEFAULT NULL,
+            "expiresAt"    timestamptz  NOT NULL,
+            "createdAt"    timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_refresh_tokens" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_refresh_tokens_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    // ── Table: api_keys ─────────────────────────────────────────────────────
+    // keyHash = sha256(pepper||secret). NO role/quota snapshot — resolved live.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "api_keys" (
+            "id"         uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "userId"     uuid         NOT NULL,
+            "name"       varchar(120) NOT NULL,
+            "prefix"     varchar(64)  NOT NULL,
+            "keyHash"    varchar(255) NOT NULL,
+            "status"     varchar(20)  NOT NULL DEFAULT 'active',
+            "lastUsedAt" timestamptz           DEFAULT NULL,
+            "expiresAt"  timestamptz           DEFAULT NULL,
+            "createdAt"  timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_api_keys" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_api_keys_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    // ── Table: rate_limit_requests ──────────────────────────────────────────
+    // justification (user input) and resolvedNote (admin remark) are bounded.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "rate_limit_requests" (
+            "id"             uuid          NOT NULL DEFAULT gen_random_uuid(),
+            "userId"         uuid          NOT NULL,
+            "requestedQuota" int           NOT NULL,
+            "justification"  varchar(2000) NOT NULL,
+            "status"         varchar(20)   NOT NULL DEFAULT 'pending',
+            "approvedQuota"  int                    DEFAULT NULL,
+            "reviewerId"     uuid                   DEFAULT NULL,
+            "resolvedNote"   varchar(1000)          DEFAULT NULL,
+            "reviewedAt"     timestamptz            DEFAULT NULL,
+            "createdAt"      timestamptz   NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_rate_limit_requests" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_rate_limit_requests_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE,
+            CONSTRAINT "FK_rate_limit_requests_reviewerId"
+                FOREIGN KEY ("reviewerId") REFERENCES "users"("id") ON DELETE SET NULL
+        )
+    `);
+
+    // ── Table: user_dashboards ──────────────────────────────────────────────
+    // Per-user, per-network. layout jsonb size is capped at the API/DTO layer.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "user_dashboards" (
+            "id"        uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "userId"    uuid         NOT NULL,
+            "network"   varchar(60)  NOT NULL,
+            "name"      varchar(200) NOT NULL,
+            "layout"    jsonb        NOT NULL,
+            "createdAt" timestamptz  NOT NULL DEFAULT now(),
+            "updatedAt" timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_user_dashboards" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_user_dashboards_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    // ── Table: quick_filters ────────────────────────────────────────────────
+    // Per-user, per-network, per-section. criteria jsonb capped at the API layer.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "quick_filters" (
+            "id"        uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "userId"    uuid         NOT NULL,
+            "network"   varchar(60)  NOT NULL,
+            "section"   varchar(20)  NOT NULL,
+            "name"      varchar(200) NOT NULL,
+            "criteria"  jsonb        NOT NULL,
+            "createdAt" timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_quick_filters" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_quick_filters_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    // ── Table: audit_log ────────────────────────────────────────────────────
+    // bigserial PK for append-only throughput. actorUserId nullable (system events).
+    // ON DELETE SET NULL so audit rows survive user deletion.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "audit_log" (
+            "id"          bigserial    NOT NULL,
+            "actorUserId" uuid                  DEFAULT NULL,
+            "action"      varchar(120) NOT NULL,
+            "targetType"  varchar(60)           DEFAULT NULL,
+            "targetId"    varchar(120)          DEFAULT NULL,
+            "network"     varchar(60)           DEFAULT NULL,
+            "ip"          varchar(64)           DEFAULT NULL,
+            "userAgent"   varchar(512)          DEFAULT NULL,
+            "outcome"     varchar(10)  NOT NULL,
+            "detail"      jsonb                 DEFAULT NULL,
+            "createdAt"   timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_audit_log" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_audit_log_actorUserId"
+                FOREIGN KEY ("actorUserId") REFERENCES "users"("id") ON DELETE SET NULL
+        )
+    `);
+
+    // ── Table: auth_email_tokens ────────────────────────────────────────────
+    // Single-use, expiring tokens for email verification (type='verify') and
+    // password reset (type='reset'). tokenHash = sha256(pepper||token); the raw
+    // token is emailed to the user and never stored here. usedAt enables
+    // single-use enforcement; expiresAt enables expiry. The unique index on
+    // tokenHash supports O(1) constant-time lookup-by-hash in the verify/reset flow.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "auth_email_tokens" (
+            "id"        uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "userId"    uuid         NOT NULL,
+            "type"      varchar(20)  NOT NULL,
+            "tokenHash" varchar(255) NOT NULL,
+            "expiresAt" timestamptz  NOT NULL,
+            "usedAt"    timestamptz           DEFAULT NULL,
+            "createdAt" timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_auth_email_tokens" PRIMARY KEY ("id"),
+            CONSTRAINT "FK_auth_email_tokens_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    // ── Indexes ─────────────────────────────────────────────────────────────
+    // users: case-insensitive unique email (callers also lower-case before I/O).
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_users_email" ON "users" (lower("email"))`,
+    );
+    // users: unique username, partial so multiple NULLs are allowed.
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_users_username" ON "users" ("username") WHERE "username" IS NOT NULL`,
+    );
+
+    // refresh_tokens: per-user session listing + family-wide revocation.
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_refresh_tokens_userId" ON "refresh_tokens" ("userId")`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_refresh_tokens_familyId" ON "refresh_tokens" ("familyId")`,
+    );
+
+    // api_keys: unique prefix for O(1) inbound key lookup + per-user listing.
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_api_keys_prefix" ON "api_keys" ("prefix")`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_api_keys_userId" ON "api_keys" ("userId")`,
+    );
+
+    // rate_limit_requests: per-user history.
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_rate_limit_requests_userId" ON "rate_limit_requests" ("userId")`,
+    );
+
+    // user_dashboards: one dashboard per (userId, network) + per-user listing.
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "idx_user_dashboards_user_network" ON "user_dashboards" ("userId", "network")`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_user_dashboards_userId" ON "user_dashboards" ("userId")`,
+    );
+
+    // quick_filters: per-user/network listing.
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "idx_quick_filters_user_network" ON "quick_filters" ("userId", "network")`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_quick_filters_userId" ON "quick_filters" ("userId")`,
+    );
+
+    // audit_log: per-actor timeline + global recent-events.
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "idx_audit_log_actor_created" ON "audit_log" ("actorUserId", "createdAt")`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_audit_log_createdAt" ON "audit_log" ("createdAt")`,
+    );
+
+    // auth_email_tokens: unique hash for O(1) lookup + per-user/type listing.
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_auth_email_tokens_tokenHash" ON "auth_email_tokens" ("tokenHash")`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "IDX_auth_email_tokens_userId_type" ON "auth_email_tokens" ("userId", "type")`,
+    );
+}
+
+/**
+ * Opens a short-lived DataSource to the system (auth/identity) DB, runs the
+ * idempotent bootstrapSystemSchema above, and destroys it. Called once at API
+ * boot (main.ts) after ensureSystemDatabaseExists(). Mirrors the worker's
+ * bootstrapSchema(ds) pattern — the system DB uses synchronize:false, so
+ * bootstrapSystemSchema is the single source of truth for its schema.
+ */
+export async function bootstrapSystemDatabase(): Promise<void> {
+    const ds = new DataSource(getSystemDatabaseConfig() as DataSourceOptions);
+    try {
+        await ds.initialize();
+        await bootstrapSystemSchema(ds);
+        console.log('[SystemBootstrap] System schema is up to date');
+    } finally {
+        if (ds.isInitialized) {
+            await ds.destroy();
+        }
+    }
+}
+
+/**
+ * Idempotent: seeds ONE admin account from INITIAL_ADMIN_EMAIL +
+ * INITIAL_ADMIN_PASSWORD env vars IF AND ONLY IF no active admin row exists.
+ *
+ * Safety invariants:
+ *  - With an existing active admin → logs and returns WITHOUT writing anything.
+ *    Never resets an existing admin's password.
+ *  - With INITIAL_ADMIN_* unset → warns and returns WITHOUT crashing boot.
+ *  - The hashed password is never printed to logs.
+ *  - The seeded admin has mustChangePassword=true (forced change on first login)
+ *    and emailVerifiedAt set to now() (admin-created = trusted, no email needed).
+ *  - hashPasswordRaw applies PASSWORD_PEPPER consistently with the login path.
+ */
+export async function seedInitialAdmin(): Promise<void> {
+    const email = process.env.INITIAL_ADMIN_EMAIL?.trim();
+    const password = process.env.INITIAL_ADMIN_PASSWORD?.trim();
+
+    if (!email || !password) {
+        console.warn(
+            '[SystemBootstrap] INITIAL_ADMIN_EMAIL or INITIAL_ADMIN_PASSWORD not set — ' +
+            'skipping initial admin seed. Set both env vars to create the break-glass admin.',
+        );
+        return;
+    }
+
+    const ds = new DataSource(getSystemDatabaseConfig() as DataSourceOptions);
+    try {
+        await ds.initialize();
+
+        // Check for any existing active admin — strict: role=admin AND isActive=true.
+        const rows = await ds.query<unknown[]>(
+            `SELECT 1 FROM users WHERE role = $1 AND "isActive" = true LIMIT 1`,
+            ['admin'],
+        );
+
+        if (rows.length > 0) {
+            console.log('[SystemBootstrap] Active admin already exists — skipping initial admin seed');
+            return;
+        }
+
+        // No active admin: insert the break-glass admin. Never log the password.
+        const passwordHash = await hashPasswordRaw(password);
+        const normalizedEmail = email.toLowerCase();
+
+        await ds.query(
+            `INSERT INTO users
+                (email, "passwordHash", role, "isActive", "emailVerifiedAt", "mustChangePassword")
+             VALUES ($1, $2, 'admin', true, now(), true)`,
+            [normalizedEmail, passwordHash],
+        );
+
+        console.log(
+            `[SystemBootstrap] Initial admin seeded (email: ${normalizedEmail}). ` +
+            'Password change required on first login.',
+        );
+    } finally {
+        if (ds.isInitialized) {
+            await ds.destroy();
+        }
+    }
 }

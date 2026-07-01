@@ -7,11 +7,14 @@ import { Toaster } from 'vue-sonner';
         <AppSidebar />
         <div class="flex flex-1 flex-col overflow-auto">
             <AppTopbar />
+            <AccountBanner />
             <main class="flex-1 pb-24">
                 <slot />
             </main>
         </div>
         <FeedbackWidget />
+        <AuthModals />
+        <ForcePasswordChangeModal />
         <Toaster position="bottom-right" rich-colors />
     </div>
 </template>

@@ -178,3 +178,143 @@ export const dataSourceOptions: DataSourceOptions = {
     synchronize: false,
     logging: resolveLogging(),
 };
+
+// ─── System database helpers ────────────────────────────────────────────────
+// The system DB is a SEPARATE database on the SAME PostgreSQL server as the
+// per-network databases. It stores cross-network data (users, API keys,
+// refresh tokens, rate-limit requests, dashboards, quick-filters).
+//
+// Naming pattern mirrors resolveDatabaseName but substitutes 'system' for
+// the network segment:
+//   {GUARDIAN_ENV}_system_{DB_DATABASE}   when GUARDIAN_ENV is set
+//   system_{DB_DATABASE}                  when GUARDIAN_ENV is empty
+// An explicit DB_SYSTEM_NAME env var overrides the computed name entirely.
+//
+// DB_SYNCHRONIZE is INTENTIONALLY IGNORED for the system DB regardless of its
+// value. Credential tables are created/evolved only via the idempotent
+// system-schema bootstrap (synchronize:false hard-forced), mirroring the
+// project's existing schema-bootstrap.ts pattern.
+
+/**
+ * Resolves the system database name.
+ *
+ * Priority:
+ *  1. DB_SYSTEM_NAME env var (verbatim, after trim)
+ *  2. `{GUARDIAN_ENV}_system_{DB_DATABASE}` when GUARDIAN_ENV is set
+ *  3. `system_{DB_DATABASE}` when GUARDIAN_ENV is empty
+ *
+ * Mirrors resolveDatabaseName's GUARDIAN_ENV / DB_DATABASE handling but
+ * uses the fixed segment 'system' instead of a network name.
+ */
+export function getSystemDatabaseName(): string {
+    const guardianEnv = process.env.GUARDIAN_ENV || '';
+    const dbDatabase = process.env.DB_DATABASE || 'sustainable_explorer';
+    const override = process.env.DB_SYSTEM_NAME?.trim();
+    if (override) {
+        return override;
+    }
+    return guardianEnv ? `${guardianEnv}_system_${dbDatabase}` : `system_${dbDatabase}`;
+}
+
+/**
+ * Returns TypeORM module options for the system database.
+ *
+ * synchronize is HARD-FORCED to false regardless of the DB_SYNCHRONIZE
+ * environment variable. Credential tables are created/evolved only via
+ * bootstrapSystemSchema (idempotent raw SQL run at boot), never by synchronize.
+ *
+ * Entities glob targets src/shared/entities/auth/ — a subdirectory that is
+ * intentionally separate from the per-network entity glob so the two
+ * DataSources never load each other's entities.
+ */
+export function getSystemDatabaseConfig(): TypeOrmModuleOptions {
+    // DB_SYNCHRONIZE is NOT read here — synchronize is unconditionally false;
+    // credential tables are bootstrap-controlled.
+    return {
+        type: 'postgres',
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        username: process.env.DB_USER || 'explorer',
+        password: process.env.DB_PASSWORD || 'explorer_password',
+        database: getSystemDatabaseName(),
+        entities: [join(__dirname, '..', 'entities', 'auth', '*.{ts,js}')],
+        synchronize: false,
+        logging: resolveLogging(),
+        extra: {
+            min: parseInt(process.env.DB_POOL_MIN || '2', 10),
+            max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+        },
+    };
+}
+
+/**
+ * Creates (if missing) the system database and ensures required extensions +
+ * TypeORM metadata tables exist.
+ *
+ * Structural clone of ensureDatabaseExistsForNetwork with dbName fixed to
+ * getSystemDatabaseName(). Uses the same two-client pattern, env fallbacks,
+ * and error-handling wording. citext is NOT created here — it is installed
+ * by the first auth migration (keeping parity with the per-network helper
+ * which only provisions pg_trgm).
+ */
+export async function ensureSystemDatabaseExists(): Promise<void> {
+    const dbName = getSystemDatabaseName();
+
+    const client = new Client({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER || 'explorer',
+        password: process.env.DB_PASSWORD || 'explorer_password',
+        database: 'postgres',
+    });
+
+    try {
+        await client.connect();
+        const result = await client.query(
+            `SELECT 1 FROM pg_database WHERE datname = $1`,
+            [dbName],
+        );
+        if (result.rowCount === 0) {
+            console.log(`Database "${dbName}" does not exist, creating...`);
+            await client.query(`CREATE DATABASE "${dbName}"`);
+            console.log(`Database "${dbName}" created successfully`);
+        } else {
+            console.log(`Database "${dbName}" already exists`);
+        }
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to ensure database "${dbName}" exists: ${message}`);
+        throw error;
+    } finally {
+        await client.end();
+    }
+
+    // Extensions + TypeORM metadata table for the system DB.
+    // citext is NOT created here — it is handled by bootstrapSystemSchema.
+    const targetClient = new Client({
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        user: process.env.DB_USER || 'explorer',
+        password: process.env.DB_PASSWORD || 'explorer_password',
+        database: dbName,
+    });
+    try {
+        await targetClient.connect();
+        await targetClient.query(`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
+        await targetClient.query(`
+            CREATE TABLE IF NOT EXISTS typeorm_metadata (
+                type varchar NOT NULL,
+                database varchar,
+                schema varchar,
+                "table" varchar,
+                name varchar,
+                value text
+            )
+        `);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.error(`Failed to setup extensions/metadata for ${dbName}: ${message}`);
+    } finally {
+        await targetClient.end();
+    }
+}

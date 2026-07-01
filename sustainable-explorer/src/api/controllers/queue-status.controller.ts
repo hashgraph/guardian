@@ -24,6 +24,7 @@ import {
     ApiProperty,
     ApiPropertyOptional,
 } from '@nestjs/swagger';
+import { AdminWrite } from '../auth/decorators/admin-write.decorator';
 import { Job } from 'bullmq';
 import { Observable } from 'rxjs';
 import { IsBoolean, IsInt, IsOptional, IsString, IsIn, Min, Max } from 'class-validator';
@@ -276,10 +277,25 @@ class IpfsCidStatusListDto {
 // Controller
 // ---------------------------------------------------------------------------
 
+// The sync-status page is VIEWABLE by everyone (read-only): all GET/SSE endpoints
+// here are PUBLIC so guests/users can see queue + sync + IPFS status. Only the
+// state-changing ACTIONS (retry / requeue / ipfs-retry POSTs) are admin-gated via
+// @AdminWrite. (The Guardian-sync data is separately admin-only — see
+// guardian-sync.controller.) Read-vs-write is the access axis here.
 @ApiTags('queue-status')
 @Controller('api/v1')
 export class QueueStatusController {
     private readonly logger = new Logger(QueueStatusController.name);
+
+    // The public sync-status summary is hit on EVERY page load (sidebar "last
+    // synced" indicator) and runs a full aggregate over topic_cache. It changes
+    // slowly, so cache the aggregate per-network for a few seconds (lag is still
+    // recomputed live each call). Eliminates the per-page DB scan for all users.
+    private static readonly SYNC_STATUS_TTL_MS = 15_000;
+    private readonly syncStatusCache = new Map<
+        string,
+        { maxSeconds: number | null; totalTopics: number; syncedTopics: number; totalMessages: number; expiresAt: number }
+    >();
 
     constructor(
         private readonly queueRegistry: QueueRegistry,
@@ -523,6 +539,7 @@ export class QueueStatusController {
     // -------------------------------------------------------------------------
 
     @Post(':network/queues/:baseName/jobs/:jobId/retry')
+    @AdminWrite()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: 'Retry a single failed job',
@@ -586,6 +603,7 @@ export class QueueStatusController {
     // -------------------------------------------------------------------------
 
     @Post(':network/queues/:baseName/retry-all-failed')
+    @AdminWrite()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: 'Retry all (or a batch of) failed jobs',
@@ -693,46 +711,62 @@ export class QueueStatusController {
     @ApiResponse({ status: 200, type: SyncStatusDto })
     @ApiResponse({ status: 404, description: 'Network not configured on this API instance' })
     async getSyncStatus(@Param('network') network: string): Promise<SyncStatusDto> {
-        const ds = this.dataSources.getDataSource(network);
+        const now = Date.now();
+        let cached = this.syncStatusCache.get(network);
 
-        const [[aggRow]]: [
-            Array<{
-                totalTopics: string;
-                syncedTopics: string;
-                totalMessages: string;
-                maxLastUpdate: string | null;
-            }>,
-        ] = await Promise.all([
-            ds.query(
-                `SELECT COUNT(*)::int                                      AS "totalTopics",
-                        COUNT(*) FILTER (WHERE "hasNext" = false)::int     AS "syncedTopics",
-                        COALESCE(SUM(messages), 0)::bigint                 AS "totalMessages",
-                        MAX("lastUpdate")                                   AS "maxLastUpdate"
-                 FROM topic_cache`,
-            ),
-        ]);
+        if (!cached || cached.expiresAt <= now) {
+            const ds = this.dataSources.getDataSource(network);
 
-        // lastUpdate is stored as millisecond string ("1778146836950") or
-        // Hedera consensus format ("1746620000.123456789"). MAX() on text gives the
-        // lexicographic maximum which is correct for uniform 13-digit ms strings.
-        // Parse the same way as per-row normalisation.
-        let maxSeconds: number | null = null;
-        if (aggRow?.maxLastUpdate) {
-            const raw = parseInt(aggRow.maxLastUpdate.split('.')[0], 10);
-            const secs = raw > 1e10 ? Math.floor(raw / 1000) : raw;
-            if (!isNaN(secs) && secs > 0) maxSeconds = secs;
+            const [[aggRow]]: [
+                Array<{
+                    totalTopics: string;
+                    syncedTopics: string;
+                    totalMessages: string;
+                    maxLastUpdate: string | null;
+                }>,
+            ] = await Promise.all([
+                ds.query(
+                    `SELECT COUNT(*)::int                                      AS "totalTopics",
+                            COUNT(*) FILTER (WHERE "hasNext" = false)::int     AS "syncedTopics",
+                            COALESCE(SUM(messages), 0)::bigint                 AS "totalMessages",
+                            MAX("lastUpdate")                                   AS "maxLastUpdate"
+                     FROM topic_cache`,
+                ),
+            ]);
+
+            // lastUpdate is stored as millisecond string ("1778146836950") or
+            // Hedera consensus format ("1746620000.123456789"). MAX() on text gives the
+            // lexicographic maximum which is correct for uniform 13-digit ms strings.
+            let maxSeconds: number | null = null;
+            if (aggRow?.maxLastUpdate) {
+                const raw = parseInt(aggRow.maxLastUpdate.split('.')[0], 10);
+                const secs = raw > 1e10 ? Math.floor(raw / 1000) : raw;
+                if (!isNaN(secs) && secs > 0) maxSeconds = secs;
+            }
+
+            cached = {
+                maxSeconds,
+                totalTopics: Number(aggRow?.totalTopics ?? 0),
+                syncedTopics: Number(aggRow?.syncedTopics ?? 0),
+                totalMessages: Number(aggRow?.totalMessages ?? 0),
+                expiresAt: now + QueueStatusController.SYNC_STATUS_TTL_MS,
+            };
+            this.syncStatusCache.set(network, cached);
         }
 
-        const lastSyncedAt = maxSeconds !== null ? new Date(maxSeconds * 1000).toISOString() : null;
+        // Lag is recomputed live each call so the indicator stays accurate even
+        // while the aggregate is served from cache.
+        const lastSyncedAt =
+            cached.maxSeconds !== null ? new Date(cached.maxSeconds * 1000).toISOString() : null;
         const lagSeconds =
-            maxSeconds !== null ? Math.max(0, Math.floor(Date.now() / 1000) - maxSeconds) : 0;
+            cached.maxSeconds !== null ? Math.max(0, Math.floor(Date.now() / 1000) - cached.maxSeconds) : 0;
 
         return {
             lastSyncedAt,
             lagSeconds,
-            totalTopics: Number(aggRow?.totalTopics ?? 0),
-            syncedTopics: Number(aggRow?.syncedTopics ?? 0),
-            totalMessages: Number(aggRow?.totalMessages ?? 0),
+            totalTopics: cached.totalTopics,
+            syncedTopics: cached.syncedTopics,
+            totalMessages: cached.totalMessages,
         };
     }
 
@@ -815,6 +849,7 @@ export class QueueStatusController {
     }
 
     @Post(':network/sync-status/requeue-topic')
+    @AdminWrite()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: 'Manually enqueue a topic for sync',
@@ -1175,6 +1210,7 @@ export class QueueStatusController {
     // -------------------------------------------------------------------------
 
     @Post(':network/ipfs-status/:cid/retry')
+    @AdminWrite()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: 'Retry IPFS fetch for a single failed CID',
@@ -1249,6 +1285,7 @@ export class QueueStatusController {
     // -------------------------------------------------------------------------
 
     @Post(':network/ipfs-status/retry-by-topic')
+    @AdminWrite()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
         summary: 'Retry all IPFS fetch failures linked to a given topicId',

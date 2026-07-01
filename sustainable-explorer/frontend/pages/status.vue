@@ -21,6 +21,9 @@ import type {
 const { t } = useI18n();
 const { network } = useNetwork();
 const config = useRuntimeConfig();
+// Sync page is PUBLIC (read-only). Guardian-sync data + all actions are admin-only.
+const { isAdmin } = useAuth();
+const { header: csrfHeader } = useCsrf();
 
 // ─── API composables ──────────────────────────────────────────────────────────
 
@@ -120,6 +123,8 @@ async function requeueTopic(topicId: string, fromStart: boolean) {
                 method: 'POST',
                 body: { topicId: topicId.trim(), fromStart },
                 baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+                credentials: 'include',
+                headers: csrfHeader(),
             },
         );
         await showToast(`Topic ${topicId} queued for sync`);
@@ -161,11 +166,13 @@ onMounted(() => {
     pollTimer = setInterval(() => {
         refreshQueues();
     }, 30_000);
-    // guardian-sync heartbeats every 10s — poll at the same cadence.
-    guardianSyncTimer = setInterval(() => {
-        refreshGuardianSync();
-        refreshGuardianSyncEvents();
-    }, 10_000);
+    // Guardian-sync data is admin-only — only admins poll it (others would 401).
+    if (isAdmin.value) {
+        guardianSyncTimer = setInterval(() => {
+            refreshGuardianSync();
+            refreshGuardianSyncEvents();
+        }, 10_000);
+    }
 });
 
 onUnmounted(() => {
@@ -336,6 +343,8 @@ async function confirmRetryAll() {
                 method: 'POST',
                 body: { force, limit: Math.min(retryAllState.value!.failedCount, 1000) },
                 baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+                credentials: 'include',
+                headers: csrfHeader(),
             },
         );
         retryAllState.value = null;
@@ -502,6 +511,8 @@ async function confirmRetryJob(job: FailedJobDto) {
                 method: 'POST',
                 body: { force: state.force },
                 baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+                credentials: 'include',
+                headers: csrfHeader(),
             },
         );
         state.done = true;
@@ -611,6 +622,8 @@ async function retryIpfsFailure(cid: string) {
         await $fetch(`/api/v1/${network.value}/ipfs-status/${encodeURIComponent(cid)}/retry`, {
             method: 'POST',
             baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+            credentials: 'include',
+            headers: csrfHeader(),
         });
         showToast(`CID ${cid.slice(0, 20)}… queued for retry`);
         await refreshIpfsFailures();
@@ -634,6 +647,8 @@ async function retryAllIpfsForTopic() {
                 includeChildTopics: ipfsIncludeChildTopics.value || undefined,
             },
             baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+            credentials: 'include',
+            headers: csrfHeader(),
         });
         showToast(`Retry queued for all failures on topic ${ipfsTopicFilter.value}`);
         await refreshIpfsFailures();
@@ -976,8 +991,9 @@ function formatTs(ts: number): string {
                                             {{ $t('status.actions.viewFailures') }}
                                         </button>
 
-                                        <!-- Retry all -->
+                                        <!-- Retry all (admin-only action) -->
                                         <button
+                                            v-if="isAdmin"
                                             class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs border border-stat-rose/50 text-stat-rose hover:bg-stat-rose/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                             :disabled="q.counts.failed === 0"
                                             @click="openRetryAll(q)"
@@ -1066,8 +1082,8 @@ function formatTs(ts: number): string {
                             </button>
                         </div>
 
-                        <!-- Manual requeue: add a new topic or re-trigger an existing one -->
-                        <div class="flex items-center gap-2 flex-wrap mb-2 rounded-md border border-dashed bg-muted/20 px-3 py-2">
+                        <!-- Manual requeue (admin-only action) -->
+                        <div v-if="isAdmin" class="flex items-center gap-2 flex-wrap mb-2 rounded-md border border-dashed bg-muted/20 px-3 py-2">
                             <span class="text-xs font-medium text-muted-foreground">Requeue topic:</span>
                             <input
                                 v-model="requeueInput"
@@ -1130,6 +1146,7 @@ function formatTs(ts: number): string {
                                         <td class="py-2 px-3 text-right text-muted-foreground text-xs">{{ formatRelativeTime(topic.lastUpdate) }}</td>
                                         <td class="py-2 px-3 text-center">
                                             <button
+                                                v-if="isAdmin"
                                                 :disabled="!!requeuePending[topic.topicId]"
                                                 title="Requeue topic from current watermark"
                                                 class="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
@@ -1139,6 +1156,7 @@ function formatTs(ts: number): string {
                                                 <RefreshCw v-else class="h-3 w-3" />
                                                 Requeue
                                             </button>
+                                            <span v-else class="text-xs text-muted-foreground">—</span>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -1233,7 +1251,7 @@ function formatTs(ts: number): string {
         </div>
 
         <!-- Section D2: Guardian Sync (only when a guardian-sync process is running) -->
-        <div v-if="guardianSync?.enabled" class="border-t">
+        <div v-if="isAdmin && guardianSync?.enabled" class="border-t">
             <button
                 class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/20 transition-colors"
                 @click="guardianSyncPanelOpen = !guardianSyncPanelOpen"
@@ -1400,7 +1418,7 @@ function formatTs(ts: number): string {
                 </div>
                 <div class="flex items-center gap-3">
                     <button
-                        v-if="ipfsTopicFilter && ipfsHasFailedRows && !ipfsFailuresPending"
+                        v-if="isAdmin && ipfsTopicFilter && ipfsHasFailedRows && !ipfsFailuresPending"
                         class="inline-flex items-center gap-1 text-xs text-stat-rose border border-stat-rose/50 hover:bg-stat-rose/5 rounded px-2 py-1 transition-colors disabled:opacity-50"
                         :disabled="ipfsRetryAllTopicPending"
                         @click.stop="retryAllIpfsForTopic"
@@ -1622,7 +1640,7 @@ function formatTs(ts: number): string {
                                     <!-- Actions (Retry only for failed rows) -->
                                     <td class="py-3 px-3">
                                         <button
-                                            v-if="row.status === 'failed'"
+                                            v-if="row.status === 'failed' && isAdmin"
                                             class="inline-flex items-center gap-1 rounded px-2 py-1 text-xs border border-stat-rose/50 text-stat-rose hover:bg-stat-rose/5 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                                             :disabled="!!ipfsRetryPending[row.cid]"
                                             @click="retryIpfsFailure(row.cid)"
@@ -1651,8 +1669,8 @@ function formatTs(ts: number): string {
             </Transition>
         </div>
 
-        <!-- Section E-pre2: Maintenance (collapsible) -->
-        <div class="border-t">
+        <!-- Section E-pre2: Maintenance (collapsible) — admin-only -->
+        <div v-if="isAdmin" class="border-t">
             <button
                 class="w-full flex items-center justify-between px-6 py-4 text-left hover:bg-muted/20 transition-colors"
                 @click="maintenancePanelOpen = !maintenancePanelOpen"
@@ -1945,6 +1963,7 @@ function formatTs(ts: number): string {
                                     </code>
                                 </div>
                                 <button
+                                    v-if="isAdmin"
                                     class="inline-flex items-center gap-1 text-xs rounded px-2 py-1 border border-stat-rose/50 text-stat-rose hover:bg-stat-rose/5 transition-colors"
                                     @click="openRetryAll({ baseName: drawerBaseName!, fullName: '', counts: { waiting: 0, active: 0, completed: 0, failed: group.count, delayed: 0, paused: 0 }, config: { concurrency: 1, attempts: 3, backoffType: '', backoffDelay: 0 }, isPaused: false })"
                                 >
@@ -2016,8 +2035,8 @@ function formatTs(ts: number): string {
                                     </span>
                                 </div>
 
-                                <!-- Retry controls -->
-                                <div class="flex items-center gap-2">
+                                <!-- Retry controls (admin-only action) -->
+                                <div v-if="isAdmin" class="flex items-center gap-2">
                                     <template v-if="!jobRetryStates[job.id]?.confirming && !jobRetryStates[job.id]?.done">
                                         <button
                                             class="inline-flex items-center gap-1 text-xs rounded px-2 py-1 border border-border hover:bg-muted transition-colors"

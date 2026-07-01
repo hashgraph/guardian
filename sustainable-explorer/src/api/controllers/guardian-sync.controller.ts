@@ -1,13 +1,21 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiOkResponse, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
+import { ApiOkResponse, ApiParam, ApiQuery, ApiTags, ApiCookieAuth } from '@nestjs/swagger';
 import {
     GuardianSyncService,
     GuardianSyncStatusDto,
     GuardianSyncEventPageDto,
 } from '../services/guardian-sync.service';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { Roles } from '../auth/decorators/roles.decorator';
 
+// Operational telemetry — admin-only (the spec scopes "Guardian Sync data" /
+// "manage sync status" to administrators). Whole controller is admin-gated.
 @ApiTags('guardian-sync')
+@ApiCookieAuth()
 @Controller('api/v1')
+@UseGuards(JwtAuthGuard, RolesGuard)
+@Roles('admin')
 export class GuardianSyncController {
     constructor(private readonly guardianSync: GuardianSyncService) {}
 

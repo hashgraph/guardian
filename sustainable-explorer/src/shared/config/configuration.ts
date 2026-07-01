@@ -182,5 +182,82 @@ export default registerAs('app', () => {
 
         // Guardian environment
         guardianEnv: process.env.GUARDIAN_ENV || '',
+
+        // System database — stores only the raw override string to avoid a
+        // circular import of database.config (which owns getSystemDatabaseName()).
+        // Name resolution: DB_SYSTEM_NAME → {GUARDIAN_ENV}_system_{DB_DATABASE}
+        //   (or system_{DB_DATABASE} when GUARDIAN_ENV is empty).
+        // Shares DB_HOST / DB_PORT / DB_USER / DB_PASSWORD with the network DBs.
+        systemDatabase: {
+            nameOverride: process.env.DB_SYSTEM_NAME?.trim() || '',
+        },
+
+        // Auth / JWT — secrets (jwtAccessSecret, jwtRefreshSecret, passwordPepper,
+        // apiKeyPepper) MUST come from environment / secret manager; never commit them.
+        auth: {
+            jwtAccessSecret: process.env.JWT_ACCESS_SECRET || '',
+            jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || '',
+            accessTokenTtlMinutes: parseInt(process.env.ACCESS_TOKEN_TTL_MINUTES || '15', 10),
+            refreshTokenTtlDays: parseInt(process.env.REFRESH_TOKEN_TTL_DAYS || '7', 10),
+            sessionAbsoluteTtlDays: parseInt(process.env.SESSION_ABSOLUTE_TTL_DAYS || '30', 10),
+            // Pepper values: random 32-byte hex strings from a secret manager.
+            // Used to prevent rainbow-table attacks against the DB if it is leaked.
+            passwordPepper: process.env.PASSWORD_PEPPER || '',
+            apiKeyPepper: process.env.API_KEY_PEPPER || '',
+            bcryptRounds: parseInt(process.env.BCRYPT_ROUNDS || '12', 10),
+            // Cookie topology: same-domain reverse-proxy (frontend + API share domain).
+            cookieDomain: process.env.AUTH_COOKIE_DOMAIN || '',
+            cookieSameSite: process.env.AUTH_COOKIE_SAMESITE || 'Lax',
+            cookieSecure: (process.env.AUTH_COOKIE_SECURE || 'true') === 'true',
+            // Base URL of the public frontend, used to build email verification and
+            // password-reset links (e.g. https://app.example.com). Must have no trailing
+            // slash — links are path-appended in the email-token service.
+            publicAppUrl: process.env.APP_PUBLIC_URL || '',
+            // Minimum seconds between verification-email resends, per user.
+            resendVerificationCooldownSeconds: parseInt(process.env.RESEND_VERIFICATION_COOLDOWN_SECONDS || '300', 10),
+        },
+
+        // Rate limits — applied GLOBALLY per user / API key (never per-network).
+        rateLimit: {
+            systemUserPerHour: parseInt(process.env.RATE_LIMIT_SYSTEM_USER_PER_HOUR || '1000', 10),
+            adminPerHour: parseInt(process.env.RATE_LIMIT_ADMIN_PER_HOUR || '10000', 10),
+            maxQuota: parseInt(process.env.RATE_LIMIT_MAX_QUOTA || '10000', 10),
+            loginMaxFailures: parseInt(process.env.LOGIN_MAX_FAILURES || '10', 10),
+            loginLockMinutes: parseInt(process.env.LOGIN_LOCK_MINUTES || '15', 10),
+            // Max ACTIVE API keys a single user may hold (default 3); enforced
+            // atomically at API-key creation.
+            apiKeyMaxActivePerUser: parseInt(process.env.API_KEY_MAX_ACTIVE_PER_USER || '3', 10),
+            // Throttler enforcement (Redis-backed). OFF by default — flag-gated.
+            enforce: (process.env.RATE_LIMIT_ENFORCE || 'false') === 'true',
+            // Hourly request quota for unauthenticated/guest traffic (per IP).
+            guestPerHour: parseInt(process.env.RATE_LIMIT_GUEST_PER_HOUR || '600', 10),
+        },
+
+        // Initial admin — break-glass admin seeded on first boot. MUST be set via
+        // environment / secret manager; do NOT commit real values.
+        initialAdmin: {
+            email: process.env.INITIAL_ADMIN_EMAIL || '',
+            password: process.env.INITIAL_ADMIN_PASSWORD || '',
+        },
+
+        // SMTP — email verification + forgot-password.
+        smtp: {
+            host: process.env.SMTP_HOST || '',
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
+            user: process.env.SMTP_USER || '',
+            password: process.env.SMTP_PASSWORD || '',
+            from: process.env.SMTP_FROM || '',
+            secure: (process.env.SMTP_SECURE || 'false') === 'true',
+        },
+
+        // Public-data access control. OFF by default — flipping
+        // enforce=true requires network-scoped data endpoints to come from EITHER
+        // the trusted frontend (browser Origin in API_CORS_ORIGINS, or the
+        // FRONTEND_SHARED_SECRET header for SSR server-to-server) OR a valid API
+        // key. Guests browse via the frontend; programmatic callers need a key.
+        dataAccess: {
+            enforce: (process.env.DATA_ACCESS_ENFORCE || 'false') === 'true',
+            frontendSecret: process.env.FRONTEND_SHARED_SECRET || '',
+        },
     };
 });
