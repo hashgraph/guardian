@@ -53,9 +53,10 @@ describe('NatsService reply handler decode failure', () => {
         // Must resolve (not reject) — that is the whole point of the fix.
         await getReplyCallback()(null, makeMsg('mid-1', 'test-reply'));
 
+        // The caller receives a generic message; internal detail stays server-side.
         assert.deepEqual(result, {
             body: null,
-            error: 'connect ECONNREFUSED 10.0.0.1:55427',
+            error: 'Failed to decode reply payload',
             code: 500
         });
         assert.equal(svc.responseCallbacksMap.has('mid-1'), false, 'callback must be cleaned up');
@@ -84,5 +85,35 @@ describe('NatsService reply handler decode failure', () => {
         );
         await getReplyCallback()(null, makeMsg('unknown-id', 'test-reply'));
         assert.equal(svc.responseCallbacksMap.size, 0);
+    });
+});
+
+/**
+ * sendMessage/sendRawMessage must not use an async Promise executor: a
+ * sign/encode/publish failure there becomes an unhandledRejection and leaves the
+ * caller's promise pending forever. The fix must reject the promise and clean up
+ * the pending response callback instead.
+ */
+describe('NatsService send failure handling', () => {
+    afterEach(() => sinon.restore());
+
+    it('sendMessage rejects (and clears its callback) when encode fails, instead of hanging', async () => {
+        sinon.stub(JwtServicesValidator, 'sign').resolves('token');
+        const { svc } = await buildService(async () => ({}));
+        svc.connection.publish = () => { };
+        svc.codec.encode = async () => { throw new Error('encode boom'); };
+
+        await assert.rejects(svc.sendMessage('subject', { x: 1 }), /encode boom/);
+        assert.equal(svc.responseCallbacksMap.size, 0, 'pending callback must be cleaned up');
+    });
+
+    it('sendRawMessage rejects (and clears its callback) when sign fails, instead of hanging', async () => {
+        sinon.stub(JwtServicesValidator, 'sign').rejects(new Error('sign boom'));
+        const { svc } = await buildService(async () => ({}));
+        svc.connection.publish = () => { };
+        svc.codec.encode = async (d) => d;
+
+        await assert.rejects(svc.sendRawMessage('subject', { x: 1 }), /sign boom/);
+        assert.equal(svc.responseCallbacksMap.size, 0, 'pending callback must be cleaned up');
     });
 });

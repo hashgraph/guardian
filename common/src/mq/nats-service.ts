@@ -94,8 +94,10 @@ export abstract class NatsService {
                             // Decode may fetch a large-payload directLink; a failure here (e.g.
                             // ECONNREFUSED when the responder died mid-request) must fail this
                             // request rather than throw out of the async callback and crash the process.
+                            // Log the detail server-side; return a generic message to the caller so
+                            // internal exception text (e.g. the directLink URL) is not leaked.
                             console.error('Reply decode failed:', e.message);
-                            fn(null, e.message, 500);
+                            fn(null, 'Failed to decode reply payload', 500);
                             this.responseCallbacksMap.delete(messageId);
                             return;
                         }
@@ -204,7 +206,7 @@ export abstract class NatsService {
     public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true, externalMessageId?: string): Promise<T> {
         const messageId = externalMessageId ?? GenerateUUIDv4();
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             if (isResponseCallback) {
@@ -218,13 +220,22 @@ export abstract class NatsService {
             } else {
                 resolve(null);
             }
-            const token = await JwtServicesValidator.sign(subject);
-            head.append('serviceToken', token);
+            // Run the async work outside the Promise executor: a rejection from
+            // sign/encode/publish inside an async executor is neither caught nor
+            // settles this promise (it becomes an unhandledRejection and the
+            // caller hangs). Route it to reject and clean up the callback instead.
+            (async () => {
+                const token = await JwtServicesValidator.sign(subject);
+                head.append('serviceToken', token);
 
-            this.connection.publish(subject, await this.codec.encode(data), {
-                reply: this.replySubject,
-                headers: head
-            })
+                this.connection.publish(subject, await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            })().catch((e) => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            });
         });
     }
 
@@ -256,7 +267,7 @@ export abstract class NatsService {
      */
     public sendRawMessage<T>(subject: string, data?: unknown): Promise<T> {
         const messageId = GenerateUUIDv4();
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             // head.append('rawMessage', 'true');
@@ -267,15 +278,23 @@ export abstract class NatsService {
                 } else {
                     resolve(body);
                 }
-            })
+            });
 
-            const token = await JwtServicesValidator.sign(subject);
-            head.append('serviceToken', token);
+            // See sendMessage: keep async work out of the Promise executor so a
+            // sign/encode/publish failure rejects this promise (and clears the
+            // callback) instead of becoming an unhandledRejection.
+            (async () => {
+                const token = await JwtServicesValidator.sign(subject);
+                head.append('serviceToken', token);
 
-            this.connection.publish(subject, await this.codec.encode(data), {
-                reply: this.replySubject,
-                headers: head
-            })
+                this.connection.publish(subject, await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            })().catch((e) => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            });
         });
     }
 

@@ -26,6 +26,28 @@ let booted = false;
 let logAttributes: string[] = ['GLOBAL'];
 
 /**
+ * Guards against registering the process listeners more than once (duplicate
+ * imports, tests, hot reload), which would fire every handler N times.
+ * @private
+ */
+let handlersRegistered = false;
+
+/**
+ * Number of post-boot unhandled rejections that have been logged and swallowed.
+ * Exposed so callers can surface it as a metric / health signal — swallowing
+ * indefinitely without observability can hide a persistently failing path.
+ * @private
+ */
+let swallowedRejections = 0;
+
+/**
+ * @returns the number of post-boot unhandled rejections swallowed so far.
+ */
+export function getSwallowedRejectionCount(): number {
+    return swallowedRejections;
+}
+
+/**
  * Route the global error handlers to a PinoLogger once one is available.
  * @param logger initialized logger
  */
@@ -69,12 +91,21 @@ function logGlobalError(kind: string, error: Error): void {
 export function registerGlobalErrorHandlers(attributes: string[]): void {
     logAttributes = attributes;
 
+    // Idempotent: keep the latest attributes but attach the listeners only once.
+    if (handlersRegistered) {
+        return;
+    }
+    handlersRegistered = true;
+
     process.on('unhandledRejection', (reason: unknown) => {
         const error = reason instanceof Error ? reason : new Error(String(reason));
         logGlobalError('unhandledRejection', error);
         if (!booted) {
             console.error('[unhandledRejection] occurred during startup - exiting for a clean restart');
             process.exit(1);
+        } else {
+            swallowedRejections += 1;
+            console.error(`[unhandledRejection] swallowed post-boot (total: ${swallowedRejections})`);
         }
     });
 
