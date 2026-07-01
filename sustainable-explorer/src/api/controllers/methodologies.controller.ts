@@ -16,6 +16,7 @@ import {
 } from '../dto/methodology.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { UpdateMappingDto } from '../dto/update-mapping.dto';
+import { AdminWrite } from '../auth/decorators/admin-write.decorator';
 
 @ApiTags('methodologies')
 @Controller('api/v1/:network/methodologies')
@@ -128,7 +129,7 @@ export class MethodologiesController {
         });
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Post(':id/redecode')
     @ApiOperation({
         summary: 'Re-run the policy decoder for an existing methodology',
@@ -164,7 +165,7 @@ export class MethodologiesController {
         return this.mappingReprocessService.redecodePolicy(network, id);
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Post('redecode-all')
     @ApiOperation({
         summary: 'Re-decode every decoded policy to re-stamp docType from updated classifier',
@@ -194,7 +195,7 @@ export class MethodologiesController {
         return this.mappingReprocessService.redecodeAllPolicies(network);
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Post('reparse-projects')
     @ApiOperation({
         summary: 'Re-parse projects across every methodology in the network',
@@ -228,7 +229,7 @@ export class MethodologiesController {
         return this.mappingReprocessService.reparseAllProjects(network);
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Post(':id/reparse-projects')
     @ApiOperation({
         summary: 'Re-parse already-downloaded VCs to populate projects with updated field mapping',
@@ -263,7 +264,7 @@ export class MethodologiesController {
         return this.mappingReprocessService.reparseProjects(network, id);
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Patch(':id/decoded')
     @ApiOperation({
         summary: 'Manually edit and save the field mapping for a methodology',

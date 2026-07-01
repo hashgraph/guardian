@@ -256,6 +256,9 @@ const decodeStatusClass = (status: string | null | undefined) => {
 
 // ─── Action: re-run decoder ──────────────────────────────────────────────────
 
+// Decode / reparse / edit-mapping are admin-only maintenance actions (spec).
+const { isAdmin } = useAuth();
+const { header: csrfHeader } = useCsrf();
 const redecodePending = ref(false);
 
 async function triggerRedecode() {
@@ -266,7 +269,7 @@ async function triggerRedecode() {
   try {
     await $fetch(
       `/api/v1/${network.value}/methodologies/${id.value}/redecode`,
-      { method: 'POST', baseURL },
+      { method: 'POST', baseURL, credentials: 'include', headers: csrfHeader() },
     );
     const { toast } = await import('vue-sonner');
     toast.success(t('methodologies.detail.decoded.actions.rerunSuccess'));
@@ -290,7 +293,7 @@ async function triggerReparse() {
   try {
     const res = await $fetch<{ enqueued: number }>(
       `/api/v1/${network.value}/methodologies/${id.value}/reparse-projects`,
-      { method: 'POST', baseURL },
+      { method: 'POST', baseURL, credentials: 'include', headers: csrfHeader() },
     );
     const { toast } = await import('vue-sonner');
     if (res.enqueued === 0) {
@@ -558,6 +561,8 @@ async function saveMapping() {
       {
         method: 'PATCH',
         baseURL,
+        credentials: 'include',
+        headers: csrfHeader(),
         body: { fieldMap },
       },
     );
@@ -1354,8 +1359,8 @@ function getResolvedField(fieldKey: string) {
                   <p class="text-xs text-destructive/80 font-mono break-all">{{ decodedData.decodeError }}</p>
                 </div>
               </div>
-              <!-- Action buttons row -->
-              <div class="flex items-center justify-end gap-2 pt-1">
+              <!-- Action buttons row (admin-only maintenance actions) -->
+              <div v-if="isAdmin" class="flex items-center justify-end gap-2 pt-1">
                 <!-- Re-run decoder -->
                 <Button
                   variant="outline"
@@ -1398,8 +1403,8 @@ function getResolvedField(fieldKey: string) {
                 <FileText class="h-4 w-4 text-primary" />
                 {{ $t('methodologies.detail.decoded.fieldsTableTitle') }}
               </h2>
-              <!-- Edit mapping controls — shown only when projectSchema and availableSchemas are present -->
-              <template v-if="decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0">
+              <!-- Edit mapping controls — admin-only, when projectSchema and availableSchemas are present -->
+              <template v-if="isAdmin && decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0">
                 <template v-if="!editingMapping">
                   <Button
                     variant="outline"

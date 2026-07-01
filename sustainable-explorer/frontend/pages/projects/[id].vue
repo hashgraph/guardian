@@ -231,6 +231,9 @@ async function handleViewVcJson(consensusTimestamp: string) {
 // ─── Re-extract action ────────────────────────────────────────────────────────
 
 const { t } = useI18n();
+// Re-extract / refresh-IPFS are admin-only maintenance actions (spec).
+const { isAdmin } = useAuth();
+const { header: csrfHeader } = useCsrf();
 const reextractPending = ref(false);
 
 async function triggerReextract() {
@@ -241,7 +244,7 @@ async function triggerReextract() {
     try {
         const res = await $fetch<{ enqueued: number }>(
             `/api/v1/${network.value}/projects/${projectId.value}/re-extract`,
-            { method: 'POST', baseURL },
+            { method: 'POST', baseURL, credentials: 'include', headers: csrfHeader() },
         );
         const { toast } = await import('vue-sonner');
         if (res.enqueued === 0) {
@@ -269,7 +272,7 @@ async function triggerRefreshIpfs() {
     try {
         const res = await $fetch<{ refreshed: number; reparseEnqueued: number }>(
             `/api/v1/${network.value}/projects/${projectId.value}/refresh-ipfs`,
-            { method: 'POST', baseURL },
+            { method: 'POST', baseURL, credentials: 'include', headers: csrfHeader() },
         );
         const { toast } = await import('vue-sonner');
         const total = res.refreshed + res.reparseEnqueued;
@@ -747,25 +750,27 @@ const emissions = computed(() => {
 
             <!-- ── Tab: Advanced ───────────────────────────────────────────────── -->
             <div v-else-if="activeTab === 'advanced'" class="p-6 space-y-6">
-                <!-- Admin actions -->
+                <!-- Actions (re-extract / refresh-IPFS are admin-only) -->
                 <div class="flex items-center gap-2 flex-wrap">
-                    <button
-                        :disabled="reextractPending"
-                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        @click="triggerReextract"
-                    >
-                        <RotateCcw :class="['h-4 w-4 text-primary', reextractPending ? 'animate-spin' : '']" />
-                        Re-extract
-                    </button>
-                    <button
-                        :disabled="refreshIpfsPending"
-                        class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        @click="triggerRefreshIpfs"
-                    >
-                        <CloudDownload :class="['h-4 w-4 text-primary', refreshIpfsPending ? 'animate-spin' : '']" />
-                        Refresh IPFS
-                    </button>
-                    <div class="w-px h-6 bg-border" />
+                    <template v-if="isAdmin">
+                        <button
+                            :disabled="reextractPending"
+                            class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            @click="triggerReextract"
+                        >
+                            <RotateCcw :class="['h-4 w-4 text-primary', reextractPending ? 'animate-spin' : '']" />
+                            Re-extract
+                        </button>
+                        <button
+                            :disabled="refreshIpfsPending"
+                            class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            @click="triggerRefreshIpfs"
+                        >
+                            <CloudDownload :class="['h-4 w-4 text-primary', refreshIpfsPending ? 'animate-spin' : '']" />
+                            Refresh IPFS
+                        </button>
+                        <div class="w-px h-6 bg-border" />
+                    </template>
                     <button
                         class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         @click="exportProject(project!, 'iwa', network)"

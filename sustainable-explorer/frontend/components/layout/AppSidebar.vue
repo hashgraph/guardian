@@ -42,6 +42,7 @@ const navItems = computed(() => [
     { label: t('nav.developers'), icon: Users, to: '/developers' },
     { label: t('nav.sdgs'), icon: Target, to: '/sdgs' },
     { label: t('nav.analytics'), icon: BarChart3, to: '/analytics' },
+    // Sync status page is viewable by everyone (read-only); actions are admin-only.
     { label: t('nav.syncStatus'), icon: Activity, to: '/status' },
 ]);
 </script>
