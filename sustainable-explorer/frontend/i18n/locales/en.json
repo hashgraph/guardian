@@ -859,7 +859,11 @@
     },
     "vcViewer": {
         "rawDataOnBlockchain": "Raw Data on the blockchain",
-        "searchInJson": "Search in JSON..."
+        "searchInJson": "Search in JSON...",
+        "matchCount": "{current} of {total}",
+        "noMatches": "0 results",
+        "prevMatch": "Previous match",
+        "nextMatch": "Next match"
     },
     "relationshipDiagram": {
         "registry": "Registry",
