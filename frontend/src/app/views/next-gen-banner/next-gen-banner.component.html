@@ -1,11 +1,15 @@
 @if (enabled) {
   <div class="next-gen-banner">
-    <span class="next-gen-banner-text">
-      Experimental UI is available.
-    </span>
-    <div class="next-gen-banner-actions">
+    <div class="next-gen-banner-line">
+      <i class="pi pi-info-circle next-gen-banner-info"></i>
+      <i class="pi pi-star-fill next-gen-banner-star"></i>
+      <span class="next-gen-banner-text">
+        Experimental UI is available.
+      </span>
       <a class="next-gen-banner-link" [href]="feedbackMailto" target="_blank" rel="noopener noreferrer">Send feedback</a>
-      <button type="button" class="next-gen-banner-disable" (click)="disableNewUi()">Turn off</button>
     </div>
+    <button type="button" class="next-gen-banner-close" (click)="close()" aria-label="Close">
+      <i class="pi pi-times"></i>
+    </button>
   </div>
 }

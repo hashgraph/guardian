@@ -4,30 +4,64 @@
     right: 0;
     left: 0;
     z-index: 10000;
+    min-height: 40px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 8px 16px;
-    background: var(--color-secondary);
-    color: var(--color-primary);
+    justify-content: center;
+    padding: 7px 16px;
+    background: var(--color-primary);
+    color: var(--guardian-on-primary-color);
+    box-sizing: border-box;
 }
 
-.next-gen-banner-actions {
+.next-gen-banner-line {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: center;
+    gap: 10px;
+    min-width: 0;
 }
 
-.next-gen-banner-link,
-.next-gen-banner-disable {
+.next-gen-banner-info,
+.next-gen-banner-star {
+    flex-shrink: 0;
+    color: var(--guardian-on-primary-color);
+    font-size: 16px;
+}
+
+.next-gen-banner-text {
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--guardian-on-primary-color);
+    white-space: nowrap;
+}
+
+.next-gen-banner-link {
+    min-height: 28px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 16px;
+    border-radius: 16px;
+    background: var(--guardian-background);
     color: var(--color-primary);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
 }
 
-.next-gen-banner-disable {
+.next-gen-banner-close {
+    position: absolute;
+    top: 50%;
+    right: 16px;
+    transform: translateY(-50%);
     border: 0;
     padding: 0;
     background: transparent;
-    font: inherit;
+    color: var(--guardian-on-primary-color);
+    cursor: pointer;
+    font-size: 18px;
 }
