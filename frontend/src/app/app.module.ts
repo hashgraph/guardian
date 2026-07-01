@@ -149,6 +149,7 @@ import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 import { TreeTableModule } from 'primeng/treetable';
+import { MenubarModule } from 'primeng/menubar';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
 
 const GuardianPreset = definePreset(Aura, {
@@ -290,7 +291,8 @@ const GuardianPreset = definePreset(Aura, {
         CardModule,
         ToggleSwitchModule,
         AngularSvgIconModule.forRoot(),
-        TreeTableModule
+        TreeTableModule,
+        MenubarModule
     ],
     providers: [
         WebSocketService,

@@ -1,5 +1,8 @@
-import { Component, Input, OnInit, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, AfterViewInit, ElementRef, ViewChild, NgZone, AfterViewChecked } from '@angular/core';
+import { MenuItem } from 'primeng/api';
 import { getMenuItems, NavbarMenuItem } from './menu.model';
+import { formatBalance, getUserInitials } from '../../utils';
+import { MenuLayout, MenuLayoutService } from '../../services/menu-layout.service';
 import { IUser, UserCategory, UserPermissions, UserRole } from '@guardian/interfaces';
 import { AuthStateService } from '../../services/auth-state.service';
 import { AuthService } from '../../services/auth.service';
@@ -19,15 +22,16 @@ import { DocWidgetService } from '../../services/doc-widget.service';
     styleUrls: ['./new-header.component.scss'],
     standalone: false
 })
-export class NewHeaderComponent implements OnInit, AfterViewChecked {
+export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
     public isLogin: boolean = false;
     public user: UserPermissions = new UserPermissions();
     public username: string | null = null;
     public balance: string = '';
     public menuCollapsed: boolean = false;
     public smallMenuMode: boolean = false;
-    public notificationOpen: boolean = false;
     public menuItems: NavbarMenuItem[];
+    public horizontalModel: MenuItem[] = [];
+    public layout: MenuLayout = 'vertical';
     public activeLink: string = '';
     public activeLinkRoot: string = '';
 
@@ -41,6 +45,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     private ws!: any;
     private authSubscription!: any;
     private policyRequestsSubscription = new Subscription();
+    private layoutSubscription = new Subscription();
+    private brandingData: any = null;
 
     @Input() remoteContainerMethod: any;
 
@@ -58,7 +64,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         public headerProps: HeaderPropsService,
         private brandingService: BrandingService,
         private externalPoliciesService: ExternalPoliciesService,
-        private docWidgetService: DocWidgetService) {
+        private docWidgetService: DocWidgetService,
+        public menuLayout: MenuLayoutService) {
         this.router.events.subscribe((event) => {
             if (event instanceof NavigationEnd) {
                 this.update();
@@ -71,6 +78,15 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         } catch (error) {
             console.error(error)
         }
+        this.layout = this.menuLayout.layout;
+        this.layoutSubscription.add(this.menuLayout.changes.subscribe((layout) => {
+            this.layout = layout;
+            if (this.isLogin) {
+                this.applyContainerLayout();
+                // the logo/name nodes are re-created when the layout template swaps
+                setTimeout(() => this.applyBranding());
+            }
+        }));
     }
 
     ngOnInit(): void {
@@ -80,8 +96,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         this.ws = this.webSocketService.profileSubscribe((event) => {
             if (event.type === 'PROFILE_BALANCE') {
                 if (event.data && event.data.balance) {
-                    const b = parseFloat(event.data.balance);
-                    this.balance = `${b.toFixed(3)} ${event.data.unit}`;
+                    this.balance = formatBalance(event.data.balance);
                 } else {
                     this.balance = 'N\\A';
                     this.balanceType = '';
@@ -133,6 +148,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.authSubscription = null;
         }
         this.policyRequestsSubscription.unsubscribe();
+        this.layoutSubscription.unsubscribe();
     }
 
     private resetBalance() {
@@ -149,15 +165,7 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         this.auth.balance().subscribe((balance: any) => {
             if (balance && balance.balance) {
                 const b = parseFloat(balance.balance);
-                if (b > 999) {
-                    this.balance = `${b.toFixed(0)} ${balance.unit}`;
-                } else if (b > 99) {
-                    this.balance = `${b.toFixed(2)} ${balance.unit}`;
-                } else if (b > 9) {
-                    this.balance = `${b.toFixed(3)} ${balance.unit}`;
-                } else {
-                    this.balance = `${b.toFixed(4)} ${balance.unit}`;
-                }
+                this.balance = formatBalance(b);
                 if (b > 100) {
                     this.balanceType = 'normal';
                 } else if (b > 20) {
@@ -191,28 +199,41 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             if (!isLogin) {
                 this.remoteContainerMethod('NO_MARGIN');
             } else {
-                this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
+                this.applyContainerLayout();
             }
+            this.syncActiveGroups();
             this.updateRemotePolicyRequests();
-            this.brandingService.getBrandingData().then(res => {
-                const logo = document.getElementById('company-logo') as HTMLImageElement;
-                if (logo) {
-                    logo.src = res.companyLogoUrl;
-                    if (res.companyLogoUrl) {
-                        logo.style.display = 'block';
-                    } else {
-                        logo.style.display = 'none';
-                    }
-                }
-
-                if (document.getElementById('company-name')) {
-                    document.getElementById('company-name')!.innerText = res.companyName;
-                }
-            })
+            this.applyBranding();
 
         }, () => {
             this.setStatus(false, null);
         });
+    }
+
+    private applyBranding() {
+        // Branding doesn't change during a session, so fetch it once and re-apply the
+        // cached values to the logo/name nodes (which are re-created when the layout or
+        // collapse state swaps the template) without hitting the network each time.
+        if (this.brandingData) {
+            this.renderBranding(this.brandingData);
+            return;
+        }
+        this.brandingService.getBrandingData().then(res => {
+            this.brandingData = res;
+            this.renderBranding(res);
+        });
+    }
+
+    private renderBranding(res: any) {
+        const logo = document.getElementById('company-logo') as HTMLImageElement;
+        if (logo) {
+            logo.src = res.companyLogoUrl;
+            logo.style.display = res.companyLogoUrl ? 'block' : 'none';
+        }
+        const name = document.getElementById('company-name');
+        if (name) {
+            name.innerText = res.companyName;
+        }
     }
 
     private checkUsernameOverflow(): void {
@@ -230,6 +251,8 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
             this.username = username;
             this.user = new UserPermissions(user);
             this.menuItems = getMenuItems(this.user);
+            this.horizontalModel = this.buildHorizontalModel(this.menuItems);
+            this.syncActiveGroups();
         }
 
         setTimeout(() => this.checkUsernameOverflow());
@@ -243,38 +266,56 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
         this.router.navigate(['/login']);
     }
 
-    public onNotificationOpenChange(open: boolean) {
-        this.notificationOpen = open;
-        if (!open && this.menuCollapsed !== this.smallMenuMode) {
-            this.menuCollapsed = this.smallMenuMode;
+    private applyContainerLayout() {
+        if (this.layout === 'horizontal') {
+            this.remoteContainerMethod('HORIZONTAL');
+        } else {
+            this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
         }
     }
 
-    public onNavbarMouseLeave() {
-        if (this.notificationOpen) {
+    /** Open the group whose child matches the current route (and close the others). */
+    private syncActiveGroups() {
+        if (!this.menuItems) {
             return;
         }
-        this.menuCollapsed = this.smallMenuMode;
+        for (const item of this.menuItems) {
+            if (item.childItems) {
+                item.active = this.hasActiveChild(item);
+            }
+        }
     }
 
-    public onNavbarMouseMove() {
-        if (this.notificationOpen || !this.menuCollapsed) {
-            return;
+    public hasActiveChild(barItem: NavbarMenuItem): boolean {
+        return !!barItem.childItems?.some(
+            (child) => !!child.routerLink && this.activeLink.startsWith(child.routerLink)
+        );
+    }
+
+    private buildHorizontalModel(items: NavbarMenuItem[]): MenuItem[] {
+        if (!items) {
+            return [];
         }
-        this.menuCollapsed = false;
+        return items.map((item) => {
+            const menuItem: MenuItem = {
+                label: item.title,
+                icon: item.icon || undefined
+            };
+            if (item.childItems?.length) {
+                menuItem.items = this.buildHorizontalModel(item.childItems);
+            } else if (item.routerLink) {
+                menuItem.routerLink = item.routerLink;
+            }
+            return menuItem;
+        });
     }
 
     public toggleMenuMode() {
         this.smallMenuMode = !this.smallMenuMode;
         this.menuCollapsed = this.smallMenuMode;
+        // resizeMenu keeps the --header-width body variable in sync; fixed action bars
+        // (e.g. Settings/Branding) read it via CSS, so no per-element style fix-ups here.
         this.remoteContainerMethod(this.smallMenuMode ? 'COLLAPSE' : 'EXPAND');
-
-        const fixedActionsContainer = document.getElementById('fixed-actions-container');
-        if (fixedActionsContainer) {
-            fixedActionsContainer.style.left = !this.smallMenuMode ?
-                'var(--header-width-expand)' :
-                'var(--header-width-collapse)'
-        }
 
         try {
             localStorage.setItem('MAIN_HEADER', String(this.smallMenuMode));
@@ -286,6 +327,10 @@ export class NewHeaderComponent implements OnInit, AfterViewChecked {
     public goToHomePage() {
         const home = this.auth.home(this.user.role);
         this.router.navigate([home]);
+    }
+
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
     }
 
     public goToBrandingPage(event: MouseEvent) {

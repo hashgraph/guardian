@@ -179,7 +179,7 @@
             width: 100%;
             border-top: 1px solid var(--color-grey-3, #e1e7ef);
             background: var(--guardian-background, #fff);
-            padding-left: calc(var(--header-width-expand) + 48px);
+            padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
             transition: padding-left 0.125s ease-in-out;
 
             margin-top: 20px;
@@ -548,7 +548,7 @@
         width: 100%;
         border-top: 1px solid var(--color-grey-3, #e1e7ef);
         background: var(--guardian-background, #fff);
-        padding-left: calc(var(--header-width-expand) + 48px);
+        padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
         transition: padding-left 0.125s ease-in-out;
         margin-top: 20px;
         left: 50%;

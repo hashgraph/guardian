@@ -297,7 +297,7 @@
 
 .options-footer {
     padding: 12px 48px;
-    padding-left: calc(var(--header-width-expand) + 48px);
+    padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
     display: flex;
     justify-content: space-between;
     position: fixed;
