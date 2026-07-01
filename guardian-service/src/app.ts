@@ -32,7 +32,9 @@ import {
     Wallet,
     Workers,
     JwtServicesValidator,
-    NotificationEvents
+    NotificationEvents,
+    markServiceBooted,
+    setGlobalErrorLogger
 } from '@guardian/common';
 import { entities } from '@guardian/common/dist/entities.js';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
@@ -152,6 +154,7 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+    setGlobalErrorLogger(logger);
     NotificationEvents.init(new GuardiansService());
 
     const state = new ApplicationState();
@@ -434,6 +437,10 @@ Promise.all([
     initMathjs();
 
     startMetricsServer();
+
+    // Bootstrap complete: from here on, a stray unhandled rejection is logged and
+    // swallowed instead of terminating the service.
+    markServiceBooted();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

@@ -87,7 +87,18 @@ export abstract class NatsService {
                     const serviceToken = msg.headers?.get('serviceToken');
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
-                        const message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                        let message: IMessageResponse<any>;
+                        try {
+                            message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                        } catch (e: any) {
+                            // Decode may fetch a large-payload directLink; a failure here (e.g.
+                            // ECONNREFUSED when the responder died mid-request) must fail this
+                            // request rather than throw out of the async callback and crash the process.
+                            console.error('Reply decode failed:', e.message);
+                            fn(null, e.message, 500);
+                            this.responseCallbacksMap.delete(messageId);
+                            return;
+                        }
                         if (!message) {
                             fn(null)
                         } else {
