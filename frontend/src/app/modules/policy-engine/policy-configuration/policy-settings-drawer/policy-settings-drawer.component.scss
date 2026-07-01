@@ -1,0 +1,129 @@
+:host {
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.psd-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    background: color-mix(in srgb, #000 32%, transparent);
+}
+
+.psd-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 41;
+    width: min(760px, 92vw);
+    background: var(--guardian-background, #fff);
+    border-left: 1px solid var(--guardian-border-color, #E1E7EF);
+    box-shadow: -8px 0 24px var(--guardian-shadow, #00000014);
+    transform: translateX(100%);
+    transition: transform 0.22s ease;
+    display: flex;
+    flex-direction: column;
+
+    &.open {
+        transform: translateX(0);
+    }
+}
+
+.psd {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.psd-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--guardian-font-color, #23252E);
+
+    i {
+        font-size: 18px;
+        color: var(--color-primary, #4169E2);
+    }
+
+    .psd-close {
+        margin-left: auto;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--guardian-font-color, #23252E);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background: var(--guardian-hover, #F0F3FC);
+        }
+    }
+}
+
+.psd-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 16px;
+}
+
+.psd-nav {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-right: 1px solid var(--guardian-border-color, #E1E7EF);
+    padding-right: 12px;
+    overflow: auto;
+}
+
+.psd-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--guardian-font-color, #23252E);
+    transition: background 0.12s ease, color 0.12s ease;
+
+    i {
+        font-size: 16px;
+        color: var(--guardian-disabled-color, #848FA9);
+        width: 20px;
+        text-align: center;
+    }
+
+    &:hover {
+        background: var(--guardian-hover, #F0F3FC);
+    }
+
+    &[selected="true"] {
+        background: var(--guardian-primary-background, #e1e7fa);
+        color: var(--color-primary, #4169E2);
+
+        i {
+            color: var(--color-primary, #4169E2);
+        }
+    }
+}
+
+.psd-content {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+    position: relative;
+}

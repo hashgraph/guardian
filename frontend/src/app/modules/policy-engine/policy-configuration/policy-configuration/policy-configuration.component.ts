@@ -97,6 +97,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public validationLevel: 'error' | 'warning' | 'info' | 'success' | 'ok' = 'ok';
 
     public currentView: string = 'blocks';
+    public copiedField: string = '';
     public search: string = '';
     public searchModule: string = '';
     public storage: PolicyStorage;
@@ -1525,6 +1526,81 @@ export class PolicyConfigurationComponent implements OnInit {
             const blockData = this.currentBlock?.getJSON() || null;
             navigator.clipboard.writeText(JSON.stringify(blockData));
         }
+    }
+
+    public openPolicySettings: boolean = false;
+    public commandPaletteVisible: boolean = false;
+    public commandQuery: string = '';
+    public commands: { label: string; icon: string; action: () => void }[] = [];
+
+    @HostListener('document:keydown', ['$event'])
+    public onGlobalKeydown(event: KeyboardEvent): void {
+        if ((event.metaKey || event.ctrlKey) && (event.key === 'k' || event.key === 'K')) {
+            if (this.rootType !== 'Policy') {
+                return;
+            }
+            event.preventDefault();
+            this.toggleCommandPalette();
+        } else if (event.key === 'Escape' && this.commandPaletteVisible) {
+            this.commandPaletteVisible = false;
+        }
+    }
+
+    public openPolicySettingsDrawer(): void {
+        this.openPolicySettings = true;
+    }
+
+    public toggleCommandPalette(): void {
+        this.commandPaletteVisible = !this.commandPaletteVisible;
+        if (this.commandPaletteVisible) {
+            this.commandQuery = '';
+            this.buildCommands();
+        }
+    }
+
+    public get filteredCommands(): { label: string; icon: string; action: () => void }[] {
+        const query = this.commandQuery.trim().toLowerCase();
+        if (!query) {
+            return this.commands;
+        }
+        return this.commands.filter((command) => command.label.toLowerCase().includes(query));
+    }
+
+    public runCommand(command: { action: () => void }): void {
+        this.commandPaletteVisible = false;
+        setTimeout(() => command.action(), 0);
+    }
+
+    private buildCommands(): void {
+        this.commands = [
+            { label: 'Policy settings', icon: 'pi pi-cog', action: () => this.openPolicySettingsDrawer() },
+            { label: 'Save policy', icon: 'pi pi-save', action: () => this.savePolicy() },
+            { label: 'Save as new policy', icon: 'pi pi-copy', action: () => this.saveAsPolicy() },
+            { label: 'Policy wizard', icon: 'pi pi-sparkles', action: () => this.openPolicyWizardDialog() },
+            { label: 'Validate policy', icon: 'pi pi-check-circle', action: () => this.validationPolicy() },
+            { label: 'Schemas', icon: 'pi pi-database', action: () => this.onSchemas() },
+            { label: 'Settings', icon: 'pi pi-cog', action: () => this.onSettings() },
+            { label: 'Parameters', icon: 'pi pi-sliders-h', action: () => this.onEditableFields() },
+            { label: 'API documentation', icon: 'pi pi-book', action: () => this.openApiConfigDialog() },
+            { label: 'View: Tree', icon: 'pi pi-table', action: () => this.onView('blocks') },
+            { label: 'View: JSON', icon: 'pi pi-code', action: () => this.onView('json') },
+            { label: 'View: YAML', icon: 'pi pi-list', action: () => this.onView('yaml') },
+            { label: 'Toggle suggestions', icon: 'pi pi-comment', action: () => this.onSuggestionsClick() },
+        ];
+    }
+
+    public copyIdentity(field: string, value: string | undefined, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) {
+            return;
+        }
+        navigator.clipboard.writeText(value);
+        this.copiedField = field;
+        setTimeout(() => {
+            if (this.copiedField === field) {
+                this.copiedField = '';
+            }
+        }, 1500);
     }
 
     public onInitViewer(event: PolicyTreeComponent) {

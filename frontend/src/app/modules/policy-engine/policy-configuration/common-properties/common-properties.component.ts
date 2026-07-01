@@ -30,6 +30,7 @@ export class CommonPropertiesComponent implements OnInit {
 
     @Output() onInit = new EventEmitter();
     @Output('onEditTags') onEditTags = new EventEmitter();
+    @Output('selectParent') selectParent = new EventEmitter<PolicyItem>();
 
     loading: boolean = true;
     propHidden: any = {

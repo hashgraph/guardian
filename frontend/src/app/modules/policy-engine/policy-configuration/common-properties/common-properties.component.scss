@@ -1,3 +1,61 @@
+.inspector-head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+
+    .inspector-head-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .inspector-head-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--guardian-font-color, #23252E);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .inspector-head-type {
+        flex: 0 0 auto;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--color-primary, #4169E2);
+        background: var(--guardian-primary-background, #e1e7fa);
+    }
+
+    .inspector-head-parent {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--guardian-disabled-color, #848FA9);
+
+        .inspector-head-parent-name {
+            color: var(--color-primary, #4169E2);
+            font-weight: 500;
+        }
+
+        i {
+            font-size: 11px;
+            color: var(--color-primary, #4169E2);
+        }
+
+        &:hover .inspector-head-parent-name {
+            text-decoration: underline;
+        }
+    }
+}
+
 .block-name {
     padding-left: 32px;
     position: relative;

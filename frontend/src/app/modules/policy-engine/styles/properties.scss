@@ -1,27 +1,27 @@
 .policy-configuration::ng-deep {
     --pc-row-height: 42px;
     --pc-row-font-size: 16px;
-    --pc-row-font-family: "HelveticaNeue-Light", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+    --pc-row-font-family: var(--font-family-inter, 'Inter', sans-serif);
     --pc-row-font-style: normal;
 
     --guardian-primary-color: var(--color-primary, #4169E2);
-    --pc-border-color: var(--guardian-border-color, #bdbdbd);
-    --pc-active-icon-color: var(--guardian-menu-color-2, #8259ef);
-    --pc-header-color: var(--guardian-font-color, #555555);
-    --pc-error-color: #dd0a0a;
-    --pc-error-border-strong: #b80000;
-    --pc-error-bg-strong: var(--guardian-failure-background, #ffb3b3);
-    --pc-error-shadow: #b80000cc;
-    --pc-event-color: #bd9012;
-    --pc-event-icon-color: #ffc107;
-    --pc-prop-border-color: var(--guardian-border-color, #e5e5e5);
-    --pc-del-color: #eb0303;
-    --pc-required-color: #eb0303;
-    --pc-readonly-text-color: var(--guardian-disabled-color, rgba(0, 0, 0, .45));
+    --pc-border-color: var(--guardian-border-color, #E1E7EF);
+    --pc-active-icon-color: var(--color-primary, #4169E2);
+    --pc-header-color: var(--guardian-font-color, #23252E);
+    --pc-error-color: var(--color-accent-red-1, #FF432A);
+    --pc-error-border-strong: var(--color-accent-red-1, #FF432A);
+    --pc-error-bg-strong: var(--guardian-failure-background, #FFEAEA);
+    --pc-error-shadow: var(--guardian-shadow, #00000014);
+    --pc-event-color: var(--color-accent-yellow-1, #DA9B22);
+    --pc-event-icon-color: var(--color-accent-yellow-1, #DA9B22);
+    --pc-prop-border-color: var(--guardian-border-color, #E1E7EF);
+    --pc-del-color: var(--color-accent-red-1, #FF432A);
+    --pc-required-color: var(--color-accent-red-1, #FF432A);
+    --pc-readonly-text-color: var(--guardian-disabled-color, #848FA9);
     --pc-background-color: var(--guardian-background, #fff);
-    --pc-warning-border-light: #ff6b6b;
-    --pc-warning-bg-light: var(--guardian-failure-background, #ffe9ea);
-    --pc-warning-shadow: #ff6b6bcc;
+    --pc-warning-border-light: var(--color-accent-yellow-1, #DA9B22);
+    --pc-warning-bg-light: var(--guardian-warning-background, #FFF6E3);
+    --pc-warning-shadow: var(--guardian-shadow, #00000014);
 
     .properties {
         --col-name-width: 155px;
@@ -418,7 +418,7 @@
         .remove-step {
             width: auto !important;
             text-align: end;
-            color: #e30101;
+            color: var(--pc-del-color);
             cursor: pointer;
 
             i,

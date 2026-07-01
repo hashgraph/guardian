@@ -1,0 +1,35 @@
+@if (visible) {
+  <div class="psd-backdrop" (click)="close()"></div>
+}
+<div class="psd-panel" [class.open]="visible" [attr.aria-hidden]="!visible">
+  <div class="psd">
+    <div class="psd-title">
+      <i class="pi pi-cog"></i>
+      <span>Policy settings</span>
+      <button type="button" class="psd-close" (click)="close()" title="Close">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+    <div class="psd-body">
+      <div class="psd-nav">
+        @for (s of sections; track s.id) {
+          <div class="psd-nav-item" [attr.selected]="section === s.id" (click)="selectSection(s.id)">
+            <i [class]="s.icon"></i>
+            <span>{{ s.label }}</span>
+          </div>
+        }
+      </div>
+      <div class="psd-content">
+        @if (policy && visible) {
+          <policy-properties
+            [policy]="policy"
+            [readonly]="readonly"
+            [allCategories]="allCategories"
+            [policyCategories]="policyCategories"
+            [wipeContracts]="wipeContracts"
+            [type]="section"></policy-properties>
+        }
+      </div>
+    </div>
+  </div>
+</div>
