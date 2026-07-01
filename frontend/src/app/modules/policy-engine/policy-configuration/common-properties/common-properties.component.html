@@ -1,3 +1,19 @@
+@if (block && type != 'Events') {
+  <div class="inspector-head">
+    <div class="inspector-head-row">
+      <span class="inspector-head-name" [title]="block.localTag">{{ block.localTag }}</span>
+      <span class="inspector-head-type">{{ block.blockType }}</span>
+    </div>
+    @if (block.parent && !block.parent.isRoot) {
+      <div class="inspector-head-parent" (click)="selectParent.emit(block.parent)"
+        title="Select parent block">
+        <span class="inspector-head-parent-label">in</span>
+        <span class="inspector-head-parent-name">{{ block.parent.localTag }}</span>
+        <i class="pi pi-arrow-up-right"></i>
+      </div>
+    }
+  </div>
+}
 @if (type != 'Events') {
   <div class="grid-setting" [attr.readonly]="readonly">
     @if (loading) {

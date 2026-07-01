@@ -65,16 +65,18 @@
     position: relative;
     min-width: 160px;
     background: var(--guardian-background, #fff);
-    border: 2px solid #000;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
     box-sizing: border-box;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
     margin: 4px 8px 4px 0px;
-    box-shadow: 4px 4px 6px 0px #00000040;
+    box-shadow: 0 1px 2px var(--guardian-shadow, #00000014);
     padding: 0px 12px;
     align-items: center;
     display: flex;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .block-item * {
@@ -127,13 +129,13 @@
 }
 
 .block-container[selected="true"] .block-item {
-    border-color: #5161e1 !important;
-    box-shadow: 4px 4px 6px 0px #00000040, 0px 0px 4px 1px #5161e1cc !important;
+    border-color: var(--color-primary, #4169E2) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary, #4169E2) 30%, transparent) !important;
 }
 
 .block-container[selected="true"] .module-body .block-item::after {
-    border-color: #5161e1 !important;
-    box-shadow: -1px -2px 2px 0px #5161e161 !important;
+    border-color: var(--color-primary, #4169E2) !important;
+    box-shadow: -1px -2px 2px 0px color-mix(in srgb, var(--color-primary, #4169E2) 38%, transparent) !important;
 }
 
 .block-container[error="true"] .block-item {
@@ -148,8 +150,8 @@
 
 .block-container[error="true"] .tool-body .block-item::after {
     background-image:
-        linear-gradient(180deg, #838383 3px, var(--pc-error-bg-strong) 3px),
-        linear-gradient(180deg, var(--pc-error-bg-strong) 3px, #838383 3px) !important;
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--pc-error-bg-strong) 3px),
+        linear-gradient(180deg, var(--pc-error-bg-strong) 3px, var(--guardian-grey-color-3, #838383) 3px) !important;
 }
 
 .block-container[error="true"][selected="true"] .block-item {
@@ -178,7 +180,7 @@
     left: 2px;
     position: relative;
     font-size: 24px;
-    color: #404fb2;
+    color: var(--color-primary, #404fb2);
 }
 
 .module-item-icon i,
@@ -191,7 +193,7 @@
 }
 
 .tool-icon {
-    color: #c37a29 !important;
+    color: var(--pc-tool-block-color, #c37a29) !important;
 }
 
 .block-item-icon i,
@@ -205,7 +207,7 @@
     max-width: 330px;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #404040;
+    color: var(--guardian-font-color, #404040);
 }
 
 .block-container[block-type="UI Components"] .block-item {
@@ -227,7 +229,7 @@
 
 .block-container[block-type="module"] .block-item {
     background: var(--guardian-background, white);
-    border-color: #adadad;
+    border-color: var(--guardian-grey-color-3, #adadad);
 }
 
 .block-all-expand {
@@ -270,7 +272,7 @@
     content: "";
     width: 40px;
     height: 8px;
-    border: 2px solid #838383;
+    border: 2px solid var(--guardian-grey-color-3, #838383);
     top: -8px;
     left: 0px;
     border-bottom-width: 0;
@@ -294,8 +296,8 @@
     z-index: 2;
     box-sizing: border-box;
     background-image:
-        linear-gradient(180deg, #838383 3px, var(--guardian-background, #fff) 3px),
-        linear-gradient(180deg, var(--guardian-background, #fff) 3px, #838383 3px);
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--guardian-background, #fff) 3px),
+        linear-gradient(180deg, var(--guardian-background, #fff) 3px, var(--guardian-grey-color-3, #838383) 3px);
     background-position: 0 0, 3px 0;
     background-size: 3px 6px, 3px 6px;
     background-repeat: repeat-y;
@@ -305,7 +307,7 @@
 .module-body .block-item {
     height: 40px;
     background: var(--guardian-background, #fff) !important;
-    border-color: #838383 !important;
+    border-color: var(--guardian-grey-color-3, #838383) !important;
     padding: 2px 12px 2px 12px;
     margin: 8px 8px 3px 0px;
 }
@@ -343,10 +345,10 @@
     transform: translate(-50%, -100%) translate(0, -5px);
     background: var(--guardian-background, #fff);
     padding: 5px 15px;
-    border: 1px solid #7c7c7c;
-    border-radius: 4px;
+    border: 1px solid var(--guardian-border-color, #7c7c7c);
+    border-radius: 8px;
     z-index: 9999;
-    box-shadow: -1px 2px 3px 0px rgb(0 0 0 / 30%);
+    box-shadow: 0 4px 12px var(--guardian-shadow, rgb(0 0 0 / 30%));
     min-width: 250px;
     transition: opacity 0.5s;
 }
@@ -387,7 +389,7 @@
 .action-button {
     background-color: var(--guardian-background, white);
     font-size: 10px;
-    border-radius: 5px;
+    border-radius: 6px;
     width: 31px;
     height: 31px;
     line-height: 0px;
@@ -395,7 +397,7 @@
     color: var(--guardian-font-color, #3f51b5);
     z-index: 2;
     border: 1px solid var(--guardian-border-color, rgb(200 200 200));
-    box-shadow: 2px 2px 6px 1px #00000035;
+    box-shadow: 0 1px 3px var(--guardian-shadow, #00000035);
     cursor: pointer;
 
     * {
@@ -408,7 +410,7 @@
 }
 
 .delete-action {
-    color: red;
+    color: var(--pc-del-color, #FF432A);
 }
 
 .move-actions-container {
@@ -567,21 +569,21 @@
 // }
 
 .block-container[deprecated="true"] .block-item {
-    background-color: lightgray !important;
-    border-color: lightgray !important;
+    background-color: var(--guardian-disabled-background, lightgray) !important;
+    border-color: var(--guardian-disabled-color, lightgray) !important;
 }
 
 .block-container[deprecated="true"] .block-item::after {
     content: "";
     width: 110%;
     height: 3px;
-    background-color: black;
+    background-color: var(--guardian-font-color, black);
     position: absolute;
     left: -5%;
 }
 
 .block-container[selected="true"][deprecated="true"] .block-item {
-    border-color: #5161e1 !important;
+    border-color: var(--color-primary, #4169E2) !important;
 }
 
 .cdk-drag-animating {
@@ -590,7 +592,7 @@
 
 .cdk-drag-placeholder {
     opacity: 0.4 !important;
-    background: #e3e3e3 !important;
+    background: var(--guardian-grey-color, #e3e3e3) !important;
 }
 
 .cdk-drag-placeholder.block-container {
@@ -630,25 +632,25 @@
 }
 .block-container[warning="true"] .tool-body .block-item::after {
     background-image:
-        linear-gradient(180deg, #838383 3px, var(--pc-warning-bg-light) 3px),
-        linear-gradient(180deg, var(--pc-warning-bg-light) 3px, #838383 3px) !important;
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--pc-warning-bg-light) 3px),
+        linear-gradient(180deg, var(--pc-warning-bg-light) 3px, var(--guardian-grey-color-3, #838383) 3px) !important;
 }
 
 .block-container[info="true"] .block-item {
-    border-color: #35a307 !important;
-    background: #eaffea !important;
+    border-color: var(--pc-valid-color, #19BE47) !important;
+    background: var(--guardian-success-background, #eaffea) !important;
 }
 .block-container[info="true"][selected="true"] .block-item {
-    box-shadow: 4px 4px 6px 0px #00000040, 0 0 4px 1px #35a307cc !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc-valid-color, #19BE47) 35%, transparent) !important;
 }
 .block-container[info="true"] .module-body .block-item::after {
-    border-color: #35a307 !important;
-    background: #eaffea !important;
+    border-color: var(--pc-valid-color, #19BE47) !important;
+    background: var(--guardian-success-background, #eaffea) !important;
 }
 .block-container[info="true"] .tool-body .block-item::after {
     background-image:
-        linear-gradient(180deg, #838383 3px, #eaffea 3px),
-        linear-gradient(180deg, #eaffea 3px, #838383 3px) !important;
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--guardian-success-background, #eaffea) 3px),
+        linear-gradient(180deg, var(--guardian-success-background, #eaffea) 3px, var(--guardian-grey-color-3, #838383) 3px) !important;
 }
 
 .block-body
@@ -668,7 +670,7 @@
     }
 
     span {
-        font-family: Inter, sans-serif;
+        font-family: var(--font-family-inter, 'Inter', sans-serif);
         font-weight: 500;
         font-style: Medium;
         font-size: 12px;
@@ -684,7 +686,7 @@
     margin-left: auto;
 
     span {
-        font-family: Inter, sans-serif;
+        font-family: var(--font-family-inter, 'Inter', sans-serif);
         font-weight: 500;
         font-style: Medium;
         font-size: 12px;

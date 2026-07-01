@@ -21,6 +21,19 @@
             <i class="pi pi-arrow-left"></i>
             <span>Back</span>
           </div>
+          <div (click)="identityMenu.toggle($event)" class="policy-identity all-status"
+            title="Policy details">
+            <div class="policy-identity-icon">
+              <svg-icon src="/assets/images/icons/article.svg"
+                svgClass="icon-style-article action-color"></svg-icon>
+            </div>
+            <div class="policy-identity-text">
+              <span class="policy-identity-name">{{ policyTemplate.name || 'Untitled policy' }}</span>
+              <span class="policy-identity-meta">Policy details</span>
+            </div>
+            <i class="pi pi-chevron-down policy-identity-caret"></i>
+          </div>
+          <div class="delimiter"></div>
           <div (click)="savePolicy()" class="top-toolbar-btn readonly-status" title="Save Policy">
             <i class="pi pi-save"></i>
             <span>Save</span>
@@ -243,9 +256,9 @@
               <span>Copy Mode</span>
             </div>
             @if (rootTemplate.isPublishError) {
-              <div class="btn-new-block btn-label">
-                <i class="pi pi-times" style="color: #572424"></i>
-                <span style="color: #572424">Not published</span>
+              <div class="btn-new-block btn-label not-published-label">
+                <i class="pi pi-times"></i>
+                <span>Not published</span>
               </div>
             }
             <div class="delimiter"></div>
@@ -375,6 +388,14 @@
           <i class="pi pi-sliders-h"></i>
           <span>Parameters</span>
         </div>
+        @if (rootType === 'Policy') {
+          <div class="delimiter"></div>
+          <div (click)="toggleCommandPalette()" class="top-toolbar-btn all-status command-palette-btn"
+            title="Command palette (⌘K)">
+            <i class="pi pi-search"></i>
+            <span>⌘K</span>
+          </div>
+        }
       </div>
       <div (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder" cdkDropList
         cdkDropListOrientation="horizontal" class="main-container">
@@ -1050,6 +1071,21 @@
             </ng-template>
             <ng-template #propertiesBlock let-id="id" let-size="size">
               @if (this.selectedBlocks && this.selectedBlocks.size <= 1) {
+                @if (!currentBlock && rootType === 'Policy') {
+                  <div [ngStyle]="{ height: size, 'flex-basis': size }"
+                    class="right-bottom-toolbar inspector-empty">
+                    <i class="pi pi-hand-point-left inspector-empty-icon"></i>
+                    <div class="inspector-empty-title">No block selected</div>
+                    <div class="inspector-empty-text">
+                      Select a block on the canvas to edit its settings.
+                    </div>
+                    <button type="button" class="inspector-empty-btn"
+                      (click)="openPolicySettingsDrawer()">
+                      <i class="pi pi-cog"></i>
+                      <span>Policy settings</span>
+                    </button>
+                  </div>
+                }
                 @if (currentBlock && !isRootModule) {
                   <div
                     cdkDrag
@@ -1121,6 +1157,7 @@
                             [module]="openFolder"
                             [readonly]="readonly"
                             (onEditTags)="onAddTag()"
+                            (selectParent)="onSelect({ block: $event, isMultiSelect: false })"
                             class="readonly-status"
                           type="Common"></common-properties>
                         </div>
@@ -1193,9 +1230,72 @@
           </div>
         </ng-template>
       </div>
+      @if (rootType === 'Policy') {
+        <policy-settings-drawer
+          [(visible)]="openPolicySettings"
+          [policy]="policyTemplate"
+          [readonly]="readonly"
+          [allCategories]="allCategories"
+          [policyCategories]="policyCategoriesMapped"
+          [wipeContracts]="wipeContracts"></policy-settings-drawer>
+      }
     </div>
   }
 </div>
+
+<p-dialog [(visible)]="commandPaletteVisible" [modal]="true" [dismissableMask]="true"
+  [showHeader]="false" [style]="{ width: '520px' }" styleClass="command-palette-dialog"
+  [draggable]="false" [resizable]="false">
+  <div class="command-palette">
+    <div class="command-palette-search">
+      <i class="pi pi-search"></i>
+      <input type="text" pInputText [(ngModel)]="commandQuery" placeholder="Type a command…"
+        class="command-palette-input" autofocus />
+    </div>
+    <div class="command-palette-list">
+      @for (command of filteredCommands; track command.label) {
+        <div class="command-palette-item" (click)="runCommand(command)">
+          <i [class]="command.icon"></i>
+          <span>{{ command.label }}</span>
+        </div>
+      }
+      @if (filteredCommands.length === 0) {
+        <div class="command-palette-empty">No matching commands</div>
+      }
+    </div>
+  </div>
+</p-dialog>
+
+<p-popover #identityMenu>
+  <div class="identity-popover">
+    <div class="identity-popover-title">{{ policyTemplate.name || 'Untitled policy' }}</div>
+    @if (policyTemplate.version) {
+      <div class="identity-popover-version">Version {{ policyTemplate.version }}</div>
+    }
+    <div class="identity-row" (click)="copyIdentity('id', policyId, $event)" title="Copy policy ID">
+      <div class="identity-row-label">Policy ID</div>
+      <div class="identity-row-value">
+        <span class="identity-row-mono">{{ policyId || '—' }}</span>
+        @if (policyId) {
+          <i class="pi" [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"></i>
+        }
+      </div>
+    </div>
+    <div class="identity-row" (click)="copyIdentity('tag', policyTemplate.policyTag, $event)" title="Copy policy tag">
+      <div class="identity-row-label">Tag</div>
+      <div class="identity-row-value">
+        <span class="identity-row-mono">{{ policyTemplate.policyTag || '—' }}</span>
+        @if (policyTemplate.policyTag) {
+          <i class="pi" [ngClass]="copiedField === 'tag' ? 'pi-check' : 'pi-copy'"></i>
+        }
+      </div>
+    </div>
+    <div class="identity-action" (click)="openPolicySettingsDrawer(); identityMenu.hide()">
+      <i class="pi pi-cog"></i>
+      <span>Policy settings</span>
+    </div>
+  </div>
+</p-popover>
 
 <p-popover #publishMenu>
   @if (user.POLICIES_POLICY_REVIEW) {

@@ -20,6 +20,7 @@ import { PolicyConfigurationComponent } from './policy-configuration/policy-conf
 import { ContainerConfigComponent } from './policy-configuration/blocks/main/container-config/container-config.component';
 import { RequestConfigComponent } from './policy-configuration/blocks/documents/request-config/request-config.component';
 import { PolicyPropertiesComponent } from './policy-configuration/policy-properties/policy-properties.component';
+import { PolicySettingsDrawerComponent } from './policy-configuration/policy-settings-drawer/policy-settings-drawer.component';
 import { MintConfigComponent } from './policy-configuration/blocks/tokens/mint-config/mint-config.component';
 import { SendConfigComponent } from './policy-configuration/blocks/documents/send-config/send-config.component';
 import { ExternalDataConfigComponent } from './policy-configuration/blocks/documents/external-data-config/external-data-config.component';
@@ -199,6 +200,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         ContainerConfigComponent,
         RequestConfigComponent,
         PolicyPropertiesComponent,
+        PolicySettingsDrawerComponent,
         MintConfigComponent,
         WipeConfigComponent,
         SendConfigComponent,
