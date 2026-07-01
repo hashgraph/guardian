@@ -65,7 +65,7 @@
             </div>
             <div class="profile-row">
               <span class="profile-label">Balance</span>
-              <span class="profile-value">{{ balance }}</span>
+              <span class="profile-value">{{ formatBalance(balance) }}</span>
             </div>
           </div>
         </p-card>
@@ -234,6 +234,21 @@
                   <i [class]="item.icon"></i>
                   <span>{{ item.label }}</span>
                 </ng-template>
+              </p-selectbutton>
+            </div>
+
+            <div class="config-row">
+              <div class="config-row-label">
+                <span class="config-row-title">Menu layout</span>
+                <span class="config-row-desc">Navigation as a side rail or a top bar</span>
+              </div>
+              <p-selectbutton
+                [options]="menuLayouts"
+                [ngModel]="selectedMenuLayout"
+                (onChange)="onMenuLayoutChange($event.value)"
+                optionLabel="label"
+                optionValue="value"
+                styleClass="profile-theme-select">
               </p-selectbutton>
             </div>
 

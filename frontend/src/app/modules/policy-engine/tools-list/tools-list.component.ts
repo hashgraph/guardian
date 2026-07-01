@@ -251,7 +251,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
-                                        redir: String(true)
+                                        redir: String(this.user.TOOLS_TOOL_UPDATE)
                                     },
                                 });
                             }, (e) => {
@@ -271,7 +271,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
-                                        redir: String(true)
+                                        redir: String(this.user.TOOLS_TOOL_UPDATE)
                                     },
                                 });
                             }, (e) => {

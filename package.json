@@ -9,8 +9,6 @@
     "packageManager": "yarn@4.16.0",
     "private": true,
     "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2",
         "@mattrglobal/bls12381-key-pair": "2.0.0",
         "@mattrglobal/bbs-signatures": "2.0.0"
     },

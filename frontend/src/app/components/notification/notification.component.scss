@@ -57,6 +57,18 @@
     }
 }
 
+.badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ff432a;
+    cursor: pointer;
+
+    &:hover {
+        filter: brightness(1.2);
+    }
+}
+
 .notification-position {
     pointer-events: none;
     position: fixed;

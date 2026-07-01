@@ -45,6 +45,21 @@
     --header-height-policy: 175px;
     --header-background-color: #000;
 
+    /* Navigation menu (sidebar / top bar) — brand-tinted, light mode.
+       The look is driven entirely by these tokens; swap the ~9 values below for a
+       different palette (e.g. a neutral surface) without touching the template or
+       behavior. --sidebar-accent defaults to the brand primary, so customer branding
+       that overrides --color-primary automatically re-tints the active state. */
+    --sidebar-bg: #F4F7FE;
+    --sidebar-item-color: #3A4A73;
+    --sidebar-item-hover: #E6EDFB;
+    --sidebar-section-color: #7F88A8;
+    --sidebar-active-bg: var(--color-primary);
+    --sidebar-active-color: #FFFFFF;
+    --sidebar-accent: var(--color-primary);
+    --sidebar-border: #D9E4FB;
+    --sidebar-logo-color: #26215C;
+
     --table-row-height: 64px;
 
     --button-primary-color: #4169E2;
@@ -157,6 +172,26 @@
     --formula-variable-background: #3A2E12;
     --formula-function-background: #3A1730;
     --formula-text-background: #12351F;
+
+    /* Navigation menu — brand-tinted, dark mode */
+    --sidebar-bg: #171B24;
+    --sidebar-item-color: #AAB4C5;
+    --sidebar-item-hover: #202735;
+    --sidebar-section-color: #778299;
+    --sidebar-active-bg: #1C2742;
+    --sidebar-active-color: #B5D4F4;
+    --sidebar-accent: #5D7FE8;
+    --sidebar-border: #303746;
+    --sidebar-logo-color: #FFFFFF;
+}
+
+/* Horizontal (top-bar) layout: zero the rail width so page content loses its left
+   gutter, and give the bar a height so content drops below it. Toggled on <html> by
+   MenuLayoutService. */
+:root.layout-horizontal {
+    --header-width-expand: 0px;
+    --header-width-collapse: 0px;
+    --header-height: 56px;
 }
 
 @media (max-width: 810px) {

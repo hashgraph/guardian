@@ -1,9 +1,5 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
-    "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "image-size": "1.0.2"
-    },
     "dependencies": {
         "@digitalbazaar/credentials-context": "3.2.0",
         "@digitalbazaar/ed25519-signature-2018": "4.2.0",

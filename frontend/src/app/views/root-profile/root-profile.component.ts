@@ -24,8 +24,10 @@ import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disab
 import moment from 'moment';
 import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
+import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
+import { formatBalance, getUserInitials } from '../../utils';
 
 enum OperationMode {
     None,
@@ -129,6 +131,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private docWidgetService: DocWidgetService,
         private featureFlagsService: FeatureFlagsService,
         private appThemeService: AppThemeService,
+        private menuLayoutService: MenuLayoutService,
         private toastr: ToastrService
     ) {
         this.profile = null;
@@ -861,10 +864,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     }
 
     getInitials(username: string | undefined): string {
-        if (!username) { return '?'; }
-        const caps = username.match(/[A-Z]/g);
-        if (caps && caps.length >= 2) { return caps.slice(0, 2).join(''); }
-        return username.slice(0, 2).toUpperCase();
+        return getUserInitials(username);
+    }
+
+    formatBalance(balance: string | null): string {
+        return formatBalance(balance);
     }
 
     formatRole(role: string | undefined): string {
@@ -929,6 +933,18 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     onThemeChange(theme: AppTheme): void {
         this.appThemeService.setTheme(theme);
+    }
+
+    get menuLayouts(): MenuLayoutOption[] {
+        return this.menuLayoutService.layouts;
+    }
+
+    get selectedMenuLayout(): MenuLayout {
+        return this.menuLayoutService.layout;
+    }
+
+    onMenuLayoutChange(layout: MenuLayout): void {
+        this.menuLayoutService.setLayout(layout);
     }
 
     onDocWidgetToggle(checked: boolean): void {
