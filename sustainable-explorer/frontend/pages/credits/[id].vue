@@ -7,6 +7,7 @@ import {
     AlertTriangle,
     FolderKanban,
     Link,
+    Receipt,
 } from 'lucide-vue-next';
 import { formatCredits, formatDate } from '~/lib/format';
 import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
@@ -17,6 +18,8 @@ interface MintEvent {
     amount: string | null;
     date: string | null;
     document: Record<string, any> | null;
+    projectKey: string | null;
+    type: string | null;
 }
 
 interface CreditRaw {
@@ -34,8 +37,14 @@ interface CreditRaw {
     mintDate: string | null;
 }
 
+interface CreditProjectLink {
+    projectId: string | null;
+    project: string | null;
+}
+
 interface CreditRawDetail {
     credit: CreditRaw | null;
+    projects: CreditProjectLink[];
     tokenMessage: Record<string, any> | null;
     mintEvents: MintEvent[];
 }
@@ -63,11 +72,29 @@ const { data, pending } = useAsyncData<CreditRawDetail | null>(
 
 const credit = computed(() => data.value?.credit ?? null);
 const mintEvents = computed(() => data.value?.mintEvents ?? []);
+const projects = computed(() => data.value?.projects ?? []);
+
+// The project the user clicked from the list (passed as ?projectId= query param).
+const connectedProjectId = computed(() => (route.query.projectId as string) || null);
+
+// Resolved project for the Overview — falls back to credit.projectId for deep-links.
+const connectedProject = computed<CreditProjectLink | null>(() => {
+    const id = connectedProjectId.value;
+    if (id) {
+        const match = projects.value.find(p => p.projectId === id);
+        if (match) return match;
+        return { projectId: id, project: null };
+    }
+    if (credit.value?.projectId) {
+        return { projectId: credit.value.projectId, project: credit.value.project };
+    }
+    return null;
+});
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type TabKey = 'details' | 'provenance';
-const VALID_TABS = new Set<TabKey>(['details', 'provenance']);
+type TabKey = 'details' | 'provenance' | 'mint-events';
+const VALID_TABS = new Set<TabKey>(['details', 'provenance', 'mint-events']);
 
 const activeTab = ref<TabKey>('details');
 const tabReady = ref(false);
@@ -80,23 +107,55 @@ onMounted(() => {
 
 function setTab(key: TabKey) {
     activeTab.value = key;
-    router.replace({ hash: key === 'details' ? '' : `#${key}` });
+    router.replace({ query: route.query, hash: key === 'details' ? '' : `#${key}` });
 }
 
 const tabs = computed(() => [
-    { key: 'details'    as TabKey, label: t('credits.detail.tabs.details'),  icon: Coins },
-    { key: 'provenance' as TabKey, label: t('credits.detail.tabs.linkage'),  icon: Link },
+    { key: 'details'     as TabKey, label: t('credits.detail.tabs.details'),    icon: Coins },
+    { key: 'mint-events' as TabKey, label: t('credits.detail.tabs.mintEvents'), icon: Receipt },
+    { key: 'provenance'  as TabKey, label: t('credits.detail.tabs.linkage'),    icon: Link },
 ]);
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 
 const tokenSupply = computed(() => credit.value?.supply ?? 0);
-const totalMinted = computed(() =>
+
+const totalMintedAll = computed(() =>
     mintEvents.value.reduce((s, e) => s + (e.amount ? parseFloat(e.amount) : 0), 0),
 );
+
+const totalMintedProject = computed<number | null>(() => {
+    const pid = connectedProjectId.value;
+    if (!pid) return null;
+    return mintEvents.value
+        .filter(e => e.projectKey === pid)
+        .reduce((s, e) => s + (e.amount ? parseFloat(e.amount) : 0), 0);
+});
+
 const hasDifference = computed(
-    () => tokenSupply.value > 0 && totalMinted.value > 0 && tokenSupply.value !== totalMinted.value,
+    () => tokenSupply.value > 0 && totalMintedAll.value > 0 && tokenSupply.value !== totalMintedAll.value,
 );
+
+// Mint events scoped to the connected project; falls back to all events on deep-links.
+const mintEventsForProject = computed(() => {
+    const pid = connectedProjectId.value;
+    if (!pid) return mintEvents.value;
+    return mintEvents.value.filter(e => e.projectKey === pid);
+});
+
+// Mint Events pagination
+const mintEventsPage = ref(1);
+const mintEventsPageSize = ref(10);
+const mintEventsTotalPages = computed(() =>
+    Math.max(1, Math.ceil(mintEventsForProject.value.length / mintEventsPageSize.value)),
+);
+const paginatedMintEvents = computed(() => {
+    const start = (mintEventsPage.value - 1) * mintEventsPageSize.value;
+    return mintEventsForProject.value.slice(start, start + mintEventsPageSize.value);
+});
+
+// Reset to page 1 when the project filter changes.
+watch(connectedProjectId, () => { mintEventsPage.value = 1; });
 
 const firstMintDate = computed(
     () =>
@@ -126,7 +185,7 @@ const relatedPending = ref(false);
 // Filter reactively so when credit.value loads after the fetch completes,
 // the current issuance is excluded without needing a re-fetch.
 const related = computed(() => {
-    const currentProjectId = credit.value?.projectId ?? null;
+    const currentProjectId = connectedProjectId.value ?? credit.value?.projectId ?? null;
     return relatedRaw.value.filter(r => r.projectId !== currentProjectId);
 });
 
@@ -317,10 +376,17 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                        {{ $t('credits.columns.type') }}
+                        {{ $t('credits.detail.connectedProject') }}
                     </div>
                     <div class="text-sm font-medium text-foreground">
-                        {{ credit.type ?? '—' }}
+                        <NuxtLink
+                            v-if="connectedProject?.projectId && connectedProject?.project"
+                            :to="`/projects/${encodeURIComponent(connectedProject.projectId)}`"
+                            class="text-primary hover:underline transition-colors"
+                        >
+                            {{ connectedProject.project }}
+                        </NuxtLink>
+                        <span v-else>{{ connectedProject?.project ?? '—' }}</span>
                     </div>
                 </div>
                 <div class="bg-card px-5 py-4">
@@ -364,50 +430,61 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Coins class="h-4 w-4 text-primary" />
                             {{ $t('credits.detail.tokenInformation') }}
-                            <span
-                                v-if="hasDifference"
-                                ref="warnTriggerRef"
-                                class="inline-flex cursor-help"
-                                @mouseenter="onWarnEnter"
-                                @mouseleave="onWarnLeave"
-                            >
-                                <AlertTriangle class="h-3.5 w-3.5 text-amber-500" />
-                                <Teleport to="body">
-                                    <Transition
-                                        enter-active-class="transition ease-out duration-100"
-                                        enter-from-class="opacity-0 scale-95"
-                                        enter-to-class="opacity-100 scale-100"
-                                        leave-active-class="transition ease-in duration-75"
-                                        leave-from-class="opacity-100"
-                                        leave-to-class="opacity-0"
-                                    >
-                                        <div v-if="warnTooltipVisible" :style="warnTooltipStyle" class="pointer-events-none">
-                                            <div class="max-w-[240px] rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg">
-                                                {{ $t('credits.detail.supplyDifferenceTooltip') }}
-                                            </div>
-                                            <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
-                                        </div>
-                                    </Transition>
-                                </Teleport>
-                            </span>
                         </h2>
                     </div>
                     <div class="p-5">
-                        <div class="grid grid-cols-2 gap-px bg-border rounded-lg overflow-hidden">
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-px bg-border rounded-lg overflow-hidden">
                             <div class="bg-card px-4 py-3">
-                                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                                     {{ $t('credits.detail.tokenSupply') }}
+                                    <InfoTooltip :text="$t('credits.detail.tokenSupplyTooltip')" />
                                 </div>
                                 <div class="text-lg font-semibold text-foreground tabular-nums">
                                     {{ formatCredits(tokenSupply) }}
                                 </div>
                             </div>
                             <div class="bg-card px-4 py-3">
-                                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                                    {{ $t('credits.detail.totalMinted') }}
+                                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    {{ $t('credits.detail.totalMintedAll') }}
+                                    <span
+                                        v-if="hasDifference"
+                                        ref="warnTriggerRef"
+                                        class="inline-flex cursor-help"
+                                        @mouseenter="onWarnEnter"
+                                        @mouseleave="onWarnLeave"
+                                    >
+                                        <AlertTriangle class="h-3 w-3 text-amber-500" />
+                                        <Teleport to="body">
+                                            <Transition
+                                                enter-active-class="transition ease-out duration-100"
+                                                enter-from-class="opacity-0 scale-95"
+                                                enter-to-class="opacity-100 scale-100"
+                                                leave-active-class="transition ease-in duration-75"
+                                                leave-from-class="opacity-100"
+                                                leave-to-class="opacity-0"
+                                            >
+                                                <div v-if="warnTooltipVisible" :style="warnTooltipStyle" class="pointer-events-none">
+                                                    <div class="max-w-[240px] rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg">
+                                                        {{ $t('credits.detail.supplyDifferenceTooltip') }}
+                                                    </div>
+                                                    <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
+                                                </div>
+                                            </Transition>
+                                        </Teleport>
+                                    </span>
+                                    <InfoTooltip :text="$t('credits.detail.totalMintedAllTooltip')" />
                                 </div>
                                 <div class="text-lg font-semibold text-foreground tabular-nums">
-                                    {{ formatCredits(totalMinted) }}
+                                    {{ formatCredits(totalMintedAll) }}
+                                </div>
+                            </div>
+                            <div class="bg-card px-4 py-3">
+                                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                                    {{ $t('credits.detail.totalMintedProject') }}
+                                    <InfoTooltip :text="$t('credits.detail.totalMintedProjectTooltip')" />
+                                </div>
+                                <div class="text-lg font-semibold text-foreground tabular-nums">
+                                    {{ totalMintedProject === null ? '—' : formatCredits(totalMintedProject) }}
                                 </div>
                             </div>
                         </div>
@@ -465,6 +542,66 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                 </div>
             </div>
 
+            <!-- Mint Events tab -->
+            <div v-else-if="activeTab === 'mint-events'">
+                <div class="px-5 py-3 border-b bg-muted/10">
+                    <p class="text-[11px] text-muted-foreground">
+                        {{ connectedProjectId ? $t('credits.detail.mintEventsSubtitle') : $t('credits.detail.mintEventsSubtitleAll') }}
+                    </p>
+                </div>
+                <div v-if="mintEventsForProject.length === 0" class="px-5 py-10 text-sm text-muted-foreground text-center">
+                    {{ $t('credits.detail.noMintEvents') }}
+                </div>
+                <template v-else>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b bg-muted/20">
+                                    <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('credits.detail.mintEventDate') }}</th>
+                                    <th class="text-right py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('credits.detail.mintEventAmount') }}</th>
+                                    <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('credits.detail.mintEventType') }}</th>
+                                    <th class="py-2.5 px-5 w-10"></th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr
+                                    v-for="e in paginatedMintEvents"
+                                    :key="e.consensusTimestamp"
+                                    class="hover:bg-muted/20 transition-colors"
+                                >
+                                    <td class="py-3.5 px-5 text-muted-foreground text-xs tabular-nums whitespace-nowrap">
+                                        {{ e.date ? formatDate(e.date) : formatDate(e.consensusTimestamp) }}
+                                    </td>
+                                    <td class="py-3.5 px-5 text-right font-semibold tabular-nums whitespace-nowrap">
+                                        {{ e.amount ? formatCredits(parseFloat(e.amount)) : '—' }}
+                                    </td>
+                                    <td class="py-3.5 px-5 text-xs whitespace-nowrap">
+                                        {{ e.type ?? '—' }}
+                                    </td>
+                                    <td class="py-3.5 px-5 text-center">
+                                        <button
+                                            class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                            :title="$t('common.viewRawData')"
+                                            @click="viewRawVc(e.topicId, e.document)"
+                                        >
+                                            <FileJson class="h-3.5 w-3.5" />
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="border-t px-5 py-2">
+                        <Pagination
+                            v-model:current-page="mintEventsPage"
+                            v-model:page-size="mintEventsPageSize"
+                            :total-pages="mintEventsTotalPages"
+                            :total-items="mintEventsForProject.length"
+                        />
+                    </div>
+                </template>
+            </div>
+
             <!-- Provenance tab: Project + Methodology + Registry Links -->
             <div v-else-if="activeTab === 'provenance'" class="p-6 space-y-6">
                 <!-- Project Links -->
@@ -475,9 +612,21 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                             {{ $t('credits.detail.project') }}
                         </h2>
                     </div>
-                    <div class="px-5 py-4">
+                    <div class="px-5 py-4 space-y-2">
+                        <template v-if="projects.length">
+                            <div v-for="p in projects" :key="p.projectId ?? p.project ?? ''">
+                                <NuxtLink
+                                    v-if="p.projectId && p.project"
+                                    :to="`/projects/${encodeURIComponent(p.projectId)}`"
+                                    class="text-sm text-primary hover:underline transition-colors"
+                                >
+                                    {{ p.project }}
+                                </NuxtLink>
+                                <span v-else class="text-sm text-muted-foreground">{{ p.project ?? p.projectId }}</span>
+                            </div>
+                        </template>
                         <NuxtLink
-                            v-if="credit.projectId && credit.project"
+                            v-else-if="credit.projectId && credit.project"
                             :to="`/projects/${encodeURIComponent(credit.projectId)}`"
                             class="text-sm text-primary hover:underline transition-colors"
                         >
@@ -506,6 +655,7 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                         >
                             {{ credit.methodology }}
                         </NuxtLink>
+                        <span v-else-if="credit.methodology" class="text-sm text-foreground">{{ credit.methodology }}</span>
                         <span v-else class="text-sm text-muted-foreground">{{ $t('credits.detail.noMethodology') }}</span>
                     </div>
                 </div>
