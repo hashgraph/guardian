@@ -20,6 +20,8 @@ interface MinimalRequest {
         'x-forwarded-for'?: string;
     };
     user?: AuthenticatedUser;
+    /** Set by DataAccessGuard for trusted-frontend traffic — exempt from limits. */
+    rateLimitExempt?: boolean;
 }
 interface MinimalResponse {
     setHeader(name: string, value: string): unknown;
@@ -59,6 +61,14 @@ export class RateLimitGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest<MinimalRequest>();
+
+        // Trusted-frontend UI + login are exempt (DataAccessGuard runs first and
+        // marks them). Rate limits apply only to programmatic (API-key / direct)
+        // callers — never the frontend, and never an unauthenticated login request.
+        if (request.rateLimitExempt) {
+            return true;
+        }
+
         const response = context.switchToHttp().getResponse<MinimalResponse>();
 
         const { key, limit } = await this.resolveBucket(request);

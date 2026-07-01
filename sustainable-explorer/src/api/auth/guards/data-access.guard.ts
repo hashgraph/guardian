@@ -20,6 +20,12 @@ interface MinimalRequest {
         'x-frontend-key'?: string;
     };
     user?: AuthenticatedUser;
+    /**
+     * Set true for trusted-frontend traffic (matched shared secret or allow-listed
+     * Origin). RateLimitGuard reads it to exempt the UI — rate limits apply only to
+     * programmatic (API-key / direct) callers, never the frontend or login.
+     */
+    rateLimitExempt?: boolean;
 }
 
 /**
@@ -51,23 +57,25 @@ export class DataAccessGuard implements CanActivate {
     ) {}
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        const enforce = this.config.get<boolean>('app.dataAccess.enforce');
         const request = context.switchToHttp().getRequest<MinimalRequest>();
 
+        // Detect trusted-frontend traffic FIRST and mark it — this runs on EVERY
+        // request (even when data-access enforcement is off, and on non-data routes
+        // like /auth/login) so RateLimitGuard can exempt the whole UI + login. Rate
+        // limits and the API-key gate apply only to programmatic (non-frontend) callers.
+        if (this.isTrustedFrontend(request)) {
+            request.rateLimitExempt = true;
+        }
+
+        const enforce = this.config.get<boolean>('app.dataAccess.enforce');
         // No-op unless enforcing AND this is a network-scoped data route.
         if (!enforce || !request.params?.network) {
             return true;
         }
 
-        // 1. Trusted frontend SSR (shared secret).
-        const secret = this.config.get<string>('app.dataAccess.frontendSecret') || '';
-        const provided = request.headers['x-frontend-key'];
-        if (secret && provided && this.constantEquals(provided, secret)) {
-            return true;
-        }
-
-        // 2. Guest via a trusted browser origin.
-        if (this.originAllowed(request)) {
+        // 1./2. Trusted frontend (shared secret or allow-listed Origin) — already
+        // detected above.
+        if (request.rateLimitExempt) {
             return true;
         }
 
@@ -77,6 +85,16 @@ export class DataAccessGuard implements CanActivate {
         }
 
         throw new UnauthorizedException('An API key is required for programmatic access to this endpoint');
+    }
+
+    /** True for the trusted frontend: matching X-Frontend-Key (SSR) or allow-listed Origin/Referer (browser). */
+    private isTrustedFrontend(request: MinimalRequest): boolean {
+        const secret = this.config.get<string>('app.dataAccess.frontendSecret') || '';
+        const provided = request.headers['x-frontend-key'];
+        if (secret && provided && this.constantEquals(provided, secret)) {
+            return true;
+        }
+        return this.originAllowed(request);
     }
 
     private constantEquals(a: string, b: string): boolean {
