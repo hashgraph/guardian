@@ -181,11 +181,19 @@
     background-color: var(--guardian-background, white);
     color: var(--guardian-font-color, #23252E);
     z-index: 1;
-    min-width: 150px;
+    width: 264px;
+    flex: 0 0 264px;
+    min-width: 264px;
+    max-width: 264px;
     border: 1px solid var(--pc-main-grid-border);
     border-radius: var(--pc-radius);
     box-shadow: var(--pc-elevation);
     overflow: hidden;
+}
+
+// The library is a fixed-width rail; drop the resize handle that follows it.
+.main-container > .left-toolbar + .resizing {
+    display: none;
 }
 
 .library-collapse-toggle {
@@ -211,6 +219,8 @@
 .left-toolbar.collapsed {
     min-width: 44px;
     width: 44px;
+    max-width: 44px;
+    flex: 0 0 44px;
 
     .pc-tabs .pc-tabs-headers {
         flex-direction: column;
@@ -221,23 +231,38 @@
 
         .tab-header {
             grid-template-columns: 1fr;
-            flex: 0 0 auto;
-            width: 36px;
+            flex: 0 0 auto !important;
+            width: 36px !important;
+            min-width: 36px !important;
+            max-width: 36px !important;
             height: 36px;
             margin: 2px auto;
-            padding: 0;
+            padding: 0 !important;
             border-bottom: none !important;
             border-radius: 8px;
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
 
             span {
                 display: none;
             }
 
+            svg-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+                height: 20px;
+            }
+
             svg {
-                position: static;
-                left: auto;
-                top: auto;
-                margin: 0 auto;
+                position: static !important;
+                left: auto !important;
+                top: auto !important;
+                margin: 0 !important;
+                width: 20px;
+                height: 20px;
             }
 
             &[selected="true"] {
@@ -258,6 +283,18 @@
     .pc-tabs .pc-tabs-content {
         display: none !important;
     }
+}
+
+// The collapsed rail icons render inside <svg-icon>, so their inner <svg>
+// belongs to the child component's encapsulation. Reach it through ::ng-deep
+// to cancel the default absolute positioning and center every icon uniformly.
+.policy-configuration::ng-deep .left-toolbar.collapsed .pc-tabs-headers .tab-header svg {
+    position: static !important;
+    left: auto !important;
+    top: auto !important;
+    margin: 0 !important;
+    width: 20px !important;
+    height: 20px !important;
 }
 
 .center-container {
@@ -300,7 +337,10 @@
 
 .right-toolbar {
     height: 100%;
-    // width: 485px;
+    width: 340px !important;
+    flex: 0 0 340px !important;
+    min-width: 340px;
+    max-width: 340px;
     position: relative;
     box-sizing: border-box;
     border: 1px solid var(--pc-main-grid-border);
@@ -312,7 +352,11 @@
     flex-direction: column;
     background: var(--pc-background-color);
     z-index: 1;
-    min-width: 280px;
+}
+
+// The inspector is a fixed-width rail; drop the resize handle in front of it.
+.main-container > .resizing:has(+ .right-toolbar) {
+    display: none;
 }
 
 .right-top-toolbar {
@@ -350,6 +394,14 @@
     min-height: 31px;
     z-index: 1;
     background: var(--pc-background-color);
+    display: flex;
+    flex-direction: column;
+
+    .pc-tabs {
+        flex: 1 1 auto;
+        min-height: 0;
+        height: auto;
+    }
 
     &[collapse-top="true"] {
         max-height: 100%;
@@ -372,9 +424,9 @@
 .top-toolbar {
     .delimiter {
         width: 1px;
-        height: 36px;
+        height: 24px;
         border-left: 1px solid var(--pc-border-color);
-        margin: 22px 8px;
+        margin: 0 6px;
     }
 
     .toolbar-spacer {
@@ -437,7 +489,7 @@
         align-items: center;
         gap: 6px;
         height: 28px;
-        margin: 0 4px;
+        margin: 0 2px;
         padding: 0 12px;
         border-radius: 14px;
         font-size: 12px;
@@ -850,8 +902,8 @@
 }
 
 .inspector-subsection {
-    margin-top: 12px;
-    padding-top: 12px;
+    margin-top: 4px;
+    padding: 12px;
     border-top: 1px solid var(--pc-border-color);
 
     .inspector-subsection-label {
@@ -860,7 +912,74 @@
         letter-spacing: 0.04em;
         text-transform: uppercase;
         color: var(--guardian-font-color-secondary, #8a8f9c);
-        padding: 0 12px 8px;
+        padding: 0 0 8px;
+    }
+
+    ::ng-deep .artifact-container {
+        margin-top: 0;
+        height: auto;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    ::ng-deep .artifact-list {
+        width: 100%;
+        border: 1px solid var(--pc-border-color);
+        border-radius: 8px;
+        min-height: 0;
+        max-height: 220px;
+        overflow-y: auto;
+    }
+
+    ::ng-deep .artifact-row {
+        padding: 8px 10px;
+        font-size: 13px;
+        border-bottom: 1px solid var(--pc-border-color);
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    ::ng-deep .artifact-row .remove-prop {
+        top: 50%;
+        right: 8px;
+        transform: translateY(-50%);
+        color: var(--pc-del-color, #FF432A);
+    }
+
+    ::ng-deep .artifact-row .remove-prop i {
+        font-size: 15px;
+    }
+
+    ::ng-deep .add-artifact-button {
+        width: 100% !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        margin-bottom: 0 !important;
+        border: 1px dashed var(--pc-border-color) !important;
+        border-radius: 8px !important;
+        box-shadow: none !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        color: var(--color-primary, #4169E2) !important;
+
+        &:hover {
+            border-color: var(--color-primary, #4169E2) !important;
+            background: color-mix(in srgb, var(--color-primary, #4169E2) 8%, transparent) !important;
+        }
+
+        i {
+            color: var(--color-primary, #4169E2) !important;
+            font-size: 14px !important;
+            margin: 0 !important;
+        }
+
+        &::after {
+            content: "Add artifact";
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--color-primary, #4169E2);
+        }
     }
 }
 
@@ -877,34 +996,43 @@
     box-shadow: 0px -1px 0px 0px var(--pc-border-color);
 
     .components-search {
-        height: 32px;
-        box-sizing: border-box;
-        font-weight: 500;
-        color: var(--pc-header-color);
-        padding: 6px 8px 0px 8px;
         position: relative;
+        height: 34px;
+        margin: 10px 8px 4px;
+        box-sizing: border-box;
 
         input {
             position: absolute;
-            left: 8px;
-            top: 0;
-            right: 8px;
-            height: 24px;
+            inset: 0;
+            width: 100%;
+            height: 34px;
             box-sizing: border-box;
             border: 1px solid var(--pc-border-color);
-            border-radius: 4px;
-            padding: 2px 24px 2px 7px;
+            border-radius: 8px;
+            padding: 0 32px 0 12px;
             outline: none;
+            font-size: 13px;
             background: var(--guardian-background, #fff);
             color: var(--guardian-font-color, #23252E);
+            transition: border-color 0.15s ease;
+
+            &::placeholder {
+                color: var(--pc-no-active-color);
+            }
+
+            &:focus {
+                border-color: var(--color-primary, #4169E2);
+            }
         }
 
         .components-search-icon {
             position: absolute;
-            top: 12px;
-            right: 16px;
-            color: var(--pc-border-color);
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            color: var(--pc-no-active-color);
             font-size: 14px;
+            pointer-events: none;
         }
     }
 
@@ -915,60 +1043,68 @@
         }
 
         .components-group-name {
-            height: 34px;
-            border-top: none;
-            border-bottom: 1px solid var(--pc-border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            height: 32px;
             box-sizing: border-box;
-            margin: 6px 0px 2px;
+            margin: 10px 6px 2px;
             font-weight: 600;
-            font-size: 12px;
+            font-size: 11px;
             letter-spacing: 0.04em;
             text-transform: uppercase;
             color: var(--pc-no-active-color);
             position: relative;
-            padding: 9px 24px;
+            padding: 0 8px;
+            border-radius: 6px;
             cursor: pointer;
             user-select: none;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
 
             .components-group-name-icon {
+                flex: 0 0 auto;
                 color: var(--pc-favorite-color);
-                position: absolute;
-                left: 26px;
-                top: 12px;
-                font-size: 14px;
+                font-size: 12px;
+            }
+
+            .group-dot {
+                margin-right: 0;
+            }
+
+            > span:last-child {
+                flex: 1 1 auto;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
             }
 
             &:hover {
                 background: var(--pc-component-hover);
+                color: var(--pc-header-color);
             }
         }
 
-        .components-group-collapse {
-            width: 16px;
-            position: absolute;
-            left: 4px;
-            top: 10px;
-            display: block;
+        .components-group-collapse,
+        .components-group-open {
+            flex: 0 0 auto;
+            width: 12px;
+            font-size: 11px;
+            color: var(--pc-no-active-color);
             pointer-events: all;
         }
 
+        .components-group-collapse {
+            display: block;
+        }
+
         .components-group-open {
-            width: 16px;
-            position: absolute;
-            left: 4px;
-            top: 9px;
             display: none;
-            pointer-events: all;
         }
 
         .components-group-item {
             position: relative;
             width: 100%;
             max-width: 100%;
-            height: 34px;
+            height: auto;
             overflow: hidden;
 
             .drag-btn {
@@ -1000,35 +1136,55 @@
         }
 
         .component-btn {
-            top: 5px;
-            height: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            height: 32px;
             position: relative;
-            padding: 2px 32px 7px 46px;
+            margin: 1px 6px;
+            padding: 0 30px 0 18px;
             box-sizing: border-box;
-            color: var(--pc-active-icon-color);
+            border-radius: 8px;
+            color: var(--guardian-font-color, #23252E);
+            font-size: 13px;
+            font-weight: 400;
             cursor: pointer;
             user-select: none;
-            max-width: 100%;
+            max-width: calc(100% - 12px);
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
 
             .component-btn-icon {
-                position: absolute;
-                top: 3px;
-                left: 14px;
+                flex: 0 0 auto;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 20px;
+                height: 20px;
+                font-size: 16px;
                 pointer-events: none;
-                width: 24px;
-                height: 24px;
+                color: var(--pc-active-icon-color);
+            }
+
+            > span {
+                flex: 1 1 auto;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            > .component-btn-favorite {
+                position: absolute;
+                top: 50%;
+                right: 10px;
+                transform: translateY(-50%);
             }
 
             .component-btn-favorite {
-                position: absolute;
-                top: 3px;
-                right: 6px;
                 color: var(--pc-background-color);
                 cursor: pointer;
-                font-size: 16px;
+                font-size: 15px;
 
                 &[favorite="true"] {
                     color: var(--pc-favorite-color) !important;
@@ -1058,15 +1214,14 @@
 
         .component-btn-toolbar {
             position: absolute;
-            top: 0px;
-            right: 0px;
+            top: 50%;
+            right: 6px;
+            transform: translateY(-50%);
 
             i,
             svg {
-                top: 3px;
-                right: 6px;
                 cursor: pointer;
-                font-size: 22px;
+                font-size: 15px;
                 position: relative !important;
             }
 
@@ -1079,8 +1234,7 @@
 
         svg.icon-style-policy-module,
         svg.icon-style-handyman {
-            width: 18px;
-            padding-bottom: 5px;
+            width: 16px;
             fill: var(--pc-event-color);
         }
     }
@@ -1095,16 +1249,15 @@
 }
 
 .prop-container {
-    border-top: 0px solid var(--pc-background-color);
-    margin: 4px 0px 0px 0px;
-    overflow: auto;
     position: absolute !important;
     left: 0;
     top: 0;
     right: 0;
-    bottom: 0px;
+    bottom: 0;
     box-sizing: border-box;
-    box-shadow: 0px -1px 0px 0px var(--pc-border-color);
+    padding: 0 12px 8px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .action-event-icon {
@@ -1210,9 +1363,11 @@
                     display: grid !important;
 
                     span {
-                        font-size: 16px;
-                        margin-bottom: 4px;
+                        font-size: 14px;
+                        font-weight: 600;
+                        margin-bottom: 0;
                         padding-left: 0;
+                        align-self: center;
                     }
 
                     &[selected="false"] {
@@ -1315,55 +1470,219 @@
 
     .pc-tabs.minimized-tabs {
         .pc-tabs-headers {
+            padding: 0 44px 0 8px;
+            gap: 4px;
+            align-items: center;
+
             .tab-header {
-                padding: 6px 16px;
+                height: 28px !important;
+                box-sizing: border-box;
+                padding: 0 14px;
                 flex: none;
+                border-radius: 8px;
+                border-bottom: none !important;
+                color: var(--guardian-font-color-secondary, #8a8f9c);
+                font-family: var(--font-family-inter, 'Inter', sans-serif) !important;
+                font-size: 14px !important;
+                font-weight: 500 !important;
+                align-items: center;
+                transition: background 0.15s ease, color 0.15s ease;
+
+                span {
+                    font-family: var(--font-family-inter, 'Inter', sans-serif);
+                    font-size: 14px !important;
+                    font-weight: 500;
+                }
+
+                svg-icon,
+                svg-icon svg,
+                svg {
+                    position: static !important;
+                    top: auto !important;
+                    left: auto !important;
+                    width: 18px !important;
+                    height: 18px !important;
+                    font-size: 16px !important;
+                }
 
                 &.tab-header-icon {
-                    display: grid !important;
-                    grid-template-columns: max-content auto !important;
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 8px;
+                    padding: 0 14px;
+                }
+
+                &:hover {
+                    background: var(--guardian-grey-background, #f1f3f9);
+                    color: var(--guardian-font-color, #23252E);
+                }
+
+                &[selected="true"] {
+                    border-bottom: none !important;
+                    background: color-mix(in srgb, var(--color-primary, #4169e2) 12%, transparent) !important;
+                    color: var(--color-primary, #4169e2) !important;
                 }
             }
         }
     }
 
     .pc-tabs-headers.right-menu {
-        padding-right: 30px;
+        padding-right: 44px;
+    }
+
+    // #6 Drop the canvas header strip; the root is already represented by the
+    // "Policy" block in the tree. Collapse the header and let the tree fill
+    // the canvas; the legend button floats onto the canvas (styled below).
+    .pc-tabs.minimized-tabs {
+        .pc-tabs-headers.right-menu {
+            height: 0 !important;
+            min-height: 0 !important;
+            padding: 0 !important;
+            border-bottom: none !important;
+            overflow: visible;
+
+            .tab-header {
+                display: none !important;
+            }
+        }
+
+        .pc-tabs-content {
+            top: 0 !important;
+        }
+    }
+
+    // #4 Floating breadcrumb for sub-module navigation (replaces the header
+    // tabs). Only shown when a module is open; offset right of the
+    // collapse-all control.
+    .canvas-breadcrumb {
+        position: absolute;
+        top: 10px;
+        right: 66px;
+        left: auto;
+        z-index: 10;
+        height: 34px;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        max-width: calc(100% - 90px);
+        overflow: hidden;
+        padding: 0 5px;
+        box-sizing: border-box;
+        background: var(--guardian-background, #fff);
+        border: 1px solid var(--pc-border-color, #E1E7EF);
+        border-radius: 9px;
+        box-shadow: 0 2px 6px var(--guardian-shadow, #0000001a);
+        font-family: var(--font-family-inter, 'Inter', sans-serif);
+        font-size: 13px;
+
+        .canvas-breadcrumb-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 26px;
+            padding: 0 9px;
+            border-radius: 7px;
+            line-height: 1;
+            color: var(--guardian-font-color-secondary, #848FA9);
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 170px;
+            transition: background 0.15s ease, color 0.15s ease;
+
+            svg-icon {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                flex: 0 0 auto;
+                width: 16px;
+                height: 16px;
+                line-height: 0;
+            }
+
+            svg-icon svg,
+            svg {
+                display: block;
+                width: 16px !important;
+                height: 16px !important;
+            }
+
+            span {
+                display: inline-flex;
+                align-items: center;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
+            &:hover {
+                background: var(--guardian-grey-background, #f1f3f9);
+                color: var(--guardian-font-color, #23252E);
+            }
+
+            &.active {
+                color: var(--color-primary, #4169E2);
+                background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
+                font-weight: 500;
+            }
+        }
+
+        .canvas-breadcrumb-sep {
+            font-size: 10px;
+            color: var(--guardian-font-color-secondary, #848FA9);
+            flex: 0 0 auto;
+            display: inline-flex;
+            align-items: center;
+        }
     }
 }
 
 .policy-configuration::ng-deep {
     .theme-legends {
         position: absolute;
-        top: 0;
-        right: 0;
-        width: 30px;
-        height: 30px;
+        top: 10px;
+        right: 22px;
+        width: 34px;
+        height: 34px;
         overflow: visible;
+        z-index: 10;
 
         .theme-legends-icon {
             position: absolute;
             top: 0;
             right: 0;
-            width: 30px;
-            height: 38px;
+            width: 34px;
+            height: 34px;
             overflow: hidden;
             cursor: pointer;
             box-sizing: border-box;
-            border-left: 1px solid var(--pc-border-color);
-            color: var(--guardian-font-color, #555);
+            border-radius: 9px;
+            background: var(--guardian-background, #fff);
+            border: 1px solid var(--pc-border-color, #E1E7EF);
+            box-shadow: 0 2px 6px var(--guardian-shadow, #0000001a);
+            color: var(--guardian-font-color-secondary, #848FA9);
             display: grid;
             justify-content: center;
             align-content: center;
+            transition: background 0.15s ease, color 0.15s ease;
 
             &:hover {
-                background: var(--pc-tabs-hover-color);
+                background: var(--guardian-grey-background, #f1f3f9);
+                color: var(--color-primary, #4169E2);
             }
 
             i,
             svg {
-                font-size: 22px;
+                font-size: 18px;
             }
+        }
+
+        &[active="true"] .theme-legends-icon {
+            background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
+            color: var(--color-primary, #4169E2);
+            border-color: color-mix(in srgb, var(--color-primary, #4169E2) 40%, transparent);
         }
 
         .theme-legends-container {
@@ -1373,24 +1692,27 @@
             right: 10px;
             z-index: 5;
             border: 1px solid var(--pc-border-color);
-            border-radius: var(--pc-radius, 10px);
-            box-shadow: var(--pc-elevation);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px var(--guardian-shadow, #0000001f);
             background: var(--pc-background-color);
             overflow: auto;
             max-height: calc(100vh - 260px);
-            padding: 6px;
+            min-width: 224px;
+            padding: 8px;
         }
 
         .theme-rule {
-            width: 200px;
+            width: auto;
             height: auto;
             min-height: 20px;
             display: grid;
-            grid-template-columns: 50px auto;
+            grid-template-columns: 44px auto;
+            align-items: center;
+            gap: 6px;
             margin-right: 0px;
             background: var(--pc-background-color);
-            padding: 4px 6px;
-            border-radius: 6px;
+            padding: 5px 8px;
+            border-radius: 8px;
             pointer-events: all;
         }
 
@@ -1406,6 +1728,9 @@
         .theme-rule-description {
             align-items: center;
             display: flex;
+            font-family: var(--font-family-inter, 'Inter', sans-serif);
+            font-size: 13px;
+            color: var(--guardian-font-color, #23252E);
         }
 
         .theme-legends-divider {
@@ -1420,8 +1745,8 @@
             }
 
             .theme-legends-icon {
-                background: var(--pc-background-color);
-                color: var(--pc-active-icon-color);
+                background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
+                color: var(--color-primary, #4169E2);
             }
         }
     }
@@ -1513,9 +1838,233 @@
     // }
 }
 
-.right-bottom-toolbar .tab-header {
-    max-width: 50%;
-    margin-right: auto;
+.right-toolbar .tab-header {
+    display: flex !important;
+    grid-template-columns: none !important;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    margin-right: 0;
+    padding: 6px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+// Block inspector: persistent title/type header above the tabs.
+.inspector-head--panel {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--pc-border-color);
+    cursor: grab;
+
+    .inspector-head-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .inspector-head-name {
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--pc-header-color, #23252E);
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .inspector-head-type {
+        flex: 0 0 auto;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--color-primary, #4169E2);
+        background: var(--guardian-primary-background, #e1e7fa);
+    }
+
+    .inspector-head-parent {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        align-self: flex-start;
+        cursor: pointer;
+        font-size: 12px;
+        color: var(--guardian-disabled-color, #848FA9);
+
+        .inspector-head-parent-name {
+            color: var(--color-primary, #4169E2);
+            font-weight: 500;
+        }
+
+        i {
+            font-size: 11px;
+            color: var(--color-primary, #4169E2);
+        }
+
+        &:hover .inspector-head-parent-name {
+            text-decoration: underline;
+        }
+    }
+}
+
+// Block inspector tabs styled as a segmented control (matches the top bar).
+// Scoped through .pc-tabs to outrank the default .pc-tabs-headers .tab-header
+// rules (which set a grid layout + underline with !important).
+.policy-configuration::ng-deep .pc-tabs .pc-tabs-headers--segment {
+    height: 38px;
+    padding: 0 8px;
+    gap: 0;
+    align-items: center;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--pc-border-color);
+    background: var(--pc-background-color);
+
+    .segment-track {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 30px;
+        padding: 3px;
+        border-radius: 9px;
+        background: var(--guardian-grey-background, #f1f3f9);
+        border: 1px solid var(--pc-border-color);
+        box-sizing: border-box;
+    }
+
+    .tab-header {
+        flex: 1 1 0 !important;
+        height: 24px !important;
+        min-width: 0;
+        padding: 0 6px !important;
+        margin: 0 !important;
+        border-radius: 6px !important;
+        border-bottom: none !important;
+        display: flex !important;
+        grid-template-columns: none !important;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1;
+        color: var(--guardian-font-color-secondary, #8a8f9c);
+        background: transparent !important;
+        transition: background 0.15s ease, color 0.15s ease;
+
+        &:hover {
+            background: transparent !important;
+            color: var(--guardian-font-color, #23252e) !important;
+        }
+
+        &[selected="true"] {
+            background: var(--guardian-background, #fff) !important;
+            color: var(--color-primary, #4169e2) !important;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+            border-bottom: none !important;
+            cursor: default;
+        }
+    }
+}
+
+// Library switcher (Blocks / Modules / Tools) as a segmented control,
+// matching the top-bar Design/JSON/YAML pill. Expanded state only —
+// the collapsed rail keeps its vertical icon buttons.
+.policy-configuration::ng-deep .left-toolbar:not(.collapsed) .pc-tabs-headers--library {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 38px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    border-bottom: 1px solid var(--pc-border-color);
+    background: var(--pc-background-color);
+
+    .library-segment {
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        height: 30px;
+        padding: 3px;
+        border-radius: 9px;
+        background: var(--guardian-grey-background, #f1f3f9);
+        border: 1px solid var(--pc-border-color);
+        box-sizing: border-box;
+    }
+
+    .tab-header {
+        flex: 1 1 0 !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        height: 24px !important;
+        padding: 0 4px !important;
+        margin: 0 !important;
+        border-radius: 6px !important;
+        border-bottom: none !important;
+        display: flex !important;
+        grid-template-columns: none !important;
+        align-items: center;
+        justify-content: center;
+        background: transparent !important;
+        color: var(--guardian-font-color-secondary, #8a8f9c) !important;
+        transition: background 0.15s ease, color 0.15s ease;
+
+        svg-icon,
+        svg {
+            display: none !important;
+        }
+
+        span {
+            position: static !important;
+            display: block !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            font-size: 12px !important;
+            font-weight: 500 !important;
+            line-height: 1;
+            letter-spacing: 0;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        &:hover {
+            background: transparent !important;
+            color: var(--guardian-font-color, #23252e) !important;
+        }
+
+        &[selected="true"] {
+            background: var(--guardian-background, #fff) !important;
+            color: var(--color-primary, #4169e2) !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+            cursor: default !important;
+
+            span {
+                font-weight: 600 !important;
+            }
+        }
+    }
+
+    .library-collapse-toggle {
+        flex: 0 0 26px;
+        height: 30px;
+        border-radius: 8px;
+    }
+}
+
+// Collapsed rail: unwrap the segment so the tabs become direct children
+// again and the existing vertical icon-button layout applies unchanged.
+.policy-configuration::ng-deep .left-toolbar.collapsed .pc-tabs-headers--library .library-segment {
+    display: contents;
 }
 
 .module-root-icon {
@@ -1570,7 +2119,7 @@
     align-items: center;
     gap: 8px;
     height: 44px;
-    margin: 18px 4px;
+    margin: 0 2px;
     padding: 0 10px;
     max-width: 240px;
     border: 1px solid transparent;

@@ -1,19 +1,3 @@
-@if (block && type != 'Events') {
-  <div class="inspector-head">
-    <div class="inspector-head-row">
-      <span class="inspector-head-name" [title]="block.localTag">{{ block.localTag }}</span>
-      <span class="inspector-head-type">{{ block.blockType }}</span>
-    </div>
-    @if (block.parent && !block.parent.isRoot) {
-      <div class="inspector-head-parent" (click)="selectParent.emit(block.parent)"
-        title="Select parent block">
-        <span class="inspector-head-parent-label">in</span>
-        <span class="inspector-head-parent-name">{{ block.parent.localTag }}</span>
-        <i class="pi pi-arrow-up-right"></i>
-      </div>
-    }
-  </div>
-}
 @if (type != 'Events') {
   <div class="grid-setting" [attr.readonly]="readonly">
     @if (loading) {
@@ -25,12 +9,13 @@
       <div class="table-body">
         @if (block) {
           <table class="properties">
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'about')"
-                [attr.collapse]="propHidden.about">
-                <i class="pi pi-caret-down"></i>
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
+            <tr class="propHeader" (click)="onHide(propHidden, 'about')">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" [attr.collapse]="propHidden.about">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>About</span>
               </td>
-              <td class="propHeaderCell cellName">About</td>
               <td class="propHeaderCell"></td>
             </tr>
             <tr class="propRow" [attr.collapse]="propHidden.about">
@@ -91,12 +76,12 @@
                 </td>
               </tr>
             }
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
-                [attr.collapse]="propHidden.metaData">
-                <i class="pi pi-caret-down"></i>
+            <tr class="propHeader" (click)="onHide(propHidden, 'metaData')">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" [attr.collapse]="propHidden.metaData">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>Meta Data</span>
               </td>
-              <td class="propHeaderCell cellName">Meta Data</td>
               <td class="propHeaderCell"></td>
             </tr>
             <!-- Meta Data  -->
@@ -130,7 +115,7 @@
               <td class="propRowCell">
                 <p-multiSelect [(ngModel)]="block.permissions" [options]="roles" [disabled]="readonly"
                   (onChange)="onSave()" optionLabel="name" optionValue="value" placeholder="Select Roles"
-                  [appendTo]="'body'">
+                  [appendTo]="'body'" panelStyleClass="pc-select-panel">
                 </p-multiSelect>
               </td>
             </tr>
@@ -166,7 +151,7 @@
               <td class="propRowCell">
                 <p-select [(ngModel)]="block.properties.onErrorAction" [options]="errorActions"
                   [disabled]="readonly" (onChange)="onSave()" optionLabel="label" optionValue="value"
-                  placeholder="Select Action" [appendTo]="'body'">
+                  placeholder="Select Action" [appendTo]="'body'" panelStyleClass="pc-select-panel">
                 </p-select>
               </td>
             </tr>
@@ -204,12 +189,12 @@
               </tr>
             }
             @if (customProperties) {
-              <tr class="propHeader">
-                <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'customProperties')"
-                  [attr.collapse]="propHidden.customProperties">
-                  <i class="pi pi-caret-down"></i>
+              <tr class="propHeader" (click)="onHide(propHidden, 'customProperties')">
+                <td class="propRowCol"></td>
+                <td class="propHeaderCell cellName" [attr.collapse]="propHidden.customProperties">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span>Properties</span>
                 </td>
-                <td class="propHeaderCell cellName">Properties</td>
                 <td class="propHeaderCell"></td>
               </tr>
               @for (property of customProperties; track property) {
@@ -233,14 +218,13 @@
       <div class="table-body">
         @if (block) {
           <table class="properties">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
             @if (defaultEvent) {
-              <tr class="propHeader">
-                <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'defaultEvent')"
-                  [attr.collapse]="propHidden.defaultEvent">
-                  <i class="pi pi-caret-own"></i>
-                </td>
-                <td class="propHeaderCell cellName fullCell">
-                  <div style="height: 20px;" [attr.disabled]="block.properties.stopPropagation">
+              <tr class="propHeader" (click)="onHide(propHidden, 'defaultEvent')">
+                <td class="propRowCol"></td>
+                <td class="propHeaderCell cellName fullCell" [attr.collapse]="propHidden.defaultEvent">
+                  <div class="event-header-row" [attr.disabled]="block.properties.stopPropagation">
+                    <i class="pi pi-chevron-down chevron-icon"></i>
                     <span class="prop-icon prop-icon-event">
                       <svg-icon src="/assets/images/icons/flash_on.svg"
                       svgClass="icon-style-flash_on"></svg-icon>
@@ -312,13 +296,11 @@
             }
             @for (item of module.allEvents; track item) {
               @if (isOutputEvent(item) || isInputEvent(item)) {
-                <tr class="propHeader">
-                  <td class="propRowCol cellCollapse" (click)="onHide(propHidden.eventsGroup, item.id)"
-                    [attr.collapse]="propHidden.eventsGroup[item.id]">
-                    <i class="pi pi-caret-down"></i>
-                  </td>
-                  <td class="propHeaderCell cellName fullCell">
-                    <div style="height: 20px;" [attr.disabled]="item.disabled">
+                <tr class="propHeader" (click)="onHide(propHidden.eventsGroup, item.id)">
+                  <td class="propRowCol"></td>
+                  <td class="propHeaderCell cellName fullCell" [attr.collapse]="propHidden.eventsGroup[item.id]">
+                    <div class="event-header-row" [attr.disabled]="item.disabled">
+                      <i class="pi pi-chevron-down chevron-icon"></i>
                       <span class="prop-icon prop-icon-event" [attr.invalid]="isInvalid(item)">
                         <svg-icon src="/assets/images/icons/flash_on.svg"
                         svgClass="icon-style-flash_on"></svg-icon>
@@ -342,7 +324,7 @@
                     </div>
                   </td>
                   <td class="propHeaderCell">
-                    <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEvent(item)">
+                    <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveEvent(item)">
                       <i class="pi pi-trash"></i>
                     </span>
                   </td>
@@ -358,7 +340,7 @@
                       (onChange)="chanceType($event.value, item)"
                       [disabled]="readonly"
                       placeholder="Select Event Type"
-                      [appendTo]="'body'">
+                      [appendTo]="'body'" panelStyleClass="pc-select-panel">
                     </p-select>
                   </td>
                 </tr>
@@ -393,7 +375,7 @@
                   <td class="propRowCell cellName source-elm">Output Event</td>
                   <td class="propRowCell">
                     <p-select [(ngModel)]="item.output" [options]="getOutputEvents(item)"
-                      [disabled]="readonly" (onChange)="onSave()" [appendTo]="'body'"
+                      [disabled]="readonly" (onChange)="onSave()" [appendTo]="'body'" panelStyleClass="pc-select-panel"
                       placeholder="Select an event">
                     </p-select>
                   </td>
@@ -425,7 +407,7 @@
                   <td class="propRowCell">
                     <p-select [(ngModel)]="item.input" [options]="getPreparedInputEvents(item)"
                       [disabled]="readonly" (onChange)="onSave()" placeholder="Select Input"
-                      [appendTo]="'body'">
+                      [appendTo]="'body'" panelStyleClass="pc-select-panel">
                     </p-select>
                   </td>
                 </tr>
@@ -443,7 +425,7 @@
                       (onChange)="onSave()"
                       [disabled]="readonly"
                       placeholder="Select Actor"
-                      [appendTo]="'body'">
+                      [appendTo]="'body'" panelStyleClass="pc-select-panel">
                     </p-select>
                   </td>
                 </tr>

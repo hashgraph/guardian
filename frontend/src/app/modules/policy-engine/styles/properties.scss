@@ -1,6 +1,6 @@
 .policy-configuration::ng-deep {
-    --pc-row-height: 42px;
-    --pc-row-font-size: 16px;
+    --pc-row-height: 30px;
+    --pc-row-font-size: 13px;
     --pc-row-font-family: var(--font-family-inter, 'Inter', sans-serif);
     --pc-row-font-style: normal;
 
@@ -24,15 +24,35 @@
     --pc-warning-shadow: var(--guardian-shadow, #00000014);
 
     .properties {
-        --col-name-width: 155px;
+        --col-name-width: 116px;
         --col-value-width: 100%;
+        --pc-control-height: 30px;
 
         width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
         position: relative;
-        background: var(--pc-prop-border-color);
-        font-size: var(--pc-row-font-family);
+        background: var(--pc-background-color);
+        border-collapse: collapse;
+        font-size: var(--pc-row-font-size);
         font-family: var(--pc-row-font-family);
         font-style: var(--pc-row-font-style);
+
+        // table-layout:fixed sizes columns off whichever row the browser
+        // treats as authoritative, which is unreliable when header rows
+        // and data rows disagree on widths. An explicit colgroup removes
+        // the ambiguity regardless of row content.
+        colgroup .col-toggle {
+            width: 18px;
+        }
+
+        colgroup .col-name {
+            width: var(--col-name-width);
+        }
+
+        colgroup .col-value {
+            width: var(--col-value-width);
+        }
 
         .cellTitle {
             font-weight: 500;
@@ -47,9 +67,9 @@
         }
 
         .propRowCol {
-            background: var(--pc-prop-border-color);
-            width: 20px;
-            min-width: 20px;
+            background: transparent;
+            width: 18px;
+            min-width: 18px;
             position: relative;
             cursor: pointer;
             user-select: none;
@@ -58,34 +78,39 @@
             i,
             svg {
                 position: absolute;
-                top: 9px;
-                left: 1px;
-                height: 20px;
-                width: 20px;
+                top: 50%;
+                left: 0;
+                height: 14px;
+                width: 14px;
+                font-size: 12px;
+                line-height: 14px;
+                transform: translateY(-50%);
+                transition: transform 0.12s ease;
                 pointer-events: none;
-                color: var(--pc-header-color);
-            }
-
-            &[collapse="false"] i,
-            &[collapse="false"] svg {
-                top: 9px;
-                left: 1px;
+                color: var(--guardian-font-color-secondary, #848FA9);
             }
 
             &[collapse="true"] i,
             &[collapse="true"] svg {
-                transform: rotate(-90deg);
-                top: 4px;
-                left: 2px;
+                transform: translateY(-50%) rotate(-90deg);
             }
         }
 
         .propHeader {
-            background: var(--pc-prop-border-color);
+            background: transparent;
             color: var(--pc-header-color);
             position: relative;
-            font-weight: 500;
-            position: relative;
+            cursor: pointer;
+
+            &:hover {
+                background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent);
+            }
+
+            &:hover .propRowCol i,
+            &:hover .propRowCol svg,
+            &:hover .chevron-icon {
+                color: var(--pc-header-color);
+            }
 
             &[collapse="true"] {
                 display: none;
@@ -95,47 +120,63 @@
                 pointer-events: none;
                 position: absolute;
                 content: "";
-                top: -2px;
-                left: -2px;
-                right: -2px;
-                bottom: -1px;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
                 border-top: 1px solid var(--pc-border-color);
                 z-index: 1;
             }
 
+            &:first-child::after {
+                border-top: none;
+            }
+
             .cellName {
-                width: var(--col-name-width) !important;
-                max-width: var(--col-name-width) !important;
-                min-width: var(--col-name-width) !important;
+                display: flex;
+                align-items: flex-start;
+                gap: 6px;
+                width: auto !important;
+                max-width: none !important;
+                min-width: 0 !important;
                 overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                padding-right: 5px;
+                white-space: normal;
                 box-sizing: border-box;
-                font-size: var(--pc-row-font-size);
-                font-weight: bold;
-                padding: 8px 6px !important;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.06em;
+                text-transform: uppercase;
+                color: var(--pc-header-color, #23252E);
+                padding: 12px 4px 6px 4px !important;
 
                 span {
-                    width: calc(var(--col-value-width) - 10px);
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
+                    white-space: normal;
+                    overflow-wrap: break-word;
                     display: block;
+                }
+
+                .chevron-icon {
+                    flex: 0 0 auto;
+                    font-size: 11px;
+                    transition: transform 0.12s ease;
+                }
+
+                &[collapse="true"] .chevron-icon {
+                    transform: rotate(-90deg);
                 }
             }
 
             .propHeaderCell {
-                width: var(--col-value-width);
-                max-width: var(--col-value-width);
-                min-width: var(--col-value-width);
+                width: auto;
+                max-width: none;
+                min-width: 0;
                 position: relative;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 box-sizing: border-box;
-                min-height: var(--pc-row-height);
-                padding: 8px 0px;
+                min-height: 20px;
+                padding: 5px 0px 3px;
             }
         }
 
@@ -145,56 +186,75 @@
             }
 
             &:nth-child(2n) .propRowCell {
-                background: var(--guardian-grey-background, #f7f7f7);
+                background: transparent;
             }
 
             .cellName {
                 width: var(--col-name-width) !important;
                 max-width: var(--col-name-width) !important;
                 min-width: var(--col-name-width) !important;
-                padding-left: 10px !important;
+                padding-left: 0 !important;
                 overflow: hidden;
-                white-space: nowrap;
-                text-overflow: ellipsis;
-                padding-right: 5px;
+                white-space: normal;
+                overflow-wrap: break-word;
+                padding-right: 8px;
                 box-sizing: border-box;
+                color: var(--guardian-font-color-secondary, #8a8f9c);
+                font-weight: 400;
+                font-size: var(--pc-row-font-size);
+                line-height: 1.25;
+                vertical-align: top;
+                padding-top: 6px;
 
                 span {
                     width: calc(var(--col-name-width) - 10px);
-                    overflow: hidden;
-                    white-space: nowrap;
-                    text-overflow: ellipsis;
+                    white-space: normal;
+                    overflow-wrap: break-word;
                     display: block;
                 }
 
-                .lvl[lvl="1"] {
-                    padding-left: 0px !important;
-                    width: 140px !important;
+                .lvl {
+                    --lvl-indent: 0px;
+                    padding-left: var(--lvl-indent) !important;
+                    width: calc(var(--col-name-width) - 10px - var(--lvl-indent)) !important;
                 }
 
                 .lvl[lvl="1"] {
-                    padding-left: 8px !important;
-                    width: 132px !important;
+                    --lvl-indent: 8px;
                 }
 
                 .lvl[lvl="2"] {
-                    padding-left: 16px !important;
-                    width: 124px !important;
+                    --lvl-indent: 16px;
                 }
 
                 .lvl[lvl="3"] {
-                    padding-left: 24px !important;
-                    width: 116px !important;
-                }
-
-                .lvl[lvl="3"] {
-                    padding-left: 32px !important;
-                    width: 108px !important;
+                    --lvl-indent: 24px;
                 }
 
                 .lvl[lvl="4"] {
-                    padding-left: 40px !important;
-                    width: 100px !important;
+                    --lvl-indent: 32px;
+                }
+
+                .lvl[lvl="5"] {
+                    --lvl-indent: 40px;
+                }
+            }
+
+            .cellName:has(.chevron-icon) {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                padding-left: 4px !important;
+
+                .chevron-icon {
+                    flex: 0 0 auto;
+                    font-size: 11px;
+                    color: var(--guardian-font-color-secondary, #848FA9);
+                    transition: transform 0.12s ease;
+                }
+
+                &[collapse="true"] .chevron-icon {
+                    transform: rotate(-90deg);
                 }
             }
 
@@ -210,32 +270,32 @@
                     top: 0;
                     bottom: 0;
                     align-items: center;
-                    padding: 11px 8px;
+                    padding: 8px 8px;
                 }
             }
 
             .propRowCell {
-                width: var(--col-value-width);
-                max-width: var(--col-value-width);
-                min-width: var(--col-value-width);
+                width: auto;
+                max-width: none;
+                min-width: 0;
                 background: var(--pc-background-color);
                 position: relative;
                 overflow: hidden;
                 text-overflow: ellipsis;
                 white-space: nowrap;
                 box-sizing: border-box;
-                padding: 0px;
+                padding: 1px 0px;
+                vertical-align: middle;
                 font-size: var(--pc-row-font-size);
                 min-height: var(--pc-row-height);
 
                 p-select,
                 p-multiselect,
-                select-schema {
-                    position: absolute;
-                    left: 0;
-                    top: 0;
-                    bottom: 0;
-                    right: 0;
+                select-schema,
+                select-block {
+                    position: relative;
+                    display: block;
+                    width: 100%;
                 }
 
                 &.multi-line {
@@ -258,6 +318,11 @@
                 }
             }
 
+            .propRowCell.cellName {
+                white-space: normal;
+                overflow-wrap: break-word;
+            }
+
             .propRowCell:has(.remove-prop) {
                 padding-right: 34px;
             }
@@ -271,18 +336,25 @@
             }
 
             input {
-                height: 24px;
+                height: var(--pc-control-height);
                 box-sizing: border-box;
                 border: 1px solid var(--pc-border-color);
-                border-radius: 3px;
-                padding: 2px 24px 2px 6px;
+                border-radius: 6px;
+                padding: 2px 8px;
                 outline: none;
                 width: 100%;
+                font-size: 13px;
+                font-family: var(--pc-row-font-family);
                 background: var(--guardian-background, #fff);
                 color: var(--guardian-font-color, #000);
 
                 &:hover {
                     border: 1px solid var(--guardian-primary-color);
+                }
+
+                &:focus {
+                    border: 1px solid var(--guardian-primary-color);
+                    box-shadow: 0 0 0 3px color-mix(in srgb, var(--guardian-primary-color) 15%, transparent);
                 }
 
                 &[readonly] {
@@ -291,19 +363,39 @@
                     outline: none !important;
                 }
 
-                &[type="checkbox"] {
-                    width: 16px;
-                    height: 16px;
-                    box-sizing: border-box;
-                    line-height: 24px;
-                    margin: 0;
-                    border: none;
-                    display: block;
-                    margin-left: 12px;
+                &[type="checkbox"].prop-input {
+                    appearance: none;
+                    -webkit-appearance: none;
+                    flex: 0 0 auto;
+                    width: 40px;
+                    height: 20px;
+                    margin: 4px 0;
+                    padding: 0;
+                    border: none !important;
+                    border-radius: 20px;
+                    background-color: var(--pc-border-color, #E1E7EF);
+                    background-image: radial-gradient(circle at center, #fff 7px, rgba(0, 0, 0, 0) 8px);
+                    background-repeat: no-repeat;
+                    background-size: 20px 20px;
+                    background-position: left center;
                     cursor: pointer;
+                    transition: background-color 0.15s ease, background-position 0.15s ease;
+
+                    &:hover {
+                        border: none !important;
+                    }
+
+                    &:focus {
+                        box-shadow: none;
+                    }
+
+                    &:checked {
+                        background-color: var(--guardian-primary-color);
+                        background-position: right center;
+                    }
                 }
 
-                &[readonly][type="checkbox"] {
+                &[readonly][type="checkbox"].prop-input {
                     pointer-events: none;
                     filter: grayscale(1);
                 }
@@ -316,7 +408,7 @@
                 padding: 6px 24px 4px 7px;
                 outline: none;
                 width: 100% !important;
-                font-size: 16px;
+                font-size: var(--pc-row-font-size);
                 min-width: 100% !important;
                 min-height: 70px;
                 color: var(--guardian-font-color, var(--color-grey-6));
@@ -350,6 +442,104 @@
             padding-left: 50px !important;
         }
 
+        // Tree-style connector for nested rows so the hierarchy reads at a
+        // glance (mirrors the angled connector from the redesign mockup).
+        *[offset="1"] .cellName,
+        *[offset="2"] .cellName,
+        *[offset="3"] .cellName,
+        *[offset="4"] .cellName,
+        .subRow .cellName,
+        .subRow-2 .cellName,
+        .subRow-3 .cellName,
+        .subRow-4 .cellName {
+            position: relative;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                height: 50%;
+                width: 6px;
+                border-left: 1px solid var(--pc-border-color);
+                border-bottom: 1px solid var(--pc-border-color);
+                border-bottom-left-radius: 5px;
+                pointer-events: none;
+            }
+        }
+
+        *[offset="1"] .cellName::before,
+        .subRow .cellName::before {
+            left: 8px;
+        }
+
+        *[offset="2"] .cellName::before,
+        .subRow-2 .cellName::before {
+            left: 18px;
+        }
+
+        *[offset="3"] .cellName::before,
+        .subRow-3 .cellName::before {
+            left: 28px;
+        }
+
+        *[offset="4"] .cellName::before,
+        .subRow-4 .cellName::before {
+            left: 38px;
+        }
+
+        // Config editors that still use the old markup keep their collapse
+        // caret in the far-left toggle column, detached from the indented
+        // label. Pull each nested caret in beside its label (aligned with the
+        // tree connector) and tint it like the section chevrons. Drop the
+        // connector on those toggle rows so the caret isn't doubled up.
+        .propRowCol.cellCollapse {
+            overflow: visible;
+
+            // The caret is nudged out of this 18px cell (below), but the click
+            // handler lives on the cell. Extend a transparent hit area over the
+            // caret + label so the toggle keeps working (and the label becomes
+            // clickable to collapse too).
+            &::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0;
+                width: 128px;
+                cursor: pointer;
+                z-index: 3;
+            }
+
+            i {
+                position: absolute;
+                z-index: 4;
+                color: var(--guardian-font-color-secondary, #848FA9);
+                font-size: 11px;
+            }
+        }
+
+        .propHeader > .propRowCol.cellCollapse i {
+            left: 8px;
+        }
+
+        .subRow > .propRowCol.cellCollapse i {
+            left: 24px;
+        }
+
+        .subRow-2 > .propRowCol.cellCollapse i {
+            left: 34px;
+        }
+
+        .subRow-3 > .propRowCol.cellCollapse i {
+            left: 44px;
+        }
+
+        .subRow:has(> .propRowCol.cellCollapse) .cellName::before,
+        .subRow-2:has(> .propRowCol.cellCollapse) .cellName::before,
+        .subRow-3:has(> .propRowCol.cellCollapse) .cellName::before {
+            display: none;
+        }
+
         .navigation .stepRow .propRowCol {
             left: 20px !important;
             top: 2px !important;
@@ -360,14 +550,14 @@
             height: 18px;
             overflow: hidden;
             cursor: pointer;
-            font-size: 14px;
+            font-size: 13px;
             color: var(--pc-active-icon-color);
             position: relative;
             font-weight: 500;
             user-select: none;
             width: 100%;
-            min-width: 175px;
-            padding: 2px 0px 0px 28px;
+            min-width: 0;
+            padding: 2px 0px 0px 22px;
 
             i,
             svg {
@@ -399,15 +589,25 @@
 
         .remove-prop {
             position: absolute;
-            top: 5px;
-            right: 2px;
-            color: var(--pc-del-color);
+            top: 50%;
+            right: 6px;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--guardian-font-color-secondary, #848FA9);
             cursor: pointer;
             padding: 2px;
+            border-radius: 6px;
 
             i,
             svg {
-                font-size: 18px;
+                font-size: 14px;
+            }
+
+            &:hover {
+                color: var(--pc-del-color);
+                background: color-mix(in srgb, var(--pc-del-color) 10%, transparent);
             }
 
             &[readonly="true"] {
@@ -433,97 +633,110 @@
 
         .propBottom {
             background: var(--pc-background-color);
-            font-weight: 500;
             position: absolute;
-            bottom: 2px;
-            height: 38px;
+            bottom: 0px;
+            height: 44px;
             left: 0px;
-            right: 4px;
-            border-left: 24px solid var(--pc-prop-border-color);
-            padding: 8px 15px;
+            right: 0px;
+            padding: 6px 12px;
             box-sizing: border-box;
-            box-shadow: 0px -2px 0 0 var(--pc-prop-border-color), 0px 0px 0 0 var(--pc-prop-border-color), 2px 0px 0 0 var(--pc-prop-border-color);
-
-            &::after {
-                pointer-events: none;
-                position: absolute;
-                content: "";
-                top: -3px;
-                left: -26px;
-                right: -4px;
-                bottom: 0px;
-                border-top: 1px solid var(--pc-border-color);
-                z-index: 1;
-            }
+            border-top: 1px solid var(--pc-border-color);
         }
 
         .propRowBottom {
-            height: 28px;
+            height: 44px;
+        }
+
+        .propBottom .propAdd {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            width: 100%;
+            height: 32px;
+            padding: 0;
+            border: 1px dashed var(--pc-border-color);
+            border-radius: 8px;
+            font-weight: 500;
+
+            &:hover {
+                text-decoration: none;
+                border-color: var(--guardian-primary-color);
+                background: color-mix(in srgb, var(--guardian-primary-color) 6%, transparent);
+            }
+
+            i,
+            svg {
+                position: static;
+                font-size: 12px;
+            }
         }
 
         .icon-event {
-            display: inline-block;
-            overflow: visible;
-            font-size: 18px;
-            line-height: 10px;
-            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 15px;
             color: var(--pc-event-icon-color);
-            width: 16px;
-            position: relative;
-            top: 4px;
         }
 
         .icon-link {
-            display: inline-block;
-            overflow: visible;
-            font-size: 18px;
-            line-height: 10px;
-            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            font-size: 15px;
             color: var(--pc-active-icon-color);
-            width: 18px;
-            position: relative;
-            top: 4px;
             user-select: none;
         }
 
         .readonly-prop {
             padding-left: 6px;
-            color: var(--pc-readonly-text-color);
-            display: block;
+            color: var(--guardian-font-color, #23252E);
+            display: flex;
+            align-items: center;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
             position: absolute;
             left: 0;
             top: 0;
+            bottom: 0;
             right: 10px;
         }
 
+        .event-header-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 20px;
+        }
+
         .prop-icon {
-            display: inline-block !important;
-            height: 18px !important;
+            display: inline-flex !important;
+            align-items: center;
+            height: auto !important;
             width: auto !important;
-            line-height: 18px !important;
-            overflow: hidden !important;
+            line-height: normal !important;
+            overflow: visible !important;
         }
 
         .prop-icon i,
         .prop-icon svg {
-            position: relative !important;
-            font-size: 20px !important;
+            position: static !important;
+            font-size: 15px !important;
         }
 
         .prop-icon-text {
-            display: inline-block !important;
-            height: 16px !important;
+            display: inline-flex !important;
+            align-items: center;
+            height: auto !important;
             width: auto !important;
-            line-height: 16px !important;
-            overflow: hidden !important;
+            line-height: normal !important;
+            overflow: visible !important;
+            font-size: var(--pc-row-font-size);
+            font-weight: 600;
         }
 
         .prop-icon-event {
             color: var(--pc-event-color);
-            width: 20px !important;
         }
 
         .prop-icon-event[invalid="true"] {
@@ -536,33 +749,170 @@
         }
 
         .common-properties-button {
-            width: 99%;
-            font-size: 12px;
-            line-height: 25px;
-            color: var(--pc-active-icon-color);
+            width: 100%;
+            height: 30px;
+            box-sizing: border-box;
+            font-size: 13px;
+            font-family: var(--pc-row-font-family);
+            font-weight: 500;
+            line-height: 1;
+            color: var(--guardian-primary-color);
             background-color: var(--pc-background-color);
-            border-radius: 4px;
-            border: 1px solid var(--color-primary, #4169E2);
+            border-radius: 8px;
+            border: 1px solid var(--pc-border-color);
             cursor: pointer;
+
+            &:hover {
+                border-color: var(--guardian-primary-color);
+                background: color-mix(in srgb, var(--guardian-primary-color) 6%, transparent);
+            }
         }
 
         .common-properties-button-container {
             display: flex;
             justify-content: center;
             align-self: center;
-            padding: 3px;
+            padding: 2px 0;
         }
 
         .custom-properties {
             display: contents;
         }
+
+        p-select,
+        p-multiselect {
+            width: 100%;
+            height: var(--pc-control-height);
+            min-height: var(--pc-control-height);
+            box-sizing: border-box;
+            border-radius: 6px;
+            border: 1px solid var(--pc-border-color);
+            background: var(--guardian-background, #fff);
+            box-shadow: none;
+            display: flex !important;
+            flex-direction: row;
+            flex-wrap: nowrap;
+            align-items: center;
+            overflow: hidden;
+            font-size: 13px;
+            font-family: var(--pc-row-font-family);
+
+            &:not(.p-disabled):hover {
+                border-color: var(--guardian-primary-color);
+            }
+
+            &.p-focus,
+            &.p-inputwrapper-focus {
+                border-color: var(--guardian-primary-color);
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--guardian-primary-color) 15%, transparent);
+            }
+        }
+
+        p-select .p-select-label,
+        p-multiselect .p-multiselect-label {
+            flex: 1 1 auto;
+            min-width: 0;
+            height: 100%;
+            padding: 0 10px;
+            font-size: 13px;
+            color: var(--guardian-font-color, #23252E);
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        p-select .p-select-label.p-placeholder,
+        p-multiselect .p-multiselect-label.p-placeholder {
+            color: var(--guardian-font-color-secondary, #848FA9);
+        }
+
+        p-select .p-select-dropdown,
+        p-multiselect .p-multiselect-dropdown {
+            flex: 0 0 auto;
+            width: 24px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--guardian-font-color-secondary, #848FA9);
+        }
+
+        // PrimeNG p-checkbox is used in some config editors instead of a
+        // native checkbox. Render it as the same toggle switch so the
+        // inspector controls stay consistent.
+        p-checkbox {
+            display: inline-block;
+            width: 40px;
+            height: 20px;
+            margin: 4px 0;
+
+            .p-checkbox,
+            .p-checkbox-box {
+                width: 40px !important;
+                height: 20px !important;
+                min-width: 40px;
+            }
+
+            .p-checkbox-input {
+                width: 40px;
+                height: 20px;
+                cursor: pointer;
+            }
+
+            .p-checkbox-box {
+                position: relative;
+                border-radius: 20px !important;
+                border: none !important;
+                background: var(--pc-border-color, #E1E7EF) !important;
+                box-shadow: none !important;
+                transition: background 0.15s ease;
+
+                &::after {
+                    content: "";
+                    position: absolute;
+                    top: 3px;
+                    left: 3px;
+                    width: 14px;
+                    height: 14px;
+                    border-radius: 50%;
+                    background: #fff;
+                    box-shadow: 0 1px 2px var(--guardian-shadow, #00000024);
+                    transition: transform 0.15s ease;
+                }
+            }
+
+            .p-checkbox-icon {
+                display: none !important;
+            }
+
+            &.p-checkbox-checked .p-checkbox-box {
+                background: var(--guardian-primary-color) !important;
+
+                &::after {
+                    transform: translateX(20px);
+                }
+            }
+        }
+    }
+
+    // Block-specific config editors are inserted as sibling components
+    // inside .table-body via ViewContainerRef. Their custom-element hosts
+    // default to display:inline, which shrink-wraps the .properties table
+    // inside them and defeats table-layout:fixed (columns size to content
+    // instead of filling the rail). Force the hosts to fill the width.
+    .grid-setting .table-body > *:not(table) {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .grid-setting {
         position: relative;
         height: auto;
         width: 100%;
-        overflow: auto;
+        overflow: visible;
 
         .loading {
             background: color-mix(in srgb, var(--guardian-background, #fff) 70%, transparent);
@@ -587,5 +937,53 @@
             pointer-events: none;
             filter: grayscale(1);
         }
+    }
+}
+
+// PrimeNG select/multiSelect overlays render via appendTo="body" and land
+// outside .policy-configuration's DOM subtree, so ::ng-deep scoping above
+// can't reach them. panelStyleClass="pc-select-panel" tags only our own
+// overlays, so this stays global on purpose without leaking to other
+// p-select/p-multiSelect usages elsewhere in the app.
+::ng-deep .pc-select-panel {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+
+    .p-select-header,
+    .p-multiselect-header {
+        padding: 8px;
+    }
+
+    .p-select-filter,
+    .p-multiselect-filter {
+        height: 32px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .p-select-list,
+    .p-multiselect-list {
+        padding: 4px;
+        gap: 2px;
+    }
+
+    .p-select-option,
+    .p-multiselect-option {
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .p-checkbox {
+        width: 16px;
+        height: 16px;
+    }
+
+    .p-checkbox-box {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
     }
 }

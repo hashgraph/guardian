@@ -95,7 +95,7 @@ export class PolicyTreeComponent implements OnInit {
     private root!: PolicyBlock;
     private collapsedMap: Map<string, boolean> = new Map<string, boolean>();
     private eventsDisabled = false;
-    private paddingLeft = 40;
+    private paddingLeft = 32;
 
     private tooltip!: HTMLDivElement;
     private canvas!: EventCanvas;
@@ -997,7 +997,7 @@ export class PolicyTreeComponent implements OnInit {
         const next = items[index]?.data;
         const lvl = Math.max(1, next && next > prev ? next : prev);
         const placeholder = event.item.getPlaceholderElement()
-        placeholder.style.paddingLeft = `${40 * lvl}px`;
+        placeholder.style.paddingLeft = `${32 * lvl}px`;
     }
 
     public onDragEntered(event: any) {
@@ -1009,7 +1009,7 @@ export class PolicyTreeComponent implements OnInit {
         const next = items[index]?.data;
         const lvl = Math.max(1, next && next > prev ? next : prev);
         const placeholder = event.item.getPlaceholderElement()
-        placeholder.style.paddingLeft = `${40 * lvl}px`;
+        placeholder.style.paddingLeft = `${32 * lvl}px`;
     }
 
     public onDragSortPredicate(index: number): boolean {

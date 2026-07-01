@@ -1,6 +1,7 @@
 <!-- UI Prop -->
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propHeader">
       <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
         [attr.collapse]="propHidden.options">

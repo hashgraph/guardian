@@ -78,7 +78,7 @@ export class Options {
             [
                 { id: 'blocks', size: '225px' },
                 { id: 'tree', size: 'auto' },
-                { id: 'properties', size: '465px' },
+                { id: 'properties', size: '340px' },
             ]
         );
         this._propertiesOrder = new ArrayProperty(prefix + 'PROPERTIES_ORDER', [
