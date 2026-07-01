@@ -1,6 +1,7 @@
 <!-- UI Prop -->
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     @if (properties.blockType=='interfaceStepBlock') {
       <tr class="propRow">
         <td class="propRowCol"></td>
@@ -11,11 +12,12 @@
         </td>
       </tr>
     }
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
       </td>
-      <td class="propHeaderCell cellName">UI</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -37,6 +39,7 @@
           optionLabel="label"
           optionValue="value"
           [appendTo]="'body'"
+          panelStyleClass="pc-select-panel"
           >
         </p-select>
       </td>

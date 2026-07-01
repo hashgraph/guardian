@@ -266,28 +266,29 @@
         <ng-template #configurationBlocks let-id="id" let-size="size">
           <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
             [attr.resizing-id]="id" [cdkDragStartDelay]="100"
-            [ngStyle]="{ width: options.libraryCollapsed ? '44px' : size, 'flex-basis': options.libraryCollapsed ? '44px' : size }"
             [class.collapsed]="options.libraryCollapsed"
             cdkDrag class="left-toolbar">
             <i *cdkDragPreview class="pi pi-list"></i>
             <div class="pc-tabs">
-              <div cdkDragHandle class="pc-tabs-headers">
-                <div (click)="selectLibrary('components')" [attr.selected]="options.components"
-                  class="tab-header tab-header-min" title="Blocks">
-                  <svg-icon class="icon-style-article action-color" src="/assets/images/icons/article.svg"
-                  svgClass="icon-style-article action-color"></svg-icon>
-                  <span>Blocks</span>
-                </div>
-                <div (click)="selectLibrary('moduleLibrary')" [attr.selected]="options.moduleLibrary"
-                  class="tab-header tab-header-min" title="Modules">
-                  <svg-icon class="action-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
-                  <span>Modules</span>
-                </div>
-                <div (click)="selectLibrary('toolLibrary')" [attr.selected]="options.toolLibrary"
-                  class="tab-header tab-header-min" title="Tools">
-                  <svg-icon class="icon-style-handyman" src="/assets/images/icons/handyman.svg"
-                  svgClass="icon-style-handyman"></svg-icon>
-                  <span>Tools</span>
+              <div cdkDragHandle class="pc-tabs-headers pc-tabs-headers--library">
+                <div class="library-segment">
+                  <div (click)="selectLibrary('components')" [attr.selected]="options.components"
+                    class="tab-header tab-header-min" title="Blocks">
+                    <svg-icon class="icon-style-article action-color" src="/assets/images/icons/article.svg"
+                    svgClass="icon-style-article action-color"></svg-icon>
+                    <span>Blocks</span>
+                  </div>
+                  <div (click)="selectLibrary('moduleLibrary')" [attr.selected]="options.moduleLibrary"
+                    class="tab-header tab-header-min" title="Modules">
+                    <svg-icon class="action-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
+                    <span>Modules</span>
+                  </div>
+                  <div (click)="selectLibrary('toolLibrary')" [attr.selected]="options.toolLibrary"
+                    class="tab-header tab-header-min" title="Tools">
+                    <svg-icon class="icon-style-handyman" src="/assets/images/icons/handyman.svg"
+                    svgClass="icon-style-handyman"></svg-icon>
+                    <span>Tools</span>
+                  </div>
                 </div>
                 <div (click)="toggleLibrary()" class="library-collapse-toggle"
                   [title]="options.libraryCollapsed ? 'Expand library' : 'Collapse library'">
@@ -307,12 +308,10 @@
                     <div [attr.collapsed]="options.favoritesGroup"
                       [attr.readonly]="disableComponentMenu" class="components-group">
                       <div (click)="collapse('favoritesGroup')" class="components-group-name">
-                        <i class="pi pi-caret-down components-group-collapse"></i>
-                        <i class="pi pi-caret-right components-group-open"></i>
+                        <i class="pi pi-chevron-down components-group-collapse"></i>
+                        <i class="pi pi-chevron-right components-group-open"></i>
                         <i class="pi pi-star components-group-name-icon"></i>
-                        <span style="padding-left: 24px">
-                          Favorites ({{ componentsList.favorites.length }})
-                        </span>
+                        <span>Favorites ({{ componentsList.favorites.length }})</span>
                       </div>
                       <div class="components-group-body readonly-status">
                         @for (item of componentsList.favorites; track item) {
@@ -339,8 +338,8 @@
                   <div [attr.collapsed]="options.uiGroup" [attr.readonly]="disableComponentMenu"
                     class="components-group">
                     <div (click)="collapse('uiGroup')" class="components-group-name">
-                      <i class="pi pi-caret-down components-group-collapse"></i>
-                      <i class="pi pi-caret-right components-group-open"></i>
+                      <i class="pi pi-chevron-down components-group-collapse"></i>
+                      <i class="pi pi-chevron-right components-group-open"></i>
                       <span class="group-dot group-dot--ui"></span>
                       <span>UI Components ({{ componentsList.uiComponents.length }})</span>
                     </div>
@@ -368,8 +367,8 @@
                   <div [attr.collapsed]="options.serverGroup" [attr.readonly]="disableComponentMenu"
                     class="components-group">
                     <div (click)="collapse('serverGroup')" class="components-group-name">
-                      <i class="pi pi-caret-down components-group-collapse"></i>
-                      <i class="pi pi-caret-right components-group-open"></i>
+                      <i class="pi pi-chevron-down components-group-collapse"></i>
+                      <i class="pi pi-chevron-right components-group-open"></i>
                       <span class="group-dot group-dot--server"></span>
                       <span>Server Components ({{ componentsList.serverBlocks.length }})</span>
                     </div>
@@ -397,8 +396,8 @@
                   <div [attr.collapsed]="options.addonsGroup" [attr.readonly]="disableComponentMenu"
                     class="components-group">
                     <div (click)="collapse('addonsGroup')" class="components-group-name">
-                      <i class="pi pi-caret-down components-group-collapse"></i>
-                      <i class="pi pi-caret-right components-group-open"></i>
+                      <i class="pi pi-chevron-down components-group-collapse"></i>
+                      <i class="pi pi-chevron-right components-group-open"></i>
                       <span class="group-dot group-dot--addon"></span>
                       <span>Addons ({{ componentsList.addons.length }})</span>
                     </div>
@@ -426,8 +425,8 @@
                     <div [attr.collapsed]="options.unGroup"
                       [attr.readonly]="disableComponentMenu" class="components-group">
                       <div (click)="collapse('unGroup')" class="components-group-name">
-                        <i class="pi pi-caret-down components-group-collapse"></i>
-                        <i class="pi pi-caret-right components-group-open"></i>
+                        <i class="pi pi-chevron-down components-group-collapse"></i>
+                        <i class="pi pi-chevron-right components-group-open"></i>
                         <span>unGrouped</span>
                       </div>
                       <div class="components-group-body readonly-status">
@@ -465,11 +464,10 @@
                       [attr.collapsed]="options.favoritesModulesGroup" [attr.readonly]="disableModuleMenu"
                       class="components-group">
                       <div (click)="collapse('favoritesModulesGroup')" class="components-group-name">
-                        <i class="pi pi-caret-down components-group-collapse"></i>
-                        <i class="pi pi-caret-right components-group-open"></i>
+                        <i class="pi pi-chevron-down components-group-collapse"></i>
+                        <i class="pi pi-chevron-right components-group-open"></i>
                         <i class="pi pi-star components-group-name-icon"></i>
-                        <span style="padding-left: 22px">Favorites
-                        ({{ modulesList.favorites.length }})</span>
+                        <span>Favorites ({{ modulesList.favorites.length }})</span>
                       </div>
                       <div class="components-group-body readonly-status">
                         @for (item of modulesList.favorites; track item) {
@@ -504,8 +502,8 @@
                   <div [attr.collapsed]="options.defaultModulesGroup" [attr.readonly]="disableModuleMenu"
                     class="components-group">
                     <div (click)="collapse('defaultModulesGroup')" class="components-group-name">
-                      <i class="pi pi-caret-down components-group-collapse"></i>
-                      <i class="pi pi-caret-right components-group-open"></i>
+                      <i class="pi pi-chevron-down components-group-collapse"></i>
+                      <i class="pi pi-chevron-right components-group-open"></i>
                       <span>Default Modules ({{ modulesList.defaultModules.length }})</span>
                     </div>
                     <div class="components-group-body readonly-status">
@@ -541,8 +539,8 @@
                   <div [attr.collapsed]="options.customModulesGroup" [attr.readonly]="disableModuleMenu"
                     class="components-group">
                     <div (click)="collapse('customModulesGroup')" class="components-group-name">
-                      <i class="pi pi-caret-down components-group-collapse"></i>
-                      <i class="pi pi-caret-right components-group-open"></i>
+                      <i class="pi pi-chevron-down components-group-collapse"></i>
+                      <i class="pi pi-chevron-right components-group-open"></i>
                       <span>Custom models ({{ modulesList.customModules.length }})</span>
                     </div>
                     <div class="components-group-body readonly-status">
@@ -587,8 +585,8 @@
                   <div [attr.collapsed]="options.customToolsGroup" [attr.readonly]="disableToolMenu"
                     class="components-group">
                     <div (click)="collapse('customToolsGroup')" class="components-group-name">
-                      <i class="pi pi-caret-down components-group-collapse"></i>
-                      <i class="pi pi-caret-right components-group-open"></i>
+                      <i class="pi pi-chevron-down components-group-collapse"></i>
+                      <i class="pi pi-chevron-right components-group-open"></i>
                       <span>Tools ({{ modulesList.customTools.length }})</span>
                     </div>
                     <div class="components-group-body readonly-status">
@@ -728,6 +726,39 @@
                   }
                 </div>
               </div>
+              @if (allSubModule && allSubModule.length) {
+                <div class="canvas-breadcrumb">
+                  @if (rootType === 'Policy') {
+                    <span class="canvas-breadcrumb-item" [class.active]="openFolder===policyTemplate"
+                      (click)="onOpenRoot(policyTemplate)">
+                      <svg-icon class="action-color" src="/assets/images/icons/article.svg"></svg-icon>
+                      <span>Policy</span>
+                    </span>
+                  }
+                  @if (rootType === 'Module') {
+                    <span class="canvas-breadcrumb-item" [class.active]="openFolder===moduleTemplate"
+                      (click)="onOpenRoot(moduleTemplate)">
+                      <svg-icon class="action-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
+                      <span>Module</span>
+                    </span>
+                  }
+                  @if (rootType === 'Tool') {
+                    <span class="canvas-breadcrumb-item" [class.active]="openFolder===toolTemplate"
+                      (click)="onOpenRoot(toolTemplate)">
+                      <svg-icon svgClass="tool-icon" src="/assets/images/icons/handyman.svg"></svg-icon>
+                      <span>Tool</span>
+                    </span>
+                  }
+                  @for (item of allSubModule; track item) {
+                    <i class="pi pi-chevron-right canvas-breadcrumb-sep"></i>
+                    <span class="canvas-breadcrumb-item" [class.active]="openFolder===item"
+                      (click)="onOpenModule(item)">
+                      <svg-icon class="edit-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
+                      <span>{{ item.localTag }}</span>
+                    </span>
+                  }
+                </div>
+              }
                         <div [ngClass]="{
                                 'tree-container': isTree
                             }" class="pc-tabs-content">
@@ -842,13 +873,6 @@
                       <div (click)="select('tokens')" [attr.selected]="options.tokens" class="tab-header">
                         Tokens
                       </div>
-                      <div (click)="collapse('rightTopMenu')" [attr.collapsed]="options.rightTopMenu"
-                        class="tabs-icon">
-                        <i
-                        class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                        <i
-                        class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
-                      </div>
                     </div>
                     <div [attr.readonly]="!isTree" class="pc-tabs-content">
                       <div [hidden]="!options.description" class="prop-container">
@@ -902,13 +926,6 @@
                       <div (click)="select('variablesModule')" [attr.selected]="options.variablesModule"
                         class="tab-header">
                         Variables
-                      </div>
-                      <div (click)="collapse('rightTopMenu')" [attr.collapsed]="options.rightTopMenu"
-                        class="tabs-icon">
-                        <i
-                        class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                        <i
-                        class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
                       </div>
                     </div>
                     <div [attr.readonly]="!isTree" class="pc-tabs-content">
@@ -966,24 +983,34 @@
                     [ngStyle]="{ height: size, 'flex-basis': size }"
                     class="right-bottom-toolbar">
                     <i *cdkDragPreview class="pi pi-align-left"></i>
+                    <div cdkDragHandle class="inspector-head inspector-head--panel">
+                      <div class="inspector-head-row">
+                        <span class="inspector-head-name" [title]="currentBlock.localTag">{{ currentBlock.localTag }}</span>
+                        <span class="inspector-head-type">{{ currentBlock.blockType }}</span>
+                      </div>
+                      @if (currentBlock.parent && !currentBlock.parent.isRoot) {
+                        <div class="inspector-head-parent"
+                          (click)="onSelect({ block: currentBlock.parent, isMultiSelect: false })"
+                          title="Select parent block">
+                          <span class="inspector-head-parent-label">in</span>
+                          <span class="inspector-head-parent-name">{{ currentBlock.parent.localTag }}</span>
+                          <i class="pi pi-arrow-up-right"></i>
+                        </div>
+                      }
+                    </div>
                     <div class="pc-tabs">
-                      <div cdkDragHandle class="pc-tabs-headers">
-                        <div (click)="select('properties')" [attr.selected]="options.properties || options.artifacts"
-                          class="tab-header">
-                          Settings
-                        </div>
-                        <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
-                          Events
-                        </div>
-                        <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
-                          JSON
-                        </div>
-                        <div (click)="collapse('rightBottomMenu')"
-                          [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
-                          <i
-                          class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                          <i
-                          class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
+                      <div class="pc-tabs-headers pc-tabs-headers--segment">
+                        <div class="segment-track">
+                          <div (click)="select('properties')" [attr.selected]="options.properties || options.artifacts"
+                            class="tab-header">
+                            Properties
+                          </div>
+                          <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
+                            Events
+                          </div>
+                          <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
+                            JSON
+                          </div>
                         </div>
                       </div>
                       <div [attr.readonly]="!isTree" class="pc-tabs-content">
@@ -1064,11 +1091,6 @@
                       <div cdkDragHandle class="pc-tabs-headers">
                         <div (click)="select('events')" [attr.selected]="true" class="tab-header">
                           Events
-                        </div>
-                        <div (click)="collapse('rightBottomMenu')"
-                          [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
-                          <i class="pi pi-arrow-up-right-and-arrow-down-left-from-center tabs-icon-full"></i>
-                          <i class="pi  pi-arrow-down-left-and-arrow-up-right-to-center tabs-icon-min"></i>
                         </div>
                       </div>
                       <div class="pc-tabs-content">
