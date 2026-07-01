@@ -15,7 +15,6 @@ const FEEDBACK_MAILTO_TEMPLATE =
 })
 export class NextGenBannerComponent {
     public guardianVersion: string = '';
-    public hidden: boolean = false;
 
     constructor(
         private featureFlagsService: FeatureFlagsService,
@@ -27,11 +26,7 @@ export class NextGenBannerComponent {
     }
 
     get enabled(): boolean {
-        const enabled = this.featureFlagsService.isNextGenUiEnabled();
-        if (!enabled) {
-            this.hidden = false;
-        }
-        return enabled && !this.hidden;
+        return this.featureFlagsService.isNextGenUiEnabled();
     }
 
     get feedbackMailto(): string {
@@ -40,7 +35,7 @@ export class NextGenBannerComponent {
             .replace('{ORIGIN}', encodeURIComponent(window.location.href));
     }
 
-    close(): void {
-        this.hidden = true;
+    turnOff(): void {
+        this.featureFlagsService.setNextGenUiEnabled(false);
     }
 }

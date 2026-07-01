@@ -53,15 +53,20 @@
     cursor: pointer;
 }
 
-.next-gen-banner-close {
+.next-gen-banner-turn-off {
     position: absolute;
     top: 50%;
     right: 16px;
     transform: translateY(-50%);
-    border: 0;
     padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--guardian-on-primary-color);
     background: transparent;
     color: var(--guardian-on-primary-color);
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    white-space: nowrap;
     cursor: pointer;
-    font-size: 18px;
 }
