@@ -335,6 +335,10 @@
         @if (isTree) {
           <div (click)="eventMenu.toggle($event)" class="top-toolbar-group all-status event-color"
             style="width: 80px">
+            @if (eventVisible =='Selected') {
+              <svg-icon class="event-color" src="/assets/images/icons/flash_on.svg"
+              svgClass="icon-style-flash_on event-color"></svg-icon>
+            }
             @if (eventVisible =='All') {
               <svg-icon class="event-color" src="/assets/images/icons/flash_on.svg"
               svgClass="icon-style-flash_on event-color"></svg-icon>
@@ -352,6 +356,9 @@
             @if (eventVisible =='None') {
               <svg-icon class="event-color" src="/assets/images/icons/flash_off.svg"
               svgClass="icon-style-flash_off event-color"></svg-icon>
+            }
+            @if (eventVisible =='Selected') {
+              <span class="event-color">Selected</span>
             }
             @if (eventVisible =='All') {
               <span class="event-color">All Events</span>
@@ -422,27 +429,33 @@
         }
         <ng-template #configurationBlocks let-id="id" let-size="size">
           <div (cdkDragDropped)="onDropSection($event)" (cdkDragStarted)="onDragSection($event)"
-            [attr.resizing-id]="id" [cdkDragStartDelay]="100" [ngStyle]="{ width: size, 'flex-basis': size }"
+            [attr.resizing-id]="id" [cdkDragStartDelay]="100"
+            [ngStyle]="{ width: options.libraryCollapsed ? '44px' : size, 'flex-basis': options.libraryCollapsed ? '44px' : size }"
+            [class.collapsed]="options.libraryCollapsed"
             cdkDrag class="left-toolbar">
             <i *cdkDragPreview class="pi pi-list"></i>
             <div class="pc-tabs">
               <div cdkDragHandle class="pc-tabs-headers">
-                <div (click)="select('components')" [attr.selected]="options.components"
-                  class="tab-header tab-header-min">
+                <div (click)="selectLibrary('components')" [attr.selected]="options.components"
+                  class="tab-header tab-header-min" title="Blocks">
                   <svg-icon class="icon-style-article action-color" src="/assets/images/icons/article.svg"
                   svgClass="icon-style-article action-color"></svg-icon>
                   <span>Blocks</span>
                 </div>
-                <div (click)="select('moduleLibrary')" [attr.selected]="options.moduleLibrary"
-                  class="tab-header tab-header-min">
+                <div (click)="selectLibrary('moduleLibrary')" [attr.selected]="options.moduleLibrary"
+                  class="tab-header tab-header-min" title="Modules">
                   <svg-icon class="action-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
                   <span>Modules</span>
                 </div>
-                <div (click)="select('toolLibrary')" [attr.selected]="options.toolLibrary"
-                  class="tab-header tab-header-min">
+                <div (click)="selectLibrary('toolLibrary')" [attr.selected]="options.toolLibrary"
+                  class="tab-header tab-header-min" title="Tools">
                   <svg-icon class="icon-style-handyman" src="/assets/images/icons/handyman.svg"
                   svgClass="icon-style-handyman"></svg-icon>
                   <span>Tools</span>
+                </div>
+                <div (click)="toggleLibrary()" class="library-collapse-toggle"
+                  [title]="options.libraryCollapsed ? 'Expand library' : 'Collapse library'">
+                  <i [ngClass]="options.libraryCollapsed ? 'pi pi-angle-double-right' : 'pi pi-angle-double-left'"></i>
                 </div>
               </div>
               <div #menuList="cdkDropList" (cdkDropListDropped)="drop($event)"
@@ -844,6 +857,19 @@
                           <div class="theme-rule-description">{{ theme.default.description || '-' }}</div>
                         </div>
                       }
+                      <div class="theme-legends-divider"></div>
+                      <div class="theme-rule">
+                        <div class="theme-rule-prev">
+                          <div class="action-event-icon"></div>
+                        </div>
+                        <div class="theme-rule-description">Action event</div>
+                      </div>
+                      <div class="theme-rule">
+                        <div class="theme-rule-prev">
+                          <div class="refresh-event-icon"></div>
+                        </div>
+                        <div class="theme-rule-description">Refresh event</div>
+                      </div>
                     </div>
                   }
                   @if (!isTree) {
@@ -884,6 +910,7 @@
                     (search)="onBlockSearch($event)"
                     (select)="onSelect($event)"
                     (test)="onTest($event)"
+                    (addChild)="blockPickerQuery=''; blockPicker.toggle($event)"
                     [(currentBlock)]="currentBlock"
                     [active]="eventVisible"
                     [blocks]="openFolder.dataSource"
@@ -927,15 +954,17 @@
             @for (properties of options.propertiesOrder; track properties; let last = $last) {
               @switch (properties.id) {
                 @case ('policy') {
-                  <ng-container
-                  *ngTemplateOutlet="propertiesPolicy; context: { size: properties.size, id: properties.id }"></ng-container>
+                  @if (rootType !== 'Policy') {
+                    <ng-container
+                    *ngTemplateOutlet="propertiesPolicy; context: { size: properties.size, id: properties.id }"></ng-container>
+                  }
                 }
                 @case ('block') {
                   <ng-container
                   *ngTemplateOutlet="propertiesBlock; context: { size: properties.size, id: properties.id }"></ng-container>
                 }
               }
-              @if (!last) {
+              @if (!last && !(properties.id === 'policy' && rootType === 'Policy')) {
                 <div (onStopResizing)="stopResizingProperties($event)"
                   [ngStyle]="{ visibility: (!options.rightTopMenu && !options.rightBottomMenu) ? 'visible' : 'hidden' }"
                   [vertical]="true" class="resizing-vertical" resizing>
@@ -1376,7 +1405,31 @@
   </div>
 </p-popover>
 
+<p-popover #blockPicker>
+  <div class="block-picker">
+    <div class="block-picker-search">
+      <i class="pi pi-search"></i>
+      <input [(ngModel)]="blockPickerQuery" placeholder="Search blocks" autofocus>
+    </div>
+    <div class="block-picker-list">
+      @for (item of pickerBlocks; track item.type) {
+        <div (click)="addPickedBlock(item, blockPicker)" class="block-picker-item">
+          <i [ngClass]="'pi pi-' + item.icon" class="block-picker-item-icon"></i>
+          <span>{{ item.name }}</span>
+        </div>
+      } @empty {
+        <div class="block-picker-empty">No blocks found</div>
+      }
+    </div>
+  </div>
+</p-popover>
+
 <p-popover #eventMenu>
+  <div (click)="onShowEvent('Selected'); eventMenu.hide()" class="toolbar-menu all-status event-color">
+    <svg-icon class="icon-style-flash_on event-color" src="/assets/images/icons/flash_on.svg"
+    svgClass="icon-style-flash_on event-color"></svg-icon>
+    <span class="action-color">Selected Block Only</span>
+  </div>
   <div (click)="onShowEvent('All'); eventMenu.hide()" class="toolbar-menu all-status event-color">
     <svg-icon class="icon-style-flash_on event-color" src="/assets/images/icons/flash_on.svg"
     svgClass="icon-style-flash_on event-color"></svg-icon>

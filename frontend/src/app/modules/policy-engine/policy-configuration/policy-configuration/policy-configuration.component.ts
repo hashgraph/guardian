@@ -102,7 +102,9 @@ export class PolicyConfigurationComponent implements OnInit {
     public searchModule: string = '';
     public storage: PolicyStorage;
     public copyBlocksMode: boolean = false;
-    public eventVisible: string = 'All';
+    public eventVisible: string = 'Selected';
+    public blockPickerQuery: string = '';
+    private _allBlocks: any[] = [];
     public blockSearchData: any = null;
     public code!: string;
     public isSuggestionsEnabled = false;
@@ -923,6 +925,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private updateComponents() {
         const all = this.registeredService.getAll();
+        this._allBlocks = all.filter((block: any) => !block?.deprecated);
         this.componentsList.favorites = [];
         this.componentsList.uiComponents = [];
         this.componentsList.serverBlocks = [];
@@ -1431,6 +1434,18 @@ export class PolicyConfigurationComponent implements OnInit {
         this.options.save();
     }
 
+    public toggleLibrary() {
+        this.options.change('libraryCollapsed');
+        this.options.save();
+    }
+
+    public selectLibrary(name: string) {
+        if (this.options.libraryCollapsed) {
+            this.options.libraryCollapsed = false;
+        }
+        this.select(name);
+    }
+
     public collapse(name: string) {
         this.options.collapse(name);
         this.options.save();
@@ -1680,6 +1695,19 @@ export class PolicyConfigurationComponent implements OnInit {
             this.changeDetector.detectChanges();
         }
         this.updateTemporarySchemas();
+    }
+
+    public get pickerBlocks(): any[] {
+        const q = this.blockPickerQuery ? this.blockPickerQuery.toLowerCase() : '';
+        if (!q) {
+            return this._allBlocks;
+        }
+        return this._allBlocks.filter((block: any) => block.search.indexOf(q) !== -1);
+    }
+
+    public addPickedBlock(item: any, picker: any) {
+        this.onAdd(item);
+        picker?.hide();
     }
 
     public onAdd(btn: any) {

@@ -35,6 +35,7 @@ export class Options {
     private readonly _favorites: ObjectProperty<boolean>;
     private readonly _favoritesModules: ObjectProperty<boolean>;
     private readonly _legendActive: BooleanProperty;
+    private readonly _libraryCollapsed: BooleanProperty;
     private readonly _configurationOrder: ArrayProperty<OrderOption>;
     private readonly _propertiesOrder: ArrayProperty<OrderOption>;
 
@@ -71,6 +72,7 @@ export class Options {
         this._favorites = new ObjectProperty(prefix + 'FAVORITES', {});
         this._favoritesModules = new ObjectProperty(prefix + 'FAVORITES_MODULES', {});
         this._legendActive = new BooleanProperty(prefix + 'LEGEND', true);
+        this._libraryCollapsed = new BooleanProperty(prefix + 'LIBRARY_COLLAPSED', false);
         this._configurationOrder = new ArrayProperty(
             prefix + 'CONFIGURATION_ORDER',
             [
@@ -116,6 +118,7 @@ export class Options {
             this.outputsModule = this._outputsModule.load();
             this.variablesModule = this._variablesModule.load();
             this.legendActive = this._legendActive.load();
+            this.libraryCollapsed = this._libraryCollapsed.load();
             this._favorites.load();
             this._favoritesModules.load();
             this._configurationOrder.load();
@@ -158,6 +161,7 @@ export class Options {
             this._outputsModule.save();
             this._variablesModule.save();
             this._legendActive.save();
+            this._libraryCollapsed.save();
             this._configurationOrder.save();
             this._propertiesOrder.save();
         } catch (error) {
@@ -279,6 +283,10 @@ export class Options {
 
     public get legendActive(): boolean {
         return this._legendActive.value;
+    }
+
+    public get libraryCollapsed(): boolean {
+        return this._libraryCollapsed.value;
     }
 
     public get configurationOrder(): OrderOption[] {
@@ -496,6 +504,10 @@ export class Options {
         this._legendActive.value = value;
     }
 
+    public set libraryCollapsed(value: boolean) {
+        this._libraryCollapsed.value = value;
+    }
+
     public set configurationOrder(value: OrderOption[]) {
         if (Array.isArray(value)) {
             this._configurationOrder.value = value;
@@ -617,6 +629,9 @@ export class Options {
         switch (name) {
             case 'legendActive':
                 this.legendActive = !this.legendActive;
+                break;
+            case 'libraryCollapsed':
+                this.libraryCollapsed = !this.libraryCollapsed;
                 break;
             default:
                 return;

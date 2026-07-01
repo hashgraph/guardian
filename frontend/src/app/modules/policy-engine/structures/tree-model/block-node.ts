@@ -31,6 +31,7 @@ export class FlatBlockNode {
     public canDown!: boolean;
     public canLeft!: boolean;
     public canRight!: boolean;
+    public hasEvents!: boolean;
 
     constructor(node: PolicyItem) {
         this.node = node;
