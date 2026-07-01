@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-    ArrowLeft, FileJson, ExternalLink,
+    FileJson, ExternalLink,
 } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
 
@@ -29,16 +29,6 @@ const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
 
 <template>
     <div class="space-y-3">
-        <!-- Breadcrumb -->
-        <div class="flex items-center gap-2 text-sm text-muted-foreground">
-            <NuxtLink to="/projects" class="inline-flex items-center gap-1.5 hover:text-foreground transition-colors">
-                <ArrowLeft class="h-3.5 w-3.5" />
-                Projects
-            </NuxtLink>
-            <span>/</span>
-            <span class="text-foreground truncate max-w-[320px]">{{ project.name }}</span>
-        </div>
-
         <!-- Title row -->
         <div class="flex items-start justify-between gap-4">
             <div class="min-w-0">

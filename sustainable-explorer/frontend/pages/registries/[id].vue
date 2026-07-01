@@ -1,12 +1,10 @@
 <script setup lang="ts">
 import {
-    ArrowLeft,
     Building2,
     Globe,
     FileJson,
     Copy,
     Check,
-    ChevronRight,
     AlertCircle,
     ExternalLink,
     Shield,
@@ -268,19 +266,6 @@ function openRawData() {
 
 <template>
     <div class="space-y-6 p-6">
-        <!-- Breadcrumb -->
-        <div class="flex items-center gap-2 text-sm text-muted-foreground">
-            <NuxtLink
-                to="/registries"
-                class="hover:text-foreground transition-colors flex items-center gap-1"
-            >
-                <ArrowLeft class="h-3.5 w-3.5" />
-                {{ $t('registries.detail.breadcrumb') }}
-            </NuxtLink>
-            <ChevronRight class="h-3.5 w-3.5" />
-            <span class="text-foreground font-medium truncate">{{ registry?.name ?? registryId }}</span>
-        </div>
-
         <!-- Loading skeleton -->
         <template v-if="pending">
             <div class="space-y-4">

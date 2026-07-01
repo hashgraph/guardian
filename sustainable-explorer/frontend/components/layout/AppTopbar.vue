@@ -39,6 +39,13 @@ async function resolveDetailLabel(parentPath: string, paramId: string) {
     let endpoint: string | null = null;
     if (parentPath === '/projects') endpoint = `projects/${paramId}`;
     else if (parentPath === '/methodologies') endpoint = `methodologies/${paramId}`;
+    else if (parentPath === '/registries') {
+        endpoint = paramId.startsWith('did:')
+            ? `registries/${encodeURIComponent(paramId)}`
+            : `registries/id/${paramId}`;
+    } else if (parentPath === '/credits') {
+        endpoint = `credits/${encodeURIComponent(paramId)}/raw`;
+    }
     if (!endpoint) return;
 
     if (!import.meta.client) return;
@@ -47,11 +54,11 @@ async function resolveDetailLabel(parentPath: string, paramId: string) {
     const baseURL = config.public.apiBaseUrl as string;
 
     try {
-        const res = await $fetch<{ name?: string; displayName?: string }>(
+        const res = await $fetch<{ name?: string; displayName?: string; credit?: { name?: string } }>(
             `/api/v1/${network.value}/${endpoint}`,
             { baseURL },
         );
-        const label = res?.name || res?.displayName;
+        const label = res?.name || res?.displayName || res?.credit?.name;
         if (label) detailLabelCache.value[cacheKey] = label;
     } catch {
         // Leave the cache untouched on error — breadcrumb shows raw id as fallback.
@@ -342,10 +349,11 @@ function onSearchKeydown(e: KeyboardEvent) {
                 </NuxtLink>
                 <span
                     v-else
-                    class="flex items-center gap-1 text-xs font-medium text-foreground truncate max-w-[140px] md:max-w-[240px]"
+                    class="flex items-center gap-1 text-xs font-medium text-foreground min-w-0 max-w-[140px] md:max-w-[240px]"
+                    :title="crumb.label"
                 >
                     <component :is="crumb.icon" v-if="crumb.icon" class="h-3.5 w-3.5 shrink-0" />
-                    {{ crumb.label }}
+                    <span class="truncate">{{ crumb.label }}</span>
                 </span>
             </template>
         </nav>
