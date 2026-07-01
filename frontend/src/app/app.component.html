@@ -10,10 +10,10 @@
   @if (url !== 'login') {
     <app-new-header [remoteContainerMethod]="resizeMenu"></app-new-header>
   }
+  @if (url !== 'login') {
+    <app-next-gen-banner></app-next-gen-banner>
+  }
   <div class="content" id="main-content">
-    @if (url !== 'login') {
-      <app-next-gen-banner></app-next-gen-banner>
-    }
     <router-outlet></router-outlet>
   </div>
 </div>
