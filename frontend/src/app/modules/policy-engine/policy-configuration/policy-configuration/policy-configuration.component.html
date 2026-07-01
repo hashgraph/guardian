@@ -16,13 +16,12 @@
   @if (isModuleValid) {
     <div [attr.readonly]="readonly" class="policy-configuration">
       <div class="top-toolbar">
+        <!-- ============ LEFT ZONE: identity + status ============ -->
         @if (rootType === 'Policy') {
-          <div (click)="backToPolicies()" class="top-toolbar-btn all-status" title="Back">
+          <div (click)="backToPolicies()" class="top-toolbar-btn icon-only all-status" title="Back">
             <i class="pi pi-arrow-left"></i>
-            <span>Back</span>
           </div>
-          <div (click)="identityMenu.toggle($event)" class="policy-identity all-status"
-            title="Policy details">
+          <div (click)="identityMenu.toggle($event)" class="policy-identity all-status">
             <div class="policy-identity-icon">
               <svg-icon src="/assets/images/icons/article.svg"
                 svgClass="icon-style-article action-color"></svg-icon>
@@ -33,66 +32,114 @@
             </div>
             <i class="pi pi-chevron-down policy-identity-caret"></i>
           </div>
-          <div class="delimiter"></div>
-          <div (click)="savePolicy()" class="top-toolbar-btn readonly-status" title="Save Policy">
-            <i class="pi pi-save"></i>
-            <span>Save</span>
-          </div>
-          @if (user.POLICIES_POLICY_CREATE) {
-            <div (click)="saveAsPolicy()"
-              [class.readonly-status]="policyTemplate.isDemo" class="top-toolbar-btn all-status"
-              title="Save Policy">
-              <i class="pi pi-save"></i>
-              <span>Save As</span>
-            </div>
-          }
-          <div (click)="openPolicyWizardDialog()" class="top-toolbar-btn readonly-status wizard-btn"
-            title="Policy Wizard">
-            <svg-icon src="/assets/images/icons/auto_awesome.svg" svgClass="icon-style-auto_awesome"></svg-icon>
-            <span>Wizard</span>
-          </div>
-          <div class="delimiter"></div>
           @if (policyTemplate.isDraft) {
-            <div (click)="publishMenu.toggle($event)"
-              class="top-toolbar-group all-status">
-              <i class="pi pi-pencil edit-color"></i>
-              <span class="edit-color">Draft</span>
-              <div class="expand-group">
-                <i class="pi pi-sort-down-fill"></i>
-              </div>
+            <div class="status-badge status-badge--draft">
+              <i class="pi pi-pencil"></i>
+              <span>Draft</span>
             </div>
           }
           @if (policyTemplate.isDryRun) {
-            <div (click)="dryRunMenu.toggle($event)"
-              class="top-toolbar-group all-status" style="width: 80px">
+            <div (click)="dryRunMenu.toggle($event)" class="status-badge status-badge--dryrun" title="Dry Run">
               <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
-              <span class="dry-run-color font-size-xs">
-                In Dry Run
-              </span>
-              <div class="expand-group">
-                <i class="pi pi-sort-down-fill"></i>
-              </div>
+              <span>In Dry Run</span>
+              <i class="pi pi-sort-down-fill status-badge-caret"></i>
             </div>
           }
           @if (policyTemplate.isPublished) {
-            <div class="top-toolbar-btn top-toolbar-label">
-              <i class="pi pi-globe publish-color"></i>
-              <span class="publish-color">Published</span>
+            <div class="status-badge status-badge--published">
+              <i class="pi pi-globe"></i><span>Published</span>
             </div>
           }
           @if (policyTemplate.isDemo) {
-            <div class="top-toolbar-btn top-toolbar-label">
-              <i class="pi pi-globe demo-color"></i>
-              <span class="demo-color">Demo</span>
+            <div class="status-badge status-badge--demo">
+              <i class="pi pi-globe"></i><span>Demo</span>
             </div>
           }
           @if (policyTemplate.isView) {
-            <div class="top-toolbar-btn top-toolbar-label">
-              <i class="pi pi-globe demo-color"></i>
-              <span class="demo-color">View</span>
+            <div class="status-badge status-badge--demo">
+              <i class="pi pi-globe"></i><span>View</span>
             </div>
           }
-          <div class="delimiter"></div>
+        }
+        @if (rootType === 'Module') {
+          <div (click)="backToModules()" class="top-toolbar-btn icon-only all-status" title="Back">
+            <i class="pi pi-arrow-left"></i>
+          </div>
+          @if (moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW) {
+            <div (click)="publishMenu2.toggle($event)" class="status-badge status-badge--draft">
+              <i class="pi pi-pencil"></i><span>Draft</span>
+              <i class="pi pi-sort-down-fill status-badge-caret"></i>
+            </div>
+          }
+          @if (moduleTemplate.isPublished) {
+            <div class="status-badge status-badge--published">
+              <i class="pi pi-globe"></i><span>Published</span>
+            </div>
+          }
+        }
+        @if (rootType === 'Tool') {
+          <div (click)="backToTools()" class="top-toolbar-btn icon-only all-status" title="Back">
+            <i class="pi pi-arrow-left"></i>
+          </div>
+          @if (toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW) {
+            <div (click)="publishMenu3.toggle($event)" class="status-badge status-badge--draft">
+              <i class="pi pi-pencil"></i><span>Draft</span>
+              <i class="pi pi-sort-down-fill status-badge-caret"></i>
+            </div>
+          }
+          @if (toolTemplate.isDryRun) {
+            <div (click)="dryRunMenu2.toggle($event)" class="status-badge status-badge--dryrun">
+              <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
+              <span>In Dry Run</span>
+              <i class="pi pi-sort-down-fill status-badge-caret"></i>
+            </div>
+          }
+          @if (toolTemplate.isPublished) {
+            <div class="status-badge status-badge--published">
+              <i class="pi pi-globe"></i><span>Published</span>
+            </div>
+          }
+        }
+
+        <div class="toolbar-spacer"></div>
+
+        <!-- ============ CENTER ZONE: view segment ============ -->
+        <div class="view-segment">
+          <div class="view-segment-item" [class.active]="currentView == 'blocks'"
+            (click)="onView('blocks')">Design</div>
+          <div class="view-segment-item" [class.active]="currentView == 'json'"
+            (click)="onView('json')">JSON</div>
+          <div class="view-segment-item" [class.active]="currentView == 'yaml'"
+            (click)="onView('yaml')">YAML</div>
+        </div>
+
+        <div class="toolbar-spacer"></div>
+
+        <!-- ============ RIGHT ZONE: actions ============ -->
+        @if (rootType === 'Policy') {
+          <div (click)="toggleCommandPalette()" class="top-toolbar-btn icon-only all-status command-palette-btn"
+            title="Command palette (⌘K)">
+            <i class="pi pi-search"></i>
+          </div>
+        }
+        @if (!readonly && isTree) {
+          <div (click)="undoPolicy()" [attr.storage-active]="storage.isUndo"
+            class="top-toolbar-btn icon-only readonly-status" title="Undo">
+            <i class="pi pi-undo"></i>
+          </div>
+          <div (click)="redoPolicy()" [attr.storage-active]="storage.isRedo"
+            class="top-toolbar-btn icon-only readonly-status" title="Redo">
+            <i class="pi pi-refresh"></i>
+          </div>
+          @if (rootTemplate.isPublishError) {
+            <div class="btn-new-block btn-label not-published-label">
+              <i class="pi pi-times"></i>
+              <span>Not published</span>
+            </div>
+          }
+        }
+        <div class="delimiter"></div>
+        @if (rootType === 'Policy') {
           @if (policyTemplate.isDraft) {
             <div
               class="top-toolbar-btn top-toolbar-group all-status validation"
@@ -104,7 +151,7 @@
               #validationBtn
               >
               <i class="pi pi-check-circle"></i>
-              <span>Validation</span>
+              <span>{{ validationCount > 0 ? 'Issues' : 'Valid' }}</span>
               @if (validationCount > 0) {
                 <div class="error-count">{{ validationCount }}</div>
               }
@@ -117,292 +164,81 @@
             </div>
           }
           @if (policyTemplate.isRun) {
-            <div
-              [routerLink]="['/policy-viewer', policyId]"
-              class="top-toolbar-btn all-status"
-              >
+            <div [routerLink]="['/policy-viewer', policyId]" class="top-toolbar-btn all-status">
               <i class="pi pi-angle-double-right"></i>
               <span>Go</span>
             </div>
           }
-          <div (click)="openApiConfigDialog()" class="top-toolbar-btn readonly-status" title="Configure API Documentation">
-            <i class="pi pi-book"></i>
-            <span>API</span>
+          <div (click)="savePolicy()" class="top-toolbar-btn readonly-status" title="Save Policy">
+            <i class="pi pi-save"></i>
+            <span>Save</span>
           </div>
-          <div class="delimiter"></div>
+          @if (policyTemplate.isDraft) {
+            @if (user.POLICIES_POLICY_REVIEW) {
+              <div (click)="tryPublishPolicy()" class="top-toolbar-group all-status publish-primary"
+                title="Publish">
+                <i class="pi pi-globe"></i>
+                <span>Publish</span>
+                <div class="expand-group" (click)="$event.stopPropagation(); publishMenu.toggle($event)">
+                  <i class="pi pi-sort-down-fill"></i>
+                </div>
+              </div>
+            } @else {
+              <div (click)="tryRunPolicy()" class="top-toolbar-btn all-status" title="Dry Run">
+                <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
+                <span class="dry-run-color">Dry Run</span>
+              </div>
+            }
+          }
         }
         @if (rootType === 'Module') {
-          <div (click)="backToModules()" class="top-toolbar-btn all-status" title="Back">
-            <i class="pi pi-arrow-left"></i>
-            <span>Back</span>
-          </div>
+          @if (moduleTemplate.isDraft) {
+            <div (click)="validationModule()" [attr.errors-count]="errorsCount"
+              [attr.readonly]="!isTree" class="top-toolbar-btn all-status validation" title="Validation Module">
+              <i class="pi pi-check-circle"></i>
+              <span>{{ errorsCount > 0 ? 'Issues' : 'Valid' }}</span>
+              @if (errorsCount>0) {
+                <div class="error-count">{{ errorsCount }}</div>
+              }
+            </div>
+          }
           <div (click)="updateModule()" class="top-toolbar-btn readonly-status" title="Save Module">
             <i class="pi pi-save"></i>
             <span>Save</span>
           </div>
           @if (user.MODULES_MODULE_CREATE) {
-            <div (click)="saveAsModule()" class="top-toolbar-btn all-status"
-              title="Save Module">
+            <div (click)="saveAsModule()" class="top-toolbar-btn all-status" title="Save Module">
               <i class="pi pi-save"></i>
               <span>Save As</span>
             </div>
           }
-          <div class="delimiter"></div>
-          @if (moduleTemplate.isDraft && user.MODULES_MODULE_REVIEW) {
-            <div (click)="publishMenu2.toggle($event)"
-              class="top-toolbar-group all-status">
-              <i class="pi pi-pencil"></i>
-              <span class="edit-color">Draft</span>
-              <div class="expand-group">
-                <i class="pi pi-sort-down-fill"></i>
-              </div>
-            </div>
-          }
-          @if (moduleTemplate.isPublished) {
-            <div class="top-toolbar-btn top-toolbar-label">
-              <i class="pi pi-globe publish-color"></i>
-              <span class="publish-color">Published</span>
-            </div>
-          }
-          @if (moduleTemplate.isDraft) {
-            <div (click)="validationModule()" [attr.errors-count]="errorsCount"
-              [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Module">
+        }
+        @if (rootType === 'Tool') {
+          @if (toolTemplate.isDraft) {
+            <div (click)="validationTool()" [attr.errors-count]="errorsCount"
+              [attr.readonly]="!isTree" class="top-toolbar-btn all-status validation" title="Validation Tool">
               <i class="pi pi-check-circle"></i>
-              <span>Validation</span>
+              <span>{{ errorsCount > 0 ? 'Issues' : 'Valid' }}</span>
               @if (errorsCount>0) {
                 <div class="error-count">{{ errorsCount }}</div>
               }
             </div>
           }
-          <div class="delimiter"></div>
-        }
-        @if (rootType === 'Tool') {
-          <div (click)="backToTools()" class="top-toolbar-btn all-status" title="Back">
-            <i class="pi pi-arrow-left"></i>
-            <span>Back</span>
-          </div>
           <div (click)="updateTool()" class="top-toolbar-btn readonly-status" title="Save Tool">
             <i class="pi pi-save"></i>
             <span>Save</span>
           </div>
           @if (user.TOOLS_TOOL_CREATE) {
-            <div (click)="saveAsTool()" class="top-toolbar-btn"
-              title="Save Tool">
+            <div (click)="saveAsTool()" class="top-toolbar-btn" title="Save Tool">
               <i class="pi pi-save"></i>
               <span>Save As</span>
             </div>
           }
-          <div class="delimiter"></div>
-          @if (toolTemplate.isDraft && user.TOOLS_TOOL_REVIEW) {
-            <div (click)="publishMenu3.toggle($event)"
-              class="top-toolbar-group all-status">
-              <i class="pi pi-pencil edit-color"></i>
-              <span class="edit-color">Draft</span>
-              <div class="expand-group">
-                <i class="pi pi-sort-down-fill"></i>
-              </div>
-            </div>
-          }
-          @if (toolTemplate.isDryRun) {
-            <div (click)="dryRunMenu2.toggle($event)"
-              class="top-toolbar-group all-status" style="width: 80px">
-              <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build"></svg-icon>
-              <span class="dry-run-color font-size-xs">
-                In Dry Run
-              </span>
-              <div class="expand-group">
-                <i class="pi pi-sort-down-fill"></i>
-              </div>
-            </div>
-          }
-          @if (toolTemplate.isPublished) {
-            <div class="top-toolbar-btn top-toolbar-label">
-              <i class="pi pi-globe"></i>
-              <span class="publish-color">Published</span>
-            </div>
-          }
-          @if (toolTemplate.isDraft) {
-            <div (click)="validationTool()" [attr.errors-count]="errorsCount"
-              [attr.readonly]="!isTree" class="top-toolbar-btn all-status" title="Validation Module">
-              <i class="pi pi-check-circle"></i>
-              <span>Validation</span>
-              @if (errorsCount>0) {
-                <div class="error-count">{{ errorsCount }}</div>
-              }
-            </div>
-          }
-          <div class="delimiter"></div>
         }
-        @if (!readonly && isTree) {
-          <ng-container>
-            <div (click)="undoPolicy()" [attr.storage-active]="storage.isUndo"
-              class="top-toolbar-btn readonly-status" title="Undo">
-              <i class="pi pi-undo"></i>
-              <span>Undo</span>
-            </div>
-            <div (click)="redoPolicy()" [attr.storage-active]="storage.isRedo"
-              class="top-toolbar-btn readonly-status" title="Redo">
-              <i class="pi pi-refresh"></i>
-              <span>Redo</span>
-            </div>
-            <div (click)="onSuggestionsClick()" [ngClass]="{'btn-mode-active': isSuggestionsEnabled}"
-              class="top-toolbar-btn top-toolbar-btn__suggestions" title="Suggestions">
-              <svg-icon src="/assets/images/icons/assistant.svg" svgClass="icon-style-assistant"></svg-icon>
-              <span>Suggestions</span>
-            </div>
-            <div (click)="copyBlocksMode=!copyBlocksMode" [ngClass]="{'btn-mode-active': copyBlocksMode}"
-              class="top-toolbar-btn" title="Copy Mode">
-              <i class="pi pi-copy"></i>
-              <span>Copy Mode</span>
-            </div>
-            @if (rootTemplate.isPublishError) {
-              <div class="btn-new-block btn-label not-published-label">
-                <i class="pi pi-times"></i>
-                <span>Not published</span>
-              </div>
-            }
-            <div class="delimiter"></div>
-          </ng-container>
-          @if (
-            user.MODULES_MODULE_CREATE &&
-            rootType === 'Policy' &&
-            openType !== 'Sub' &&
-            !currentBlock?.isModule &&
-            !currentBlock?.isRoot) {
-            <div (click)="onCreateModule()" class="top-toolbar-btn readonly-status long_title_i"
-              title="Create New Module">
-              <i class="pi pi-folder-plus"></i>
-              <span>Create New Module</span>
-            </div>
-            @if (user.MODULES_MODULE_CREATE) {
-              <div (click)="onConvertToModule()"
-                class="top-toolbar-btn readonly-status long_title_svg" title="Convert to Module">
-                <svg-icon src="/assets/images/icons/move_to_inbox.svg"
-                svgClass="icon-style-move_to_inbox"></svg-icon>
-                <span>Convert to Module</span>
-              </div>
-            }
-            <div class="delimiter"></div>
-          }
-          @if (rootType === 'Policy' && currentBlock?.isModule) {
-            <div (click)="onSaveModule()" class="top-toolbar-btn readonly-status" title="Create New Module">
-              <svg-icon src="/assets/images/icons/folder_special.svg"
-              svgClass="icon-style-folder_special"></svg-icon>
-              <span>Save Module</span>
-            </div>
-            @if (openType !== 'Sub') {
-              <div (click)="onOpenModule(currentBlock)"
-                class="top-toolbar-btn readonly-status" title="Convert to Module">
-                <i class="pi pi-folder-open"></i>
-                <span>Open Module</span>
-              </div>
-            }
-            <div class="delimiter"></div>
-          }
-        }
-        <div (click)="viewMenu.toggle($event)" class="top-toolbar-group all-status event-color" style="width: 80px">
-          @if (currentView == 'blocks') {
-            <svg-icon src="/assets/images/icons/view_agenda.svg"
-            svgClass="icon-style-view_agenda"></svg-icon>
-          }
-          @if (currentView == 'json') {
-            <i class="pi pi-code"></i>
-          }
-          @if (currentView == 'yaml') {
-            <i class="pi pi-list"></i>
-          }
-          @if (currentView == 'blocks') {
-            <span>Tree</span>
-          }
-          @if (currentView == 'json') {
-            <span>JSON</span>
-          }
-          @if (currentView == 'yaml') {
-            <span>YAML</span>
-          }
-          <div class="expand-group">
-            <i class="pi pi-sort-down-fill"></i>
-          </div>
+        <div (click)="overflowMenu.toggle($event)"
+          class="top-toolbar-btn icon-only all-status overflow-btn" title="More actions">
+          <i class="pi pi-ellipsis-v"></i>
         </div>
-        <div class="delimiter"></div>
-        @if (isTree) {
-          <div (click)="onSchemas()" class="top-toolbar-btn all-status" title="Settings">
-            <svg-icon src="/assets/images/icons/dataset.svg" svgClass="icon-style-dataset"></svg-icon>
-            <span>Schemas</span>
-          </div>
-          <div class="delimiter"></div>
-        }
-        @if (isTree) {
-          <div (click)="eventMenu.toggle($event)" class="top-toolbar-group all-status event-color"
-            style="width: 80px">
-            @if (eventVisible =='Selected') {
-              <svg-icon class="event-color" src="/assets/images/icons/flash_on.svg"
-              svgClass="icon-style-flash_on event-color"></svg-icon>
-            }
-            @if (eventVisible =='All') {
-              <svg-icon class="event-color" src="/assets/images/icons/flash_on.svg"
-              svgClass="icon-style-flash_on event-color"></svg-icon>
-            }
-            @if (eventVisible == 'Action') {
-              <div class="event-color">
-                <div class="action-event-icon"></div>
-              </div>
-            }
-            @if (eventVisible == 'Refresh') {
-              <div class="event-color">
-                <div class="refresh-event-icon"></div>
-              </div>
-            }
-            @if (eventVisible =='None') {
-              <svg-icon class="event-color" src="/assets/images/icons/flash_off.svg"
-              svgClass="icon-style-flash_off event-color"></svg-icon>
-            }
-            @if (eventVisible =='Selected') {
-              <span class="event-color">Selected</span>
-            }
-            @if (eventVisible =='All') {
-              <span class="event-color">All Events</span>
-            }
-            @if (eventVisible =='Action') {
-              <span class="event-color">Action Events</span>
-            }
-            @if (eventVisible =='Refresh') {
-              <span class="event-color">Refresh Events</span>
-            }
-            @if (eventVisible =='None') {
-              <span class="event-color">Hide Events</span>
-            }
-            <div class="expand-group">
-              <i class="pi pi-sort-down-fill"></i>
-            </div>
-          </div>
-          <div class="delimiter"></div>
-        }
-        <div (click)="themesMenu.toggle($event)" class="top-toolbar-group all-status event-color"
-          style="width: 80px">
-          <i class="pi pi-palette"></i>
-          <span>Themes</span>
-          <div class="expand-group">
-            <i class="pi pi-sort-down-fill"></i>
-          </div>
-        </div>
-        <div (click)="onSettings()" class="top-toolbar-btn all-status" title="Settings">
-          <i class="pi pi-cog"></i>
-          <span>Settings</span>
-        </div>
-        <div class="delimiter"></div>
-        <div (click)="onEditableFields()" class="top-toolbar-btn all-status" title="Parameters">
-          <i class="pi pi-sliders-h"></i>
-          <span>Parameters</span>
-        </div>
-        @if (rootType === 'Policy') {
-          <div class="delimiter"></div>
-          <div (click)="toggleCommandPalette()" class="top-toolbar-btn all-status command-palette-btn"
-            title="Command palette (⌘K)">
-            <i class="pi pi-search"></i>
-            <span>⌘K</span>
-          </div>
-        }
       </div>
       <div (cdkDropListDropped)="onDroppedSection($event)" [cdkDropListData]="options.configurationOrder" cdkDropList
         cdkDropListOrientation="horizontal" class="main-container">
@@ -505,6 +341,7 @@
                     <div (click)="collapse('uiGroup')" class="components-group-name">
                       <i class="pi pi-caret-down components-group-collapse"></i>
                       <i class="pi pi-caret-right components-group-open"></i>
+                      <span class="group-dot group-dot--ui"></span>
                       <span>UI Components ({{ componentsList.uiComponents.length }})</span>
                     </div>
                     <div class="components-group-body readonly-status">
@@ -533,6 +370,7 @@
                     <div (click)="collapse('serverGroup')" class="components-group-name">
                       <i class="pi pi-caret-down components-group-collapse"></i>
                       <i class="pi pi-caret-right components-group-open"></i>
+                      <span class="group-dot group-dot--server"></span>
                       <span>Server Components ({{ componentsList.serverBlocks.length }})</span>
                     </div>
                     <div class="components-group-body readonly-status">
@@ -561,6 +399,7 @@
                     <div (click)="collapse('addonsGroup')" class="components-group-name">
                       <i class="pi pi-caret-down components-group-collapse"></i>
                       <i class="pi pi-caret-right components-group-open"></i>
+                      <span class="group-dot group-dot--addon"></span>
                       <span>Addons ({{ componentsList.addons.length }})</span>
                     </div>
                     <div class="components-group-body readonly-status">
@@ -1129,19 +968,15 @@
                     <i *cdkDragPreview class="pi pi-align-left"></i>
                     <div class="pc-tabs">
                       <div cdkDragHandle class="pc-tabs-headers">
-                        <div (click)="select('properties')" [attr.selected]="options.properties"
+                        <div (click)="select('properties')" [attr.selected]="options.properties || options.artifacts"
                           class="tab-header">
-                          Properties
+                          Settings
                         </div>
                         <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
                           Events
                         </div>
-                        <div (click)="select('artifacts')" [attr.selected]="options.artifacts"
-                          class="tab-header">
-                          Artifacts
-                        </div>
                         <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
-                          Json
+                          JSON
                         </div>
                         <div (click)="collapse('rightBottomMenu')"
                           [attr.collapsed]="options.rightBottomMenu" class="tabs-icon">
@@ -1152,7 +987,7 @@
                         </div>
                       </div>
                       <div [attr.readonly]="!isTree" class="pc-tabs-content">
-                        <div [hidden]="!options.properties" class="prop-container">
+                        <div [hidden]="!options.properties && !options.artifacts" class="prop-container">
                           @if (errorsMap[currentBlock.id]) {
                             <div class="errors-properties">
                               @for (item of errorsMap[currentBlock.id]; track item) {
@@ -1189,6 +1024,11 @@
                             (selectParent)="onSelect({ block: $event, isMultiSelect: false })"
                             class="readonly-status"
                           type="Common"></common-properties>
+                          <div class="inspector-subsection">
+                            <div class="inspector-subsection-label">Artifacts</div>
+                            <artifact-properties [block]="currentBlock" [policyId]="policyId"
+                              [readonly]="readonly" class="readonly-status"></artifact-properties>
+                          </div>
                         </div>
                         <div [hidden]="!options.events" class="prop-container">
                           <common-properties
@@ -1198,10 +1038,6 @@
                             (onEditTags)="onAddTag()"
                             class="readonly-status"
                           type="Events"></common-properties>
-                        </div>
-                        <div [hidden]="!options.artifacts" class="prop-container">
-                          <artifact-properties [block]="currentBlock" [policyId]="policyId"
-                          [readonly]="readonly" class="readonly-status"></artifact-properties>
                         </div>
                         <div [hidden]="!options.json" class="prop-container">
                           @if (options.json) {
@@ -1297,10 +1133,7 @@
 
 <p-popover #identityMenu>
   <div class="identity-popover">
-    <div class="identity-popover-title">{{ policyTemplate.name || 'Untitled policy' }}</div>
-    @if (policyTemplate.version) {
-      <div class="identity-popover-version">Version {{ policyTemplate.version }}</div>
-    }
+    <div class="identity-popover-header">Policy details</div>
     <div class="identity-row" (click)="copyIdentity('id', policyId, $event)" title="Copy policy ID">
       <div class="identity-row-label">Policy ID</div>
       <div class="identity-row-value">
@@ -1319,22 +1152,21 @@
         }
       </div>
     </div>
+    <div class="identity-row identity-row--plain">
+      <div class="identity-row-label">Version</div>
+      <div class="identity-row-value">
+        <span class="identity-row-plain-value">{{ policyTemplate.version || '1.0' }}</span>
+      </div>
+    </div>
+    <div class="identity-divider"></div>
     <div class="identity-action" (click)="openPolicySettingsDrawer(); identityMenu.hide()">
-      <i class="pi pi-cog"></i>
-      <span>Policy settings</span>
+      <i class="pi pi-pencil"></i>
+      <span>Edit policy details</span>
     </div>
   </div>
 </p-popover>
 
 <p-popover #publishMenu>
-  @if (user.POLICIES_POLICY_REVIEW) {
-    <div (click)="tryPublishPolicy(); publishMenu.hide()"
-      class="toolbar-menu all-status publish-color" title="Release version into public domain.">
-      <i class="pi pi-globe publish-color"></i>
-      <span class="publish-color">Publish</span>
-    </div>
-  }
-
   <div (click)="tryRunPolicy(); publishMenu.hide()" class="toolbar-menu all-status dry-run-color"
     title="Run without making any persistent changes or executing transaction.">
     <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
@@ -1476,6 +1308,114 @@
       <span [class]="t === theme ? 'action-color' : 'no-action-color'">{{ t.name }}</span>
     </div>
   }
+</p-popover>
+
+<p-popover #overflowMenu>
+  <div class="overflow-menu">
+    @if (rootType === 'Policy') {
+      @if (user.POLICIES_POLICY_CREATE) {
+        <div (click)="saveAsPolicy(); overflowMenu.hide()" class="toolbar-menu all-status"
+          [class.readonly-status]="policyTemplate.isDemo">
+          <i class="pi pi-save"></i>
+          <span>Save As</span>
+        </div>
+      }
+      <div (click)="openPolicyWizardDialog(); overflowMenu.hide()" class="toolbar-menu readonly-status">
+        <svg-icon src="/assets/images/icons/auto_awesome.svg" svgClass="icon-style-auto_awesome"></svg-icon>
+        <span>Wizard</span>
+      </div>
+      <div (click)="openApiConfigDialog(); overflowMenu.hide()" class="toolbar-menu readonly-status">
+        <i class="pi pi-book"></i>
+        <span>API</span>
+      </div>
+    }
+    @if (!readonly && isTree) {
+      <div class="overflow-menu-divider"></div>
+      <div (click)="onSuggestionsClick(); overflowMenu.hide()" class="toolbar-menu"
+        [ngClass]="{'btn-mode-active': isSuggestionsEnabled}">
+        <svg-icon src="/assets/images/icons/assistant.svg" svgClass="icon-style-assistant"></svg-icon>
+        <span>Suggestions</span>
+      </div>
+      <div (click)="copyBlocksMode=!copyBlocksMode; overflowMenu.hide()" class="toolbar-menu"
+        [ngClass]="{'btn-mode-active': copyBlocksMode}">
+        <i class="pi pi-copy"></i>
+        <span>Copy Mode</span>
+      </div>
+      @if (
+        user.MODULES_MODULE_CREATE &&
+        rootType === 'Policy' &&
+        openType !== 'Sub' &&
+        !currentBlock?.isModule &&
+        !currentBlock?.isRoot) {
+        <div (click)="onCreateModule(); overflowMenu.hide()" class="toolbar-menu readonly-status">
+          <i class="pi pi-folder-plus"></i>
+          <span>Create New Module</span>
+        </div>
+        <div (click)="onConvertToModule(); overflowMenu.hide()" class="toolbar-menu readonly-status">
+          <svg-icon src="/assets/images/icons/move_to_inbox.svg" svgClass="icon-style-move_to_inbox"></svg-icon>
+          <span>Convert to Module</span>
+        </div>
+      }
+      @if (rootType === 'Policy' && currentBlock?.isModule) {
+        <div (click)="onSaveModule(); overflowMenu.hide()" class="toolbar-menu readonly-status">
+          <svg-icon src="/assets/images/icons/folder_special.svg" svgClass="icon-style-folder_special"></svg-icon>
+          <span>Save Module</span>
+        </div>
+        @if (openType !== 'Sub') {
+          <div (click)="onOpenModule(currentBlock); overflowMenu.hide()" class="toolbar-menu readonly-status">
+            <i class="pi pi-folder-open"></i>
+            <span>Open Module</span>
+          </div>
+        }
+      }
+    }
+    @if (isTree) {
+      <div class="overflow-menu-divider"></div>
+      <div (click)="onSchemas(); overflowMenu.hide()" class="toolbar-menu all-status">
+        <svg-icon src="/assets/images/icons/dataset.svg" svgClass="icon-style-dataset"></svg-icon>
+        <span>Schemas</span>
+      </div>
+      <div class="overflow-menu-divider"></div>
+      <div class="overflow-menu-label">Event display</div>
+      <div (click)="onShowEvent('Selected'); overflowMenu.hide()" class="toolbar-menu"
+        [attr.active]="eventVisible === 'Selected' ? true : null">
+        <i class="pi pi-bolt"></i>
+        <span>Selected block only</span>
+        @if (eventVisible === 'Selected') { <i class="pi pi-check overflow-check"></i> }
+      </div>
+      <div (click)="onShowEvent('All'); overflowMenu.hide()" class="toolbar-menu"
+        [attr.active]="eventVisible === 'All' ? true : null">
+        <i class="pi pi-share-alt"></i>
+        <span>Show all events</span>
+        @if (eventVisible === 'All') { <i class="pi pi-check overflow-check"></i> }
+      </div>
+      <div (click)="onShowEvent('None'); overflowMenu.hide()" class="toolbar-menu"
+        [attr.active]="eventVisible === 'None' ? true : null">
+        <i class="pi pi-eye-slash"></i>
+        <span>Hide events</span>
+        @if (eventVisible === 'None') { <i class="pi pi-check overflow-check"></i> }
+      </div>
+    }
+    <div class="overflow-menu-divider"></div>
+    <div class="overflow-menu-label">Theme</div>
+    @for (t of themes; track t) {
+      <div (click)="setTheme(t); overflowMenu.hide()" class="toolbar-menu"
+        [attr.active]="t === theme ? true : null">
+        <i class="pi pi-palette"></i>
+        <span>{{ t.name }}</span>
+        @if (t === theme) { <i class="pi pi-check overflow-check"></i> }
+      </div>
+    }
+    <div class="overflow-menu-divider"></div>
+    <div (click)="onSettings(); overflowMenu.hide()" class="toolbar-menu all-status">
+      <i class="pi pi-cog"></i>
+      <span>Settings</span>
+    </div>
+    <div (click)="onEditableFields(); overflowMenu.hide()" class="toolbar-menu all-status">
+      <i class="pi pi-sliders-h"></i>
+      <span>Parameters</span>
+    </div>
+  </div>
 </p-popover>
 
 <ng-template #preloader>
