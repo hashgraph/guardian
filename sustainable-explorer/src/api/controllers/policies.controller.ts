@@ -9,6 +9,7 @@ import {
 import { IsOptional, IsBoolean } from 'class-validator';
 import { Transform } from 'class-transformer';
 import { PoliciesService } from '../services/policies.service';
+import { AdminWrite } from '../auth/decorators/admin-write.decorator';
 
 class RedecodeQueryDto {
     @IsOptional()
@@ -22,6 +23,7 @@ class RedecodeQueryDto {
 export class PoliciesController {
     constructor(private readonly policiesService: PoliciesService) {}
 
+    @AdminWrite()
     @Post(':topicId/redecode')
     @ApiOperation({
         summary: 'Re-decode a policy by topic ID',
@@ -71,6 +73,7 @@ export class PoliciesController {
         );
     }
 
+    @AdminWrite()
     @Post(':topicId/reparse-projects')
     @ApiOperation({
         summary: 'Re-parse projects for all VCs linked to a policy topic',

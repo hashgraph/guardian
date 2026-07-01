@@ -1,9 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from '@shared/config/configuration';
+import { AuthModule } from './auth/auth.module';
+import { AdminModule } from './admin/admin.module';
+import { AccountModule } from './account/account.module';
 
 // Database
 import { NetworkDataSourceRegistry } from './database/network-datasource.registry';
+import { SystemDatabaseModule } from '@api/database/system-database.module';
+import { RedisModule } from '@shared/redis/redis.module';
 
 // Controllers
 import { RegistriesController } from './controllers/registries.controller';
@@ -42,6 +47,11 @@ import { GuardianSyncService } from './services/guardian-sync.service';
             isGlobal: true,
             load: [configuration],
         }),
+        SystemDatabaseModule,
+        RedisModule,
+        AuthModule,
+        AdminModule,
+        AccountModule,
     ],
     controllers: [
         RegistriesController,

@@ -53,7 +53,9 @@ export const useQueueEventsSse = (opts: { network: Ref<string>; baseURL: string 
         const url = `${opts.baseURL}/api/v1/${opts.network.value}/queues/events`;
 
         try {
-            es = new EventSource(url);
+            // withCredentials sends the auth cookie cross-origin — the queue
+            // events stream is admin-only now (the /status page is admin-gated).
+            es = new EventSource(url, { withCredentials: true });
 
             es.onopen = () => {
                 isConnected.value = true;

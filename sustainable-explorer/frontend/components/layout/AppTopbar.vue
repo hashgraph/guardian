@@ -502,5 +502,8 @@ function onSearchKeydown(e: KeyboardEvent) {
                 </div>
             </Transition>
         </div>
+
+        <!-- Right: authentication (sign-in button or user dropdown) -->
+        <AuthMenu />
     </header>
 </template>

@@ -10,6 +10,7 @@ import {
     ActivityEventDto,
 } from '../dto/project.dto';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
+import { AdminWrite } from '../auth/decorators/admin-write.decorator';
 
 const VALID_EXPORT_FORMATS = new Set<string>(['iwa', 'cadtrust', 'cdop']);
 
@@ -65,7 +66,7 @@ export class ProjectsController {
         return this.projectsService.findActivity(network, id);
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Post(':id/re-extract')
     @ApiOperation({
         summary: 'Re-extract a project from its already-attached VCs',
@@ -103,7 +104,7 @@ export class ProjectsController {
         return this.projectsService.reextractProject(network, id);
     }
 
-    // TODO: gate behind admin auth once decided
+    @AdminWrite()
     @Post(':id/refresh-ipfs')
     @ApiOperation({
         summary: 'Force IPFS re-fetch + project reparse for every VC in this project\'s topic',
