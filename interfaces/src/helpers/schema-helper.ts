@@ -706,6 +706,12 @@ export class SchemaHelper {
                     result[key] = b[key];
                 }
             }
+            if (Array.isArray(result.required) && result.properties) {
+                result.required = result.required.filter(
+                    (name: string) => result.properties[name] !== false
+                );
+                if (result.required.length === 0) { delete result.required; }
+            }
             return result;
         };
 
