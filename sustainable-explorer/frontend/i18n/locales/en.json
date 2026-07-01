@@ -589,6 +589,33 @@
             "hideUnlinked": "Hides tokens that have not yet been matched to a project. Uncheck to see all indexed tokens including those still awaiting project attribution.",
             "mintDate": "Mint Date",
             "mintAmount": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials."
+        },
+        "detail": {
+            "notFound": "Token not found",
+            "notFoundDesc": "Token {tokenId} was not found on {network}.",
+            "overview": "Overview",
+            "tokenId": "Token ID",
+            "firstMintDate": "First Mint Date",
+            "tabs": {
+                "details": "Details",
+                "linkage": "Linkage"
+            },
+            "tokenInformation": "Token Information",
+            "supplyDifferenceTooltip": "The Supply Amount and Minted Amount for this issuance are currently different.",
+            "tokenSupply": "Token Supply",
+            "totalMinted": "Total Minted",
+            "relatedIssuances": "Related Token Issuances",
+            "relatedIssuancesSubtitle": "Other issuances for this token ID",
+            "loading": "Loading…",
+            "noRelatedIssuances": "No issuances found for this token ID.",
+            "project": "Project",
+            "noProject": "No project linked",
+            "methodology": "Methodology",
+            "methodologySubtitle": "Retrieved via token → project relationship",
+            "noMethodology": "No methodology linked",
+            "registry": "Registry",
+            "registrySubtitle": "Retrieved via token → project → methodology chain",
+            "noRegistry": "No registry linked"
         }
     },
     "methodologies": {

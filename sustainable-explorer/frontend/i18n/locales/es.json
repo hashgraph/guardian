@@ -584,6 +584,33 @@
             "hideUnlinked": "Oculta los tokens que aún no han sido asociados a ningún proyecto. Desmarque para ver todos los tokens indexados.",
             "mintDate": "Fecha de emisión",
             "mintAmount": "Número total de créditos acuñados para el proyecto. Para NFTs, es el número de seriales únicos."
+        },
+        "detail": {
+            "notFound": "Token no encontrado",
+            "notFoundDesc": "El token {tokenId} no fue encontrado en {network}.",
+            "overview": "Resumen",
+            "tokenId": "ID de token",
+            "firstMintDate": "Primera fecha de emisión",
+            "tabs": {
+                "details": "Detalles",
+                "linkage": "Vinculación"
+            },
+            "tokenInformation": "Información del token",
+            "supplyDifferenceTooltip": "El monto de suministro y el monto acuñado de esta emisión son actualmente diferentes.",
+            "tokenSupply": "Suministro del token",
+            "totalMinted": "Total acuñado",
+            "relatedIssuances": "Emisiones de token relacionadas",
+            "relatedIssuancesSubtitle": "Otras emisiones para este ID de token",
+            "loading": "Cargando…",
+            "noRelatedIssuances": "No se encontraron emisiones para este ID de token.",
+            "project": "Proyecto",
+            "noProject": "Sin proyecto vinculado",
+            "methodology": "Metodología",
+            "methodologySubtitle": "Obtenido a través de la relación token → proyecto",
+            "noMethodology": "Sin metodología vinculada",
+            "registry": "Registro",
+            "registrySubtitle": "Obtenido a través de la cadena token → proyecto → metodología",
+            "noRegistry": "Sin registro vinculado"
         }
     },
     "methodologies": {

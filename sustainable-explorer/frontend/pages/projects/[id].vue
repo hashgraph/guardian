@@ -49,8 +49,16 @@ type TabKey = 'summary' | 'issuances' | 'documents' | 'advanced';
 const VALID_TABS = new Set<TabKey>(['summary', 'issuances', 'documents', 'advanced']);
 
 const router = useRouter();
-const initialHash = (route.hash?.replace('#', '') ?? '') as TabKey;
-const activeTab = ref<TabKey>(VALID_TABS.has(initialHash) ? initialHash : 'summary');
+// Always start with 'summary' — route.hash is empty on the server (browsers strip fragments
+// before sending HTTP requests), so initializing from it creates an SSR/client mismatch that
+// corrupts hydration. The hash is applied client-side in onMounted after hydration completes.
+const activeTab = ref<TabKey>('summary');
+const tabReady = ref(false);
+onMounted(() => {
+    const h = (route.hash?.replace('#', '') ?? '') as TabKey;
+    if (VALID_TABS.has(h)) activeTab.value = h;
+    tabReady.value = true;
+});
 
 function setTab(key: TabKey) {
     activeTab.value = key;
@@ -371,19 +379,32 @@ const emissions = computed(() => {
 </script>
 
 <template>
-    <!-- Loading state -->
-    <div v-if="pending" class="flex items-center justify-center p-12">
-        <div class="text-sm text-muted-foreground">Loading project...</div>
+    <!-- Page-wide skeleton — shown while data is fetching OR while the tab hash is being resolved from the URL -->
+    <div v-if="pending || !tabReady" class="space-y-6 p-6">
+        <div class="space-y-3">
+            <Skeleton class="h-4 w-36" />
+            <Skeleton class="h-8 w-2/3" />
+            <Skeleton class="h-4 w-1/2" />
+        </div>
+        <div class="rounded-xl border bg-card p-6 space-y-4">
+            <Skeleton class="h-4 w-1/4" />
+            <Skeleton class="h-4 w-full" />
+            <Skeleton class="h-4 w-5/6" />
+            <Skeleton class="h-4 w-3/4" />
+            <Skeleton class="h-4 w-full" />
+            <Skeleton class="h-4 w-2/3" />
+            <Skeleton class="h-4 w-5/6" />
+            <Skeleton class="h-32 w-full" />
+        </div>
     </div>
 
-    <!-- Error state -->
+    <!-- Not found -->
     <div v-else-if="!project" class="p-6">
         <h1 class="text-xl font-bold text-foreground">{{ $t('projects.notFound') }}</h1>
     </div>
 
-    <!-- Project detail -->
+    <!-- Project detail — rendered only after the correct tab is known -->
     <div v-else class="space-y-6 p-6">
-        <!-- Header (always visible, above tabs) -->
         <ProjectHeader
             :project="project"
             :network="network"
@@ -393,7 +414,6 @@ const emissions = computed(() => {
             @view-raw-data="viewProjectVc"
         />
 
-        <!-- Tab navigation -->
         <div class="rounded-xl border bg-card overflow-hidden">
             <div class="border-b">
                 <nav class="flex gap-0 -mb-px overflow-x-auto">
@@ -414,6 +434,7 @@ const emissions = computed(() => {
                 </nav>
             </div>
 
+            <div>
             <!-- ── Tab: Summary ───────────────────────────────────────────────── -->
             <div v-if="activeTab === 'summary'" class="p-6 space-y-6">
                 <!-- Key Facts -->
@@ -910,7 +931,8 @@ const emissions = computed(() => {
                     </div>
                 </div>
             </div>
-        </div>
+            </div>
+        </div><!-- end tab card -->
 
         <!-- Raw Data Viewer Modal -->
         <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
