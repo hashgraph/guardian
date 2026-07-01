@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {
-    ArrowLeft,
     ExternalLink,
     FileJson,
     Coins,
@@ -219,15 +218,6 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
 
     <!-- Not found -->
     <div v-else-if="!credit" class="p-6">
-        <div class="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-            <NuxtLink
-                to="/credits"
-                class="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-            >
-                <ArrowLeft class="h-3.5 w-3.5" />
-                {{ $t('credits.title') }}
-            </NuxtLink>
-        </div>
         <h1 class="text-xl font-bold text-foreground">{{ $t('credits.detail.notFound') }}</h1>
         <p class="text-sm text-muted-foreground mt-1">
             {{ $t('credits.detail.notFoundDesc', { tokenId, network }) }}
@@ -238,17 +228,6 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
     <div v-else class="space-y-6 p-6">
         <!-- Header -->
         <div class="space-y-3">
-            <div class="flex items-center gap-2 text-sm text-muted-foreground">
-                <NuxtLink
-                    to="/credits"
-                    class="inline-flex items-center gap-1.5 hover:text-foreground transition-colors"
-                >
-                    <ArrowLeft class="h-3.5 w-3.5" />
-                    {{ $t('credits.title') }}
-                </NuxtLink>
-                <span>/</span>
-                <span class="text-xs text-foreground">{{ credit.name ?? credit.tokenId }}</span>
-            </div>
             <div class="flex items-start justify-between gap-4">
                 <div class="min-w-0">
                     <div class="flex items-center gap-3 flex-wrap">
