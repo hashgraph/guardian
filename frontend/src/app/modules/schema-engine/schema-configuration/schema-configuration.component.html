@@ -388,7 +388,10 @@
                 <div class="cross-targets-chips">
                   <span class="cross-targets-label">Sub-schema THEN:</span>
                   @for (target of condition.crossThenTargets; track target.fieldPath.join('>')) {
-                    <span class="cross-target-chip" [title]="target.fieldPath.join(' > ')">
+                    <span class="cross-target-chip"
+                          [class.cross-target-chip--stale]="isCrossTargetStale(condition, target)"
+                          [title]="isCrossTargetStale(condition, target) ? 'Field no longer available: ' + target.fieldPath.join(' > ') : target.fieldPath.join(' > ')"
+                    >
                       {{ target.label }}
                       <button class="chip-remove" (click)="onCrossTargetRemove(condition, 'then', target)">×</button>
                     </span>
@@ -469,7 +472,10 @@
                 <div class="cross-targets-chips">
                   <span class="cross-targets-label">Sub-schema ELSE:</span>
                   @for (target of condition.crossElseTargets; track target.fieldPath.join('>')) {
-                    <span class="cross-target-chip" [title]="target.fieldPath.join(' > ')">
+                    <span class="cross-target-chip"
+                          [class.cross-target-chip--stale]="isCrossTargetStale(condition, target)"
+                          [title]="isCrossTargetStale(condition, target) ? 'Field no longer available: ' + target.fieldPath.join(' > ') : target.fieldPath.join(' > ')"
+                    >
                       {{ target.label }}
                       <button class="chip-remove" (click)="onCrossTargetRemove(condition, 'else', target)">×</button>
                     </span>

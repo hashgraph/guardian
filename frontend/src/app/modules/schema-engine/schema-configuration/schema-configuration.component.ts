@@ -94,6 +94,7 @@ export class SchemaConfigurationComponent implements OnInit {
     private _fieldOptionGroupsCache = new Map<ConditionControl, ConditionFieldGroup[]>();
     private _crossThenGroupsCache = new Map<ConditionControl, ConditionFieldGroup[]>();
     private _crossElseGroupsCache = new Map<ConditionControl, ConditionFieldGroup[]>();
+    private _staleTargetKeys = new Map<ConditionControl, Set<string>>();
 
     public get isSystem(): boolean {
         return this.schemaType === SchemaType.System;
@@ -496,14 +497,28 @@ export class SchemaConfigurationComponent implements OnInit {
                 }
                 const fieldName = pickName(p.field);
                 const fc = fieldName ? availableByKey.get(fieldName) : undefined;
-                if (!fc) { return undefined; }
+                if (fc) {
+                    return {
+                        key: fc.controlKey.value,
+                        label: fc.controlTitle.value || fc.controlKey.value,
+                        fieldPath: [fc.controlKey.value],
+                        typeKey: fc.controlType.value,
+                        required: fc.controlRequired.value,
+                        fieldControl: fc,
+                    };
+                }
+                // Field is excluded from the IF picker but still exists — preserve the condition on round-trip.
+                const fallbackFc = fieldName
+                    ? this.fields.find(f => f.controlKey?.value === fieldName)
+                    : undefined;
+                if (!fallbackFc) { return undefined; }
                 return {
-                    key: fc.controlKey.value,
-                    label: fc.controlTitle.value || fc.controlKey.value,
-                    fieldPath: [fc.controlKey.value],
-                    typeKey: fc.controlType.value,
-                    required: fc.controlRequired.value,
-                    fieldControl: fc,
+                    key: fallbackFc.controlKey.value,
+                    label: fallbackFc.controlTitle.value || fallbackFc.controlKey.value,
+                    fieldPath: [fallbackFc.controlKey.value],
+                    typeKey: fallbackFc.controlType.value,
+                    required: fallbackFc.controlRequired.value,
+                    fieldControl: fallbackFc,
                 };
             };
 
@@ -1046,13 +1061,42 @@ export class SchemaConfigurationComponent implements OnInit {
                     return true;
                 }
             }
+            if (path.length > 2) {
+                const getSubFields = (typeKey: string): SchemaField[] | undefined => {
+                    const info = this.schemaTypeMap[typeKey];
+                    if (!info?.isRef) { return undefined; }
+                    return this.subSchemas?.find(s => s.iri === info.type)?.fields;
+                };
+                const findFc = (): FieldControl | undefined => {
+                    const inFields = this.fields.find(fc => fc.controlKey?.value === key);
+                    if (inFields) { return inFields; }
+                    for (const cond of this.conditions) {
+                        const found = [...(cond.thenControls || []), ...(cond.elseControls || [])]
+                            .find(fc => fc.controlKey?.value === key);
+                        if (found) { return found; }
+                    }
+                    return undefined;
+                };
+                let currentFields = getSubFields(findFc()?.controlType?.value ?? '');
+                for (let i = 1; i < path.length - 1; i++) {
+                    if (!currentFields) { break; }
+                    const field = currentFields.find(f => f.name === path[i]);
+                    if (!field) { break; }
+                    if (field.isArray) { return true; }
+                    currentFields = getSubFields(this.getType(field));
+                }
+            }
             return false;
         };
 
         const resolveIfField = (opt: ConditionFieldOption | undefined): { field: SchemaField; fieldPath?: string[] } | null => {
             if (!opt?.fieldPath?.length) { return null; }
             if (startsWithArrayRefContainer(opt.fieldPath)) { return null; }
-            const leaf = traverseFieldPath(opt.fieldPath);
+            let leaf = traverseFieldPath(opt.fieldPath);
+            if (!leaf && opt.fieldPath.length === 1 && opt.fieldControl) {
+                const currentKey = opt.fieldControl.controlKey?.value;
+                if (currentKey) { leaf = fieldsBySchemaName.get(currentKey); }
+            }
             if (!leaf) { return null; }
             return opt.fieldPath.length === 1
                 ? { field: leaf }
@@ -1397,8 +1441,36 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     public isValid(): boolean {
-        if (this.dataForm) {
-            return this.dataForm.valid;
+        if (!this.dataForm?.valid) { return false; }
+        return !this._hasStaleConditionSelections();
+    }
+
+    private _hasStaleConditionSelections(): boolean {
+        const validRefKeys = new Set(
+            this.getAllRefControls().map(fc => fc.controlKey?.value).filter(Boolean)
+        );
+        for (const condition of (this.conditions || [])) {
+            const groups = this._fieldOptionGroupsCache.get(condition) ?? [];
+            const validKeys = new Set(groups.flatMap(g => g.items.map(i => i.key)));
+            for (let i = 0; i < condition.conditions.length; i++) {
+                const row = condition.conditions.at(i) as UntypedFormGroup;
+                const opt: ConditionFieldOption = (row.get('field') as UntypedFormControl)?.value;
+                if (!opt) { continue; }
+                const isStale = opt.fieldControl
+                    ? opt.fieldControl.controlKey?.value !== opt.key
+                    : !validKeys.has(opt.key);
+                if (isStale) { return true; }
+            }
+            for (const t of [...condition.crossThenTargets, ...condition.crossElseTargets]) {
+                if (!t.fieldPath?.length) { return true; }
+                const refKey = t.fieldPath[0];
+                if (validRefKeys.has(refKey)) { continue; }
+                // type='' is a transient setSubSchemas reset; form required validator blocks save independently.
+                const isTransient = this.fields?.some(
+                    fc => fc.controlKey?.value === refKey && fc.controlType?.value === ''
+                );
+                if (!isTransient) { return true; }
+            }
         }
         return false;
     }
@@ -1647,7 +1719,12 @@ export class SchemaConfigurationComponent implements OnInit {
     }
 
     private watchFieldControl(fc: FieldControl): void {
-        merge(fc.controlType.valueChanges, fc.controlArray.valueChanges)
+        merge(
+            fc.controlType.valueChanges,
+            fc.controlArray.valueChanges,
+            fc.controlKey.valueChanges,
+            fc.controlTitle.valueChanges,
+        )
             .pipe(takeUntil(this.destroy$))
             .subscribe(() => this.rebuildOptionCaches());
     }
@@ -1662,6 +1739,63 @@ export class SchemaConfigurationComponent implements OnInit {
             this._crossThenGroupsCache.set(condition, this.computeCrossGroups(condition, 'then'));
             this._crossElseGroupsCache.set(condition, this.computeCrossGroups(condition, 'else'));
         }
+        this.validateConditionFieldOptions();
+    }
+
+    private validateConditionFieldOptions(): void {
+        const validRefKeys = new Set(
+            this.getAllRefControls().map(fc => fc.controlKey?.value).filter(Boolean)
+        );
+        for (const condition of this.conditions) {
+            const groups = this._fieldOptionGroupsCache.get(condition) ?? [];
+            const validKeys = new Set(groups.flatMap(g => g.items.map(i => i.key)));
+
+            for (let i = 0; i < condition.conditions.length; i++) {
+                const row = condition.conditions.at(i) as UntypedFormGroup;
+                const fieldCtrl = row.get('field') as UntypedFormControl;
+                const opt: ConditionFieldOption = fieldCtrl?.value;
+                const isStale = opt && (
+                    opt.fieldControl
+                        ? opt.fieldControl.controlKey?.value !== opt.key
+                        : !validKeys.has(opt.key)
+                );
+                if (isStale) {
+                    fieldCtrl.setErrors({ staleOption: true });
+                } else if (fieldCtrl?.hasError('staleOption')) {
+                    fieldCtrl.updateValueAndValidity({ emitEvent: false });
+                }
+            }
+
+            const staleKeys = new Set<string>();
+            for (const t of [...condition.crossThenTargets, ...condition.crossElseTargets]) {
+                if (!t.fieldPath?.length) { staleKeys.add(t.key); continue; }
+                const refKey = t.fieldPath[0];
+                if (validRefKeys.has(refKey)) { continue; }
+                const isTransient = this.fields?.some(
+                    fc => fc.controlKey?.value === refKey && fc.controlType?.value === ''
+                );
+                if (!isTransient) { staleKeys.add(t.key); }
+            }
+            this._staleTargetKeys.set(condition, staleKeys);
+
+            const hasStaleThen = condition.crossThenTargets.some(t => staleKeys.has(t.key));
+            if (hasStaleThen) {
+                condition.crossThenCount.setErrors({ staleTarget: true });
+            } else if (condition.crossThenCount.hasError('staleTarget')) {
+                condition.crossThenCount.updateValueAndValidity({ emitEvent: false });
+            }
+
+            const hasStaleElse = condition.crossElseTargets.some(t => staleKeys.has(t.key));
+            if (hasStaleElse) {
+                condition.crossElseCount.setErrors({ staleTarget: true });
+            } else if (condition.crossElseCount.hasError('staleTarget')) {
+                condition.crossElseCount.updateValueAndValidity({ emitEvent: false });
+            }
+        }
+    }
+
+    public isCrossTargetStale(condition: ConditionControl, target: ConditionFieldOption): boolean {
+        return this._staleTargetKeys.get(condition)?.has(target.key) ?? false;
     }
 
     public getFieldOptionGroupsForCondition(condition: ConditionControl): ConditionFieldGroup[] {

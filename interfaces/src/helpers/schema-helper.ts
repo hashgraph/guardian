@@ -819,7 +819,14 @@ export class SchemaHelper {
             for (const f of (cond.elseFields || [])) { conditionFieldNames.add(f.name); }
         }
         if (conditionFieldNames.size && Array.isArray(document.required)) {
-            document.required = document.required.filter((name: string) => !conditionFieldNames.has(name));
+            const fieldNameCount = new Map<string, number>();
+            for (const f of (fields || [])) {
+                fieldNameCount.set(f.name, (fieldNameCount.get(f.name) ?? 0) + 1);
+            }
+            document.required = document.required.filter(
+                (name: string) =>
+                    !conditionFieldNames.has(name) || (fieldNameCount.get(name) ?? 0) > 1
+            );
         }
 
         return document;
