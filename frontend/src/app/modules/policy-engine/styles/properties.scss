@@ -22,11 +22,11 @@
     --pc-warning-border-light: var(--color-accent-yellow-1, #DA9B22);
     --pc-warning-bg-light: var(--guardian-warning-background, #FFF6E3);
     --pc-warning-shadow: var(--guardian-shadow, #00000014);
+    --pc-control-height: 30px;
 
     .properties {
         --col-name-width: 116px;
         --col-value-width: 100%;
-        --pc-control-height: 30px;
 
         width: 100%;
         max-width: 100%;
