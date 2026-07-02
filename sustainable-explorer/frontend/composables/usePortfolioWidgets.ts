@@ -18,7 +18,7 @@ export type WidgetKey =
 
 const STORAGE_KEY = 'portfolio_widgets';
 
-const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
+export const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
     totalIssued: true,
     activeSupply: true,
     totalRetired: true,
@@ -130,5 +130,5 @@ export function usePortfolioWidgets() {
         widgets.value = { ...widgets.value, [key]: value };
     }
 
-    return { widgetVisible, toggleWidget, setWidget, widgetGroups: WIDGET_GROUPS };
+    return { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups: WIDGET_GROUPS };
 }

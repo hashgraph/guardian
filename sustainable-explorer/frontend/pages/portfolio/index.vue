@@ -11,7 +11,6 @@ import {
     BarChart2,
     PieChart,
     Building2,
-    BookOpen,
     Flag,
     Target,
     Activity,
@@ -19,31 +18,54 @@ import {
     Layers,
     CheckCircle2,
 } from 'lucide-vue-next';
-import { formatCredits } from '~/lib/format';
+import { toast } from 'vue-sonner';
+import { formatCredits, formatSmartCredits } from '~/lib/format';
 import {
     allocateDonutColors,
     DONUT_OTHER_COLOR,
     mergeTopBinsWithOther,
 } from '~/lib/chart-colors';
 import { SectorType, SECTOR_I18N_KEYS } from '~/types/enums';
+import { DEFAULT_WIDGETS } from '~/composables/usePortfolioWidgets';
 
 const { t } = useI18n();
 
 const {
-    recentActivity,
     buildRetirementSeries,
     totalRetired,
-    registries: allRegistries,   // full network list, used for watchlist modal candidates
     pending,
 } = useDashboard();
-
-const { sdgStats } = useSdgStats();
 const { projects: allProjects } = useProjects();   // full list for watchlist modal candidates
-const { credits: allCredits } = useCredits();      // full list for watchlist modal candidates
-const { methodologies } = useMethodologies();
 
 const { watchlistItems, addItem, removeItem, hasItem, count: watchlistCount } = usePortfolioWatchlist();
-const { widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
+const { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
+const { isAuthenticated } = useAuth();
+const { hydrateFromApi, pushType } = usePortfolioSync();
+const {
+    watchlistFilters,
+    setFilter: setWatchlistFilter,
+    clearFilters: clearWatchlistFilters,
+    hasActiveFilters: hasActiveWatchlistFilters,
+    filterOptions: watchlistFilterOptions,
+    matchesFilters: matchesWatchlistFilters,
+    activeFilterChips: watchlistFilterChips,
+    activeFilterSummary: watchlistFilterSummary,
+} = usePortfolioWatchlistFilters();
+
+// Icon/color per filter category for the small removable chips shown in the
+// watchlist bar. Static (not interpolated) class strings so Tailwind's
+// content scanner picks them up — same pattern the old per-type watchlist
+// breakdown chips used before this feature replaced them with filters.
+const watchlistFilterChipIcon: Record<string, typeof Flag> = {
+    country: Flag,
+    methodology: Layers,
+    registry: Building2,
+};
+const watchlistFilterChipClass: Record<string, string> = {
+    country: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
+    methodology: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
+    registry: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
+};
 
 // All chart data filtered by the active watchlist (falls back to full dataset when empty)
 const {
@@ -60,6 +82,9 @@ const {
     topCountries,
     buildIssuanceSeries,
     recentIssuances,
+    filteredSdgStats,
+    recentActivity,
+    dataPending,
 } = usePortfolioDashboard(watchlistItems);
 
 // Period toggles
@@ -68,13 +93,15 @@ const issuancePeriod = ref<TimePeriod>('monthly');
 const retirementPeriod = ref<TimePeriod>('monthly');
 
 const issuanceSeriesData = computed(() => buildIssuanceSeries(issuancePeriod.value));
+// Sum raw values (stored in millions), convert back to credits, then smart-format.
+// Avoids "0M total" when total credits < 100 000.
 const issuanceSeriesTotal = computed(() =>
-    Math.round(issuanceSeriesData.value.reduce((s, d) => s + d.value, 0) * 10) / 10,
+    formatSmartCredits(issuanceSeriesData.value.reduce((s, d) => s + d.value, 0) * 1_000_000),
 );
 
 const retirementSeriesData = computed(() => buildRetirementSeries(retirementPeriod.value));
 const retirementSeriesTotal = computed(() =>
-    Math.round(retirementSeriesData.value.reduce((s, d) => s + d.value, 0) * 10) / 10,
+    formatSmartCredits(retirementSeriesData.value.reduce((s, d) => s + d.value, 0) * 1_000_000),
 );
 
 // Chart mode for sector/registry donuts
@@ -143,30 +170,40 @@ const sectorTotal = computed(() => sectorChartSegments.value.reduce((sum, s) => 
 const registryTotal = computed(() => registryChartSegments.value.reduce((sum, s) => sum + s.value, 0));
 
 
-// Top SDGs by project count
+// Top SDGs — by project count or credit supply depending on chartMode
 const topSdgs = computed(() => {
-    const sorted = [...sdgStats.value].sort((a, b) => b.projects - a.projects).slice(0, 8);
-    const max = sorted[0]?.projects ?? 1;
-    return sorted.map(s => ({
-        name: s.name,
-        count: s.projects,
-        width: max > 0 ? Math.round((s.projects / max) * 100) : 0,
-        color: s.color,
-    }));
+    const useCredits = chartMode.value === 'credits';
+    const sorted = [...filteredSdgStats.value]
+        .sort((a, b) => (useCredits ? b.credits - a.credits : b.projects - a.projects))
+        .slice(0, 8);
+    const max = (useCredits ? sorted[0]?.credits : sorted[0]?.projects) ?? 1;
+    return sorted.map(s => {
+        const val = useCredits ? s.credits : s.projects;
+        return {
+            name: s.name,
+            count: val,
+            width: max > 0 ? Math.round((val / max) * 100) : 0,
+            color: s.color,
+        };
+    });
 });
 
-// SDG coverage bar viz (all SDGs)
+// SDG coverage bar viz (all SDGs) — filtered by watchlist, mode-aware
 const sdgCoverage = computed(() => {
-    const sorted = [...sdgStats.value].sort((a, b) => a.id - b.id);
-    const max = Math.max(...sorted.map(s => s.projects), 1);
-    return sorted.map(s => ({
-        id: s.id,
-        name: `SDG ${s.id}`,
-        shortName: s.name.length > 20 ? `${s.name.slice(0, 18)}…` : s.name,
-        projects: s.projects,
-        width: max > 0 ? Math.round((s.projects / max) * 100) : 0,
-        color: s.color || 'var(--color-primary)',
-    }));
+    const useCredits = chartMode.value === 'credits';
+    const sorted = [...filteredSdgStats.value].sort((a, b) => a.id - b.id);
+    const max = Math.max(...sorted.map(s => useCredits ? s.credits : s.projects), 1);
+    return sorted.map(s => {
+        const val = useCredits ? s.credits : s.projects;
+        return {
+            id: s.id,
+            name: `SDG ${s.id}`,
+            shortName: s.name.length > 20 ? `${s.name.slice(0, 18)}…` : s.name,
+            projects: val,
+            width: max > 0 ? Math.round((val / max) * 100) : 0,
+            color: s.color || 'var(--color-primary)',
+        };
+    });
 });
 
 
@@ -209,55 +246,22 @@ const showWatchlistModal = ref(false);
 const showWidgetLibraryModal = ref(false);
 const showChartBuilderModal = ref(false);
 
-// Watchlist modal
-type WatchlistTab = 'project' | 'methodology' | 'registry' | 'token';
-const watchlistTab = ref<WatchlistTab>('project');
+// Watchlist modal — projects only. Uncapped; narrowed by search + the
+// persisted country/methodology/registry filters (usePortfolioWatchlistFilters).
 const watchlistSearch = ref('');
 
 const watchlistCandidates = computed(() => {
     const q = watchlistSearch.value.toLowerCase();
-    if (watchlistTab.value === 'project') {
-        return allProjects.value
-            .filter(p => p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q))
-            .slice(0, 50)
-            .map(p => ({
-                id: p.id,
-                type: 'project' as const,
-                name: p.name,
-                meta: p.registry ?? '',
-            }));
-    }
-    if (watchlistTab.value === 'methodology') {
-        return methodologies.value
-            .filter(m => m.name?.toLowerCase().includes(q) || m.registry?.toLowerCase().includes(q))
-            .slice(0, 50)
-            .map(m => ({
-                id: m.id,
-                type: 'methodology' as const,
-                name: m.name,
-                meta: m.registry ?? '',
-            }));
-    }
-    if (watchlistTab.value === 'registry') {
-        return allRegistries.value
-            .filter(r => r.name?.toLowerCase().includes(q))
-            .slice(0, 30)
-            .map(r => ({
-                id: r.name,
-                type: 'registry' as const,
-                name: r.name,
-                meta: `${r.projects} projects`,
-            }));
-    }
-    // tokens
-    return allCredits.value
-        .filter(c => (c.name ?? c.tokenId).toLowerCase().includes(q))
-        .slice(0, 50)
-        .map(c => ({
-            id: c.tokenId,
-            type: 'token' as const,
-            name: c.name ?? c.tokenId,
-            meta: c.registry ?? '',
+    return allProjects.value
+        .filter(p =>
+            (!q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q)) &&
+            matchesWatchlistFilters(p),
+        )
+        .map(p => ({
+            id: p.id,
+            type: 'project' as const,
+            name: p.name,
+            meta: p.registry ?? '',
         }));
 });
 
@@ -268,6 +272,18 @@ function openWatchlist() {
 
 function clearWatchlist() {
     watchlistItems.value = [];
+}
+
+// Used by the "filtered" banner's single Clear action — watchlist and
+// filters are two different ways of scoping the dashboard (see
+// usePortfolioDashboard's precedence), so "go back to seeing everything"
+// has to reset both, not just whichever one currently has priority.
+// Clearing the watchlist first means it's already empty by the time
+// watchlistFilters changes, so the clear-on-filter-change watcher's
+// "watchlist non-empty" guard is false and no spurious Undo toast fires.
+function clearWatchlistAndFilters() {
+    watchlistItems.value = [];
+    clearWatchlistFilters();
 }
 
 // Chart builder
@@ -284,6 +300,20 @@ const chartTitle = ref('');
 const chartType = ref<ChartType>('line');
 const xAxis = ref('month');
 const yAxis = ref('credits');
+
+const xAxisOptions = computed(() => [
+    { value: 'month', label: t('portfolio.modal.chartBuilder.axes.month') },
+    { value: 'vintage', label: t('portfolio.modal.chartBuilder.axes.vintage') },
+    { value: 'sector', label: t('portfolio.modal.chartBuilder.axes.sector') },
+    { value: 'country', label: t('portfolio.modal.chartBuilder.axes.country') },
+    { value: 'registry', label: t('portfolio.modal.chartBuilder.axes.registry') },
+    { value: 'sdg', label: t('portfolio.modal.chartBuilder.axes.sdg') },
+]);
+const yAxisOptions = computed(() => [
+    { value: 'credits', label: t('portfolio.modal.chartBuilder.axes.credits') },
+    { value: 'projects', label: t('portfolio.modal.chartBuilder.axes.projects') },
+    { value: 'retirements', label: t('portfolio.modal.chartBuilder.axes.retirements') },
+]);
 
 // Persist custom charts in localStorage so they survive page reload
 const CUSTOM_CHARTS_KEY = 'portfolio_custom_charts';
@@ -336,7 +366,7 @@ function getChartRawData(cfg: CustomChartConfig): { label: string; value: number
         }));
     }
     if (xAxis === 'sdg') {
-        return sdgStats.value.map(s => ({
+        return filteredSdgStats.value.map(s => ({
             label: `SDG ${s.id}`,
             value: yAxis === 'credits' ? s.credits : s.projects,
         }));
@@ -383,6 +413,159 @@ function removeCustomChart(i: number) {
     customCharts.value = customCharts.value.filter((_, idx) => idx !== i);
 }
 
+// ── Watchlist chip overflow ──────────────────────────────────────────────────
+// Keeps the chip row to a single line. After mount (and on container resize),
+// we measure how many chips fit in the row and hide the rest behind "+N more".
+const chipsRowRef = ref<HTMLElement | null>(null);
+const visibleChipCount = ref(Infinity); // Infinity = all visible (before first measurement)
+
+const hiddenChipCount = computed(() =>
+    isFinite(visibleChipCount.value)
+        ? Math.max(0, watchlistItems.value.length - visibleChipCount.value)
+        : 0,
+);
+
+async function recalcChips(): Promise<void> {
+    // Phase 1: make all chips visible so offsetWidth is measurable.
+    visibleChipCount.value = Infinity;
+    await nextTick();
+
+    const el = chipsRowRef.value;
+    if (!el || el.children.length === 0) return;
+
+    const gap = 8; // gap-2
+    const containerW = el.clientWidth;
+    const chips = Array.from(el.children) as HTMLElement[];
+
+    // Pass 1 — count how many fit without any badge.
+    let used = 0, count = 0;
+    for (const chip of chips) {
+        const addGap = count > 0 ? gap : 0;
+        if (used + addGap + chip.offsetWidth > containerW) break;
+        used += addGap + chip.offsetWidth;
+        count++;
+    }
+
+    if (count >= chips.length) {
+        // All chips fit — no badge needed.
+        visibleChipCount.value = chips.length;
+        return;
+    }
+
+    // Pass 2 — some chips overflow; reserve ~68 px for the "+N more" badge.
+    const badgeReserve = 68 + gap;
+    let used2 = 0, count2 = 0;
+    for (const chip of chips) {
+        const addGap = count2 > 0 ? gap : 0;
+        if (used2 + addGap + chip.offsetWidth > containerW - badgeReserve) break;
+        used2 += addGap + chip.offsetWidth;
+        count2++;
+    }
+    visibleChipCount.value = Math.max(1, count2);
+}
+
+let _chipsRO: ResizeObserver | null = null;
+
+// Re-create the ResizeObserver whenever the chips row mounts or unmounts
+// (the v-if on the row means the element comes and goes with the watchlist).
+watch(chipsRowRef, (el) => {
+    _chipsRO?.disconnect();
+    _chipsRO = null;
+    if (el) {
+        _chipsRO = new ResizeObserver(() => { void recalcChips(); });
+        _chipsRO.observe(el);
+    }
+});
+
+// ── True only after the client has mounted and read localStorage. ─────────────
+// Guards ALL chart sections so SSR never renders with the unfiltered (server-side)
+// dataset — the server has no localStorage, so SSR data is always "all network" data.
+// clientReady gates the transition from skeleton → real content on both SPA nav
+// and hard reload, ensuring the first visible render always has the correct watchlist.
+const clientReady = ref(false);
+
+// Combined guard: charts only show when the client is ready AND data is loaded.
+const displayReady = computed(() => clientReady.value && !dataPending.value);
+
+// Suppresses watchers during hydration — prevents applyRemote from triggering
+// spurious PUT calls when it overwrites refs with server data on page load.
+const hydrating = ref(false);
+
+// Applies server-fetched preferences to local reactive state.
+// localStorage watchers in each composable re-sync automatically when refs change.
+async function applyRemote(
+    remote: Awaited<ReturnType<typeof hydrateFromApi>>,
+): Promise<void> {
+    if (!remote) return;
+    hydrating.value = true;
+    const remoteWatchlist = remote.watchlist ?? [];
+    if (remoteWatchlist.length > 0) {
+        // Server has saved items — server is the source of truth.
+        watchlistItems.value = remoteWatchlist;
+    } else if (watchlistItems.value.length > 0) {
+        // Server returned empty but local has items (user hasn't synced yet).
+        // Keep local items and push them up so they persist across devices.
+        pushType('watchlist', watchlistItems.value, 0);
+    }
+    const remoteFilters = remote.watchlistFilters ?? {};
+    if (Object.keys(remoteFilters).length > 0) {
+        watchlistFilters.value = remoteFilters;
+    } else if (hasActiveWatchlistFilters.value) {
+        pushType('watchlist_filters', watchlistFilters.value, 0);
+    }
+    widgets.value = { ...DEFAULT_WIDGETS, ...(remote.widgets ?? {}) };
+    customCharts.value = (remote.customCharts ?? []).slice(0, 5);
+    await nextTick();
+    hydrating.value = false;
+}
+
+// Push changes to API — one independent 800ms debounce per type.
+// hydrating guard prevents spurious PUTs during initial hydration from the server.
+watch(watchlistItems,   () => { if (!hydrating.value) pushType('watchlist',         watchlistItems.value); }, { deep: true });
+watch(widgets,          () => { if (!hydrating.value) pushType('widgets',           widgets.value);        }, { deep: true });
+watch(customCharts,     () => { if (!hydrating.value) pushType('custom_charts',     customCharts.value);   }, { deep: true });
+
+// Explicit project picks and filters are two different ways of scoping the
+// dashboard (see usePortfolioDashboard's precedence). Letting both linger at
+// once is confusing — the watchlist would silently keep winning while the
+// user thinks their filter change did something. So changing a filter while
+// projects are watchlisted clears the watchlist, handing scope to the filter.
+// This mirrors the app's existing convention for reversible destructive
+// actions (e.g. API key revoke) — act immediately, no blocking confirm
+// dialog, but surface an "Undo" toast rather than losing the selection
+// silently. Guarded so Undo (which restores both refs) doesn't re-trigger itself.
+const suppressFilterClearWatchlist = ref(false);
+watch(watchlistFilters, (_newFilters, oldFilters) => {
+    if (!hydrating.value && !suppressFilterClearWatchlist.value && watchlistItems.value.length > 0) {
+        const previousWatchlist = watchlistItems.value;
+        const previousFilters = oldFilters ? { ...oldFilters } : {};
+        watchlistItems.value = [];
+        toast(
+            previousWatchlist.length === 1
+                ? t('portfolio.watchlistClearedByFilterSingular')
+                : t('portfolio.watchlistClearedByFilter', { count: previousWatchlist.length }),
+            {
+                action: {
+                    label: t('common.undo'),
+                    onClick: async () => {
+                        suppressFilterClearWatchlist.value = true;
+                        watchlistItems.value = previousWatchlist;
+                        watchlistFilters.value = previousFilters;
+                        await nextTick();
+                        suppressFilterClearWatchlist.value = false;
+                    },
+                },
+            },
+        );
+    }
+    if (!hydrating.value) pushType('watchlist_filters', watchlistFilters.value);
+}, { deep: true });
+
+// Re-hydrate when the user logs in while on this page, or switches network.
+watch([isAuthenticated, network], async ([authed]) => {
+    if (authed) await applyRemote(await hydrateFromApi());
+});
+
 // Keyboard close
 function onKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') {
@@ -392,8 +575,21 @@ function onKeydown(e: KeyboardEvent) {
     }
 }
 
-onMounted(() => window.addEventListener('keydown', onKeydown));
-onUnmounted(() => window.removeEventListener('keydown', onKeydown));
+// Re-measure chips whenever the watchlist changes (items added/removed).
+watch(watchlistItems, () => { void recalcChips(); }, { deep: true });
+
+onMounted(async () => {
+    window.addEventListener('keydown', onKeydown);
+    // Signal that localStorage has been read (happens synchronously in composable setup).
+    // Charts can now render with the correct watchlist-filtered data.
+    clientReady.value = true;
+    void recalcChips();
+    if (isAuthenticated.value) await applyRemote(await hydrateFromApi());
+});
+onUnmounted(() => {
+    window.removeEventListener('keydown', onKeydown);
+    _chipsRO?.disconnect();
+});
 </script>
 
 <template>
@@ -437,13 +633,27 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
         <!-- WATCHLIST BAR -->
         <div class="px-6 pb-4">
             <div class="rounded-xl border bg-card p-4">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2">
-                        <Star class="h-3.5 w-3.5 text-stat-amber fill-stat-amber" />
+                <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <Star class="h-3.5 w-3.5 text-stat-amber fill-stat-amber shrink-0" />
                         <span class="text-sm font-medium text-foreground">{{ $t('portfolio.watchlist') }}</span>
                         <span class="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                             {{ watchlistCount }}
                         </span>
+                        <span v-if="watchlistFilterChips.length > 0" class="text-muted-foreground/40 text-[11px]">·</span>
+                        <button
+                            v-for="chip in watchlistFilterChips"
+                            :key="chip.key"
+                            type="button"
+                            :title="`${chip.full} — click to clear`"
+                            class="group inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors"
+                            :class="watchlistFilterChipClass[chip.key]"
+                            @click="setWatchlistFilter(chip.key, '')"
+                        >
+                            <component :is="watchlistFilterChipIcon[chip.key]" class="h-2.5 w-2.5 shrink-0" />
+                            <span class="truncate max-w-[120px]">{{ chip.chipText }}</span>
+                            <X class="h-2.5 w-2.5 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                        </button>
                     </div>
                     <button
                         class="text-xs font-medium text-primary hover:underline"
@@ -452,14 +662,23 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         + {{ $t('portfolio.addItems') }}
                     </button>
                 </div>
-                <div v-if="watchlistItems.length > 0" class="flex flex-wrap gap-2">
-                    <WatchlistChip
-                        v-for="item in watchlistItems"
-                        :key="`${item.type}:${item.id}`"
-                        :label="item.name"
-                        :type="item.type"
-                        @remove="removeItem(item.id, item.type)"
-                    />
+                <div v-if="watchlistItems.length > 0" class="flex items-center gap-2 min-w-0">
+                    <div ref="chipsRowRef" class="flex flex-nowrap gap-2 overflow-hidden flex-1 min-w-0">
+                        <WatchlistChip
+                            v-for="(item, idx) in watchlistItems"
+                            :key="item.id"
+                            v-show="idx < visibleChipCount"
+                            :label="item.name"
+                            @remove="removeItem(item.id, item.type)"
+                        />
+                    </div>
+                    <button
+                        v-if="hiddenChipCount > 0"
+                        class="shrink-0 whitespace-nowrap rounded-full border bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        @click="openWatchlist()"
+                    >
+                        +{{ hiddenChipCount }} more
+                    </button>
                 </div>
                 <div v-else class="text-center py-2 text-xs text-muted-foreground">
                     {{ $t('portfolio.watchlistEmpty') }}
@@ -481,12 +700,15 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
         >
             <div v-if="isFiltered" class="mx-6 mb-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-2.5 flex items-center gap-2.5">
                 <Star class="h-3.5 w-3.5 text-primary shrink-0 fill-primary/30" />
-                <span class="text-xs text-foreground">
+                <span v-if="watchlistCount > 0" class="text-xs text-foreground">
                     Showing data for <span class="font-semibold text-primary">{{ watchlistCount }} watchlisted {{ watchlistCount === 1 ? 'item' : 'items' }}</span> — all charts and KPIs are filtered.
+                </span>
+                <span v-else class="text-xs text-foreground">
+                    Showing data for projects matching <span class="font-semibold text-primary">{{ watchlistFilterSummary }}</span> — all charts and KPIs are filtered.
                 </span>
                 <button
                     class="ml-auto text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                    @click="clearWatchlist()"
+                    @click="clearWatchlistAndFilters()"
                 >
                     Clear filter
                 </button>
@@ -496,7 +718,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
         <!-- KPI CARDS -->
         <div class="px-6 pb-5">
             <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <template v-if="pending">
+                <template v-if="!displayReady">
                     <Skeleton v-for="n in 4" :key="n" class="h-28 rounded-xl" />
                 </template>
                 <template v-else>
@@ -581,7 +803,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         </div>
                     </div>
                     <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card p-5">
+                        <Skeleton v-if="!displayReady" class="h-52 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card p-5">
                             <TrendLineChart
                                 :data="issuanceSeriesData"
                                 color="hsl(142, 76%, 36%)"
@@ -593,14 +816,14 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                                     {{ issuanceSeriesData.length }}
                                     {{ issuancePeriod === 'monthly' ? $t('dashboard.months') : issuancePeriod === 'quarterly' ? $t('dashboard.quarters') : $t('dashboard.years') }}
                                 </span>
-                                <span class="text-sm font-semibold text-foreground">{{ issuanceSeriesTotal }}{{ $t('dashboard.mTotal') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ issuanceSeriesTotal }} total</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Vintage Distribution -->
-                <div v-if="widgetVisible('vintageDist')">
+                <div v-if="widgetVisible('vintageDist')" class="flex flex-col">
                     <div class="flex items-center justify-between px-6 py-4">
                         <div>
                             <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.sections.vintageDist') }}</h2>
@@ -610,15 +833,16 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                             <X class="h-3.5 w-3.5" />
                         </button>
                     </div>
-                    <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card p-5">
-                            <div v-if="vintageDistribution.length > 0" class="flex items-end gap-2 h-48">
+                    <div class="px-6 pb-6 flex-1 flex flex-col">
+                        <Skeleton v-if="!displayReady" class="flex-1 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card p-5 flex-1 flex flex-col overflow-hidden">
+                            <div v-if="vintageDistribution.length > 0" class="flex items-end gap-2 flex-1 min-h-[12rem]">
                                 <div
                                     v-for="v in vintageDistribution"
                                     :key="v.year"
-                                    class="flex-1 flex flex-col items-center gap-1"
+                                    class="flex-1 min-w-0 flex flex-col items-center gap-1"
                                 >
-                                    <span class="text-[10px] font-medium text-muted-foreground tabular-nums">{{ formatCredits(v.credits) }}</span>
+                                    <span class="text-[10px] font-medium text-muted-foreground tabular-nums">{{ formatSmartCredits(v.credits) }}</span>
                                     <div
                                         class="w-full rounded-t-md bg-chart-2/80 hover:bg-chart-2 transition-colors"
                                         :style="{ height: `${vintageMax > 0 ? (v.credits / vintageMax) * 130 : 0}px` }"
@@ -626,7 +850,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                                     <span class="text-[10px] text-muted-foreground">{{ v.year }}</span>
                                 </div>
                             </div>
-                            <div v-else class="flex items-center justify-center h-48 text-sm text-muted-foreground">
+                            <div v-else class="flex-1 flex items-center justify-center min-h-[12rem] text-sm text-muted-foreground">
                                 {{ $t('dashboard.noVintageData') }}
                             </div>
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
@@ -644,7 +868,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
         <div v-if="widgetVisible('projectsSector') || widgetVisible('projectsByRegistry') || widgetVisible('sdgRadar')" class="border-t">
             <div class="flex items-center justify-between px-6 py-4">
                 <div>
-                    <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.sections.breakdowns') }}</h2>
+                    <h2 class="text-base font-semibold text-foreground">{{ chartMode === 'credits' ? $t('portfolio.sections.issuanceBreakdowns') : $t('portfolio.sections.breakdowns') }}</h2>
                 </div>
                 <div class="flex items-center rounded-lg border p-0.5">
                     <button
@@ -669,10 +893,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                     <!-- Projects by Sector -->
                     <div v-if="widgetVisible('projectsSector')" class="rounded-xl border bg-card p-5">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.projectsBySector') }}</h3>
+                            <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.bySector') }}</h3>
                             <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('projectsSector', false)"><X class="h-3.5 w-3.5" /></button>
                         </div>
-                        <div class="flex items-start gap-4">
+                        <Skeleton v-if="!displayReady" class="h-32 rounded-xl" />
+                        <div v-else class="flex items-start gap-4">
                             <DonutChart :segments="sectorChartSegments" :size="120" />
                             <div class="space-y-1.5 flex-1 min-w-0 pt-1">
                                 <div v-for="s in sectorDonutRows" :key="s.label" class="flex items-center gap-2 min-w-0">
@@ -689,10 +914,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                     <!-- Projects by Registry -->
                     <div v-if="widgetVisible('projectsByRegistry')" class="rounded-xl border bg-card p-5">
                         <div class="flex items-center justify-between mb-4">
-                            <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.projectsByRegistry') }}</h3>
+                            <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.byRegistry') }}</h3>
                             <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('projectsByRegistry', false)"><X class="h-3.5 w-3.5" /></button>
                         </div>
-                        <div class="flex items-start gap-4">
+                        <Skeleton v-if="!displayReady" class="h-32 rounded-xl" />
+                        <div v-else class="flex items-start gap-4">
                             <DonutChart :segments="registryChartSegments" :size="120" />
                             <div class="space-y-1.5 flex-1 min-w-0 pt-1">
                                 <div v-for="s in registryDonutRows" :key="s.label" class="flex items-center gap-2 min-w-0">
@@ -712,7 +938,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                             <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.sdgCoverage') }}</h3>
                             <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('sdgRadar', false)"><X class="h-3.5 w-3.5" /></button>
                         </div>
-                        <div class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                        <Skeleton v-if="!displayReady" class="h-64 rounded-xl" />
+                        <div v-else class="space-y-2 max-h-64 overflow-y-auto pr-1">
                             <div v-for="sdg in sdgCoverage" :key="sdg.id" class="flex items-center gap-2">
                                 <span class="text-[10px] font-semibold text-muted-foreground w-8 shrink-0 tabular-nums">{{ sdg.name }}</span>
                                 <div class="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
@@ -747,7 +974,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('topCountries', false)"><X class="h-3.5 w-3.5" /></button>
                     </div>
                     <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card p-5 space-y-3">
+                        <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card p-5 space-y-3">
                             <div v-for="c in topCountries" :key="c.name" class="flex items-center gap-3">
                                 <span class="text-xs text-foreground min-w-[90px] truncate">{{ c.name }}</span>
                                 <div class="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
@@ -778,14 +1006,23 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         </div>
                     </div>
                     <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card overflow-hidden">
+                        <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card overflow-hidden">
                             <table class="w-full text-sm table-fixed">
+                                <colgroup>
+                                    <!-- NAME: flexible, takes all remaining width -->
+                                    <col class="min-w-0" />
+                                    <!-- Numeric cols: fixed, compact -->
+                                    <col class="w-16 sm:w-20" />
+                                    <col class="w-20 sm:w-24" />
+                                    <col class="w-20 sm:w-24" />
+                                </colgroup>
                                 <thead>
                                     <tr class="border-b bg-muted/30">
-                                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.name') }}</th>
-                                        <th class="w-16 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.policies') }}</th>
-                                        <th class="w-16 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.projectsCol') }}</th>
-                                        <th class="w-24 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('dashboard.issuancesCol') }}</th>
+                                        <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wide">{{ $t('dashboard.name') }}</th>
+                                        <th class="text-right py-2.5 px-2 sm:px-3 text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">{{ $t('dashboard.policies') }}</th>
+                                        <th class="text-right py-2.5 px-2 sm:px-3 text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">{{ $t('dashboard.projectsCol') }}</th>
+                                        <th class="text-right py-2.5 px-2 sm:px-3 text-xs font-medium text-muted-foreground uppercase tracking-wide leading-tight">{{ $t('dashboard.issuancesCol') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
@@ -797,10 +1034,12 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                                         v-slot="{ navigate }"
                                     >
                                         <tr class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigate()">
-                                            <td class="py-2.5 px-4"><span class="font-medium text-foreground break-all">{{ org.name }}</span></td>
-                                            <td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{{ org.policies }}</td>
-                                            <td class="py-2.5 px-4 text-right tabular-nums text-primary font-medium">{{ org.projects }}</td>
-                                            <td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{{ org.credits }}</td>
+                                            <td class="py-2.5 px-3 min-w-0">
+                                                <span class="font-medium text-foreground break-words hyphens-auto">{{ org.name }}</span>
+                                            </td>
+                                            <td class="py-2.5 px-2 sm:px-3 text-right tabular-nums text-muted-foreground text-xs">{{ org.policies }}</td>
+                                            <td class="py-2.5 px-2 sm:px-3 text-right tabular-nums text-primary font-medium text-xs">{{ org.projects }}</td>
+                                            <td class="py-2.5 px-2 sm:px-3 text-right tabular-nums text-muted-foreground text-xs">{{ org.credits }}</td>
                                         </tr>
                                     </NuxtLink>
                                     <tr v-if="registries.length === 0">
@@ -829,7 +1068,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         </div>
                     </div>
                     <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card divide-y">
+                        <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card divide-y">
                             <div v-for="token in recentIssuances" :key="token.name" class="flex items-center gap-3 px-4 py-3">
                                 <span class="flex-1 text-sm text-foreground truncate font-medium">{{ token.name }}</span>
                                 <Badge variant="outline" class="text-[10px] shrink-0">{{ token.type }}</Badge>
@@ -850,7 +1090,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('sdgTopList', false)"><X class="h-3.5 w-3.5" /></button>
                     </div>
                     <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card p-5 space-y-3">
+                        <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card p-5 space-y-3">
                             <div v-for="sdg in topSdgs" :key="sdg.name" class="flex items-center gap-3">
                                 <span class="text-xs text-foreground min-w-[110px] truncate">{{ sdg.name }}</span>
                                 <div class="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
@@ -885,24 +1126,27 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('networkActivity', false)"><X class="h-3.5 w-3.5" /></button>
                     </div>
                     <div class="px-6 pb-6">
-                        <div v-if="recentActivity.length > 0" class="rounded-xl border bg-card divide-y">
-                            <div
-                                v-for="(item, idx) in recentActivity"
-                                :key="idx"
-                                class="flex items-center gap-4 px-4 py-3"
-                            >
-                                <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                                    <component :is="activityIcons[item.type] ?? Activity" :class="[activityColors[item.type] ?? 'text-muted-foreground', 'h-4 w-4']" />
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-foreground">{{ item.action }}</p>
-                                    <p class="text-xs text-muted-foreground truncate">{{ item.detail }}</p>
+                        <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
+                        <template v-else>
+                            <div v-if="recentActivity.length > 0" class="rounded-xl border bg-card divide-y">
+                                <div
+                                    v-for="(item, idx) in recentActivity"
+                                    :key="idx"
+                                    class="flex items-center gap-4 px-4 py-3"
+                                >
+                                    <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+                                        <component :is="activityIcons[item.type] ?? Activity" :class="[activityColors[item.type] ?? 'text-muted-foreground', 'h-4 w-4']" />
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-sm font-medium text-foreground">{{ item.action }}</p>
+                                        <p class="text-xs text-muted-foreground truncate">{{ item.detail }}</p>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div v-else class="rounded-xl border bg-card py-8 text-center text-sm text-muted-foreground">
-                            {{ $t('dashboard.noActivity') }}
-                        </div>
+                            <div v-else class="rounded-xl border bg-card py-8 text-center text-sm text-muted-foreground">
+                                {{ $t('dashboard.noActivity') }}
+                            </div>
+                        </template>
                     </div>
                 </div>
 
@@ -932,7 +1176,8 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         </div>
                     </div>
                     <div class="px-6 pb-6">
-                        <div class="rounded-xl border bg-card p-5">
+                        <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
+                        <div v-else class="rounded-xl border bg-card p-5">
                             <TrendLineChart
                                 :data="retirementSeriesData"
                                 color="hsl(24, 95%, 53%)"
@@ -941,7 +1186,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
                                 <span class="text-xs text-muted-foreground">{{ retirementSeriesData.length }} {{ retirementPeriod === 'monthly' ? $t('dashboard.months') : retirementPeriod === 'quarterly' ? $t('dashboard.quarters') : $t('dashboard.years') }}</span>
-                                <span class="text-sm font-semibold text-foreground">{{ retirementSeriesTotal }}{{ $t('dashboard.mTotal') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ retirementSeriesTotal }} total</span>
                             </div>
                         </div>
                     </div>
@@ -975,7 +1220,10 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                 <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.sections.customCharts') }}</h2>
             </div>
             <div class="px-6 pb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <div v-for="(chart, i) in customCharts" :key="i" class="rounded-xl border bg-card p-5">
+                <template v-if="!displayReady">
+                    <Skeleton v-for="i in customCharts.length" :key="i" class="h-52 rounded-xl" />
+                </template>
+                <div v-for="(chart, i) in displayReady ? customCharts : []" :key="i" class="rounded-xl border bg-card p-5">
                     <!-- Card header -->
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center gap-2">
@@ -1094,21 +1342,18 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
-                        <!-- Tabs -->
-                        <div class="flex border-b shrink-0 px-6 overflow-x-auto">
-                            <button
-                                v-for="tab in (['project', 'methodology', 'registry', 'token'] as const)"
-                                :key="tab"
-                                class="flex items-center gap-1.5 px-4 py-3 text-xs font-medium border-b-2 transition-colors whitespace-nowrap"
-                                :class="watchlistTab === tab ? 'border-primary text-primary' : 'border-transparent text-muted-foreground hover:text-foreground'"
-                                @click="watchlistTab = tab; watchlistSearch = ''"
-                            >
-                                <component :is="{ project: FolderKanban, methodology: BookOpen, registry: Building2, token: Coins }[tab]" class="h-3.5 w-3.5" />
-                                {{ $t(`portfolio.modal.watchlist.tabs.${tab}`) }}
-                                <span v-if="watchlistItems.filter(i => i.type === tab).length > 0" class="rounded-full bg-primary/10 text-primary px-1.5 py-0.5 text-[10px] font-semibold">
-                                    {{ watchlistItems.filter(i => i.type === tab).length }}
-                                </span>
-                            </button>
+                        <!-- Filters (multi-select, mirrors the Projects table's FilterBar) -->
+                        <div class="px-6 py-3 border-b shrink-0">
+                            <FilterBar
+                                model-value=""
+                                :filters="watchlistFilterOptions"
+                                :active-filters="watchlistFilters"
+                                :result-count="watchlistCandidates.length"
+                                :total-count="allProjects.length"
+                                hide-search
+                                @filter="setWatchlistFilter"
+                                @clear="clearWatchlistFilters"
+                            />
                         </div>
                         <!-- Search -->
                         <div class="px-6 py-3 border-b shrink-0">
@@ -1120,7 +1365,7 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                         </div>
                         <!-- List -->
                         <div class="flex-1 overflow-y-auto px-6 py-2">
-                            <div v-for="item in watchlistCandidates" :key="`${item.type}:${item.id}`" class="flex items-center justify-between py-3 border-b last:border-0 gap-4">
+                            <div v-for="item in watchlistCandidates" :key="item.id" class="flex items-center justify-between py-3 border-b last:border-0 gap-4">
                                 <div class="flex-1 min-w-0">
                                     <p class="text-sm font-medium text-foreground truncate">{{ item.name }}</p>
                                     <p v-if="item.meta" class="text-[11px] text-muted-foreground mt-0.5">{{ item.meta }}</p>
@@ -1304,28 +1549,11 @@ onUnmounted(() => window.removeEventListener('keydown', onKeydown));
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="text-xs font-medium text-foreground block mb-1.5">{{ $t('portfolio.modal.chartBuilder.xAxis') }}</label>
-                                    <select
-                                        v-model="xAxis"
-                                        class="w-full rounded-lg border bg-card px-3 py-2 text-xs text-foreground focus:ring-2 focus:ring-primary/30 focus:outline-none"
-                                    >
-                                        <option value="month">{{ $t('portfolio.modal.chartBuilder.axes.month') }}</option>
-                                        <option value="vintage">{{ $t('portfolio.modal.chartBuilder.axes.vintage') }}</option>
-                                        <option value="sector">{{ $t('portfolio.modal.chartBuilder.axes.sector') }}</option>
-                                        <option value="country">{{ $t('portfolio.modal.chartBuilder.axes.country') }}</option>
-                                        <option value="registry">{{ $t('portfolio.modal.chartBuilder.axes.registry') }}</option>
-                                        <option value="sdg">{{ $t('portfolio.modal.chartBuilder.axes.sdg') }}</option>
-                                    </select>
+                                    <SingleSelect v-model="xAxis" :options="xAxisOptions" />
                                 </div>
                                 <div>
                                     <label class="text-xs font-medium text-foreground block mb-1.5">{{ $t('portfolio.modal.chartBuilder.yAxis') }}</label>
-                                    <select
-                                        v-model="yAxis"
-                                        class="w-full rounded-lg border bg-card px-3 py-2 text-xs text-foreground focus:ring-2 focus:ring-primary/30 focus:outline-none"
-                                    >
-                                        <option value="credits">{{ $t('portfolio.modal.chartBuilder.axes.credits') }}</option>
-                                        <option value="projects">{{ $t('portfolio.modal.chartBuilder.axes.projects') }}</option>
-                                        <option value="retirements">{{ $t('portfolio.modal.chartBuilder.axes.retirements') }}</option>
-                                    </select>
+                                    <SingleSelect v-model="yAxis" :options="yAxisOptions" />
                                 </div>
                             </div>
                             <!-- Info note -->

@@ -34,7 +34,6 @@ const lastSyncTime = computed(() => {
 
 const navItems = computed(() => [
     { label: t('nav.dashboard'), icon: LayoutDashboard, to: '/' },
-    { label: t('nav.portfolio'), icon: Briefcase, to: '/portfolio' },
     { label: t('nav.projects'), icon: FolderKanban, to: '/projects' },
     { label: t('nav.issuances'), icon: Coins, to: '/credits' },
     { label: t('nav.methodologies'), icon: BookOpen, to: '/methodologies' },
@@ -45,6 +44,10 @@ const navItems = computed(() => [
     // Sync status page is viewable by everyone (read-only); actions are admin-only.
     { label: t('nav.syncStatus'), icon: Activity, to: '/status' },
 ]);
+
+const portfolioItem = computed(() => ({
+    label: t('nav.portfolio'), icon: Briefcase, to: '/portfolio',
+}));
 </script>
 
 <template>
@@ -112,6 +115,30 @@ const navItems = computed(() => [
                     leave-to-class="opacity-0"
                 >
                     <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
+                </Transition>
+            </NuxtLink>
+
+            <!-- Divider + Portfolio pinned below all main nav items -->
+            <div class="mx-1 my-1.5 h-px bg-border/60" />
+            <NuxtLink
+                :to="portfolioItem.to"
+                :title="collapsed ? portfolioItem.label : undefined"
+                class="group relative flex items-center gap-3 rounded-lg px-3 py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:scale-y-0 before:rounded-r-full before:bg-primary before:transition-transform before:duration-200 before:ease-out"
+                active-class="!bg-primary/8 !text-primary !font-semibold before:!scale-y-100"
+            >
+                <component
+                    :is="portfolioItem.icon"
+                    class="h-[18px] w-[18px] shrink-0 transition-transform duration-150 group-hover:scale-110"
+                />
+                <Transition
+                    enter-active-class="transition-all duration-150 delay-75 ease-out"
+                    enter-from-class="opacity-0 -translate-x-1"
+                    enter-to-class="opacity-100 translate-x-0"
+                    leave-active-class="transition-opacity duration-75"
+                    leave-from-class="opacity-100"
+                    leave-to-class="opacity-0"
+                >
+                    <span v-if="!collapsed" class="truncate">{{ portfolioItem.label }}</span>
                 </Transition>
             </NuxtLink>
         </nav>

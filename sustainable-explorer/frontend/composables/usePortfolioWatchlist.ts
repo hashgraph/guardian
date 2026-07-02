@@ -1,4 +1,4 @@
-export type WatchlistItemType = 'project' | 'methodology' | 'registry' | 'token';
+export type WatchlistItemType = 'project';
 
 export interface WatchlistItem {
     id: string;

@@ -256,6 +256,7 @@
         "clearAll": "Limpiar todo",
         "clear": "Limpiar",
         "clearSelection": "Limpiar selección",
+        "undo": "Deshacer",
         "loading": "Cargando...",
         "noResults": "Sin resultados",
         "retry": "Reintentar",
@@ -1111,9 +1112,15 @@
         "widgetLibrary": "Biblioteca de widgets",
         "manageWatchlist": "Gestionar lista de seguimiento",
         "watchlist": "Lista de seguimiento",
+        "watchlistTypeLabels": {
+            "project": "Proyectos",
+            "projectSingular": "Proyecto"
+        },
         "addItems": "Agregar elementos",
         "watchlistEmpty": "Aún no hay elementos.",
-        "addItemsCta": "Agregar proyectos, registros o tokens →",
+        "watchlistClearedByFilter": "Lista de seguimiento eliminada ({count} elementos) — ahora los filtros controlan tu panel",
+        "watchlistClearedByFilterSingular": "Lista de seguimiento eliminada (1 elemento) — ahora los filtros controlan tu panel",
+        "addItemsCta": "Agregar proyectos →",
         "removeWidget": "Eliminar widget",
         "noData": "Sin datos disponibles",
         "lastFive": "Últimos 5",
@@ -1146,8 +1153,11 @@
             "issuanceTrend": "Tendencia de emisión",
             "vintageDist": "Distribución por cosecha",
             "breakdowns": "Desglose de proyectos",
+            "issuanceBreakdowns": "Desglose de emisiones",
             "projectsBySector": "Proyectos por sector",
+            "bySector": "por sector",
             "projectsByRegistry": "Proyectos por registro",
+            "byRegistry": "por registro",
             "sdgCoverage": "Cobertura ODS",
             "topCountries": "Principales países anfitriones por créditos",
             "topCountriesSub": "Países clasificados por total de créditos emitidos",
@@ -1183,12 +1193,11 @@
         "modal": {
             "watchlist": {
                 "title": "Gestionar lista de seguimiento",
-                "subtitle": "Agrega o elimina proyectos, metodologías, registros y tokens para rastrear",
-                "tabs": {
-                    "project": "Proyectos",
-                    "methodology": "Metodologías",
-                    "registry": "Registros",
-                    "token": "Tokens"
+                "subtitle": "Agrega o elimina proyectos para rastrear",
+                "filters": {
+                    "country": "País",
+                    "methodology": "Metodología",
+                    "registry": "Registro"
                 },
                 "add": "Agregar",
                 "remove": "Eliminar",
