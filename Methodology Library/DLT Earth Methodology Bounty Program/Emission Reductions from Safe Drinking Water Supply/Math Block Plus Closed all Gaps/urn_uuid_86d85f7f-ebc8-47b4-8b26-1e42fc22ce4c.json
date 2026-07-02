@@ -1,0 +1,38 @@
+{
+  "id": "urn:uuid:86d85f7f-ebc8-47b4-8b26-1e42fc22ce4c",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937",
+  "issuanceDate": "2026-07-02T19:02:12.902Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+  ],
+  "credentialSubject": [
+    {
+      "name": "VMR0015 v1.0 Safe Drinking Water dMRV FINAL-3_1781328422728_1781333997086_1781446804289_1781512778575_1782677187945_1782678093448_1782679987228_1782732245385_1782736129355_1782750416668_1782763241745_1782848798178_1782893668722_1782895316748_1783016251157_1783018910899",
+      "description": "Verra VMR0015 methodology for low greenhouse-gas-emitting safe drinking water production systems. dMRV implementation on Hedera Guardian for the DLT Earth bounty.",
+      "topicDescription": "VMR0015 v1.0",
+      "version": "Dry Run",
+      "policyTag": "Tag_1783018897179.dc26f0ef",
+      "owner": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937",
+      "cid": "8f18ff2a-c91f-4687-b775-c73630c74297",
+      "url": "ipfs://8f18ff2a-c91f-4687-b775-c73630c74297",
+      "uuid": "eac900f0-e6d2-4483-b4da-ab677fe58513",
+      "operation": "PUBLISH",
+      "@context": [
+        "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+      ],
+      "id": "urn:uuid:17830189326.285655552",
+      "type": "Policy&1.0.0"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-07-02T19:02:12Z",
+    "verificationMethod": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..KuH_bHNiO2C7YRyb8crdD2FP-tg31m-2kiVFygCiE_eNHdhI2ZoS7Zwkd3fe63uW_jtPw8fflNyWhhsqxM7YBQ"
+  }
+}
