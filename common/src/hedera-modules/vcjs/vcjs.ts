@@ -377,26 +377,31 @@ export class VCJS {
             return;
         }
         const rootProperties = schema.properties || {};
-        const conditionalByRef = new Map<string, Set<string>>();
 
-        const collectConditional = (constraint: any, refKey: string) => {
-            if (!constraint || typeof constraint !== 'object') { return; }
-            if (!conditionalByRef.has(refKey)) { conditionalByRef.set(refKey, new Set()); }
-            const fields = conditionalByRef.get(refKey)!;
-            if (Array.isArray(constraint.required)) {
-                for (const fn of constraint.required) { fields.add(fn); }
-            }
-            if (constraint.properties) {
-                const parentSchema = defsObj[refKey];
-                for (const [fieldName, val] of Object.entries(constraint.properties) as [string, any][]) {
-                    if (val === false) {
-                        fields.add(fieldName);
-                    } else if (val && typeof val === 'object') {
-                        const nestedRef = parentSchema?.properties?.[fieldName]?.$ref;
-                        if (nestedRef && defsObj[nestedRef]) {
-                            collectConditional(val, nestedRef);
+        // Collect fields to strip keyed by container dot-path (not by IRI).
+        // Multiple conditions targeting the same container accumulate into one Set.
+        const stripByPath = new Map<string, Set<string>>();
+
+        const collectPath = (constraint: any, pathSoFar: string[], currentProps: any) => {
+            if (!constraint?.properties) { return; }
+            for (const [propKey, val] of Object.entries(constraint.properties) as [string, any][]) {
+                if (!val || typeof val !== 'object') { continue; }
+                const ref = currentProps[propKey]?.$ref;
+                if (!ref || !defsObj[ref]) { continue; }
+                const containerPath = [...pathSoFar, propKey];
+                const pathKey = containerPath.join('.');
+                if (Array.isArray(val.required)) {
+                    if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
+                    for (const f of val.required) { stripByPath.get(pathKey)!.add(f); }
+                }
+                if (val.properties) {
+                    for (const [fieldName, fieldVal] of Object.entries(val.properties) as [string, any][]) {
+                        if (fieldVal === false) {
+                            if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
+                            stripByPath.get(pathKey)!.add(fieldName);
                         }
                     }
+                    collectPath(val, containerPath, defsObj[ref]?.properties || {});
                 }
             }
         };
@@ -404,20 +409,80 @@ export class VCJS {
         for (const condEntry of schema.allOf) {
             if (!condEntry?.if) { continue; }
             for (const branch of [condEntry.then, condEntry.else]) {
-                if (!branch?.properties) { continue; }
-                for (const propKey of Object.keys(branch.properties)) {
-                    const constraint = branch.properties[propKey];
-                    if (!constraint || typeof constraint !== 'object') { continue; }
-                    const ref = rootProperties[propKey]?.$ref;
-                    if (!ref || !defsObj[ref]) { continue; }
-                    collectConditional(constraint, ref);
-                }
+                collectPath(branch, [], rootProperties);
             }
         }
-        for (const [ref, conditionalFields] of conditionalByRef) {
-            const defsEntry = defsObj[ref];
-            if (Array.isArray(defsEntry?.required) && conditionalFields.size) {
-                defsEntry.required = defsEntry.required.filter((r: string) => !conditionalFields.has(r));
+
+        if (!stripByPath.size) { return; }
+
+        // Pre-compute original IRIs for every path and its ancestors before any $ref rewrite.
+        const originalIriByPath = new Map<string, string>();
+        const computeOriginalIri = (pathArr: string[]): string | undefined => {
+            let props = rootProperties;
+            for (let i = 0; i < pathArr.length; i++) {
+                const ref = props[pathArr[i]]?.$ref;
+                if (!ref || !defsObj[ref]) { return undefined; }
+                if (i === pathArr.length - 1) { return ref; }
+                props = defsObj[ref]?.properties || {};
+            }
+            return undefined;
+        };
+
+        // Include all ancestor paths so passthrough clones can be created for them.
+        const allPathsNeeded = new Set<string>();
+        for (const pathKey of stripByPath.keys()) {
+            const parts = pathKey.split('.');
+            for (let d = 1; d <= parts.length; d++) {
+                allPathsNeeded.add(parts.slice(0, d).join('.'));
+            }
+        }
+        for (const pathKey of allPathsNeeded) {
+            const iri = computeOriginalIri(pathKey.split('.'));
+            if (iri) { originalIriByPath.set(pathKey, iri); }
+        }
+
+        // Process shortest paths first so parent clones exist before children need them.
+        const cloneKeys = new Map<string, string>();
+        const sortedPaths = [...allPathsNeeded].sort(
+            (a, b) => a.split('.').length - b.split('.').length
+        );
+
+        for (const pathKey of sortedPaths) {
+            const iri = originalIriByPath.get(pathKey);
+            if (!iri) { continue; }
+            const pathArr = pathKey.split('.');
+            const fieldsToStrip = stripByPath.get(pathKey);
+            const cloneKey = `${iri}__${pathArr.join('__')}`;
+
+            // Deep-copy original def so the shared entry is never mutated.
+            const clone = JSON.parse(JSON.stringify(defsObj[iri]));
+            // Give the clone a unique $id so AJV can resolve the rewritten $ref to
+            // it, without conflicting with the original entry's $id anchor.
+            clone.$id = cloneKey;
+            delete clone.$anchor;
+            delete clone.$dynamicAnchor;
+            if (fieldsToStrip?.size && Array.isArray(clone.required)) {
+                clone.required = clone.required.filter((r: string) => !fieldsToStrip.has(r));
+                if (!clone.required.length) { delete clone.required; }
+            }
+            defsObj[cloneKey] = clone;
+            cloneKeys.set(pathKey, cloneKey);
+
+            // Rewrite the $ref on this specific container only.
+            if (pathArr.length === 1) {
+                if (rootProperties[pathArr[0]]) {
+                    rootProperties[pathArr[0]] = { ...rootProperties[pathArr[0]], $ref: cloneKey };
+                }
+            } else {
+                const parentPathKey = pathArr.slice(0, -1).join('.');
+                const parentCloneKey = cloneKeys.get(parentPathKey);
+                const leafProp = pathArr[pathArr.length - 1];
+                if (parentCloneKey && defsObj[parentCloneKey]?.properties?.[leafProp]) {
+                    defsObj[parentCloneKey].properties[leafProp] = {
+                        ...defsObj[parentCloneKey].properties[leafProp],
+                        $ref: cloneKey,
+                    };
+                }
             }
         }
     }

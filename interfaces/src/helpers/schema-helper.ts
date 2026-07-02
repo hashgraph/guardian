@@ -1105,68 +1105,25 @@ export class SchemaHelper {
             }
         }
 
-        const patchMap = SchemaHelper.buildCrossTargetPatchMap(target, schemaMap);
-        return SchemaHelper.uniqueRefs(map, {}, patchMap);
-    }
-
-    /**
-     * Build a map from sub-schema IRI → set of field names to strip from required,
-     * derived from cross-schema condition targets on the given schema.
-     */
-    private static buildCrossTargetPatchMap(
-        target: Schema,
-        schemaMap: Record<string, any>
-    ): Map<string, Set<string>> {
-        const patchMap = new Map<string, Set<string>>();
-        const fieldByName = new Map<string, SchemaField>();
-        for (const field of target.fields) {
-            if (field.isRef && field.type) {
-                fieldByName.set(field.name, field);
-            }
-        }
-        for (const condition of (target.conditions || [])) {
-            const allTargets = [
-                ...(condition.thenTargets || []),
-                ...(condition.elseTargets || []),
-            ];
-            for (const t of allTargets) {
-                const path = t.fieldPath;
-                if (!path || path.length < 2) { continue; }
-                let currentField: SchemaField | undefined = fieldByName.get(path[0]);
-                for (let i = 1; i < path.length - 1 && currentField; i++) {
-                    currentField = currentField.fields?.find(f => f.name === path[i] && f.isRef);
-                }
-                const iri = currentField?.type;
-                if (!iri) { continue; }
-                const leaf = path[path.length - 1];
-                if (!patchMap.has(iri)) { patchMap.set(iri, new Set()); }
-                patchMap.get(iri)!.add(leaf);
-            }
-        }
-        return patchMap;
+        return SchemaHelper.uniqueRefs(map, {});
     }
 
     /**
      * Get unique refs
      * @param map
      * @param newMap
-     * @param patchMap fields to strip from required per schema IRI
      * @private
      */
-    private static uniqueRefs(map: any, newMap: any, patchMap?: Map<string, Set<string>>) {
+    private static uniqueRefs(map: any, newMap: any) {
         const keys = Object.keys(map);
         for (const iri of keys) {
             if (!newMap[iri]) {
                 const oldSchema = map[iri];
                 const newSchema = { ...oldSchema };
                 delete newSchema.$defs;
-                const toRemove = patchMap?.get(iri);
-                if (toRemove?.size && Array.isArray(newSchema.required)) {
-                    newSchema.required = newSchema.required.filter((r: string) => !toRemove.has(r));
-                }
                 newMap[iri] = newSchema;
                 if (oldSchema.$defs) {
-                    SchemaHelper.uniqueRefs(oldSchema.$defs, newMap, patchMap);
+                    SchemaHelper.uniqueRefs(oldSchema.$defs, newMap);
                 }
             }
         }
