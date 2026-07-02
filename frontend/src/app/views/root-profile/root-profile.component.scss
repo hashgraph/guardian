@@ -632,11 +632,28 @@ button[disabled] {
     }
 }
 
+/* The wizard centers vertically via its containers, not a form margin: the host
+   must stretch to the content-area height (components default to an inline host,
+   so the page's percentage height never resolves), and the page column centers
+   the form. :has() scopes both rules to the wizard state, so the
+   configured-profile tabs view keeps the default page flow. min-height instead
+   of the theme's fixed height lets an over-tall step grow and scroll instead of
+   clipping its top edge. */
+:host:has(.finish-setup-form) {
+    display: block;
+    height: 100%;
+}
+
+.guardian-page:has(> .finish-setup-form) {
+    height: 100%;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
 .finish-setup-form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20vh;
 }
 
 .finish-setup-form-container {
