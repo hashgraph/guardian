@@ -336,6 +336,12 @@
     position: relative;
 }
 
+/* Footer icons sit in the same column as the 32px user avatar below them; widen
+   their box so the icon centers and the labels line up with the avatar row. */
+#footerBar .item .item-icon {
+    min-width: 32px;
+}
+
 /* Keep the badge out of flow so the bell stays put / centred whether or not a
    notification count is present. */
 .notification-item .collapsed-notify-counter {
