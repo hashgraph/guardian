@@ -7,31 +7,11 @@ export interface WatchlistItem {
     meta?: string;
 }
 
-const STORAGE_KEY = 'portfolio_watchlist';
-
+// Portfolio is a logged-in-only feature (see the `auth` route middleware on
+// `pages/portfolio/index.vue`) — state lives server-side via usePortfolioSync;
+// no localStorage layer, so there's no guest-local/server reconciliation to do.
 export function usePortfolioWatchlist() {
     const watchlistItems = useState<WatchlistItem[]>('portfolio-watchlist', () => []);
-
-    if (import.meta.client) {
-        if (watchlistItems.value.length === 0) {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) watchlistItems.value = JSON.parse(raw) as WatchlistItem[];
-            } catch {
-                watchlistItems.value = [];
-            }
-        }
-    }
-
-    watch(watchlistItems, (items) => {
-        if (import.meta.client) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-            } catch {
-                // ignore quota errors
-            }
-        }
-    }, { deep: true });
 
     function hasItem(id: string, type: WatchlistItemType): boolean {
         return watchlistItems.value.some(i => i.id === id && i.type === type);

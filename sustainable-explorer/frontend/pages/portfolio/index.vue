@@ -28,6 +28,12 @@ import {
 import { SectorType, SECTOR_I18N_KEYS } from '~/types/enums';
 import { DEFAULT_WIDGETS } from '~/composables/usePortfolioWidgets';
 
+// The customizable dashboard is a logged-in-only feature — guests get
+// redirected home (with the sign-in modal opened) rather than a functional
+// guest-mode page, so no watchlist/filters/widgets/chart state is ever built
+// up in localStorage for a user who was never meant to have this feature.
+definePageMeta({ middleware: 'auth' });
+
 const { t } = useI18n();
 
 const {
@@ -315,23 +321,9 @@ const yAxisOptions = computed(() => [
     { value: 'retirements', label: t('portfolio.modal.chartBuilder.axes.retirements') },
 ]);
 
-// Persist custom charts in localStorage so they survive page reload
-const CUSTOM_CHARTS_KEY = 'portfolio_custom_charts';
+// Custom charts are hydrated from / synced to the server via usePortfolioSync
+// (Portfolio is a logged-in-only feature — no localStorage layer needed).
 const customCharts = ref<CustomChartConfig[]>([]);
-
-if (import.meta.client) {
-    try {
-        const raw = localStorage.getItem(CUSTOM_CHARTS_KEY);
-        if (raw) customCharts.value = JSON.parse(raw);
-    } catch { customCharts.value = []; }
-}
-
-watch(customCharts, (val) => {
-    if (import.meta.client) {
-        try { localStorage.setItem(CUSTOM_CHARTS_KEY, JSON.stringify(val)); } catch {}
-    }
-}, { deep: true });
-
 
 // Maps an xAxis+yAxis combination to { label, value }[] used by line & bar charts
 function getChartRawData(cfg: CustomChartConfig): { label: string; value: number }[] {
@@ -477,11 +469,11 @@ watch(chipsRowRef, (el) => {
     }
 });
 
-// ── True only after the client has mounted and read localStorage. ─────────────
-// Guards ALL chart sections so SSR never renders with the unfiltered (server-side)
-// dataset — the server has no localStorage, so SSR data is always "all network" data.
-// clientReady gates the transition from skeleton → real content on both SPA nav
-// and hard reload, ensuring the first visible render always has the correct watchlist.
+// ── True only after the client has mounted and the server hydration below has
+// had a chance to run. Guards ALL chart sections so the first visible render
+// never flashes the unfiltered "all network" dataset before the user's saved
+// watchlist/filters arrive — clientReady gates the transition from skeleton
+// → real content on both SPA nav and hard reload.
 const clientReady = ref(false);
 
 // Combined guard: charts only show when the client is ready AND data is loaded.
@@ -492,7 +484,6 @@ const displayReady = computed(() => clientReady.value && !dataPending.value);
 const hydrating = ref(false);
 
 // Applies server-fetched preferences to local reactive state.
-// localStorage watchers in each composable re-sync automatically when refs change.
 async function applyRemote(
     remote: Awaited<ReturnType<typeof hydrateFromApi>>,
 ): Promise<void> {
@@ -503,8 +494,10 @@ async function applyRemote(
         // Server has saved items — server is the source of truth.
         watchlistItems.value = remoteWatchlist;
     } else if (watchlistItems.value.length > 0) {
-        // Server returned empty but local has items (user hasn't synced yet).
-        // Keep local items and push them up so they persist across devices.
+        // Server returned empty but the current session already added items
+        // this hasn't hit the server yet (e.g. mid-debounce, or a network
+        // switch racing the initial save) — push them up rather than
+        // dropping them silently.
         pushType('watchlist', watchlistItems.value, 0);
     }
     const remoteFilters = remote.watchlistFilters ?? {};
@@ -580,11 +573,14 @@ watch(watchlistItems, () => { void recalcChips(); }, { deep: true });
 
 onMounted(async () => {
     window.addEventListener('keydown', onKeydown);
-    // Signal that localStorage has been read (happens synchronously in composable setup).
-    // Charts can now render with the correct watchlist-filtered data.
+    // Without a localStorage pre-population step, state starts empty on
+    // mount — wait for the server hydration to resolve before flipping
+    // clientReady, so the skeleton stays up rather than flashing the
+    // unfiltered "all network" dataset before the user's saved
+    // watchlist/filters arrive.
+    if (isAuthenticated.value) await applyRemote(await hydrateFromApi());
     clientReady.value = true;
     void recalcChips();
-    if (isAuthenticated.value) await applyRemote(await hydrateFromApi());
 });
 onUnmounted(() => {
     window.removeEventListener('keydown', onKeydown);

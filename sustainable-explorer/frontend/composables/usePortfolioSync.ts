@@ -60,7 +60,10 @@ export function usePortfolioSync() {
                 headers: { 'x-csrf-token': readCsrfCookie() },
                 body: { network: network.value, type, layout },
             }).catch(() => {
-                // Silently swallow — localStorage already holds the change.
+                // Silently swallow. No local fallback (Portfolio has no
+                // localStorage layer) — a failed save is only lost from the
+                // server; the in-memory ref keeps the change for the rest of
+                // this session, but a reload would revert to last-saved state.
             });
         }, delay);
     }

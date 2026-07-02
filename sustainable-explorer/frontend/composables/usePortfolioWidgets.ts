@@ -16,8 +16,6 @@ export type WidgetKey =
     | 'retirementTrend'
     | 'syncStatus';
 
-const STORAGE_KEY = 'portfolio_widgets';
-
 export const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
     totalIssued: true,
     activeSupply: true,
@@ -95,28 +93,6 @@ const WIDGET_GROUPS: WidgetGroup[] = [
 
 export function usePortfolioWidgets() {
     const widgets = useState<Record<WidgetKey, boolean>>('portfolio-widgets', () => ({ ...DEFAULT_WIDGETS }));
-
-    if (import.meta.client) {
-        try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            if (raw) {
-                const parsed = JSON.parse(raw) as Partial<Record<WidgetKey, boolean>>;
-                widgets.value = { ...DEFAULT_WIDGETS, ...parsed };
-            }
-        } catch {
-            widgets.value = { ...DEFAULT_WIDGETS };
-        }
-    }
-
-    watch(widgets, (val) => {
-        if (import.meta.client) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
-            } catch {
-                // ignore quota errors
-            }
-        }
-    }, { deep: true });
 
     function widgetVisible(key: WidgetKey): boolean {
         return widgets.value[key] ?? true;

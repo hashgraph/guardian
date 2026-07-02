@@ -2,18 +2,16 @@ import type { Project } from '~/types/models';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { naturalCompare, isValidCountryName } from '~/lib/utils';
 
-const STORAGE_KEY = 'portfolio_watchlist_filters';
-
 // Both endpoints are paginated with no "all" mode; methodology/registry
 // catalogs are small enough that a single high-limit page covers them.
 const FILTER_OPTIONS_LIMIT = 1000;
 
 /**
  * Multi-select Country/Methodology/Registry filters for the Watchlist.
- * Persisted the same way as usePortfolioWatchlist — useState singleton +
- * localStorage for guests, overwritten by usePortfolioSync's hydrateFromApi
- * for logged-in users. Selecting filters (even with no projects individually
- * watchlisted) narrows the whole portfolio dashboard — see usePortfolioDashboard.
+ * Portfolio is a logged-in-only feature — state is a useState singleton,
+ * hydrated from and synced to the server via usePortfolioSync. Selecting
+ * filters (even with no projects individually watchlisted) narrows the whole
+ * portfolio dashboard — see usePortfolioDashboard.
  */
 export function usePortfolioWatchlistFilters() {
     const { t } = useI18n();
@@ -31,27 +29,6 @@ export function usePortfolioWatchlistFilters() {
     });
 
     const watchlistFilters = useState<Record<string, string>>('portfolio-watchlist-filters', () => ({}));
-
-    if (import.meta.client) {
-        if (Object.keys(watchlistFilters.value).length === 0) {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (raw) watchlistFilters.value = JSON.parse(raw) as Record<string, string>;
-            } catch {
-                watchlistFilters.value = {};
-            }
-        }
-    }
-
-    watch(watchlistFilters, (val) => {
-        if (import.meta.client) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
-            } catch {
-                // ignore quota errors
-            }
-        }
-    }, { deep: true });
 
     function setFilter(key: string, value: string): void {
         if (!value || value === 'all') {
