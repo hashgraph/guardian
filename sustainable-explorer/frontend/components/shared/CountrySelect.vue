@@ -32,9 +32,9 @@ const filteredCountries = computed(() => {
     );
 });
 
-const displayValue = computed(() => {
+const displayName = computed(() => {
     if (!props.modelValue) return '';
-    return countryLabel(props.modelValue);
+    return countryName(props.modelValue);
 });
 
 function toggle() {
@@ -60,11 +60,12 @@ function select(code: string) {
         <button
             :id="id"
             type="button"
-            class="w-full rounded-md border bg-background px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-primary"
+            class="flex w-full items-center gap-2 rounded-md border bg-background px-3 py-2 text-sm text-left focus:outline-none focus:ring-2 focus:ring-primary"
             :class="modelValue ? 'text-foreground' : 'text-muted-foreground'"
             @click="toggle()"
         >
-            {{ displayValue || placeholder }}
+            <CountryFlag v-if="modelValue && isCountryCode(modelValue)" :code="modelValue" size="sm" />
+            {{ displayName || placeholder }}
         </button>
 
         <!-- Dropdown panel -->
@@ -104,7 +105,10 @@ function select(code: string) {
                         :class="modelValue === c.code ? 'text-foreground font-medium' : 'text-foreground'"
                         @click="select(c.code)"
                     >
-                        <span>{{ countryFlag(c.code) }} {{ c.name }}</span>
+                        <span class="flex items-center gap-2">
+                            <CountryFlag :code="c.code" size="sm" />
+                            {{ c.name }}
+                        </span>
                         <Check v-if="modelValue === c.code" class="h-3.5 w-3.5 shrink-0 text-primary" />
                     </li>
                 </ul>

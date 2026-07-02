@@ -335,7 +335,11 @@ const skeletonRows = computed(() => Array.from({ length: Math.min(pageSize.value
                                     <td class="px-4 py-3 text-muted-foreground">{{ u.jobTitle || '—' }}</td>
                                     <!-- Country -->
                                     <td class="px-4 py-3 text-muted-foreground">
-                                        {{ u.country ? (countryFlag(u.country) + ' ' + countryName(u.country)).trim() : '—' }}
+                                        <span v-if="u.country" class="inline-flex items-center gap-2">
+                                            <CountryFlag v-if="isCountryCode(u.country)" :code="u.country" size="sm" />
+                                            {{ countryName(u.country) }}
+                                        </span>
+                                        <template v-else>—</template>
                                     </td>
                                     <!-- Role -->
                                     <td class="px-4 py-3">

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LogOut, Pencil, KeyRound, Loader2, Building2, Briefcase, MapPin, CalendarDays, Activity, ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import { LogOut, Pencil, KeyRound, Loader2, Building2, Briefcase, MapPin, CalendarDays, Activity, ChevronLeft, ChevronRight, X } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import type { MyActivityResult } from '~/composables/useAuth';
 
@@ -28,18 +28,6 @@ function apiError(err: unknown): string {
     const e = err as { data?: { message?: string | string[] } };
     const m = e?.data?.message;
     return (Array.isArray(m) ? m[0] : m) || t('auth.errorGeneric');
-}
-
-// Helper to display country names safely
-function countryLabel(code?: string): string {
-    if (!code) return '—';
-    try {
-        // Fallback to DisplayNames API if available, or just return the uppercase code
-        const displayNames = new Intl.DisplayNames([navigator.language || 'en'], { type: 'region' });
-        return displayNames.of(code.toUpperCase()) || code;
-    } catch {
-        return code.toUpperCase();
-    }
 }
 
 // ── Profile edit ─────────────────────────────────────────────────────────────
@@ -259,7 +247,10 @@ const memberSince = computed(() =>
                             <MapPin class="mt-0.5 h-4 w-4 text-muted-foreground" />
                             <div>
                                 <dt class="text-xs text-muted-foreground">{{ $t('account.fields.country') }}</dt>
-                                <dd class="text-sm font-medium text-foreground">{{ countryLabel(user?.country) || '—' }}</dd>
+                                <dd class="flex items-center gap-2 text-sm font-medium text-foreground">
+                                    <CountryFlag v-if="user?.country && isCountryCode(user.country)" :code="user.country" size="sm" />
+                                    {{ user?.country ? countryName(user.country) : '—' }}
+                                </dd>
                             </div>
                         </div>
                         <div class="flex items-start gap-3 rounded-lg border bg-background/40 p-3">
@@ -414,12 +405,16 @@ const memberSince = computed(() =>
             <div
                 v-if="showPwModal"
                 class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/60 p-4"
-                @click.self="showPwModal = false"
             >
                 <div class="w-full max-w-md rounded-lg border bg-background p-6 shadow-xl">
-                    <div class="mb-1 flex items-center gap-2">
-                        <KeyRound class="h-5 w-5 text-primary" />
-                        <h2 class="text-lg font-semibold text-foreground">{{ $t('account.changePassword') }}</h2>
+                    <div class="mb-4 flex items-start justify-between">
+                        <div class="mb-1 flex items-center gap-2">
+                            <KeyRound class="h-5 w-5 text-primary" />
+                            <h2 class="text-lg font-semibold text-foreground">{{ $t('account.changePassword') }}</h2>
+                        </div>
+                        <button class="rounded-md p-1 text-muted-foreground hover:bg-muted" @click="showPwModal = false">
+                            <X class="h-4 w-4" />
+                        </button>
                     </div>
                     <p class="mb-4 text-sm text-muted-foreground">{{ $t('account.securityHint') }}</p>
 

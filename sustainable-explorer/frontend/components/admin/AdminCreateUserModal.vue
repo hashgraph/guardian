@@ -73,7 +73,6 @@ async function onSubmit() {
             <div
                 v-if="open"
                 class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4"
-                @click.self="close()"
             >
                 <div class="w-full max-w-lg rounded-lg border bg-background p-6 shadow-xl">
                     <div class="mb-4 flex items-start justify-between">

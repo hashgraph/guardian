@@ -133,8 +133,6 @@ async function onSignUp() {
             <div
                 v-if="modal"
                 class="fixed inset-0 z-[2000] flex items-center justify-center bg-black/50 p-4"
-                @click.self="close()"
-                @keydown.esc="close()"
             >
                 <div class="w-full max-w-md rounded-lg border bg-background p-6 shadow-xl">
                     <div class="mb-4 flex items-start justify-between">

@@ -2,9 +2,14 @@
  * Country data and helpers.
  *
  * COUNTRIES — all ISO 3166-1 alpha-2 countries sorted by name.
- * countryFlag(code) — regional-indicator emoji for a valid 2-letter code.
+ * isCountryCode(code) — whether `code` is a known 2-letter code; guards
+ *   `<CountryFlag :code="code" />` usage against legacy free-text values.
+ * countryFlag(code) — regional-indicator emoji for a valid 2-letter code. Only
+ *   safe for plain-text contexts (e.g. emails) — use <CountryFlag> in UI instead,
+ *   since emoji flags have no glyph in Windows' default font and render as raw
+ *   "XX" text there.
  * countryName(code) — English name for a known code; raw value for legacy text.
- * countryLabel(code) — "<flag> <name>" trimmed.
+ * countryLabel(code) — "<flag emoji> <name>" trimmed.
  */
 
 export interface Country {
@@ -270,6 +275,17 @@ const _codeMap = new Map<string, string>(COUNTRIES.map(c => [c.code.toUpperCase(
 export function countryFlag(code?: string | null): string {
     if (!code || code.length !== 2 || !/^[A-Za-z]{2}$/.test(code)) return '';
     return code.toUpperCase().replace(/./g, c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 65));
+}
+
+/**
+ * True if `code` is a recognized 2-letter ISO 3166-1 alpha-2 code — i.e. safe to
+ * pass to <CountryFlag>. Guards against legacy free-text values (e.g. "Sri Lanka"
+ * saved before the country field switched to ISO codes), which CountryFlag would
+ * otherwise resolve to the wrong flag via its substring(0,2) fallback.
+ */
+export function isCountryCode(code?: string | null): boolean {
+    if (!code) return false;
+    return _codeMap.has(code.toUpperCase());
 }
 
 /** Returns the English name for a known 2-letter code; raw value for legacy full-name strings. */
