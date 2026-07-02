@@ -100,6 +100,21 @@ export class BrandingService {
             if (brandingData.headerColor1) {
                 document.body.style.setProperty('--guardian-menu-color-2', brandingData.headerColor1);
             }
+            if (brandingData.headerColor) {
+                const bodyStyle = document.body.style;
+                const sidebarBg = brandingData.headerColor1
+                    ? colorToGradient(brandingData.headerColor, brandingData.headerColor1)
+                    : brandingData.headerColor;
+                bodyStyle.setProperty('--sidebar-bg', sidebarBg);
+                bodyStyle.setProperty('--sidebar-item-color', '#FFFFFF');
+                bodyStyle.setProperty('--sidebar-section-color', 'rgba(255, 255, 255, 0.65)');
+                bodyStyle.setProperty('--sidebar-item-hover', 'rgba(255, 255, 255, 0.12)');
+                bodyStyle.setProperty('--sidebar-border', 'rgba(255, 255, 255, 0.16)');
+                bodyStyle.setProperty('--sidebar-logo-color', '#FFFFFF');
+                bodyStyle.setProperty('--sidebar-accent', '#FFFFFF');
+                bodyStyle.setProperty('--sidebar-active-bg', 'rgba(255, 255, 255, 0.16)');
+                bodyStyle.setProperty('--sidebar-active-color', '#FFFFFF');
+            }
             if (brandingData.companyName) {
                 if (companyName) {
                     companyName.textContent = brandingData.companyName;

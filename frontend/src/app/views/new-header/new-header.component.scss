@@ -376,8 +376,8 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: var(--guardian-primary-background);
-        color: var(--sidebar-accent);
+        background: var(--sidebar-active-bg);
+        color: var(--sidebar-active-color);
         font-size: 12px;
         font-weight: 500;
     }
@@ -485,7 +485,7 @@
     border: none;
     border-bottom: 1px solid var(--sidebar-border);
     border-radius: 0;
-    background: var(--guardian-background);
+    background: var(--sidebar-bg);
     padding: 0 14px;
 }
 
@@ -499,6 +499,30 @@
     font-size: 14px;
     font-weight: 500;
     line-height: 20px;
+}
+
+/* Top-level bar items follow the sidebar tokens (branding-aware) instead of the
+   PrimeNG menubar theme colors. Scoped to direct children of the root list so
+   dropdown submenu panels keep the PrimeNG defaults. */
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item > .p-menubar-item-content {
+    color: var(--sidebar-item-color);
+
+    .p-menubar-item-icon,
+    .p-menubar-submenu-icon {
+        color: var(--sidebar-item-color);
+    }
+}
+
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item:not(.p-disabled) > .p-menubar-item-content:hover,
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item.p-focus > .p-menubar-item-content,
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item.p-menubar-item-active > .p-menubar-item-content {
+    background: var(--sidebar-item-hover);
+    color: var(--sidebar-accent);
+
+    .p-menubar-item-icon,
+    .p-menubar-submenu-icon {
+        color: var(--sidebar-accent);
+    }
 }
 
 /* Custom Hedera mark for the Tokens item. Rendered via a mask filled with
