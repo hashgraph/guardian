@@ -372,6 +372,12 @@ form {
     }
 }
 
+.condition-field-error {
+    color: var(--red-500, #ef4444);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
 .if-field-group-label {
     display: block;
     font-weight: 600;

@@ -778,14 +778,14 @@ export class SchemaHelper {
                     deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
                     buildCrossForbidden(cond.elseTargets)
                 ),
-                buildForbid(cond.elseFields)
+                buildForbid(cond.elseFields?.filter(f => !cond.thenFields?.some(t => t.name === f.name)))
             );
             const elseObj = deepMergeSchemaObj(
                 deepMergeSchemaObj(
                     deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
                     buildCrossForbidden(cond.thenTargets)
                 ),
-                buildForbid(cond.thenFields)
+                buildForbid(cond.thenFields?.filter(f => !cond.elseFields?.some(t => t.name === f.name)))
             );
 
             if (!thenObj && !elseObj) {
@@ -1118,10 +1118,10 @@ export class SchemaHelper {
         schemaMap: Record<string, any>
     ): Map<string, Set<string>> {
         const patchMap = new Map<string, Set<string>>();
-        const fieldNameToIRI = new Map<string, string>();
+        const fieldByName = new Map<string, SchemaField>();
         for (const field of target.fields) {
             if (field.isRef && field.type) {
-                fieldNameToIRI.set(field.name, field.type);
+                fieldByName.set(field.name, field);
             }
         }
         for (const condition of (target.conditions || [])) {
@@ -1132,11 +1132,11 @@ export class SchemaHelper {
             for (const t of allTargets) {
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
-                let iri: string | undefined = fieldNameToIRI.get(path[0]);
-                for (let i = 1; i < path.length - 1 && iri; i++) {
-                    const prop = schemaMap[iri]?.properties?.[path[i]];
-                    iri = prop?.$ref ?? prop?.items?.$ref;
+                let currentField: SchemaField | undefined = fieldByName.get(path[0]);
+                for (let i = 1; i < path.length - 1 && currentField; i++) {
+                    currentField = currentField.fields?.find(f => f.name === path[i] && f.isRef);
                 }
+                const iri = currentField?.type;
                 if (!iri) { continue; }
                 const leaf = path[path.length - 1];
                 if (!patchMap.has(iri)) { patchMap.set(iri, new Set()); }

@@ -378,6 +378,29 @@ export class VCJS {
         }
         const rootProperties = schema.properties || {};
         const conditionalByRef = new Map<string, Set<string>>();
+
+        const collectConditional = (constraint: any, refKey: string) => {
+            if (!constraint || typeof constraint !== 'object') { return; }
+            if (!conditionalByRef.has(refKey)) { conditionalByRef.set(refKey, new Set()); }
+            const fields = conditionalByRef.get(refKey)!;
+            if (Array.isArray(constraint.required)) {
+                for (const fn of constraint.required) { fields.add(fn); }
+            }
+            if (constraint.properties) {
+                const parentSchema = defsObj[refKey];
+                for (const [fieldName, val] of Object.entries(constraint.properties) as [string, any][]) {
+                    if (val === false) {
+                        fields.add(fieldName);
+                    } else if (val && typeof val === 'object') {
+                        const nestedRef = parentSchema?.properties?.[fieldName]?.$ref;
+                        if (nestedRef && defsObj[nestedRef]) {
+                            collectConditional(val, nestedRef);
+                        }
+                    }
+                }
+            }
+        };
+
         for (const condEntry of schema.allOf) {
             if (!condEntry?.if) { continue; }
             for (const branch of [condEntry.then, condEntry.else]) {
@@ -387,16 +410,7 @@ export class VCJS {
                     if (!constraint || typeof constraint !== 'object') { continue; }
                     const ref = rootProperties[propKey]?.$ref;
                     if (!ref || !defsObj[ref]) { continue; }
-                    if (!conditionalByRef.has(ref)) { conditionalByRef.set(ref, new Set()); }
-                    const conditionalFields = conditionalByRef.get(ref)!;
-                    if (Array.isArray(constraint.required)) {
-                        for (const fieldName of constraint.required) { conditionalFields.add(fieldName); }
-                    }
-                    if (constraint.properties) {
-                        for (const [fieldName, val] of Object.entries(constraint.properties)) {
-                            if (val === false) { conditionalFields.add(fieldName); }
-                        }
-                    }
+                    collectConditional(constraint, ref);
                 }
             }
         }

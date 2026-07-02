@@ -229,11 +229,18 @@
                             appendTo="body"
                             placeholder="Field"
                             [formControl]="getRowFieldControl(row)"
+                            [ngClass]="{'ng-invalid ng-dirty': getRowFieldControl(row)?.invalid}"
                             (onChange)="onIfRowFieldChange(condition, i, $event)">
                             <ng-template let-group pTemplate="group">
                               <span class="if-field-group-label">{{ group.label }}</span>
                             </ng-template>
                           </p-select>
+                          @if (getRowFieldControl(row)?.hasError('staleOption')) {
+                            <small class="condition-field-error">Field no longer exists — please re-select.</small>
+                          }
+                          @if (getRowFieldControl(row)?.hasError('arrayRefTrigger')) {
+                            <small class="condition-field-error">Array-ref fields cannot be used as IF triggers.</small>
+                          }
                         </div>
                         @if (getRowField(row)) {
                           <div class="equal-label">=</div>

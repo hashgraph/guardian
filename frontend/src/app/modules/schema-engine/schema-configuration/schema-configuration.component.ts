@@ -1048,46 +1048,7 @@ export class SchemaConfigurationComponent implements OnInit {
             return current;
         };
 
-        const startsWithArrayRefContainer = (path: string[]): boolean => {
-            if (path.length <= 1) { return false; }
-            const key = path[0];
-            const isArrayRef = (fc: FieldControl) =>
-                fc.controlKey?.value === key &&
-                !!fc.controlArray?.value &&
-                !!this.schemaTypeMap[fc.controlType?.value]?.isRef;
-            if (this.fields.some(isArrayRef)) { return true; }
-            for (const cond of this.conditions) {
-                if ([...(cond.thenControls || []), ...(cond.elseControls || [])].some(isArrayRef)) {
-                    return true;
-                }
-            }
-            if (path.length > 2) {
-                const getSubFields = (typeKey: string): SchemaField[] | undefined => {
-                    const info = this.schemaTypeMap[typeKey];
-                    if (!info?.isRef) { return undefined; }
-                    return this.subSchemas?.find(s => s.iri === info.type)?.fields;
-                };
-                const findFc = (): FieldControl | undefined => {
-                    const inFields = this.fields.find(fc => fc.controlKey?.value === key);
-                    if (inFields) { return inFields; }
-                    for (const cond of this.conditions) {
-                        const found = [...(cond.thenControls || []), ...(cond.elseControls || [])]
-                            .find(fc => fc.controlKey?.value === key);
-                        if (found) { return found; }
-                    }
-                    return undefined;
-                };
-                let currentFields = getSubFields(findFc()?.controlType?.value ?? '');
-                for (let i = 1; i < path.length - 1; i++) {
-                    if (!currentFields) { break; }
-                    const field = currentFields.find(f => f.name === path[i]);
-                    if (!field) { break; }
-                    if (field.isArray) { return true; }
-                    currentFields = getSubFields(this.getType(field));
-                }
-            }
-            return false;
-        };
+        const startsWithArrayRefContainer = (path: string[]) => this.startsWithArrayRefContainer(path);
 
         const resolveIfField = (opt: ConditionFieldOption | undefined): { field: SchemaField; fieldPath?: string[] } | null => {
             if (!opt?.fieldPath?.length) { return null; }
@@ -1147,6 +1108,13 @@ export class SchemaConfigurationComponent implements OnInit {
                 const row = rows[0];
                 const resolved = resolveIfField(row?.field);
                 if (!resolved) {
+                    const opt = row?.field as ConditionFieldOption | undefined;
+                    if (opt?.fieldPath?.length && startsWithArrayRefContainer(opt.fieldPath)) {
+                        console.warn(
+                            `Schema condition skipped: IF trigger "${opt.fieldPath.join('.')}" ` +
+                            `passes through an array-ref field and cannot be evaluated at runtime.`
+                        );
+                    }
                     continue;
                 }
                 conditions.push({
@@ -1445,6 +1413,47 @@ export class SchemaConfigurationComponent implements OnInit {
         return !this._hasStaleConditionSelections();
     }
 
+    private startsWithArrayRefContainer(path: string[]): boolean {
+        if (path.length <= 1) { return false; }
+        const key = path[0];
+        const isArrayRef = (fc: FieldControl) =>
+            fc.controlKey?.value === key &&
+            !!fc.controlArray?.value &&
+            !!this.schemaTypeMap[fc.controlType?.value]?.isRef;
+        if (this.fields.some(isArrayRef)) { return true; }
+        for (const cond of this.conditions) {
+            if ([...(cond.thenControls || []), ...(cond.elseControls || [])].some(isArrayRef)) {
+                return true;
+            }
+        }
+        if (path.length >= 2) {
+            const getSubFields = (typeKey: string): SchemaField[] | undefined => {
+                const info = this.schemaTypeMap[typeKey];
+                if (!info?.isRef) { return undefined; }
+                return this.subSchemas?.find(s => s.iri === info.type)?.fields;
+            };
+            const findFc = (): FieldControl | undefined => {
+                const inFields = this.fields.find(fc => fc.controlKey?.value === key);
+                if (inFields) { return inFields; }
+                for (const cond of this.conditions) {
+                    const found = [...(cond.thenControls || []), ...(cond.elseControls || [])]
+                        .find(fc => fc.controlKey?.value === key);
+                    if (found) { return found; }
+                }
+                return undefined;
+            };
+            let currentFields = getSubFields(findFc()?.controlType?.value ?? '');
+            for (let i = 1; i < path.length; i++) {
+                if (!currentFields) { break; }
+                const field = currentFields.find(f => f.name === path[i]);
+                if (!field) { break; }
+                if (field.isArray) { return true; }
+                currentFields = getSubFields(this.getType(field));
+            }
+        }
+        return false;
+    }
+
     private _hasStaleConditionSelections(): boolean {
         const validRefKeys = new Set(
             this.getAllRefControls().map(fc => fc.controlKey?.value).filter(Boolean)
@@ -1456,9 +1465,12 @@ export class SchemaConfigurationComponent implements OnInit {
                 const row = condition.conditions.at(i) as UntypedFormGroup;
                 const opt: ConditionFieldOption = (row.get('field') as UntypedFormControl)?.value;
                 if (!opt) { continue; }
+                if (opt.fieldPath?.length > 0 && this.startsWithArrayRefContainer(opt.fieldPath)) { return true; }
                 const isStale = opt.fieldControl
                     ? opt.fieldControl.controlKey?.value !== opt.key
-                    : !validKeys.has(opt.key);
+                    : (opt.fieldPath?.length > 1)
+                        ? !validRefKeys.has(opt.fieldPath[0])
+                        : !validKeys.has(opt.key);
                 if (isStale) { return true; }
             }
             for (const t of [...condition.crossThenTargets, ...condition.crossElseTargets]) {
@@ -1754,14 +1766,19 @@ export class SchemaConfigurationComponent implements OnInit {
                 const row = condition.conditions.at(i) as UntypedFormGroup;
                 const fieldCtrl = row.get('field') as UntypedFormControl;
                 const opt: ConditionFieldOption = fieldCtrl?.value;
-                const isStale = opt && (
+                const isArrayRef = opt?.fieldPath?.length > 0 && this.startsWithArrayRefContainer(opt.fieldPath);
+                const isStale = !isArrayRef && opt && (
                     opt.fieldControl
                         ? opt.fieldControl.controlKey?.value !== opt.key
-                        : !validKeys.has(opt.key)
+                        : (opt.fieldPath?.length > 1)
+                            ? !validRefKeys.has(opt.fieldPath[0])
+                            : !validKeys.has(opt.key)
                 );
-                if (isStale) {
+                if (isArrayRef) {
+                    fieldCtrl.setErrors({ arrayRefTrigger: true });
+                } else if (isStale) {
                     fieldCtrl.setErrors({ staleOption: true });
-                } else if (fieldCtrl?.hasError('staleOption')) {
+                } else if (fieldCtrl?.hasError('staleOption') || fieldCtrl?.hasError('arrayRefTrigger')) {
                     fieldCtrl.updateValueAndValidity({ emitEvent: false });
                 }
             }
