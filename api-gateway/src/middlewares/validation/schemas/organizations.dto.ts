@@ -96,9 +96,9 @@ export class OrganizationDTO {
 
     @ApiProperty({
         type: String,
-        description: 'Lifecycle status of the organization',
+        description: 'Lifecycle status of the organization. PUBLISH_ERROR indicates a failed publish attempt; the organization can be republished.',
         required: false,
-        enum: ['DRAFT', 'PUBLISHED'],
+        enum: ['DRAFT', 'PUBLISHED', 'PUBLISH_ERROR'],
         example: 'PUBLISHED'
     })
     @IsOptional()

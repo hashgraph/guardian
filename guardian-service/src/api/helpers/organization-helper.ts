@@ -100,6 +100,10 @@ export interface IEnrollMemberPayload {
  * topic → publish OrganizationMessage(CreateOrganization) to global topic → store org key in vault
  * → persist hydrated org record via auth-service.
  *
+ * The final persist (status = PUBLISHED + all on-ledger fields) is the commit point: the org
+ * record is never left half-published. A failure in the side-effecting phase marks the org
+ * PUBLISH_ERROR and rethrows; retry publishes a fresh topic/DID set (no ledger rollback exists).
+ *
  * Mirrors guardian-service/src/api/helpers/profile-helper.ts::createUserProfile.
  *
  * @param payload publish payload
@@ -240,179 +244,212 @@ export async function publishOrganization({
     // ------------------------
 
     // ------------------------
-    // <-- Create org topic + one-way-link to global
+    // <-- On-ledger publish phase
     // ------------------------
-    notifier.startStep(STEP_CREATE_TOPIC);
-    const signOptions: ISignOptions = { signType: SignType.INTERNAL };
-    const messageServer = new MessageServer({
-        operatorId: payload.hederaAccountId,
-        operatorKey: payload.hederaAccountKey,
-        signOptions
-    });
-    const topicHelper = new TopicHelper(
-        payload.hederaAccountId,
-        payload.hederaAccountKey,
-        signOptions
-    );
-    const topicConfig = await topicHelper.create({
-        type: TopicType.OrganizationTopic,
-        name: TopicType.OrganizationTopic,
-        description: TopicType.OrganizationTopic,
-        owner: null,
-        policyId: null,
-        policyUUID: null
-    }, {
-        admin: true,
-        submit: true
-    }, {
-        userId: logId
-    });
-    await topicHelper.oneWayLink({
-        topic: topicConfig,
-        parent: globalTopic,
-        rationale: null,
-        userId: owner.id
-    });
-    const newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
-    messageServer.setTopicObject(topicConfig);
-    notifier.completeStep(STEP_CREATE_TOPIC);
-    // ------------------------
-    // Create org topic -->
-    // ------------------------
-
-    // ------------------------
-    // <-- Publish DID Document for the org
-    // ------------------------
-    notifier.startStep(STEP_PUBLISH_DID);
-    logger.info('Create Organization DID Document', ['GUARDIAN_SERVICE'], logId);
-
-    const vcHelper = new VcHelper();
-    const orgDidDocument = await vcHelper.generateNewDid(
-        topicConfig.topicId,
-        payload.hederaAccountKey
-    );
-    const orgDid = orgDidDocument.getDid();
-
-    // The on-disk DID-document row requires an IAuthUser to attribute creation; use the SR caller.
-    const srUser = await users.getUserById(owner.creator, logId);
-    if (!srUser) {
-        throw new Error('Standard Registry user not found.');
-    }
-    const didRow = await vcHelper.saveDidDocument(orgDidDocument, srUser);
-
+    // Everything from here on has side effects (Hedera topic + messages, satellite Topic /
+    // DidDocument rows, vault keys) and the ledger cannot be rolled back. On failure, mark the
+    // organization PUBLISH_ERROR (same idiom as policy/tool publishing) and rethrow; retry is
+    // allowed (the guard above only rejects PUBLISHED) and creates a fresh topic/DID set — the
+    // prior set stays orphaned on the ledger and is not referenced by the org record.
     try {
-        const didMessage = new DIDMessage(MessageAction.CreateDID);
-        didMessage.setDocument(orgDidDocument);
-        const didResult = await messageServer
-            .setTopicObject(topicConfig)
-            .sendMessage(didMessage, {
-                sendToIPFS: true,
-                memo: null,
-                userId: owner.id,
-                interception: owner.id
-            });
-        didRow.status = DidDocumentStatus.CREATE;
-        didRow.messageId = didResult.getId();
-        didRow.topicId = didResult.getTopicId();
-        await dataBaseServer.update(DidDocumentCollection, null, didRow);
-    } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE'], logId);
-        throw error;
-    }
-    notifier.completeStep(STEP_PUBLISH_DID);
-    // ------------------------
-    // Publish DID Document -->
-    // ------------------------
-
-    // ------------------------
-    // <-- Publish OrganizationMessage to the global topic
-    // ------------------------
-    notifier.startStep(STEP_PUBLISH_ORG_MSG);
-    let orgMessageId: string | null = null;
-    try {
-        const orgMessage = new OrganizationMessage(MessageAction.CreateOrganization);
-        orgMessage.setDocument(
-            orgDid,
-            topicConfig.topicId,
-            org.name || '',
-            rolesSnapshot
+        // ------------------------
+        // <-- Create org topic + one-way-link to global
+        // ------------------------
+        notifier.startStep(STEP_CREATE_TOPIC);
+        const signOptions: ISignOptions = { signType: SignType.INTERNAL };
+        const messageServer = new MessageServer({
+            operatorId: payload.hederaAccountId,
+            operatorKey: payload.hederaAccountKey,
+            signOptions
+        });
+        const topicHelper = new TopicHelper(
+            payload.hederaAccountId,
+            payload.hederaAccountKey,
+            signOptions
         );
-        const orgMessageResult = await messageServer
-            .setTopicObject(globalTopic)
-            .sendMessage(orgMessage, {
-                sendToIPFS: true,
-                memo: null,
-                userId: owner.id,
-                interception: owner.id
-            });
-        orgMessageId = orgMessageResult.getId();
+        const topicConfig = await topicHelper.create({
+            type: TopicType.OrganizationTopic,
+            name: TopicType.OrganizationTopic,
+            description: TopicType.OrganizationTopic,
+            owner: null,
+            policyId: null,
+            policyUUID: null
+        }, {
+            admin: true,
+            submit: true
+        }, {
+            userId: logId
+        });
+        await topicHelper.oneWayLink({
+            topic: topicConfig,
+            parent: globalTopic,
+            rationale: null,
+            userId: owner.id
+        });
+        const newTopic = await dataBaseServer.save(Topic, topicConfig.toObject());
+        messageServer.setTopicObject(topicConfig);
+        notifier.completeStep(STEP_CREATE_TOPIC);
+        // ------------------------
+        // Create org topic -->
+        // ------------------------
+
+        // ------------------------
+        // <-- Publish DID Document for the org
+        // ------------------------
+        notifier.startStep(STEP_PUBLISH_DID);
+        logger.info('Create Organization DID Document', ['GUARDIAN_SERVICE'], logId);
+
+        const vcHelper = new VcHelper();
+        const orgDidDocument = await vcHelper.generateNewDid(
+            topicConfig.topicId,
+            payload.hederaAccountKey
+        );
+        const orgDid = orgDidDocument.getDid();
+
+        // The on-disk DID-document row requires an IAuthUser to attribute creation; use the SR caller.
+        const srUser = await users.getUserById(owner.creator, logId);
+        if (!srUser) {
+            throw new Error('Standard Registry user not found.');
+        }
+        const didRow = await vcHelper.saveDidDocument(orgDidDocument, srUser);
+
+        try {
+            const didMessage = new DIDMessage(MessageAction.CreateDID);
+            didMessage.setDocument(orgDidDocument);
+            const didResult = await messageServer
+                .setTopicObject(topicConfig)
+                .sendMessage(didMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: owner.id,
+                    interception: owner.id
+                });
+            didRow.status = DidDocumentStatus.CREATE;
+            didRow.messageId = didResult.getId();
+            didRow.topicId = didResult.getTopicId();
+            await dataBaseServer.update(DidDocumentCollection, null, didRow);
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE'], logId);
+            throw error;
+        }
+        notifier.completeStep(STEP_PUBLISH_DID);
+        // ------------------------
+        // Publish DID Document -->
+        // ------------------------
+
+        // ------------------------
+        // <-- Publish OrganizationMessage to the global topic
+        // ------------------------
+        notifier.startStep(STEP_PUBLISH_ORG_MSG);
+        let orgMessageId: string | null = null;
+        try {
+            const orgMessage = new OrganizationMessage(MessageAction.CreateOrganization);
+            orgMessage.setDocument(
+                orgDid,
+                topicConfig.topicId,
+                org.name || '',
+                rolesSnapshot
+            );
+            const orgMessageResult = await messageServer
+                .setTopicObject(globalTopic)
+                .sendMessage(orgMessage, {
+                    sendToIPFS: true,
+                    memo: null,
+                    userId: owner.id,
+                    interception: owner.id
+                });
+            orgMessageId = orgMessageResult.getId();
+        } catch (error) {
+            logger.error(error, ['GUARDIAN_SERVICE'], logId);
+            throw error;
+        }
+        notifier.completeStep(STEP_PUBLISH_ORG_MSG);
+        // ------------------------
+        // Publish OrganizationMessage -->
+        // ------------------------
+
+        // ------------------------
+        // <-- Save org wallet + topic keys
+        // ------------------------
+        notifier.startStep(STEP_SAVE_KEYS);
+        newTopic.owner = orgDid;
+        newTopic.parent = globalTopic.topicId;
+        await dataBaseServer.update(Topic, null, newTopic);
+        topicConfig.owner = orgDid;
+        topicConfig.parent = globalTopic.topicId;
+        // Org wallet uses the org's own walletToken (generated at draft creation in Phase 2).
+        await topicConfig.saveKeysByUser({ walletToken: org.walletToken });
+        const wallet = new Wallet();
+        await wallet.setKey(org.walletToken, KeyType.KEY, orgDid, payload.hederaAccountKey);
+        notifier.completeStep(STEP_SAVE_KEYS);
+        // ------------------------
+        // Save org wallet + topic keys -->
+        // ------------------------
+
+        // ------------------------
+        // <-- Persist hydrated org record
+        // ------------------------
+        notifier.startStep(STEP_PERSIST);
+        const updated = await users.sendMessage<IOrganizationRecord>(
+            AuthEvents.UPDATE_ORGANIZATION,
+            {
+                id: org.id,
+                organization: {
+                    description: payload.description ?? org.description,
+                    status: 'PUBLISHED',
+                    did: orgDid,
+                    topicId: topicConfig.topicId,
+                    parentTopicId: globalTopic.topicId,
+                    hederaAccountId: payload.hederaAccountId,
+                    location: LocationType.LOCAL
+                },
+                owner,
+                userId: logId
+            }
+        );
+        notifier.completeStep(STEP_PERSIST);
+        // ------------------------
+        // Persist hydrated org record -->
+        // ------------------------
+
+        logger.info(
+            `Organization ${org.id} published (did=${orgDid} topicId=${topicConfig.topicId} msgId=${orgMessageId})`,
+            ['GUARDIAN_SERVICE'],
+            logId
+        );
+
+        notifier.complete();
+        return updated;
     } catch (error) {
-        logger.error(error, ['GUARDIAN_SERVICE'], logId);
+        // Best-effort marker in its own try/catch: auth-service may itself be the failing
+        // dependency, and a failed marker write must not mask the original publish error.
+        try {
+            await users.sendMessage(
+                AuthEvents.UPDATE_ORGANIZATION,
+                {
+                    id: org.id,
+                    organization: { status: 'PUBLISH_ERROR' },
+                    owner,
+                    userId: logId
+                }
+            );
+        } catch (markerError) {
+            logger.error(markerError, ['GUARDIAN_SERVICE'], logId);
+        }
         throw error;
     }
-    notifier.completeStep(STEP_PUBLISH_ORG_MSG);
-    // ------------------------
-    // Publish OrganizationMessage -->
-    // ------------------------
-
-    // ------------------------
-    // <-- Save org wallet + topic keys
-    // ------------------------
-    notifier.startStep(STEP_SAVE_KEYS);
-    newTopic.owner = orgDid;
-    newTopic.parent = globalTopic.topicId;
-    await dataBaseServer.update(Topic, null, newTopic);
-    topicConfig.owner = orgDid;
-    topicConfig.parent = globalTopic.topicId;
-    // Org wallet uses the org's own walletToken (generated at draft creation in Phase 2).
-    await topicConfig.saveKeysByUser({ walletToken: org.walletToken });
-    const wallet = new Wallet();
-    await wallet.setKey(org.walletToken, KeyType.KEY, orgDid, payload.hederaAccountKey);
-    notifier.completeStep(STEP_SAVE_KEYS);
-    // ------------------------
-    // Save org wallet + topic keys -->
-    // ------------------------
-
-    // ------------------------
-    // <-- Persist hydrated org record
-    // ------------------------
-    notifier.startStep(STEP_PERSIST);
-    const updated = await users.sendMessage<IOrganizationRecord>(
-        AuthEvents.UPDATE_ORGANIZATION,
-        {
-            id: org.id,
-            organization: {
-                description: payload.description ?? org.description,
-                status: 'PUBLISHED',
-                did: orgDid,
-                topicId: topicConfig.topicId,
-                parentTopicId: globalTopic.topicId,
-                hederaAccountId: payload.hederaAccountId,
-                location: LocationType.LOCAL
-            },
-            owner,
-            userId: logId
-        }
-    );
-    notifier.completeStep(STEP_PERSIST);
-    // ------------------------
-    // Persist hydrated org record -->
-    // ------------------------
-
-    logger.info(
-        `Organization ${org.id} published (did=${orgDid} topicId=${topicConfig.topicId} msgId=${orgMessageId})`,
-        ['GUARDIAN_SERVICE'],
-        logId
-    );
-
-    notifier.complete();
-    return updated;
 }
 
 /**
  * Enroll a user as a member of a published organization:
+ * validate the member (user exists, not already in an organization) BEFORE any ledger write,
  * publish a RegistrationMessage(Init) on the org topic carrying the member DID + orgRoleName,
  * then persist the OrganizationMember record (carrying the messageId) via auth-service.
+ *
+ * Ledger-first ordering is deliberate: every persisted member row carries the messageId of its
+ * on-ledger enrollment message. The trade-off is that a persist failure after the publish
+ * leaves a ghost message on the org topic; ghosts grant nothing (membership is DB-authoritative)
+ * and the pre-flight validation keeps the deterministic failure cases from ever publishing.
  *
  * @param payload enrollment payload
  * @param owner caller (Standard Registry IOwner)
@@ -443,6 +480,7 @@ export async function enrollOrganizationMember({
     // <-- Steps
     const STEP_RESOLVE_ORG = 'Resolve organization';
     const STEP_RESOLVE_ROLE = 'Resolve role';
+    const STEP_VALIDATE_MEMBER = 'Validate member';
     const STEP_RESOLVE_TOPIC = 'Resolve organization topic';
     const STEP_PUBLISH_ENROLLMENT = 'Publish enrollment message';
     const STEP_PERSIST = 'Persist member';
@@ -450,6 +488,7 @@ export async function enrollOrganizationMember({
 
     notifier.addStep(STEP_RESOLVE_ORG);
     notifier.addStep(STEP_RESOLVE_ROLE);
+    notifier.addStep(STEP_VALIDATE_MEMBER);
     notifier.addStep(STEP_RESOLVE_TOPIC);
     notifier.addStep(STEP_PUBLISH_ENROLLMENT);
     notifier.addStep(STEP_PERSIST);
@@ -491,6 +530,33 @@ export async function enrollOrganizationMember({
     notifier.completeStep(STEP_RESOLVE_ROLE);
     // ------------------------
     // Resolve role -->
+    // ------------------------
+
+    // ------------------------
+    // <-- Pre-flight member validation (before any ledger write)
+    // ------------------------
+    // Deterministic failures (unknown user, user already in an organization) must be rejected
+    // here — the RegistrationMessage published below cannot be removed from the ledger.
+    // Best-effort only: the @Unique(did) constraint at persist remains the authoritative,
+    // race-safe check. GET_ORG_MEMBERSHIP_BY_DID filters active = true, which matches the
+    // did-only unique scope only because membership has no soft-deactivate state (removal is a
+    // hard delete); if soft-deactivate is ever introduced, revisit this check together with the
+    // active-predicate reads in auth-service.
+    notifier.startStep(STEP_VALIDATE_MEMBER);
+    const memberUser = await users.getUserById(payload.did, logId);
+    if (!memberUser) {
+        throw new Error('User not found');
+    }
+    const existingMembership = await users.sendMessage<IOrganizationMemberRecord>(
+        AuthEvents.GET_ORG_MEMBERSHIP_BY_DID,
+        { did: payload.did, userId: logId }
+    );
+    if (existingMembership) {
+        throw new Error('This user is already a member of an organization');
+    }
+    notifier.completeStep(STEP_VALIDATE_MEMBER);
+    // ------------------------
+    // Pre-flight member validation -->
     // ------------------------
 
     // ------------------------

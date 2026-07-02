@@ -61,7 +61,9 @@ export class Organization extends BaseEntity {
     parentTopicId?: string;
 
     /**
-     * Lifecycle status — free-form string for now (e.g. 'DRAFT' | 'PUBLISHED')
+     * Lifecycle status — free-form string for now ('DRAFT' | 'PUBLISHED' | 'PUBLISH_ERROR').
+     * PUBLISH_ERROR marks a publish that failed after its first ledger side effect; the org
+     * remains republishable (only PUBLISHED blocks a re-publish).
      */
     @Property({ nullable: true })
     status?: string;

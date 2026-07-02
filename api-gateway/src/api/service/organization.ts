@@ -275,7 +275,7 @@ export class OrganizationApi {
     @ApiOperation({
         summary: 'Publish a DRAFT organization on the ledger.',
         description:
-            'Creates the organization topic under the SR/global topic, publishes the organization DID and OrganizationMessage, stores the Hedera key in the org wallet, and persists the hydrated record. The provided Hedera key is stored securely and never echoed.'
+            'Creates the organization topic under the SR/global topic, publishes the organization DID and OrganizationMessage, stores the Hedera key in the org wallet, and persists the hydrated record (status PUBLISHED) as the final step. If publishing fails after the first ledger write the organization is marked PUBLISH_ERROR and can be republished (a retry creates a fresh topic/DID set). The provided Hedera key is stored securely and never echoed.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiBody({
@@ -432,7 +432,7 @@ export class OrganizationApi {
     @ApiOperation({
         summary: 'Enroll a user as a member of an organization.',
         description:
-            'Publishes a RegistrationMessage(Init) on the organization topic (carrying member DID + role name as attributes), then persists the OrganizationMember record with the resulting messageId. A user can belong to at most one organization (enforced by @Unique(did)).'
+            'Validates the member first (user exists, not already in an organization), then publishes a RegistrationMessage(Init) on the organization topic (carrying member DID + role name as attributes), then persists the OrganizationMember record with the resulting messageId. A user can belong to at most one organization (enforced by @Unique(did)).'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiBody({ description: 'Member DID + target OrgRole identifier.', type: EnrollMemberDTO, required: true })
