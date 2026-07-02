@@ -249,7 +249,7 @@ export class OrganizationApi {
     @ApiOperation({
         summary: 'Delete an organization.',
         description:
-            'Deletes the organization and cascades its OrgRoles, OrganizationMembers, and PolicyOrgAssignments at the record layer. Hedera-side artefacts (topic, DID document, on-ledger messages) are immutable and are NOT removed.'
+            'Deletes the organization and cascades its OrgRoles, OrganizationMembers, and PolicyOrgAssignments at the record layer. Only DRAFT organizations can be deleted; once publishing has begun (PUBLISHED or PUBLISH_ERROR) the organization is permanent — a PUBLISH_ERROR organization can be republished, and decommissioning a published organization is future work. Hedera-side artefacts (topic, DID document, on-ledger messages) are immutable and are NOT removed.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiOkResponse({ description: 'Organization deleted. Returns the removed record.', type: OrganizationDTO })

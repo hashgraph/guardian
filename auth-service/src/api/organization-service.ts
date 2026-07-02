@@ -289,6 +289,18 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid organization');
                     }
 
+                    // Deletable ⇔ zero ledger footprint. Only DRAFT guarantees that: topic
+                    // creation is the first publish side effect, and both PUBLISHED and
+                    // PUBLISH_ERROR orgs may already carry the CreateOrganization message on
+                    // the global discovery topic plus a vault key — a hard delete would leave
+                    // those dangling and a future restore/discovery-from-Hedera consumer would
+                    // resurrect the record. Mirrors the deletePolicy status guards. A
+                    // PUBLISH_ERROR org remains republishable, not deletable; decommissioning
+                    // a published org (deactivate + on-ledger tombstone) is future work.
+                    if (item.status !== 'DRAFT') {
+                        return new MessageError('Only draft organizations can be deleted');
+                    }
+
                     // Cascade in dependency order — record-layer only, no Hedera calls.
                     await entityRepository.deleteEntity(OrganizationMember, { organizationId: id });
                     await entityRepository.deleteEntity(OrgRole, { organizationId: id });
