@@ -250,6 +250,11 @@ services:
             # SSE base URL — must bypass Nitro proxy (Nitro buffers the body,
             # which breaks text/event-stream). Must be publicly reachable.
             NUXT_PUBLIC_SSE_API_BASE_URL: ${NUXT_PUBLIC_SSE_API_BASE_URL:-http://localhost:3030}
+            # Shared secret marking SSR server-to-server requests as the trusted
+            # frontend (sent as X-Frontend-Key so DataAccessGuard exempts them from
+            # the API-key gate + rate limits). MUST match the API's
+            # FRONTEND_SHARED_SECRET. Server-only — never exposed to the browser.
+            FRONTEND_SHARED_SECRET: ${FRONTEND_SHARED_SECRET:-}
         ports:
             - '${FRONTEND_PORT:-3000}:3000'
         depends_on:

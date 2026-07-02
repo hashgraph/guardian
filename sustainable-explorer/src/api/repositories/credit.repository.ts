@@ -45,12 +45,19 @@ export interface CreditListResult {
     total: number;
 }
 
+export interface CreditProjectLink {
+    projectId: string | null;
+    project: string | null;
+}
+
 /**
  * Raw underlying data for one credit/token — the actual HCS messages.
  * Returned by the /credits/:tokenId/raw endpoint for the "raw data" viewer.
  */
 export interface CreditRawDetail {
     credit: CreditRow | null;
+    /** All distinct projects linked to this tokenId via project_mint_link. */
+    projects: CreditProjectLink[];
     /** Raw Token-issue message from HCS (one row from `message` table). */
     tokenMessage: Record<string, unknown> | null;
     /** MintToken VC documents that issued tokens against this tokenId. */
@@ -60,6 +67,8 @@ export interface CreditRawDetail {
         amount: string | null;
         date: string | null;
         document: Record<string, unknown> | null;
+        projectKey: string | null;
+        type: string | null;
     }>;
 }
 
