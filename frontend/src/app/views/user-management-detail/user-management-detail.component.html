@@ -5,15 +5,19 @@
 }
 
 <div class="guardian-page">
-  <div>
-    <button (click)="goToPage()"
-      iconPos="left"
-      icon="pi pi-chevron-left"
-      class="button secondary height-40 margin-bottom-16"
-      label="Back to User Management"
-      pButton
-      type="button">
-    </button>
+  <div class="user-detail-header">
+    <div class="header-row header-row-back">
+      <span
+        class="user-detail-breadcrumb user-detail-breadcrumb-clickable"
+        role="button"
+        tabindex="0"
+        (click)="goToPage()"
+        (keydown.enter)="goToPage()">
+        <span class="breadcrumb-item">User Management</span>
+      </span>
+      <span class="breadcrumb-sep"> / </span>
+      <span class="breadcrumb-item">{{ username }}</span>
+    </div>
   </div>
 
   <div class="guardian-user-page-header">{{ username }}</div>

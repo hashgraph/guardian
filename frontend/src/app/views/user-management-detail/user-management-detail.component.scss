@@ -27,6 +27,54 @@
     justify-content: center;
 }
 
+.user-detail-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--guardian-page-header-padding);
+    /* The breadcrumb row (16px) + gap (4px) sit inside the page's 56px top
+       padding, so the title keeps the same position as on pages without a
+       breadcrumb and the content below does not shift down. */
+    margin-top: -20px;
+    margin-bottom: 4px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    .header-row {
+        display: flex;
+        align-items: center;
+        padding: 0;
+    }
+
+    .user-detail-breadcrumb,
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        color: var(--guardian-primary-color, #3f51b5);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        user-select: none;
+        cursor: default;
+    }
+
+    .breadcrumb-sep {
+        color: var(--guardian-grid-color, #848fa9);
+        font-size: 12px;
+        line-height: 16px;
+        padding: 0 4px;
+    }
+
+    .user-detail-breadcrumb-clickable {
+        cursor: pointer;
+        width: max-content;
+
+        .breadcrumb-item {
+            cursor: pointer;
+        }
+    }
+}
+
 .permissions-content {
     padding: 24px;
     border-radius: 16px;
