@@ -1454,6 +1454,14 @@ export class SchemaConfigurationComponent implements OnInit {
         return false;
     }
 
+    private _isIfControlLive(fc: FieldControl, currentCondition: ConditionControl): boolean {
+        if (this.fields.some(f => f === fc)) { return true; }
+        return this.conditions.some(c =>
+            c !== currentCondition &&
+            (c.thenControls?.some(tc => tc === fc) || c.elseControls?.some(ec => ec === fc))
+        );
+    }
+
     private _hasStaleConditionSelections(): boolean {
         const validRefKeys = new Set(
             this.getAllRefControls().map(fc => fc.controlKey?.value).filter(Boolean)
@@ -1468,6 +1476,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 if (opt.fieldPath?.length > 0 && this.startsWithArrayRefContainer(opt.fieldPath)) { return true; }
                 const isStale = opt.fieldControl
                     ? opt.fieldControl.controlKey?.value !== opt.key
+                        || !this._isIfControlLive(opt.fieldControl, condition)
                     : (opt.fieldPath?.length > 1)
                         ? !validRefKeys.has(opt.fieldPath[0])
                         : !validKeys.has(opt.key);
@@ -1770,6 +1779,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 const isStale = !isArrayRef && opt && (
                     opt.fieldControl
                         ? opt.fieldControl.controlKey?.value !== opt.key
+                            || !this._isIfControlLive(opt.fieldControl, condition)
                         : (opt.fieldPath?.length > 1)
                             ? !validRefKeys.has(opt.fieldPath[0])
                             : !validKeys.has(opt.key)
