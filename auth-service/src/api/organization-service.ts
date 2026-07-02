@@ -523,7 +523,7 @@ export class OrganizationService extends NatsService {
 
                     const active = await entityRepository.count(OrganizationMember, {
                         orgRoleId: id,
-                        active: { $ne: false }
+                        active: true
                     });
                     if (active > 0) {
                         return new MessageError('Cannot delete a role that is still assigned to members');
@@ -712,7 +712,7 @@ export class OrganizationService extends NatsService {
                     }
                     const item = await new DatabaseServer().findOne(OrganizationMember, {
                         did: msg.did,
-                        active: { $ne: false }
+                        active: true
                     });
                     return new MessageResponse(item);
                 } catch (error) {

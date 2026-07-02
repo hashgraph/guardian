@@ -47,10 +47,13 @@ export class OrganizationMember extends BaseEntity {
     orgRoleName?: string;
 
     /**
-     * Whether the membership is currently active
+     * Whether the membership is currently active.
+     * Always true today — member removal is a hard delete, not a soft-deactivate.
+     * Non-nullable with a default so strict `active: true` reads are fail-closed
+     * and provably equivalent to `{ $ne: false }`.
      */
-    @Property({ nullable: true })
-    active?: boolean;
+    @Property({ default: true })
+    active: boolean = true;
 
     /**
      * On-ledger enrollment message id (published under the org topic)
