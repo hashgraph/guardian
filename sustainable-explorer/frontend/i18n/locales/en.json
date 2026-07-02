@@ -441,6 +441,9 @@
         "searchPlaceholder": "Search projects...",
         "quickFilters": "Quick filters:",
         "downloadData": "Download Data",
+        "filteredByRegistry": "Showing projects for registry",
+        "unknownRegistry": "this registry",
+        "clearRegistryFilter": "Clear filter",
         "projectsFound": "{count} projects found",
         "totalIssuances": "Total issuances:",
         "countries": "Countries:",
@@ -565,6 +568,7 @@
         "unknownMethodology": "this methodology",
         "clearMethodologyFilter": "Clear filter",
         "filteredByRegistry": "Showing issuances for registry",
+        "unknownRegistry": "this registry",
         "clearRegistryFilter": "Clear filter",
         "supplyTooltip": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials.",
         "columns": {
@@ -638,6 +642,9 @@
         "searchPlaceholder": "Search methodologies...",
         "noMatch": "No methodologies match your filters",
         "downloadData": "Download Data",
+        "filteredByRegistry": "Showing methodologies for registry",
+        "unknownRegistry": "this registry",
+        "clearRegistryFilter": "Clear filter",
         "columns": {
             "methodology": "Methodology",
             "name": "Name",
