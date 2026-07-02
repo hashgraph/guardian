@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { colorToGradient } from '../static/color-remoter.function';
+import { colorToGradient, isLightColor } from '../static/color-remoter.function';
 import { disableGlobalLoader } from '../static/global-loader.function';
 
 export interface BrandingPayload {
@@ -106,14 +106,25 @@ export class BrandingService {
                     ? colorToGradient(brandingData.headerColor, brandingData.headerColor1)
                     : brandingData.headerColor;
                 bodyStyle.setProperty('--sidebar-bg', sidebarBg);
-                bodyStyle.setProperty('--sidebar-item-color', '#FFFFFF');
-                bodyStyle.setProperty('--sidebar-section-color', 'rgba(255, 255, 255, 0.65)');
-                bodyStyle.setProperty('--sidebar-item-hover', 'rgba(255, 255, 255, 0.12)');
-                bodyStyle.setProperty('--sidebar-border', 'rgba(255, 255, 255, 0.16)');
-                bodyStyle.setProperty('--sidebar-logo-color', '#FFFFFF');
-                bodyStyle.setProperty('--sidebar-accent', '#FFFFFF');
-                bodyStyle.setProperty('--sidebar-active-bg', 'rgba(255, 255, 255, 0.16)');
-                bodyStyle.setProperty('--sidebar-active-color', '#FFFFFF');
+                if (isLightColor(brandingData.headerColor)) {
+                    bodyStyle.setProperty('--sidebar-item-color', '#3A4A73');
+                    bodyStyle.setProperty('--sidebar-section-color', 'rgba(38, 33, 92, 0.65)');
+                    bodyStyle.setProperty('--sidebar-item-hover', 'rgba(0, 0, 0, 0.08)');
+                    bodyStyle.setProperty('--sidebar-border', 'rgba(0, 0, 0, 0.12)');
+                    bodyStyle.setProperty('--sidebar-logo-color', '#26215C');
+                    bodyStyle.setProperty('--sidebar-accent', '#26215C');
+                    bodyStyle.setProperty('--sidebar-active-bg', 'rgba(0, 0, 0, 0.10)');
+                    bodyStyle.setProperty('--sidebar-active-color', '#26215C');
+                } else {
+                    bodyStyle.setProperty('--sidebar-item-color', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-section-color', 'rgba(255, 255, 255, 0.65)');
+                    bodyStyle.setProperty('--sidebar-item-hover', 'rgba(255, 255, 255, 0.12)');
+                    bodyStyle.setProperty('--sidebar-border', 'rgba(255, 255, 255, 0.16)');
+                    bodyStyle.setProperty('--sidebar-logo-color', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-accent', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-active-bg', 'rgba(255, 255, 255, 0.16)');
+                    bodyStyle.setProperty('--sidebar-active-color', '#FFFFFF');
+                }
             }
             if (brandingData.companyName) {
                 if (companyName) {
