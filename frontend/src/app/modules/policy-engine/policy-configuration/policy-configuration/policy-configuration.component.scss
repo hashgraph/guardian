@@ -1015,7 +1015,7 @@
             box-shadow: -2px 2px 4px 0px #00000020;
             background: var(--pc-background-color);
             overflow: auto;
-            max-height: calc(100vh - 260px);
+            max-height: calc(100vh - var(--header-height) - 260px);
         }
 
         .theme-rule {

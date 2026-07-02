@@ -140,7 +140,7 @@ a {
 .grid-table-container {
     ::ng-deep .grid-table {
         .p-datatable-wrapper {
-            max-height: calc(-395px + 100vh);
+            max-height: calc(100vh - var(--header-height) - 395px);
         }
     }
 }
@@ -819,7 +819,7 @@ a {
 
     ::ng-deep .guardian-grid-table {
         .p-treetable-scrollable-body {
-            max-height: calc(-435px + 100vh);
+            max-height: calc(100vh - var(--header-height) - 435px);
         }
 
         .grey-row.parent {
