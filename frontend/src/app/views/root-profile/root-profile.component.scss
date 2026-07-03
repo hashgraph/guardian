@@ -601,6 +601,22 @@ button[disabled] {
     gap: 2px;
 }
 
+.config-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.config-row-link {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-primary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-primary);
+    white-space: nowrap;
+}
+
 .config-row-title {
     font-family: Inter, sans-serif;
     font-size: 14px;

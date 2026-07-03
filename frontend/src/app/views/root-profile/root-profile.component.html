@@ -190,6 +190,22 @@
 
             <div class="config-row">
               <div class="config-row-label">
+                <span class="config-row-title">Experimental UI</span>
+                <span class="config-row-desc">Enable experimental user interface.</span>
+              </div>
+              <div class="config-row-actions">
+                @if (nextGenUiEnabled) {
+                  <a class="config-row-link" [href]="feedbackMailto" target="_blank" rel="noopener noreferrer">Send feedback</a>
+                }
+                <p-toggleswitch
+                  [ngModel]="nextGenUiEnabled"
+                  (onChange)="onNextGenUiToggle($event.checked)">
+                </p-toggleswitch>
+              </div>
+            </div>
+
+            <div class="config-row">
+              <div class="config-row-label">
                 <span class="config-row-title">Two-factor authentication</span>
                 <span class="config-row-desc">Require an authenticator code at sign-in</span>
               </div>
