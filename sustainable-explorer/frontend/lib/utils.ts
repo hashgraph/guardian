@@ -24,3 +24,22 @@ export function naturalCompare(a: string, b: string): number {
     if (ga !== gb) return ga - gb;
     return a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 }
+
+const INVALID_COUNTRY_LOWER = new Set([
+    'not applicable', 'not specified', 'n/a', 'na', 'none', 'not stated',
+    'not available', 'not provided', 'unknown',
+    'point', 'multipoint', 'linestring', 'multilinestring',
+    'polygon', 'multipolygon', 'geometrycollection',
+]);
+
+// Returns false for raw lat/lng coordinates, IPFS/file URIs, and other
+// non-place-name strings that sometimes end up in a project's country field.
+export function isValidCountryName(v: string): boolean {
+    if (!v) return false;
+    if (INVALID_COUNTRY_LOWER.has(v.toLowerCase())) return false;
+    if (/:\/\//.test(v)) return false;
+    if (/^(Qm[1-9A-HJ-NP-Za-km-z]{44}|baf[a-z0-9]{20,})$/i.test(v)) return false;
+    // raw coordinate: "32.5825" or "90.3563° E" or "-23.1"
+    if (/^-?\d+(\.\d+)?\s*°?\s*[NSEW]?$/i.test(v.trim())) return false;
+    return true;
+}

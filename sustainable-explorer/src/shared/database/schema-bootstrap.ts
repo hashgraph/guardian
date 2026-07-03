@@ -402,9 +402,15 @@ export async function bootstrapSystemSchema(dataSource: DataSource): Promise<voi
         `CREATE INDEX IF NOT EXISTS "IDX_rate_limit_requests_userId" ON "rate_limit_requests" ("userId")`,
     );
 
-    // user_dashboards: one dashboard per (userId, network) + per-user listing.
+    // user_dashboards: one row per (userId, network, name/type) + per-user listing.
+    // Drop the old 2-column unique index (one row per user per network) so we can
+    // replace it with a 3-column index (one row per user per network per type).
     await dataSource.query(
-        `CREATE UNIQUE INDEX IF NOT EXISTS "idx_user_dashboards_user_network" ON "user_dashboards" ("userId", "network")`,
+        `DROP INDEX IF EXISTS "idx_user_dashboards_user_network"`,
+    );
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "idx_user_dashboards_user_network_type"
+           ON "user_dashboards" ("userId", "network", "name")`,
     );
     await dataSource.query(
         `CREATE INDEX IF NOT EXISTS "IDX_user_dashboards_userId" ON "user_dashboards" ("userId")`,
