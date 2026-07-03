@@ -19,6 +19,10 @@
     display: flex;
     border-radius: 6px;
     font-family: var(--guardian-font-family);
+    font-size: var(--guardian-primary-font-size);
+    font-style: var(--guardian-font-style);
+    font-weight: 500;
+    line-height: 20px;
     transition: all 0.25s ease-in-out;
     white-space: nowrap;
     user-select: none;

@@ -234,7 +234,7 @@
                 (onChange)="onThemeChange($event.value)"
                 optionLabel="label"
                 optionValue="value"
-                styleClass="profile-theme-select">
+                styleClass="guardian-select-button profile-theme-select">
                 <ng-template let-item pTemplate="item">
                   <i [class]="item.icon"></i>
                   <span>{{ item.label }}</span>
@@ -253,7 +253,7 @@
                 (onChange)="onMenuLayoutChange($event.value)"
                 optionLabel="label"
                 optionValue="value"
-                styleClass="profile-theme-select">
+                styleClass="guardian-select-button profile-theme-select">
               </p-selectbutton>
             </div>
 
@@ -701,7 +701,7 @@
               <p-button
                 (click)="onPrevStep()"
                 class="generate-btn"
-                label="Prev"
+                label="Back"
                 [outlined]=true
                 >
               </p-button>
@@ -769,7 +769,7 @@
               <p-button
                 (click)="onPrevStep()"
                 class="generate-btn"
-                label="Prev"
+                label="Back"
                 [outlined]=true
                 >
               </p-button>

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpContext } from '@angular/common/http';
-import { colorToGradient } from '../static/color-remoter.function';
+import { colorToGradient, isLightColor } from '../static/color-remoter.function';
 import { disableGlobalLoader } from '../static/global-loader.function';
 import { SILENT_HTTP_ERRORS } from '../constants';
 
@@ -13,6 +13,8 @@ export interface BrandingPayload {
     loginBannerUrl: string
     faviconUrl: string,
     termsAndConditions: string
+    useCustomMenuColors?: boolean
+    useSolidBackground?: boolean
 }
 
 /**
@@ -118,6 +120,14 @@ export class BrandingService {
 
             if (brandingData.primaryColor) {
                 document.body.style.setProperty('--color-primary', brandingData.primaryColor);
+                // PrimeNG (--primary-color) and the guardian theme
+                // (--guardian-primary-color) resolve their primary tokens on
+                // :root, so a body-level override never reaches them — the
+                // branded primary must be written on the root element too.
+                const rootStyle = document.documentElement.style;
+                rootStyle.setProperty('--primary-color', brandingData.primaryColor);
+                rootStyle.setProperty('--guardian-primary-color', brandingData.primaryColor);
+                rootStyle.setProperty('--button-primary-color-hover', brandingData.primaryColor);
             }
             if (brandingData.headerColor && brandingData.headerColor1) {
                 const gradientData = colorToGradient(brandingData.headerColor, brandingData.headerColor1);
@@ -127,6 +137,38 @@ export class BrandingService {
             }
             if (brandingData.headerColor1) {
                 document.body.style.setProperty('--guardian-menu-color-2', brandingData.headerColor1);
+            }
+            // Custom menu colors are driven by the stored flags; configs saved
+            // before the flags existed fall back to "enabled when a menu color
+            // is set" so existing installations keep their current look.
+            const useCustomMenuColors = brandingData.useCustomMenuColors ?? !!brandingData.headerColor;
+            const useSolidBackground = brandingData.useSolidBackground
+                ?? (!brandingData.headerColor1 || brandingData.headerColor1 === brandingData.headerColor);
+            if (useCustomMenuColors && brandingData.headerColor) {
+                const bodyStyle = document.body.style;
+                const sidebarBg = (brandingData.headerColor1 && !useSolidBackground)
+                    ? colorToGradient(brandingData.headerColor, brandingData.headerColor1)
+                    : brandingData.headerColor;
+                bodyStyle.setProperty('--sidebar-bg', sidebarBg);
+                if (isLightColor(brandingData.headerColor)) {
+                    bodyStyle.setProperty('--sidebar-item-color', '#3A4A73');
+                    bodyStyle.setProperty('--sidebar-section-color', 'rgba(38, 33, 92, 0.65)');
+                    bodyStyle.setProperty('--sidebar-item-hover', 'rgba(0, 0, 0, 0.08)');
+                    bodyStyle.setProperty('--sidebar-border', 'rgba(0, 0, 0, 0.12)');
+                    bodyStyle.setProperty('--sidebar-logo-color', '#26215C');
+                    bodyStyle.setProperty('--sidebar-accent', '#26215C');
+                    bodyStyle.setProperty('--sidebar-active-bg', 'rgba(0, 0, 0, 0.10)');
+                    bodyStyle.setProperty('--sidebar-active-color', '#26215C');
+                } else {
+                    bodyStyle.setProperty('--sidebar-item-color', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-section-color', 'rgba(255, 255, 255, 0.65)');
+                    bodyStyle.setProperty('--sidebar-item-hover', 'rgba(255, 255, 255, 0.12)');
+                    bodyStyle.setProperty('--sidebar-border', 'rgba(255, 255, 255, 0.16)');
+                    bodyStyle.setProperty('--sidebar-logo-color', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-accent', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-active-bg', 'rgba(255, 255, 255, 0.16)');
+                    bodyStyle.setProperty('--sidebar-active-color', '#FFFFFF');
+                }
             }
             if (brandingData.companyName) {
                 if (companyName) {

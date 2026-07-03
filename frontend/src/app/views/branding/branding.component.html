@@ -35,41 +35,7 @@
       </div>
       <div class="color-picker-item">
         <div class="p-field">
-          <label class="p-field-label" for="headerColor">First Menu Color</label>
-          <input [formControl]="headerColorControl" [value]="headerColorControl.value" class="p-field-input"
-            id="headerColor" placeholder="Enter text"
-            type="text"/>
-          @if (headerColorControl.invalid) {
-            <small class="p-error">Color is invalid</small>
-          }
-        </div>
-        <p-colorPicker [formControl]="headerColorControl" [format]="'hex'"
-        class="margin-top-20"></p-colorPicker>
-      </div>
-      <div class="tooltip">
-        Choose a color for the side menu background. This color will be applied
-        as first component of gradient.
-      </div>
-      <div class="color-picker-item">
-        <div class="p-field">
-          <label class="p-field-label" for="headerColor1">Second Menu Color</label>
-          <input [formControl]="headerColor1Control" [value]="headerColor1Control.value" class="p-field-input"
-            id="headerColor1" placeholder="Enter text"
-            type="text"/>
-          @if (headerColor1Control.invalid) {
-            <small class="p-error">Color is invalid</small>
-          }
-        </div>
-        <p-colorPicker [formControl]="headerColor1Control" [format]="'hex'"
-        class="margin-top-20"></p-colorPicker>
-      </div>
-      <div class="tooltip">
-        Choose a color for the side menu background. This color will be applied
-        as second component of gradient.
-      </div>
-      <div class="color-picker-item">
-        <div class="p-field">
-          <label class="p-field-label" for="primaryColor">Primary color</label>
+          <label class="p-field-label" for="primaryColor">Primary Color</label>
           <input [formControl]="primaryColorControl" [value]="primaryColorControl.value" class="p-field-input"
             id="primaryColor" placeholder="Enter text"
             type="text"/>
@@ -82,13 +48,69 @@
       <div class="tooltip">
         Choose a color for the CTA buttons
       </div>
-      <ng-container [ngTemplateOutlet]="companyLogo"></ng-container>
+      <div class="section-divider"></div>
+      <div class="toggle-row">
+        <label class="toggle-label" for="useCustomMenuColors">Use Custom Menu Colors</label>
+        <p-toggleswitch [formControl]="useCustomMenuColorsControl" inputId="useCustomMenuColors"></p-toggleswitch>
+      </div>
+      <div class="tooltip">
+        When disabled, the side menu color follows the selected Dark / Light theme. Enable to set
+        custom menu colors.
+      </div>
+      @if (useCustomMenuColorsControl.value) {
+        <div class="menu-colors-panel">
+          <div class="toggle-row">
+            <label class="toggle-label" for="useSolidBackground">Use Solid Background</label>
+            <p-toggleswitch [formControl]="useSolidBackgroundControl" inputId="useSolidBackground"></p-toggleswitch>
+          </div>
+          <div class="color-picker-item">
+            <div class="p-field">
+              <label class="p-field-label" for="headerColor">Menu Color</label>
+              <input [formControl]="headerColorControl" [value]="headerColorControl.value" class="p-field-input"
+                id="headerColor" placeholder="Enter text"
+                type="text"/>
+              @if (headerColorControl.invalid) {
+                <small class="p-error">Color is invalid</small>
+              }
+            </div>
+            <p-colorPicker [formControl]="headerColorControl" [format]="'hex'"
+            class="margin-top-20"></p-colorPicker>
+          </div>
+          <div class="tooltip">
+            Choose a color for the side menu background.
+            @if (!useSolidBackgroundControl.value) {
+              This color will be applied as first component of gradient.
+            }
+          </div>
+          @if (!useSolidBackgroundControl.value) {
+            <div class="color-picker-item">
+              <div class="p-field">
+                <label class="p-field-label" for="headerColor1">Second Menu Color</label>
+                <input [formControl]="headerColor1Control" [value]="headerColor1Control.value" class="p-field-input"
+                  id="headerColor1" placeholder="Enter text"
+                  type="text"/>
+                @if (headerColor1Control.invalid) {
+                  <small class="p-error">Color is invalid</small>
+                }
+              </div>
+              <p-colorPicker [formControl]="headerColor1Control" [format]="'hex'"
+              class="margin-top-20"></p-colorPicker>
+            </div>
+            <div class="tooltip">
+              Choose a color for the side menu background. This color will be applied
+              as second component of gradient.
+            </div>
+          }
+        </div>
+      }
 
     </div>
     <div class="vertical-cards">
       <div class="card">
         <h4>Login Background</h4>
         <ng-container [ngTemplateOutlet]="backgroundInfo"></ng-container>
+        <div class="section-divider"></div>
+        <ng-container [ngTemplateOutlet]="companyLogo"></ng-container>
       </div>
     </div>
   </div>
@@ -107,20 +129,22 @@
           <p class="grey">It is recommended to select a small, square image with a minimum size of 128x128
             pixels, and the image file should not exceed 336 KB. This logo will not be displayed on
           mobile.</p>
-          <div class="flex flex-column-gap-8">
-            <button (click)="logoInputFile.click()" class="button height-28" pButton>
+        </div>
+      </div>
+      <div class="image-actions">
+        <button (click)="logoInputFile.click()" class="button" pButton>
               <svg fill="none" height="16" viewBox="0 0 16 16" width="16"
                 xmlns="http://www.w3.org/2000/svg">
                 <path clip-rule="evenodd" d="M7.33338 10C7.33338 10.3682 7.63186 10.6667 8.00005 10.6667C8.36824 10.6667 8.66672 10.3682 8.66672 10L8.66672 4.27612L10.1954 5.80477C10.4557 6.06512 10.8778 6.06512 11.1382 5.80477C11.3985 5.54442 11.3985 5.12231 11.1382 4.86196L8.47151 2.19529L8.4715 2.1953C8.35085 2.07464 8.18417 2 8.00005 2C7.81593 2 7.64925 2.07464 7.5286 2.1953L7.52859 2.19529L4.86193 4.86196C4.60158 5.12231 4.60158 5.54442 4.86193 5.80477C5.12228 6.06512 5.54439 6.06512 5.80474 5.80477L7.33338 4.27612L7.33338 10ZM3.33333 9.66667C3.33333 9.29848 3.03486 9 2.66667 9C2.29848 9 2 9.29848 2 9.66667V12C2 13.1046 2.89543 14 4 14H12C13.1046 14 14 13.1046 14 12V9.66667C14 9.29848 13.7015 9 13.3333 9C12.9651 9 12.6667 9.29848 12.6667 9.66667V12C12.6667 12.3682 12.3682 12.6667 12 12.6667H4C3.63181 12.6667 3.33333 12.3682 3.33333 12V9.66667Z"
                   fill="white"
                   fill-rule="evenodd"/>
               </svg>
-              <span style="margin-left: 8px">Upload</span>
+              <span>Upload</span>
             </button>
             <input #logoInputFile (change)="handleCompanyLogoInput($any($event.target).files)"
               accept="image/*" style="display:none;"
               type="file">
-            <button (click)="clearCompanyLogo()" class="button secondary height-28" pButton>
+            <button (click)="clearCompanyLogo()" class="button secondary" pButton>
               <svg fill="none" height="16" viewBox="0 0 16 16" width="16"
                 xmlns="http://www.w3.org/2000/svg">
                 <mask height="16" id="mask0_1598_2998" maskUnits="userSpaceOnUse" style="mask-type:luminance"
@@ -133,10 +157,8 @@
                     />
                 </g>
               </svg>
-              <span style="margin-left: 8px">Clear image</span>
+              <span>Clear image</span>
             </button>
-          </div>
-        </div>
       </div>
     </div>
   </ng-template>
@@ -154,19 +176,21 @@
           <p>On the login page, the image will be displayed as a background on the left side.</p>
           <p class="grey">It is recommended to choose an image with a horizontal orientation, with a minimum
           size of 1280x800 pixels, and the image file should not exceed 1 MB.</p>
-          <button (click)="backgroundInputFile.click()" class="button height-28" pButton>
+        </div>
+      </div>
+      <div class="image-actions">
+        <button (click)="backgroundInputFile.click()" class="button" pButton>
             <svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
               <path clip-rule="evenodd" d="M7.33338 10C7.33338 10.3682 7.63186 10.6667 8.00005 10.6667C8.36824 10.6667 8.66672 10.3682 8.66672 10L8.66672 4.27612L10.1954 5.80477C10.4557 6.06512 10.8778 6.06512 11.1382 5.80477C11.3985 5.54442 11.3985 5.12231 11.1382 4.86196L8.47151 2.19529L8.4715 2.1953C8.35085 2.07464 8.18417 2 8.00005 2C7.81593 2 7.64925 2.07464 7.5286 2.1953L7.52859 2.19529L4.86193 4.86196C4.60158 5.12231 4.60158 5.54442 4.86193 5.80477C5.12228 6.06512 5.54439 6.06512 5.80474 5.80477L7.33338 4.27612L7.33338 10ZM3.33333 9.66667C3.33333 9.29848 3.03486 9 2.66667 9C2.29848 9 2 9.29848 2 9.66667V12C2 13.1046 2.89543 14 4 14H12C13.1046 14 14 13.1046 14 12V9.66667C14 9.29848 13.7015 9 13.3333 9C12.9651 9 12.6667 9.29848 12.6667 9.66667V12C12.6667 12.3682 12.3682 12.6667 12 12.6667H4C3.63181 12.6667 3.33333 12.3682 3.33333 12V9.66667Z"
                 fill="white"
                 fill-rule="evenodd"/>
             </svg>
-            <span style="margin-left: 8px">Upload</span>
+            <span>Upload</span>
             <input #backgroundInputFile (change)="handleLoginBannerInput($any($event.target).files)"
               accept="image/*" style="display:none;"
               type="file">
           </button>
-          <button (click)="clearLoginBanner()" class="button secondary height-28" pButton
-            style="margin-left: 8px;">
+          <button (click)="clearLoginBanner()" class="button secondary" pButton>
             <svg fill="none" height="16" viewBox="0 0 16 16" width="16"
               xmlns="http://www.w3.org/2000/svg">
               <mask height="16" id="mask0_1598_2998" maskUnits="userSpaceOnUse" style="mask-type:luminance"
@@ -179,9 +203,8 @@
                   />
               </g>
             </svg>
-            <span style="margin-left: 8px">Clear image</span>
+            <span>Clear image</span>
           </button>
-        </div>
       </div>
     </div>
   </ng-template>

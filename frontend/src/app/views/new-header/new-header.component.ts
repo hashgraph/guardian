@@ -47,6 +47,8 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
     private policyRequestsSubscription = new Subscription();
     private layoutSubscription = new Subscription();
     private brandingData: any = null;
+    public companyName: string = '';
+    public companyLogoUrl: string | null = '/assets/images/logo.png';
 
     @Input() remoteContainerMethod: any;
 
@@ -211,9 +213,10 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     private applyBranding() {
-        // Branding doesn't change during a session, so fetch it once and re-apply the
-        // cached values to the logo/name nodes (which are re-created when the layout or
-        // collapse state swaps the template) without hitting the network each time.
+        // Branding doesn't change during a session, so fetch it once and keep the
+        // values in component fields. The template binds them, so the name/logo
+        // render whenever the header (re)appears — writing to the DOM nodes here
+        // raced against them being created right after login and left the name empty.
         if (this.brandingData) {
             this.renderBranding(this.brandingData);
             return;
@@ -225,15 +228,8 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
     }
 
     private renderBranding(res: any) {
-        const logo = document.getElementById('company-logo') as HTMLImageElement;
-        if (logo) {
-            logo.src = res.companyLogoUrl;
-            logo.style.display = res.companyLogoUrl ? 'block' : 'none';
-        }
-        const name = document.getElementById('company-name');
-        if (name) {
-            name.innerText = res.companyName;
-        }
+        this.companyLogoUrl = res.companyLogoUrl || null;
+        this.companyName = res.companyName || '';
     }
 
     private checkUsernameOverflow(): void {

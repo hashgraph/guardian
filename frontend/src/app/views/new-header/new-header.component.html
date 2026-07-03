@@ -4,8 +4,8 @@
       <p-menubar [model]="horizontalModel" styleClass="guardian-menubar">
         <ng-template pTemplate="start">
           <div [routerLink]="'/'" class="topbar-brand">
-            <img alt="" id="company-logo" src="/assets/images/logo.png" />
-            <span id="company-name"></span>
+            <img [src]="companyLogoUrl" [style.display]="companyLogoUrl ? 'block' : 'none'" alt="" id="company-logo" />
+            <span id="company-name">{{ companyName }}</span>
           </div>
         </ng-template>
         <ng-template pTemplate="end">
@@ -29,8 +29,8 @@
 <ng-template #logotype>
   <div id="logotype">
     <div [routerLink]="'/'" class="logotype-brand">
-      <img alt="" id="company-logo" src="/assets/images/logo.png" />
-      <span [class.hidden-logotype]="menuCollapsed" id="company-name"></span>
+      <img [src]="companyLogoUrl" [style.display]="companyLogoUrl ? 'block' : 'none'" alt="" id="company-logo" />
+      <span [class.hidden-logotype]="menuCollapsed" id="company-name">{{ companyName }}</span>
     </div>
     <div (click)="toggleMenuMode()" [pTooltip]="menuCollapsed ? 'Expand menu' : 'Collapse menu'" class="collapse-toggle" tooltipPosition="right">
       <i [class.rotate-180]="menuCollapsed" class="pi pi-angle-left"></i>

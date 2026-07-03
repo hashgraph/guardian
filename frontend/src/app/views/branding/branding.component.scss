@@ -50,6 +50,55 @@
     line-height: normal;
 }
 
+.toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 16px;
+    margin-top: 24px;
+
+    .toggle-label {
+        color: var(--color-grey-black-1, #181818);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 16px;
+    }
+}
+
+.menu-colors-panel {
+    margin-top: 16px;
+    padding: 4px 16px 16px;
+    border-radius: 12px;
+    background: var(--guardian-grey-background, #F9FAFC);
+
+    .toggle-row {
+        margin-top: 12px;
+    }
+
+    /* Per the mockup, the first color field keeps a clear gap below the
+       Use Solid Background toggle row. */
+    .toggle-row + .color-picker-item {
+        margin-top: 14px;
+    }
+
+    /* Keep the panel's bottom padding as the only spacing after the last
+       helper text, so the panel closes evenly. */
+    .tooltip:last-child {
+        margin-bottom: 0;
+    }
+}
+
+.section-divider {
+    border-top: 1px solid var(--color-grey-3, #E1E7EF);
+    margin: 20px 0;
+}
+
+/* The divider already provides the vertical rhythm before a toggle row. */
+.section-divider + .toggle-row {
+    margin-top: 0;
+}
+
 .branding-page-header {
     display: flex;
     align-items: center;
@@ -406,10 +455,80 @@ button[disabled] {
         border: 1px solid var(--color-grey-3, #E1E7EF);
         background: var(--color-grey-white, #FFF);
 
+        /* Grid layout: label on top, the text input and the color preview in
+           one row (vertically centered on each other), a validation message in
+           its own row below. `display: contents` lifts the .p-field children
+           into the grid so no margin math is needed. */
         .color-picker-item {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            column-gap: 12px;
+
+            .p-field {
+                display: contents;
+            }
+
+            .p-field-label {
+                grid-column: 1 / -1;
+                grid-row: 1;
+            }
+
+            .p-field-input {
+                grid-column: 1;
+                grid-row: 2;
+            }
+
+            .p-error {
+                grid-column: 1 / -1;
+                grid-row: 3;
+            }
+
+            p-colorpicker {
+                grid-column: 2;
+                grid-row: 2;
+                align-self: center;
+                margin-top: 0;
+            }
+        }
+
+        /* Pill-shaped card buttons (Upload / Clear image) per the v2 design:
+           full rounding, 36px height, flex centering; typography stays the
+           standard app button font. The secondary button is a white pill with
+           a grey border and primary-colored text (the global .secondary paints
+           a transparent bg with a primary border and uses !important, so the
+           overrides need it too). */
+        .button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 36px;
+            padding: 0 18px;
+            border-radius: 999px;
+            line-height: 20px;
+        }
+
+        .button.secondary {
+            background: var(--color-grey-white, #FFF) !important;
+            border: 1px solid var(--color-grey-3, #E1E7EF) !important;
+            color: var(--color-primary) !important;
+        }
+
+        /* Shared button row below the image+text row in both image blocks,
+           right-aligned and identical in both blocks. */
+        .image-selector .image-actions {
             display: flex;
-            justify-content: flex-start;
-            column-gap: 8px;
+            align-items: center;
+            justify-content: flex-end;
+            column-gap: 12px;
+            margin-top: 16px;
+        }
+
+        /* Large rounded color preview, sized to line up with the 40px input. */
+        ::ng-deep .p-colorpicker-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px solid var(--color-grey-3, #E1E7EF);
         }
 
         h4 {
@@ -422,7 +541,10 @@ button[disabled] {
         }
 
         .tooltip {
-            text-align: justify;
+            /* Left-aligned (justify stretched the lines to both edges) with a
+               2px inset so the helper text lines up optically with the labels
+               and the input borders above it. */
+            text-align: left;
             color: var(--color-grey-6, #848FA9);
             font-family: Inter, sans-serif;
             font-size: 12px;
@@ -430,6 +552,7 @@ button[disabled] {
             font-weight: 400;
             line-height: 14px;
             margin: 6px 0 16px 0;
+            padding: 0 2px;
         }
 
         .p-field {
@@ -441,10 +564,10 @@ button[disabled] {
         .p-field-label {
             color: var(--color-grey-black-1, #181818);
             font-family: Inter, sans-serif;
-            font-size: 12px;
+            font-size: 13px;
             font-style: normal;
-            font-weight: 500;
-            line-height: 14px;
+            font-weight: 600;
+            line-height: 16px;
             margin-bottom: 6px;
         }
 
@@ -502,17 +625,21 @@ button[disabled] {
         }
 
         .description {
+            /* Description text per the v2 design: both paragraphs the same
+               dark tone, 13.5/20 with a compact 10px paragraph gap, so the
+               button row lands where the mockup places it. */
             p {
                 color: var(--color-grey-black-2, #23252E);
                 font-family: Inter, sans-serif;
-                font-size: 14px;
+                font-size: 13.5px;
                 font-style: normal;
                 font-weight: 400;
-                line-height: 18px;
+                line-height: 20px;
+                margin: 0 0 10px;
             }
 
             .grey {
-                color: var(--color-grey-6, #848FA9);
+                color: var(--color-grey-black-2, #23252E);
             }
         }
     }

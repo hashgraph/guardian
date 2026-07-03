@@ -27,10 +27,58 @@
     justify-content: center;
 }
 
+.user-detail-header {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: var(--guardian-page-header-padding);
+    /* The breadcrumb row (16px) + gap (4px) sit inside the page's 56px top
+       padding, so the title keeps the same position as on pages without a
+       breadcrumb and the content below does not shift down. */
+    margin-top: -20px;
+    margin-bottom: 4px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+
+    .header-row {
+        display: flex;
+        align-items: center;
+        padding: 0;
+    }
+
+    .user-detail-breadcrumb,
+    .breadcrumb-item {
+        display: flex;
+        align-items: center;
+        color: var(--guardian-primary-color, #3f51b5);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
+        user-select: none;
+        cursor: default;
+    }
+
+    .breadcrumb-sep {
+        color: var(--guardian-grid-color, #848fa9);
+        font-size: 12px;
+        line-height: 16px;
+        padding: 0 4px;
+    }
+
+    .user-detail-breadcrumb-clickable {
+        cursor: pointer;
+        width: max-content;
+
+        .breadcrumb-item {
+            cursor: pointer;
+        }
+    }
+}
+
 .permissions-content {
     padding: 24px;
     border-radius: 16px;
-    border: 1px solid #E1E7EF;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
     background: var(--guardian-background, #fff);
     margin-bottom: 88px;
     margin-top: 24px;
@@ -84,14 +132,14 @@
         display: flex;
         height: 28px;
         margin-right: 8px;
-        border: 1px solid #848FA9;
+        border: 1px solid var(--guardian-grid-color, #848FA9);
         background: var(--guardian-background, #fff);
         border-radius: 6px;
         padding: 3px 12px 3px 12px;
         user-select: none;
 
         &[own="true"] {
-            background: #EFF3F7;
+            background: var(--guardian-disabled-background, #EFF3F7);
         }
 
         .role-name {
@@ -123,8 +171,8 @@
     }
 
     .close-icon-color {
-        fill: #848FA9;
-        color: #848FA9;
+        fill: var(--guardian-grid-color, #848FA9);
+        color: var(--guardian-grid-color, #848FA9);
     }
 
     &::ng-deep .p-multiselect {
@@ -146,7 +194,7 @@
 .categories {
     overflow-y: auto;
     margin-top: 24px;
-    border: 1px solid #E1E7EF;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
 
     .category {
 
@@ -161,9 +209,9 @@
         .category-header {
             display: flex;
             align-items: center;
-            color: #6C7791;
+            color: var(--guardian-grey-color-4, #6C7791);
             width: 100%;
-            background: #EFF3F7;
+            background: var(--guardian-grey-color, #EFF3F7);
             height: 44px;
             padding-left: 14px;
             font-family: Inter;
@@ -185,7 +233,7 @@
             background: var(--guardian-grey-background, #F9FAFC);
 
             .category-actions-header {
-                color: #848FA9;
+                color: var(--guardian-grid-color, #848FA9);
                 width: 100%;
                 display: flex;
                 align-items: center;
@@ -225,7 +273,7 @@
                 font-weight: 500;
                 line-height: 16px;
                 text-align: left;
-                border-bottom: 1px solid #E1E7EF;
+                border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
 
                 .entity-name {
                     width: 100%;
@@ -279,7 +327,7 @@
                             position: absolute;
                             width: 280px;
                             height: 3px;
-                            border-bottom: 2px solid #eeeeee;
+                            border-bottom: 2px solid var(--guardian-border-color, #eeeeee);
                             left: 43px;
                             top: 28px;
                         }
@@ -289,7 +337,7 @@
                             position: absolute;
                             width: 280px;
                             height: 3px;
-                            border-bottom: 2px solid #eeeeee;
+                            border-bottom: 2px solid var(--guardian-border-color, #eeeeee);
                             right: 43px;
                             top: 28px;
                         }
@@ -322,7 +370,7 @@
         border-collapse: collapse;
 
         tbody {
-            box-shadow: 0px 4px 8px 0px #00000014;
+            box-shadow: 0px 4px 8px 0px var(--guardian-shadow, #00000014);
         }
     }
 
@@ -334,7 +382,7 @@
             font-weight: 400;
             line-height: 14px;
             text-align: left;
-            color: #848FA9;
+            color: var(--guardian-grid-color, #848FA9);
         }
     }
 
@@ -344,7 +392,7 @@
         .row-cell-text {
             padding: 20px 10px 20px 24px;
             text-align: left;
-            border: 1px solid #e9ecef;
+            border: 1px solid var(--guardian-border-color, #e9ecef);
             border-width: 0 0 1px 0;
             font-family: Inter;
             font-size: 14px;
@@ -389,7 +437,7 @@
         border: 1px solid var(--color-grey-3);
         background: var(--guardian-background, #FFF);
         margin-top: 4px;
-        box-shadow: 0 0 1px 0 #000;
+        box-shadow: 0 0 1px 0 var(--guardian-shadow, #000);
     }
 
     .dropdown-label {
@@ -413,7 +461,7 @@
 }
 
 .guardian-page::ng-deep .mat-tab-label-active {
-    color: #0031ff !important;
+    color: var(--color-primary, #0031ff) !important;
     opacity: 1 !important;
 }
 
@@ -448,7 +496,7 @@
 
 .chip-color-green {
     color: #19be47;
-    background: #cafdd9;
+    background: var(--guardian-success-background, #cafdd9);
 }
 
 .chip-color-red {
@@ -471,7 +519,7 @@
     display: flex;
     justify-content: flex-end;
     padding: 12px 48px;
-    border-top: 1px solid #E1E7EF;
+    border-top: 1px solid var(--guardian-border-color, #E1E7EF);
 
     .secondary {
         margin-right: 12px;
