@@ -271,10 +271,24 @@
       "description": "Named roles defined in the policy workflow.",
       "uniqueItems": true,
       "items": {
-        "type": "string",
-        "minLength": 1
+        "oneOf": [
+          {
+            "type": "string",
+            "enum": ["Admin", "Project Proponent", "VVB"]
+          },
+          {
+            "type": "string",
+            "minLength": 1,
+            "not": {
+              "enum": ["Admin", "Project Proponent", "VVB"]
+            }
+          }
+        ]
       },
-      "examples": [["Standard Registry", "Project Proponent", "VVB"]]
+      "examples": [
+        ["Admin", "Project Proponent", "VVB"],
+        ["Admin", "Project Proponent", "VVB", "Site Inspector"]
+      ]
     },
 
     "dependencies": {

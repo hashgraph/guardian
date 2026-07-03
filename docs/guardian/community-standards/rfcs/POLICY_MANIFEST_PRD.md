@@ -251,7 +251,7 @@ Methodology Library/
 | `sdg_alignment` | array | integers 1–17 | UN SDG numbers supported. | `[13, 15]` |
 | `sector` | enum | `energy\|transport\|waste\|land-use\|industrial\|agriculture\|water\|other` | Primary economic sector. | `land-use` |
 | `guardian_version_min` | string | semver | Minimum Guardian platform version. | `2.20.0` |
-| `roles` | array | strings | Named workflow roles. | `["Standard Registry", "VVB"]` |
+| `roles` | array | strings | Named workflow roles. | `["Admin", "Project Proponent", "VVB"]` |
 | `dependencies` | array | See 6.5 | Required Guardian modules. | |
 | `supersedes` | string | kebab-case | ID of policy this replaces. Omit if this is the first version. | `gold-standard-mecd-v1` |
 | `superseded_by` | string | kebab-case | ID of policy that replaces this. Omit until superseded. | `gold-standard-mecd-v2` |

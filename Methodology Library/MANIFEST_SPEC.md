@@ -68,7 +68,7 @@ That is the complete minimum. Everything else is optional but strongly encourage
 | `sdg_alignment` | array | UN SDG numbers 1–17. | `[13, 15]` |
 | `sector` | string | `energy` \| `transport` \| `waste` \| `land-use` \| `industrial` \| `agriculture` \| `water` \| `other` | `land-use` |
 | `guardian_version_min` | string | Minimum Guardian platform version required. | `2.20.0` |
-| `roles` | array | Role name strings defined in the workflow. | `["Standard Registry", "Project Proponent", "VVB"]` |
+| `roles` | array | Role name strings defined in the workflow. | `["Admin", "Project Proponent", "VVB"]` |
 | `dependencies` | array | `{id, version_min?}` — other Guardian module IDs required. | |
 | `supersedes` | string \| null | ID of the policy this replaces. | `gold-standard-mecd-v1` |
 | `superseded_by` | string \| null | ID of policy that replaces this one. | |
