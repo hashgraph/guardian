@@ -597,11 +597,19 @@
             "overview": "Resumen",
             "tokenId": "ID de token",
             "connectedProject": "Proyecto",
-            "firstMintDate": "Primera fecha de emisión",
+            "lastMintDate": "Última fecha de emisión",
             "tabs": {
                 "details": "Detalles",
                 "mintEvents": "Transacciones",
-                "linkage": "Vinculación"
+                "linkage": "Vinculación",
+                "advanced": "Avanzado"
+            },
+            "advanced": {
+                "title": "Avanzado",
+                "tokenPolicy": "ID de política del token",
+                "mintTokenId": "Token acuñado",
+                "tokenCreatedDate": "Fecha de creación del token",
+                "issueDid": "DID de emisión"
             },
             "tokenInformation": "Información del token",
             "supplyDifferenceTooltip": "El monto de suministro y el monto acuñado de esta emisión son actualmente diferentes.",
