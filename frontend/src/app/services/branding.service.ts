@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { colorToGradient } from '../static/color-remoter.function';
 import { disableGlobalLoader } from '../static/global-loader.function';
+import { SILENT_HTTP_ERRORS } from '../constants';
 
 export interface BrandingPayload {
     headerColor: string
@@ -14,20 +15,30 @@ export interface BrandingPayload {
     termsAndConditions: string
 }
 
+/**
+ * Fallback branding applied when the backend is unreachable or returns no data.
+ * Mirrors the initial branding defined server-side (guardian-service branding.service.ts).
+ */
+const DEFAULT_BRANDING: BrandingPayload = {
+    headerColor: '#0031ff',
+    headerColor1: '#8259ef',
+    primaryColor: '#0031ff',
+    companyName: 'GUARDIAN',
+    companyLogoUrl: '/assets/images/logo.png',
+    loginBannerUrl: '/assets/bg.jpg',
+    faviconUrl: 'favicon.ico',
+    termsAndConditions: '',
+};
+
 @Injectable({
     providedIn: 'root'
 })
 export class BrandingService {
-    private brandingData: BrandingPayload = {
-        headerColor: '',
-        headerColor1: '',
-        primaryColor: '',
-        companyName: '',
-        companyLogoUrl: '',
-        loginBannerUrl: '',
-        faviconUrl: '',
-        termsAndConditions: '',
-    };
+    private brandingData: BrandingPayload = { ...DEFAULT_BRANDING };
+
+    // Shared in-flight fetch so the several components that request branding on
+    // startup reuse a single HTTP call instead of each firing their own.
+    private brandingRequest?: Promise<BrandingPayload>;
 
     constructor(
         private http: HttpClient
@@ -54,17 +65,34 @@ export class BrandingService {
     }
 
     getBrandingData(): Promise<BrandingPayload> {
-        // send GET request
-        return this.http.get('/api/v1/branding')
+        // Reuse the in-flight request if branding is already being fetched.
+        if (this.brandingRequest) {
+            return this.brandingRequest;
+        }
+
+        // send GET request. Errors are handled here (falling back to defaults),
+        // so mark the request silent to keep the global error interceptor from
+        // showing a toast when the backend is unavailable.
+        const request = this.http
+            .get('/api/v1/branding', {
+                context: new HttpContext().set(SILENT_HTTP_ERRORS, true)
+            })
             .toPromise()
             .then((data: any) => {
-                this.brandingData = data;
+                this.brandingData = data || { ...DEFAULT_BRANDING };
                 return this.brandingData as BrandingPayload;
             })
             .catch((error: any) => {
                 console.log(error)
+                this.brandingData = { ...DEFAULT_BRANDING };
                 return this.brandingData;
+            })
+            .finally(() => {
+                this.brandingRequest = undefined;
             });
+
+        this.brandingRequest = request;
+        return request;
     }
 
     loadBrandingData(width?: number): Promise<BrandingPayload> {
