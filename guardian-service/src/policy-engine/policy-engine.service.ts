@@ -2483,7 +2483,7 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    await DatabaseServer.setVirtualUser(policyId, virtualDID)
+                    await DatabaseServer.setVirtualUser(policyId, virtualDID, owner?.id)
                     const users = await DatabaseServer.getVirtualUsers(policyId);
 
                     await (new GuardiansService())
@@ -2514,7 +2514,7 @@ export class PolicyEngineService {
                     await DatabaseServer.clearAllSavepointData(policyId);
 
                     const users = await DatabaseServer.getVirtualUsers(policyId);
-                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did, owner?.id);
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
                     const policies = (await DatabaseServer.getListOfPolicies(filters));
                     return new MessageResponse({ policies });
@@ -4115,7 +4115,7 @@ export class PolicyEngineService {
                     await DatabaseServer.clearDryRun(policyId, false);
                     PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
-                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did, owner?.id);
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));

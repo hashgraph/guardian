@@ -4085,7 +4085,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async getVirtualUser(policyId: string): Promise<DryRun | null> {
+    public static async getVirtualUser(policyId: string, userId?: string | null): Promise<DryRun | null> {
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            if (!pointer?.did) {
+                return null;
+            }
+            return await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'VirtualUsers',
+                did: pointer.did
+            }, {
+                fields: [
+                    'id',
+                    'did',
+                    'username',
+                    'hederaAccountId',
+                    'active'
+                ]
+            } as unknown as FindOptions<object>);
+        }
+        // Legacy fallback: single shared active pointer. Used only when no
+        // real (authenticated) user context is available, e.g. background
+        // jobs. Callers resolving a request on behalf of a real user should
+        // always pass `userId`, so that each real user driving a dry-run
+        // policy keeps their own independently selected virtual persona
+        // instead of sharing one global pointer with every other tester.
         return await new DataBaseHelper(DryRun).findOne({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -5087,7 +5116,25 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async setVirtualUser(policyId: string, did: string): Promise<void> {
+    public static async setVirtualUser(policyId: string, did: string, userId?: string | null): Promise<void> {
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            if (pointer) {
+                pointer.did = did;
+                await new DataBaseHelper(DryRun).save(pointer);
+            } else {
+                await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+                    did,
+                    userId
+                }, policyId, 'ActiveVirtualUser', false));
+            }
+            return;
+        }
+        // Legacy fallback: see getVirtualUser() above.
         const items = (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'
