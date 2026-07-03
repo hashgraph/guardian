@@ -58,9 +58,15 @@
 
     // PrimeNG 21: p-selectbutton host carries both .guardian-select-button and
     // .p-selectbutton on the same element, so togglebuttons are direct children.
+    // Mirror the pre-21 .p-button colors on the togglebutton markup: unchecked
+    // items in the guardian primary on the secondary surface, the checked item
+    // inverted — so the selected label is never the raw PrimeNG white in dark mode.
     .p-togglebutton {
         outline: none;
         box-shadow: none;
+        color: var(--guardian-primary-color);
+        background: var(--guardian-secondary-background);
+        border-color: var(--guardian-primary-color);
 
         &:focus,
         &:focus-visible {
@@ -69,8 +75,21 @@
         }
     }
 
+    .p-togglebutton .p-togglebutton-content {
+        background: transparent;
+        color: inherit;
+    }
+
+    .p-togglebutton-checked {
+        color: var(--guardian-secondary-color);
+        background: var(--guardian-primary-color);
+        border-color: var(--guardian-primary-color);
+    }
+
     .p-togglebutton-checked .p-togglebutton-content {
         box-shadow: none;
+        background: transparent;
+        color: inherit;
     }
 
     .guardian-select-button-item {

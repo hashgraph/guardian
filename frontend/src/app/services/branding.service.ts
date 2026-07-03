@@ -92,6 +92,14 @@ export class BrandingService {
 
             if (brandingData.primaryColor) {
                 document.body.style.setProperty('--color-primary', brandingData.primaryColor);
+                // PrimeNG (--primary-color) and the guardian theme
+                // (--guardian-primary-color) resolve their primary tokens on
+                // :root, so a body-level override never reaches them — the
+                // branded primary must be written on the root element too.
+                const rootStyle = document.documentElement.style;
+                rootStyle.setProperty('--primary-color', brandingData.primaryColor);
+                rootStyle.setProperty('--guardian-primary-color', brandingData.primaryColor);
+                rootStyle.setProperty('--button-primary-color-hover', brandingData.primaryColor);
             }
             if (brandingData.headerColor && brandingData.headerColor1) {
                 const gradientData = colorToGradient(brandingData.headerColor, brandingData.headerColor1);

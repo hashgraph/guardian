@@ -82,6 +82,7 @@ form {
             justify-content: flex-start;
 
             h1 {
+                color: var(--color-grey-black-1, #181818);
                 font-family: Merriweather Sans, Poppins, sans-serif;
                 font-size: 32px;
                 font-style: normal;
@@ -149,6 +150,10 @@ form {
     align-items: center;
     justify-content: center;
     column-gap: 8px;
+
+    span:not(.primary-text-button) {
+        color: var(--color-grey-black-1, #181818);
+    }
 
     span {
         font-family: Inter, sans-serif;
