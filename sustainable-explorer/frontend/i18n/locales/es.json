@@ -443,6 +443,9 @@
         "searchPlaceholder": "Buscar proyectos...",
         "quickFilters": "Filtros rápidos:",
         "downloadData": "Descargar datos",
+        "filteredByRegistry": "Mostrando proyectos del registro",
+        "unknownRegistry": "este registro",
+        "clearRegistryFilter": "Quitar filtro",
         "projectsFound": "{count} proyectos encontrados",
         "totalIssuances": "Emisiones totales:",
         "countries": "Países:",
@@ -562,6 +565,7 @@
         "unknownMethodology": "esta metodología",
         "clearMethodologyFilter": "Quitar filtro",
         "filteredByRegistry": "Mostrando emisiones del registro",
+        "unknownRegistry": "este registro",
         "clearRegistryFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
         "columns": {
@@ -635,6 +639,9 @@
         "searchPlaceholder": "Buscar metodologías...",
         "noMatch": "Ninguna metodología coincide con tus filtros",
         "downloadData": "Descargar datos",
+        "filteredByRegistry": "Mostrando metodologías del registro",
+        "unknownRegistry": "este registro",
+        "clearRegistryFilter": "Quitar filtro",
         "columns": {
             "methodology": "Metodología",
             "name": "Nombre",
