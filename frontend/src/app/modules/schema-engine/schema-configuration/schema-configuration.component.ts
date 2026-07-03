@@ -563,30 +563,6 @@ export class SchemaConfigurationComponent implements OnInit {
         this.ifFormatValueForOption(valueCtrl, opt);
     }
 
-    private ifFormatValueFor(valueCtrl: UntypedFormControl, field: FieldControl) {
-        const type = this.schemaTypeMap[field.controlType.value];
-        const isNumber = ['number', 'integer'].includes(type.type) || type.format === 'duration';
-
-        const validators = [];
-        if (field.controlRequired.value) {
-            validators.push(Validators.required);
-        }
-        if (isNumber) {
-            validators.push(this.isNumberOrEmptyValidator());
-        }
-
-        valueCtrl.clearValidators();
-        valueCtrl.setValidators(validators);
-
-        if (['date', 'date-time', 'time'].includes(type.format)) {
-            this.subscribeFormatDateValue(valueCtrl, type.format);
-        } else if (isNumber) {
-            this.subscribeFormatNumberValue(valueCtrl, type.format || type.type);
-        }
-
-        valueCtrl.updateValueAndValidity();
-    }
-
     public getOperatorControl(condition: ConditionControl): UntypedFormControl {
         return (this.conditionsForm.get(condition.name) as UntypedFormGroup)
             .get('ifCondition')!
@@ -1027,17 +1003,6 @@ export class SchemaConfigurationComponent implements OnInit {
         }
 
         const fieldsBySchemaName = new Map<string, SchemaField>(fields.map(f => [f.name, f]));
-
-        const getPickedName = (r: any): string | undefined => {
-            if (Array.isArray(r?.field?.fieldPath) && r.field.fieldPath.length > 0) {
-                return r.field.fieldPath[0];
-            }
-            if (Array.isArray(r?.fieldPath) && r.fieldPath.length > 0) {
-                return r.fieldPath[0];
-            }
-            return r?.field?.key || r?.field?.controlKey?.value ||
-                (typeof r?.field === 'string' ? r.field : undefined);
-        };
 
         const traverseFieldPath = (path: string[]): SchemaField | undefined => {
             let current: SchemaField | undefined = fieldsBySchemaName.get(path[0]);
