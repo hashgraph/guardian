@@ -12,6 +12,8 @@ export interface BrandingPayload {
     loginBannerUrl: string
     faviconUrl: string,
     termsAndConditions: string
+    useCustomMenuColors?: boolean
+    useSolidBackground?: boolean
 }
 
 @Injectable({
@@ -100,9 +102,15 @@ export class BrandingService {
             if (brandingData.headerColor1) {
                 document.body.style.setProperty('--guardian-menu-color-2', brandingData.headerColor1);
             }
-            if (brandingData.headerColor) {
+            // Custom menu colors are driven by the stored flags; configs saved
+            // before the flags existed fall back to "enabled when a menu color
+            // is set" so existing installations keep their current look.
+            const useCustomMenuColors = brandingData.useCustomMenuColors ?? !!brandingData.headerColor;
+            const useSolidBackground = brandingData.useSolidBackground
+                ?? (!brandingData.headerColor1 || brandingData.headerColor1 === brandingData.headerColor);
+            if (useCustomMenuColors && brandingData.headerColor) {
                 const bodyStyle = document.body.style;
-                const sidebarBg = brandingData.headerColor1
+                const sidebarBg = (brandingData.headerColor1 && !useSolidBackground)
                     ? colorToGradient(brandingData.headerColor, brandingData.headerColor1)
                     : brandingData.headerColor;
                 bodyStyle.setProperty('--sidebar-bg', sidebarBg);
