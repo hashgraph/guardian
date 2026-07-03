@@ -7,6 +7,7 @@ import {
     FolderKanban,
     Link,
     Receipt,
+    Shield,
 } from 'lucide-vue-next';
 import { formatCredits, formatDate } from '~/lib/format';
 import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
@@ -45,6 +46,9 @@ interface CreditRawDetail {
     credit: CreditRaw | null;
     projects: CreditProjectLink[];
     tokenMessage: Record<string, any> | null;
+    policyId: string | null;
+    policyName: string | null;
+    policyTopicId: string | null;
     mintEvents: MintEvent[];
 }
 
@@ -92,8 +96,8 @@ const connectedProject = computed<CreditProjectLink | null>(() => {
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
 
-type TabKey = 'details' | 'provenance' | 'mint-events';
-const VALID_TABS = new Set<TabKey>(['details', 'provenance', 'mint-events']);
+type TabKey = 'details' | 'provenance' | 'mint-events' | 'advanced';
+const VALID_TABS = new Set<TabKey>(['details', 'provenance', 'mint-events', 'advanced']);
 
 const activeTab = ref<TabKey>('details');
 const tabReady = ref(false);
@@ -113,6 +117,7 @@ const tabs = computed(() => [
     { key: 'details'     as TabKey, label: t('credits.detail.tabs.details'),    icon: Coins },
     { key: 'mint-events' as TabKey, label: t('credits.detail.tabs.mintEvents'), icon: Receipt },
     { key: 'provenance'  as TabKey, label: t('credits.detail.tabs.linkage'),    icon: Link },
+    { key: 'advanced'    as TabKey, label: t('credits.detail.tabs.advanced'),   icon: Shield },
 ]);
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
@@ -124,7 +129,7 @@ const totalMintedAll = computed(() =>
 );
 
 const totalMintedProject = computed<number | null>(() => {
-    const pid = connectedProjectId.value;
+    const pid = connectedProjectId.value ?? credit.value?.projectId ?? null;
     if (!pid) return null;
     return mintEvents.value
         .filter(e => e.projectKey === pid)
@@ -156,18 +161,28 @@ const paginatedMintEvents = computed(() => {
 // Reset to page 1 when the project filter changes.
 watch(connectedProjectId, () => { mintEventsPage.value = 1; });
 
-const firstMintDate = computed(
-    () =>
-        credit.value?.mintDate ??
-        mintEvents.value
-            .map(e => e.date)
-            .filter(Boolean)
-            .sort()[0] ??
-        null,
-);
+const lastMintDate = computed(() => {
+    const dates = mintEvents.value.map(e => e.date).filter((d): d is string => !!d).sort();
+    return dates.at(-1) ?? credit.value?.mintDate ?? null;
+});
 
 const hashscanTokenUrl = computed(
     () => `https://hashscan.io/${network.value}/token/${tokenId.value}`,
+);
+
+// ─── Advanced tab ─────────────────────────────────────────────────────────────
+
+const tokenMessage = computed(() => data.value?.tokenMessage ?? null);
+const policyTopicId = computed(() => data.value?.policyTopicId ?? null);
+const mintTokenId = computed<string | null>(() => (tokenMessage.value?.options?.tokenId as string) ?? null);
+const tokenCreatedDate = computed<string | null>(() => (tokenMessage.value?.consensusTimestamp as string) ?? null);
+const issueDid = computed<string | null>(() => (tokenMessage.value?.owner as string) ?? null);
+
+const policyHashscanUrl = computed(() =>
+    policyTopicId.value ? `https://hashscan.io/${network.value}/topic/${policyTopicId.value}` : null,
+);
+const mintTokenHashscanUrl = computed(() =>
+    mintTokenId.value ? `https://hashscan.io/${network.value}/token/${mintTokenId.value}` : null,
 );
 
 const typeColor: Record<string, string> = {
@@ -370,10 +385,10 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                 </div>
                 <div class="bg-card px-5 py-4">
                     <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
-                        {{ $t('credits.detail.firstMintDate') }}
+                        {{ $t('credits.detail.lastMintDate') }}
                     </div>
                     <div class="text-sm font-medium text-foreground">
-                        {{ firstMintDate ? formatDate(firstMintDate) : '—' }}
+                        {{ lastMintDate ? formatDate(lastMintDate) : '—' }}
                     </div>
                 </div>
             </div>
@@ -659,6 +674,70 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                             {{ credit.registry }}
                         </NuxtLink>
                         <span v-else class="text-sm text-muted-foreground">{{ $t('credits.detail.noRegistry') }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Advanced tab: raw Token-message-derived blockchain details -->
+            <div v-else-if="activeTab === 'advanced'" class="p-6 space-y-6">
+                <div class="rounded-xl border bg-card overflow-hidden">
+                    <div class="px-5 py-3.5 border-b bg-muted/30">
+                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <Shield class="h-4 w-4 text-primary" />
+                            {{ $t('credits.detail.advanced.title') }}
+                        </h2>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border">
+                        <div class="bg-card px-5 py-4">
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                {{ $t('credits.detail.advanced.tokenPolicy') }}
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <code class="text-sm font-mono text-foreground break-all">{{ policyTopicId ?? '—' }}</code>
+                                <a
+                                    v-if="policyHashscanUrl"
+                                    :href="policyHashscanUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                                >
+                                    <ExternalLink class="h-3 w-3" />
+                                    {{ $t('common.viewOnHashScan') }}
+                                </a>
+                            </div>
+                        </div>
+                        <div class="bg-card px-5 py-4">
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                {{ $t('credits.detail.advanced.mintTokenId') }}
+                            </div>
+                            <a
+                                v-if="mintTokenHashscanUrl"
+                                :href="mintTokenHashscanUrl"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
+                            >
+                                <ExternalLink class="h-3.5 w-3.5" />
+                                {{ $t('common.viewOnHashScan') }}
+                            </a>
+                            <span v-else class="text-sm font-medium text-foreground">—</span>
+                        </div>
+                        <div class="bg-card px-5 py-4">
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                {{ $t('credits.detail.advanced.tokenCreatedDate') }}
+                            </div>
+                            <div class="text-sm font-medium text-foreground">
+                                {{ tokenCreatedDate ? formatDate(tokenCreatedDate) : '—' }}
+                            </div>
+                        </div>
+                        <div class="bg-card px-5 py-4">
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
+                                {{ $t('credits.detail.advanced.issueDid') }}
+                            </div>
+                            <div class="text-sm font-medium text-foreground font-mono break-all">
+                                {{ issueDid ?? '—' }}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>

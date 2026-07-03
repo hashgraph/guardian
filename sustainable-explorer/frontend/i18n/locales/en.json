@@ -596,11 +596,19 @@
             "overview": "Overview",
             "tokenId": "Token ID",
             "connectedProject": "Project",
-            "firstMintDate": "First Mint Date",
+            "lastMintDate": "Last Mint Date",
             "tabs": {
                 "details": "Details",
                 "mintEvents": "Transactions",
-                "linkage": "Linkage"
+                "linkage": "Linkage",
+                "advanced": "Advanced"
+            },
+            "advanced": {
+                "title": "Advanced",
+                "tokenPolicy": "Token Policy Id",
+                "mintTokenId": "Mint Token",
+                "tokenCreatedDate": "Token Created Date",
+                "issueDid": "Issue DID"
             },
             "tokenInformation": "Token Information",
             "supplyDifferenceTooltip": "The Supply Amount and Minted Amount for this issuance are currently different.",
