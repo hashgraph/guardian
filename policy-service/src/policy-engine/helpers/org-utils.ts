@@ -1,7 +1,4 @@
-import { KeyType, Users, Wallet } from '@guardian/common';
-import { PrivateKey } from '@hiero-ledger/sdk';
-import { IHederaCredentials } from '../policy-user.js';
-import { AnyBlockType } from '../policy-engine.interface.js';
+import { Users } from '@guardian/common';
 
 /**
  * Resolves the DID list of all active members of an organization.
@@ -31,26 +28,4 @@ export async function getOrgHederaAccountId(
     }
     const info = await new Users().getOrgHederaInfo(orgId, userId);
     return info?.hederaAccountId ?? null;
-}
-
-/**
- * Lazily load an organization's Hedera credentials (account id + private key) for signing.
- * NOT used by the guards (they only need getOrgHederaAccountId); provided for callers that
- * must sign with the org key. Key is read from the vault via the low-level Wallet.getKey
- * (walletToken + org DID) — Wallet.getUserKey is NOT used because an Organization is not a User.
- */
-export async function loadOrgHederaCredentials(
-    orgId: string,
-    ref: AnyBlockType,
-    userId: string | null
-): Promise<IHederaCredentials> {
-    if (ref.dryRun) {
-        return { hederaAccountId: '0.0.0', hederaAccountKey: PrivateKey.generate().toString() };
-    }
-    const info = await new Users().getOrgHederaInfo(orgId, userId);
-    if (!info?.walletToken) {
-        throw new Error(`Organization ${orgId} has no Hedera credentials`);
-    }
-    const key = await new Wallet().getKey(info.walletToken, KeyType.KEY, info.did);
-    return { hederaAccountId: info.hederaAccountId, hederaAccountKey: key };
 }
