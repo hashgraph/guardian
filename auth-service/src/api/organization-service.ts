@@ -762,6 +762,65 @@ export class OrganizationService extends NatsService {
             });
 
         /**
+         * Look up a user's org context by DID (unscoped, internal).
+         * Joins the active membership with its OrgRole in one round trip so callers get an
+         * atomic snapshot of { organizationId, orgRoleName, orgRolePermissions } — or null
+         * when the user has no active membership.
+         */
+        this.getMessages(AuthEvents.GET_ORG_CONTEXT_BY_DID,
+            async (msg: { did: string, userId: string | null }) => {
+                const userId = msg?.userId;
+                try {
+                    if (!msg || !msg.did) {
+                        return new MessageResponse(null);
+                    }
+                    const entityRepository = new DatabaseServer();
+                    const member = await entityRepository.findOne(OrganizationMember, {
+                        did: msg.did,
+                        active: true
+                    });
+                    if (!member?.organizationId) {
+                        return new MessageResponse(null);
+                    }
+                    let orgRolePermissions: string[] = [];
+                    if (member.orgRoleId) {
+                        const role = await entityRepository.findOne(OrgRole, { id: member.orgRoleId });
+                        orgRolePermissions = role?.permissions ?? [];
+                    }
+                    return new MessageResponse({
+                        organizationId: member.organizationId,
+                        orgRoleName: member.orgRoleName ?? null,
+                        orgRolePermissions
+                    });
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * List the DIDs of an organization's active members (unscoped, internal).
+         * Returns the full DID set — it feeds `$in` document filters in the policy engine.
+         */
+        this.getMessages(AuthEvents.GET_ORG_MEMBER_DIDS,
+            async (msg: { organizationId: string, userId: string | null }) => {
+                const userId = msg?.userId;
+                try {
+                    if (!msg || !msg.organizationId) {
+                        return new MessageResponse([]);
+                    }
+                    const members = await new DatabaseServer().find(OrganizationMember, {
+                        organizationId: msg.organizationId,
+                        active: true
+                    });
+                    return new MessageResponse(members.map((m) => m.did).filter(Boolean));
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
          * Update a member's role (validates the new role belongs to the same org)
          */
         this.getMessages(AuthEvents.UPDATE_ORG_MEMBER_ROLE,

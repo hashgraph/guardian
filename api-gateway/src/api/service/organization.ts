@@ -74,7 +74,8 @@ function coerceBool(value: unknown): boolean | undefined {
  * Guardians helper, which in turn delegates to the orchestration handlers added in Phase 3.
  *
  * Intentionally NOT exposed at REST: GET_ORG_MEMBERSHIP_BY_DID, GET_POLICY_ORGS,
- * GET_POLICIES_FOR_ORG, GET_ORG_POLICY_IDS_FOR_USER — those are internal NATS-only lookups.
+ * GET_POLICIES_FOR_ORG, GET_ORG_POLICY_IDS_FOR_USER, GET_ORG_HEDERA_INFO,
+ * GET_ORG_CONTEXT_BY_DID, GET_ORG_MEMBER_DIDS — those are internal NATS-only lookups.
  */
 @Controller('organizations')
 @ApiTags('organizations')

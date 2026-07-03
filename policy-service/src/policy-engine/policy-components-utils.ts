@@ -1285,16 +1285,11 @@ export class PolicyComponentsUtils {
     }
 
     private static async populateOrgContext(user: PolicyUser): Promise<void> {
-        const [membership] = await DatabaseServer.getOrganizationMembers(
-            { did: user.did, active: true }
-        );
-        if (membership?.organizationId) {
-            user.organization = membership.organizationId;
-            user.organizationRole = membership.orgRoleName ?? null;
-            if (membership.orgRoleId) {
-                const orgRole = await DatabaseServer.getOrgRole(membership.orgRoleId);
-                user.organizationRolePermissions = orgRole?.permissions ?? [];
-            }
+        const context = await new Users().getOrgContextByDid(user.did, user.userId ?? null);
+        if (context?.organizationId) {
+            user.organization = context.organizationId;
+            user.organizationRole = context.orgRoleName ?? null;
+            user.organizationRolePermissions = context.orgRolePermissions ?? [];
         }
     }
 

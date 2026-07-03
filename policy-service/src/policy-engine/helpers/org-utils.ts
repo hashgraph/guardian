@@ -1,4 +1,4 @@
-import { DatabaseServer, KeyType, Users, Wallet } from '@guardian/common';
+import { KeyType, Users, Wallet } from '@guardian/common';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { IHederaCredentials } from '../policy-user.js';
 import { AnyBlockType } from '../policy-engine.interface.js';
@@ -13,8 +13,8 @@ export async function resolveOrgMemberDids(organization: string | null | undefin
     if (!organization) {
         return [];
     }
-    const members = await DatabaseServer.getOrganizationMembers({ organizationId: organization, active: true });
-    return members.map(m => m.did).filter((did): did is string => !!did);
+    const dids = await new Users().getOrgMemberDids(organization, null);
+    return (dids ?? []).filter((did): did is string => !!did);
 }
 
 /**

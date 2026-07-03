@@ -1,4 +1,4 @@
-import { AuthEvents, GenerateUUIDv4, IOwner, IRootConfig, UserRole } from '@guardian/interfaces';
+import { AuthEvents, GenerateUUIDv4, IOwner, IRootConfig, OrgRolePermission, UserRole } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 import { KeyType, Wallet } from './wallet.js';
 import { NatsService } from '../mq/index.js';
@@ -379,5 +379,29 @@ export class Users extends NatsService {
         userId: string | null
     ): Promise<{ did: string, hederaAccountId: string, walletToken: string } | null> {
         return await this.sendMessage(AuthEvents.GET_ORG_HEDERA_INFO, { organizationId, userId });
+    }
+
+    /**
+     * Get a user's org context (active membership joined with its OrgRole) by DID (internal lookup)
+     * @param did
+     * @param userId
+     */
+    public async getOrgContextByDid(
+        did: string,
+        userId: string | null
+    ): Promise<{ organizationId: string, orgRoleName: string | null, orgRolePermissions: OrgRolePermission[] } | null> {
+        return await this.sendMessage(AuthEvents.GET_ORG_CONTEXT_BY_DID, { did, userId });
+    }
+
+    /**
+     * Get the DIDs of an organization's active members (internal lookup)
+     * @param organizationId
+     * @param userId
+     */
+    public async getOrgMemberDids(
+        organizationId: string,
+        userId: string | null
+    ): Promise<string[]> {
+        return await this.sendMessage(AuthEvents.GET_ORG_MEMBER_DIDS, { organizationId, userId });
     }
 }
