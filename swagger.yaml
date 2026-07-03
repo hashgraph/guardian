@@ -56573,6 +56573,10 @@ components:
           type: string
         termsAndConditions:
           type: string
+        useCustomMenuColors:
+          type: boolean
+        useSolidBackground:
+          type: boolean
       required:
         - headerColor
         - primaryColor
@@ -56582,6 +56586,8 @@ components:
         - faviconUrl
         - headerColor1
         - termsAndConditions
+        - useCustomMenuColors
+        - useSolidBackground
     SuggestionsInputDTO:
       type: object
       properties:
