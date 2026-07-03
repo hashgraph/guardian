@@ -9,7 +9,7 @@ import './modules/common/models/lang-modes/formula-lang.mode';
 import './modules/common/models/lang-modes/single-line';
 import './modules/schema-engine/schema-lang-modes/schema-json-lang.mode';
 import {globalLoaderActive} from './static/global-loader.function';
-import {ActivatedRoute} from '@angular/router';
+import {Router} from '@angular/router';
 import {DomSanitizer} from '@angular/platform-browser';
 
 @Component({
@@ -31,18 +31,16 @@ export class AppComponent implements OnInit {
 
     @ViewChild('contentContainer') contentContainer: ElementRef;
 
-    public url: string;
-
     constructor(
         public authState: AuthStateService,
         public wsService: WebSocketService,
         private brandingService: BrandingService,
-        private activatedRoute: ActivatedRoute,
+        private router: Router,
         private domSanitizer: DomSanitizer,
-    ) {
-        activatedRoute.url.subscribe(segs => {
-            this.url = segs.pop()!.path;
-        })
+    ) {}
+
+    get isLoginPage(): boolean {
+        return this.router.url.split('?')[0] === '/login';
     }
 
     ngOnInit(): void {

@@ -54,6 +54,7 @@ import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootProfileComponent } from './views/root-profile/root-profile.component';
+import { NextGenBannerComponent } from './views/next-gen-banner/next-gen-banner.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -204,6 +205,7 @@ const GuardianPreset = definePreset(Aura, {
         HeaderComponent,
         RegisterComponent,
         RootProfileComponent,
+        NextGenBannerComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,

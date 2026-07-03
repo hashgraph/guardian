@@ -26,7 +26,14 @@ import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
+import { FeatureFlagsService } from '../../services/feature-flags.service';
+import { SettingsService } from '../../services/settings.service';
 import { formatBalance, getUserInitials } from '../../utils';
+
+const FEEDBACK_MAILTO_TEMPLATE =
+    'mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request%20-%20{ORIGIN}' +
+    '&body=This%20is%20%5Bfeedback%20/%20support%20request%20/%20feature%20request%5D%0A%0A--%0A%0A' +
+    'Add%20a%20summary%20here.%0A%0A%0AVersion:%20%5B{VERSION}%5D%0AOrigin:%20%5B{ORIGIN}%5D%0A---%0A';
 
 enum OperationMode {
     None,
@@ -112,6 +119,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public relayerAccountColumns: IColumn[];
     public searchRelayerAccount: string;
     public balances: Map<string, string>;
+    public guardianVersion: string = '';
 
     constructor(
         private auth: AuthService,
@@ -128,6 +136,8 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private router: Router,
         private cdRef: ChangeDetectorRef,
         private docWidgetService: DocWidgetService,
+        private featureFlagsService: FeatureFlagsService,
+        private settingsService: SettingsService,
         private appThemeService: AppThemeService,
         private menuLayoutService: MenuLayoutService,
         private toastr: ToastrService
@@ -197,6 +207,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         this.loadProfile();
         this.step = 'HEDERA';
         this.refreshOtpStatus();
+        this.subscriptions.add(
+            this.settingsService.getAbout().subscribe((about) => {
+                this.guardianVersion = about?.version || '';
+            })
+        );
     }
 
     ngOnDestroy(): void {
@@ -921,6 +936,16 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         return this.docWidgetService.isEnabled();
     }
 
+    get nextGenUiEnabled(): boolean {
+        return this.featureFlagsService.isNextGenUiEnabled();
+    }
+
+    get feedbackMailto(): string {
+        return FEEDBACK_MAILTO_TEMPLATE
+            .replaceAll('{VERSION}', encodeURIComponent(this.guardianVersion))
+            .replaceAll('{ORIGIN}', encodeURIComponent(window.location.href));
+    }
+
     get docWidgetAvailable(): boolean {
         return this.docWidgetService.available;
     }
@@ -943,6 +968,10 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     onDocWidgetToggle(checked: boolean): void {
         this.docWidgetService.setEnabled(checked);
+    }
+
+    onNextGenUiToggle(checked: boolean): void {
+        this.featureFlagsService.setNextGenUiEnabled(checked);
     }
 
     onToggle2fa(checked: boolean): void {
