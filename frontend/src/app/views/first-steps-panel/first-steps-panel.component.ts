@@ -1,0 +1,107 @@
+import { Component, HostListener, OnInit } from '@angular/core';
+import { IUser, UserPermissions } from '@guardian/interfaces';
+import { FirstStepsService } from '../../services/first-steps.service';
+import { AuthService } from '../../services/auth.service';
+
+const MIN_PANEL_WIDTH = 320;
+const MAX_PANEL_WIDTH = 640;
+const DEFAULT_PANEL_WIDTH = 380;
+const PANEL_WIDTH_KEY = 'FIRST_STEPS_PANEL_WIDTH';
+const PANEL_WIDTH_VAR = '--first-steps-panel-width';
+const RESIZING_CLASS = 'first-steps-resizing';
+
+@Component({
+    selector: 'app-first-steps-panel',
+    templateUrl: './first-steps-panel.component.html',
+    styleUrls: ['./first-steps-panel.component.scss'],
+    standalone: false
+})
+export class FirstStepsPanelComponent implements OnInit {
+    private resizing: boolean = false;
+    private resizeStartX: number = 0;
+    private resizeStartWidth: number = 0;
+
+    constructor(
+        public firstSteps: FirstStepsService,
+        private auth: AuthService
+    ) {
+        this.restoreWidth();
+    }
+
+    ngOnInit(): void {
+        // Hide until the current user's role is confirmed. The service is a
+        // singleton, so `available` can be stale (true) from a previous account
+        // on the same browser session; without this reset the drawer would flash
+        // open for a non-registry user before the new role resolves.
+        this.firstSteps.setAvailable(false);
+        this.auth.sessions().subscribe((user: IUser | null) => {
+            const permissions = new UserPermissions(user);
+            // Gate by role: First Steps is available for Standard Registry only.
+            this.firstSteps.setAvailable(permissions.STANDARD_REGISTRY);
+        });
+    }
+
+    get open(): boolean {
+        return this.firstSteps.isOpen();
+    }
+
+    disable(): void {
+        this.firstSteps.setEnabled(false);
+    }
+
+    onResizeStart(event: MouseEvent): void {
+        event.preventDefault();
+        this.resizing = true;
+        this.resizeStartX = event.clientX;
+        this.resizeStartWidth = this.currentWidth();
+        document.documentElement.classList.add(RESIZING_CLASS);
+        document.body.style.userSelect = 'none';
+    }
+
+    @HostListener('document:mousemove', ['$event'])
+    onDocumentMouseMove(event: MouseEvent): void {
+        if (!this.resizing) {
+            return;
+        }
+        // Right-side drawer: dragging the handle left widens it.
+        const delta = this.resizeStartX - event.clientX;
+        const width = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, this.resizeStartWidth + delta));
+        document.documentElement.style.setProperty(PANEL_WIDTH_VAR, `${width}px`);
+    }
+
+    @HostListener('document:mouseup')
+    onDocumentMouseUp(): void {
+        if (!this.resizing) {
+            return;
+        }
+        this.resizing = false;
+        document.documentElement.classList.remove(RESIZING_CLASS);
+        document.body.style.userSelect = '';
+        try {
+            localStorage.setItem(PANEL_WIDTH_KEY, String(this.currentWidth()));
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    private currentWidth(): number {
+        const value = getComputedStyle(document.documentElement).getPropertyValue(PANEL_WIDTH_VAR);
+        const parsed = parseInt(value, 10);
+        return Number.isFinite(parsed) ? parsed : DEFAULT_PANEL_WIDTH;
+    }
+
+    private restoreWidth(): void {
+        try {
+            const stored = localStorage.getItem(PANEL_WIDTH_KEY);
+            if (!stored) {
+                return;
+            }
+            const width = Math.min(MAX_PANEL_WIDTH, Math.max(MIN_PANEL_WIDTH, parseInt(stored, 10)));
+            if (Number.isFinite(width)) {
+                document.documentElement.style.setProperty(PANEL_WIDTH_VAR, `${width}px`);
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+}

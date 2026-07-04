@@ -1,0 +1,30 @@
+<p-drawer
+  [visible]="open"
+  (visibleChange)="firstSteps.setOpen($event)"
+  position="right"
+  [modal]="false"
+  [dismissible]="false"
+  [showCloseIcon]="false"
+  styleClass="first-steps-drawer">
+  <ng-template pTemplate="headless">
+    <aside class="first-steps-panel">
+      <div class="first-steps-resize" (mousedown)="onResizeStart($event)" title="Drag to resize"></div>
+      <div class="first-steps-header">
+        <div class="first-steps-heading">
+          <h2 class="first-steps-title">First Steps</h2>
+          <p class="first-steps-subtitle">A quick tutorial to get you started with Guardian.</p>
+        </div>
+        <button type="button" class="first-steps-disable" (click)="disable()">Disable</button>
+      </div>
+
+      <div class="first-steps-content">
+        <ol class="first-steps-steps">
+          <li><strong>Set up your profile</strong> — connect your Hedera account and generate your DID.</li>
+          <li><strong>Create or import a policy</strong> — go to Manage → Policies and import or create one.</li>
+          <li><strong>Register a token</strong> — define the token minted when your policy issues credentials.</li>
+          <li><strong>Invite users</strong> — add users and assign roles so they can submit documents.</li>
+        </ol>
+      </div>
+    </aside>
+  </ng-template>
+</p-drawer>

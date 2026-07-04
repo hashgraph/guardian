@@ -1,0 +1,90 @@
+:host ::ng-deep .p-drawer.first-steps-drawer {
+    width: var(--first-steps-panel-width);
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.first-steps-panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 24px 20px;
+    box-sizing: border-box;
+    background: var(--color-grey-white, #ffffff);
+    border-left: 1px solid var(--color-grey-3, #e1e7ef);
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.06);
+    overflow-y: auto;
+}
+
+.first-steps-resize {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    cursor: ew-resize;
+    z-index: 2;
+    transition: background 0.15s ease-in-out;
+
+    &:hover {
+        background: var(--color-grey-3, #e1e7ef);
+    }
+}
+
+.first-steps-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.first-steps-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--guardian-font-color, #23252e);
+}
+
+.first-steps-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-grey-5, #848fa9);
+}
+
+/* "Disable" control, styled like the Experimental UI banner turn-off link. */
+.first-steps-disable {
+    flex: 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-bottom: 1px solid var(--guardian-font-color, #23252e);
+    background: transparent;
+    color: var(--guardian-font-color, #23252e);
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 18px;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.first-steps-content {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--color-grey-6, #495057);
+}
+
+.first-steps-steps {
+    margin: 0;
+    padding-left: 20px;
+
+    li {
+        margin: 8px 0;
+    }
+
+    strong {
+        color: var(--guardian-font-color, #23252e);
+    }
+}

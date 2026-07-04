@@ -206,6 +206,17 @@
 
             <div class="config-row">
               <div class="config-row-label">
+                <span class="config-row-title">First Steps</span>
+                <span class="config-row-desc">Show the First Steps tutorial toggle in the side menu</span>
+              </div>
+              <p-toggleswitch
+                [ngModel]="firstStepsEnabled"
+                (onChange)="onFirstStepsToggle($event.checked)">
+              </p-toggleswitch>
+            </div>
+
+            <div class="config-row">
+              <div class="config-row-label">
                 <span class="config-row-title">Two-factor authentication</span>
                 <span class="config-row-desc">Require an authenticator code at sign-in</span>
               </div>
