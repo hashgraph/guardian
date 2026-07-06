@@ -420,7 +420,7 @@ async function downloadProjects() {
           <button
             v-if="isAuthenticated"
             v-show="savedSearchesRef?.hasActiveFilters"
-            class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+            class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
             @click="savedSearchesRef?.open()"
           >
             <Save class="h-3 w-3" />

@@ -640,6 +640,7 @@
         "namePlaceholder": "e.g. Gold Standard Kenya",
         "summaryTitle": "Active Filters",
         "saveButton": "Save Search",
+        "empty": "No quick filters available",
         "cancel": "Cancel",
         "ok": "OK",
         "duplicateName": "A saved search with this name already exists",

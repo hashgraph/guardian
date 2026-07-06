@@ -15,7 +15,12 @@ const emit = defineEmits<{ apply: [criteria: SavedSearchCriteria] }>();
 
 const { isAuthenticated } = useAuth();
 const { network } = useNetwork();
-const { savedSearches, fetchAll, save, remove } = useSavedSearches(props.section);
+const { savedSearches, loading, fetchAll, save, remove } = useSavedSearches(props.section);
+
+// Guests never have saved searches to fetch, so this is immediately true for
+// them (no flash); for a logged-in user it's suppressed while the initial
+// fetch is in flight so it doesn't flicker on before the real list arrives.
+const showEmptyState = computed(() => !loading.value && savedSearches.value.length === 0);
 
 onMounted(fetchAll);
 // Re-fetch if the user logs in while already on the page.
@@ -105,6 +110,10 @@ defineExpose({
                 @remove="remove(s.id)"
             />
         </template>
+
+        <span v-if="showEmptyState" class="text-[11px] text-muted-foreground">
+            {{ $t('savedSearch.empty') }}
+        </span>
 
         <SaveSearchDialog
             v-if="isAuthenticated"

@@ -635,6 +635,7 @@
         "namePlaceholder": "p. ej. Gold Standard Kenia",
         "summaryTitle": "Filtros activos",
         "saveButton": "Guardar búsqueda",
+        "empty": "No hay filtros rápidos disponibles",
         "cancel": "Cancelar",
         "ok": "Aceptar",
         "duplicateName": "Ya existe una búsqueda guardada con este nombre",

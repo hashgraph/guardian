@@ -42,7 +42,9 @@ export function useSavedSearches(section: 'projects' | 'methodologies' | 'issuan
     };
 
     const savedSearches = ref<SavedSearch[]>([]);
-    const loading = ref(false);
+    // Starts true for a logged-in user so a consumer's empty-state message
+    // doesn't flash on before the initial fetchAll() (called from onMounted) resolves.
+    const loading = ref(isAuthenticated.value);
 
     async function fetchAll(): Promise<void> {
         if (!isAuthenticated.value || !import.meta.client) return;
