@@ -17,14 +17,15 @@
         <button type="button" class="first-steps-disable" (click)="disable()">Disable</button>
       </div>
 
-      <div class="first-steps-content">
-        <ol class="first-steps-steps">
-          <li><strong>Set up your profile</strong> — connect your Hedera account and generate your DID.</li>
-          <li><strong>Create or import a policy</strong> — go to Manage → Policies and import or create one.</li>
-          <li><strong>Register a token</strong> — define the token minted when your policy issues credentials.</li>
-          <li><strong>Invite users</strong> — add users and assign roles so they can submit documents.</li>
-        </ol>
-      </div>
+      @if (loadFailed) {
+        <p class="first-steps-error">
+          First Steps content isn't available. The page should be present under
+          <code>frontend/src/assets/first-steps/</code> — copy it from <code>docs/first-steps/</code> and
+          rebuild.
+        </p>
+      } @else {
+        <div class="first-steps-content" [innerHTML]="contentHtml"></div>
+      }
     </aside>
   </ng-template>
 </p-drawer>

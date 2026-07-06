@@ -1,7 +1,12 @@
 import { Component, HostListener, OnInit } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { IUser, UserPermissions } from '@guardian/interfaces';
 import { FirstStepsService } from '../../services/first-steps.service';
 import { AuthService } from '../../services/auth.service';
+import { renderFirstStepsMarkdown } from './first-steps-markdown';
+import { FIRST_STEPS_PAGES } from './first-steps-pages';
+
+const CONTENT_BASE = 'assets/first-steps/';
 
 const MIN_PANEL_WIDTH = 320;
 const MAX_PANEL_WIDTH = 640;
@@ -17,12 +22,16 @@ const RESIZING_CLASS = 'first-steps-resizing';
     standalone: false
 })
 export class FirstStepsPanelComponent implements OnInit {
+    public contentHtml: string = '';
+    public loadFailed: boolean = false;
+
     private resizing: boolean = false;
     private resizeStartX: number = 0;
     private resizeStartWidth: number = 0;
 
     constructor(
         public firstSteps: FirstStepsService,
+        private http: HttpClient,
         private auth: AuthService
     ) {
         this.restoreWidth();
@@ -36,8 +45,24 @@ export class FirstStepsPanelComponent implements OnInit {
         this.firstSteps.setAvailable(false);
         this.auth.sessions().subscribe((user: IUser | null) => {
             const permissions = new UserPermissions(user);
-            // Gate by role: First Steps is available for Standard Registry only.
-            this.firstSteps.setAvailable(permissions.STANDARD_REGISTRY);
+            const page = FIRST_STEPS_PAGES[permissions.role];
+            // Gate by role: First Steps only activates for roles in FIRST_STEPS_PAGES.
+            this.firstSteps.setAvailable(!!page);
+            if (page) {
+                this.loadContent(CONTENT_BASE + page);
+            }
+        });
+    }
+
+    private loadContent(url: string): void {
+        this.loadFailed = false;
+        this.http.get(url, { responseType: 'text' }).subscribe({
+            next: (markdown) => {
+                this.contentHtml = renderFirstStepsMarkdown(markdown);
+            },
+            error: () => {
+                this.loadFailed = true;
+            }
         });
     }
 
