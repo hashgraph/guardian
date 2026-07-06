@@ -69,6 +69,11 @@ const methodologyFilterName = computed(() => {
     return allCredits.value[0]?.methodologyDisplay ?? null;
 });
 
+const registryFilterName = computed(() => {
+    if (!registryDidFilter.value) return null;
+    return allCredits.value[0]?.registry ?? null;
+});
+
 const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
     useFilteredPagination(allCredits, {
         searchFields: ['name', 'symbol', 'tokenId', 'projectDisplay', 'methodologyDisplay', 'registry'],
@@ -205,7 +210,7 @@ async function downloadCredits() {
         <div v-if="registryDidFilter" class="px-6 pb-2">
             <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
                 <span class="text-muted-foreground">{{ $t('credits.filteredByRegistry') }}</span>
-                <span class="font-medium text-foreground font-mono text-xs">{{ registryDidFilter }}</span>
+                <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('credits.unknownRegistry') }}</span>
                 <NuxtLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                     {{ $t('credits.clearRegistryFilter') }} ×
                 </NuxtLink>
@@ -292,7 +297,7 @@ async function downloadCredits() {
 
                         <!-- Data rows -->
                         <template v-else>
-                            <tr v-for="c in paginated" :key="`${c.tokenId}|${c.projectId ?? ''}`" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(`/credits/${encodeURIComponent(c.tokenId)}`)">
+                            <tr v-for="c in paginated" :key="`${c.tokenId}|${c.projectId ?? ''}`" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(c.projectId ? `/credits/${encodeURIComponent(c.tokenId)}?projectId=${encodeURIComponent(c.projectId)}` : `/credits/${encodeURIComponent(c.tokenId)}`)">
                                 <td class="py-3 px-4 whitespace-nowrap">
                                     <div class="font-medium text-foreground">{{ c.name ?? '-' }}</div>
                                     <div class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId ?? '-' }}</div>

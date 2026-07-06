@@ -105,6 +105,27 @@ const countryFilterOptions = computed(() =>
   ),
 );
 
+// Navigation from a registry-scoped link (e.g. the Registry detail page's
+// "Projects" card) filters by DID — registries aren't unique by name (the
+// registries list can hold multiple entries sharing a display name with
+// different DIDs), so name-based matching would silently mix in projects
+// from the wrong registry. Narrowed here, before useFilteredPagination, so
+// the manual filters/search/sort and all result counts stay consistent with
+// the scoped set. Separate from the manual `registry` FilterBar filter below.
+const route = useRoute();
+const registryDidFilter = computed(() =>
+  typeof route.query.registryDid === "string" ? route.query.registryDid : null,
+);
+const scopedProjects = computed(() =>
+  registryDidFilter.value
+    ? allProjects.value.filter((p) => p.registryDid === registryDidFilter.value)
+    : allProjects.value,
+);
+const registryFilterName = computed(() => {
+  if (!registryDidFilter.value) return null;
+  return scopedProjects.value[0]?.registry ?? null;
+});
+
 const {
   searchQuery,
   currentPage,
@@ -119,7 +140,7 @@ const {
   setFilter,
   clearFilters,
   applyPreset,
-} = useFilteredPagination(allProjects, {
+} = useFilteredPagination(scopedProjects, {
   searchFields: [
     "name",
     "country",
@@ -132,6 +153,12 @@ const {
   pageSize: 10,
   defaultSort: { key: "createdAt", dir: "desc" },
   arrayFields: ["sdgs"],
+  // registryDid drives the separate scopedProjects narrowing above, not the
+  // manual FilterBar `registry` filter — excluding it here stops
+  // parseFiltersFromQuery from also picking it up as a generic activeFilters
+  // entry, which would persist (stuck at mount-time value) even after
+  // navigating away and silently keep the list scoped after "Clear filter".
+  excludeFromQuery: ["registryDid"],
 });
 
 const presets = computed(() => [
@@ -375,6 +402,26 @@ async function downloadProjects() {
       <p class="text-sm text-muted-foreground mt-1">
         {{ $t("projects.subtitle") }}
       </p>
+    </div>
+
+    <div v-if="registryDidFilter" class="px-6 pb-2">
+        <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+            <span class="text-muted-foreground">{{ $t('projects.filteredByRegistry') }}</span>
+            <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('projects.unknownRegistry') }}</span>
+            <NuxtLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                {{ $t('projects.clearRegistryFilter') }} ×
+            </NuxtLink>
+        </div>
+    </div>
+
+    <div v-if="registryDidFilter" class="px-6 pb-2">
+        <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+            <span class="text-muted-foreground">{{ $t('projects.filteredByRegistry') }}</span>
+            <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('projects.unknownRegistry') }}</span>
+            <NuxtLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                {{ $t('projects.clearRegistryFilter') }} ×
+            </NuxtLink>
+        </div>
     </div>
 
     <div class="px-4 sm:px-6 pb-4">

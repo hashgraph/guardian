@@ -367,7 +367,7 @@ function openRawData() {
                 </NuxtLink>
 
                 <NuxtLink
-                    :to="`/projects?registry=${encodeURIComponent(registry.name)}`"
+                    :to="`/projects?registryDid=${encodeURIComponent(registry.did)}`"
                     class="group rounded-xl border bg-card px-5 py-5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:border-border/80"
                 >
                     <div class="flex items-center justify-between mb-3">

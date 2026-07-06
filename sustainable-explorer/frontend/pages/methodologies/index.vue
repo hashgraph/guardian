@@ -140,6 +140,31 @@ const activeFilterRecord = computed<Record<string, string>>(() => {
     return r;
 });
 
+// Separate from the manual `registryName` FilterBar filter above — this
+// reflects navigation from a registry-scoped link (e.g. the Registry detail
+// page's "Methodologies" card), which filters by DID (registries aren't
+// unique by name — see registries list, duplicate names with different DIDs)
+// while still showing a friendly name in its own banner.
+const registryDidFromQuery = computed(() =>
+    typeof route.query.registryDid === 'string' ? route.query.registryDid : null);
+const registryFilterName = computed(() => {
+    if (!registryDidFromQuery.value) return null;
+    return registriesData.value?.data.find(r => r.did === registryDidFromQuery.value)?.name ?? null;
+});
+
+// `filters.value.registryDid` is only ever seeded once at mount (from
+// `initialFilters`) and drives the actual useMethodologiesApi fetch — it
+// doesn't reactively track the URL afterward. Without this, navigating away
+// via the banner's "Clear filter" link (which clears route.query.registryDid)
+// hides the banner but leaves the list silently still scoped, and syncToUrl()
+// could even resurrect the param from this stale value on the next search.
+watch(registryDidFromQuery, (val) => {
+    const next = { ...filters.value };
+    if (val) next.registryDid = val;
+    else delete next.registryDid;
+    filters.value = next;
+});
+
 function setMethodologyFilter(key: string, value: string) {
     const next = { ...filters.value };
     if (!value || value === 'all') delete next[key];
@@ -378,6 +403,16 @@ async function downloadMethodologies() {
           statTotal
         }}</span>
       </div>
+    </div>
+
+    <div v-if="registryDidFromQuery" class="px-6 pb-2">
+        <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+            <span class="text-muted-foreground">{{ $t('methodologies.filteredByRegistry') }}</span>
+            <span v-if="registriesData" class="font-medium text-foreground">{{ registryFilterName ?? $t('methodologies.unknownRegistry') }}</span>
+            <NuxtLink to="/methodologies" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                {{ $t('methodologies.clearRegistryFilter') }} ×
+            </NuxtLink>
+        </div>
     </div>
 
     <div class="px-6 pb-3">

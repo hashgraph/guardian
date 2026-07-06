@@ -4,6 +4,9 @@ import { AccountController } from './account.controller';
 import { ApiKeyService } from './api-key.service';
 import { RateLimitRequestController } from './rate-limit-request.controller';
 import { RateLimitRequestService } from './rate-limit-request.service';
+import { DashboardPreferencesController } from './dashboard-preferences.controller';
+import { DashboardPreferencesService } from './dashboard-preferences.service';
+import { DashboardPreferencesRepository } from './dashboard-preferences.repository';
 
 /**
  * Account module — authenticated user self-service (API keys today; saved
@@ -17,7 +20,7 @@ import { RateLimitRequestService } from './rate-limit-request.service';
  */
 @Module({
     imports: [AuthModule],
-    controllers: [AccountController, RateLimitRequestController],
-    providers: [ApiKeyService, RateLimitRequestService],
+    controllers: [AccountController, RateLimitRequestController, DashboardPreferencesController],
+    providers: [ApiKeyService, RateLimitRequestService, DashboardPreferencesService, DashboardPreferencesRepository],
 })
 export class AccountModule {}

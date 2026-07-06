@@ -40,7 +40,7 @@ export default defineNuxtConfig({
         { path: '~/components/layout', pathPrefix: false },
         { path: '~/components/shared', pathPrefix: false },
         { path: '~/components/project', pathPrefix: false },
-        { path: '~/components/registry', pathPrefix: false },
+        { path: '~/components/portfolio', pathPrefix: false },
         { path: '~/components/auth', pathPrefix: false },
         { path: '~/components/admin', pathPrefix: false },
         { path: '~/components/account', pathPrefix: false },

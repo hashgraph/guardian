@@ -256,6 +256,7 @@
         "clearAll": "Limpiar todo",
         "clear": "Limpiar",
         "clearSelection": "Limpiar selección",
+        "undo": "Deshacer",
         "loading": "Cargando...",
         "noResults": "Sin resultados",
         "retry": "Reintentar",
@@ -301,6 +302,7 @@
     },
     "nav": {
         "dashboard": "Panel",
+        "portfolio": "Portafolio",
         "projects": "Proyectos",
         "issuances": "Emisiones",
         "methodologies": "Metodologías",
@@ -442,6 +444,9 @@
         "searchPlaceholder": "Buscar proyectos...",
         "quickFilters": "Filtros rápidos:",
         "downloadData": "Descargar datos",
+        "filteredByRegistry": "Mostrando proyectos del registro",
+        "unknownRegistry": "este registro",
+        "clearRegistryFilter": "Quitar filtro",
         "projectsFound": "{count} proyectos encontrados",
         "totalIssuances": "Emisiones totales:",
         "countries": "Países:",
@@ -600,6 +605,7 @@
         "unknownMethodology": "esta metodología",
         "clearMethodologyFilter": "Quitar filtro",
         "filteredByRegistry": "Mostrando emisiones del registro",
+        "unknownRegistry": "este registro",
         "clearRegistryFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
         "columns": {
@@ -631,11 +637,19 @@
             "overview": "Resumen",
             "tokenId": "ID de token",
             "connectedProject": "Proyecto",
-            "firstMintDate": "Primera fecha de emisión",
+            "lastMintDate": "Última fecha de emisión",
             "tabs": {
                 "details": "Detalles",
                 "mintEvents": "Transacciones",
-                "linkage": "Vinculación"
+                "linkage": "Vinculación",
+                "advanced": "Avanzado"
+            },
+            "advanced": {
+                "title": "Avanzado",
+                "tokenPolicy": "ID de política del token",
+                "mintTokenId": "Token acuñado",
+                "tokenCreatedDate": "Fecha de creación del token",
+                "issueDid": "DID de emisión"
             },
             "tokenInformation": "Información del token",
             "supplyDifferenceTooltip": "El monto de suministro y el monto acuñado de esta emisión son actualmente diferentes.",
@@ -673,6 +687,9 @@
         "searchPlaceholder": "Buscar metodologías...",
         "noMatch": "Ninguna metodología coincide con tus filtros",
         "downloadData": "Descargar datos",
+        "filteredByRegistry": "Mostrando metodologías del registro",
+        "unknownRegistry": "este registro",
+        "clearRegistryFilter": "Quitar filtro",
         "columns": {
             "methodology": "Metodología",
             "name": "Nombre",
@@ -1149,5 +1166,138 @@
         "copyDid": "Copiar DID",
         "copyId": "Copiar ID",
         "viewRawData": "Datos brutos en la blockchain"
+    },
+    "portfolio": {
+        "title": "Mi Portafolio",
+        "subtitle": "{count} elementos en la lista de seguimiento · los widgets reflejan tu selección",
+        "addCustomChart": "Agregar gráfico personalizado",
+        "widgetLibrary": "Biblioteca de widgets",
+        "manageWatchlist": "Gestionar lista de seguimiento",
+        "watchlist": "Lista de seguimiento",
+        "watchlistTypeLabels": {
+            "project": "Proyectos",
+            "projectSingular": "Proyecto"
+        },
+        "addItems": "Agregar elementos",
+        "watchlistEmpty": "Aún no hay elementos.",
+        "watchlistClearedByFilter": "Lista de seguimiento eliminada ({count} elementos) — ahora los filtros controlan tu panel",
+        "watchlistClearedByFilterSingular": "Lista de seguimiento eliminada (1 elemento) — ahora los filtros controlan tu panel",
+        "addItemsCta": "Agregar proyectos →",
+        "removeWidget": "Eliminar widget",
+        "noData": "Sin datos disponibles",
+        "lastFive": "Últimos 5",
+        "chartLimitReached": "Límite de gráficos alcanzado (5/5)",
+        "syncedLabel": "Sincronizado —",
+        "syncedSub": "Hedera Mainnet · {projects} proyectos indexados",
+        "kpi": {
+            "totalIssued": {
+                "label": "Total de créditos emitidos",
+                "sub": "Emitidos en cadena (mainnet)",
+                "footer": "Verificado en cadena"
+            },
+            "activeSupply": {
+                "label": "Suministro activo",
+                "sub": "Emitidos − retirados",
+                "footer": "Tasa de retiro: 0%"
+            },
+            "totalRetired": {
+                "label": "Total de créditos retirados",
+                "sub": "Retirados permanentemente",
+                "footer": "Sin retiros aún"
+            },
+            "activeProjects": {
+                "label": "Proyectos activos",
+                "sub": "Verificados en mainnet",
+                "footer": "{n} en lista de seguimiento"
+            }
+        },
+        "sections": {
+            "issuanceTrend": "Tendencia de emisión",
+            "vintageDist": "Distribución por cosecha",
+            "breakdowns": "Desglose de proyectos",
+            "issuanceBreakdowns": "Desglose de emisiones",
+            "projectsBySector": "Proyectos por sector",
+            "bySector": "por sector",
+            "projectsByRegistry": "Proyectos por registro",
+            "byRegistry": "por registro",
+            "sdgCoverage": "Cobertura ODS",
+            "topCountries": "Principales países anfitriones por créditos",
+            "topCountriesSub": "Países clasificados por total de créditos emitidos",
+            "topRegistries": "Principales registros",
+            "recentIssuances": "Emisiones recientes",
+            "topSdgs": "Principales ODS por cantidad de proyectos",
+            "networkActivity": "Actividad de la red",
+            "retirementTrend": "Tendencia de retiros",
+            "syncStatus": "Última marca de sincronización",
+            "customCharts": "Gráficos personalizados"
+        },
+        "widgetGroups": {
+            "kpis": "Tarjetas KPI",
+            "trends": "Gráficos de tendencia",
+            "breakdowns": "Desgloses",
+            "tables": "Tablas y listas",
+            "system": "Sistema"
+        },
+        "widgetDesc": {
+            "issuanceTrend": "Emisión de créditos a lo largo del tiempo",
+            "retirementTrend": "Volumen de retiros a lo largo del tiempo",
+            "vintageDist": "Créditos agrupados por año de cosecha",
+            "projectsSector": "Gráfico de dona de proyectos o créditos por sector",
+            "projectsByRegistry": "Gráfico de dona de proyectos o créditos por registro",
+            "sdgRadar": "Barras de cobertura para los 17 ODS",
+            "topCountries": "Países anfitriones clasificados por créditos totales",
+            "topRegistries": "Registros más activos por política y cantidad de proyectos",
+            "recentIssuances": "Los 5 tokens acuñados más recientemente",
+            "sdgTopList": "Principales ODS clasificados por cantidad de proyectos",
+            "networkActivity": "Cambios recientes en la red Guardian",
+            "syncStatus": "Última sincronización de datos de Hedera Guardian"
+        },
+        "modal": {
+            "watchlist": {
+                "title": "Gestionar lista de seguimiento",
+                "subtitle": "Agrega o elimina proyectos para rastrear",
+                "filters": {
+                    "country": "País",
+                    "methodology": "Metodología",
+                    "registry": "Registro"
+                },
+                "add": "Agregar",
+                "remove": "Eliminar",
+                "done": "Listo",
+                "footer": "{count} elementos en total · no se permiten duplicados"
+            },
+            "widgets": {
+                "title": "Biblioteca de widgets",
+                "subtitle": "Activa o desactiva widgets — los activos aparecen en tu panel de portafolio",
+                "apply": "Aplicar cambios"
+            },
+            "chartBuilder": {
+                "title": "Agregar gráfico personalizado",
+                "subtitle": "{used}/5 gráficos personalizados usados — elige tipo y fuente de datos",
+                "chartTitle": "Título del gráfico",
+                "titlePlaceholder": "p. ej. Créditos por sector",
+                "chartType": "Tipo de gráfico",
+                "xAxis": "Eje X (Categorías)",
+                "yAxis": "Eje Y (Métrica)",
+                "types": {
+                    "line": "Línea",
+                    "bar": "Barras",
+                    "donut": "Dona"
+                },
+                "axes": {
+                    "month": "Tiempo — Mes",
+                    "vintage": "Año de cosecha",
+                    "sector": "Sector",
+                    "country": "País",
+                    "registry": "Registro",
+                    "sdg": "Meta ODS",
+                    "credits": "Créditos emitidos",
+                    "projects": "Cantidad de proyectos",
+                    "retirements": "Volumen de retiros"
+                },
+                "note": "Los gráficos reflejan tu lista de seguimiento activa. Hasta 5 gráficos personalizados en total.",
+                "add": "Agregar gráfico"
+            }
+        }
     }
 }

@@ -60,6 +60,12 @@ export interface CreditRawDetail {
     projects: CreditProjectLink[];
     /** Raw Token-issue message from HCS (one row from `message` table). */
     tokenMessage: Record<string, unknown> | null;
+    /** Policy ID governing this token, resolved via the linked project's originating VC message. Null when no project is attributed or its VC has no policyId. */
+    policyId: string | null;
+    /** Resolved policy display name (Instance-Policy options.name), joined via policyId -> policy. Null when unresolved. */
+    policyName: string | null;
+    /** Hedera topic id of the governing policy (policy.policyTopicId), for the HashScan link. Null when the policy is unresolved. */
+    policyTopicId: string | null;
     /** MintToken VC documents that issued tokens against this tokenId. */
     mintEvents: Array<{
         consensusTimestamp: string;

@@ -402,6 +402,50 @@ export class PgCreditRepository extends CreditRepository {
         );
         const tokenMessage = tokenMessageRows[0] ?? null;
 
+        // 2b. Resolve the policy governing this token via its linked
+        //     project's originating VC message. The Token-creation message
+        //     and MintToken VCs never carry a policyId at the Guardian
+        //     source — only "project-shaped" VCs (registration, monitoring,
+        //     etc.) do, per ipfs-fetch.processor.ts's stamping logic.
+        //     business_view.sourceTimestamp is the consensusTimestamp of
+        //     that originating VC, so joining back to `message` on it
+        //     recovers the policyId. Both queries are conditional (skipped
+        //     entirely when there's no attributed project / no policyId),
+        //     and both join columns are indexed (business_view.projectKey
+        //     has a unique partial index, message.consensusTimestamp is
+        //     unique, policy.policyId has a unique index).
+        let policyId: string | null = null;
+        let policyName: string | null = null;
+        let policyTopicId: string | null = null;
+        if (credit?.projectId) {
+            const projectPolicyRows: Array<{ policyId: string | null }> = await this.dataSource.query(
+                `SELECT m."policyId"
+                 FROM business_view bv
+                 JOIN message m ON m."consensusTimestamp" = bv."sourceTimestamp"
+                 WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = $1
+                 LIMIT 1`,
+                [credit.projectId],
+            );
+            policyId = projectPolicyRows[0]?.policyId ?? null;
+        }
+        if (policyId) {
+            const policyNameRows: Array<{ policyName: string | null; policyTopicId: string | null }> = await this.dataSource.query(
+                `SELECT ip.options->>'name' AS "policyName",
+                        p."policyTopicId"   AS "policyTopicId"
+                 FROM policy p
+                 JOIN message ip
+                     ON ip.type = 'Instance-Policy'
+                    AND ip.action = 'publish-policy'
+                    AND ip."topicId" = p."policyTopicId"
+                 WHERE p."policyId" = $1
+                 ORDER BY ip."consensusTimestamp" DESC
+                 LIMIT 1`,
+                [policyId],
+            );
+            policyName = policyNameRows[0]?.policyName ?? null;
+            policyTopicId = policyNameRows[0]?.policyTopicId ?? null;
+        }
+
         // 3. MintToken VC documents that minted credits for this tokenId.
         const mintRows: Array<{
             consensusTimestamp: string;
@@ -459,6 +503,9 @@ export class PgCreditRepository extends CreditRepository {
             credit,
             projects,
             tokenMessage,
+            policyId,
+            policyName,
+            policyTopicId,
             mintEvents: mintRows,
         };
     }
