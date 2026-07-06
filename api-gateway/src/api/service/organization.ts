@@ -14,6 +14,7 @@ import {
     Put,
     Query,
     Response,
+    ValidationPipe,
 } from '@nestjs/common';
 import {
     ApiBody,
@@ -232,7 +233,9 @@ export class OrganizationApi {
     async updateOrganization(
         @AuthUser() user: IAuthUser,
         @Param('id') id: string,
-        @Body() body: UpdateOrganizationDTO,
+        // whitelist strips undeclared fields: the UPDATE_ORGANIZATION handler also writes
+        // the publish-flow fields (status, did, topicId, hederaAccountId) when present.
+        @Body(new ValidationPipe({ transform: true, whitelist: true })) body: UpdateOrganizationDTO,
     ): Promise<OrganizationDTO> {
         try {
             const owner = new EntityOwner(user);

@@ -38,19 +38,34 @@ export async function resolveOrgMemberDids(user: Pick<PolicyUser, 'organization'
 }
 
 /**
+ * Org-account-id lookups memoized per acting PolicyUser instance — same lifetime and
+ * rationale as orgMemberDidsCache above. A published organization's account id is stable
+ * through every legitimate flow, so this window is conservative; it is kept per-action for
+ * posture consistency with the org context itself (§8.3).
+ */
+const orgAccountIdCache = new WeakMap<object, Promise<string | null>>();
+
+/**
  * Resolve an organization's Hedera account id (no key load).
  * Used by token-operation permission guards to detect when an operation targets the org account.
- * Returns null when the org id is falsy or the org has no Hedera account.
+ * Returns null when the user has no organization or the org has no Hedera account.
+ * The fetch happens at most once per policy action (memoized on the PolicyUser instance);
+ * a failed lookup rejects every consumer in that action identically (fail closed).
  */
 export async function getOrgHederaAccountId(
-    orgId: string,
+    user: Pick<PolicyUser, 'organization'> | null | undefined,
     userId: string | null
 ): Promise<string | null> {
-    if (!orgId) {
+    if (!user?.organization) {
         return null;
     }
-    const info = await new Users().getOrgHederaInfo(orgId, userId);
-    return info?.hederaAccountId ?? null;
+    let promise = orgAccountIdCache.get(user);
+    if (!promise) {
+        promise = new Users().getOrgHederaInfo(user.organization, userId)
+            .then((info) => info?.hederaAccountId ?? null);
+        orgAccountIdCache.set(user, promise);
+    }
+    return promise;
 }
 
 /**
@@ -73,7 +88,7 @@ export async function checkOrgTokenPermission(
     if (!user?.organization || !operationAccount) {
         return;
     }
-    const orgAccountId = await getOrgHederaAccountId(user.organization, userId);
+    const orgAccountId = await getOrgHederaAccountId(user, userId);
     const error = getOrgTokenPermissionError(user, orgAccountId, operationAccount, permission);
     if (error) {
         throw new BlockActionError(error, ref.blockType, ref.uuid);

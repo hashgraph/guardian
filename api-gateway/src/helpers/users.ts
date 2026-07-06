@@ -506,7 +506,14 @@ export class Users extends NatsService {
         organization: { name?: string, description?: string },
         owner: IOwner
     ): Promise<any> {
-        return await this.sendMessage(AuthEvents.UPDATE_ORGANIZATION, { id, organization, owner, userId: owner.id });
+        // Forward only the record-layer fields. The UPDATE_ORGANIZATION handler also accepts
+        // the on-ledger fields (status, did, topicId, hederaAccountId, …) for the publish
+        // flow — a verbatim body forward would let a REST caller set them directly.
+        const fields = {
+            name: organization?.name,
+            description: organization?.description
+        };
+        return await this.sendMessage(AuthEvents.UPDATE_ORGANIZATION, { id, organization: fields, owner, userId: owner.id });
     }
 
     /**
