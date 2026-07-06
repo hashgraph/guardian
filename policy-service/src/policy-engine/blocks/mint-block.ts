@@ -13,7 +13,7 @@ import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
-import { getOrgHederaAccountId } from '../helpers/org-utils.js';
+import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 
 /**
  * Mint block
@@ -518,20 +518,6 @@ export class MintBlock {
             throw new BlockActionError('Bad User DID', ref.blockType, ref.uuid);
         }
 
-        const mintOptions = await ref.getOptions(event.user);
-        const mintUser = event.user;
-        if (mintOptions.accountType === 'custom-value' && mintUser?.organization) {
-            const orgAccountId = await getOrgHederaAccountId(mintUser.organization, event?.user?.userId);
-            if (orgAccountId && mintOptions.accountIdValue === orgAccountId) {
-                if (!mintUser.organizationRolePermissions.includes(OrgRolePermission.TOKEN_MINTING)) {
-                    throw new BlockActionError(
-                        'Insufficient organization permissions for token minting',
-                        ref.blockType, ref.uuid
-                    );
-                }
-            }
-        }
-
         await this.run(ref, event, docOwner, docs, null, event?.user?.userId);
 
         return event.data;
@@ -560,17 +546,16 @@ export class MintBlock {
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], userId);
         const targetAccount = await this.getAccount(ref, docs, accounts, relayerAccount, userId, event.user);
 
+        // Org token guards must stay in run(): it is the single convergence point of both
+        // entry events (RunEvent and AdditionalMintEvent) — a guard in runAction() alone
+        // would be bypassed by AdditionalMintEvent.
         const mintUser = event.user;
-        if (mintUser?.organization && relayerAccount !== mintUser.hederaAccountId) {
-            const orgAccountId = await getOrgHederaAccountId(mintUser.organization, userId);
-            if (orgAccountId && relayerAccount === orgAccountId) {
-                if (!mintUser.organizationRolePermissions.includes(OrgRolePermission.TOKEN_TRANSFER)) {
-                    throw new BlockActionError(
-                        'Insufficient organization permissions for token transfer',
-                        ref.blockType, ref.uuid
-                    );
-                }
-            }
+        const mintOptions = await ref.getOptions(mintUser);
+        if (mintOptions.accountType === 'custom-value') {
+            await checkOrgTokenPermission(ref, mintUser, targetAccount, OrgRolePermission.TOKEN_MINTING, userId);
+        }
+        if (relayerAccount !== mintUser?.hederaAccountId) {
+            await checkOrgTokenPermission(ref, mintUser, relayerAccount, OrgRolePermission.TOKEN_TRANSFER, userId);
         }
 
         const [vp, amount] = await this.mintProcessing(

@@ -1,4 +1,11 @@
 import { Users } from '@guardian/common';
+import { OrgRolePermission } from '@guardian/interfaces';
+import { BlockActionError } from '../errors/index.js';
+import { getOrgTokenPermissionError } from './org-token-permission.js';
+import type { AnyBlockType } from '../policy-engine.interface.js';
+import type { PolicyUser } from '../policy-user.js';
+
+export { getOrgTokenPermissionError };
 
 /**
  * Resolves the DID list of all active members of an organization.
@@ -28,4 +35,31 @@ export async function getOrgHederaAccountId(
     }
     const info = await new Users().getOrgHederaInfo(orgId, userId);
     return info?.hederaAccountId ?? null;
+}
+
+/**
+ * Org token-operation permission guard — the single enforcement contract for
+ * TOKEN_MINTING / TOKEN_TRANSFER / TOKEN_RETIREMENT. Call it wherever a token
+ * operation's account has been resolved, before any Hedera side effect.
+ *
+ * No org membership (or no account to check) → no-op: covers non-members, removed
+ * members and dry-run virtual users (whose org context is always empty).
+ * A failed org lookup rejects and aborts the block action (fail closed) — this
+ * function must never catch the getOrgHederaAccountId rejection.
+ */
+export async function checkOrgTokenPermission(
+    ref: AnyBlockType,
+    user: PolicyUser,
+    operationAccount: string,
+    permission: OrgRolePermission,
+    userId: string | null
+): Promise<void> {
+    if (!user?.organization || !operationAccount) {
+        return;
+    }
+    const orgAccountId = await getOrgHederaAccountId(user.organization, userId);
+    const error = getOrgTokenPermissionError(user, orgAccountId, operationAccount, permission);
+    if (error) {
+        throw new BlockActionError(error, ref.blockType, ref.uuid);
+    }
 }

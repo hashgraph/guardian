@@ -12,7 +12,7 @@ import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
-import { getOrgHederaAccountId } from '../helpers/org-utils.js';
+import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 
 /**
  * Retirement block
@@ -411,19 +411,7 @@ export class RetirementBlock {
             throw new BlockActionError('Token recipient is not set', ref.blockType, ref.uuid);
         }
 
-        if (event.user?.organization) {
-            const orgAccountId = await getOrgHederaAccountId(
-                event.user.organization, event?.user?.userId
-            );
-            if (orgAccountId && targetAccount === orgAccountId) {
-                if (!event.user.organizationRolePermissions.includes(OrgRolePermission.TOKEN_RETIREMENT)) {
-                    throw new BlockActionError(
-                        'Insufficient organization permissions for token retirement',
-                        ref.blockType, ref.uuid
-                    );
-                }
-            }
-        }
+        await checkOrgTokenPermission(ref, event.user, targetAccount, OrgRolePermission.TOKEN_RETIREMENT, event?.user?.userId);
 
         const policyOwner = await PolicyUtils.getUserCredentials(ref, ref.policyOwner, event?.user?.userId);
 
