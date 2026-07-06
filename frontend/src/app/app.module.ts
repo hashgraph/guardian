@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import { ToastrModule } from 'ngx-toastr';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
@@ -263,7 +264,7 @@ const GuardianPreset = definePreset(Aura, {
         FormulasModule,
         TagEngineModule,
         CompareModule,
-        ToastrModule.forRoot(),
+        ToastModule,
         QRCodeComponent,
         ButtonModule,
         InputTextModule,
@@ -297,6 +298,7 @@ const GuardianPreset = definePreset(Aura, {
         MenubarModule
     ],
     providers: [
+        MessageService,
         WebSocketService,
         AuthService,
         ProfileService,
