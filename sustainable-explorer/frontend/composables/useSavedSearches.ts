@@ -42,6 +42,10 @@ export function useSavedSearches(section: 'projects' | 'methodologies' | 'issuan
     };
 
     const savedSearches = ref<SavedSearch[]>([]);
+    // Backend-configured cap (QUICK_FILTERS_MAX_PER_USER), fetched alongside the
+    // list itself so there's a single source of truth — no separate frontend
+    // config to drift out of sync. Placeholder value until the first fetch resolves.
+    const limit = ref(10);
     // Starts true for a logged-in user so a consumer's empty-state message
     // doesn't flash on before the initial fetchAll() (called from onMounted) resolves.
     const loading = ref(isAuthenticated.value);
@@ -50,11 +54,13 @@ export function useSavedSearches(section: 'projects' | 'methodologies' | 'issuan
         if (!isAuthenticated.value || !import.meta.client) return;
         loading.value = true;
         try {
-            savedSearches.value = await apiFetch<SavedSearch[]>('/api/v1/me/quick-filters', {
+            const result = await apiFetch<{ items: SavedSearch[]; limit: number }>('/api/v1/me/quick-filters', {
                 baseURL: baseURL(),
                 credentials: 'include',
                 query: { network: network.value, section },
             });
+            savedSearches.value = result.items;
+            limit.value = result.limit;
         } catch {
             savedSearches.value = [];
         } finally {
@@ -96,5 +102,5 @@ export function useSavedSearches(section: 'projects' | 'methodologies' | 'issuan
         }
     }
 
-    return { savedSearches, loading, fetchAll, save, remove };
+    return { savedSearches, limit, loading, fetchAll, save, remove };
 }

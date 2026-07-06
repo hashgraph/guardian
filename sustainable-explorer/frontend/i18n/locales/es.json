@@ -640,7 +640,8 @@
         "ok": "Aceptar",
         "duplicateName": "Ya existe una búsqueda guardada con este nombre",
         "duplicateCriteria": "Este conjunto exacto de filtros ya está guardado como \"{name}\"",
-        "saveError": "No se pudo guardar la búsqueda. Inténtalo de nuevo"
+        "saveError": "No se pudo guardar la búsqueda. Inténtalo de nuevo",
+        "limitReachedTooltip": "Has alcanzado el máximo de {max} búsquedas guardadas"
     },
     "methodologies": {
         "title": "Metodologías",

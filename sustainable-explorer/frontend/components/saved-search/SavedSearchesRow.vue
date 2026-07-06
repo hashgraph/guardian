@@ -15,7 +15,12 @@ const emit = defineEmits<{ apply: [criteria: SavedSearchCriteria] }>();
 
 const { isAuthenticated } = useAuth();
 const { network } = useNetwork();
-const { savedSearches, loading, fetchAll, save, remove } = useSavedSearches(props.section);
+const { savedSearches, limit: savedSearchLimit, loading, fetchAll, save, remove } = useSavedSearches(props.section);
+
+// Max saved searches per user (per network+section, matching how the whole
+// feature is scoped) — fetched from the backend alongside the list itself
+// (single source of truth, no separate frontend config to drift out of sync).
+const atSavedSearchLimit = computed(() => savedSearches.value.length >= savedSearchLimit.value);
 
 // Guests never have saved searches to fetch, so this is immediately true for
 // them (no flash); for a logged-in user it's suppressed while the initial
@@ -94,8 +99,10 @@ function onSelect(search: (typeof savedSearches.value)[number]) {
 // + dialog (the active tag itself is the only "currently active" indicator;
 // no separate text label). The parent opens the dialog via this template ref.
 defineExpose({
-    open() { dialogOpen.value = true; },
+    open() { if (!atSavedSearchLimit.value) dialogOpen.value = true; },
     hasActiveFilters,
+    atLimit: atSavedSearchLimit,
+    limit: savedSearchLimit,
 });
 </script>
 

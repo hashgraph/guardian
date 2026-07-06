@@ -249,15 +249,24 @@ async function downloadCredits() {
         <div class="px-6 pb-3">
             <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters">
                 <template #before-clear>
-                    <button
+                    <InfoTooltip
                         v-if="isAuthenticated"
                         v-show="savedSearchesRef?.hasActiveFilters"
-                        class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
-                        @click="savedSearchesRef?.open()"
+                        :text="savedSearchesRef?.atLimit ? $t('savedSearch.limitReachedTooltip', { max: savedSearchesRef?.limit }) : ''"
                     >
-                        <Save class="h-3 w-3" />
-                        {{ $t('savedSearch.saveButton') }}
-                    </button>
+                        <button
+                            :class="[
+                                'inline-flex items-center gap-1 rounded-md py-1.5 text-xs transition-colors',
+                                savedSearchesRef?.atLimit
+                                    ? 'text-muted-foreground/50 cursor-not-allowed'
+                                    : 'text-muted-foreground hover:text-primary',
+                            ]"
+                            @click="!savedSearchesRef?.atLimit && savedSearchesRef?.open()"
+                        >
+                            <Save class="h-3 w-3" />
+                            {{ $t('savedSearch.saveButton') }}
+                        </button>
+                    </InfoTooltip>
                 </template>
             </FilterBar>
             <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">

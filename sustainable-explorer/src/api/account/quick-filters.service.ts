@@ -1,4 +1,5 @@
 import { ConflictException, Injectable, NotFoundException, UnprocessableEntityException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { QuickFiltersRepository, QuickFilterRow } from './quick-filters.repository';
 import type { QuickFilterCriteria } from './dto/quick-filter-criteria.type';
 
@@ -6,10 +7,22 @@ const POSTGRES_UNIQUE_VIOLATION = '23505';
 
 @Injectable()
 export class QuickFiltersService {
-    constructor(private readonly repo: QuickFiltersRepository) {}
+    constructor(
+        private readonly repo: QuickFiltersRepository,
+        private readonly config: ConfigService,
+    ) {}
 
-    async list(userId: string, network: string, section: string): Promise<QuickFilterRow[]> {
-        return this.repo.findAll(userId, network, section);
+    private maxPerUser(): number {
+        return this.config.get<number>('app.quickFilters.maxPerUser') ?? 10;
+    }
+
+    async list(
+        userId: string,
+        network: string,
+        section: string,
+    ): Promise<{ items: QuickFilterRow[]; limit: number }> {
+        const items = await this.repo.findAll(userId, network, section);
+        return { items, limit: this.maxPerUser() };
     }
 
     async create(
@@ -23,6 +36,14 @@ export class QuickFiltersService {
         const hasFilters = criteria.filters && Object.keys(criteria.filters).length > 0;
         if (!hasSearch && !hasFilters) {
             throw new UnprocessableEntityException('Cannot save a search with no active filters');
+        }
+
+        // Defense-in-depth: the frontend disables the Save Search button once
+        // at the limit, so this should only ever fire via direct API use.
+        const max = this.maxPerUser();
+        const existing = await this.repo.count(userId, network, section);
+        if (existing >= max) {
+            throw new ConflictException(`Saved search limit reached (maximum ${max}).`);
         }
 
         try {

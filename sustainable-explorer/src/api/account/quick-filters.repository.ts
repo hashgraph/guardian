@@ -24,6 +24,17 @@ export class QuickFiltersRepository {
         );
     }
 
+    /** Single indexed COUNT — used to enforce the per-user saved-search cap. */
+    async count(userId: string, network: string, section: string): Promise<number> {
+        const rows = await this.systemDataSource.getDataSource().query<{ c: number }[]>(
+            `SELECT count(*)::int AS c
+               FROM quick_filters
+              WHERE "userId" = $1 AND network = $2 AND section = $3`,
+            [userId, network, section],
+        );
+        return rows[0]?.c ?? 0;
+    }
+
     async create(
         userId: string,
         network: string,

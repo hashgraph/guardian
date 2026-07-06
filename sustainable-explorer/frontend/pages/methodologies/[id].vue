@@ -1387,16 +1387,18 @@ function getResolvedField(fieldKey: string) {
                 {{ $t('methodologies.detail.decoded.fieldsTableTitle') }}
               </h2>
               <!-- Edit mapping controls — admin-only, when projectSchema and availableSchemas are present -->
-              <!-- TEMP: isAdmin check disabled for local testing — restore before committing -->
-              <template v-if="decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0">
+              <template
+                v-if="
+                  isAdmin &&
+                  decodedData.projectSchema &&
+                  decodedData.availableSchemas &&
+                  decodedData.availableSchemas.length > 0
+                "
+              >
                 <template v-if="!editingMapping">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    @click="enterEditMode"
-                  >
+                  <Button variant="outline" size="sm" @click="enterEditMode">
                     <Pencil class="h-3.5 w-3.5" />
-                    {{ $t('methodologies.detail.decoded.actions.editMapping') }}
+                    {{ $t("methodologies.detail.decoded.actions.editMapping") }}
                   </Button>
                 </template>
                 <template v-else>
@@ -1407,14 +1409,14 @@ function getResolvedField(fieldKey: string) {
                       :disabled="saveMappingPending"
                       @click="cancelEditMode"
                     >
-                      {{ $t('methodologies.detail.decoded.actions.cancel') }}
+                      {{ $t("methodologies.detail.decoded.actions.cancel") }}
                     </Button>
                     <Button
                       size="sm"
                       :disabled="saveMappingPending || !hasChanges"
                       @click="saveMapping"
                     >
-                      {{ $t('methodologies.detail.decoded.actions.save') }}
+                      {{ $t("methodologies.detail.decoded.actions.save") }}
                     </Button>
                   </div>
                 </template>

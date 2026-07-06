@@ -645,7 +645,8 @@
         "ok": "OK",
         "duplicateName": "A saved search with this name already exists",
         "duplicateCriteria": "This exact set of filters is already saved as \"{name}\"",
-        "saveError": "Could not save search — please try again"
+        "saveError": "Could not save search — please try again",
+        "limitReachedTooltip": "You've reached the maximum of {max} saved searches"
     },
     "methodologies": {
         "title": "Methodologies",
