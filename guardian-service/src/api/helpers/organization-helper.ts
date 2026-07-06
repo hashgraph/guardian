@@ -443,8 +443,10 @@ export async function publishOrganization({
 /**
  * Enroll a user as a member of a published organization:
  * validate the member (user exists, not already in an organization) BEFORE any ledger write,
- * publish a RegistrationMessage(Init) on the org topic carrying the member DID + orgRoleName,
- * then persist the OrganizationMember record (carrying the messageId) via auth-service.
+ * publish a RegistrationMessage(Init) on the org topic carrying the member DID, orgRoleName,
+ * and the role's permission set as of enrollment (a self-describing event record — the DB
+ * stays authoritative for current permissions), then persist the OrganizationMember record
+ * (carrying the messageId) via auth-service.
  *
  * Ledger-first ordering is deliberate: every persisted member row carries the messageId of its
  * on-ledger enrollment message. The trade-off is that a persist failure after the publish
@@ -599,7 +601,11 @@ export async function enrollOrganizationMember({
     const attributes: { [k: string]: string } = {
         organizationId: org.id,
         orgRoleId: payload.orgRoleId,
-        orgRoleName: role.name || ''
+        orgRoleName: role.name || '',
+        // Permission snapshot as of enrollment (JSON array string). Makes the enrollment
+        // event self-describing on the ledger; NOT a live mirror — authorization always
+        // reads OrgRole.permissions from the DB, and later role edits are record-layer only.
+        orgRolePermissions: JSON.stringify(role.permissions || [])
     };
     const regMessage = new RegistrationMessage(MessageAction.Init);
     regMessage.setDocument(payload.did, org.topicId, attributes);
