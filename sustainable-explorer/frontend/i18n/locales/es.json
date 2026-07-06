@@ -641,6 +641,20 @@
             "noRegistry": "Sin registro vinculado"
         }
     },
+    "savedSearch": {
+        "dialogTitle": "Guardar búsqueda",
+        "dialogSubtitle": "Guarda tus filtros actuales para volver a aplicarlos más tarde",
+        "nameLabel": "Nombre",
+        "namePlaceholder": "p. ej. Gold Standard Kenia",
+        "summaryTitle": "Filtros activos",
+        "saveButton": "Guardar búsqueda",
+        "activeLabel": "Búsqueda guardada activa",
+        "cancel": "Cancelar",
+        "ok": "Aceptar",
+        "duplicateName": "Ya existe una búsqueda guardada con este nombre",
+        "duplicateCriteria": "Este conjunto exacto de filtros ya está guardado como \"{name}\"",
+        "saveError": "No se pudo guardar la búsqueda. Inténtalo de nuevo"
+    },
     "methodologies": {
         "title": "Metodologías",
         "subtitle": "Flujos de trabajo de políticas publicados para la verificación de sostenibilidad",

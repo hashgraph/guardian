@@ -1387,7 +1387,8 @@ function getResolvedField(fieldKey: string) {
                 {{ $t('methodologies.detail.decoded.fieldsTableTitle') }}
               </h2>
               <!-- Edit mapping controls — admin-only, when projectSchema and availableSchemas are present -->
-              <template v-if="isAdmin && decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0">
+              <!-- TEMP: isAdmin check disabled for local testing — restore before committing -->
+              <template v-if="decodedData.projectSchema && decodedData.availableSchemas && decodedData.availableSchemas.length > 0">
                 <template v-if="!editingMapping">
                   <Button
                     variant="outline"

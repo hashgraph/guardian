@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { FileJson, Sparkles, Download, Loader2 } from 'lucide-vue-next';
+import { FileJson, Sparkles, Download, Loader2, Bookmark } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { naturalCompare } from '~/lib/utils';
 import { downloadCsv, csvDateStamp, buildCreditCsvRows } from '~/lib/csv-export';
+import type { SavedSearchCriteria } from '~/composables/useSavedSearches';
+import SavedSearchesRow from '~/components/saved-search/SavedSearchesRow.vue';
 
 const { t, locale } = useI18n();
 const { network } = useNetwork();
@@ -104,6 +106,39 @@ const filters = computed<FilterOption[]>(() => [
     { key: 'supply', label: t('credits.filters.supply'), type: 'numrange', options: [] },
     { key: 'mintDate', label: t('credits.filters.mintDate'), type: 'daterange', options: [] },
 ]);
+
+// Human-friendly rendering of a filter value for the Save Search dialog's
+// "Active Filters" summary. Range filters (supply, mintDate) are stored
+// pipe-joined ("min|max") per useFilteredPagination's convention — shown as "A – B".
+function formatFilterValue(value: string): string {
+    if (!value.includes('|')) return value;
+    const [from, to] = value.split('|');
+    if (from && to) return `${from} – ${to}`;
+    return from || to || value;
+}
+
+const filterSummary = computed(() => {
+    const items: { label: string; value: string }[] = [];
+    if (searchQuery.value.trim()) {
+        items.push({ label: t('common.search'), value: searchQuery.value.trim() });
+    }
+    items.push(
+        ...filters.value
+            .filter(f => activeFilters.value[f.key] && activeFilters.value[f.key] !== 'all')
+            .map(f => ({ label: f.label, value: formatFilterValue(activeFilters.value[f.key]) })),
+    );
+    return items;
+});
+
+// applyPreset()'s sort.key is typed against this page's specific row union;
+// a saved search's criteria.sort.key is a plain string (page-agnostic). Safe
+// at runtime — it was produced by this same page's own sortKey when saved.
+function applySavedSearch(criteria: SavedSearchCriteria) {
+    applyPreset(criteria as any);
+}
+
+const { isAuthenticated } = useAuth();
+const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null);
 
 const summaryStats = computed(() => {
     const f = filtered.value;
@@ -218,7 +253,17 @@ async function downloadCredits() {
         </div>
 
         <div class="px-6 pb-3">
-            <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters" />
+            <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters">
+                <button
+                    v-if="isAuthenticated"
+                    v-show="savedSearchesRef?.hasActiveFilters"
+                    class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                    @click="savedSearchesRef?.open()"
+                >
+                    <Bookmark class="h-3.5 w-3.5" />
+                    {{ $t('savedSearch.saveButton') }}
+                </button>
+            </FilterBar>
             <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
                 <input
                     type="checkbox"
@@ -243,6 +288,18 @@ async function downloadCredits() {
                 >
                     {{ preset.label }}
                 </button>
+
+                <SavedSearchesRow
+                    ref="savedSearchesRef"
+                    section="issuances"
+                    :search-query="searchQuery"
+                    :active-filters="activeFilters"
+                    :sort-key="sortKey as string | null"
+                    :sort-dir="sortDir"
+                    :summary="filterSummary"
+                    @apply="applySavedSearch"
+                />
+
                 <button
                     :disabled="downloading"
                     class="ml-auto inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

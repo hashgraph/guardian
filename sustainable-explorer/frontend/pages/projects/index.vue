@@ -9,6 +9,7 @@ import {
   Columns2,
   Download,
   Loader2,
+  Bookmark,
 } from "lucide-vue-next";
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
 import { formatCredits } from "~/lib/format";
@@ -24,6 +25,8 @@ import {
   buildProjectCsvRows,
 } from "~/lib/csv-export";
 import { mapApiProject } from "~/composables/useProjects";
+import type { SavedSearchCriteria } from "~/composables/useSavedSearches";
+import SavedSearchesRow from "~/components/saved-search/SavedSearchesRow.vue";
 
 const { t } = useI18n();
 const { network } = useNetwork();
@@ -207,6 +210,19 @@ function isPresetActive(preset: { filters: Record<string, string> }): boolean {
   );
 }
 
+// applyPreset()'s sort.key is typed against this page's specific row union
+// (keyof the mapped project row), while a saved search's criteria.sort.key is
+// a plain string (saved searches are page-agnostic). The value is guaranteed
+// valid at runtime — it was produced by this same page's own sortKey when the
+// search was saved — so the cast here is safe, matching the `sortKey as
+// string | null` cast already used elsewhere in this file's template.
+function applySavedSearch(criteria: SavedSearchCriteria) {
+  applyPreset(criteria as any);
+}
+
+const { isAuthenticated } = useAuth();
+const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null);
+
 // Summary statistics for filtered results
 const summaryStats = computed(() => {
   const f = filtered.value;
@@ -282,6 +298,34 @@ const filters = computed<FilterOption[]>(() => [
     })),
   },
 ]);
+
+// Human-friendly rendering of a filter value for the Save Search dialog's
+// "Active Filters" summary. Range filters (vintage) are stored pipe-joined
+// ("2022|2022") per useFilteredPagination's convention — shown as "A – B".
+function formatFilterValue(value: string): string {
+  if (!value.includes("|")) return value;
+  const [from, to] = value.split("|");
+  if (from && to) return `${from} – ${to}`;
+  return from || to || value;
+}
+
+const filterSummary = computed(() => {
+  const items: { label: string; value: string }[] = [];
+  if (searchQuery.value.trim()) {
+    items.push({ label: t("common.search"), value: searchQuery.value.trim() });
+  }
+  items.push(
+    ...filters.value
+      .filter(
+        (f) => activeFilters.value[f.key] && activeFilters.value[f.key] !== "all",
+      )
+      .map((f) => ({
+        label: f.label,
+        value: formatFilterValue(activeFilters.value[f.key]),
+      })),
+  );
+  return items;
+});
 
 const statusColor: Record<string, string> = {
   Registered: "bg-slate-100 text-slate-600",
@@ -402,7 +446,17 @@ async function downloadProjects() {
         :search-placeholder="$t('projects.searchPlaceholder')"
         @filter="setFilter"
         @clear="clearFilters"
-      />
+      >
+        <button
+          v-if="isAuthenticated"
+          v-show="savedSearchesRef?.hasActiveFilters"
+          class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          @click="savedSearchesRef?.open()"
+        >
+          <Bookmark class="h-3.5 w-3.5" />
+          {{ $t("savedSearch.saveButton") }}
+        </button>
+      </FilterBar>
 
       <!-- Preset Templates -->
       <div class="flex items-center gap-2 mt-2.5 flex-wrap">
@@ -422,6 +476,18 @@ async function downloadProjects() {
         >
           {{ preset.label }}
         </button>
+
+        <SavedSearchesRow
+          ref="savedSearchesRef"
+          section="projects"
+          :search-query="searchQuery"
+          :active-filters="activeFilters"
+          :sort-key="sortKey as string | null"
+          :sort-dir="sortDir"
+          :summary="filterSummary"
+          @apply="applySavedSearch"
+        />
+
         <button
           :disabled="downloading"
           class="ml-auto inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
