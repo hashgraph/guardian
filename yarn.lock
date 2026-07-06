@@ -1722,12 +1722,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@google-cloud/secret-manager@npm:6.1.1":
-  version: 6.1.1
-  resolution: "@google-cloud/secret-manager@npm:6.1.1"
+"@google-cloud/secret-manager@npm:6.2.0":
+  version: 6.2.0
+  resolution: "@google-cloud/secret-manager@npm:6.2.0"
   dependencies:
     google-gax: "npm:^5.0.0"
-  checksum: 10c0/89554c2205106ad765db2fcfb4202c54b824fce74ccb237c9c38c2e431b20d7f04de09db00f92d68ae217b011667e9bcfa0824199103a4498251a1a4b16f9b9b
+  checksum: 10c0/2f02258fe5bd5f98f5be551c969f2a56f674edf41faf16200ad27989c20b7ee84c5b2ec039abc6d4487c630c14e802fc4856f0880e1e91238965cee024314b92
   languageName: node
   linkType: hard
 
@@ -1792,7 +1792,7 @@ __metadata:
     "@digitalbazaar/security-context": "npm:1.0.1"
     "@digitalbazaar/vc": "npm:7.3.0"
     "@formulajs/formulajs": "npm:4.6.0"
-    "@google-cloud/secret-manager": "npm:6.1.1"
+    "@google-cloud/secret-manager": "npm:6.2.0"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/sdk": "npm:2.85.0"
     "@mattrglobal/jsonld-signatures-bbs": "npm:1.2.0"
