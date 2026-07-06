@@ -5,6 +5,10 @@ import {
     VC_DOCUMENT_SYSTEM_FIELDS,
     VC_DOCUMENT_OPTION_PREFIX,
     VC_DOCUMENT_DOCUMENT_PREFIX,
+    POLICY_DATA_MAX_PAGE_SIZE,
+    POLICY_DATA_DEFAULT_PAGE_SIZE,
+    POLICY_DATA_MAX_CONTAINS_LENGTH,
+    ModelHelper,
 } from '@guardian/interfaces';
 import { ApiResponse } from '../api/helpers/api-response.js';
 import {
@@ -94,8 +98,30 @@ function buildMongoFilter(
             if (typeof entry.value !== 'string') {
                 throw new Error(`Operator "contains" requires a string value for field "${field}".`);
             }
+            if (entry.value.length > POLICY_DATA_MAX_CONTAINS_LENGTH) {
+                throw new Error(
+                    `Operator "contains" value for field "${field}" exceeds max length of ${POLICY_DATA_MAX_CONTAINS_LENGTH} characters.`
+                );
+            }
             q[field] = { $regex: escapeRegex(entry.value), $options: 'i' };
             continue;
+        }
+
+        const isScalar = (v: unknown): boolean =>
+            ['string', 'number', 'boolean'].includes(typeof v);
+
+        if (entry.op === 'eq' || entry.op === 'ne') {
+            if (entry.value !== null && !isScalar(entry.value)) {
+                throw new Error(
+                    `Operator "${entry.op}" for field "${field}" requires a string, number, boolean, or null value.`
+                );
+            }
+        } else if (['gt', 'gte', 'lt', 'lte'].includes(entry.op)) {
+            if (!isScalar(entry.value)) {
+                throw new Error(
+                    `Operator "${entry.op}" for field "${field}" requires a string, number, or boolean value.`
+                );
+            }
         }
 
         let safeValue = entry.value;
@@ -104,6 +130,12 @@ function buildMongoFilter(
                 safeValue = typeof safeValue === 'string'
                     ? safeValue.split(',').map((s: string) => s.trim())
                     : [safeValue];
+            }
+            const invalidIndex = (safeValue as unknown[]).findIndex((v) => !isScalar(v));
+            if (invalidIndex !== -1) {
+                throw new Error(
+                    `Operator "${entry.op}" for field "${field}" requires all array elements to be a string, number, or boolean.`
+                );
             }
         }
 
@@ -125,7 +157,7 @@ function buildMongoFilter(
  *   page       : number   (1-based)
  *   pageSize   : number   (1–200)
  *   sortField? : string   — field name; prefix '-' for descending
- *   ownerDid   : string   — caller's DID for access-control checks
+ *   ownerDid   : string   — caller's DID, used only for audit-log context (see catch block); not access control
  * }
  */
 export async function policyDataAPI(
@@ -159,9 +191,10 @@ export async function policyDataAPI(
                 );
             }
 
+            // Fetch all matching schemas (bounded by version count for one name/topic);
+            // if multiple versions of the same schema name exist under the topic, the latest version is used.
             const schemas = await DatabaseServer.getSchemas(
-                { name: schemaName, topicId: policy.topicId },
-                { limit: 1 }
+                { name: schemaName, topicId: policy.topicId }
             );
             if (!schemas || schemas.length === 0) {
                 return new MessageError(
@@ -169,7 +202,9 @@ export async function policyDataAPI(
                     404
                 );
             }
-            const schema = schemas[0];
+            const schema = schemas.reduce((latest, candidate) =>
+                ModelHelper.versionCompare(candidate.version || '', latest.version || '') > 0 ? candidate : latest
+            );
             const schemaIri = schema.iri;
 
             let mongoFilter: Record<string, unknown>;
@@ -179,17 +214,24 @@ export async function policyDataAPI(
                 return new MessageError(validationError.message, 400);
             }
 
+            const sortDescending = !!sortField?.startsWith('-');
+            const normalisedSortField = sortField
+                ? normalisePath(sortDescending ? sortField.slice(1) : sortField)
+                : undefined;
+            if (normalisedSortField && !VC_DOCUMENT_SYSTEM_FIELDS.has(normalisedSortField)) {
+                return new MessageError(
+                    `Unknown sort field: "${sortField}". Allowed fields: ${[...VC_DOCUMENT_SYSTEM_FIELDS].join(', ')}.`,
+                    400
+                );
+            }
+
             const _page = Math.max(1, page || 1);
-            const _pageSize = Math.min(200, Math.max(1, pageSize || 20));
+            const _pageSize = Math.min(POLICY_DATA_MAX_PAGE_SIZE, Math.max(1, pageSize || POLICY_DATA_DEFAULT_PAGE_SIZE));
             const offset = (_page - 1) * _pageSize;
 
             const sortOptions: Record<string, 'ASC' | 'DESC'> = {};
-            if (sortField) {
-                if (sortField.startsWith('-')) {
-                    sortOptions[normalisePath(sortField.slice(1))] = 'DESC';
-                } else {
-                    sortOptions[normalisePath(sortField)] = 'ASC';
-                }
+            if (normalisedSortField) {
+                sortOptions[normalisedSortField] = sortDescending ? 'DESC' : 'ASC';
             } else {
                 sortOptions['createDate'] = 'DESC';
             }

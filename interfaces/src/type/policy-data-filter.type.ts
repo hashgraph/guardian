@@ -41,3 +41,12 @@ export const VC_DOCUMENT_OPTION_PREFIX = 'option.';
  * (.0.) are both accepted; callers normalise before querying.
  */
 export const VC_DOCUMENT_DOCUMENT_PREFIX = 'document.';
+
+/** Maximum allowed page size for policy-data queries. */
+export const POLICY_DATA_MAX_PAGE_SIZE = 200;
+
+/** Default page size for policy-data queries. */
+export const POLICY_DATA_DEFAULT_PAGE_SIZE = 20;
+
+/** Max length for a "contains" filter value, to bound $regex scan cost. */
+export const POLICY_DATA_MAX_CONTAINS_LENGTH = 256;

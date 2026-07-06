@@ -29,19 +29,17 @@ import {
     UnauthorizedErrorDTO,
 } from '#middlewares';
 import {
-    VC_DOCUMENT_SYSTEM_FIELDS,
-    VC_DOCUMENT_OPTION_PREFIX,
-    VC_DOCUMENT_DOCUMENT_PREFIX,
+    POLICY_DATA_MAX_PAGE_SIZE,
+    POLICY_DATA_DEFAULT_PAGE_SIZE,
 } from '@guardian/interfaces';
 import { AuthUser, Auth } from '#auth';
 import { Guardians, InternalException } from '#helpers';
 
-const MAX_PAGE_SIZE = 200;
-const DEFAULT_PAGE_SIZE = 20;
-
 /**
  * Validates and parses the `filters` query-string value.
  * Returns the parsed object, or throws with a 400.
+ * Field/operator/value whitelisting is left to the service layer (buildMongoFilter),
+ * which is the sole source of truth for what's actually valid.
  */
 function parseFilters(
     raw: string | undefined,
@@ -59,21 +57,7 @@ function parseFilters(
         throw new Error('`filters` must be a JSON object, not an array or primitive.');
     }
 
-    const ALLOWED_OPS = new Set(['eq', 'ne', 'in', 'nin', 'gt', 'gte', 'lt', 'lte', 'contains']);
-
     for (const [field, entry] of Object.entries(parsed as Record<string, unknown>)) {
-        if (
-            !VC_DOCUMENT_SYSTEM_FIELDS.has(field) &&
-            !field.startsWith(VC_DOCUMENT_OPTION_PREFIX) &&
-            !field.startsWith(VC_DOCUMENT_DOCUMENT_PREFIX)
-        ) {
-            throw new Error(
-                `Unknown filter field: "${field}". ` +
-                `Allowed system fields: ${[...VC_DOCUMENT_SYSTEM_FIELDS].join(', ')}; ` +
-                `or any field beginning with "${VC_DOCUMENT_OPTION_PREFIX}" or "${VC_DOCUMENT_DOCUMENT_PREFIX}".`
-            );
-        }
-
         if (
             typeof entry !== 'object' ||
             entry === null ||
@@ -82,14 +66,6 @@ function parseFilters(
         ) {
             throw new Error(
                 `Filter for field "${field}" must be an object with shape { "op": "<operator>", "value": <any> }.`
-            );
-        }
-
-        const op = (entry as Record<string, unknown>).op;
-        if (typeof op !== 'string' || !ALLOWED_OPS.has(op)) {
-            throw new Error(
-                `Invalid operator "${op}" for field "${field}". ` +
-                `Allowed operators: ${[...ALLOWED_OPS].join(', ')}.`
             );
         }
     }
@@ -111,15 +87,14 @@ export class PolicyDataApi {
      */
     @Get('/query')
     @Auth(
-        Permissions.POLICIES_POLICY_READ,
-        Permissions.POLICIES_POLICY_EXECUTE,
         Permissions.POLICIES_POLICY_AUDIT,
         Permissions.POLICIES_POLICY_MANAGE,
     )
     @ApiOperation({
         summary: 'Query policy-committed VC documents.',
         description:
-            'Returns a paginated list of Verifiable Credential documents committed by a published Guardian policy.',
+            'Returns a paginated list of Verifiable Credential documents committed by a published Guardian policy. ' +
+            'Intentionally restricted to audit/manage roles for cross-policy access; there is no per-participant filtering.',
     })
     @ApiQuery({
         name: 'policyId',
@@ -159,7 +134,7 @@ export class PolicyDataApi {
     })
     @ApiQuery({
         name: 'pageSize',
-        description: `Items per page (default: ${DEFAULT_PAGE_SIZE}, max: ${MAX_PAGE_SIZE}).`,
+        description: `Items per page (default: ${POLICY_DATA_DEFAULT_PAGE_SIZE}, max: ${POLICY_DATA_MAX_PAGE_SIZE}).`,
         required: false,
         type: Number,
         example: 20,
@@ -264,7 +239,7 @@ export class PolicyDataApi {
             }
 
             const page = Math.max(1, parseInt(rawPage, 10) || 1);
-            const pageSize = Math.min(MAX_PAGE_SIZE, Math.max(1, parseInt(rawPageSize, 10) || DEFAULT_PAGE_SIZE));
+            const pageSize = Math.min(POLICY_DATA_MAX_PAGE_SIZE, Math.max(1, parseInt(rawPageSize, 10) || POLICY_DATA_DEFAULT_PAGE_SIZE));
 
             const guardians = new Guardians();
             let result: { items: unknown[]; total: number };
@@ -279,19 +254,10 @@ export class PolicyDataApi {
                     user.did,
                 );
             } catch (svcError: any) {
-                const msg: string = svcError?.message ?? String(svcError);
-                if (msg.includes('not found')) {
-                    return res.status(HttpStatus.NOT_FOUND).send({ statusCode: 404, message: msg });
-                }
-                if (msg.includes('not published') || msg.includes('not queryable')) {
-                    return res.status(HttpStatus.FORBIDDEN).send({ statusCode: 403, message: msg });
-                }
-                if (
-                    msg.includes('Unknown filter field') ||
-                    msg.includes('Unknown operator') ||
-                    msg.includes('must have shape')
-                ) {
-                    return res.status(HttpStatus.BAD_REQUEST).send({ statusCode: 400, message: msg });
+                // MessageError.code survives the NATS round-trip (see Guardians.sendMessage); trust it when present.
+                // Errors with no .code never reached guardian-service's handler (transport failure) — rethrow to log via InternalException below.
+                if (svcError?.code) {
+                    return res.status(svcError.code).send({ statusCode: svcError.code, message: svcError.message ?? String(svcError) });
                 }
                 throw svcError;
             }
