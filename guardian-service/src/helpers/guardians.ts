@@ -1,6 +1,5 @@
-import { JwtServicesValidator, NatsService, Singleton } from '@guardian/common';
+import { NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, PolicyEvents } from '@guardian/interfaces';
-import { headers } from 'nats';
 
 class MessageError extends Error {
     public code: number;
@@ -40,8 +39,14 @@ export class GuardiansService extends NatsService {
      * @param policyId
      */
     public async checkIfPolicyAlive(policyId: string): Promise<boolean> {
-        const exist = await this.sendPolicyMessage<boolean>(PolicyEvents.CHECK_IF_ALIVE, policyId, {}, 1000)
-        return !!exist
+        // Fast fail: no subscriber on the subject -> immediate "no responders".
+        const subject = [policyId, PolicyEvents.CHECK_IF_ALIVE].join('-');
+        try {
+            const alive = await this.requestOrThrow<boolean>(subject, {}, 1000, { policyId });
+            return !!alive;
+        } catch {
+            return false;
+        }
     }
 
     /**
@@ -52,38 +57,20 @@ export class GuardiansService extends NatsService {
      * @param awaitInterval
      */
     public async sendPolicyMessage<T>(subject: string, policyId: string, data: unknown, awaitInterval: number = 100000): Promise<T> {
-        const messageId = GenerateUUIDv4();
-        const head = headers();
-        head.append('messageId', messageId);
-        head.append('policyId', policyId);
-        const token = await JwtServicesValidator.sign([policyId, subject].join('-'));
-        head.append('serviceToken', token);
-
-        return Promise.race([
-            new Promise<T>(async (resolve, reject) => {
-                this.responseCallbacksMap.set(messageId, (d: T, error?) => {
-                    if (error) {
-                        reject(new Error(error));
-                        return
-                    }
-                    resolve(d);
-                })
-
-                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data), {
-                    reply: this.replySubject,
-                    headers: head
-                })
-            }),
-            new Promise<T>((resolve, reject) => {
-                setTimeout(() => {
-                    this.responseCallbacksMap.delete(messageId);
-                    resolve(null);
-                }, awaitInterval)
-            }),
-        ])
+        const full = [policyId, subject].join('-');
+        try {
+            return await this.requestOrThrow<T>(full, data, awaitInterval, { policyId });
+        } catch (error: any) {
+            // No host / slow -> null (soft contract); responder error propagates.
+            if (error?.code === 'NO_RESPONDERS' || error?.code === 'REQUEST_TIMEOUT') {
+                return null;
+            }
+            throw error;
+        }
     }
+
     /**
-     * sendPolicyMessage
+     * sendBlockMessage
      * @param subject
      * @param policyId
      * @param data
@@ -95,34 +82,32 @@ export class GuardiansService extends NatsService {
         data: unknown,
         awaitInterval: number = 5 * 60 * 1000
     ): Promise<T> {
-        const messageId = GenerateUUIDv4();
-        const head = headers();
-        head.append('messageId', messageId);
-        head.append('policyId', policyId);
-        const token = await JwtServicesValidator.sign([policyId, subject].join('-'));
-        head.append('serviceToken', token);
+        const full = [policyId, subject].join('-');
+        const deadline = Date.now() + awaitInterval;
+        const retryDelay = 500;
 
-        return Promise.race([
-            new Promise<T>(async (resolve, reject) => {
-                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
-                    if (error) {
-                        reject(new MessageError(error, code));
-                        return
+        for (; ;) {
+            const remaining = deadline - Date.now();
+            if (remaining <= 0) {
+                throw new MessageError('Block Timeout', 504);
+            }
+            try {
+                return await this.requestOrThrow<T>(full, data, remaining, { policyId });
+            } catch (error: any) {
+                // No host -> not delivered, safe to retry until the deadline.
+                if (error?.code === 'NO_RESPONDERS') {
+                    if (Date.now() + retryDelay >= deadline) {
+                        throw new MessageError('Block Timeout', 504);
                     }
-                    resolve(body);
-                })
-
-                this.connection.publish([policyId, subject].join('-'), await this.codec.encode(data), {
-                    reply: this.replySubject,
-                    headers: head
-                })
-            }),
-            new Promise<T>((resolve, reject) => {
-                setTimeout(() => {
-                    this.responseCallbacksMap.delete(messageId);
-                    reject(new MessageError('Block Timeout', 504));
-                }, awaitInterval)
-            }),
-        ])
+                    await new Promise((resolve) => setTimeout(resolve, retryDelay));
+                    continue;
+                }
+                // Slow responder may have been delivered; do not retry.
+                if (error?.code === 'REQUEST_TIMEOUT') {
+                    throw new MessageError('Block Timeout', 504);
+                }
+                throw error;
+            }
+        }
     }
 }
