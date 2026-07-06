@@ -277,6 +277,7 @@
         "dateTo": "Fecha hasta",
         "yearFrom": "Año desde",
         "yearTo": "Año hasta",
+        "allYears": "Todos los años",
         "numMin": "Mínimo",
         "numMax": "Máximo",
         "clearRange": "Limpiar rango",
@@ -449,6 +450,8 @@
         "sectoralScope": "Alcance sectorial: {scope}",
         "sdgsTooltip": "Objetivos de Desarrollo Sostenible de la ONU a los que contribuye este proyecto. Pasa el cursor sobre cada icono para ver el nombre completo del objetivo.",
         "sectorTooltip": "Incluye el Alcance Sectorial como detalle adicional",
+        "stageTooltip": "Punto del ciclo de vida del crédito en el que se encuentra el proyecto: Registrado → En validación → MRV enviado → Verificado → Emitido.",
+        "expectedIssuanceYearTooltip": "Año en que se prevé que se emitan los créditos por primera vez — aplica a los proyectos en preemisión. Muestra «Por definir» cuando aún no hay una previsión disponible, y «—» para los proyectos ya emitidos.",
         "columns": {
             "project": "Proyecto",
             "country": "País",
@@ -459,6 +462,9 @@
             "transferred": "Transferido",
             "retired": "Retirado",
             "status": "Estado",
+            "lifecycleStage": "Etapa",
+            "projectedVolume": "Vol. proyectado",
+            "expectedIssuanceYear": "Año est.",
             "sdgs": "ODS",
             "rawData": "Datos brutos"
         },
@@ -470,14 +476,45 @@
             "sector": "Sector",
             "sectoralScope": "Alcance sectorial",
             "developer": "Desarrollador",
-            "sdgs": "ODS"
+            "sdgs": "ODS",
+            "lifecycleStage": "Etapa",
+            "expectedIssuanceYear": "Año de emisión esperado",
+            "pipeline": "Estado de emisión"
+        },
+        "pipelineFilter": {
+            "pipeline": "Preemisión",
+            "issued": "Emitido"
         },
         "presets": {
             "goldStandard": "Gold Standard",
             "sdg13": "ODS 13: Acción por el clima",
             "vintage2022": "Añada 2022",
             "issuingEnergy": "Emitiendo Energía",
-            "glycolRecycling": "Reciclaje de Glicol"
+            "glycolRecycling": "Reciclaje de Glicol",
+            "pipeline": "Preemisión"
+        },
+        "lifecycleStages": {
+            "Registered": "Registrado",
+            "Validation": "En validación",
+            "Monitoring": "MRV enviado",
+            "Verified": "Verificado",
+            "Issued": "Emitido"
+        },
+        "milestones": {
+            "title": "Seguimiento de hitos",
+            "subtitle": "Registro → Envío de MRV → Verificación → Emisión",
+            "registration": "Registro",
+            "mrvSubmission": "Envío de MRV",
+            "verification": "Verificación",
+            "issuance": "Emisión",
+            "expected": "estimado",
+            "tbd": "Por definir"
+        },
+        "tbd": "Por definir",
+        "notEstimated": "No estimado",
+        "projectedEstimate": {
+            "title": "Emisión proyectada",
+            "subtitle": "Volumen previsto y año de emisión esperado"
         },
         "notFound": "Proyecto no encontrado",
         "details": {
@@ -512,6 +549,9 @@
                 "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
                 "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
                 "reextractError": "Error al re-extraer"
+            },
+            "issuances": {
+                "yearFilter": "Año"
             }
         },
         "compare": {
@@ -791,7 +831,14 @@
                     "registry": "Registro",
                     "issuances": "Emisiones",
                     "mintedAmount": "Monto acuñado",
-                    "status": "Estado"
+                    "projectedVolume": "Volumen proyectado",
+                    "expectedIssuanceYear": "Año de emisión esperado",
+                    "status": "Estado",
+                    "stage": "Etapa"
+                },
+                "stageFilter": {
+                    "label": "Etapa",
+                    "all": "Todos"
                 },
                 "noProjects": "No se encontraron proyectos bajo esta política."
             },

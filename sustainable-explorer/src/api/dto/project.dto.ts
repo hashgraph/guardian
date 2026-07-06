@@ -127,6 +127,23 @@ export class LinkedVcDto {
     csId: string | null;
 }
 
+export class MilestoneDto {
+    @ApiProperty({ description: 'Milestone key: registration | mrvSubmission | verification | issuance' })
+    key: string;
+
+    @ApiProperty({ description: 'Human-readable milestone label' })
+    label: string;
+
+    @ApiProperty({ description: 'Milestone state: complete | current | expected | pending' })
+    state: string;
+
+    @ApiProperty({ nullable: true, description: 'Date associated with this milestone (YYYY-MM-DD, or bare YYYY for an expected issuance year), actual or expected' })
+    date: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Whether the date is an actual on-chain date or an expected/forecast one: actual | expected' })
+    dateType: string | null;
+}
+
 export class LinkedSchemaDto {
     @ApiProperty({ description: 'Schema UUID from the VC type field, or literal "MintToken" for mint VCs' })
     schemaUuid: string;
@@ -317,7 +334,19 @@ export class ProjectResponseDto {
     })
     linkedSchemas: LinkedSchemaDto[];
 
-    static fromRow(row: ProjectRow, network: string): ProjectResponseDto {
+    @ApiProperty({ description: 'Derived lifecycle stage: Registered | Validation | Monitoring | Verified | Issued' })
+    lifecycleStage: string;
+
+    @ApiProperty({ nullable: true, description: 'Derived expected issuance year (YYYY), or null when undetermined ("TBD")' })
+    expectedIssuanceYear: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Projected/actual credit volume: totalIssued when Issued, otherwise null ("Not estimated")' })
+    projectedVolume: number | null;
+
+    @ApiProperty({ type: [MilestoneDto], description: 'Registration → MRV Submission → Verification → Issuance milestone tracker' })
+    milestones: MilestoneDto[];
+
+    static fromRow(row: ProjectRow, network: string, full: boolean = false): ProjectResponseDto {
         const data = (row.businessData ?? {}) as Record<string, unknown>;
 
         // Build a quick-lookup map from policy schemas for this project.
@@ -373,20 +402,24 @@ export class ProjectResponseDto {
         // so the frontend can render "Project schema: 0 VCs" for phantom cases like Capturiant.
         // Compare on the trimmed UUID (linkedVcs entries store the bare UUID
         // form, so a full-IRI comparison would always miss and treat every
-        // schema as empty).
-        const linkedSchemaUuids = new Set(groupedBySchema.keys());
+        // schema as empty). Only built for the detail response (full=true) —
+        // the list never renders these, and every entry has vcCount === 0 so
+        // it can't affect the vcCount-guarded stage checks below.
         const emptySchemas: LinkedSchemaDto[] = [];
-        for (const s of (row.policySchemas ?? [])) {
-            const trimmed = trimSchemaId(s.schemaId);
-            if (!linkedSchemaUuids.has(trimmed)) {
-                emptySchemas.push({
-                    schemaUuid: trimmed,
-                    schemaName: s.name,
-                    isProjectSchema: s.isProjectSchema,
-                    docType: s.docType,
-                    vcCount: 0,
-                    linkedVcs: [],
-                });
+        if (full) {
+            const linkedSchemaUuids = new Set(groupedBySchema.keys());
+            for (const s of (row.policySchemas ?? [])) {
+                const trimmed = trimSchemaId(s.schemaId);
+                if (!linkedSchemaUuids.has(trimmed)) {
+                    emptySchemas.push({
+                        schemaUuid: trimmed,
+                        schemaName: s.name,
+                        isProjectSchema: s.isProjectSchema,
+                        docType: s.docType,
+                        vcCount: 0,
+                        linkedVcs: [],
+                    });
+                }
             }
         }
 
@@ -419,6 +452,97 @@ export class ProjectResponseDto {
         const friendlyName = looksLikeId
             ? (projectSchemaName ?? (typeof data['methodology'] === 'string' ? (data['methodology'] as string) : null) ?? rawName)
             : rawName;
+
+        const totalIssued = row.totalIssued ?? 0;
+        const isIssued = totalIssued > 0 || (row.issuanceCount ?? 0) > 0;
+
+        // Earliest VC of a given docType, by consensusTimestamp (F8 conversion).
+        const earliestVcOfType = (docTypes: string[]): LinkedVcDto | null => {
+            const vcs = linkedSchemas
+                .filter(s => docTypes.includes(s.docType))
+                .flatMap(s => s.linkedVcs)
+                .filter(vc => vc.consensusTimestamp);
+            if (vcs.length === 0) return null;
+            return vcs.reduce((earliest, vc) => vc.consensusTimestamp.localeCompare(earliest.consensusTimestamp) < 0 ? vc : earliest);
+        };
+        const tsToDate = (ts: string): string | null => {
+            const s = parseFloat(ts);
+            if (!Number.isFinite(s)) return null;
+            const d = new Date(s * 1000);
+            return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0];
+        };
+
+        // A stage is reached only when the project actually has a VC of that
+        // docType. Schemas the policy defines but the project never submitted
+        // are carried as zero-VC entries (for the detail phantom-schema view) —
+        // they must NOT advance the stage, or every project under a policy would
+        // inherit that policy's most-advanced document type.
+        const hasVerification = linkedSchemas.some(s => s.docType === 'verificationReport' && s.vcCount > 0);
+        const hasMonitoring = linkedSchemas.some(s => s.docType === 'monitoringReport' && s.vcCount > 0);
+        const hasValidation = linkedSchemas.some(s => s.docType === 'validationReport' && s.vcCount > 0);
+
+        const lifecycleStage = isIssued ? 'Issued'
+            : hasVerification ? 'Verified'
+            : hasMonitoring ? 'Monitoring'
+            : hasValidation ? 'Validation'
+            : 'Registered';
+
+        const firstIssuanceEvent = (row.issuanceEvents ?? []).find(e => e.mintDate) ?? null;
+        const creditingPeriodStartYear = typeof data['creditingPeriodStart'] === 'string' ? data['creditingPeriodStart'].match(/\d{4}/)?.[0] ?? null : null;
+        const vintageYear = typeof data['vintage'] === 'string' ? data['vintage'].match(/\d{4}/)?.[0] ?? null : null;
+
+        // Only real, dynamically-extracted fields feed this — no guessed cadence.
+        // Issued projects use their actual first-issuance year (detail only);
+        // pipeline projects use the crediting-period start or vintage year
+        // (vintage maps to the IWA firstYearIssuance forecast field), else "TBD".
+        const expectedIssuanceYear = isIssued
+            ? (firstIssuanceEvent?.mintDate?.slice(0, 4) ?? null)
+            : creditingPeriodStartYear ?? vintageYear ?? null;
+
+        // §3.4 — credits is reported-to-date, never a forward projection (F5); only totalIssued qualifies.
+        const projectedVolume = isIssued ? totalIssued : null;
+
+        // Milestones are only rendered on the detail page — skip building them
+        // (and the earliest-VC lookups they need) on list rows.
+        let milestones: MilestoneDto[] = [];
+        if (full) {
+            const registrationVc = earliestVcOfType(['registration', 'pdd']);
+            const mrvVc = earliestVcOfType(['monitoringReport']);
+            const verificationVc = earliestVcOfType(['verificationReport']);
+
+            milestones = [
+                {
+                    key: 'registration',
+                    label: 'Registration',
+                    state: 'complete',
+                    date: registrationVc ? tsToDate(registrationVc.consensusTimestamp) : (typeof data['createdAt'] === 'string' ? data['createdAt'] : null),
+                    // createdAt is worker-derived (vintage/crediting-period), not an
+                    // on-chain timestamp — don't overstate it as 'actual'.
+                    dateType: registrationVc ? 'actual' : (typeof data['createdAt'] === 'string' ? 'expected' : null),
+                },
+                {
+                    key: 'mrvSubmission',
+                    label: 'MRV Submission',
+                    state: mrvVc ? 'complete' : (isIssued ? 'complete' : 'expected'),
+                    date: mrvVc ? tsToDate(mrvVc.consensusTimestamp) : (typeof data['creditingPeriodStart'] === 'string' ? data['creditingPeriodStart'] : null),
+                    dateType: mrvVc ? 'actual' : (typeof data['creditingPeriodStart'] === 'string' ? 'expected' : null),
+                },
+                {
+                    key: 'verification',
+                    label: 'Verification',
+                    state: verificationVc ? 'complete' : (isIssued ? 'complete' : (mrvVc ? 'current' : 'pending')),
+                    date: verificationVc ? tsToDate(verificationVc.consensusTimestamp) : null,
+                    dateType: verificationVc ? 'actual' : null,
+                },
+                {
+                    key: 'issuance',
+                    label: 'Issuance',
+                    state: isIssued ? 'complete' : (verificationVc ? 'current' : 'pending'),
+                    date: isIssued ? (firstIssuanceEvent?.mintDate ?? null) : expectedIssuanceYear,
+                    dateType: isIssued ? 'actual' : (expectedIssuanceYear ? 'expected' : null),
+                },
+            ];
+        }
 
         return {
             id: row.id,
@@ -470,6 +594,10 @@ export class ProjectResponseDto {
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,
             linkedSchemas,
+            lifecycleStage,
+            expectedIssuanceYear,
+            projectedVolume,
+            milestones,
         };
     }
 }

@@ -1,4 +1,4 @@
-import type { Project, ProjectIssuance, IssuanceEvent, LinkedSchema, LinkedVc } from '~/types/models';
+import type { Project, ProjectIssuance, IssuanceEvent, LinkedSchema, LinkedVc, Milestone } from '~/types/models';
 
 // country display name → ISO 3166-1 alpha-3 for CountryFlag component
 export const COUNTRY_ALPHA3: Record<string, string> = {
@@ -181,6 +181,18 @@ export function mapApiProject(raw: Record<string, any>): Project {
             : [],
         decodeMethod: typeof raw.decodeMethod === 'string' ? raw.decodeMethod : null,
         metadata: raw.metadata && typeof raw.metadata === 'object' ? (raw.metadata as Record<string, unknown>) : null,
+        lifecycleStage: typeof raw.lifecycleStage === 'string' ? raw.lifecycleStage : ((raw.totalIssued ?? 0) > 0 ? 'Issued' : 'Registered'),
+        expectedIssuanceYear: typeof raw.expectedIssuanceYear === 'string' ? raw.expectedIssuanceYear : null,
+        projectedVolume: typeof raw.projectedVolume === 'number' ? raw.projectedVolume : null,
+        milestones: Array.isArray(raw.milestones)
+            ? (raw.milestones as Array<Record<string, any>>).map((m): Milestone => ({
+                key: typeof m['key'] === 'string' ? m['key'] : '',
+                label: typeof m['label'] === 'string' ? m['label'] : '',
+                state: typeof m['state'] === 'string' ? (m['state'] as Milestone['state']) : 'pending',
+                date: typeof m['date'] === 'string' ? m['date'] : null,
+                dateType: typeof m['dateType'] === 'string' ? (m['dateType'] as Milestone['dateType']) : null,
+            }))
+            : [],
     };
 }
 

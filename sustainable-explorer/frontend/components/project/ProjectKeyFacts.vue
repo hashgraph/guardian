@@ -169,7 +169,7 @@ function tip(iwaPaths: string): string {
             <!-- Total Credits — last row, no border-b -->
             <div class="bg-card px-5 py-4 sm:col-span-2">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Total Credits
+                    Estimated Total Credits
                     <InfoTooltip :text="tip('ImpactClaim.quantity')" />
                 </div>
                 <div class="text-sm font-semibold text-foreground tabular-nums">{{ formatCredits(project.credits) }}</div>

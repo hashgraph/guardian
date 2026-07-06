@@ -15,8 +15,8 @@ import { formatCredits } from "~/lib/format";
 import { naturalCompare } from "~/lib/utils";
 import { SDG_LIST } from "~/lib/sdgs";
 import { generateProjectVc } from "~/lib/mock-vc";
-import { MOCK_TRANSFERS, MOCK_RETIREMENTS } from "~/data";
 import { getMethodologyLongName } from "~/lib/methodologies";
+import { LIFECYCLE_STAGES, lifecycleStageColor } from "~/lib/lifecycle";
 import type { Project } from "~/types/models";
 import {
   downloadCsv,
@@ -73,22 +73,6 @@ function displayCountry(p: Project): string | null {
   return looksLikeLocation(name) ? name : null;
 }
 
-// Aggregate transferred/retired per project
-const transferredByProject = computed(() => {
-  const map: Record<string, number> = {};
-  for (const t of MOCK_TRANSFERS) {
-    map[t.projectId] = (map[t.projectId] || 0) + t.quantity;
-  }
-  return map;
-});
-const retiredByProject = computed(() => {
-  const map: Record<string, number> = {};
-  for (const r of MOCK_RETIREMENTS) {
-    map[r.projectId] = (map[r.projectId] || 0) + r.quantity;
-  }
-  return map;
-});
-
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref("");
 const vcViewerData = ref<Record<string, any> | null>(null);
@@ -99,18 +83,19 @@ function viewVc(p: Project) {
   vcViewerOpen.value = true;
 }
 
+function isPipelineStage(p: { lifecycleStage?: string }): boolean {
+  return p.lifecycleStage !== "Issued";
+}
+
 const allProjects = computed(() =>
   projects.value.map((p) => ({
     ...p,
     creditsFormatted: formatCredits(p.credits),
-    transferred: transferredByProject.value[p.id] || 0,
-    transferredFormatted: formatCredits(transferredByProject.value[p.id] || 0),
-    retired: retiredByProject.value[p.id] || 0,
-    retiredFormatted: formatCredits(retiredByProject.value[p.id] || 0),
     methodologyLong: getMethodologyLongName(p.methodologyId, p.methodology),
     // Override country with the resolved display name so filters and sorting
     // use the same value that appears in the column (not raw coordinates).
     country: displayCountry(p) ?? "",
+    isPipeline: isPipelineStage(p),
   })),
 );
 
@@ -170,6 +155,10 @@ const presets = computed(() => [
     label: t("projects.presets.glycolRecycling"),
     filters: { sector: "Glycol Recycling" } as Record<string, string>,
   },
+  {
+    label: t("projects.presets.pipeline"),
+    filters: { isPipeline: "true" } as Record<string, string>,
+  },
 ]);
 
 function isPresetActive(preset: { filters: Record<string, string> }): boolean {
@@ -220,6 +209,29 @@ const filters = computed<FilterOption[]>(() => [
     options: [],
   },
   {
+    key: "isPipeline",
+    label: t("projects.filters.pipeline"),
+    options: [
+      { value: "true", label: t("projects.pipelineFilter.pipeline") },
+      { value: "false", label: t("projects.pipelineFilter.issued") },
+    ],
+  },
+  {
+    key: "lifecycleStage",
+    label: t("projects.filters.lifecycleStage"),
+    multiSelect: true,
+    options: LIFECYCLE_STAGES.map((s) => ({
+      value: s,
+      label: t(`projects.lifecycleStages.${s}`),
+    })),
+  },
+  {
+    key: "expectedIssuanceYear",
+    label: t("projects.filters.expectedIssuanceYear"),
+    type: "yearrange" as const,
+    options: [],
+  },
+  {
     key: "sector",
     label: t("projects.filters.sector"),
     multiSelect: true,
@@ -256,14 +268,6 @@ const filters = computed<FilterOption[]>(() => [
   },
 ]);
 
-const statusColor: Record<string, string> = {
-  Registered: "bg-slate-100 text-slate-600",
-  "Under Validation": "bg-stat-amber/10 text-stat-amber",
-  Verified: "bg-stat-blue/10 text-stat-blue",
-  Issuing: "bg-stat-green/10 text-stat-green",
-  Completed: "bg-purple-50 text-purple-600",
-};
-
 const skeletonRows = computed(() =>
   Array.from({ length: pageSize.value }, (_, i) => i),
 );
@@ -283,7 +287,6 @@ async function downloadProjects() {
     if (af.registry) query.registry = af.registry;
     if (af.country) query.country = af.country;
     if (af.developer) query.developer = af.developer;
-    // sector, sectoralScope, sdgs, vintage range — applied client-side below
 
     let mapped = (
       await fetchAllPages(`/api/v1/${network.value}/projects`, query)
@@ -320,6 +323,25 @@ async function downloadProjects() {
         return true;
       });
     }
+    if (af.isPipeline) {
+      mapped = mapped.filter(
+        (p) => String(isPipelineStage(p)) === af.isPipeline,
+      );
+    }
+    if (af.lifecycleStage) {
+      const stages = af.lifecycleStage.split("|").filter(Boolean);
+      mapped = mapped.filter((p) => stages.includes(String(p.lifecycleStage)));
+    }
+    if (af.expectedIssuanceYear) {
+      const [from, to] = af.expectedIssuanceYear.split("|");
+      mapped = mapped.filter((p) => {
+        const y = p.expectedIssuanceYear;
+        if (!y) return false;
+        if (from && y < from) return false;
+        if (to && y > to) return false;
+        return true;
+      });
+    }
 
     if (sortKey.value && sortDir.value) {
       const key = sortKey.value as string;
@@ -345,9 +367,9 @@ async function downloadProjects() {
 </script>
 
 <template>
-  <div class="space-y-0">
-    <div class="px-6 pt-6 pb-4">
-      <h1 class="text-2xl font-bold text-foreground">
+  <div class="w-full max-w-[1600px] mx-auto space-y-0">
+    <div class="px-4 sm:px-6 pt-6 pb-4">
+      <h1 class="text-2xl font-bold text-foreground tracking-tight">
         {{ $t("projects.title") }}
       </h1>
       <p class="text-sm text-muted-foreground mt-1">
@@ -355,7 +377,7 @@ async function downloadProjects() {
       </p>
     </div>
 
-    <div class="px-6 pb-3">
+    <div class="px-4 sm:px-6 pb-4">
       <FilterBar
         v-model="searchQuery"
         :filters="filters"
@@ -368,26 +390,29 @@ async function downloadProjects() {
       />
 
       <!-- Preset Templates -->
-      <div class="flex items-center gap-2 mt-2.5 flex-wrap">
-        <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+      <div class="flex items-center gap-2 mt-3 flex-wrap">
+        <span class="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
           <Sparkles class="h-3 w-3" /> {{ $t("projects.quickFilters") }}
         </span>
-        <button
-          v-for="preset in presets"
-          :key="preset.label"
-          :class="[
-            'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors',
-            isPresetActive(preset)
-              ? 'border-primary/50 bg-primary/10 text-primary'
-              : 'border-primary/25 text-muted-foreground hover:bg-muted hover:text-foreground',
-          ]"
-          @click="applyPreset({ filters: preset.filters })"
-        >
-          {{ preset.label }}
-        </button>
+        <div class="flex flex-wrap gap-1.5 items-center">
+          <button
+            v-for="preset in presets"
+            :key="preset.label"
+            :class="[
+              'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors',
+              isPresetActive(preset)
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-muted-foreground/20 text-muted-foreground hover:bg-muted hover:text-foreground',
+            ]"
+            @click="applyPreset({ filters: preset.filters })"
+          >
+            {{ preset.label }}
+          </button>
+        </div>
+        
         <button
           :disabled="downloading"
-          class="ml-auto inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          class="sm:ml-auto inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           @click="downloadProjects"
         >
           <Loader2 v-if="downloading" class="h-3.5 w-3.5 animate-spin" />
@@ -398,72 +423,44 @@ async function downloadProjects() {
     </div>
 
     <!-- Summary Stats -->
-    <div v-if="filtered.length !== total" class="px-6 pb-3">
-      <div
-        class="flex items-center gap-4 rounded-lg bg-muted/50 px-4 py-2.5 text-xs"
-      >
-        <span class="font-medium text-foreground">{{
-          $t("projects.projectsFound", { count: filtered.length })
-        }}</span>
-        <span class="text-muted-foreground">&middot;</span>
-        <span class="text-muted-foreground"
-          >{{ $t("projects.totalIssuances") }}
-          <strong class="text-foreground">{{
-            formatCredits(summaryStats.totalIssuances)
-          }}</strong></span
-        >
-        <span class="text-muted-foreground">&middot;</span>
-        <span class="text-muted-foreground"
-          >{{ $t("projects.countries") }}
-          <strong class="text-foreground">{{
-            summaryStats.uniqueCountries
-          }}</strong></span
-        >
-        <span class="text-muted-foreground">&middot;</span>
-        <span class="text-muted-foreground"
-          >{{ $t("projects.registries") }}
-          <strong class="text-foreground">{{
-            summaryStats.uniqueRegistries
-          }}</strong></span
-        >
+    <div v-if="filtered.length !== total" class="px-4 sm:px-6 pb-4">
+      <div class="flex flex-wrap items-center gap-y-1.5 gap-x-4 rounded-xl border bg-muted/40 px-4 py-2.5 text-xs">
+        <span class="font-semibold text-foreground">
+          {{ $t("projects.projectsFound", { count: filtered.length }) }}
+        </span>
+        <span class="text-muted-foreground hidden sm:inline">&middot;</span>
+        <span class="text-muted-foreground">
+          {{ $t("projects.totalIssuances") }} 
+          <strong class="text-foreground ml-0.5 font-semibold">{{ formatCredits(summaryStats.totalIssuances) }}</strong>
+        </span>
+        <span class="text-muted-foreground hidden sm:inline">&middot;</span>
+        <span class="text-muted-foreground">
+          {{ $t("projects.countries") }} 
+          <strong class="text-foreground ml-0.5 font-semibold">{{ summaryStats.uniqueCountries }}</strong>
+        </span>
+        <span class="text-muted-foreground hidden sm:inline">&middot;</span>
+        <span class="text-muted-foreground">
+          {{ $t("projects.registries") }} 
+          <strong class="text-foreground ml-0.5 font-semibold">{{ summaryStats.uniqueRegistries }}</strong>
+        </span>
       </div>
     </div>
 
-    <div class="px-6 pb-6">
-      <div class="rounded-xl border bg-card overflow-hidden">
-        <div class="overflow-x-auto">
-          <table
-            class="table-fixed text-sm"
-            style="min-width: 1360px; width: 100%"
-          >
-            <colgroup>
-              <col style="width: 3%" />
-              <col style="width: 14%" />
-              <col style="width: 10%" />
-              <col style="width: 7%" />
-              <col style="width: 11%" />
-              <col style="width: 7%" />
-              <col style="width: 6%" />
-              <col style="width: 8%" />
-              <col style="width: 8%" />
-              <col style="width: 8%" />
-              <col style="width: 10%" />
-              <col style="width: 8%" />
-            </colgroup>
-            <thead class="bg-muted/30">
-              <tr class="border-b">
-                <th
-                  class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-                >
-                  <span class="inline-flex items-center gap-1"
-                    ><Columns2 class="h-3.5 w-3.5"
-                  /></span>
+    <div class="px-4 sm:px-6 pb-8">
+      <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-left border-collapse text-sm table-auto min-w-[1200px]">
+            <thead class="bg-muted/40 border-b">
+              <tr>
+                <th class="w-12 py-3 px-4 text-center">
+                  <Columns2 class="h-3.5 w-3.5 mx-auto text-muted-foreground" />
                 </th>
                 <SortableHeader
                   :label="$t('projects.columns.project')"
                   sort-key="name"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
+                  class="w-[22%] min-w-[240px]"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
@@ -471,6 +468,7 @@ async function downloadProjects() {
                   sort-key="country"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
+                  class="w-[12%] min-w-[130px]"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
@@ -478,6 +476,7 @@ async function downloadProjects() {
                   sort-key="registry"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
+                  class="w-[12%] min-w-[130px]"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
@@ -485,6 +484,7 @@ async function downloadProjects() {
                   sort-key="methodology"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
+                  class="w-[14%] min-w-[140px] max-w-[200px] truncate"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
@@ -493,6 +493,7 @@ async function downloadProjects() {
                   :tooltip="$t('projects.sectorTooltip')"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
+                  class="w-[12%] min-w-[130px]"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
@@ -500,58 +501,47 @@ async function downloadProjects() {
                   sort-key="issuanceCount"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
-                  class="!text-right"
+                  class="w-[8%] min-w-[90px] !text-right"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
-                  :label="$t('projects.columns.transferred')"
-                  sort-key="transferred"
-                  mock
+                  :label="$t('projects.columns.lifecycleStage')"
+                  sort-key="lifecycleStage"
+                  :tooltip="$t('projects.stageTooltip')"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
-                  class="!text-right"
+                  class="w-[10%] min-w-[110px]"
                   @sort="toggleSort($event as any)"
                 />
                 <SortableHeader
-                  :label="$t('projects.columns.retired')"
-                  sort-key="retired"
-                  mock
+                  :label="$t('projects.columns.expectedIssuanceYear')"
+                  sort-key="expectedIssuanceYear"
+                  :tooltip="$t('projects.expectedIssuanceYearTooltip')"
                   :active-sort-key="sortKey as string"
                   :sort-dir="sortDir"
-                  class="!text-right"
+                  class="w-[8%] min-w-[90px]"
                   @sort="toggleSort($event as any)"
                 />
-                <SortableHeader
-                  :label="$t('projects.columns.status')"
-                  sort-key="status"
-                  :active-sort-key="sortKey as string"
-                  :sort-dir="sortDir"
-                  @sort="toggleSort($event as any)"
-                />
-                <th
-                  class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-                >
-                  <span class="inline-flex items-center gap-0.5">
+                <th class="w-[8%] min-w-[95px] py-3 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span class="inline-flex items-center gap-1">
                     {{ $t("projects.columns.sdgs") }}
                     <InfoTooltip :text="$t('projects.sdgsTooltip')" />
                   </span>
                 </th>
-                <th
-                  class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-                >
-                  <span class="inline-flex items-center gap-0.5"
-                    >{{ $t("projects.columns.rawData") }}
-                    <InfoTooltip :text="$t('tooltips.viewRawData')"
-                  /></span>
+                <th class="w-[5%] min-w-[70px] py-3 px-3 text-center text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                  <span class="inline-flex items-center gap-1 justify-center">
+                    {{ $t("projects.columns.rawData") }}
+                    <InfoTooltip :text="$t('tooltips.viewRawData')" />
+                  </span>
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody class="divide-y divide-border/60">
               <!-- Loading skeleton -->
               <template v-if="pending && paginated.length === 0">
                 <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                  <td v-for="col in 12" :key="col" class="py-3 px-4">
-                    <Skeleton class="h-4 w-full max-w-[120px]" />
+                  <td v-for="col in 11" :key="col" class="py-3.5 px-4">
+                    <Skeleton class="h-4 w-full" />
                   </td>
                 </tr>
               </template>
@@ -560,138 +550,116 @@ async function downloadProjects() {
                 <tr
                   v-for="p in paginated"
                   :key="p.id"
-                  class="hover:bg-muted/30 transition-colors cursor-pointer align-top"
+                  class="hover:bg-muted/20 transition-colors cursor-pointer group/row"
                 >
-                  <td class="py-3 px-3 text-center">
+                  <td class="py-3.5 px-4 text-center align-middle">
                     <button
                       :class="[
                         isSelected(p.id)
                           ? 'text-primary bg-primary/10 hover:bg-primary/20'
                           : !canAdd
-                            ? 'opacity-40 cursor-not-allowed text-muted-foreground'
+                            ? 'opacity-30 cursor-not-allowed text-muted-foreground'
                             : 'text-muted-foreground hover:bg-muted hover:text-foreground',
                         'inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors',
                       ]"
-                      :title="
-                        isSelected(p.id)
-                          ? $t('projects.compare.removeFromCompare')
-                          : !canAdd
-                            ? $t('projects.compare.maxSelected')
-                            : $t('projects.compare.addToCompare')
-                      "
                       :disabled="!canAdd && !isSelected(p.id)"
                       @click.stop="toggleProject(p.id, p.name)"
                     >
-                      <CheckSquare
-                        v-if="isSelected(p.id)"
-                        class="h-3.5 w-3.5"
-                      />
+                      <CheckSquare v-if="isSelected(p.id)" class="h-3.5 w-3.5" />
                       <Square v-else class="h-3.5 w-3.5" />
                     </button>
                   </td>
-                  <td class="py-3 px-4">
+                  <td class="py-3.5 px-4 align-middle font-medium">
                     <NuxtLink
                       :to="`/projects/${p.id}`"
-                      class="font-medium text-foreground hover:text-primary transition-colors break-words"
-                      >{{ p.name }}</NuxtLink
+                      :title="p.name"
+                      class="block line-clamp-2 text-foreground hover:text-primary transition-colors leading-relaxed"
                     >
+                      {{ p.name }}
+                    </NuxtLink>
                   </td>
-                  <td class="py-3 px-4 text-muted-foreground">
-                    <template v-if="displayCountry(p)">
-                      <div
-                        class="group relative inline-flex items-center gap-1.5"
-                      >
-                        <CountryFlag :code="resolvedCode(p)" size="sm" />
-                        <span class="hidden md:inline">{{
-                          displayCountry(p)
-                        }}</span>
-                        <div
-                          class="md:hidden pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-[100]"
-                        >
-                          <div
-                            class="whitespace-nowrap rounded-md bg-foreground px-2.5 py-1 text-[11px] text-background shadow-lg"
-                          >
-                            {{ displayCountry(p) }}
-                          </div>
-                          <div
-                            class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground"
-                          />
-                        </div>
-                      </div>
-                    </template>
-                    <span v-else class="text-xs">—</span>
+                  
+                  <td class="py-3.5 px-4 align-middle text-muted-foreground truncate">
+                    <div v-if="displayCountry(p)" class="flex items-center gap-2 max-w-full">
+                      <CountryFlag :code="resolvedCode(p)" size="sm" class="shrink-0" />
+                      <span class="truncate" :title="displayCountry(p) ?? ''">
+                        {{ displayCountry(p) }}
+                      </span>
+                    </div>
+                    <span v-else class="text-muted-foreground/50 text-xs pl-1">—</span>
                   </td>
-                  <td
-                    class="py-3 px-4 text-muted-foreground text-xs break-words"
-                  >
-                    {{ p.registry }}
+                  
+                  <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs truncate">
+                    <span class="truncate block" :title="p.registry">{{ p.registry }}</span>
                   </td>
-                  <td class="py-3 px-4 max-w-0">
+                  
+                  <td class="py-3.5 px-4 align-middle max-w-[200px]">
                     <span
-                      class="block text-xs bg-muted rounded px-1.5 py-0.5 cursor-default break-words"
-                      >{{ p.methodology }}</span
+                      class="block w-full truncate text-xs bg-muted/60 text-muted-foreground border border-muted rounded px-2 py-1 font-mono cursor-help"
+                      :title="p.methodology"
                     >
+                      {{ p.methodology }}
+                    </span>
                   </td>
-                  <td class="py-3 px-4">
-                    <span
-                      class="block text-xs text-muted-foreground cursor-default truncate"
-                      >{{ p.sector }}</span
-                    >
+                  
+                  <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs truncate">
+                    <span class="truncate block" :title="p.sector">{{ p.sector }}</span>
                   </td>
-                  <td class="py-3 px-4 text-right tabular-nums font-medium">
+                  
+                  <td class="py-3.5 px-4 align-middle text-center tabular-nums font-semibold text-sm">
                     <NuxtLink
                       v-if="p.projectKey && p.issuanceCount"
                       :to="`/credits?projectKey=${encodeURIComponent(p.projectKey)}`"
-                      class="hover:text-primary hover:underline transition-colors"
+                      class="text-foreground hover:text-primary hover:underline transition-colors"
                       @click.stop
                     >
                       {{ p.issuanceCount }}
                     </NuxtLink>
-                    <span v-else>{{ p.issuanceCount ?? 0 }}</span>
+                    <span v-else class="text-muted-foreground/60">{{ p.issuanceCount ?? 0 }}</span>
                   </td>
-                  <td
-                    class="py-3 px-4 text-right tabular-nums text-muted-foreground"
-                  >
-                    {{ p.transferredFormatted }}
-                  </td>
-                  <td
-                    class="py-3 px-4 text-right tabular-nums text-muted-foreground"
-                  >
-                    {{ p.retiredFormatted }}
-                  </td>
-                  <td class="py-3 px-4">
+                  
+                  <td class="py-3.5 px-4 align-middle whitespace-nowrap">
                     <span
                       :class="[
-                        statusColor[p.status] ||
-                          'bg-muted text-muted-foreground',
-                        'text-xs font-medium rounded-full px-2 py-0.5',
+                        lifecycleStageColor[p.lifecycleStage ?? ''] || 'bg-muted text-muted-foreground',
+                        'text-[11px] font-semibold rounded-full px-2.5 py-0.5 tracking-wide uppercase',
                       ]"
                     >
-                      {{ p.status }}
+                      {{ $t(`projects.lifecycleStages.${p.lifecycleStage}`) }}
                     </span>
                   </td>
-                  <td class="py-3 px-4">
-                    <SdgBadges :ids="p.sdgs" :max="2" />
+                  
+                  <td class="py-3.5 px-4 align-middle text-muted-foreground font-medium">
+                    {{ p.lifecycleStage !== "Issued" ? p.expectedIssuanceYear ?? $t("projects.tbd") : "—" }}
                   </td>
-                  <td class="py-3 px-3 text-center">
-                    <button
-                      class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      :title="$t('common.viewRawData')"
-                      @click.stop="viewVc(p)"
-                    >
-                      <FileJson class="h-3.5 w-3.5" />
-                    </button>
+                  
+                  <td class="w-px py-3.5 px-3 align-middle whitespace-nowrap">
+                    <div class="flex items-center min-w-max">
+                      <SdgBadges :ids="p.sdgs" :max="2" />
+                    </div>
                   </td>
-                </tr>
-                <tr v-if="paginated.length === 0">
-                  <td
-                    colspan="12"
-                    class="py-12 text-center text-sm text-muted-foreground"
-                  >
-                    {{ $t("projects.noMatch") }}
+                  
+                  <td class="w-px py-3.5 px-3 align-middle text-center">
+                    <div class="flex items-center justify-center min-w-max mx-auto">
+                      <button
+                        class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/60 hover:bg-muted hover:text-foreground transition-colors group-hover/row:text-foreground"
+                        @click.stop="viewVc(p)"
+                      >
+                        <FileJson class="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               </template>
+              
+              <tr v-if="paginated.length === 0 && !pending">
+                <td
+                  colspan="11"
+                  class="py-12 text-center text-sm text-muted-foreground"
+                >
+                  {{ $t("projects.noMatch") }}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>

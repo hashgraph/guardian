@@ -40,7 +40,7 @@ export class ProjectsService {
             instanceTopicId: query.instanceTopicId,
         });
 
-        const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network));
+        const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network, false));
         return new PaginatedResponse(data, result.total, page, limit);
     }
 
@@ -48,7 +48,7 @@ export class ProjectsService {
         const repo = this.getRepository(network);
         const row = await repo.findById(id);
         if (!row) return null;
-        return ProjectResponseDto.fromRow(row, network);
+        return ProjectResponseDto.fromRow(row, network, true);
     }
 
     async findActivity(network: string, id: string): Promise<ActivityEventDto[]> {

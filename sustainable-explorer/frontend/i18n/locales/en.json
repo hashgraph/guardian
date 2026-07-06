@@ -277,6 +277,7 @@
         "dateTo": "To date",
         "yearFrom": "From year",
         "yearTo": "To year",
+        "allYears": "All years",
         "numMin": "Min",
         "numMax": "Max",
         "clearRange": "Clear range",
@@ -449,6 +450,8 @@
         "sectoralScope": "Sectoral Scope: {scope}",
         "sdgsTooltip": "UN Sustainable Development Goals this project contributes to. Hover over each icon for the full goal name.",
         "sectorTooltip": "Includes Sectoral Scope as additional detail",
+        "stageTooltip": "Where the project sits in the credit lifecycle: Registered → Under Validation → MRV Submitted → Verified → Issued.",
+        "expectedIssuanceYearTooltip": "The year credits are first expected to be issued — applies to pre-issuance projects. Shows \"TBD\" when no forecast is available yet, and \"—\" for projects that have already issued.",
         "columns": {
             "project": "Project",
             "country": "Country",
@@ -459,6 +462,9 @@
             "transferred": "Transferred",
             "retired": "Retired",
             "status": "Status",
+            "lifecycleStage": "Stage",
+            "projectedVolume": "Proj. Volume",
+            "expectedIssuanceYear": "Exp. Year",
             "sdgs": "SDGs",
             "rawData": "Raw Data"
         },
@@ -470,14 +476,45 @@
             "sector": "Sector",
             "sectoralScope": "Sectoral Scope",
             "developer": "Developer",
-            "sdgs": "SDGs"
+            "sdgs": "SDGs",
+            "lifecycleStage": "Stage",
+            "expectedIssuanceYear": "Expected Issuance Year",
+            "pipeline": "Issuance Status"
+        },
+        "pipelineFilter": {
+            "pipeline": "Pre-Issuance",
+            "issued": "Issued"
         },
         "presets": {
             "goldStandard": "Gold Standard",
             "sdg13": "SDG 13: Climate Action",
             "vintage2022": "Vintage 2022",
             "issuingEnergy": "Issuing Energy",
-            "glycolRecycling": "Glycol Recycling"
+            "glycolRecycling": "Glycol Recycling",
+            "pipeline": "Pre-Issuance"
+        },
+        "lifecycleStages": {
+            "Registered": "Registered",
+            "Validation": "Under Validation",
+            "Monitoring": "MRV Submitted",
+            "Verified": "Verified",
+            "Issued": "Issued"
+        },
+        "milestones": {
+            "title": "Milestone Tracker",
+            "subtitle": "Registration → MRV Submission → Verification → Issuance",
+            "registration": "Registration",
+            "mrvSubmission": "MRV Submission",
+            "verification": "Verification",
+            "issuance": "Issuance",
+            "expected": "expected",
+            "tbd": "TBD"
+        },
+        "tbd": "TBD",
+        "notEstimated": "No Estimations Available",
+        "projectedEstimate": {
+            "title": "Projected Issuance",
+            "subtitle": "Forecast volume & expected issuance year"
         },
         "notFound": "Project not found",
         "details": {
@@ -517,6 +554,9 @@
                 "refreshIpfsSuccess": "Queued {refreshed} IPFS fetch(es) and {reparse} reparse(s) — refresh in a few seconds",
                 "refreshIpfsEmpty": "Nothing to refresh — all VCs in this project's topic are already fetched and indexed",
                 "refreshIpfsError": "Failed to refresh IPFS"
+            },
+            "issuances": {
+                "yearFilter": "Year"
             }
         },
         "compare": {
@@ -796,7 +836,14 @@
                     "registry": "Registry",
                     "issuances": "Issuances",
                     "mintedAmount": "Minted Amount",
-                    "status": "Status"
+                    "projectedVolume": "Projected Volume",
+                    "expectedIssuanceYear": "Expected Issuance Year",
+                    "status": "Status",
+                    "stage": "Stage"
+                },
+                "stageFilter": {
+                    "label": "Stage",
+                    "all": "All"
                 },
                 "noProjects": "No projects found under this policy."
             },
