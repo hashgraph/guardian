@@ -249,7 +249,7 @@ export class DocumentValidatorBlock {
         }
         if (options.checkOwnerOrgDocument || options.checkAssigneeOrgDocument) {
             const orgId = event?.user?.organization;
-            const memberDids = new Set(await resolveOrgMemberDids(orgId));
+            const memberDids = new Set(await resolveOrgMemberDids(event?.user));
             if (options.checkOwnerOrgDocument) {
                 if (!orgId || !memberDids.has(document.owner)) {
                     return `Invalid owner organization`;

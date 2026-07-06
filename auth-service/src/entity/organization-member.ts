@@ -1,4 +1,4 @@
-import { Entity, Property, Unique } from '@mikro-orm/core';
+import { Entity, Index, Property, Unique } from '@mikro-orm/core';
 import { BaseEntity } from '@guardian/common';
 
 /**
@@ -11,6 +11,7 @@ import { BaseEntity } from '@guardian/common';
  */
 @Entity()
 @Unique({ properties: ['did'] })
+@Index({ properties: ['organizationId', 'active'] })
 export class OrganizationMember extends BaseEntity {
     /**
      * Owning Organization id (FK string)

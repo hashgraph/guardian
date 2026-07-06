@@ -228,7 +228,7 @@ export class DocumentsSourceAddon {
             filters.assignedToGroup = user.group;
         }
         if (options.onlyOwnerOrgDocuments || options.onlyAssigneeOrgDocuments) {
-            const orgMemberDids = await resolveOrgMemberDids(user.organization);
+            const orgMemberDids = await resolveOrgMemberDids(user);
             if (options.onlyOwnerOrgDocuments) {
                 filters.owner = { $in: orgMemberDids };
             }
@@ -386,7 +386,7 @@ export class DocumentsSourceAddon {
             filters.push({ $eq: [user.group, '$assignedToGroup'] });
         }
         if (options.onlyOwnerOrgDocuments || options.onlyAssigneeOrgDocuments) {
-            const orgMemberDids = await resolveOrgMemberDids(user.organization);
+            const orgMemberDids = await resolveOrgMemberDids(user);
             if (options.onlyOwnerOrgDocuments) {
                 filters.push({ $in: ['$owner', orgMemberDids] });
             }

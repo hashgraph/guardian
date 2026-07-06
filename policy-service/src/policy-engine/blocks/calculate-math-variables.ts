@@ -188,7 +188,7 @@ export class CalculateMathVariables {
             filters.assignedToGroup = user.group;
         }
         if (options.onlyOwnerOrgDocuments || options.onlyAssigneeOrgDocuments) {
-            const orgMemberDids = await resolveOrgMemberDids(user.organization);
+            const orgMemberDids = await resolveOrgMemberDids(user);
             if (options.onlyOwnerOrgDocuments) {
                 filters.owner = { $in: orgMemberDids };
             }

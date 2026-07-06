@@ -8,17 +8,33 @@ import type { PolicyUser } from '../policy-user.js';
 export { getOrgTokenPermissionError };
 
 /**
- * Resolves the DID list of all active members of an organization.
- * Returns an empty array when organization is null/undefined/empty.
+ * Member-DID lists memoized per acting PolicyUser instance. PolicyUser objects are
+ * created fresh for every top-level policy action, so an entry lives for exactly one
+ * action — the same reuse window §8.3 documents for org context itself. Never cache
+ * by org id in a longer-lived structure: that would let a revoked member's DID keep
+ * matching filters across requests.
+ */
+const orgMemberDidsCache = new WeakMap<object, Promise<string[]>>();
+
+/**
+ * Resolves the DID list of all active members of the user's organization.
+ * Returns an empty array when the user has no organization.
  * An empty array produces { $in: [] } in filter mode (zero documents — "no org, no access")
  * and Set.has() returns false in validator mode — both are the correct short-circuit behaviours.
+ * The fetch happens at most once per policy action (memoized on the PolicyUser instance);
+ * a failed lookup rejects every consumer in that action identically (fail closed).
  */
-export async function resolveOrgMemberDids(organization: string | null | undefined): Promise<string[]> {
-    if (!organization) {
+export async function resolveOrgMemberDids(user: Pick<PolicyUser, 'organization'> | null | undefined): Promise<string[]> {
+    if (!user?.organization) {
         return [];
     }
-    const dids = await new Users().getOrgMemberDids(organization, null);
-    return (dids ?? []).filter((did): did is string => !!did);
+    let promise = orgMemberDidsCache.get(user);
+    if (!promise) {
+        promise = new Users().getOrgMemberDids(user.organization, null)
+            .then((dids) => (dids ?? []).filter((did): did is string => !!did));
+        orgMemberDidsCache.set(user, promise);
+    }
+    return promise;
 }
 
 /**
