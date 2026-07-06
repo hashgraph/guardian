@@ -10,7 +10,7 @@
         "@digitalbazaar/security-context": "1.0.1",
         "@digitalbazaar/vc": "7.3.0",
         "@formulajs/formulajs": "4.6.0",
-        "@google-cloud/secret-manager": "6.1.1",
+        "@google-cloud/secret-manager": "6.2.0",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/sdk": "2.85.0",
         "@mattrglobal/jsonld-signatures-bbs": "1.2.0",
