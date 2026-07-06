@@ -1,5 +1,5 @@
 <div class="element-path">
-    <p-dropdown
+    <p-select
         class="select"
         [options]="pathOptions"
         [(ngModel)]="startPath"
@@ -7,7 +7,7 @@
         (onBlur)="onBlur()"
         [disabled]="disabled || readonly"
         appendTo="body">
-    </p-dropdown>
+    </p-select>
 
     <input
         pInputText

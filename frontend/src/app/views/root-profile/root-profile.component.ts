@@ -22,6 +22,18 @@ import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dia
 import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
+import { ToastrService } from 'ngx-toastr';
+import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
+import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
+import { DocWidgetService } from '../../services/doc-widget.service';
+import { FeatureFlagsService } from '../../services/feature-flags.service';
+import { SettingsService } from '../../services/settings.service';
+import { formatBalance, getUserInitials } from '../../utils';
+
+const FEEDBACK_MAILTO_TEMPLATE =
+    'mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request%20-%20{ORIGIN}' +
+    '&body=This%20is%20%5Bfeedback%20/%20support%20request%20/%20feature%20request%5D%0A%0A--%0A%0A' +
+    'Add%20a%20summary%20here.%0A%0A%0AVersion:%20%5B{VERSION}%5D%0AOrigin:%20%5B{ORIGIN}%5D%0A---%0A';
 
 enum OperationMode {
     None,
@@ -46,6 +58,7 @@ interface IColumn {
     selector: 'app-root-profile',
     templateUrl: './root-profile.component.html',
     styleUrls: ['./root-profile.component.scss'],
+    standalone: false
 })
 export class RootProfileComponent implements OnInit, OnDestroy {
     @ViewChild('actionMenu') actionMenu: any;
@@ -106,6 +119,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     public relayerAccountColumns: IColumn[];
     public searchRelayerAccount: string;
     public balances: Map<string, string>;
+    public guardianVersion: string = '';
 
     constructor(
         private auth: AuthService,
@@ -120,7 +134,13 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private dialogService: DialogService,
         private route: ActivatedRoute,
         private router: Router,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private docWidgetService: DocWidgetService,
+        private featureFlagsService: FeatureFlagsService,
+        private settingsService: SettingsService,
+        private appThemeService: AppThemeService,
+        private menuLayoutService: MenuLayoutService,
+        private toastr: ToastrService
     ) {
         this.profile = null;
         this.balance = null;
@@ -187,6 +207,11 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         this.loadProfile();
         this.step = 'HEDERA';
         this.refreshOtpStatus();
+        this.subscriptions.add(
+            this.settingsService.getAbout().subscribe((about) => {
+                this.guardianVersion = about?.version || '';
+            })
+        );
     }
 
     ngOnDestroy(): void {
@@ -689,7 +714,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 viewDocument: true,
                 getByUser: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -706,7 +731,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -718,14 +743,14 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 login: profile?.username,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             this.loadProfile();
         });
     }
 
-    public onChangeTab(tab: any) {
-        this.tabIndex = tab.index;
-        this.tab = this.tabs[tab.index] || 'general';
+    public onChangeTab(index: string | number | undefined) {
+        this.tabIndex = typeof index === 'number' ? index : 0;
+        this.tab = this.tabs[this.tabIndex] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
@@ -786,7 +811,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 title: 'Add Relayer Account'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
@@ -809,7 +834,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -843,8 +868,25 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     refreshOtpStatus() {
         this.auth.getOtpStatus().subscribe((result) => {
-            this.is2faEnabled = result.enabled;
+            const enabled = result.enabled;
+            // Force p-toggleswitch to re-sync even when the value didn't change
+            this.is2faEnabled = !enabled;
+            this.cdRef.detectChanges();
+            this.is2faEnabled = enabled;
         });
+    }
+
+    getInitials(username: string | undefined): string {
+        return getUserInitials(username);
+    }
+
+    formatBalance(balance: string | null): string {
+        return formatBalance(balance);
+    }
+
+    formatRole(role: string | undefined): string {
+        if (!role) { return ''; }
+        return role.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
     }
 
     generate2fa() {
@@ -855,7 +897,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
                 width: '50vw',
                 closable: false,
                 data: { config: config }
-            }).onClose.subscribe((codes) => {
+            })!.onClose.subscribe((codes) => {
                 this.refreshOtpStatus();
                 if (codes && codes.length) {
                     this.dialogService.open(OtpCodesDialogComponent, {
@@ -873,12 +915,79 @@ export class RootProfileComponent implements OnInit, OnDestroy {
             width: '50vw',
             closable: false,
 
-        }).onClose.subscribe(result => {
+        })!.onClose.subscribe(result => {
             if (result == true) {
                 this.auth.deactivateOtp().subscribe(() => {
                     this.refreshOtpStatus();
                 });
             }
         })
+    }
+
+    get appThemes(): AppThemeOption[] {
+        return this.appThemeService.themes;
+    }
+
+    get selectedTheme(): AppTheme {
+        return this.appThemeService.getCurrentTheme();
+    }
+
+    get docWidgetEnabled(): boolean {
+        return this.docWidgetService.isEnabled();
+    }
+
+    get nextGenUiEnabled(): boolean {
+        return this.featureFlagsService.isNextGenUiEnabled();
+    }
+
+    get feedbackMailto(): string {
+        return FEEDBACK_MAILTO_TEMPLATE
+            .replaceAll('{VERSION}', encodeURIComponent(this.guardianVersion))
+            .replaceAll('{ORIGIN}', encodeURIComponent(window.location.href));
+    }
+
+    get docWidgetAvailable(): boolean {
+        return this.docWidgetService.available;
+    }
+
+    onThemeChange(theme: AppTheme): void {
+        this.appThemeService.setTheme(theme);
+    }
+
+    get menuLayouts(): MenuLayoutOption[] {
+        return this.menuLayoutService.layouts;
+    }
+
+    get selectedMenuLayout(): MenuLayout {
+        return this.menuLayoutService.layout;
+    }
+
+    onMenuLayoutChange(layout: MenuLayout): void {
+        this.menuLayoutService.setLayout(layout);
+    }
+
+    onDocWidgetToggle(checked: boolean): void {
+        this.docWidgetService.setEnabled(checked);
+    }
+
+    onNextGenUiToggle(checked: boolean): void {
+        this.featureFlagsService.setNextGenUiEnabled(checked);
+    }
+
+    onToggle2fa(checked: boolean): void {
+        if (checked) {
+            this.generate2fa();
+        } else {
+            this.deactivate2fa();
+        }
+    }
+
+    copyToClipboard(value: string | null | undefined): void {
+        if (!value) { return; }
+        navigator.clipboard.writeText(value).then(() => {
+            this.toastr.success('Copied to clipboard', '', { timeOut: 2000, positionClass: 'toast-bottom-right' });
+        }).catch((err) => {
+            console.error(err);
+        });
     }
 }

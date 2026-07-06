@@ -1,8 +1,34 @@
-.guardian-page {
-    padding: 32px 48px 48px 48px !important;
+.actions-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 40px;
 }
 
-.guardian-user-page-header {
+.module-actions-buttons-container {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+
+.toolbar-btn-primary ::ng-deep .p-button {
+    background: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    height: 40px;
+    padding: 8px 16px 8px 8px;
+    color: var(--guardian-on-primary-color, #FFF);
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 30px;
+}
+
+.module-actions-buttons-container svg {
+    margin-right: 8px;
+}
+
+.guardian-user-page-header:has(.token-id) {
     height: 86px !important;
     position: relative;
 
@@ -33,7 +59,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -52,18 +78,19 @@
     height: 80%;
 }
 
-:host ::ng-deep .p-dropdown {
-    width: 400px;
+:host ::ng-deep .dropdown-block .p-select {
+    height: 40px;
+    min-width: 300px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
 }
@@ -170,7 +197,7 @@
 }
 
 :host ::ng-deep .table-paginator {
-    .p-dropdown {
+    .p-select {
         width: 125px;
         height: 40px;
         border-radius: 8px;
@@ -209,7 +236,7 @@
         font-size: 14px;
         line-height: 16px;
         vertical-align: middle;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         display: flex;
         align-items: center;
     }
@@ -270,7 +297,7 @@
 
 .options-footer {
     padding: 12px 48px;
-    padding-left: calc(var(--header-width-expand) + 48px);
+    padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
     display: flex;
     justify-content: space-between;
     position: fixed;
@@ -278,7 +305,7 @@
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     .selected-info-block {
         display: flex;
@@ -315,7 +342,7 @@
                 font-style: normal;
                 font-weight: 500;
                 line-height: 30px;
-                color: var(--color-grey-white, #FFF);
+                color: var(--guardian-on-primary-color, #FFF);
             }
 
             &:disabled {
@@ -351,10 +378,10 @@
     }
 }
 
-.grid-table-container {
-    ::ng-deep .grid-table {
+.guardian-grid-container {
+    ::ng-deep .guardian-grid-table {
         .p-datatable-wrapper {
-            max-height: calc(-320px + 100vh);
+            max-height: calc(100vh - var(--header-height) - 320px);
         }
     }
 }

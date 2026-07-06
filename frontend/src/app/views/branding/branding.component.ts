@@ -10,7 +10,8 @@ import {Subscription} from 'rxjs';
 @Component({
     selector: 'app-branding',
     templateUrl: './branding.component.html',
-    styleUrls: ['./branding.component.scss']
+    styleUrls: ['./branding.component.scss'],
+    standalone: false
 })
 export class BrandingComponent implements OnInit, OnDestroy {
 
@@ -27,6 +28,9 @@ export class BrandingComponent implements OnInit, OnDestroy {
     headerColor1Control = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
     primaryHexColorControl = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
     primaryColorControl = new UntypedFormControl('', [Validators.pattern(/^#[0-9A-Fa-f]{6}$/)]);
+
+    useCustomMenuColorsControl = new UntypedFormControl(false);
+    useSolidBackgroundControl = new UntypedFormControl(false);
 
     fonts = [
         {label: 'Roboto', value: 'Roboto'},
@@ -68,6 +72,21 @@ export class BrandingComponent implements OnInit, OnDestroy {
         this.fontControl.valueChanges.subscribe((value) => {
             this.selectedFont = this.fonts.find(font => font.value === value);
         });
+        this.subscription.add(this.useCustomMenuColorsControl.valueChanges.subscribe((enabled) => {
+            this.isChangesMade = true;
+            // Seed empty color fields when the toggle turns on, so saving right
+            // away keeps custom menu colors enabled instead of storing an empty
+            // color (which encodes the toggle as off).
+            if (enabled && !this.headerColorControl.value) {
+                this.headerColorControl.setValue('#0031ff');
+            }
+            if (enabled && !this.headerColor1Control.value) {
+                this.headerColor1Control.setValue('#8259ef');
+            }
+        }));
+        this.subscription.add(this.useSolidBackgroundControl.valueChanges.subscribe(() => {
+            this.isChangesMade = true;
+        }));
     }
 
     ngOnInit(): void {
@@ -84,6 +103,14 @@ export class BrandingComponent implements OnInit, OnDestroy {
             this.primaryColorControl.setValue(brandingData.primaryColor);
             this.companyNameControl.setValue(brandingData.companyName || 'GUARDIAN');
             this.termsAndConditions.setValue(brandingData.termsAndConditions);
+            // The toggles come from the stored flags; configs saved before the
+            // flags existed fall back to "enabled when a menu color is set".
+            const useCustomMenuColors = brandingData.useCustomMenuColors ?? !!brandingData.headerColor;
+            const useSolidBackground = brandingData.useSolidBackground
+                ?? (useCustomMenuColors
+                    && (!brandingData.headerColor1 || brandingData.headerColor1 === brandingData.headerColor));
+            this.useCustomMenuColorsControl.setValue(useCustomMenuColors, { emitEvent: false });
+            this.useSolidBackgroundControl.setValue(useSolidBackground, { emitEvent: false });
             this.loading = false;
         });
     }
@@ -191,6 +218,9 @@ export class BrandingComponent implements OnInit, OnDestroy {
         // create JSON payload with variables
         const brandingData = await this.brandingService.getBrandingData();
         const payload = {
+            // The colors are always stored as entered, so toggling the flags
+            // off and on again does not lose the chosen values; the flags alone
+            // decide whether and how the menu colors apply.
             headerColor: this.headerColorControl.value ? this.headerColorControl.value : brandingData.headerColor,
             headerColor1: this.headerColor1Control.value ? this.headerColor1Control.value : brandingData.headerColor1,
             primaryColor: this.primaryColorControl.value ? this.primaryColorControl.value : brandingData.primaryColor,
@@ -198,7 +228,9 @@ export class BrandingComponent implements OnInit, OnDestroy {
             companyLogoUrl: this.companyLogoUrl,
             loginBannerUrl: this.loginBannerUrl,
             faviconUrl: this.faviconUrl ? this.faviconUrl : '',
-            termsAndConditions: this.termsAndConditions.value
+            termsAndConditions: this.termsAndConditions.value,
+            useCustomMenuColors: !!this.useCustomMenuColorsControl.value,
+            useSolidBackground: !!this.useSolidBackgroundControl.value
         };
 
         this.brandingService.saveBrandingData(payload);
@@ -219,7 +251,8 @@ export class BrandingComponent implements OnInit, OnDestroy {
             document.body.style.setProperty('--linear-gradient', gradientData);
             // document.body.style.setProperty('--header-color-shadow', shadow);
             document.body.style.setProperty('--color-primary', this.primaryHexColorControl.value);
-            companyName.innerHTML = brandingData.companyName;
+            document.body.style.setProperty('--guardian-menu-color-2', this.headerColor1Control.value);
+            companyName.textContent = brandingData.companyName;
             document.title = brandingData.companyName;
 
             if (brandingData.companyLogoUrl) {
@@ -239,9 +272,10 @@ export class BrandingComponent implements OnInit, OnDestroy {
         document.body.style.setProperty('--linear-gradient', gradientData);
         // document.body.style.setProperty('--header-color-shadow', shadow);
         document.body.style.setProperty('--color-primary', primaryColor);
+        document.body.style.setProperty('--guardian-menu-color-2', this.headerColor1Control.value);
         //document.documentElement.style.setProperty('--button-primary-color', primaryColor);
         if (this.companyNameControl.value) {
-            companyName.innerHTML = this.companyNameControl.value;
+            companyName.textContent = this.companyNameControl.value;
             document.title = this.companyNameControl.value;
         }
         if (this.companyLogoUrl) {
@@ -271,7 +305,9 @@ export class BrandingComponent implements OnInit, OnDestroy {
             companyName: 'GUARDIAN',
             companyLogoUrl: '/assets/images/logo.png',
             loginBannerUrl: '/assets/bg.jpg',
-            faviconUrl: 'favicon.ico'
+            faviconUrl: 'favicon.ico',
+            useCustomMenuColors: true,
+            useSolidBackground: false
         };
 
         this.brandingService.saveBrandingData(payload);

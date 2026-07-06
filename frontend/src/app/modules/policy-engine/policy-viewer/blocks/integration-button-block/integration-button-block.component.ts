@@ -15,7 +15,8 @@ import { PolicyStatus } from '@guardian/interfaces';
     selector: 'integration-button-block',
     templateUrl: './integration-button-block.component.html',
     styleUrls: ['./integration-button-block.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -137,6 +138,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
                 viewDocument: true,
                 document: document.document,
                 type: 'VC',
+                canExport: true,
                 additionalOptions: [
                     { label: 'Integration Data', value: 'integration', icon: 'number' },
                 ],
@@ -148,7 +150,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
                     }
                 ]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

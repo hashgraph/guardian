@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables} f
     selector: 'wipe-config',
     templateUrl: './wipe-config.component.html',
     styleUrls: ['./wipe-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class WipeConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

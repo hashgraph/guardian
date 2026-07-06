@@ -65,6 +65,7 @@ const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
     styleUrls: ['./schema-form.component.scss'],
+    standalone: false
 })
 export class SchemaFormComponent implements OnInit {
     @Input('form-model') formModel!: FieldForm;

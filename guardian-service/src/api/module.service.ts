@@ -63,6 +63,9 @@ export async function preparePreviewMessage(
             userId: user.id,
             interception: null
         });
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
     if (message.type !== MessageType.Module) {
         throw new Error('Invalid Message Type');
     }

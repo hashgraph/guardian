@@ -2,7 +2,7 @@ import { DatabaseServer, IAuthUser, Policy, PolicyDiscussion, VcDocument, VcHelp
 import { EntityOwner, GenerateUUIDv4, LocationType, PolicyStatus, Schema, SchemaEntity, SchemaHelper, TopicType } from '@guardian/interfaces';
 import { publishSystemSchema } from '../helpers/import-helpers/index.js';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 
 /**
  * Policy component utils

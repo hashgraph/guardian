@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 101;
     top: var(--header-height);
@@ -201,7 +201,7 @@
     top: 42px;
     right: 0;
     width: 325px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     bottom: 30px;
     pointer-events: all;
     overflow: scroll;

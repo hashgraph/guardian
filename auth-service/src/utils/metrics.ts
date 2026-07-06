@@ -1,6 +1,6 @@
 import express from 'express';
 import client from 'prom-client';
-import guardianServicePrometheusMetrics from 'prometheus-api-metrics';
+import { expressMiddleware as guardianServicePrometheusMetrics } from 'prometheus-api-metrics';
 
 const app = express();
 

@@ -15,7 +15,7 @@
 
 .progress-footer {
   padding: 12px 48px;
-  padding-left: calc(var(--header-width-expand) + 48px);
+  padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
   display: flex;
   justify-content: space-between;
   position: fixed;
@@ -23,7 +23,7 @@
   right: 0;
   width: 100%;
   border-top: 1px solid var(--color-grey-3, #E1E7EF);
-  background: #FFF;
+  background: var(--guardian-background, #FFF);
 
   ::ng-deep {
     .p-button {
@@ -38,7 +38,7 @@
         font-style: normal;
         font-weight: 500;
         line-height: 30px;
-        color: var(--color-grey-white, #FFF);
+        color: var(--guardian-on-primary-color, #FFF);
       }
 
       &:disabled {
@@ -88,7 +88,7 @@
     height: 24px;
     border-radius: 24px;
     background: var(--color-grey-3, #E1E7EF);
-    color: white;
+    color: var(--guardian-on-primary-color, white);
   }
 
   p {
@@ -101,7 +101,7 @@
     font-style: normal;
     font-weight: 500;
     line-height: normal;
-    color: var(--color-grey-5, #C4D0E1);
+    color: var(--guardian-font-color, #C4D0E1);
   }
 
   &.stepWithAction {
@@ -115,7 +115,7 @@
       border-radius: 24px;
       border: 1px solid var(--color-grey-4, #AAB7C4);
       background: var(--color-grey-2, #EFF3F7);
-      color: var(--color-grey-6, #848FA9);
+      color: var(--guardian-font-color, #848FA9);
     }
 
     p {
@@ -124,7 +124,7 @@
       font-style: normal;
       font-weight: 500;
       line-height: normal;
-      color: var(--color-grey-6, #848FA9);
+      color: var(--guardian-font-color, #848FA9);
     }
   }
 
@@ -150,7 +150,7 @@
     height: 24px;
     border-radius: 24px;
     background: var(--color-primary, #0031ff);
-    color: white;
+    color: var(--guardian-on-primary-color, white);
   }
 
   p {
@@ -163,7 +163,7 @@
     font-style: normal;
     font-weight: 500;
     line-height: normal;
-    color: var(--color-primary, #0031ff);
+    color: var(--guardian-font-color, #0031ff);
   }
 }
 

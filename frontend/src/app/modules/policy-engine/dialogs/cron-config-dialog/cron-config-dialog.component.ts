@@ -10,7 +10,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'cron-config-dialog',
     templateUrl: './cron-config-dialog.component.html',
-    styleUrls: ['./cron-config-dialog.component.scss']
+    styleUrls: ['./cron-config-dialog.component.scss'],
+    standalone: false
 })
 export class CronConfigDialog {
     started = false;

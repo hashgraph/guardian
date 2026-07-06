@@ -1,25 +1,31 @@
-<div class="new-versions" *ngIf="visible">
+@if (visible) {
+  <div class="new-versions">
     <i class="pi pi-info-circle new-versions__info-icon"></i>
     <b class="new-versions__info-label">New versions of {{ type }} exist</b>
     <div class="new-versions__links">
-        <div class="new-versions__link" *ngFor="let newVersion of newVersions">
-            <span
-                class="new-versions__link-label"
-                [title]="newVersion.messageId"
-                (click)="onClick(newVersion.messageId)"
+      @for (newVersion of newVersions; track newVersion) {
+        <div class="new-versions__link">
+          <span
+            class="new-versions__link-label"
+            [title]="newVersion.messageId"
+            (click)="onClick(newVersion.messageId)"
             >{{ newVersion.version }}
-            </span>
-            <i
-                pTooltip="Copy message identifier"
-                tooltipStyleClass="guardian-tooltip"
-                tooltipPosition="top"
-                class="pi pi-copy new-versions__link-copy"
-                (click)="onCopyClick(newVersion)"
+          </span>
+          <i
+            pTooltip="Copy message identifier"
+            tooltipStyleClass="guardian-tooltip"
+            tooltipPosition="top"
+            class="pi pi-copy new-versions__link-copy"
+            (click)="onCopyClick(newVersion)"
                 [ngClass]="{
                     'new-versions__link-copy--hidden': newVersion.copied
                 }"
-            ></i>
-            <i class="pi pi-check new-versions__copy-done" *ngIf="newVersion.copied"></i>
+          ></i>
+          @if (newVersion.copied) {
+            <i class="pi pi-check new-versions__copy-done"></i>
+          }
         </div>
+      }
     </div>
-</div>
+  </div>
+}

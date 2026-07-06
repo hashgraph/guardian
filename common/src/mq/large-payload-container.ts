@@ -1,7 +1,7 @@
 import express from 'express'
-import http from 'http'
-import https from 'https'
-import { hostname } from 'os';
+import http from 'node:http'
+import https from 'node:https'
+import { hostname } from 'node:os';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
 import { Singleton } from '../decorators/singleton.js';
 

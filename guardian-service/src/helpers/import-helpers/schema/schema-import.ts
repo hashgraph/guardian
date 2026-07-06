@@ -257,6 +257,17 @@ export class SchemaImport {
         userId: string | null
     ) {
         step.addEstimate(schemas.length);
+
+        // Collect all policy schema UUIDs upfront so the guard inside the loop
+        // is order-independent (schemas are sorted by name, not by dependency order).
+        const policySchemaUUIDs = new Set<string>();
+        for (const file of schemas) {
+            const uuid = file.iri?.startsWith('#') ? file.iri.substring(1) : file.iri;
+            if (uuid) {
+                policySchemaUUIDs.add(uuid);
+            }
+        }
+
         for (const file of schemas) {
             this.updateId(file);
             file.category = category;
@@ -275,10 +286,15 @@ export class SchemaImport {
                 file.status = SchemaStatus.DRAFT;
             }
 
-            //Find external schemas by Title
+            //Find external (tool) schemas by title.
+            //Skip policy-owned defs to prevent rebinding when titles collide with a tool schema name.
             const defs = SchemaImportExportHelper.getDefDocuments(file);
             for (const def of defs) {
                 if (def && !this.schemaIdsMapping.has(def.$id)) {
+                    const defUUID = def.$id?.startsWith('#') ? def.$id.substring(1) : def.$id;
+                    if (policySchemaUUIDs.has(defUUID)) {
+                        continue;
+                    }
                     const externalSchemaIRI = this.externalSchemas.get(def.title);
                     if (externalSchemaIRI) {
                         this.schemaIdsMapping.set(def.$id, externalSchemaIRI);

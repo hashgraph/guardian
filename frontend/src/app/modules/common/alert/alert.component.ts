@@ -12,6 +12,7 @@ export enum AlertType {
     selector: 'app-alert',
     templateUrl: './alert.component.html',
     styleUrls: ['./alert.component.scss'],
+    standalone: false
 })
 export class AlertComponent implements OnInit {
     type?: AlertType;

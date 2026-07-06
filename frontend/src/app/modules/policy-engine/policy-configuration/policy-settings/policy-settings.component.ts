@@ -18,7 +18,8 @@ import {DialogService} from 'primeng/dynamicdialog';
 @Component({
     selector: 'policy-settings',
     templateUrl: './policy-settings.component.html',
-    styleUrls: ['./policy-settings.component.scss']
+    styleUrls: ['./policy-settings.component.scss'],
+    standalone: false
 })
 export class PolicySettingsComponent implements OnInit {
     @Output('update') update = new EventEmitter();
@@ -30,31 +31,6 @@ export class PolicySettingsComponent implements OnInit {
     public allBlocks!: any[];
     public roles: string[];
     public loading = false;
-    public colorPickerControls: any = 'no-alpha';
-    public colorPalette: Array<any> = [
-        '#ffffff',
-        '#efe5fc',
-        '#e2f9fe',
-        '#ffeeda',
-        '#bcffd9',
-
-        '#ffcadf',
-        '#c396fa',
-        '#7bd0e3',
-        '#f9b465',
-        '#8ed600',
-
-        '#ff4785',
-        '#d020ff',
-        '#00d0ff',
-        '#b36400',
-        '#1dd267',
-
-        '#db0065',
-        '#6f00c3',
-        '#0288d1',
-        '#000000',
-    ];
 
     public dropdownTypesOptions = [
         {label: 'Types', value: 'type'},
@@ -222,7 +198,7 @@ export class PolicySettingsComponent implements OnInit {
                 type,
                 theme: newTheme
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (r) => {
             if (r) {
                 if (r.name) {
@@ -251,7 +227,7 @@ export class PolicySettingsComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.loading = true;
@@ -277,7 +253,7 @@ export class PolicySettingsComponent implements OnInit {
             data: {
                 type: ImportEntityType.Theme,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 const {data} = result;
@@ -334,7 +310,7 @@ export class PolicySettingsComponent implements OnInit {
                 type: 'edit',
                 theme: theme
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 theme.name = result.name;

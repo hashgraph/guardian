@@ -1,7 +1,6 @@
 import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
-import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
-import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
+import { FilterObject, FilterQuery, FindAllOptions, MikroORM, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { Binary } from 'bson';
 import {
@@ -2684,6 +2683,27 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await this.find(DocumentState, filters, options);
     }
 
+    public async getDocumentStateHistory(
+        filters: FilterObject<DocumentState>,
+        documentSubpaths: string[],
+    ): Promise<{ createDate: Date, document: any }[]> {
+        const topLevelKeys = Array.from(new Set(
+            documentSubpaths.map(p => (p || '').split('.', 1)[0])
+        ));
+        const projection: any = { _id: 0, createDate: 1 };
+        for (const key of topLevelKeys) {
+            if (!key || key.startsWith('$') || key.includes('.') || key.includes('\0')) {
+                continue;
+            }
+            projection[`document.${key}`] = 1;
+        }
+        const pipeline: any[] = [
+            { $match: filters },
+            { $project: projection },
+        ];
+        return await this.aggregate(DocumentState, pipeline) as any;
+    }
+
     /**
      * Get Dry Run id
      * @returns Dry Run id
@@ -3096,7 +3116,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyCategories(): Promise<PolicyCategory[]> {
-        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory as FilterQuery<PolicyCategory>);
+        return await new DataBaseHelper(PolicyCategory).find({});
     }
 
     /**
@@ -3113,7 +3133,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyProperties(): Promise<PolicyProperty[]> {
-        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty as FilterQuery<PolicyProperty>);
+        return await new DataBaseHelper(PolicyProperty).find({});
     }
 
     /**

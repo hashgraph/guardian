@@ -1,47 +1,59 @@
-# Returning list of all Retire Requests
+# Returning List of All Retire Requests
 
-{% swagger method="get" path="" baseUrl="/contracts/retire/requests" summary="Return a list of all retire requests." %}
-{% swagger-description %}
-Returns all retire requests.
-{% endswagger-description %}
+**`GET /api/v1/contracts/retire/requests`**
 
-{% swagger-parameter in="query" name="contractId" type="String" %}
-Contract Identifier
-{% endswagger-parameter %}
+Returns a paginated list of all retire requests. Accessible by Standard Registry and User roles.
 
-{% swagger-parameter in="query" name="pageSize" type="Number" required="false" %}
-The numbers of items to return
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="query" name="pageIndex" type="Number" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+**Permission:** `Permissions.CONTRACTS_RETIRE_REQUEST_READ`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter    | Type   | Required | Default | Description                                                       |
+|--------------|--------|----------|---------|-------------------------------------------------------------------|
+| `contractId` | string | No       | —       | Filter requests by contract identifier                            |
+| `pageIndex`  | number | No       | 0       | The number of pages to skip before starting to collect the result |
+| `pageSize`   | number | No       | 20      | The number of items to return                                     |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Headers:
+
+| Header          | Description                              |
+|-----------------|------------------------------------------|
+| `X-Total-Count` | Total number of retire requests available |
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "contractId": "0.0.4532001",
+    "user": "0.0.4532001",
+    "tokens": [
+      {
+        "token": "0.0.5000001",
+        "count": 100
+      }
+    ]
+  }
+]
 ```
-headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RetireRequestDTO'
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -6,7 +6,8 @@ import { Component, Input } from '@angular/core';
 @Component({
     selector: 'help-icon',
     templateUrl: './help-icon.component.html',
-    styleUrls: ['./help-icon.component.scss']
+    styleUrls: ['./help-icon.component.scss'],
+    standalone: false
 })
 export class HelpIcon {
     @Input('text') text!: string;

@@ -21,7 +21,7 @@
 .btn-approve {
     background: #4caf50;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -29,10 +29,14 @@
     font-weight: 500;
 }
 
+:host-context(.guardian-theme-dark) .btn-approve {
+    background: var(--guardian-success-background, #12351F);
+}
+
 .btn-reject {
     background: #f44336;
     border-radius: 6px;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
     display: inline-block;
     padding: 2px 8px;
     margin: 0px 5px;
@@ -86,7 +90,7 @@
     display: flex;
 }
 
-.content-dropdown ::ng-deep p-dropdown .p-dropdown {
+.content-dropdown ::ng-deep p-select .p-select {
     width: 146px;
     height: 36px !important;
 }

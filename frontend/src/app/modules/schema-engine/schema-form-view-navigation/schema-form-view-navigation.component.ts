@@ -11,6 +11,7 @@ export interface NavItem {
     selector: 'app-schema-form-view-navigation',
     templateUrl: './schema-form-view-navigation.component.html',
     styleUrls: ['./schema-form-view-navigation.component.scss'],
+    standalone: false
 })
 export class SchemaFormViewNavigationComponent implements OnInit, OnChanges {
     @Input() subjects: any[] | null = null;

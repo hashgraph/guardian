@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { colorToGradient } from '../static/color-remoter.function';
+import { HttpClient, HttpContext } from '@angular/common/http';
+import { colorToGradient, isLightColor } from '../static/color-remoter.function';
 import { disableGlobalLoader } from '../static/global-loader.function';
+import { SILENT_HTTP_ERRORS } from '../constants';
 
 export interface BrandingPayload {
     headerColor: string
@@ -12,22 +13,34 @@ export interface BrandingPayload {
     loginBannerUrl: string
     faviconUrl: string,
     termsAndConditions: string
+    useCustomMenuColors?: boolean
+    useSolidBackground?: boolean
 }
+
+/**
+ * Fallback branding applied when the backend is unreachable or returns no data.
+ * Mirrors the initial branding defined server-side (guardian-service branding.service.ts).
+ */
+const DEFAULT_BRANDING: BrandingPayload = {
+    headerColor: '#0031ff',
+    headerColor1: '#8259ef',
+    primaryColor: '#0031ff',
+    companyName: 'GUARDIAN',
+    companyLogoUrl: '/assets/images/logo.png',
+    loginBannerUrl: '/assets/bg.jpg',
+    faviconUrl: 'favicon.ico',
+    termsAndConditions: '',
+};
 
 @Injectable({
     providedIn: 'root'
 })
 export class BrandingService {
-    private brandingData: BrandingPayload = {
-        headerColor: '',
-        headerColor1: '',
-        primaryColor: '',
-        companyName: '',
-        companyLogoUrl: '',
-        loginBannerUrl: '',
-        faviconUrl: '',
-        termsAndConditions: '',
-    };
+    private brandingData: BrandingPayload = { ...DEFAULT_BRANDING };
+
+    // Shared in-flight fetch so the several components that request branding on
+    // startup reuse a single HTTP call instead of each firing their own.
+    private brandingRequest?: Promise<BrandingPayload>;
 
     constructor(
         private http: HttpClient
@@ -54,17 +67,34 @@ export class BrandingService {
     }
 
     getBrandingData(): Promise<BrandingPayload> {
-        // send GET request
-        return this.http.get('/api/v1/branding')
+        // Reuse the in-flight request if branding is already being fetched.
+        if (this.brandingRequest) {
+            return this.brandingRequest;
+        }
+
+        // send GET request. Errors are handled here (falling back to defaults),
+        // so mark the request silent to keep the global error interceptor from
+        // showing a toast when the backend is unavailable.
+        const request = this.http
+            .get('/api/v1/branding', {
+                context: new HttpContext().set(SILENT_HTTP_ERRORS, true)
+            })
             .toPromise()
             .then((data: any) => {
-                this.brandingData = data;
+                this.brandingData = data || { ...DEFAULT_BRANDING };
                 return this.brandingData as BrandingPayload;
             })
             .catch((error: any) => {
                 console.log(error)
+                this.brandingData = { ...DEFAULT_BRANDING };
                 return this.brandingData;
+            })
+            .finally(() => {
+                this.brandingRequest = undefined;
             });
+
+        this.brandingRequest = request;
+        return request;
     }
 
     loadBrandingData(width?: number): Promise<BrandingPayload> {
@@ -90,6 +120,14 @@ export class BrandingService {
 
             if (brandingData.primaryColor) {
                 document.body.style.setProperty('--color-primary', brandingData.primaryColor);
+                // PrimeNG (--primary-color) and the guardian theme
+                // (--guardian-primary-color) resolve their primary tokens on
+                // :root, so a body-level override never reaches them — the
+                // branded primary must be written on the root element too.
+                const rootStyle = document.documentElement.style;
+                rootStyle.setProperty('--primary-color', brandingData.primaryColor);
+                rootStyle.setProperty('--guardian-primary-color', brandingData.primaryColor);
+                rootStyle.setProperty('--button-primary-color-hover', brandingData.primaryColor);
             }
             if (brandingData.headerColor && brandingData.headerColor1) {
                 const gradientData = colorToGradient(brandingData.headerColor, brandingData.headerColor1);
@@ -97,9 +135,44 @@ export class BrandingService {
                 document.body.style.setProperty('--linear-gradient', gradientData);
                 // document.body.style.setProperty('--header-color-shadow', shadow);
             }
+            if (brandingData.headerColor1) {
+                document.body.style.setProperty('--guardian-menu-color-2', brandingData.headerColor1);
+            }
+            // Custom menu colors are driven by the stored flags; configs saved
+            // before the flags existed fall back to "enabled when a menu color
+            // is set" so existing installations keep their current look.
+            const useCustomMenuColors = brandingData.useCustomMenuColors ?? !!brandingData.headerColor;
+            const useSolidBackground = brandingData.useSolidBackground
+                ?? (!brandingData.headerColor1 || brandingData.headerColor1 === brandingData.headerColor);
+            if (useCustomMenuColors && brandingData.headerColor) {
+                const bodyStyle = document.body.style;
+                const sidebarBg = (brandingData.headerColor1 && !useSolidBackground)
+                    ? colorToGradient(brandingData.headerColor, brandingData.headerColor1)
+                    : brandingData.headerColor;
+                bodyStyle.setProperty('--sidebar-bg', sidebarBg);
+                if (isLightColor(brandingData.headerColor)) {
+                    bodyStyle.setProperty('--sidebar-item-color', '#3A4A73');
+                    bodyStyle.setProperty('--sidebar-section-color', 'rgba(38, 33, 92, 0.65)');
+                    bodyStyle.setProperty('--sidebar-item-hover', 'rgba(0, 0, 0, 0.08)');
+                    bodyStyle.setProperty('--sidebar-border', 'rgba(0, 0, 0, 0.12)');
+                    bodyStyle.setProperty('--sidebar-logo-color', '#26215C');
+                    bodyStyle.setProperty('--sidebar-accent', '#26215C');
+                    bodyStyle.setProperty('--sidebar-active-bg', 'rgba(0, 0, 0, 0.10)');
+                    bodyStyle.setProperty('--sidebar-active-color', '#26215C');
+                } else {
+                    bodyStyle.setProperty('--sidebar-item-color', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-section-color', 'rgba(255, 255, 255, 0.65)');
+                    bodyStyle.setProperty('--sidebar-item-hover', 'rgba(255, 255, 255, 0.12)');
+                    bodyStyle.setProperty('--sidebar-border', 'rgba(255, 255, 255, 0.16)');
+                    bodyStyle.setProperty('--sidebar-logo-color', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-accent', '#FFFFFF');
+                    bodyStyle.setProperty('--sidebar-active-bg', 'rgba(255, 255, 255, 0.16)');
+                    bodyStyle.setProperty('--sidebar-active-color', '#FFFFFF');
+                }
+            }
             if (brandingData.companyName) {
                 if (companyName) {
-                    companyName.innerHTML = brandingData.companyName;
+                    companyName.textContent = brandingData.companyName;
                 }
                 document.title = brandingData.companyName;
             }

@@ -365,7 +365,7 @@ export async function importToolByFile(
 
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
-    const root = await users.getHederaAccount(user.creator, userId);
+    const root = await users.getHederaAccount(user.owner, userId);
 
     const { toolsMapping, preResolvedTools, toolsToImport } = await resolveToolOverrides(tools, metadata);
 

@@ -2043,6 +2043,9 @@ export class PolicyEngine extends NatsService {
                 userId,
                 interception: null
             });
+        if (!message) {
+            throw new Error('Invalid Message');
+        }
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }
@@ -2124,12 +2127,15 @@ export class PolicyEngine extends NatsService {
             if (confirmed) {
                 return new Promise((resolve, reject) => {
                     this.policyReadyCallbacks.set(policyId, (data, error) => {
+                        // Always clean up first so the callback settles exactly once,
+                        // even if a duplicate ready-event arrives.
+                        this.policyReadyCallbacks.delete(policyId);
                         if (error) {
                             this.policyInitializationErrors.set(policyId, error);
                             reject(new Error(error));
+                            return;
                         }
                         resolve(data);
-                        this.policyReadyCallbacks.delete(policyId);
                     })
                 });
             } else {

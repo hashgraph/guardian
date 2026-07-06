@@ -14,6 +14,7 @@ import { StepTreeComponent } from '../step-tree/step-tree.component';
     selector: 'app-separate-stepper',
     templateUrl: './separate-stepper.component.html',
     styleUrls: ['./separate-stepper.component.scss'],
+    standalone: false
 })
 export class SeparateStepperComponent implements OnInit {
     mousePosition!: any;

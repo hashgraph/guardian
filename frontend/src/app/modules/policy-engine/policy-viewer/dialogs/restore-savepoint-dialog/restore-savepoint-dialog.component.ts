@@ -29,6 +29,7 @@ export interface IRestoreSavepointAction {
     selector: 'app-restore-savepoint-dialog',
     templateUrl: './restore-savepoint-dialog.component.html',
     styleUrls: ['./restore-savepoint-dialog.component.scss'],
+    standalone: false
 })
 export class RestoreSavepointDialog {
     public policyId!: string;

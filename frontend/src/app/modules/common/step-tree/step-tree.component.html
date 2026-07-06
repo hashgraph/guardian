@@ -1,28 +1,38 @@
 <div class="tree">
-    <ul>
-        <li *ngFor="let node of dataSource.data" class="tree-node">
-            <div class="node" [ngClass]="{ 'current-node': currentNode === node }" (click)="onNodeClick(node)">
-                <i class="pi pi-angle-right"></i>
-                <span class="node-text">{{ node.name }}</span>
-            </div>
-            <ul *ngIf="node.children?.length" class="tree-children">
-                <li *ngFor="let child of node.children" class="tree-node">
-                    <div class="node" [ngClass]="{ 'current-node': currentNode === child }"
-                         (click)="onNodeClick(child)">
-                        <i class="pi pi-angle-right"></i>
-                        <span class="node-text">{{ child.name }}</span>
-                    </div>
-                    <ul *ngIf="child.children?.length" class="tree-children">
-                        <li *ngFor="let grandChild of child.children" class="tree-node">
-                            <div class="node" [ngClass]="{ 'current-node': currentNode === grandChild }"
-                                 (click)="onNodeClick(grandChild)">
-                                <i class="pi pi-angle-right"></i>
-                                <span class="node-text">{{ grandChild.name }}</span>
-                            </div>
-                        </li>
-                    </ul>
-                </li>
-            </ul>
-        </li>
-    </ul>
+  <ul>
+    @for (node of dataSource.data; track node) {
+      <li class="tree-node">
+        <div class="node" [ngClass]="{ 'current-node': currentNode === node }" (click)="onNodeClick(node)">
+          <i class="pi pi-angle-right"></i>
+          <span class="node-text">{{ node.name }}</span>
+        </div>
+        @if (node.children?.length) {
+          <ul class="tree-children">
+            @for (child of node.children; track child) {
+              <li class="tree-node">
+                <div class="node" [ngClass]="{ 'current-node': currentNode === child }"
+                  (click)="onNodeClick(child)">
+                  <i class="pi pi-angle-right"></i>
+                  <span class="node-text">{{ child.name }}</span>
+                </div>
+                @if (child.children?.length) {
+                  <ul class="tree-children">
+                    @for (grandChild of child.children; track grandChild) {
+                      <li class="tree-node">
+                        <div class="node" [ngClass]="{ 'current-node': currentNode === grandChild }"
+                          (click)="onNodeClick(grandChild)">
+                          <i class="pi pi-angle-right"></i>
+                          <span class="node-text">{{ grandChild.name }}</span>
+                        </div>
+                      </li>
+                    }
+                  </ul>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </li>
+    }
+  </ul>
 </div>

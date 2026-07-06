@@ -1,49 +1,51 @@
-# Importing a Policy from file
+# Importing a Policy from File (Async)
 
-{% swagger method="post" path="" baseUrl="/policies/push/import/file" summary="Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB." %}
-{% swagger-description %}
-Imports new policy and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /policies/push/import/file`**
 
-{% swagger-parameter in="body" required="true" type="String" %}
-A zip file that contains the policy and associated schemas and VCs to be imported.
-{% endswagger-parameter %}
+Imports a new policy and all associated artifacts from a zip file asynchronously. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `versionOfTopicId` | string | No | — | The topic ID of the policy version to associate |
+| `demo` | boolean | No | false | Import the policy in demo mode |
+
+### Request Body
+
+The request body must be the raw binary content of a `.zip` file exported from Guardian.
+
+**Content-Type:** `application/octet-stream`
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Import policy file"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

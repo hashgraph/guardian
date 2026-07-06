@@ -1,238 +1,306 @@
-<div class="page-content" *ngIf="status === 'NEED_TOPIC' || status === 'NEED_SCHEMA'" [attr.readonly-block]="readonly">
+@if (status === 'NEED_TOPIC' || status === 'NEED_SCHEMA') {
+  <div class="page-content" [attr.readonly-block]="readonly">
     <p-steps [model]="steps" [(activeIndex)]="stepIndex" [readonly]="true"></p-steps>
-
-        <div *ngIf="stepIndex === 0">
-            <form [formGroup]="topicForm" (submit)="setTopic()">
-                <div class="form-content first-step">
-                    <div class="text">
-                        Enter Hedera topic ID which contains messages about ingress VC documents.
-                    </div>
-
-                    <div class="form-group">
-                        <label for="topicId">Topic ID</label>
-                        <input
-                            id="topicId"
-                            type="text"
-                            placeholder="_._._"
-                            formControlName="topicId"
-                            class="p-inputtext p-component"
-                            (input)="applyMask($event)"
-                        />
-                    </div>
-                </div>
-                <div class="form-buttons">
-                    <button pButton type="submit" label="Next" [disabled]="!topicForm.valid"
-                            class="p-button-raised p-button-primary"></button>
-                </div>
-            </form>
+    @if (stepIndex === 0) {
+      <div>
+        <form [formGroup]="topicForm" (submit)="setTopic()">
+          <div class="form-content first-step">
+            <div class="text">
+              Enter Hedera topic ID which contains messages about ingress VC documents.
+            </div>
+            <div class="form-group">
+              <label for="topicId">Topic ID</label>
+              <input
+                id="topicId"
+                type="text"
+                placeholder="_._._"
+                formControlName="topicId"
+                class="p-inputtext p-component"
+                (input)="applyMask($event)"
+                />
+            </div>
+          </div>
+          <div class="form-buttons">
+            <button pButton type="submit" label="Next" [disabled]="!topicForm.valid"
+            class="p-button-raised p-button-primary"></button>
+          </div>
+        </form>
+      </div>
+    }
+    @if (stepIndex === 1) {
+      <div>
+        <div class="form-content">
+          <div class="text">
+            Selected topic belongs to the following policy:
+          </div>
+          @if (policyTopicId) {
+            <div class="field">
+              <div class="field-name">Policy Topic Id</div>
+              <div class="field-value">{{ policyTopicId }}</div>
+            </div>
+          }
+          @if (policyInstanceMessage) {
+            <div class="field">
+              <div class="field-name">Policy Name</div>
+              <div class="field-value">{{ policyInstanceMessage.name }}</div>
+            </div>
+          }
+          @if (policyInstanceMessage) {
+            <div class="field">
+              <div class="field-name">Policy Version</div>
+              <div class="field-value">{{ policyInstanceMessage.version }}</div>
+            </div>
+          }
+          @if (instanceTopicId) {
+            <div class="field">
+              <div class="field-name">Instance Topic Id</div>
+              <div class="field-value">{{ instanceTopicId }}</div>
+            </div>
+          }
+          @if (documentMessage) {
+            <div class="field">
+              <div class="field-name">Document Topic</div>
+              <div class="field-value">{{ documentMessage.name }}</div>
+            </div>
+          }
+          @if (documentTopicId) {
+            <div class="field">
+              <div class="field-name">Document Topic Id</div>
+              <div class="field-value">{{ documentTopicId }}</div>
+            </div>
+          }
         </div>
-        <div *ngIf="stepIndex === 1">
-            <div class="form-content">
-                <div class="text">
-                    Selected topic belongs to the following policy:
+        <div class="form-buttons">
+          <button pButton type="button" label="Back" (click)="onBack({isPrev: true})" class="p-button-text"></button>
+          <button pButton type="button" label="Next" (click)="next()"
+          class="p-button-raised p-button-primary"></button>
+        </div>
+      </div>
+    }
+    @if (stepIndex === 2) {
+      <div>
+        <form [formGroup]="schemaForm" (submit)="setSchema()">
+          <div class="form-content step-three">
+            <div class="text first">
+              Select the ingress documents schema. Note: selected schema must be compatible with the current
+              policy.
+            </div>
+            <div class="text second">
+              Only documents conforming to the schema would be accepted into the system.
+            </div>
+            <div formArrayName="schemaArray" class="schemas-block">
+              @for (control of schemaArray.controls; track control; let i = $index) {
+                <div class="schema-row">
+                  <p-radioButton
+                    [formControl]="getFormControl(control)"
+                    [value]="schemas?.[i].id"
+                  ></p-radioButton>
+                  <div>{{ schemas?.[i].name }}</div>
+                  @if (schemas?.[i].status === 'NOT_VERIFIED') {
+                    <div class="schema-status-NOT_VERIFIED">
+                      Need verification
+                    </div>
+                  }
+                  @if (schemas?.[i].status === 'INCOMPATIBLE') {
+                    <div class="schema-status-INCOMPATIBLE">
+                      Incompatible
+                    </div>
+                  }
+                  @if (schemas?.[i].status === 'COMPATIBLE') {
+                    <div class="schema-status-COMPATIBLE">
+                      Verified
+                    </div>
+                  }
                 </div>
-                <div *ngIf="policyTopicId" class="field">
-                    <div class="field-name">Policy Topic Id</div>
-                    <div class="field-value">{{ policyTopicId }}</div>
-                </div>
-                <div *ngIf="policyInstanceMessage" class="field">
-                    <div class="field-name">Policy Name</div>
-                    <div class="field-value">{{ policyInstanceMessage.name }}</div>
-                </div>
-                <div *ngIf="policyInstanceMessage" class="field">
-                    <div class="field-name">Policy Version</div>
-                    <div class="field-value">{{ policyInstanceMessage.version }}</div>
-                </div>
-                <div *ngIf="instanceTopicId" class="field">
-                    <div class="field-name">Instance Topic Id</div>
-                    <div class="field-value">{{ instanceTopicId }}</div>
-                </div>
-                <div *ngIf="documentMessage" class="field">
-                    <div class="field-name">Document Topic</div>
-                    <div class="field-value">{{ documentMessage.name }}</div>
-                </div>
-                <div *ngIf="documentTopicId" class="field">
-                    <div class="field-name">Document Topic Id</div>
-                    <div class="field-value">{{ documentTopicId }}</div>
-                </div>
+              }
             </div>
             <div class="form-buttons">
-                <button pButton type="button" label="Back" (click)="onBack({isPrev: true})" class="p-button-text"></button>
-                <button pButton type="button" label="Next" (click)="next()"
-                        class="p-button-raised p-button-primary"></button>
+              <div class="form-link" (click)="verificationAll()">Verify All</div>
             </div>
-        </div>
-        <div *ngIf="stepIndex === 2">
-            <form [formGroup]="schemaForm" (submit)="setSchema()">
-                <div class="form-content step-three">
-                    <div class="text first">
-                        Select the ingress documents schema. Note: selected schema must be compatible with the current
-                        policy.
-                    </div>
-                    <div class="text second">
-                        Only documents conforming to the schema would be accepted into the system.
-                    </div>
-
-                    <div formArrayName="schemaArray" class="schemas-block">
-                        <div *ngFor="let control of schemaArray.controls; let i = index" class="schema-row">
-                            <p-radioButton
-                                [formControl]="getFormControl(control)"
-                                [value]="schemas?.[i].id"
-                            ></p-radioButton>
-                            <div>{{ schemas?.[i].name }}</div>
-
-                            <div *ngIf="schemas?.[i].status === 'NOT_VERIFIED'" class="schema-status-NOT_VERIFIED">
-                                Need verification
-                            </div>
-                            <div *ngIf="schemas?.[i].status === 'INCOMPATIBLE'" class="schema-status-INCOMPATIBLE">
-                                Incompatible
-                            </div>
-                            <div *ngIf="schemas?.[i].status === 'COMPATIBLE'" class="schema-status-COMPATIBLE">
-                                Verified
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-buttons">
-                        <div class="form-link" (click)="verificationAll()">Verify All</div>
-                    </div>
-                </div>
-                <div class="form-buttons">
-                    <button pButton type="button" label="Back" (click)="prev()" class="p-button-text"></button>
-                    <button pButton type="submit" label="Verify & Finish" [disabled]="!schemaForm.valid"
-                            class="p-button-raised p-button-primary"></button>
-                </div>
-            </form>
-        </div>
-        <div *ngIf="stepIndex === 3">
-            <div class="form-content">
-                <div *ngIf="policyTopicId" class="field">
-                    <div class="field-name">Policy Topic Id</div>
-                    <div class="field-value">{{ policyTopicId }}</div>
-                </div>
-                <div *ngIf="policyInstanceMessage" class="field">
-                    <div class="field-name">Policy Name</div>
-                    <div class="field-value">{{ policyInstanceMessage.name }}</div>
-                </div>
-                <div *ngIf="policyInstanceMessage" class="field">
-                    <div class="field-name">Policy Version</div>
-                    <div class="field-value">{{ policyInstanceMessage.version }}</div>
-                </div>
-                <div *ngIf="instanceTopicId" class="field">
-                    <div class="field-name">Instance Topic Id</div>
-                    <div class="field-value">{{ instanceTopicId }}</div>
-                </div>
-                <div *ngIf="documentMessage" class="field">
-                    <div class="field-name">Document Topic</div>
-                    <div class="field-value">{{ documentMessage.name }}</div>
-                </div>
-                <div *ngIf="documentTopicId" class="field">
-                    <div class="field-name">Document Topic Id</div>
-                    <div class="field-value">{{ documentTopicId }}</div>
-                </div>
-                <div *ngIf="schema" class="field">
-                    <div class="field-name">Schema</div>
-                    <div class="field-value">{{ schema.name }}</div>
-                </div>
+          </div>
+          <div class="form-buttons">
+            <button pButton type="button" label="Back" (click)="prev()" class="p-button-text"></button>
+            <button pButton type="submit" label="Verify & Finish" [disabled]="!schemaForm.valid"
+            class="p-button-raised p-button-primary"></button>
+          </div>
+        </form>
+      </div>
+    }
+    @if (stepIndex === 3) {
+      <div>
+        <div class="form-content">
+          @if (policyTopicId) {
+            <div class="field">
+              <div class="field-name">Policy Topic Id</div>
+              <div class="field-value">{{ policyTopicId }}</div>
             </div>
-            <div class="form-buttons">
-                <button pButton type="button" label="Back" (click)="prev()" class="p-button-text"></button>
-                <button pButton type="button" label="Finish" (click)="next()" class="p-button-raised p-button-primary"></button>
+          }
+          @if (policyInstanceMessage) {
+            <div class="field">
+              <div class="field-name">Policy Name</div>
+              <div class="field-value">{{ policyInstanceMessage.name }}</div>
             </div>
+          }
+          @if (policyInstanceMessage) {
+            <div class="field">
+              <div class="field-name">Policy Version</div>
+              <div class="field-value">{{ policyInstanceMessage.version }}</div>
+            </div>
+          }
+          @if (instanceTopicId) {
+            <div class="field">
+              <div class="field-name">Instance Topic Id</div>
+              <div class="field-value">{{ instanceTopicId }}</div>
+            </div>
+          }
+          @if (documentMessage) {
+            <div class="field">
+              <div class="field-name">Document Topic</div>
+              <div class="field-value">{{ documentMessage.name }}</div>
+            </div>
+          }
+          @if (documentTopicId) {
+            <div class="field">
+              <div class="field-name">Document Topic Id</div>
+              <div class="field-value">{{ documentTopicId }}</div>
+            </div>
+          }
+          @if (schema) {
+            <div class="field">
+              <div class="field-name">Schema</div>
+              <div class="field-value">{{ schema.name }}</div>
+            </div>
+          }
         </div>
-</div>
-
-<div class="page-content" *ngIf="status === 'PROCESSING'">
-    <div class="sub-loading">
-        <div class="loading-text">Processing...</div>
-    </div>
-</div>
-
-<div class="page-content" *ngIf="status === 'SEARCH' ">
-    <div class="sub-loading">
-        <div class="loading-text">Search...</div>
-    </div>
-</div>
-
-<div class="page-content" *ngIf="status === 'VERIFICATION'">
-    <div class="sub-loading">
-        <div class="loading-text">Verification...</div>
-    </div>
-</div>
-
-<div class="page-content" *ngIf="status === 'ERROR'">
-    <div class="sub-loading">
-        <div class="error-text">
-            An unexpected error occurred.
+        <div class="form-buttons">
+          <button pButton type="button" label="Back" (click)="prev()" class="p-button-text"></button>
+          <button pButton type="button" label="Finish" (click)="next()" class="p-button-raised p-button-primary"></button>
         </div>
-        <div>
-            <button pButton type="submit"
-                    label="Retry"
-                    class="p-button-raised p-button-primary"
-                    (click)="restart()"
-            ></button>
-        </div>
-    </div>
-</div>
+      </div>
+    }
+  </div>
+}
 
-<div class="page-content" *ngIf="status === 'FREE'">
+@if (status === 'PROCESSING') {
+  <div class="page-content">
+    <div class="sub-loading">
+      <div class="loading-text">Processing...</div>
+    </div>
+  </div>
+}
+
+@if (status === 'SEARCH' ) {
+  <div class="page-content">
+    <div class="sub-loading">
+      <div class="loading-text">Search...</div>
+    </div>
+  </div>
+}
+
+@if (status === 'VERIFICATION') {
+  <div class="page-content">
+    <div class="sub-loading">
+      <div class="loading-text">Verification...</div>
+    </div>
+  </div>
+}
+
+@if (status === 'ERROR') {
+  <div class="page-content">
+    <div class="sub-loading">
+      <div class="error-text">
+        An unexpected error occurred.
+      </div>
+      <div>
+        <button pButton type="submit"
+          label="Retry"
+          class="p-button-raised p-button-primary"
+          (click)="restart()"
+        ></button>
+      </div>
+    </div>
+  </div>
+}
+
+@if (status === 'FREE') {
+  <div class="page-content">
     <div class="form-content">
-        <div class="text">
-            Successfully registered source topic. Target documents will be loaded accordingly to the schedule.
-        </div>
-        <div class="text note">
-            Note: manual refreshes can be trigged as required.
-        </div>
-        <div *ngIf="policyTopicId" class="field">
-            <div class="field-name">Policy Topic Id</div>
-            <div class="field-value">{{ policyTopicId }}</div>
-        </div>
-        <div *ngIf="policyInstanceMessage" class="field">
-            <div class="field-name">Policy Name</div>
-            <div class="field-value">{{ policyInstanceMessage.name }}</div>
-        </div>
-        <div *ngIf="policyInstanceMessage" class="field">
-            <div class="field-name">Policy Version</div>
-            <div class="field-value">{{ policyInstanceMessage.version }}</div>
-        </div>
-        <div *ngIf="instanceTopicId" class="field">
-            <div class="field-name">Instance Topic Id</div>
-            <div class="field-value">{{ instanceTopicId }}</div>
-        </div>
-        <div *ngIf="documentMessage" class="field">
-            <div class="field-name">Document Topic</div>
-            <div class="field-value">{{ documentMessage.name }}</div>
-        </div>
-        <div *ngIf="documentTopicId" class="field">
-            <div class="field-name">Document Topic Id</div>
-            <div class="field-value">{{ documentTopicId }}</div>
-        </div>
-        <div *ngIf="schema" class="field">
-            <div class="field-name">Schema</div>
-            <div class="field-value">{{ schema.name }}</div>
-        </div>
+      <div class="text">
+        Successfully registered source topic. Target documents will be loaded accordingly to the schedule.
+      </div>
+      <div class="text note">
+        Note: manual refreshes can be trigged as required.
+      </div>
+      @if (policyTopicId) {
         <div class="field">
-            <div class="field-name">Last Update</div>
-            <div class="field-value">
-                <div class="synchronization">
-                    <div *ngIf="lastUpdate" class="synchronization-time">{{ lastUpdate }}</div>
-                    <div *ngIf="!lastUpdate" class="synchronization-time">
-                        -
-                    </div>
-                    <div class="synchronization-update" (click)="onRefresh()">
-                        <i class="pi pi-sync"></i>
-                    </div>
-                </div>
-
-            </div>
+          <div class="field-name">Policy Topic Id</div>
+          <div class="field-value">{{ policyTopicId }}</div>
         </div>
+      }
+      @if (policyInstanceMessage) {
+        <div class="field">
+          <div class="field-name">Policy Name</div>
+          <div class="field-value">{{ policyInstanceMessage.name }}</div>
+        </div>
+      }
+      @if (policyInstanceMessage) {
+        <div class="field">
+          <div class="field-name">Policy Version</div>
+          <div class="field-value">{{ policyInstanceMessage.version }}</div>
+        </div>
+      }
+      @if (instanceTopicId) {
+        <div class="field">
+          <div class="field-name">Instance Topic Id</div>
+          <div class="field-value">{{ instanceTopicId }}</div>
+        </div>
+      }
+      @if (documentMessage) {
+        <div class="field">
+          <div class="field-name">Document Topic</div>
+          <div class="field-value">{{ documentMessage.name }}</div>
+        </div>
+      }
+      @if (documentTopicId) {
+        <div class="field">
+          <div class="field-name">Document Topic Id</div>
+          <div class="field-value">{{ documentTopicId }}</div>
+        </div>
+      }
+      @if (schema) {
+        <div class="field">
+          <div class="field-name">Schema</div>
+          <div class="field-value">{{ schema.name }}</div>
+        </div>
+      }
+      <div class="field">
+        <div class="field-name">Last Update</div>
+        <div class="field-value">
+          <div class="synchronization">
+            @if (lastUpdate) {
+              <div class="synchronization-time">{{ lastUpdate }}</div>
+            }
+            @if (!lastUpdate) {
+              <div class="synchronization-time">
+                -
+              </div>
+            }
+            <div class="synchronization-update" (click)="onRefresh()">
+              <i class="pi pi-sync"></i>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+  </div>
+}
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

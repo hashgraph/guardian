@@ -26,7 +26,7 @@ import { Examples,
 } from '#middlewares';
 import { CACHE, PREFIXES, SCHEMA_REQUIRED_PROPS } from '#constants';
 import { CacheService, EntityOwner, getCacheKey, Guardians, InternalException, ONLY_SR, SchemaUtils, ServiceError, TaskManager, UseCache, FilenameSanitizer } from '#helpers';
-import process from 'process';
+import process from 'node:process';
 
 @Controller('schema')
 @ApiTags('schema')
@@ -2546,7 +2546,7 @@ export class SchemaApi {
                 },
                 platform: 'UNIX',
             });
-            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(name)}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(name));
             res.header('Content-type', 'application/zip');
             return res.send(arcStream);
         } catch (error) {
@@ -3218,8 +3218,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file: any = await guardians.exportSchemasXlsx(owner, [schemaId]);
             const schema: any = await guardians.getSchemaById(user, schemaId);
-            const filename = FilenameSanitizer.sanitize(schema.name || '');
-            res.header('Content-disposition', `attachment; filename=${filename}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(schema.name || ''));
             res.header('Content-type', 'application/zip');
             return res.send(file);
         } catch (error) {
@@ -3505,7 +3504,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const file = await guardians.getFileTemplate(owner, filename);
             const fileBuffer = Buffer.from(file, 'base64');
-            res.header('Content-disposition', `attachment; filename=` + FilenameSanitizer.sanitize(filename));
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(filename));
             res.header('Content-type', 'application/zip');
 
             req.locals = fileBuffer

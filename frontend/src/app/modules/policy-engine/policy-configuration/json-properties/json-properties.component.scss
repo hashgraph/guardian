@@ -19,10 +19,10 @@
     right: 0px;
     height: 31px;
     overflow: hidden;
-    background: #f7f7f7;
+    background: var(--guardian-grey-background, #f7f7f7);
     display: flex;
     flex-direction: row;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--guardian-border-color, #ddd);
 }
 
 .toolbar__save-btn[readonly="true"],
@@ -61,7 +61,7 @@
 }
 
 .toolbar-btn:hover {
-    background: #f0f0f0;
+    background: var(--guardian-grey-background, #f0f0f0);
 }
 
 .toolbar-btn span {
@@ -77,8 +77,8 @@
     right: 0px;
     z-index: 99;
     padding: 10px;
-    background: #fff;
-    border-top: 1px solid #c9c9c9;
+    background: var(--guardian-background, #fff);
+    border-top: 1px solid var(--guardian-border-color, #c9c9c9);
 }
 
 .errors-properties {
@@ -92,7 +92,7 @@
     border: 1px solid #f90000;
     padding: 5px;
     color: #f90000;
-    background: #fff2f2;
+    background: var(--guardian-failure-background, #fff2f2);
     margin-bottom: 5px;
     position: relative;
     padding-left: 20px;
@@ -108,7 +108,7 @@
 }
 
 .loading {
-    background: rgb(255 255 255 / 60%);
+    background: color-mix(in srgb, var(--guardian-background, #fff) 60%, transparent);
     position: absolute;
     z-index: 99;
     top: 0;

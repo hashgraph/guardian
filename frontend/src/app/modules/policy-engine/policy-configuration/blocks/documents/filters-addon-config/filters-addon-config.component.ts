@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'filters-addon-config',
     templateUrl: './filters-addon-config.component.html',
     styleUrls: ['./filters-addon-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class FiltersAddonConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

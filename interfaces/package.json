@@ -1,14 +1,17 @@
 {
-    "author": "Envision Blockchain Solutions <info@envisionblockchain.com>",
+    "author": "Hashgraph <guardian@hashgraph.com>",
     "description": "",
     "dependencies": {
-        "reflect-metadata": "^0.1.13"
+        "reflect-metadata": "0.2.2"
     },
     "devDependencies": {
         "@types/glob": "^8.1.0",
-        "@types/node": "^22.15.19",
+        "@types/node": "24.13.2",
         "tslint": "^6.1.3",
         "typescript": "^5.8.3"
+    },
+    "engines": {
+        "node": ">=24.15.0"
     },
     "files": [
         "dist"
@@ -24,8 +27,8 @@
         "dev": "tsc -w",
         "lint": "tslint --config ../tslint.json --project .",
         "prepack": "npm run build",
-        "test": "echo \"Error: no test specified\" && exit 1"
+        "test": "mocha tests/**/*.test.mjs --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/interfaces.xml --exit"
     },
     "type": "module",
-    "version": "3.6.0-rc"
+    "version": "3.6.0"
 }

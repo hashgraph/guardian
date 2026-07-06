@@ -1,130 +1,146 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
-    <div>
-        <h2>{{ title }}</h2>
-        <h3>{{ description }}</h3>
-        <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
-            <div class="roles-form">
+  <div>
+    <h2>{{ title }}</h2>
+    <h3>{{ description }}</h3>
+    <form [formGroup]="roleForm" (ngSubmit)="onSubmit()">
+      <div class="roles-form">
 
-                <div *ngIf="!isGroup" class="role-value">
-                    <label class="form-label" htmlFor="role">Role</label>
-                    <p-dropdown
-                        #operationDropdown
-                        [options]="roles"
-                        formControlName="roleOrGroup"
-                        id="role"
-                        [appendTo]="'body'"
-                        placeholder="Not selected"
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
+        @if (!isGroup) {
+          <div class="role-value">
+            <label class="form-label" htmlFor="role">Role</label>
+            <p-select
+              #operationDropdown
+              [options]="roles"
+              formControlName="roleOrGroup"
+              id="role"
+              [appendTo]="'body'"
+              placeholder="Not selected"
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              >
+            </p-select>
+          </div>
+        }
+        @if (isGroup) {
+          <div aria-label="Select an option">
+            <div>
+              <div class="group-name">
+                <p-radioButton
+                  name="type"
+                  [value]="'new'"
+                  formControlName="type"
+                  (onClick)="onChange($event)"
+                  >
+                </p-radioButton>
+                <label>Create new group</label>
+              </div>
+              <div class="group-value" [attr.disabled]="type !== 'new'">
+                <div class="form-group groups-container">
+                  <label for="groupDropdown" class="form-label">Group Template</label>
+                  <p-select
+                    id="groupDropdown"
+                    [options]="groups"
+                    [appendTo]="'body'"
+                    formControlName="roleOrGroup"
+                    placeholder="Select a group"
+                    optionLabel="label"
+                    optionValue="value"
+                    class="full-width"
                     >
-                    </p-dropdown>
+                  </p-select>
                 </div>
-                <div *ngIf="isGroup" aria-label="Select an option">
-                    <div>
-                        <div class="group-name">
-                            <p-radioButton
-                                name="type"
-                                [value]="'new'"
-                                formControlName="type"
-                                (onClick)="onChange($event)"
-                            >
-                            </p-radioButton>
-                            <label>Create new group</label>
-                        </div>
-                        <div class="group-value" [attr.disabled]="type !== 'new'">
-                            <div class="form-group groups-container">
-                                <label for="groupDropdown" class="form-label">Group Template</label>
-                                <p-dropdown
-                                    id="groupDropdown"
-                                    [options]="groups"
-                                    [appendTo]="'body'"
-                                    formControlName="roleOrGroup"
-                                    placeholder="Select a group"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    class="full-width"
-                                >
-                                </p-dropdown>
-                            </div>
-                            <div *ngIf="ifPrivateGroup()" class="form-group group-label-container">
-                                <label for="groupLabelInput" class="form-label">Group Label</label>
-                                <input
-                                    pInputText
-                                    id="groupLabelInput"
-                                    formControlName="groupLabel"
-                                    placeholder="Enter group label"
-                                    class="full-width">
-                            </div>
-                        </div>
-                    </div>
-                    <div>
-                        <div class="group-name">
-                            <p-radioButton
-                                name="type"
-                                [value]="'invite'"
-                                formControlName="type"
-                                (onClick)="onChange($event)"
-                            >
-                            </p-radioButton>
-                            <label>Accept invitation</label>
-                        </div>
-                        <div class="group-value" [attr.disabled]="type!=='invite'">
-                            <div *ngIf="policyName" style="margin-bottom: 15px;color: #707070">
-                                <span>Policy: </span>
-                                <span>{{ policyName }}</span>
-                            </div>
-                            <div *ngIf="groupName" style="margin-bottom: 15px;color: #707070">
-                                <span>Group: </span>
-                                <span>{{ groupName }}</span>
-                            </div>
-                            <div *ngIf="groupLabel" style="margin-bottom: 15px;color: #707070">
-                                <span>Label: </span>
-                                <span>{{ groupLabel }}</span>
-                            </div>
-                            <div *ngIf="inviteRole" style="margin-bottom: 15px;color: #707070">
-                                <span>Role: </span>
-                                <span>{{ inviteRole }}</span>
-                            </div>
-                            <div class="form-group invite-container">
-                                <label for="invitationInput" class="form-label">Invite</label>
-                                <input
-                                    pInputText
-                                    id="invitationInput"
-                                    formControlName="invitation"
-                                    (input)="onParse($event)"
-                                    class="full-width"
-                                    placeholder="Enter invitation">
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                @if (ifPrivateGroup()) {
+                  <div class="form-group group-label-container">
+                    <label for="groupLabelInput" class="form-label">Group Label</label>
+                    <input
+                      pInputText
+                      id="groupLabelInput"
+                      formControlName="groupLabel"
+                      placeholder="Enter group label"
+                      class="full-width">
+                  </div>
+                }
+              </div>
             </div>
-        </form>
+            <div>
+              <div class="group-name">
+                <p-radioButton
+                  name="type"
+                  [value]="'invite'"
+                  formControlName="type"
+                  (onClick)="onChange($event)"
+                  >
+                </p-radioButton>
+                <label>Accept invitation</label>
+              </div>
+              <div class="group-value" [attr.disabled]="type!=='invite'">
+                @if (policyName) {
+                  <div style="margin-bottom: 15px;color: #707070">
+                    <span>Policy: </span>
+                    <span>{{ policyName }}</span>
+                  </div>
+                }
+                @if (groupName) {
+                  <div style="margin-bottom: 15px;color: #707070">
+                    <span>Group: </span>
+                    <span>{{ groupName }}</span>
+                  </div>
+                }
+                @if (groupLabel) {
+                  <div style="margin-bottom: 15px;color: #707070">
+                    <span>Label: </span>
+                    <span>{{ groupLabel }}</span>
+                  </div>
+                }
+                @if (inviteRole) {
+                  <div style="margin-bottom: 15px;color: #707070">
+                    <span>Role: </span>
+                    <span>{{ inviteRole }}</span>
+                  </div>
+                }
+                <div class="form-group invite-container">
+                  <label for="invitationInput" class="form-label">Invite</label>
+                  <input
+                    pInputText
+                    id="invitationInput"
+                    formControlName="invitation"
+                    (input)="onParse($event)"
+                    class="full-width"
+                    placeholder="Enter invitation">
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </form>
 
-    </div>
+  </div>
 </div>
 
 <div class="progress-footer" id="block-progress-footer" [attr.readonly-block]="readonly">
-    <div>
-        <!-- <button pButton type="button" class="button" label="Previous" [disabled]="true"></button> -->
-    </div>
-    <div>
-        <!-- <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button> -->
-        <button (click)="onSubmit()"
-                [disabled]="!roleForm.valid"
-                class="p-button"
-                form="roles-form"
-                label="Next"
-                pButton
-                type="submit"
-        ></button>
-    </div>
+  <div>
+    <!-- <button pButton type="button" class="button" label="Previous" [disabled]="true"></button> -->
+  </div>
+  <div>
+    <!-- <button pButton type="button" class="p-button-outlined" label="Save Changes" style="margin-right: 16px;"></button> -->
+    <button (click)="onSubmit()"
+      [disabled]="!roleForm.valid"
+      class="p-button"
+      form="roles-form"
+      label="Next"
+      pButton
+      type="submit"
+    ></button>
+  </div>
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

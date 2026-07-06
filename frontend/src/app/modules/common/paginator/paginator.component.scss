@@ -15,8 +15,37 @@
 
     height: 64px !important;
     border-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
+
+    ::ng-deep .p-select .p-select-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        line-height: 16px;
+    }
+
+    ::ng-deep .p-select {
+        width: 125px;
+        height: 40px;
+        border-radius: 8px;
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+        border: 1px solid var(--guardian-border-color);
+    }
+
+    ::ng-deep .p-button {
+        border-radius: 8px;
+    }
+
+    ::ng-deep .p-inputtext {
+        color: var(--color-grey-5, #848fa9);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        align-self: center;
+    }
 }
 
 .svg-btn {

@@ -23,6 +23,7 @@ interface IColumn {
     selector: 'app-external-policies',
     templateUrl: './external-policies.component.html',
     styleUrls: ['./external-policies.component.scss'],
+    standalone: false
 })
 export class ExternalPolicyComponent implements OnInit {
     public title: string = 'Remote Policy Request';
@@ -205,7 +206,7 @@ export class ExternalPolicyComponent implements OnInit {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.loadData();
@@ -229,7 +230,7 @@ export class ExternalPolicyComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Disconnect') {
                 this.loading = true;
@@ -312,7 +313,7 @@ export class ExternalPolicyComponent implements OnInit {
                     class: 'secondary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => { });
     }
 }

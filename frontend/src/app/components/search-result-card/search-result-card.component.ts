@@ -7,7 +7,8 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'app-search-result-card',
     templateUrl: './search-result-card.component.html',
-    styleUrls: ['./search-result-card.component.scss']
+    styleUrls: ['./search-result-card.component.scss'],
+    standalone: false
 })
 export class SearchResultCardComponent implements OnInit {
 

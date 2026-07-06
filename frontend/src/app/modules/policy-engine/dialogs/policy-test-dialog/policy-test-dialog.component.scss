@@ -40,7 +40,7 @@
     left: 0;
     min-width: 142px;
     padding: 4px 0;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border: 1px solid var(--guardian-border-color, #d9d9d9);
     border-radius: 4px;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.16);
@@ -58,7 +58,7 @@
     min-height: 32px;
     padding: 6px 12px;
     border: none;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     color: var(--guardian-font-color, #23252e);
     text-align: left;
     font-family: Inter, sans-serif;
@@ -73,7 +73,7 @@
     &:disabled {
         color: var(--guardian-disabled-color);
         cursor: default;
-        background: #fff;
+        background: var(--guardian-background, #fff);
     }
 }
 
@@ -200,7 +200,7 @@
     }
 
     .results-description-title {
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         font-size: 14px;
         font-weight: 600;
         line-height: 20px;
@@ -286,7 +286,7 @@
 
         .compare-info-header {
             padding-right: 16px;
-            color: #23252E;
+            color: var(--guardian-font-color, #23252E);
             width: 170px;
             font-weight: 600;
         }

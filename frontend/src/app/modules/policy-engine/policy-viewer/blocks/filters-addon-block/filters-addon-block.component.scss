@@ -20,14 +20,34 @@
 
 .content {
     flex-wrap: nowrap;
-    background: #f9fafc;
+    background: var(--guardian-background, #ffffff);
     display: inline-flex;
+    max-width: 100%;
+    min-width: 0;
+    margin-left: 14px;
 }
 
 .content-name {
     display: inline-flex;
-    margin-right: 10px;
     align-items: center;
+    height: 40px;
+    max-width: clamp(88px, 22vw, 220px);
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--color-grey-5);
+    font-family: Inter, serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+    background-color: var(--guardian-background, white);
+    border: 1px solid var(--guardian-grid-color, #ced4da);
+    border-right: 1px solid var(--guardian-grid-color, #ced4da);
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    box-sizing: border-box;
+    padding: 2px 4.5px 0 12px;
 }
 
 .content-select {
@@ -44,7 +64,7 @@
             border-color: #f00;
         }
 
-        .p-dropdown {
+        .p-select {
             border-color: #f00;
         }
 
@@ -61,6 +81,8 @@
 .grouped-content {
     display: flex;
     align-items: flex-start;
+    max-width: 100%;
+    min-width: 0;
 }
 
 .type-select {
@@ -72,23 +94,29 @@
     height: 38px;
 }
 
-p-dropdown,
-p-calendar {
+p-select,
+p-datepicker {
     height: 40px;
 }
 
 .common-prefix-dropdown {
-    background-color: white;
-    display: block;
+    background-color: var(--guardian-background, white);
+    display: inline-flex;
+    align-items: center;
     height: 40px;
-    border: 1px solid #ced4da;
-    padding: 9px 6px 9px 12px;
-    color: #848FA9;
+    border: 1px solid var(--guardian-grid-color, #ced4da);
+    padding: 2px 6px 0 4.5px;
+    color: var(--color-grey-5);
+    font-family: Inter, serif;
     font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
     box-sizing: border-box;
-    border-top-left-radius: 8px;
-    border-bottom-left-radius: 8px;
+    border-left: 0;
     border-right: 0;
+    max-width: clamp(80px, 20vw, 180px);
+    overflow: hidden;
+    text-overflow: ellipsis;
     white-space: nowrap;
 }
 
@@ -105,52 +133,81 @@ p-calendar {
     box-shadow: none;
 }
 
-.content ::ng-deep .filter-dropdown .p-dropdown {
+.content ::ng-deep .filter-dropdown.p-select {
     border-radius: 0 8px 8px 0;
+    border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
 
-    .p-dropdown-label {
+    .p-select-label {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        font-family: Inter, serif;
         font-size: 14px;
-        color: #23252E;
-        height: 36px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-grey-black-2);
+    }
+
+    .p-select-dropdown-icon {
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    .p-select-dropdown {
+        border-color: var(--guardian-grid-color, #ced4da);
     }
 }
 
-.content ::ng-deep .filter-dropdown .p-multiselect {
+.content ::ng-deep .filter-dropdown.p-multiselect {
     border-radius: 0 8px 8px 0;
+    border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
 
     .p-multiselect-label {
+        display: flex;
+        align-items: center;
+        height: 40px;
+        font-family: Inter, serif;
         font-size: 14px;
-        color: #23252E;
-        height: 36px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-grey-black-2);
+    }
+
+    .p-multiselect-dropdown-icon {
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    .p-multiselect-dropdown {
+        border-color: var(--guardian-grid-color, #ced4da);
     }
 }
 
 .content ::ng-deep .calendar-filter .p-inputtext {
     padding: 8px 8px 11px 16px;
     border-radius: 0 8px 8px 0;
+    border-color: var(--guardian-grid-color, #ced4da);
     border-left: 0;
     height: 37px;
 }
 
-.content ::ng-deep .calendar-filter .p-datepicker-trigger {
+.content ::ng-deep .calendar-filter .p-datepicker-dropdown {
     position: absolute;
     top: 50%;
     right: 8px;
     transform: translateY(-50%);
     pointer-events: none;
-    background-color: white;
+    background-color: var(--guardian-background, white);
     color: gray;
     border: none;
     padding: 0;
 }
 
 .input-filter {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     display: block;
     height: 38px;
-    border: 1px solid #ced4da;
+    border: 1px solid var(--guardian-grid-color, #ced4da);
     padding: 9px 6px 9px 12px;
     font-size: 14px;
     box-sizing: border-box;

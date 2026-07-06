@@ -1,6 +1,6 @@
 import { DatabaseServer, IAuthUser, MAP_TASKS_AGGREGATION_FILTERS, MessageError, MessageResponse, NatsService, Singleton } from '@guardian/common';
 import { GenerateUUIDv4, ITask, OrderDirection, QueueEvents, WorkerEvents } from '@guardian/interfaces';
-import { TaskEntity } from '../entity/task';
+import { TaskEntity } from '../entity/task.js';
 
 @Singleton
 export class QueueService extends NatsService {
@@ -25,9 +25,9 @@ export class QueueService extends NatsService {
             await this.clearLongPendingTasks();
         }, this.clearInterval);
 
-        this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, (task: ITask) => {
+        this.getMessages(QueueEvents.ADD_TASK_TO_QUEUE, async (task: ITask) => {
             try {
-                this.addTaskToQueue(task);
+                await this.addTaskToQueue(task);
                 return new MessageResponse({
                     ok: true
                 });
@@ -45,6 +45,7 @@ export class QueueService extends NatsService {
             const task = await dataBaseServer.findOne(TaskEntity, { taskId: data.id });
             if (!data.error || !task.isRetryableTask) {
                 await this.completeTaskInQueue(data.id, data.data, data.error);
+                await this.refreshAndReassignTasks();
                 return;
             }
             if (task.isRetryableTask && (task.attempts > 0)) {
@@ -66,6 +67,7 @@ export class QueueService extends NatsService {
             }
 
             await dataBaseServer.save(TaskEntity, task);
+            await this.refreshAndReassignTasks();
         });
 
         this.getMessages(QueueEvents.GET_TASKS_BY_USER, async (data: {
@@ -84,11 +86,13 @@ export class QueueService extends NatsService {
                         },
                         limit: pageSize,
                         offset: pageIndex * pageSize,
+                        exclude: ['data', 'dataFileId'],
                     }
                     : {
                         orderBy: {
                             processedTime: OrderDirection.DESC,
                         },
+                        exclude: ['data', 'dataFileId'],
                     };
             const filters: any = { userId, interception: { $ne: null } };
             if (status) {
@@ -110,14 +114,13 @@ export class QueueService extends NatsService {
             }
             const result = await new DatabaseServer().findAndCount(TaskEntity, filters, options);
             for (const task of result[0]) {
-                if (task.data) {
-                    delete task.data;
-                    delete task.userId;
-                    delete task.priority;
-                    delete task.attempt;
-                    delete task.attempts;
-                    delete task._id;
-                }
+                delete task.data;
+                delete task.dataFileId;
+                delete task.userId;
+                delete task.priority;
+                delete task.attempt;
+                delete task.attempts;
+                delete task._id;
             }
             return new MessageResponse(result);
         })

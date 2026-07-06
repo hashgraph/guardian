@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
-@import "./variables.scss";
-@import "codemirror/lib/codemirror";
-@import "codemirror/theme/material";
+@use "./variables.scss";
+@import "codemirror/lib/codemirror.css";
+@import "codemirror/theme/material.css";
 @import "codemirror/addon/fold/foldgutter.css";
 @import "codemirror/addon/lint/lint.css";
 @import "codemirror/addon/hint/show-hint.css";
@@ -11,7 +11,7 @@
 html,
 body {
     height: 100%;
-    background-color: #F9FAFC;
+    background-color: var(--color-background, #F9FAFC);
 }
 
 .p-dialog-mask {
@@ -156,6 +156,7 @@ p-table {
 .guardian-tooltip {
     font-size: 16px;
     overflow-wrap: break-word !important;
+    color: var(--guardian-font-color, #23252E);
 
     &.small-guardian-tooltip {
         font-size: 12px;
@@ -164,6 +165,17 @@ p-table {
     &.wide-guardian-tooltip {
         min-width: 400px;
     }
+}
+
+.p-tooltip .p-tooltip-text,
+.guardian-tooltip .p-tooltip-text {
+    background: rgba(30, 42, 58, 0.95);
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.p-tooltip-arrow {
+    display: none;
 }
 
 button.mat-raised-button,
@@ -444,7 +456,7 @@ button.mat-button {
     width: 16px;
     left: 2px;
     bottom: 4px;
-    background-color: white;
+    background-color: var(--guardian-on-primary-color, white);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30' width='16px' height='16px'%3E%3Cpath d='M 26.980469 5.9902344 A 1.0001 1.0001 0 0 0 26.292969 6.2929688 L 11 21.585938 L 4.7070312 15.292969 A 1.0001 1.0001 0 1 0 3.2929688 16.707031 L 10.292969 23.707031 A 1.0001 1.0001 0 0 0 11.707031 23.707031 L 27.707031 7.7070312 A 1.0001 1.0001 0 0 0 26.980469 5.9902344 z' fill='green' /%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: 12px 12px;
@@ -570,7 +582,8 @@ input:checked+.slider:before {
     }
 }
 
-::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+::ng-deep .p-tabs .p-tab.p-tab-active,
+::ng-deep .p-tabs .p-tab[data-p-active='true'] {
     background: #ffffff;
     border-color: var(--color-primary);
     color: var(--color-primary);
@@ -581,7 +594,7 @@ input:checked+.slider:before {
     border-radius: 8px;
     background: var(--color-primary);
     border: 0 !important;
-    color: var(--color-grey-white);
+    color: var(--guardian-on-primary-color);
     font-family: Inter, serif;
     font-size: 14px;
     font-style: normal;
@@ -591,6 +604,15 @@ input:checked+.slider:before {
     transition: all 0.25s ease-in-out;
     cursor: pointer;
     white-space: nowrap;
+}
+
+.button svg > path[fill="white"],
+.button svg > path[fill="#fff"],
+.button svg > path[fill="#ffffff"],
+.p-button svg > path[fill="white"],
+.p-button svg > path[fill="#fff"],
+.p-button svg > path[fill="#ffffff"] {
+    fill: currentColor;
 }
 
 .button:hover {
@@ -654,10 +676,6 @@ svg-icon.svg-icon-32 {
     height: 32px;
     line-height: 32px;
     font-size: 32px;
-}
-
-#ngx-colors-overlay .circle.button {
-    padding: unset;
 }
 
 .p-datatable-scrollable .p-frozen-column {
@@ -847,5 +865,34 @@ svg-icon.svg-icon-32 {
     &:hover::before {
         opacity: 1;
         color: white;
+    }
+}
+
+/* CodeMirror is a global library import with a hard-coded light surface; theme it for dark mode. */
+:root.guardian-theme-dark {
+    .CodeMirror {
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-gutters {
+        background: var(--guardian-grey-background);
+        border-right-color: var(--guardian-border-color);
+    }
+
+    .CodeMirror-linenumber {
+        color: var(--guardian-grid-color);
+    }
+
+    .CodeMirror-cursor {
+        border-left-color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-selected {
+        background: var(--guardian-hover);
+    }
+
+    .CodeMirror-activeline-background {
+        background: var(--guardian-hover);
     }
 }

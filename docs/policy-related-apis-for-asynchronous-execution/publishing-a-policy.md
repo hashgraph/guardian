@@ -1,53 +1,57 @@
-# Publishing a Policy
+# Publishing a Policy (Async)
 
-{% swagger method="put" path="" baseUrl="/policies/push/{policyId}/publish" summary="Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic." %}
-{% swagger-description %}
-Publishes the policy with the specified (internal) policy ID onto IPFS, sends a message featuring its IPFS CID into the corresponding Hedera topic. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`PUT /policies/push/{policyId}/publish`**
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-policy ID
-{% endswagger-parameter %}
+Publishes the specified policy onto IPFS asynchronously, sending a message with its IPFS CID to the corresponding Hedera topic. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-parameter in="body" %}
-Object that contains policy version.
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.POLICIES_POLICY_REVIEW`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "policyVersion": "1.0.0"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `policyVersion` | string | Yes | The version string to assign when publishing (e.g. `1.0.0`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    // Response
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Publish policy"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `500 Internal Server Error` | Unexpected server failure |

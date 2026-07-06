@@ -5,15 +5,7 @@ import {
     IndexerMessageAPI,
     MessageResponse,
 } from '@indexer/common';
-import escapeStringRegexp from 'escape-string-regexp';
 import { NetworkExplorerSettings } from '@indexer/interfaces';
-
-function createRegex(text: string) {
-    return {
-        $regex: `.*${escapeStringRegexp(text).trim()}.*`,
-        $options: 'si',
-    }
-}
 
 @Controller()
 export class SettingsService {

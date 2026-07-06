@@ -1,52 +1,38 @@
-# Export Files from Schema
+# Export Schema as Zip File
 
-### [NextCreation of Schema related to the topic](https://app.gitbook.com/o/-LuC734MpqlgwA6zyhAO/s/bOsLGPRQ1YXxw4wDcVrE/\~/changes/334/guardian/standard-registry/schemas/schema-creation-using-apis/creation-of-schema-related-to-the-topic)EXPORTING SCHEMA FILES FOR THE SCHEMA
+**`GET /api/v1/schemas/{schemaId}/export/file`**
 
-{% swagger method="post" path="" baseUrl="/schemas/{schemaId}/export/file" summary="Return zip file with schemas" %}
-{% swagger-description %}
-Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Returns a zip archive containing the schema files for the specified schema. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="schemaID" type="String" required="true" %}
-Selected schema ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-   
-}
-```
-{% endswagger-response %}
+**Permission:** `Permissions.SCHEMAS_SCHEMA_READ`
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+---
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+## Request
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
+### Path Parameters
 
-{% endswagger-response %}
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | string | Yes | The internal database ID of the schema to export |
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The response body is a binary zip file (`application/zip`). The `Content-Disposition` header is set to `attachment; filename=<timestamp>`.
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Schema cannot be exported |
+| `500 Internal Server Error` | Unexpected server failure |

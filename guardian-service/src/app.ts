@@ -32,7 +32,9 @@ import {
     Wallet,
     Workers,
     JwtServicesValidator,
-    NotificationEvents
+    NotificationEvents,
+    markServiceBooted,
+    setGlobalErrorLogger
 } from '@guardian/common';
 import { entities } from '@guardian/common/dist/entities.js';
 import { ApplicationStates, PolicyEvents, PolicyStatus, WorkerTaskType } from '@guardian/interfaces';
@@ -58,7 +60,7 @@ import { wizardAPI } from './api/wizard.service.js';
 import { startMetricsServer } from './utils/metrics.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { AppModule } from './app.module.js';
 import { analyticsAPI } from './api/analytics.service.js';
 import { suggestionsAPI } from './api/suggestions.service.js';
@@ -153,6 +155,7 @@ Promise.all([
     const channel = new MessageBrokerChannel(cn, 'guardians');
 
     const logger: PinoLogger = pinoLoggerInitialization(loggerMongo);
+    setGlobalErrorLogger(logger);
     NotificationEvents.init(new GuardiansService());
 
     const state = new ApplicationState();
@@ -436,6 +439,10 @@ Promise.all([
     initMathjs();
 
     startMetricsServer();
+
+    // Bootstrap complete: from here on, a stray unhandled rejection is logged and
+    // swallowed instead of terminating the service.
+    markServiceBooted();
 }, (reason) => {
     console.log(reason);
     process.exit(0);

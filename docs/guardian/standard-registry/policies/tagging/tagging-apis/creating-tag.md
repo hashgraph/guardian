@@ -1,46 +1,66 @@
 # Creating Tag
 
-{% swagger method="post" path="" baseUrl="/tags/" summary="Creates new tag." %}
-{% swagger-description %}
-Creates new tag.
-{% endswagger-description %}
+**`POST /api/v1/tags`**
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains tag information.
-{% endswagger-parameter %}
+Creates a new tag and associates it with the specified entity.
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TAGS_TAG_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "name": "example-tag",
+  "description": "A sample tag",
+  "entity": "PolicyDocument",
+  "target": "1706823489.123456789",
+  "localTarget": "63e3e5e8a01b3c001234abcd",
+  "uri": "https://example.com/tag-schema"
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Tag"
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Human-readable tag name |
+| `description` | string | No | Optional tag description |
+| `entity` | string | Yes | Entity type the tag belongs to (e.g. `Schema`, `Policy`, `Token`, `Module`, `Contract`, `PolicyDocument`) |
+| `target` | string | Yes | Hedera message ID of the target entity |
+| `localTarget` | string | No | Local database ID of the target entity |
+| `uri` | string | No | URI of the tag schema |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "example-tag",
+  "description": "A sample tag",
+  "entity": "PolicyDocument",
+  "target": "1706823489.123456789",
+  "localTarget": "63e3e5e8a01b3c001234abcd",
+  "uri": "https://example.com/tag-schema",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "status": "Draft"
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="Bad Request" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `400 Bad Request` | Malformed request body |
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

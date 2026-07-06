@@ -6,6 +6,7 @@ import { SchemaService } from 'src/app/services/schema.service';
     selector: 'export-plantuml-dialog',
     templateUrl: './export-plantuml-dialog.component.html',
     styleUrls: ['./export-plantuml-dialog.component.scss'],
+    standalone: false
 })
 export class ExportPlantUMLDialog {
     public loading = false;

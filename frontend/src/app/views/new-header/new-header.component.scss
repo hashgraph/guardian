@@ -1,11 +1,12 @@
+/* ── Vertical sidebar rail ─────────────────────────────────────────────── */
 #navbar {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     width: var(--header-width-expand);
     height: 100%;
-    background: var(--linear-gradient);
-    box-shadow: 8px 4px 24px 0 var(--header-color-shadow);
+    background: var(--sidebar-bg);
+    border-right: 1px solid var(--sidebar-border);
     position: fixed;
     left: 0;
     top: 0;
@@ -15,196 +16,152 @@
     z-index: 100;
 }
 
-.collapse {
+#navbar.collapse {
     width: var(--header-width-collapse) !important;
-    transition: width 0.125s ease-in-out;
-}
+    overflow: visible;
 
-#remoteButton {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background-color: #fff;
-    border-radius: 50%;
-    fill: var(--color-grey-white, #fff);
-    filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.08));
-    position: fixed;
-
-    transition: transform 0.125s ease-in-out,
-        left 0.125s ease-in-out,
-        width 0.125s ease-in-out,
-        height 0.125s ease-in-out,
-        left 0.125s ease-in-out,
-        top 0.125s ease-in-out;
-    cursor: pointer;
-    z-index: 1000;
-
-    // width: 40px;
-    // height: 40px;
-    // top: 56px;
-    // left: calc(var(--header-width-expand) - 20px);
-
-    left: calc(var(--header-width-expand) - 1px);
-    top: 80px;
-    width: 32px;
-    height: 32px;
-    transform: translate(-50%, -50%);
-
-    &:hover {
-        width: 46px;
-        height: 46px;
-        // top: 52px;
-        // left: calc(var(--header-width-expand) - 23px);
+    #menuBar {
+        overflow: visible;
     }
 }
 
-#remoteButton.collapse-button,
-.collapse-button {
-    left: calc(var(--header-width-collapse) - 1px) !important;
-}
-
-.collapsed-notify-counter {
-    margin-left: -20px;
-    margin-top: -16px;
-}
-
+/* ── Brand / logo header + collapse toggle ─────────────────────────────── */
 #logotype {
-    margin: 0 0 18px 0;
-    height: 80px;
-    min-height: 80px;
-    max-height: 80px;
+    height: 64px;
+    min-height: 64px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    grid-column-gap: 10px;
-    column-gap: 10px;
-    cursor: pointer;
-    padding: 0px 0px 0px 24px;
+    column-gap: 8px;
+    padding: 0 16px 0 20px;
+    margin-bottom: 8px;
 
-    #company-logo {
-        max-width: 32px;
-        max-height: 32px;
-        min-width: 32px;
-        min-height: 32px;
-        width: 32px;
-        height: 32px;
-        background-size: 100%;
-        background-origin: border-box;
-        background-repeat: no-repeat;
+    .logotype-brand {
+        display: flex;
+        align-items: center;
+        column-gap: 12px;
+        cursor: pointer;
+        overflow: hidden;
+
+        #company-logo {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        span {
+            color: var(--sidebar-logo-color);
+            font-family: var(--font-family-inter, Inter, sans-serif);
+            font-size: 16px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            transition: opacity 0.125s ease-in-out;
+        }
     }
 
-    span {
-        width: max(100%, 100% - 32px);
-        color: #fff;
-        font-family: Inter, serif;
-        font-size: 20px;
-        font-style: normal;
-        font-weight: 700;
-        line-height: normal;
-        transition: opacity 0.125s ease-in-out, width 0.125s ease-in-out;
-        padding-left: 12px;
-        text-transform: uppercase;
+    .collapse-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        min-width: 28px;
+        border-radius: 6px;
+        color: var(--sidebar-section-color);
+        cursor: pointer;
+        transition: background 0.125s ease-in-out, color 0.125s ease-in-out;
+
+        &:hover {
+            background: var(--sidebar-item-hover);
+            color: var(--sidebar-accent);
+        }
+
+        i {
+            font-size: 16px;
+            transition: transform 0.125s ease-in-out;
+        }
     }
 }
 
+#navbar.collapse #logotype {
+    flex-direction: column;
+    height: auto;
+    row-gap: 10px;
+    padding: 12px 0;
+    justify-content: center;
+
+    .logotype-brand {
+        justify-content: center;
+    }
+
+    .collapse-toggle {
+        display: flex;
+    }
+}
+
+
 .hidden-logotype {
-    display: none;
+    display: none !important;
     opacity: 0;
 }
 
+/* ── Menu list ─────────────────────────────────────────────────────────── */
 #menuBar {
-    max-height: calc(100vh - 80px - 18px - 18px - 345px);
-    height: calc(100vh - 80px - 18px - 18px - 345px);
+    flex: 1;
     min-height: 150px;
     overflow-y: auto;
+    padding: 0 12px;
 
     &::-webkit-scrollbar {
         width: 0;
     }
 }
 
-#footerBar {
-    margin-top: 18px;
-    max-height: 345px;
-    height: 345px;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
+.menu-section {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--sidebar-section-color);
+    padding: 14px 12px 4px;
 }
 
 .item-block {
-    transition: height 0.125s ease-in-out;
-    overflow-x: hidden;
-}
-
-.without-icon {
-    margin-left: calc(16px + 16px);
-}
-
-.rotate-180 {
-    transform: rotate(180deg);
-}
-
-.icon-color {
-    fill: var(--color-primary);
-}
-
-.icon-color-grey {
-    fill: var(--color-secondary);
-    color: var(--color-secondary);
-    transition: color 0.25s ease-in-out, fill 0.25s ease-in-out;
-}
-
-.icon-color-grey:hover {
-    fill: var(--color-grey-white);
-    color: var(--color-grey-white);
-}
-
-.cursor-pointer {
-    cursor: pointer;
+    position: relative;
 }
 
 .item {
     display: flex;
     align-items: center;
-    column-gap: 16px;
+    column-gap: 12px;
     border-radius: 8px;
-    min-height: 48px;
-    max-height: 48px;
-    padding: 0 16px;
+    min-height: 40px;
+    padding: 0 12px;
+    margin-bottom: 2px;
     white-space: nowrap;
     box-sizing: border-box;
-    margin: 0 16px 8px 16px;
-    transition: background 0.125s ease-in-out,
-        opacity 0.125s ease-in-out,
-        width 0.125s ease-in-out,
-        height 0.125s ease-in-out;
+    color: var(--sidebar-item-color);
+    transition: background 0.125s ease-in-out, color 0.125s ease-in-out;
 
-    img {
-        width: 16px;
-        height: 16px;
+    .item-icon {
+        font-size: 18px;
+        min-width: 18px;
+        text-align: center;
+        color: inherit;
     }
 
     span {
         display: flex;
         align-items: center;
         column-gap: 10px;
-        color: #fff;
-        font-family: Inter, serif;
+        color: inherit;
+        font-family: var(--font-family-inter, Inter, sans-serif);
         font-size: 14px;
-        font-style: normal;
         font-weight: 500;
         line-height: 20px;
-
-        strong {
-            color: #fff;
-            font-family: Inter, serif;
-            font-size: 16px;
-            font-style: normal;
-            font-weight: 700;
-            line-height: 16px;
-        }
     }
 
     .span-icon {
@@ -214,144 +171,416 @@
         align-items: center;
     }
 
-    .flex-column-gap-10 {
-        display: flex;
-        column-gap: 14px;
+    .chevron {
+        font-size: 14px;
+        color: var(--sidebar-section-color);
     }
-}
-
-.hidden-block {
-    max-height: 0;
-    overflow-y: hidden;
 }
 
 .clickable {
     cursor: pointer;
-    transition: background 0.125s ease-in-out;
 
     &:hover {
-        background: rgba(255, 255, 255, 0.15);
+        background: var(--sidebar-item-hover);
     }
 }
 
+/* Active leaf / top-level item: solid brand pill */
 .current {
-    background: rgba(255, 255, 255, 0.15);
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-active-color);
+
+    span,
+    .item-icon,
+    .chevron {
+        color: var(--sidebar-active-color);
+    }
 }
 
-.background-light {
-    background: rgba(255, 255, 255, 0.15);
+/* Parent whose child is the current route: highlight text, no fill */
+.parent-active:not(.current) {
+    color: var(--sidebar-accent);
+
+    .item-icon {
+        color: var(--sidebar-accent);
+    }
 }
 
-.border-item {
-    border: 2px solid rgba(255, 255, 255, 0.15);
+/* ── Expanded inline accordion children ────────────────────────────────── */
+.item-container {
+    margin: 2px 0 6px 21px;
+    padding-left: 6px;
+    border-left: 1.5px solid var(--sidebar-border);
 }
 
-.balance-item {
-    cursor: pointer;
+.child-item {
+    min-height: 34px;
+    padding-left: 12px;
 
-    &>span {
-        display: flex;
-        justify-content: space-between;
-        width: 100%;
+    span {
+        font-size: 13.5px;
+        font-weight: 400;
     }
 
-    &.collapsed-item {
+    &.current {
+        position: relative;
+        background: var(--sidebar-item-hover);
+        color: var(--sidebar-accent);
 
-        div,
         span {
-            display: none;
+            color: var(--sidebar-accent);
+            font-weight: 500;
+        }
+
+        &::before {
+            content: '';
+            position: absolute;
+            left: -7px;
+            top: 8px;
+            bottom: 8px;
+            width: 3px;
+            border-radius: 3px;
+            background: var(--sidebar-accent);
         }
     }
 }
 
-
-.boundary-box {
-    height: 78px;
-    display: flex;
-    align-items: center;
-    border-top: 1px solid rgba(255, 255, 255, 0.4);
-    padding-top: 8px;
-
-    .item {
-        width: 100%;
-    }
-
-    .span-icon span {
-        max-width: 140px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: inline-block;
-        vertical-align: middle;
-    }
+.without-icon {
+    margin-left: 0;
 }
 
 .smooth-rotate {
     transition: transform 0.125s ease-in-out;
 }
 
-.preloader {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
+.rotate-180 {
+    transform: rotate(180deg);
+}
 
-    &-image {
-        width: 16px;
-        height: 16px;
-        border-top: 3px solid var(--header-preloader-color);
-        border-left: 3px solid rgba(0, 0, 0, 0);
-        border-right: 3px solid rgba(0, 0, 0, 0);
-        border-bottom: 3px solid rgba(0, 0, 0, 0);
-        border-radius: 100%;
-        filter: brightness(100%);
-        animation-name: preloaderRotation;
-        animation-duration: 7.5s;
-        animation-iteration-count: infinite;
-        animation-timing-function: ease-in-out;
+/* ── Collapsed flyout (children popover) ───────────────────────────────── */
+.item-block.has-flyout {
+    .flyout {
+        display: none;
+        position: absolute;
+        left: 100%;
+        margin-left: -1px;
+        top: 0;
+        min-width: 210px;
+        background: var(--guardian-background);
+        border: 1px solid var(--sidebar-border);
+        border-radius: 12px;
+        box-shadow: 0 8px 24px var(--guardian-shadow, rgba(0, 0, 0, 0.12));
+        padding: 8px;
+        z-index: 1001;
+
+        .flyout-title {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--guardian-font-color);
+            padding: 4px 10px 8px;
+        }
+
+        .flyout-item {
+            display: flex;
+            align-items: center;
+            min-height: 32px;
+            padding: 0 10px;
+            border-radius: 7px;
+            color: var(--sidebar-item-color);
+
+            span {
+                font-size: 13.5px;
+                font-weight: 400;
+            }
+
+            &.current {
+                background: var(--sidebar-item-hover);
+                color: var(--sidebar-accent);
+
+                span {
+                    color: var(--sidebar-accent);
+                    font-weight: 500;
+                }
+            }
+        }
     }
 
-    @keyframes preloaderRotation {
-        0% {
-            transform: rotate(0deg);
-            opacity: 1;
+    &:hover .flyout {
+        display: block;
+    }
+}
+
+.collapse .item {
+    justify-content: center;
+    padding: 0;
+    margin: 0 auto 4px;
+    width: 44px;
+    height: 44px;
+    min-height: 44px;
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────── */
+#footerBar {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--sidebar-border);
+    margin-top: 8px;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.notification-item {
+    position: relative;
+}
+
+/* Footer icons sit in the same column as the 32px user avatar below them; widen
+   their box so the icon centers and the labels line up with the avatar row. */
+#footerBar .item .item-icon {
+    min-width: 32px;
+}
+
+/* Keep the badge out of flow so the bell stays put / centred whether or not a
+   notification count is present. */
+.notification-item .collapsed-notify-counter {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    margin: 0;
+}
+
+.user-box {
+    margin-top: 4px;
+    padding-top: 8px;
+    border-top: 1px solid var(--sidebar-border);
+}
+
+/* The profile row is a footer control, not a nav target — give it a soft active
+   state instead of the solid brand pill used for menu items. */
+.user-item.current {
+    background: var(--sidebar-item-hover);
+    color: var(--sidebar-item-color);
+
+    span,
+    .item-icon {
+        color: var(--sidebar-item-color);
+    }
+}
+
+#navbar.collapse .user-item.current {
+    background: transparent;
+}
+
+.user-item {
+    .user-avatar {
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--sidebar-active-bg);
+        color: var(--sidebar-active-color);
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .user-meta {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        line-height: 1.25;
+
+        .user-name {
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size: 14px;
+            font-weight: 500;
         }
 
-        25% {
-            transform: rotate(360deg);
-            border-top: 3px solid rgba(0, 0, 0, 0);
-            border-right: 3px solid var(--header-preloader-color);
-            border-left: 3px solid rgba(0, 0, 0, 0);
-            border-bottom: 3px solid rgba(0, 0, 0, 0);
+        .user-balance {
+            font-size: 12px;
+            font-weight: 400;
+            color: var(--sidebar-section-color);
         }
+    }
 
-        50% {
-            transform: rotate(720deg);
-            border-top: 3px solid rgba(0, 0, 0, 0);
-            border-left: 3px solid rgba(0, 0, 0, 0);
-            border-bottom: 3px solid var(--header-preloader-color);
-            border-right: 3px solid rgba(0, 0, 0, 0);
-        }
+    .logout-icon {
+        margin-left: auto;
+        color: var(--sidebar-section-color);
+        cursor: pointer;
+        transition: color 0.125s ease-in-out;
 
-        75% {
-            transform: rotate(1080deg);
-            border-top: 3px solid rgba(0, 0, 0, 0);
-            border-bottom: 3px solid rgba(0, 0, 0, 0);
-            border-right: 3px solid rgba(0, 0, 0, 0);
-            border-left: 3px solid var(--header-preloader-color);
-        }
-
-        100% {
-            transform: rotate(1440deg);
-            border-top: 3px solid var(--header-preloader-color);
-            border-left: 3px solid rgba(0, 0, 0, 0);
-            border-right: 3px solid rgba(0, 0, 0, 0);
-            border-bottom: 3px solid rgba(0, 0, 0, 0);
+        &:hover {
+            color: var(--sidebar-accent);
         }
     }
 }
 
+/* Compact balance pill used in the horizontal top bar (no "Accounts" label). */
+.balance-chip {
+    display: flex;
+    align-items: center;
+    column-gap: 7px;
+    height: 34px;
+    padding: 0 12px;
+    border: 1px solid var(--sidebar-border);
+    border-radius: 20px;
+    cursor: pointer;
+    color: var(--sidebar-item-color);
+    transition: background 0.125s ease-in-out;
+
+    i {
+        font-size: 16px;
+    }
+
+    span {
+        font-size: 13px;
+        font-weight: 500;
+        white-space: nowrap;
+    }
+
+    &:hover {
+        background: var(--sidebar-item-hover);
+    }
+}
+
+/* ── Horizontal top bar (PrimeNG menubar) ──────────────────────────────── */
+.topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--header-height);
+    z-index: 100;
+
+    .topbar-brand {
+        display: flex;
+        align-items: center;
+        column-gap: 10px;
+        cursor: pointer;
+        padding-right: 14px;
+        margin-right: 6px;
+        border-right: 1px solid var(--sidebar-border);
+
+        #company-logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+
+        #company-name {
+            color: var(--sidebar-logo-color);
+            font-family: var(--font-family-inter, Inter, sans-serif);
+            font-size: 15px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+    }
+}
+
+::ng-deep .topbar .guardian-menubar.p-menubar {
+    height: var(--header-height);
+    border: none;
+    border-bottom: 1px solid var(--sidebar-border);
+    border-radius: 0;
+    background: var(--sidebar-bg);
+    padding: 0 14px;
+}
+
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list {
+    column-gap: 4px;
+}
+
+/* Match the horizontal menu item labels to the vertical rail items. */
+::ng-deep .topbar .guardian-menubar .p-menubar-item-label {
+    font-family: var(--font-family-inter, Inter, sans-serif);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+}
+
+/* Top-level bar items follow the sidebar tokens (branding-aware) instead of the
+   PrimeNG menubar theme colors. Scoped to direct children of the root list so
+   dropdown submenu panels keep the PrimeNG defaults. */
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item > .p-menubar-item-content {
+    color: var(--sidebar-item-color);
+
+    .p-menubar-item-icon,
+    .p-menubar-submenu-icon {
+        color: var(--sidebar-item-color);
+    }
+}
+
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item:not(.p-disabled) > .p-menubar-item-content:hover,
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item.p-focus > .p-menubar-item-content,
+::ng-deep .topbar .guardian-menubar .p-menubar-root-list > .p-menubar-item.p-menubar-item-active > .p-menubar-item-content {
+    background: var(--sidebar-item-hover);
+    color: var(--sidebar-accent);
+
+    .p-menubar-item-icon,
+    .p-menubar-submenu-icon {
+        color: var(--sidebar-accent);
+    }
+}
+
+/* Custom Hedera mark for the Tokens item. Rendered via a mask filled with
+   currentColor so it tints with the item state and inverts in dark mode,
+   exactly like the PrimeIcons around it. */
+::ng-deep #navbar .icon-hbar,
+::ng-deep .guardian-menubar .icon-hbar {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    background-color: currentColor;
+    -webkit-mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
+    mask: url('/assets/images/icons/hedera-hbar.svg') no-repeat center / contain;
+}
+
+::ng-deep .topbar .guardian-menubar .p-menubar-end {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    column-gap: 6px;
+}
+
+/* Footer actions are shared with the vertical rail; inside the top bar they must sit
+   inline and compact (no full-width rows, no solid pills, no vertical dividers). */
+.topbar {
+    .item {
+        margin: 0;
+        width: auto;
+        min-height: 40px;
+        padding: 0 10px;
+        color: var(--sidebar-item-color);
+    }
+
+    .item .span-icon {
+        width: auto;
+        column-gap: 8px;
+    }
+
+    .notification-item .span-icon > span {
+        display: none;
+    }
+
+    .user-box {
+        margin: 0;
+        padding: 0;
+        border: none;
+    }
+}
+
+/* ── Badge & tooltip ───────────────────────────────────────────────────── */
 .badge {
-    background-color: #ff432a;
+    background-color: var(--color-accent-red-1, #ff432a);
     width: min-content;
     display: flex;
     align-items: center;
@@ -362,9 +591,8 @@
 
     span {
         color: #fff;
-        font-family: Inter, serif;
+        font-family: var(--font-family-inter, Inter, sans-serif);
         font-size: 12px;
-        font-style: normal;
         font-weight: 500;
         line-height: 20px;
     }
@@ -375,10 +603,9 @@
 }
 
 .notification-counter {
-    color: #FFF;
-    font-family: Inter, serif;
+    color: #fff;
+    font-family: var(--font-family-inter, Inter, sans-serif);
     font-size: 12px;
-    font-style: normal;
     font-weight: 500;
     line-height: 20px;
     pointer-events: none;
@@ -387,65 +614,4 @@
 ::ng-deep .one-line-tooltip {
     white-space: nowrap !important;
     max-width: none !important;
-}
-
-.doc-widget-toggle {
-    cursor: pointer;
-    background: #FFFFFF3D;
-    border: 1px solid #FFFFFF52;
-
-    &--disabled {
-        cursor: not-allowed;
-        opacity: 0.5;
-    }
-}
-
-.doc-toggle {
-    position: relative;
-    width: 44px;
-    min-width: 44px;
-    height: 24px;
-    border-radius: 12px;
-    background: rgba(255, 255, 255, 0.25);
-    transition: background 0.2s ease-in-out;
-
-    &__thumb {
-        position: absolute;
-        top: 2px;
-        left: 2px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        background: #fff;
-        transition: transform 0.2s ease-in-out;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    &--active {
-        background: var(--header-color-primary);
-
-        .doc-toggle__thumb {
-            transform: translateX(20px);
-            background: transparent;
-
-            .check-fill-icon-wrapper {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-
-                .check-fill-icon {
-                    width: 24px;
-                    height: 24px;
-                }
-            }
-        }
-    }
-}
-
-.open-book-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }

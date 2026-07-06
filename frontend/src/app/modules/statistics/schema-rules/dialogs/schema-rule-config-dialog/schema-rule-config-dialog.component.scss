@@ -50,7 +50,7 @@
 }
 
 .condition-container {
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
     border: 1px solid #E1E7EF;
     width: 100%;
     padding: 16px;
@@ -65,7 +65,7 @@
         width: 100%;
         padding: 16px;
         border-radius: 8px;
-        background: #FFFFFF;
+        background: var(--guardian-background, #FFFFFF);
         border: 1px solid #E1E7EF;
 
         .condition-type {
@@ -99,7 +99,7 @@
                 position: relative;
                 height: 40px;
 
-                &::ng-deep .p-dropdown {
+                &::ng-deep .p-select {
                     width: 134px;
                 }
             }
@@ -144,7 +144,7 @@
                         &.variable-name-dropdown {
                             width: 135px;
 
-                            &::ng-deep .p-dropdown-label {
+                            &::ng-deep .p-select-label {
                                 color: #4169E2 !important;
                                 font-size: 14px;
                                 font-weight: 700;

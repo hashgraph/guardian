@@ -1,54 +1,45 @@
 # Returns a sample payload for the schema by schema Id.
 
-<mark style="color:red;">`GET`</mark> `/schema/{schemaId}/sample-payload`
+**`GET /schema/{schemaId}/sample-payload`**
 
-Returns a sample payload for the schema by schema Id
+Returns a sample payload for the schema by schema ID.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** No specific permission required (authentication only)
 
-**Body**
+---
 
-| Name     | Type   | Description |
-| -------- | ------ | ----------- |
-| schemaId | string | Schema ID   |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Schema ID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns a sample JSON payload conforming to the schema document definition.
+
+```json
 {
-  description: Successful operation.
+  "field1": "example value",
+  "field2": 0,
+  "field3": true
 }
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-{
-  description: Unauthorized.
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
-
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

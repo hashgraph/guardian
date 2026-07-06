@@ -12,7 +12,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
     selector: 'app-tags-manager-block',
     templateUrl: './tags-manager-block.component.html',
-    styleUrls: ['./tags-manager-block.component.scss']
+    styleUrls: ['./tags-manager-block.component.scss'],
+    standalone: false
 })
 export class TagsManagerBlockComponent implements OnInit {
     @Input('id') id!: string;

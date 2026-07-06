@@ -70,6 +70,9 @@ export async function loadSchema(
             });
 
         log.info(`loadedSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
+        if (!response) {
+            return null;
+        }
         if (response.type === MessageType.Schema) {
             const message = response as SchemaMessage;
             const schemaToImport: any = {

@@ -30,7 +30,7 @@ form {
 
 .guardian-loading {
     border-radius: 0 !important;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     opacity: 0.5;
     position: absolute;
     z-index: 99;
@@ -141,8 +141,8 @@ form {
 }
 
 .save-icon-color {
-    fill: var(--color-grey-white);
-    color: var(--color-grey-white);
+    fill: var(--guardian-on-primary-color);
+    color: var(--guardian-on-primary-color);
 }
 
 @media (max-width: 810px) {
@@ -162,8 +162,8 @@ form {
     align-items: center;
     justify-content: center;
     color: var(--primary-color);
-    background: #F9FAFC;
-    border: 1px solid #C4D0E1;
+    background: var(--guardian-grey-background, #F9FAFC);
+    border: 1px solid var(--guardian-border-color);
     height: 52px;
     min-height: 52px;
     border-radius: 8px;

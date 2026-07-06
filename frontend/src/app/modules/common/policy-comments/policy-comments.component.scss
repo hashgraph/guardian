@@ -10,7 +10,7 @@
         flex-direction: row;
         width: 100%;
         height: 72px;
-        background: #FFFFFF;
+        background: var(--guardian-background, #FFFFFF);
         // border-bottom: 1px solid #E1E7EF;
         padding: 20px 24px 20px 10px;
         cursor: default;
@@ -53,7 +53,7 @@
                 font-family: Poppins;
                 font-weight: 600;
                 font-size: 16px;
-                color: #23252E;
+                color: var(--guardian-font-color, #23252E);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -98,7 +98,7 @@
             max-width: 32px;
             height: 32px;
             padding: 4px;
-            background-color: var(--guardian-secondary-color);
+            background-color: var(--guardian-secondary-background);
             border-radius: 100%;
             cursor: pointer;
 
@@ -120,7 +120,7 @@
         font-family: Poppins;
         font-weight: 600;
         font-size: 16px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         cursor: pointer;
 
         svg-icon {
@@ -164,7 +164,7 @@
             line-height: 16px;
             vertical-align: middle;
             color: var(--primary-primary, #4169E2);
-            background: #fff;
+            background: var(--guardian-background, #fff);
             user-select: none;
 
             .field-filter-icon {
@@ -189,7 +189,7 @@
                 border-radius: 4px;
                 cursor: pointer;
                 padding: 3px;
-                background: #fff;
+                background: var(--guardian-background, #fff);
 
                 &:hover {
                     filter: brightness(0.95);
@@ -258,7 +258,7 @@
             vertical-align: middle;
             // color: var(--primary-primary, #4169E2);
             border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
-            background: #fff;
+            background: var(--guardian-background, #fff);
             user-select: none;
             overflow: hidden;
 
@@ -284,7 +284,7 @@
                 border-radius: 4px;
                 cursor: pointer;
                 padding: 6px;
-                background: #fff;
+                background: var(--guardian-background, #fff);
 
                 &:hover {
                     filter: brightness(0.95);
@@ -510,7 +510,7 @@
             overflow: auto;
             display: flex;
             flex-direction: column-reverse;
-            background: #fff;
+            background: var(--guardian-background, #fff);
             padding: 24px;
         }
     }
@@ -750,7 +750,7 @@
         align-items: flex-start;
 
         .message-body {
-            background: #FFFFFF;
+            background: var(--guardian-background, #FFFFFF);
         }
     }
 
@@ -784,14 +784,14 @@
                 font-weight: 700;
                 font-size: 14px;
                 vertical-align: middle;
-                color: #181818;
+                color: var(--guardian-font-color, #181818);
                 line-height: 24px;
                 white-space: nowrap;
             }
 
             .message-role {
                 border: 1px solid #4169E2;
-                background: #FFFFFF;
+                background: var(--guardian-background, #FFFFFF);
                 height: 24px;
                 border-radius: 4px;
                 padding-top: 4px;
@@ -808,7 +808,7 @@
                 // margin-bottom: 8px;
 
                 margin-left: 8px;
-                background: #E1E7EF;
+                background: var(--guardian-grey-background, #E1E7EF);
                 color: #6f7279;
                 border: none;
                 white-space: nowrap;
@@ -821,7 +821,7 @@
             font-size: 14px;
             line-height: 20px;
             vertical-align: middle;
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
             white-space: pre-wrap;
 
             .message-tag,
@@ -863,7 +863,7 @@
                     width: 42px !important;
                     height: 42px !important;
                     padding: 6px !important;
-                    background: #e1e7ef !important;
+                    background: var(--guardian-grey-background, #e1e7ef) !important;
                     top: 3px !important;
                     left: 3px !important;
 
@@ -879,7 +879,7 @@
                     min-width: 48px;
                     min-height: 48px;
                     margin-right: 16px;
-                    background: #E1E7EF;
+                    background: var(--guardian-grey-background, #E1E7EF);
                     border: 1px solid #AAB7C4;
                     border-radius: 4px;
                     padding: 11px 11px;
@@ -898,7 +898,7 @@
                         font-size: 14px;
                         line-height: 18px;
                         vertical-align: middle;
-                        color: #181818;
+                        color: var(--guardian-font-color, #181818);
                         margin-bottom: 4px;
                         position: relative;
                         white-space: nowrap;
@@ -932,7 +932,7 @@
     justify-content: center;
     align-items: center;
     color: #AAB7C4;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     user-select: none;
 }
 
@@ -1153,7 +1153,7 @@ textarea {
     right: 0;
     bottom: 0;
     z-index: 9;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     width: 100%;
     height: 100%;
     overflow: hidden;

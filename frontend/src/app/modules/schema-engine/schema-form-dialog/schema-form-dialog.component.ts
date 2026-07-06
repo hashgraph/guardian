@@ -11,7 +11,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'schema-form-dialog',
     templateUrl: './schema-form-dialog.component.html',
-    styleUrls: ['./schema-form-dialog.component.scss']
+    styleUrls: ['./schema-form-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaFormDialog {
     public header: string;

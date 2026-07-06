@@ -13,7 +13,8 @@ import { ToastrService } from "ngx-toastr";
 @Component({
     selector: 'app-config-otp-dialog',
     templateUrl: './otp-config-dialog.component.html',
-    styleUrls: ['./otp-config-dialog.component.scss']
+    styleUrls: ['./otp-config-dialog.component.scss'],
+    standalone: false
 })
 export class OtpConfigDialogComponent implements OnInit {
     public form = new UntypedFormGroup({

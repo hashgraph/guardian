@@ -1,6 +1,6 @@
 import { Provider } from '@nestjs/common';
 
-import Cache from 'ioredis';
+import { Redis as Cache } from 'ioredis';
 
 //types and interfaces
 export type CacheClient = Cache;

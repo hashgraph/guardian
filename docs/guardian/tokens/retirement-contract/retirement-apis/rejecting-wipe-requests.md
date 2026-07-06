@@ -1,36 +1,45 @@
 # Rejecting Wipe Requests
 
-{% swagger method="delete" path="" baseUrl="/contracts/wipe/requests/{requestId}/reject" summary="Reject wipe request." %}
-{% swagger-description %}
-Reject wipe contract request. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`DELETE /api/v1/contracts/wipe/requests/{requestId}/reject`**
 
-{% swagger-parameter in="query" name="ban" type="boolean" %}
-Reject and ban
-{% endswagger-parameter %}
+Rejects a wipe contract request, optionally banning the requester. Only Standard Registry users are allowed to make this request.
 
-{% swagger-parameter in="path" name="requestId" type="String" required="true" %}
-Request Identifier
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.CONTRACTS_WIPE_REQUEST_REVIEW`
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+## Request
 
-{% endswagger-response %}
+### Path Parameters
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+| Parameter   | Type   | Required | Description        |
+|-------------|--------|----------|--------------------|
+| `requestId` | string | Yes      | Request identifier |
 
-{% endswagger-response %}
+### Query Parameters
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+| Parameter | Type    | Required | Default | Description                                  |
+|-----------|---------|----------|---------|----------------------------------------------|
+| `ban`     | boolean | No       | false   | If `true`, also bans the requester's account |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

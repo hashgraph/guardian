@@ -15,7 +15,8 @@ import { LocationType, UserPermissions } from '@guardian/interfaces';
 @Component({
     selector: 'tags-explorer-dialog',
     templateUrl: './tags-explorer-dialog.component.html',
-    styleUrls: ['./tags-explorer-dialog.component.scss']
+    styleUrls: ['./tags-explorer-dialog.component.scss'],
+    standalone: false
 })
 export class TagsExplorerDialog {
     public loading = false;
@@ -102,7 +103,7 @@ export class TagsExplorerDialog {
                 schemas: this.schemas,
                 inheritTagsOption: this.inheritTagsOption,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.create(result);
@@ -223,7 +224,7 @@ export class TagsExplorerDialog {
                 viewDocument: true,
                 toggle: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 }

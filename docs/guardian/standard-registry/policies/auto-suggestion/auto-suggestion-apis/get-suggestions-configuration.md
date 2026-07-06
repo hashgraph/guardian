@@ -1,38 +1,44 @@
-# Get suggestions configuration
+# Get Suggestions Configuration
 
-{% swagger method="get" path="" baseUrl="/suggestions/config" summary="Get suggestions config" %}
-{% swagger-description %}
-Get suggestions config. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`GET /api/v1/suggestions/config`**
 
-{% swagger-response status="200: OK" description="Successful operation. Response suggestions config." %}
+Returns the current auto-suggestion priority order configuration. Only Standard Registry users are allowed to make this request.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SUGGESTIONS_SUGGESTIONS_READ`
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": "63e3e5e8a01b3c001234abcd",
+      "blockType": "requestVcDocumentBlock",
+      "order": 1
+    }
+  ]
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  items:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/SuggestionsOrderPriority"
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field          | Type   | Description                                         |
+|----------------|--------|-----------------------------------------------------|
+| `items`        | array  | List of suggestion priority configuration entries   |
+| `items[].id`   | string | Unique identifier of the configuration entry        |
+| `items[].blockType` | string | Block type for this priority entry            |
+| `items[].order` | number | Priority order (lower number = higher priority)   |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

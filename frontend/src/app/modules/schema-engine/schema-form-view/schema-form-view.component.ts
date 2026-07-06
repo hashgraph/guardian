@@ -35,7 +35,8 @@ interface IFieldIndexControl {
     selector: 'app-schema-form-view',
     templateUrl: './schema-form-view.component.html',
     styleUrls: ['./schema-form-view.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class SchemaFormViewComponent implements OnInit {
     @Input('private-fields') hide!: { [x: string]: boolean };
@@ -432,7 +433,7 @@ export class SchemaFormViewComponent implements OnInit {
             width: '90%',
             styleClass: 'guardian-dialog',
             data: formulas,
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any) => { });
     }
 

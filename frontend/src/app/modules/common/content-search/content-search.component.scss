@@ -9,7 +9,7 @@
     border-radius: 8px;
     padding: 0 12px;
     height: 40px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     transition: border-color 0.2s;
 
     &:focus-within {
@@ -33,7 +33,7 @@
     font-family: Inter, sans-serif;
     font-size: 14px;
     line-height: 16px;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     background: transparent;
 
     &::placeholder {

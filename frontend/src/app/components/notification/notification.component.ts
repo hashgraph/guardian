@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
 import { ToastrService } from 'ngx-toastr';
@@ -10,6 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     selector: 'app-notification',
     templateUrl: './notification.component.html',
     styleUrls: ['./notification.component.scss'],
+    standalone: false
 })
 export class NotificationComponent implements OnInit {
     notifications: any[] = [];
@@ -17,6 +18,9 @@ export class NotificationComponent implements OnInit {
     progressNotifications: any[] = [];
     menuOpened: boolean = false;
     subscription = new Subscription();
+
+    /** Show a plain red dot instead of the unread count (used in the collapsed menu). */
+    @Input() compact: boolean = false;
 
     @Output() menuOpenedChange = new EventEmitter<boolean>();
 

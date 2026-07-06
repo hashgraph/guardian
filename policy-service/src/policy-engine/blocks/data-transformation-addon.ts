@@ -2,10 +2,10 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyAddonBlock, IPolicyCalculateBlock, IPolicyDocument, IPolicyEventState } from '../policy-engine.interface.js';
 import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { PolicyUser } from '../policy-user.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { BasicBlock } from '../helpers/decorators/basic-block.js';
-import path from 'path';
+import path from 'node:path';
 import { LocationType } from '@guardian/interfaces';
 import { ActionCallback } from '../helpers/decorators/event-callback.js';
 import { PolicyInputEventType } from '../interfaces/policy-event-type.js';
@@ -57,23 +57,39 @@ export class DataTransformationAddon {
                 },
             });
 
+            // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+            const cleanup = () => {
+                worker.terminate().catch(() => {
+                    // Ignore errors during worker termination
+                });
+            };
+            worker.on('exit', (code) => {
+                cleanup();
+                if (code !== 0 && code !== null) {
+                    reject(new Error(`Data transformation worker exited with code ${code}`));
+                }
+            });
             const done = async (result: any | any[], final: boolean) => {
                 if (!result) {
                     if (final) {
+                        cleanup();
                         resolve(null);
                     }
                     return;
                 }
+                if (final) { cleanup(); }
                 resolve(result);
             }
 
             worker.on('error', (error) => {
+                cleanup();
                 reject(error);
             });
             worker.on('message', async (result: any) => {
                 try {
                     await done(result.result, result.final);
                 } catch (error) {
+                    cleanup();
                     reject(error);
                 }
             });

@@ -1,100 +1,113 @@
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <p-progressSpinner></p-progressSpinner>
-</div>
+  </div>
+}
 
-<div *ngIf="recording" class="recording-container">
+@if (recording) {
+  <div class="recording-container">
     <div class="recording-menu">
-        <div class="recording-menu-label">
-            <div class="recording-animation">
-                <div class="recording-circle"></div>
-                <div class="recording-text">REC</div>
-            </div>
+      <div class="recording-menu-label">
+        <div class="recording-animation">
+          <div class="recording-circle"></div>
+          <div class="recording-text">REC</div>
         </div>
-        <div class="recording-menu-btn recording-test-btn" (click)="policyTestAutomation.toggle($event)">
-            <span>TEST</span>
-            <i class="pi pi-sort-down-fill"></i>
-        </div>
-        <div class="recording-menu-btn recording-stop-btn" (click)="stopRecording()">
-            <span>STOP</span>
-        </div>
-        <div class="recording-menu-btn" title="Actions" (click)="onShowActions()">
-            <i class="pi pi-bars"></i>
-        </div>
+      </div>
+      <div class="recording-menu-btn recording-test-btn" (click)="policyTestAutomation.toggle($event)">
+        <span>TEST</span>
+        <i class="pi pi-sort-down-fill"></i>
+      </div>
+      <div class="recording-menu-btn recording-stop-btn" (click)="stopRecording()">
+        <span>STOP</span>
+      </div>
+      <div class="recording-menu-btn" title="Actions" (click)="onShowActions()">
+        <i class="pi pi-bars"></i>
+      </div>
     </div>
-
-    <div
-        *ngIf="showActions"
+    @if (showActions) {
+      <div
         class="record-logs"
         [attr.record-status]="recordStatus">
-        <div *ngIf="this.recordError" class="record-error">
+        @if (this.recordError) {
+          <div class="record-error">
             {{ this.recordError }}
-        </div>
-        <div
-            *ngFor="let item of recordItems"
+          </div>
+        }
+        @for (item of recordItems; track item) {
+          <div
             class="record-item"
             [attr.selected]="item._selected"
-        >
+            >
             <div class="record-item-index">{{ item._index }}</div>
             <div class="record-item-method">{{ item._title }}</div>
             <div class="record-item-time">{{ item._time }}</div>
-        </div>
-    </div>
+          </div>
+        }
+      </div>
+    }
+    <p-popover #policyTestAutomation styleClass="policy-test-record-overlay">
+      <policy-test-automation-popup></policy-test-automation-popup>
+    </p-popover>
+  </div>
+}
 
-    <p-overlayPanel #policyTestAutomation styleClass="policy-test-record-overlay">
-        <policy-test-automation-popup></policy-test-automation-popup>
-    </p-overlayPanel>
 
-</div>
-
-
-<div *ngIf="running" class="running-container">
+@if (running) {
+  <div class="running-container">
     <div class="running-menu">
-        <div class="running-menu-label">
-            <div class="running-animation">
-                <div class="running-circle"></div>
-                <div class="running-text">{{ recordIndex }}/{{ recordCount }}</div>
-            </div>
+      <div class="running-menu-label">
+        <div class="running-animation">
+          <div class="running-circle"></div>
+          <div class="running-text">{{ recordIndex }}/{{ recordCount }}</div>
         </div>
-
-        <div *ngIf="this.recordError" class="running-menu-btn" title="Retry step" (click)="retryStep()">
-            <i class="pi pi-play"></i>
+      </div>
+      @if (this.recordError) {
+        <div class="running-menu-btn" title="Retry step" (click)="retryStep()">
+          <i class="pi pi-play"></i>
         </div>
-        <div *ngIf="this.recordError" class="running-menu-btn" title="Skip step" (click)="skipStep()">
-            <i class="pi pi-replay"></i>
+      }
+      @if (this.recordError) {
+        <div class="running-menu-btn" title="Skip step" (click)="skipStep()">
+          <i class="pi pi-replay"></i>
         </div>
-        <div class="running-menu-btn" title="Fast Forward" (click)="fastForward()">
-            <i class="pi pi-step-forward"></i>
-        </div>
-        <div class="running-menu-btn" title="Stop" (click)="stopRunning()">
-            <i class="pi pi-stop"></i>
-        </div>
-        <div class="running-menu-btn" title="Actions" (click)="onShowActions()">
-            <i class="pi pi-bars"></i>
-        </div>
+      }
+      <div class="running-menu-btn" title="Fast Forward" (click)="fastForward()">
+        <i class="pi pi-step-forward"></i>
+      </div>
+      <div class="running-menu-btn" title="Stop" (click)="stopRunning()">
+        <i class="pi pi-stop"></i>
+      </div>
+      <div class="running-menu-btn" title="Actions" (click)="onShowActions()">
+        <i class="pi pi-bars"></i>
+      </div>
     </div>
-
-    <div
-        *ngIf="showActions"
+    @if (showActions) {
+      <div
         class="record-logs"
         [attr.record-status]="recordStatus">
-        <div *ngIf="this.recordError" class="record-error">
+        @if (this.recordError) {
+          <div class="record-error">
             {{ this.recordError }}
-        </div>
-        <div
-            *ngFor="let item of recordItems"
+          </div>
+        }
+        @for (item of recordItems; track item) {
+          <div
             class="record-item"
             [attr.selected]="item._selected"
             tooltipPosition="left"
             tooltipStyleClass="record-tooltip"
             [pTooltip]="item._tooltip"
-        >
+            >
             <div class="record-item-index">{{ item._index }}</div>
             <div class="record-item-method">{{ item._title }}</div>
             <div class="record-item-time">{{ item._time }}</div>
-        </div>
-    </div>
-
-    <div *ngIf="overlay" class="running-overlay" (click)="onOverlay()">
-
-    </div>
-</div>
+          </div>
+        }
+      </div>
+    }
+    @if (overlay) {
+      <div class="running-overlay" (click)="onOverlay()">
+      </div>
+    }
+  </div>
+}

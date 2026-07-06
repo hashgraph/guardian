@@ -14,42 +14,50 @@
   <div class="group-container">
     <div class="group-header">Schemas</div>
 
-    <div *ngIf="!schemas.length" class="field-container">
-      <div class="field-value">No schemas to display</div>
-    </div>
+    @if (!schemas.length) {
+      <div class="field-container">
+        <div class="field-value">No schemas to display</div>
+      </div>
+    }
 
-    <div *ngIf="schemas.length" class="field-container master-select field-item">
-      <label>
-        <p-checkbox
-          [binary]="true"
-          [formControl]="master"
-          inputId="select-all"
-        ></p-checkbox>
-        <span class="schema-name">Select all</span>
-      </label>
-    </div>
+    @if (schemas.length) {
+      <div class="field-container master-select field-item">
+        <label>
+          <p-checkbox
+            [binary]="true"
+            [formControl]="master"
+            inputId="select-all"
+          ></p-checkbox>
+          <span class="schema-name">Select all</span>
+        </label>
+      </div>
+    }
 
-    <div *ngIf="schemas.length" class="field-array">
-        <div class="field-item" *ngFor="let s of schemas; let i = index">
+    @if (schemas.length) {
+      <div class="field-array">
+        @for (s of schemas; track s; let i = $index) {
+          <div class="field-item">
             <label>
               <p-checkbox
-                  [binary]="true"
-                  [formControl]="checks.at(i)"
-                  inputId="schema-{{ i }}"
+                [binary]="true"
+                [formControl]="checks.at(i)"
+                inputId="schema-{{ i }}"
               ></p-checkbox>
               <span class="schema-name">{{ s.name }}</span>
             </label>
-              <p-button
-                (click)="onOpenDocument(s)"
-                label="Schema"
-                icon="pi pi-align-right"
-                class="schema-menu-btn"
-                [outlined]="true"
-                [pTooltip]="'View schema details'"
-                tooltipPosition="bottom">
+            <p-button
+              (click)="onOpenDocument(s)"
+              label="Schema"
+              icon="pi pi-align-right"
+              class="schema-menu-btn"
+              [outlined]="true"
+              [pTooltip]="'View schema details'"
+              tooltipPosition="bottom">
             </p-button>
-        </div>
-    </div>
+          </div>
+        }
+      </div>
+    }
   </div>
 </div>
 
@@ -65,7 +73,7 @@
         class="guardian-button guardian-button-primary"
         (click)="onSubmit()"
         [disabled]="schemas.length === 0"
-      >
+        >
         Replace checked schemas
       </button>
     </div>

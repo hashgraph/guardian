@@ -14,6 +14,7 @@ import { PolicyBlock } from 'src/app/modules/policy-engine/structures';
     templateUrl: './policy-parameter-property.component.html',
     styleUrls: ['./policy-parameter-property.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class PolicyParameterPropertyComponent implements OnInit {
     @Input() control!: AbstractControl;
@@ -107,7 +108,7 @@ export class PolicyParameterPropertyComponent implements OnInit {
                 expression: this.fc.value,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.fc.setValue(result.expression);

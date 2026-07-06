@@ -123,10 +123,10 @@
     width: 100%;
 }
 
-:host ::ng-deep .p-inputswitch {
+:host ::ng-deep .p-toggleswitch {
     transform: scale(0.92);
 }
-:host ::ng-deep .p-inputswitch.p-inputswitch-checked .p-inputswitch-slider {
+:host ::ng-deep .p-toggleswitch.p-toggleswitch-checked .p-toggleswitch-slider {
     box-shadow: none;
 }
 

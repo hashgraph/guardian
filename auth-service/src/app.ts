@@ -6,7 +6,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { InitializeVault } from './vaults/index.js';
 import { ImportKeysFromDatabase } from './helpers/import-keys-from-database.js';
-import process from 'process';
+import process from 'node:process';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module.js';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';

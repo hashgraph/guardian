@@ -16,7 +16,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'invite-dialog',
     templateUrl: './invite-dialog.component.html',
-    styleUrls: ['./invite-dialog.component.scss']
+    styleUrls: ['./invite-dialog.component.scss'],
+    standalone: false
 })
 export class InviteDialogComponent implements OnInit, AfterContentInit {
     loading = false;

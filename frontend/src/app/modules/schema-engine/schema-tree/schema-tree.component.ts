@@ -30,6 +30,7 @@ interface TagItem {
     selector: 'app-schema-tree',
     templateUrl: './schema-tree.component.html',
     styleUrls: ['./schema-tree.component.scss'],
+    standalone: false
 })
 export class SchemaTreeComponent implements OnInit {
     public loading = false;
