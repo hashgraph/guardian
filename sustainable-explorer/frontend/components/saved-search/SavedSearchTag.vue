@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { X } from 'lucide-vue-next';
+import { Trash2 } from 'lucide-vue-next';
 
 defineProps<{ label: string; active: boolean }>();
 const emit = defineEmits<{ select: []; remove: [] }>();
@@ -16,10 +16,10 @@ const emit = defineEmits<{ select: []; remove: [] }>();
     >
         <button class="max-w-[140px] truncate" @click="emit('select')">{{ label }}</button>
         <button
-            class="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full hover:text-foreground"
+            class="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full hover:text-destructive"
             @click.stop="emit('remove')"
         >
-            <X class="h-2.5 w-2.5" />
+            <Trash2 class="h-2.5 w-2.5" />
         </button>
     </span>
 </template>

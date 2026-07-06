@@ -9,7 +9,7 @@ import {
   Columns2,
   Download,
   Loader2,
-  Bookmark,
+  Save,
 } from "lucide-vue-next";
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
 import { formatCredits } from "~/lib/format";
@@ -178,37 +178,6 @@ const {
   // navigating away and silently keep the list scoped after "Clear filter".
   excludeFromQuery: ["registryDid"],
 });
-
-const presets = computed(() => [
-  {
-    label: t("projects.presets.goldStandard"),
-    filters: { registry: "Gold Standard" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.sdg13"),
-    filters: { sdgs: "13" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.vintage2022"),
-    filters: { vintage: "2022|2022" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.issuingEnergy"),
-    filters: { status: "Issuing", sector: "Energy" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.glycolRecycling"),
-    filters: { sector: "Glycol Recycling" } as Record<string, string>,
-  },
-]);
-
-function isPresetActive(preset: { filters: Record<string, string> }): boolean {
-  const af = activeFilters.value;
-  const entries = Object.entries(preset.filters);
-  return (
-    entries.length > 0 && entries.every(([key, value]) => af[key] === value)
-  );
-}
 
 // applyPreset()'s sort.key is typed against this page's specific row union
 // (keyof the mapped project row), while a saved search's criteria.sort.key is
@@ -447,15 +416,17 @@ async function downloadProjects() {
         @filter="setFilter"
         @clear="clearFilters"
       >
-        <button
-          v-if="isAuthenticated"
-          v-show="savedSearchesRef?.hasActiveFilters"
-          class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-          @click="savedSearchesRef?.open()"
-        >
-          <Bookmark class="h-3.5 w-3.5" />
-          {{ $t("savedSearch.saveButton") }}
-        </button>
+        <template #before-clear>
+          <button
+            v-if="isAuthenticated"
+            v-show="savedSearchesRef?.hasActiveFilters"
+            class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+            @click="savedSearchesRef?.open()"
+          >
+            <Save class="h-3 w-3" />
+            {{ $t("savedSearch.saveButton") }}
+          </button>
+        </template>
       </FilterBar>
 
       <!-- Preset Templates -->
@@ -463,19 +434,6 @@ async function downloadProjects() {
         <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
           <Sparkles class="h-3 w-3" /> {{ $t("projects.quickFilters") }}
         </span>
-        <button
-          v-for="preset in presets"
-          :key="preset.label"
-          :class="[
-            'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors',
-            isPresetActive(preset)
-              ? 'border-primary/50 bg-primary/10 text-primary'
-              : 'border-primary/25 text-muted-foreground hover:bg-muted hover:text-foreground',
-          ]"
-          @click="applyPreset({ filters: preset.filters })"
-        >
-          {{ preset.label }}
-        </button>
 
         <SavedSearchesRow
           ref="savedSearchesRef"

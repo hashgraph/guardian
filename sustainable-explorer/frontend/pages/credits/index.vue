@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { FileJson, Sparkles, Download, Loader2, Bookmark } from 'lucide-vue-next';
+import { FileJson, Sparkles, Download, Loader2, Save } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
 import { naturalCompare } from '~/lib/utils';
@@ -84,12 +84,6 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
         excludeFromQuery: ['projectKey', 'methodologyId', 'linkedOnly', 'registryDid'],
     });
 
-const presets = computed(() => [
-    { label: t('credits.presets.fungible'), filters: { type: 'Fungible' } as Record<string, string> },
-    { label: t('credits.presets.nonFungible'), filters: { type: 'Non-Fungible' } as Record<string, string> },
-    { label: t('credits.presets.minted2024'), filters: { mintDate: '2024-01-01|2024-12-31' } as Record<string, string> },
-    { label: t('credits.presets.minted2025'), filters: { mintDate: '2025-01-01|2025-12-31' } as Record<string, string> },
-]);
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
 
@@ -254,15 +248,17 @@ async function downloadCredits() {
 
         <div class="px-6 pb-3">
             <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters">
-                <button
-                    v-if="isAuthenticated"
-                    v-show="savedSearchesRef?.hasActiveFilters"
-                    class="inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    @click="savedSearchesRef?.open()"
-                >
-                    <Bookmark class="h-3.5 w-3.5" />
-                    {{ $t('savedSearch.saveButton') }}
-                </button>
+                <template #before-clear>
+                    <button
+                        v-if="isAuthenticated"
+                        v-show="savedSearchesRef?.hasActiveFilters"
+                        class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-primary transition-colors"
+                        @click="savedSearchesRef?.open()"
+                    >
+                        <Save class="h-3 w-3" />
+                        {{ $t('savedSearch.saveButton') }}
+                    </button>
+                </template>
             </FilterBar>
             <label class="mt-2 inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
                 <input
@@ -280,14 +276,6 @@ async function downloadCredits() {
                 <span class="flex items-center gap-1 text-[11px] text-muted-foreground">
                     <Sparkles class="h-3 w-3" /> {{ $t('credits.quickFilters') }}
                 </span>
-                <button
-                    v-for="preset in presets"
-                    :key="preset.label"
-                    class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                    @click="applyPreset({ filters: preset.filters })"
-                >
-                    {{ preset.label }}
-                </button>
 
                 <SavedSearchesRow
                     ref="savedSearchesRef"

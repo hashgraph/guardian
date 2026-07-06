@@ -86,7 +86,8 @@ function onSelect(search: (typeof savedSearches.value)[number]) {
 
 // The "Save Search" trigger button lives in the parent's FilterBar row (same
 // row as the search input), not here — this component only owns the tag list
-// + active label + dialog. The parent opens the dialog via this template ref.
+// + dialog (the active tag itself is the only "currently active" indicator;
+// no separate text label). The parent opens the dialog via this template ref.
 defineExpose({
     open() { dialogOpen.value = true; },
     hasActiveFilters,
@@ -115,7 +116,4 @@ defineExpose({
             @save="onSaveConfirmed"
         />
     </div>
-    <p v-if="activeSearch" class="mt-1 text-[11px] text-muted-foreground">
-        {{ $t('savedSearch.activeLabel') }}: <strong class="text-foreground">{{ activeSearch.name }}</strong>
-    </p>
 </template>

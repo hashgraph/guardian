@@ -477,13 +477,6 @@
             "developer": "Desarrollador",
             "sdgs": "ODS"
         },
-        "presets": {
-            "goldStandard": "Gold Standard",
-            "sdg13": "ODS 13: Acción por el clima",
-            "vintage2022": "Añada 2022",
-            "issuingEnergy": "Emitiendo Energía",
-            "glycolRecycling": "Reciclaje de Glicol"
-        },
         "notFound": "Proyecto no encontrado",
         "details": {
             "projectDetails": "Detalles del proyecto",
@@ -547,12 +540,6 @@
         "searchPlaceholder": "Buscar emisiones...",
         "quickFilters": "Filtros rápidos:",
         "downloadData": "Descargar datos",
-        "presets": {
-            "fungible": "Tokens fungibles",
-            "nonFungible": "No fungibles (NFTs)",
-            "minted2024": "Acuñados en 2024",
-            "minted2025": "Acuñados en 2025"
-        },
         "issuancesFound": "{count} emisiones encontradas",
         "totalSupply": "Suministro total:",
         "registries": "Registros:",
@@ -648,7 +635,6 @@
         "namePlaceholder": "p. ej. Gold Standard Kenia",
         "summaryTitle": "Filtros activos",
         "saveButton": "Guardar búsqueda",
-        "activeLabel": "Búsqueda guardada activa",
         "cancel": "Cancelar",
         "ok": "Aceptar",
         "duplicateName": "Ya existe una búsqueda guardada con este nombre",

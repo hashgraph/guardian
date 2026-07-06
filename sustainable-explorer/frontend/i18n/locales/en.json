@@ -477,13 +477,6 @@
             "developer": "Developer",
             "sdgs": "SDGs"
         },
-        "presets": {
-            "goldStandard": "Gold Standard",
-            "sdg13": "SDG 13: Climate Action",
-            "vintage2022": "Vintage 2022",
-            "issuingEnergy": "Issuing Energy",
-            "glycolRecycling": "Glycol Recycling"
-        },
         "notFound": "Project not found",
         "details": {
             "projectDetails": "Project Details",
@@ -552,12 +545,6 @@
         "searchPlaceholder": "Search issuances...",
         "quickFilters": "Quick filters:",
         "downloadData": "Download Data",
-        "presets": {
-            "fungible": "Fungible tokens",
-            "nonFungible": "Non-Fungible (NFTs)",
-            "minted2024": "Minted 2024",
-            "minted2025": "Minted 2025"
-        },
         "issuancesFound": "{count} issuances found",
         "totalSupply": "Total supply:",
         "registries": "Registries:",
@@ -653,7 +640,6 @@
         "namePlaceholder": "e.g. Gold Standard Kenya",
         "summaryTitle": "Active Filters",
         "saveButton": "Save Search",
-        "activeLabel": "Active saved search",
         "cancel": "Cancel",
         "ok": "OK",
         "duplicateName": "A saved search with this name already exists",
