@@ -10,7 +10,7 @@
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
-        "bson": "6.10.3",
+        "bson": "6.10.4",
         "cron": "^4.3.0",
         "dotenv": "^16.6.1",
         "ethers": "6.16.0",
