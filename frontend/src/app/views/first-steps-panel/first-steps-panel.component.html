@@ -19,9 +19,8 @@
 
       @if (loadFailed) {
         <p class="first-steps-error">
-          First Steps content isn't available. The page should be present under
-          <code>frontend/src/assets/first-steps/</code> — copy it from <code>docs/first-steps/</code> and
-          rebuild.
+          First Steps content couldn't be loaded. It is fetched from the Guardian repository on GitHub —
+          check your connection and try again.
         </p>
       } @else {
         <div class="first-steps-content" [innerHTML]="contentHtml"></div>

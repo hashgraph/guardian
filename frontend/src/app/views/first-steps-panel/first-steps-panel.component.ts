@@ -1,12 +1,12 @@
 import { Component, HostListener, OnInit } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { IUser, UserPermissions } from '@guardian/interfaces';
+import { environment } from 'src/environments/environment';
 import { FirstStepsService } from '../../services/first-steps.service';
 import { AuthService } from '../../services/auth.service';
 import { renderFirstStepsMarkdown } from './first-steps-markdown';
 import { FIRST_STEPS_PAGES } from './first-steps-pages';
 
-const CONTENT_BASE = 'assets/first-steps/';
+const CONTENT_BASE = `https://raw.githubusercontent.com/hashgraph/guardian/${environment.githubRef}/docs/first-steps/`;
 
 const MIN_PANEL_WIDTH = 320;
 const MAX_PANEL_WIDTH = 640;
@@ -31,7 +31,6 @@ export class FirstStepsPanelComponent implements OnInit {
 
     constructor(
         public firstSteps: FirstStepsService,
-        private http: HttpClient,
         private auth: AuthService
     ) {
         this.restoreWidth();
@@ -56,14 +55,23 @@ export class FirstStepsPanelComponent implements OnInit {
 
     private loadContent(url: string): void {
         this.loadFailed = false;
-        this.http.get(url, { responseType: 'text' }).subscribe({
-            next: (markdown) => {
+        // Use the native fetch (not Angular HttpClient) so the app's AuthInterceptor
+        // does not attach an Authorization header. A plain cross-origin GET with no
+        // custom headers stays a "simple request", so the browser skips the CORS
+        // preflight that raw.githubusercontent.com rejects (403 on OPTIONS).
+        fetch(url)
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                return response.text();
+            })
+            .then((markdown) => {
                 this.contentHtml = renderFirstStepsMarkdown(markdown);
-            },
-            error: () => {
+            })
+            .catch(() => {
                 this.loadFailed = true;
-            }
-        });
+            });
     }
 
     get open(): boolean {
