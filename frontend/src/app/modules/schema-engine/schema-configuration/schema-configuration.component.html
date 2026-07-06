@@ -218,19 +218,35 @@
                           <p-select
                             class="guardian-dropdown"
                             panelStyleClass="guardian-dropdown-panel"
-                            [options]="getFieldsForCondition(condition)"
+                            [options]="getFieldOptionGroupsForCondition(condition)"
+                            [group]="true"
+                            optionGroupLabel="label"
+                            optionGroupChildren="items"
+                            optionLabel="label"
+                            dataKey="key"
+                            [filter]="true"
+                            filterBy="label"
                             appendTo="body"
-                            optionLabel="controlDescription.value"
                             placeholder="Field"
                             [formControl]="getRowFieldControl(row)"
+                            [ngClass]="{'ng-invalid ng-dirty': getRowFieldControl(row)?.invalid}"
                             (onChange)="onIfRowFieldChange(condition, i, $event)">
+                            <ng-template let-group pTemplate="group">
+                              <span class="if-field-group-label">{{ group.label }}</span>
+                            </ng-template>
                           </p-select>
+                          @if (getRowFieldControl(row)?.hasError('staleOption')) {
+                            <small class="condition-field-error">Field no longer exists — please re-select.</small>
+                          }
+                          @if (getRowFieldControl(row)?.hasError('arrayRefTrigger')) {
+                            <small class="condition-field-error">Array-ref fields cannot be used as IF triggers.</small>
+                          }
                         </div>
                         @if (getRowField(row)) {
                           <div class="equal-label">=</div>
                         }
                         @switch (true) {
-                          @case (isFieldType1(getRowField(row))) {
+                          @case (isFieldType1(getRowOption(row))) {
                             <div
                               class="input-field-container guardian-input-container"
                               style="margin-bottom: unset"
@@ -244,7 +260,7 @@
                                 />
                             </div>
                           }
-                          @case (isFieldType2(getRowField(row))) {
+                          @case (isFieldType2(getRowOption(row))) {
                             <div
                               class="input-field-container guardian-input-container"
                               style="margin-bottom: unset"
@@ -259,7 +275,7 @@
                                 />
                             </div>
                           }
-                          @case (isFieldType3(getRowField(row))) {
+                          @case (isFieldType3(getRowOption(row))) {
                             <div
                               class="form-group required-form-field guardian-input-container">
                               <label class="form-label">Choose a date &amp; time</label>
@@ -271,7 +287,7 @@
                               appendTo="body"></p-datepicker>
                             </div>
                           }
-                          @case (isFieldType4(getRowField(row))) {
+                          @case (isFieldType4(getRowOption(row))) {
                             <div
                               class="form-group example-full-width required-form-field">
                               <label class="form-label">Choose a date</label>
@@ -282,7 +298,7 @@
                               appendTo="body"></p-datepicker>
                             </div>
                           }
-                          @case (isFieldType5(getRowField(row))) {
+                          @case (isFieldType5(getRowOption(row))) {
                             <div
                               class="radio-button-container">
                               <div>
@@ -375,6 +391,44 @@
                 </div>
                 <div class="guardian-button-label">Add THEN Field</div>
               </button>
+              @if (condition.crossThenTargets.length) {
+                <div class="cross-targets-chips">
+                  <span class="cross-targets-label">Sub-schema THEN:</span>
+                  @for (target of condition.crossThenTargets; track target.fieldPath.join('>')) {
+                    <span class="cross-target-chip"
+                          [class.cross-target-chip--stale]="isCrossTargetStale(condition, target)"
+                          [title]="isCrossTargetStale(condition, target) ? 'Field no longer available: ' + target.fieldPath.join(' > ') : target.fieldPath.join(' > ')"
+                    >
+                      {{ target.label }}
+                      <button class="chip-remove" (click)="onCrossTargetRemove(condition, 'then', target)">×</button>
+                    </span>
+                  }
+                </div>
+              }
+              <div class="cross-target-add-row">
+                <p-select
+                  class="guardian-dropdown cross-target-dropdown"
+                  panelStyleClass="guardian-dropdown-panel"
+                  [options]="getCrossTargetGroupsForCondition(condition, 'then')"
+                  [group]="true"
+                  optionGroupLabel="label"
+                  optionGroupChildren="items"
+                  optionLabel="label"
+                  dataKey="key"
+                  [filter]="true"
+                  filterBy="label"
+                  [resetFilterOnHide]="true"
+                  appendTo="body"
+                  placeholder="Add sub-schema THEN field…"
+                  (onChange)="onCrossTargetAdd(condition, 'then', $event)">
+                  <ng-template let-group pTemplate="group">
+                    <span class="if-field-group-label">{{ group.label }}</span>
+                  </ng-template>
+                  <ng-template let-option pTemplate="item">
+                    <span class="if-field-item-label" [title]="option.label">{{ option.shortLabel || option.label }}</span>
+                  </ng-template>
+                </p-select>
+              </div>
               <p class="condition-label">ELSE</p>
               @if (condition.elseControls) {
                 <div
@@ -421,6 +475,44 @@
                 </div>
                 <div class="guardian-button-label">Add ELSE Field</div>
               </button>
+              @if (condition.crossElseTargets.length) {
+                <div class="cross-targets-chips">
+                  <span class="cross-targets-label">Sub-schema ELSE:</span>
+                  @for (target of condition.crossElseTargets; track target.fieldPath.join('>')) {
+                    <span class="cross-target-chip"
+                          [class.cross-target-chip--stale]="isCrossTargetStale(condition, target)"
+                          [title]="isCrossTargetStale(condition, target) ? 'Field no longer available: ' + target.fieldPath.join(' > ') : target.fieldPath.join(' > ')"
+                    >
+                      {{ target.label }}
+                      <button class="chip-remove" (click)="onCrossTargetRemove(condition, 'else', target)">×</button>
+                    </span>
+                  }
+                </div>
+              }
+              <div class="cross-target-add-row">
+                <p-select
+                  class="guardian-dropdown cross-target-dropdown"
+                  panelStyleClass="guardian-dropdown-panel"
+                  [options]="getCrossTargetGroupsForCondition(condition, 'else')"
+                  [group]="true"
+                  optionGroupLabel="label"
+                  optionGroupChildren="items"
+                  optionLabel="label"
+                  dataKey="key"
+                  [filter]="true"
+                  filterBy="label"
+                  [resetFilterOnHide]="true"
+                  appendTo="body"
+                  placeholder="Add sub-schema ELSE field…"
+                  (onChange)="onCrossTargetAdd(condition, 'else', $event)">
+                  <ng-template let-group pTemplate="group">
+                    <span class="if-field-group-label">{{ group.label }}</span>
+                  </ng-template>
+                  <ng-template let-option pTemplate="item">
+                    <span class="if-field-item-label" [title]="option.label">{{ option.shortLabel || option.label }}</span>
+                  </ng-template>
+                </p-select>
+              </div>
               <button
                 (click)="onConditionRemove(condition)"
                 class="guardian-button guardian-button-delete rmv-btn">
