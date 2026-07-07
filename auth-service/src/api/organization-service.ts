@@ -484,14 +484,15 @@ export class OrganizationService extends NatsService {
                         const updated = await entityRepository.update(OrgRole, null, item);
 
                         // Propagate the denormalized orgRoleName on members if the name changed.
+                        // Raw targeted $set: touches only the denorm field, so a concurrent
+                        // member role change can never be reverted, and a member switched away
+                        // between operations no longer matches the orgRoleId filter.
                         if (nameChanged && newName) {
-                            const members = await entityRepository.find(OrganizationMember, { orgRoleId: id });
-                            if (members.length) {
-                                for (const m of members) {
-                                    m.orgRoleName = newName;
-                                }
-                                await entityRepository.update(OrganizationMember, null, members);
-                            }
+                            await entityRepository.updateEntity(
+                                OrganizationMember,
+                                { $set: { orgRoleName: newName, updateDate: new Date() } },
+                                { orgRoleId: id }
+                            );
                         }
 
                         return new MessageResponse(updated);
