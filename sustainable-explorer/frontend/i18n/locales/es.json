@@ -820,7 +820,12 @@
                 "publishedAt": "Publicada el",
                 "registryDid": "DID del Registro",
                 "network": "Red",
-                "downloadPolicy": "Descargar paquete de política (.zip)"
+                "downloadPolicy": "Descargar paquete de política (.zip)",
+                "downloadPending": "Preparando descarga… (obtenerla de IPFS puede tardar un momento)",
+                "downloadNotReady": "El paquete de política aún no está listo — la política no se ha decodificado por completo. Inténtalo de nuevo más tarde.",
+                "downloadError": "No se pudo descargar el paquete de política. Inténtalo de nuevo.",
+                "downloadAuthRequired": "Inicia sesión para descargar el paquete de política.",
+                "downloadRateLimited": "Has alcanzado el límite de descargas. Espera un momento e inténtalo de nuevo."
             },
             "analytics": {
                 "schemaCount": "Conteo de esquemas",

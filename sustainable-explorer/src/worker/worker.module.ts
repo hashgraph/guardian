@@ -93,15 +93,13 @@ export class WorkerModule {
 
                 BullModule.forRootAsync({
                     useFactory: () => {
-                        const redictConfig = getRedictConfig();
-                        return {
-                            connection: {
-                                host: redictConfig.host,
-                                port: redictConfig.port,
-                                password: redictConfig.password,
-                                db: redictConfig.db,
-                            },
-                        };
+                        // Strip keyPrefix — BullMQ manages its own 'bull:' namespace
+                        // (queue.registry does the same). Spread the rest so the worker's
+                        // queue connections inherit retryStrategy + reconnectOnError and
+                        // survive a Redict restart/redeploy (the ENOTFOUND/LOADING window)
+                        // instead of throwing until the process is restarted.
+                        const { keyPrefix: _kp, ...connection } = getRedictConfig();
+                        return { connection };
                     },
                 }),
 
@@ -121,15 +119,11 @@ export class WorkerModule {
                 {
                     provide: 'REDICT_PUB',
                     useFactory: () => {
-                        const config = getRedictConfig();
-                        return new Redis({
-                            host: config.host,
-                            port: config.port,
-                            password: config.password,
-                            db: config.db,
-                            maxRetriesPerRequest: null,
-                            enableReadyCheck: false,
-                        });
+                        // Strip keyPrefix to preserve this client's unprefixed keys
+                        // (autoscaler) and channels ('se:events'); spread the rest so it
+                        // inherits the shared retry/reconnect resilience settings.
+                        const { keyPrefix: _kp, ...connection } = getRedictConfig();
+                        return new Redis(connection);
                     },
                 },
 

@@ -40,6 +40,9 @@ import { DashboardService } from './services/dashboard.service';
 import { QueueRegistry } from './queues/queue.registry';
 import { QueueEventsBus } from './queues/queue-events-bus.service';
 import { GuardianSyncService } from './services/guardian-sync.service';
+import { IpfsService } from '@worker/services/ipfs.service';
+import { POLICY_ZIP_STORAGE } from '@worker/services/storage/policy-zip-storage.interface';
+import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip-storage.service';
 
 @Module({
     imports: [
@@ -82,6 +85,8 @@ import { GuardianSyncService } from './services/guardian-sync.service';
         QueueRegistry,
         QueueEventsBus,
         GuardianSyncService,
+        IpfsService,
+        { provide: POLICY_ZIP_STORAGE, useClass: LocalPolicyZipStorage },
     ],
 })
 export class ApiModule {}
