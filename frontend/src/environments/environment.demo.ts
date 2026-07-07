@@ -1,6 +1,6 @@
 export const environment = {
     production: true,
-    githubRef: 'main',
+    githubRef: 'develop',
     displayDemoAccounts: true,
     accessTokenUpdateInterval: 29 * 1000,
     isMeecoConfigured: false,
