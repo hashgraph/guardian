@@ -4,7 +4,7 @@ import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfa
 import { ProfileService } from 'src/app/services/profile.service';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -80,7 +80,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
         private profileService: ProfileService,
         private modulesService: ModulesService,
         private dialog: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
         private router: Router,
         private dialogService: DialogService,
         @Inject(CONFIGURATION_ERRORS)
@@ -347,7 +347,8 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                         }
                     }
                 }
-                this.informService.errorMessage(text.join(''), 'The module is invalid');
+                const msg = text.join('');
+                this.toastService.error(msg, 'The module is invalid', { sticky: true, logMessage: msg });
                 this._configurationErrors.set(element.uuid, errors);
                 this.router.navigate(['module-configuration'], {
                     queryParams: {

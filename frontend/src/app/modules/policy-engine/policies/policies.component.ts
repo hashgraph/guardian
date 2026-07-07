@@ -21,7 +21,7 @@ import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -724,7 +724,7 @@ export class PoliciesComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private dialogService: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
@@ -994,9 +994,11 @@ export class PoliciesComponent implements OnInit {
                                     }
                                 }
                             }
-                            this.informService.errorMessage(
-                                text.join(''),
-                                'The policy is invalid'
+                            const msg = text.join('');
+                            this.toastService.error(
+                                msg,
+                                'The policy is invalid',
+                                { sticky: true, logMessage: msg }
                             );
                             this._configurationErrors.set(element.id, errors);
                             this.router.navigate(['policy-configuration'], {

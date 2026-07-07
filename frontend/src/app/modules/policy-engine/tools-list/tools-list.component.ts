@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, ModuleStatus, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
@@ -117,7 +117,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         private dialog: DialogService,
         private dialogService: DialogService,
         private route: ActivatedRoute,
-        private informService: InformService,
+        private toastService: ToastService,
         private router: Router,
     ) {
         this.tools = null;
@@ -463,9 +463,11 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                         }
                     }
                 }
-                this.informService.errorMessage(
-                    text.join(''),
-                    'The tool is invalid'
+                const msg = text.join('');
+                this.toastService.error(
+                    msg,
+                    'The tool is invalid',
+                    { sticky: true, logMessage: msg }
                 );
                 this.loading = false;
             }

@@ -6,6 +6,7 @@ type ToastSeverity = 'success' | 'info' | 'warn' | 'error';
 
 export interface ToastOptions {
     logMessage?: string;
+    logUrl?: string;
     sticky?: boolean;
 }
 
@@ -30,13 +31,13 @@ export class ToastService {
     }
 
     public warn(detail: string, summary = '', options: ToastOptions = {}): void {
-        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : undefined;
+        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : options.logUrl;
         const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
         this.add('warn', detail, summary, { ...timing, data: { logUrl } });
     }
 
     public error(detail: string, summary = '', options: ToastOptions = {}): void {
-        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : undefined;
+        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : options.logUrl;
         const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
         this.add('error', detail, summary, { ...timing, data: { logUrl } });
     }
@@ -46,7 +47,8 @@ export class ToastService {
         const translated = this.messageTranslator.translateMessage(msg);
         const summary = (error?.code ? `${error.code} ` : '') +
             (translated.wasTranslated ? 'Hedera transaction failed' : 'Other Error');
-        this.error(translated.text || 'Unknown error', summary);
+        const detail = translated.text || 'Unknown error';
+        this.error(detail, summary, { sticky: true, logMessage: detail });
     }
 
     public sticky(severity: 'info' | 'error', detail: string, summary: string, key: string): void {

@@ -8,7 +8,7 @@ import { IUser, Schema, SchemaEntity, UserPermissions } from '@guardian/interfac
 import { DemoService } from '../../services/demo.service';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from '../../services/tasks.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -128,7 +128,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private relayerAccountsService: RelayerAccountsService,
         private schemaService: SchemaService,
         private otherService: DemoService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private headerProps: HeaderPropsService,
         private dialogService: DialogService,
@@ -501,7 +501,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
