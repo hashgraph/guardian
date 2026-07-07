@@ -6,7 +6,7 @@ import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUser } from '../policy-user.js';
 import { BlockActionError } from '../errors/index.js';
 import { SignAndSendRole } from './sign-and-send-role.js';
-import { GenerateDID } from './generate-did.js';
+import { GenerateDID, IGenerateDidBatch } from './generate-did.js';
 import { SignVC } from './sign-vc.js';
 import { PolicyActionType } from './policy-action.type.js';
 import { SendMessage } from './send-message.js';
@@ -209,7 +209,7 @@ export class PolicyActionsUtils {
         user: PolicyUser,
         relayerAccount: string,
         userId: string | null
-    }, actionStatusId?: string): Promise<string> {
+    }, actionStatusId?: string, batch?: IGenerateDidBatch): Promise<string> {
         const { ref, type, user, userId } = options;
         try {
             if (type === 'UUID') {
@@ -224,7 +224,7 @@ export class PolicyActionsUtils {
             if (type === 'DID') {
                 const userCred = await PolicyUtils.getUserCredentials(ref, user.did, userId);
                 if (userCred.location === LocationType.LOCAL) {
-                    return await GenerateDID.local(options, actionStatusId);
+                    return await GenerateDID.local(options, actionStatusId, batch);
                 } else {
                     const data = await GenerateDID.request(options);
                     return new Promise((resolve, reject) => {
