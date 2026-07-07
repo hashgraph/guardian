@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Param, Query, Body, StreamableFile, NotFoundException } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Param, Query, Body, StreamableFile, NotFoundException, UseGuards } from '@nestjs/common';
 import {
     ApiTags,
     ApiOperation,
@@ -6,6 +6,7 @@ import {
     ApiParam,
     ApiBody,
     ApiProduces,
+    ApiCookieAuth,
 } from '@nestjs/swagger';
 import { MethodologiesService } from '../services/methodologies.service';
 import { MappingReprocessService } from '../services/mapping-reprocess.service';
@@ -17,6 +18,7 @@ import {
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { UpdateMappingDto } from '../dto/update-mapping.dto';
 import { AdminWrite } from '../auth/decorators/admin-write.decorator';
+import { JwtAuthGuard } from '@api/auth/guards/jwt-auth.guard';
 
 @ApiTags('methodologies')
 @Controller('api/v1/:network/methodologies')
@@ -100,27 +102,42 @@ export class MethodologiesController {
         return result;
     }
 
+    @ApiCookieAuth()
+    @UseGuards(JwtAuthGuard)
     @Get(':id/policy-package')
     @ApiOperation({
         summary: 'Download the methodology\'s policy ZIP package',
         description:
-            'Streams the policy ZIP (the methodology definition package) from the indexer\'s ' +
-            'cached IPFS content (ipfs_files), resolved via the policy\'s sourceCid. ' +
-            'Available once the policy has been decoded; returns 404 when the ZIP has not ' +
-            'been cached yet.',
+            'Streams the policy ZIP (the methodology definition package), resolved via the ' +
+            'policy\'s sourceCid. Served from the local zip cache; on a cache miss it fetches ' +
+            'the ZIP from IPFS on-demand and persists it so subsequent requests are served ' +
+            'from cache. Requires an authenticated user and is rate-limited (global RateLimitGuard). ' +
+            'Returns 404 when the policy has not been decoded, or when it is decoded but the ' +
+            'ZIP cannot be retrieved from cache or IPFS.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
     @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
     @ApiProduces('application/zip')
     @ApiResponse({ status: 200, description: 'The policy ZIP file' })
-    @ApiResponse({ status: 404, description: 'Policy package not cached for this methodology' })
+    @ApiResponse({ status: 401, description: 'Authentication required' })
+    @ApiResponse({ status: 404, description: 'Policy not decoded yet, or its package could not be retrieved' })
+    @ApiResponse({ status: 429, description: 'Rate limit exceeded' })
     async downloadPolicyPackage(
         @Param('network') network: string,
         @Param('id') id: string,
     ): Promise<StreamableFile> {
         const pkg = await this.methodologiesService.getPolicyPackage(network, id);
-        if (!pkg) {
-            throw new NotFoundException(`No cached policy package for methodology "${id}" on ${network}`);
+        if (!pkg.ok) {
+            if (pkg.reason === 'not-decoded') {
+                throw new NotFoundException(
+                    `The policy for methodology "${id}" on ${network} has not been decoded yet, ` +
+                    `so its package is not available for download.`,
+                );
+            }
+            throw new NotFoundException(
+                `The policy package for methodology "${id}" on ${network} is not available right now — ` +
+                `it isn't cached and could not be retrieved from IPFS. Please try again later.`,
+            );
         }
         return new StreamableFile(pkg.content, {
             type: 'application/zip',

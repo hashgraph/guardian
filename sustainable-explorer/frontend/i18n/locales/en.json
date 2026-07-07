@@ -827,7 +827,12 @@
                 "publishedAt": "Published At",
                 "registryDid": "Registry DID",
                 "network": "Network",
-                "downloadPolicy": "Download policy package (.zip)"
+                "downloadPolicy": "Download policy package (.zip)",
+                "downloadPending": "Preparing download… (fetching from IPFS may take a moment)",
+                "downloadNotReady": "The policy package isn't ready yet — the policy hasn't been fully decoded. Please try again later.",
+                "downloadError": "Couldn't download the policy package. Please try again.",
+                "downloadAuthRequired": "Please sign in to download the policy package.",
+                "downloadRateLimited": "You've hit the download rate limit. Please wait a moment and try again."
             },
             "analytics": {
                 "schemaCount": "Schema Count",

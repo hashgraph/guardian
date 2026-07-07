@@ -172,23 +172,17 @@ export class MappingReprocessService {
 
         const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
 
+        const BULK_CHUNK = 500;
+        const stamp = Date.now();
         let enqueued = 0;
-        for (const row of vcRows) {
-            const jobData: ProjectReparseJobData = {
-                messageConsensusTimestamp: row.consensusTimestamp,
-            };
-            // Remove any stale completed job with the same canonical jobId so a
-            // bulk re-parse after a mapping change always re-processes. The
-            // upsert is idempotent on the worker side (linkedVcs dedupe check
-            // prevents credit/vcCount double-counting), so re-runs are safe.
-            const canonicalJobId = `project-reparse-${row.consensusTimestamp}`;
-            const stale = await queue.getJob(canonicalJobId);
-            if (stale) await stale.remove();
-
-            await queue.add('reparse', jobData, {
-                jobId: `project-reparse-${row.consensusTimestamp}-${Date.now()}`,
-            });
-            enqueued++;
+        for (let i = 0; i < vcRows.length; i += BULK_CHUNK) {
+            const jobs = vcRows.slice(i, i + BULK_CHUNK).map((row, j) => ({
+                name: 'reparse',
+                data: { messageConsensusTimestamp: row.consensusTimestamp } as ProjectReparseJobData,
+                opts: { jobId: `project-reparse-${row.consensusTimestamp}-${stamp}-${i + j}` },
+            }));
+            await queue.addBulk(jobs);
+            enqueued += jobs.length;
         }
 
         this.logger.log(

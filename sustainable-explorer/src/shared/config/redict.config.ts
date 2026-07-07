@@ -15,11 +15,10 @@ export function getRedictConfig(): RedisOptions {
         keyPrefix: process.env.REDICT_KEY_PREFIX || 'se:',
         maxRetriesPerRequest: null,
         enableReadyCheck: false,
-        retryStrategy: (times: number) => {
-            if (times > 10) {
-                return null;
-            }
-            return Math.min(times * 200, 5000);
+        retryStrategy: (times: number) => Math.min(times * 200, 5000),
+        reconnectOnError: (err: Error) => {
+            const msg = err.message.toUpperCase();
+            return msg.includes('LOADING') || msg.includes('READONLY');
         },
     };
 }

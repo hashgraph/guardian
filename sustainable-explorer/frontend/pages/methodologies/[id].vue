@@ -134,12 +134,62 @@ const hashscanUrl = computed(() => {
 });
 
 // Download the policy ZIP through our API (served from cached IPFS content).
-// Shown only once the policy is decoded — that's when the ZIP is cached.
+// The download button is only rendered once decodeStatus === 'success' — that's
+// when a ZIP can exist — so failed/pending methodologies never trigger the call.
 const policyPackageUrl = computed(() => {
   if (methodology.value?.decodeStatus !== 'success') return null;
   const base = (useRuntimeConfig().public.apiBaseUrl as string) || '';
   return `${base}/api/v1/${network.value}/methodologies/${id.value}/policy-package`;
 });
+
+// A plain <a download> can't reliably download a cross-origin response (the
+// download attribute is ignored, so the ZIP opens inline or the error JSON
+// shows as a page). Fetch the bytes ourselves, then save via a Blob URL so the
+// download works and any backend error (e.g. "policy not decoded yet") surfaces
+// as a toast instead of navigating away.
+const policyDownloadPending = ref(false);
+
+async function downloadPolicyPackage() {
+  if (!import.meta.client || !policyPackageUrl.value || policyDownloadPending.value) return;
+  policyDownloadPending.value = true;
+  const { toast } = await import('vue-sonner');
+  try {
+    const res = await fetch(policyPackageUrl.value, { credentials: 'include' });
+    if (!res.ok) {
+      // Prefer the backend's message (it explains not-decoded vs not-cached);
+      // fall back to a localized message per status.
+      let message =
+        res.status === 401
+          ? t('methodologies.detail.policy.downloadAuthRequired')
+          : res.status === 429
+            ? t('methodologies.detail.policy.downloadRateLimited')
+            : res.status === 404
+              ? t('methodologies.detail.policy.downloadNotReady')
+              : t('methodologies.detail.policy.downloadError');
+      try {
+        const body = await res.json();
+        if (body?.message) message = body.message;
+      } catch {
+        // response wasn't JSON — keep the localized fallback
+      }
+      toast.error(message);
+      return;
+    }
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = objectUrl;
+    a.download = `policy-${id.value}.zip`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(objectUrl);
+  } catch {
+    toast.error(t('methodologies.detail.policy.downloadError'));
+  } finally {
+    policyDownloadPending.value = false;
+  }
+}
 
 const publishedAt = computed(() => {
   const ts = methodology.value?.sourceTimestamp;
@@ -255,7 +305,8 @@ const decodeStatusClass = (status: string | null | undefined) => {
 // ─── Action: re-run decoder ──────────────────────────────────────────────────
 
 // Decode / reparse / edit-mapping are admin-only maintenance actions (spec).
-const { isAdmin } = useAuth();
+// isAuthenticated gates the policy-package download (auth-only endpoint).
+const { isAdmin, isAuthenticated } = useAuth();
 const { header: csrfHeader } = useCsrf();
 const redecodePending = ref(false);
 
@@ -2082,15 +2133,19 @@ function getResolvedField(fieldKey: string) {
                 <ExternalLink class="h-4 w-4" />
                 {{ $t('methodologies.detail.viewOnHashScan') }}
               </a>
-              <a
-                v-if="policyPackageUrl"
-                :href="policyPackageUrl"
-                download
-                class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium"
+              <button
+                v-if="policyPackageUrl && isAuthenticated"
+                type="button"
+                :disabled="policyDownloadPending"
+                class="inline-flex items-center gap-2 text-sm text-primary hover:underline font-medium disabled:opacity-60 disabled:cursor-not-allowed disabled:no-underline"
+                @click="downloadPolicyPackage"
               >
-                <Download class="h-4 w-4" />
-                {{ $t('methodologies.detail.policy.downloadPolicy') }}
-              </a>
+                <RefreshCw v-if="policyDownloadPending" class="h-4 w-4 animate-spin" />
+                <Download v-else class="h-4 w-4" />
+                {{ policyDownloadPending
+                  ? $t('methodologies.detail.policy.downloadPending')
+                  : $t('methodologies.detail.policy.downloadPolicy') }}
+              </button>
             </div>
           </div>
         </div>
