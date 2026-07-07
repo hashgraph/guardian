@@ -24,11 +24,13 @@ export class ToastService {
         this.add('info', detail, summary, { life: this.TRANSIENT_LIFE });
     }
 
-    public warn(detail: string, summary = '', logUrl?: string): void {
+    public warn(detail: string, summary = '', logMessage?: string): void {
+        const logUrl = logMessage ? `/admin/logs?message=${btoa(logMessage)}` : undefined;
         this.add('warn', detail, summary, { sticky: true, data: { logUrl } });
     }
 
-    public error(detail: string, summary = '', logUrl?: string): void {
+    public error(detail: string, summary = '', logMessage?: string): void {
+        const logUrl = logMessage ? `/admin/logs?message=${btoa(logMessage)}` : undefined;
         this.add('error', detail, summary, { sticky: true, data: { logUrl } });
     }
 
@@ -46,10 +48,6 @@ export class ToastService {
 
     public clearKey(key: string): void {
         this.messageService.clear(key);
-    }
-
-    public buildLogUrl(message: string): string {
-        return `/admin/logs?message=${btoa(message)}`;
     }
 
     private add(severity: ToastSeverity, detail: string, summary: string, options: Partial<ToastMessageOptions> = {}): void {
