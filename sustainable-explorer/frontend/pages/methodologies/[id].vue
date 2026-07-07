@@ -126,6 +126,15 @@ async function copyValue(val: string) {
   } catch {}
 }
 
+// Guardian Service Indexer — policies are addressed by the policy publish
+// message's HCS consensus timestamp, which is methodology.sourceTimestamp
+// (the same value used for the HashScan transaction link below).
+const INDEXER_BASE_URL = 'https://indexer.guardianservice.app';
+const indexerPolicyUrl = computed(() => {
+  const ts = methodology.value?.sourceTimestamp;
+  return ts ? `${INDEXER_BASE_URL}/policies/${ts}` : null;
+});
+
 const hashscanUrl = computed(() => {
   // Prefer the exact transaction that published the policy document — its HCS
   // consensus timestamp is methodology.sourceTimestamp. Fall back to the topic
@@ -1017,6 +1026,18 @@ function getResolvedField(fieldKey: string) {
             </div>
           </div>
         </div>
+
+        <!-- View on Indexer (Guardian Service Indexer, opens in a new tab) -->
+        <a
+          v-if="indexerPolicyUrl"
+          :href="indexerPolicyUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex shrink-0 items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+        >
+          <ExternalLink class="h-4 w-4 text-primary" />
+          {{ $t('common.viewOnIndexer') }}
+        </a>
       </div>
 
       <!-- Summary card -->
