@@ -33,7 +33,7 @@ import {
     POLICY_DATA_DEFAULT_PAGE_SIZE,
 } from '@guardian/interfaces';
 import { AuthUser, Auth } from '#auth';
-import { Guardians, InternalException } from '#helpers';
+import { EntityOwner, Guardians, InternalException } from '#helpers';
 
 /**
  * Validates and parses the `filters` query-string value.
@@ -242,6 +242,7 @@ export class PolicyDataApi {
             const pageSize = Math.min(POLICY_DATA_MAX_PAGE_SIZE, Math.max(1, parseInt(rawPageSize, 10) || POLICY_DATA_DEFAULT_PAGE_SIZE));
 
             const guardians = new Guardians();
+            const owner = new EntityOwner(user);
             let result: { items: unknown[]; total: number };
             try {
                 result = await guardians.getPolicyDataDocuments(
@@ -251,7 +252,7 @@ export class PolicyDataApi {
                     page,
                     pageSize,
                     sort || undefined,
-                    user.did,
+                    owner.owner,
                 );
             } catch (svcError: any) {
                 // MessageError.code survives the NATS round-trip (see Guardians.sendMessage); trust it when present.

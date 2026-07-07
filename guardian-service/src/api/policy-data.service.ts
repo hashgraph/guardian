@@ -157,7 +157,7 @@ function buildMongoFilter(
  *   page       : number   (1-based)
  *   pageSize   : number   (1–200)
  *   sortField? : string   — field name; prefix '-' for descending
- *   ownerDid   : string   — caller's DID, used only for audit-log context (see catch block); not access control
+ *   policyOwner: string   — caller's Standard Registry tenant DID; enforces the tenant-ownership boundary for tenant-scoped roles (falsy for cross-organization roles like AUDITOR, which aren't tenant-restricted)
  * }
  */
 export async function policyDataAPI(
@@ -171,18 +171,22 @@ export async function policyDataAPI(
         page: number;
         pageSize: number;
         sortField?: string;
-        ownerDid: string;
+        policyOwner: string;
     }) => {
         try {
             if (!msg) {
                 return new MessageError('Invalid parameters.');
             }
 
-            const { policyId, schemaName, filters, page, pageSize, sortField } = msg;
+            const { policyId, schemaName, filters, page, pageSize, sortField, policyOwner } = msg;
 
             const policy = await dataBaseServer.getPolicy(policyId);
             if (!policy) {
                 return new MessageError(`Policy "${policyId}" not found.`, 404);
+            }
+            // AUDITOR has no single tenant (EntityOwner leaves owner null for it) — a falsy policyOwner means the caller is a cross-organization auditor, not scoped to one tenant.
+            if (policyOwner && policy.owner !== policyOwner) {
+                return new MessageError(`Insufficient permissions to access the policy "${policyId}".`, 403);
             }
             if (policy.status !== PolicyStatus.PUBLISH) {
                 return new MessageError(
@@ -250,7 +254,7 @@ export async function policyDataAPI(
 
             return new MessageResponse({ items, total });
         } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE'], msg?.ownerDid);
+            await logger.error(error, ['GUARDIAN_SERVICE']);
             return new MessageError(error);
         }
     });

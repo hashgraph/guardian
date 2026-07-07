@@ -152,7 +152,7 @@ export class Guardians extends NatsService {
      * @param page       - 1-based page number
      * @param pageSize   - items per page (1-200)
      * @param sortField  - optional sort field; prefix '-' for descending
-     * @param ownerDid   - caller's DID for server-side logging
+     * @param policyOwner - caller's Standard Registry tenant DID, used to restrict access to the caller's own policies
      */
     public async getPolicyDataDocuments(
         policyId: string,
@@ -161,7 +161,7 @@ export class Guardians extends NatsService {
         page: number,
         pageSize: number,
         sortField: string | undefined,
-        ownerDid: string,
+        policyOwner: string,
     ): Promise<{ items: unknown[]; total: number }> {
         return await this.sendMessage(MessageAPI.GET_POLICY_DATA_DOCUMENTS, {
             policyId,
@@ -170,7 +170,7 @@ export class Guardians extends NatsService {
             page,
             pageSize,
             sortField,
-            ownerDid,
+            policyOwner,
         });
     }
 
