@@ -5,8 +5,10 @@ import {
     Network, FileText, ChevronDown,
     Database,
     FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X, Download,
+    ListChecks, TrendingUp,
 } from 'lucide-vue-next';
 import type { Credit } from '~/types/models';
+import { formatCredits } from '~/lib/format';
 import { exportProject, type ExportFormat } from '~/lib/project-export';
 import { getSDG } from '~/lib/sdgs';
 import { getMethodologyName } from '~/lib/methodologies';
@@ -444,6 +446,20 @@ const emissions = computed(() => {
                     :display-country-code="displayCountryCode"
                 />
 
+                <!-- Milestone Tracker (Registration → MRV Submission → Verification → Issuance) -->
+                <div v-if="project.milestones?.length" class="rounded-xl border bg-card overflow-hidden">
+                    <div class="px-5 py-3.5 border-b bg-muted/30">
+                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <ListChecks class="h-4 w-4 text-primary" />
+                            {{ $t('projects.milestones.title') }}
+                        </h2>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('projects.milestones.subtitle') }}</p>
+                    </div>
+                    <div class="px-5 py-6 overflow-x-auto">
+                        <MilestoneTracker :milestones="project.milestones" />
+                    </div>
+                </div>
+
                 <!-- SDG Icons -->
                 <div v-if="project.sdgs?.length" class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
@@ -509,6 +525,32 @@ const emissions = computed(() => {
             <!-- ── Tab: Issuances & Credits ────────────────────────────────────── -->
             <div v-else-if="activeTab === 'issuances'" class="p-6 space-y-6">
                 <CreditLifecycle :project="project" />
+
+                <!-- Projected Issuance (pipeline projects only — issued projects show actuals above) -->
+                <div v-if="project.lifecycleStage !== 'Issued'" class="rounded-xl border bg-card overflow-hidden">
+                    <div class="px-5 py-3.5 border-b bg-muted/30">
+                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <TrendingUp class="h-4 w-4 text-primary" />
+                            {{ $t('projects.projectedEstimate.title') }}
+                        </h2>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('projects.projectedEstimate.subtitle') }}</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-px bg-border">
+                        <div class="bg-card px-5 py-4 text-center">
+                            <div class="text-lg font-semibold text-foreground tabular-nums">
+                                {{ project.projectedVolume != null ? formatCredits(project.projectedVolume) : $t('projects.notEstimated') }}
+                            </div>
+                            <div class="text-[11px] text-muted-foreground">{{ $t('projects.columns.projectedVolume') }}</div>
+                        </div>
+                        <div class="bg-card px-5 py-4 text-center">
+                            <div class="text-lg font-semibold text-foreground tabular-nums">
+                                {{ project.expectedIssuanceYear ?? $t('projects.tbd') }}
+                            </div>
+                            <div class="text-[11px] text-muted-foreground">{{ $t('projects.columns.expectedIssuanceYear') }}</div>
+                        </div>
+                    </div>
+                </div>
+
                 <IssuancesTable
                     :project="project"
                     @view-vc="handleViewVc"

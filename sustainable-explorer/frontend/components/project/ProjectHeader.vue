@@ -3,6 +3,7 @@ import {
     FileJson, ExternalLink,
 } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
+import { lifecycleStageColor } from '~/lib/lifecycle';
 
 const props = defineProps<{
     project: Project;
@@ -17,14 +18,6 @@ const emit = defineEmits<{
 }>();
 
 const { t } = useI18n();
-
-const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
-    Registered: { bg: 'bg-slate-50', text: 'text-slate-600', dot: 'bg-slate-400' },
-    'Under Validation': { bg: 'bg-amber-50', text: 'text-amber-700', dot: 'bg-amber-500' },
-    Verified: { bg: 'bg-blue-50', text: 'text-blue-700', dot: 'bg-blue-500' },
-    Issuing: { bg: 'bg-emerald-50', text: 'text-emerald-700', dot: 'bg-emerald-500' },
-    Completed: { bg: 'bg-purple-50', text: 'text-purple-600', dot: 'bg-purple-500' },
-};
 </script>
 
 <template>
@@ -36,13 +29,11 @@ const statusColor: Record<string, { bg: string; text: string; dot: string }> = {
                     <h1 class="text-2xl font-bold text-foreground">{{ project.name }}</h1>
                     <span
                         :class="[
-                            statusColor[project.status]?.bg ?? 'bg-muted',
-                            statusColor[project.status]?.text ?? 'text-muted-foreground',
-                            'inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-medium',
+                            lifecycleStageColor[project.lifecycleStage ?? ''] || 'bg-muted text-muted-foreground',
+                            'inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium',
                         ]"
                     >
-                        <span :class="[statusColor[project.status]?.dot ?? 'bg-muted-foreground', 'h-1.5 w-1.5 rounded-full']" />
-                        {{ project.status }}
+                        {{ $t(`projects.lifecycleStages.${project.lifecycleStage}`) }}
                     </span>
                 </div>
             </div>

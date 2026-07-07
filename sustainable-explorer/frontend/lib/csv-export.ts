@@ -41,6 +41,7 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
         'SDGs', 'Co-benefits', 'Category', 'Sector', 'Sectoral Scope', 'Created At',
         'Crediting Period Start', 'Crediting Period End', 'Issuance Count',
         'Total Issued', 'Total Retired', 'Total Active',
+        'Lifecycle Stage', 'Expected Issuance Year',
     ];
     const rows = projects.map(p => [
         network,
@@ -67,6 +68,9 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
         p.totalIssued ?? 0,
         p.totalRetired ?? 0,
         p.totalActive ?? 0,
+        p.lifecycleStage ?? '',
+        // Expected Issuance Year applies to pre-issuance projects only; blank once issued.
+        p.lifecycleStage !== 'Issued' ? (p.expectedIssuanceYear ?? '') : '',
     ]);
     return [header, ...rows];
 }

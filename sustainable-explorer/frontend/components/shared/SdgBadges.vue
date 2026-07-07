@@ -25,7 +25,7 @@ function sdgIcon(id: number): string {
             <img
                 :src="sdgIcon(id)"
                 :alt="`SDG ${id}`"
-                class="h-7 w-7 rounded-sm cursor-default"
+                class="h-7 w-7 min-w-7 object-contain shrink-0 rounded-sm cursor-default"
             />
             <!-- Tooltip -->
             <div class="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity z-50">
@@ -37,7 +37,7 @@ function sdgIcon(id: number): string {
         </div>
         <span
             v-if="overflow > 0"
-            class="flex h-7 min-w-[1.75rem] items-center justify-center rounded-sm bg-muted px-1 text-[10px] font-medium text-muted-foreground cursor-default"
+            class="flex h-7 min-w-[1.75rem] shrink-0 items-center justify-center rounded-sm bg-muted px-1 text-[10px] font-medium text-muted-foreground cursor-default"
         >
             +{{ overflow }}
         </span>

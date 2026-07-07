@@ -26,9 +26,12 @@ import {
   RotateCcw,
   Pencil,
   Download,
+  Globe,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
 import { allocateDonutColors } from "~/lib/chart-colors";
+import { getSDG } from "~/lib/sdgs";
+import { LIFECYCLE_STAGES, lifecycleStageColor } from "~/lib/lifecycle";
 import type {
   MethodologyDto,
   MethodologiesResponse,
@@ -110,6 +113,7 @@ const statusBadgeClass = (status: string | null | undefined) => {
   if (s === "DRAFT") return "bg-stat-amber/10 text-stat-amber";
   return "bg-muted text-muted-foreground";
 };
+
 
 const copiedValue = ref<string | null>(null);
 async function copyValue(val: string) {
@@ -211,6 +215,39 @@ const linkedProjectsLoaded = ref(false);
 const linkedProjectsMapped = computed(() => linkedProjects.value.map(mapApiProject));
 const { resolvedCode: resolvedProjectCode, resolvedName: resolvedProjectName } = useGeocodedCountries(linkedProjectsMapped);
 
+// Union of SDGs across all linked projects — dedupe + sort ascending.
+const aggregatedSdgIds = computed(() => {
+  const ids = new Set<number>();
+  for (const p of linkedProjectsMapped.value) {
+    for (const sdgId of p.sdgs ?? []) ids.add(sdgId);
+  }
+  return Array.from(ids).sort((a, b) => a - b);
+});
+
+// Compact lifecycle-stage + expected-year filter over the already-loaded set (§8 — no new queries).
+const linkedProjectsStageFilter = ref<'all' | typeof LIFECYCLE_STAGES[number]>('all');
+const linkedProjectsYearFrom = ref('');
+const linkedProjectsYearTo = ref('');
+
+const linkedProjectsFiltered = computed(() => {
+  let result = linkedProjectsMapped.value;
+  if (linkedProjectsStageFilter.value !== 'all') {
+    result = result.filter(p => p.lifecycleStage === linkedProjectsStageFilter.value);
+  }
+  const from = linkedProjectsYearFrom.value;
+  const to = linkedProjectsYearTo.value;
+  if (from || to) {
+    result = result.filter(p => {
+      const year = p.expectedIssuanceYear;
+      if (!year) return false;
+      if (from && year < from) return false;
+      if (to && year > to) return false;
+      return true;
+    });
+  }
+  return result;
+});
+
 if (import.meta.client) {
   const config = useRuntimeConfig();
   const baseURL = config.public.apiBaseUrl as string;
@@ -234,25 +271,17 @@ if (import.meta.client) {
   // Linked projects scope to this *version* of the methodology — filtered by
   // instanceTopicId (the URL id), not policyTopicId, so v0.1 and v0.2 of the
   // same policy show different project lists.
+  //
+  // Fetched eagerly on id change (not gated on activeTab) — the data also
+  // feeds the Overview tab's SDG card and the dashboard section, both of
+  // which can render before the user ever visits the Linked Projects tab.
   watch(
-    [activeTab, id],
-    async ([tab, instId], [, oldInstId]) => {
-      if (tab !== 'projects' || !instId) return;
+    id,
+    async (instId, oldInstId) => {
+      if (!instId) return;
       if (instId === oldInstId && linkedProjectsLoaded.value) return;
       linkedProjectsLoaded.value = false;
       await loadLinkedProjects(instId);
-    },
-    { immediate: true },
-  );
-
-  // Eagerly load for dashboard section when threshold is met
-  watch(
-    [methodology, id] as const,
-    ([m, instId]) => {
-      if (!m || !instId) return;
-      if (!meetsDashboardThreshold(m.stats.projectCount, m.stats.issuanceCount)) return;
-      if (linkedProjectsLoaded.value) return;
-      loadLinkedProjects(instId);
     },
     { immediate: true },
   );
@@ -1317,6 +1346,35 @@ function getResolvedField(fieldKey: string) {
             </div>
           </div>
         </div>
+
+        <!-- SDG Icons — union of SDGs across all linked projects -->
+        <div v-if="aggregatedSdgIds.length" class="rounded-xl border bg-card overflow-hidden">
+          <div class="px-5 py-3.5 border-b bg-muted/30">
+            <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+              <Globe class="h-4 w-4 text-primary" />
+              {{ $t('sdgs.title') }}
+            </h2>
+          </div>
+          <div class="px-5 py-5">
+            <div class="flex flex-wrap gap-3">
+              <div
+                v-for="sdgId in aggregatedSdgIds"
+                :key="sdgId"
+                class="group relative flex items-center gap-3 rounded-lg border px-4 py-3 hover:bg-muted/30 transition-colors"
+              >
+                <img
+                  :src="`/sdgs/E-WEB-Goal-${String(sdgId).padStart(2, '0')}.png`"
+                  :alt="`SDG ${sdgId}`"
+                  class="h-10 w-10 rounded"
+                />
+                <div>
+                  <div class="text-xs font-semibold text-foreground">SDG {{ sdgId }}</div>
+                  <div class="text-[11px] text-muted-foreground">{{ getSDG(sdgId)?.name }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- Tab: Decoded Mapping -->
@@ -1959,67 +2017,106 @@ function getResolvedField(fieldKey: string) {
             <p>{{ $t('methodologies.detail.linkedProjects.noTopicId') }}</p>
           </div>
 
-          <!-- Projects table -->
-          <table v-else class="w-full text-sm">
-            <thead>
-              <tr class="border-b bg-muted/20">
-                <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.project') }}</th>
-                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.country') }}</th>
-                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.registry') }}</th>
-                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.issuances') }}</th>
-                <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.mintedAmount') }}</th>
-                <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.status') }}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y">
-              <tr
-                v-for="p in linkedProjectsMapped"
-                :key="p.id"
-                class="hover:bg-muted/30 transition-colors cursor-pointer"
-                @click="navigateTo('/projects/' + p.id)"
-              >
-                <td class="py-3 px-5">
-                  <div class="font-medium text-foreground truncate max-w-[280px]">
-                    {{ p.name || '—' }}
-                  </div>
-                  <div v-if="p.developer" class="text-xs text-muted-foreground mt-0.5">{{ p.developer }}</div>
-                </td>
-                <td class="py-3 px-4 text-sm text-muted-foreground">
-                  <div v-if="p.country || (p.lat && p.lng)" class="flex items-center gap-1.5">
-                    <CountryFlag :code="resolvedProjectCode(p)" size="sm" />
-                    <span>{{ resolvedProjectName(p) || '' }}</span>
-                  </div>
-                  <span v-else>—</span>
-                </td>
-                <td class="py-3 px-4 text-sm text-muted-foreground truncate max-w-[160px]">
-                  {{ p.registry || '—' }}
-                </td>
-                <td class="py-3 px-4 text-right tabular-nums text-sm font-medium text-foreground">
-                  {{ p.issuanceCount != null ? p.issuanceCount.toLocaleString() : '—' }}
-                </td>
-                <td class="py-3 px-4 text-right tabular-nums text-sm text-muted-foreground">
-                  {{ (p.totalIssued ?? 0) > 0 ? formatCredits(p.totalIssued!) : '—' }}
-                </td>
-                <td class="py-3 px-4">
-                  <span
-                    :class="[
-                      (p.status ?? '').toUpperCase() === 'ISSUING'
-                        ? 'bg-stat-green/10 text-stat-green'
-                        : 'bg-muted text-muted-foreground',
-                      'text-xs font-medium rounded-full px-2 py-0.5',
-                    ]"
-                  >
-                    {{ p.status ?? '—' }}
-                  </span>
-                </td>
-              </tr>
-              <tr v-if="!linkedProjects.length">
-                <td colspan="6" class="py-8 text-center text-sm text-muted-foreground">
-                  {{ $t('methodologies.detail.linkedProjects.noProjects') }}
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <template v-else>
+            <!-- Compact Lifecycle Stage + Expected Year filter -->
+            <div class="px-5 py-3 border-b bg-muted/10 flex flex-wrap items-center gap-3">
+              <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{{ $t('methodologies.detail.linkedProjects.stageFilter.label') }}</span>
+                <select
+                  v-model="linkedProjectsStageFilter"
+                  class="rounded-md border bg-card px-2 py-1 text-xs"
+                >
+                  <option value="all">{{ $t('methodologies.detail.linkedProjects.stageFilter.all') }}</option>
+                  <option v-for="stage in LIFECYCLE_STAGES" :key="stage" :value="stage">
+                    {{ $t(`projects.lifecycleStages.${stage}`) }}
+                  </option>
+                </select>
+              </div>
+              <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <span>{{ $t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear') }}</span>
+                <input
+                  v-model="linkedProjectsYearFrom"
+                  type="number"
+                  :placeholder="$t('common.yearFrom')"
+                  class="w-20 rounded-md border bg-card px-2 py-1"
+                />
+                <span>–</span>
+                <input
+                  v-model="linkedProjectsYearTo"
+                  type="number"
+                  :placeholder="$t('common.yearTo')"
+                  class="w-20 rounded-md border bg-card px-2 py-1"
+                />
+              </div>
+            </div>
+
+            <!-- Projects table -->
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b bg-muted/20">
+                  <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.project') }}</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.country') }}</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.registry') }}</th>
+                  <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.issuances') }}</th>
+                  <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.mintedAmount') }}</th>
+                  <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear') }}</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.linkedProjects.columns.stage') }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y">
+                <tr
+                  v-for="p in linkedProjectsFiltered"
+                  :key="p.id"
+                  class="hover:bg-muted/30 transition-colors cursor-pointer"
+                  @click="navigateTo('/projects/' + p.id)"
+                >
+                  <td class="py-3 px-5 align-middle">
+                    <div class="font-medium text-foreground truncate max-w-[280px]">
+                      {{ p.name || '—' }}
+                    </div>
+                    <div v-if="p.developer" class="text-xs text-muted-foreground mt-0.5">{{ p.developer }}</div>
+                  </td>
+                  <td class="py-3 px-4 align-middle text-sm text-muted-foreground">
+                    <div v-if="p.country || (p.lat && p.lng)" class="flex items-center gap-1.5">
+                      <CountryFlag :code="resolvedProjectCode(p)" size="sm" />
+                      <span>{{ resolvedProjectName(p) || '' }}</span>
+                    </div>
+                    <span v-else>—</span>
+                  </td>
+                  <td class="py-3 px-4 align-middle text-sm text-muted-foreground truncate max-w-[160px]">
+                    {{ p.registry || '—' }}
+                  </td>
+                  
+                  <td class="py-3 px-4 align-middle text-center tabular-nums text-sm font-medium text-foreground">
+                    {{ p.issuanceCount != null ? p.issuanceCount.toLocaleString() : '—' }}
+                  </td>
+                  <td class="py-3 px-4 align-middle text-center tabular-nums text-sm text-muted-foreground">
+                    {{ (p.totalIssued ?? 0) > 0 ? formatCredits(p.totalIssued!) : '—' }}
+                  </td>
+                  <td class="py-3 px-4 align-middle text-center text-sm text-muted-foreground">
+                    {{ p.lifecycleStage !== 'Issued' ? (p.expectedIssuanceYear ?? $t('projects.tbd')) : '—' }}
+                  </td>
+                  
+                  <td class="py-3 px-4 align-middle">
+                    <span
+                      :class="[
+                        lifecycleStageColor[p.lifecycleStage ?? ''] ||
+                          'bg-muted text-muted-foreground',
+                        'text-xs font-medium rounded-full px-2 py-0.5',
+                      ]"
+                    >
+                      {{ $t(`projects.lifecycleStages.${p.lifecycleStage}`) }}
+                    </span>
+                  </td>
+                </tr>
+                <tr v-if="!linkedProjectsFiltered.length">
+                  <td colspan="7" class="py-8 text-center text-sm text-muted-foreground">
+                    {{ $t('methodologies.detail.linkedProjects.noProjects') }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </template>
         </div>
       </div>
 

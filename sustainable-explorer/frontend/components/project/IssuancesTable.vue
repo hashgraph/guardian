@@ -15,6 +15,23 @@ const emit = defineEmits<{
 // Per-mint-event issuance history (new path)
 const events = computed(() => props.project.issuanceEvents ?? []);
 
+// Client-side mint-year filter over the event rows
+const yearFilter = ref('all');
+const availableYears = computed<number[]>(() => {
+    const years = new Set<number>();
+    for (const e of events.value) {
+        if (!e.mintDate) continue;
+        const y = new Date(e.mintDate).getFullYear();
+        if (!isNaN(y)) years.add(y);
+    }
+    return [...years].sort((a, b) => b - a);
+});
+const filteredEvents = computed(() =>
+    yearFilter.value === 'all'
+        ? events.value
+        : events.value.filter(e => e.mintDate && new Date(e.mintDate).getFullYear() === Number(yearFilter.value)),
+);
+
 // Per-token aggregate totals (derived from issuances — existing logic)
 const linkedCredits = computed<Credit[]>(() => {
     if (!props.project.issuances?.length) return [];
@@ -32,9 +49,9 @@ const linkedCredits = computed<Credit[]>(() => {
     }));
 });
 
-// Header badge count: prefer events length, fall back to per-token count
+// Header badge count: prefer (filtered) events length, fall back to per-token count
 const badgeCount = computed(() =>
-    events.value.length > 0 ? events.value.length : linkedCredits.value.length,
+    events.value.length > 0 ? filteredEvents.value.length : linkedCredits.value.length,
 );
 
 function eventTypeLabel(type: string | null): 'Fungible' | 'Non-Fungible' {
@@ -94,7 +111,19 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                 <Coins class="h-4 w-4 text-primary" />
                 Linked Issuances
             </h2>
-            <span class="text-xs text-muted-foreground">{{ badgeCount }} issuance(s)</span>
+            <div class="flex items-center gap-2">
+                <select
+                    v-if="availableYears.length > 0"
+                    v-model="yearFilter"
+                    :title="$t('projects.detail.issuances.yearFilter')"
+                    :aria-label="$t('projects.detail.issuances.yearFilter')"
+                    class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                >
+                    <option value="all">{{ $t('common.allYears') }}</option>
+                    <option v-for="y in availableYears" :key="y" :value="String(y)">{{ y }}</option>
+                </select>
+                <span class="text-xs text-muted-foreground">{{ badgeCount }} issuance(s)</span>
+            </div>
         </div>
 
         <!-- PRIMARY: per-mint-event issuance history -->
@@ -115,7 +144,7 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-for="e in events" :key="e.mintConsensusTimestamp" class="hover:bg-muted/30 transition-colors">
+                    <tr v-for="e in filteredEvents" :key="e.mintConsensusTimestamp" class="hover:bg-muted/30 transition-colors">
                         <td class="py-3 px-5 text-muted-foreground tabular-nums">
                             {{ e.mintDate ? formatDate(e.mintDate) : '—' }}
                         </td>

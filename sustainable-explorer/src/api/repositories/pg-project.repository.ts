@@ -77,6 +77,16 @@ const PROJECT_STATS_JOIN = `
  * explicit because they don't fit the generic operator model.
  */
 export class PgProjectRepository extends ProjectRepository {
+    // Per-network (keyed by DataSource) cache of policy schema metadata used to
+    // classify linkedVcs on list rows. The repository itself is instantiated
+    // per-call (see project.service.ts), so this must live on the class, not
+    // on `this`. Invalidated whenever `sig` (a cheap aggregate over the policy
+    // table) changes — see findAll() below.
+    private static readonly schemaCache = new WeakMap<DataSource, {
+        sig: string;
+        byTopic: Map<string, PolicySchemaRow[]>;
+    }>();
+
     constructor(private readonly dataSource: DataSource) {
         super();
     }
@@ -179,8 +189,76 @@ export class PgProjectRepository extends ProjectRepository {
             this.dataSource.query(countSql, countParams),
         ]);
 
+        // List rows carry no schema metadata, so linkedSchemas[].docType would
+        // default to 'unknown' and lifecycleStage degrade to Issued/Registered.
+        // Batch-load each distinct policy's schema names + policyMapping in one
+        // indexed query (names extracted SQL-side — the heavyweight
+        // rawSchemaJson bodies never leave Postgres), mirroring findById.
+        const policyTopicIds = [...new Set(
+            rawRows
+                .map((r) => (r.businessData as Record<string, any> | null)?.['policyTopicId'])
+                .filter((t): t is string => typeof t === 'string' && t.length > 0),
+        )];
+        // Schema metadata is essentially static (it only changes when a policy
+        // is (re)decoded), so we cache it per-network keyed by DataSource and
+        // only refetch the referenced-but-uncached topics. Freshness is kept
+        // by a cheap signature query: any decode/redecode bumps policy.updatedAt
+        // (see policy-decode.processor.ts), so count+max(updatedAt) changing
+        // is a reliable invalidation trigger.
+        let schemasByTopic = new Map<string, PolicySchemaRow[]>();
+        if (policyTopicIds.length > 0) {
+            const [sigRow]: Array<{ c: number; m: string }> = await this.dataSource.query(
+                `SELECT count(*)::int AS c, COALESCE(max("updatedAt")::text, '0') AS m
+                 FROM policy WHERE "decodeStatus" = 'decoded'`,
+            );
+            const sig = `${sigRow?.c ?? 0}:${sigRow?.m ?? '0'}`;
+
+            let entry = PgProjectRepository.schemaCache.get(this.dataSource);
+            if (!entry || entry.sig !== sig) {
+                entry = { sig, byTopic: new Map<string, PolicySchemaRow[]>() };
+                PgProjectRepository.schemaCache.set(this.dataSource, entry);
+            }
+
+            const missing = policyTopicIds.filter((t) => !entry!.byTopic.has(t));
+            if (missing.length > 0) {
+                const policyRows: Array<{
+                    policyTopicId: string;
+                    policyMapping: Record<string, unknown> | null;
+                    schema_names: Record<string, unknown> | null;
+                }> = await this.dataSource.query(
+                    `SELECT DISTINCT ON (p."policyTopicId")
+                            p."policyTopicId",
+                            p."policyMapping",
+                            (SELECT jsonb_object_agg(s.key, s.value->'name')
+                               FROM jsonb_each(COALESCE(p."rawSchemaJson", '{}'::jsonb)) s) AS schema_names
+                     FROM policy p
+                     WHERE p."policyTopicId" = ANY($1::varchar[])
+                       AND p."decodeStatus" = 'decoded'
+                     ORDER BY p."policyTopicId", p."createdAt" DESC`,
+                    [missing],
+                );
+                for (const pr of policyRows) {
+                    const schemaNamesByIri = new Map<string, string | null>();
+                    for (const [iri, name] of Object.entries(pr.schema_names ?? {})) {
+                        schemaNamesByIri.set(iri, typeof name === 'string' ? name : null);
+                    }
+                    entry.byTopic.set(pr.policyTopicId, PgProjectRepository.buildPolicySchemas(
+                        schemaNamesByIri,
+                        (pr.policyMapping ?? {}) as Record<string, unknown[]>,
+                    ));
+                }
+            }
+
+            schemasByTopic = entry.byTopic;
+        }
+
         return {
-            rows: rawRows.map((row) => PgProjectRepository.mapRow(row)),
+            rows: rawRows.map((row) => PgProjectRepository.mapRow(
+                row,
+                undefined,
+                undefined,
+                schemasByTopic.get((row.businessData as Record<string, any> | null)?.['policyTopicId'] ?? ''),
+            )),
             total: countResult[0]?.total ?? 0,
         };
     }
@@ -422,6 +500,7 @@ export class PgProjectRepository extends ProjectRepository {
                  FROM policy
                  WHERE "policyTopicId" = $1
                    AND "decodeStatus" = 'decoded'
+                 ORDER BY "createdAt" DESC
                  LIMIT 1`,
                 [policyTopicId],
             );
@@ -429,38 +508,15 @@ export class PgProjectRepository extends ProjectRepository {
             if (policySchemaRows.length > 0) {
                 const pr = policySchemaRows[0];
                 const rawSchemaJson = (pr.rawSchemaJson ?? {}) as Record<string, unknown>;
-                const policyMapping = (pr.policyMapping ?? {}) as Record<string, unknown[]>;
-
-                const projectIris = new Set<string>();
-                const docTypeByIri = new Map<string, string>();
-                for (const entries of Object.values(policyMapping)) {
-                    if (!Array.isArray(entries)) continue;
-                    for (const entry of entries) {
-                        if (!entry || typeof entry !== 'object') continue;
-                        const e = entry as Record<string, unknown>;
-                        if (e['isProjectSchema'] === true && typeof e['schemaIri'] === 'string') {
-                            projectIris.add(e['schemaIri'] as string);
-                        }
-                        if (typeof e['schemaIri'] === 'string' && typeof e['docType'] === 'string') {
-                            docTypeByIri.set(e['schemaIri'] as string, e['docType'] as string);
-                        }
-                    }
-                }
-
-                policySchemas = Object.entries(rawSchemaJson).map(([iri, schemaDoc]) => {
+                const schemaNamesByIri = new Map<string, string | null>();
+                for (const [iri, schemaDoc] of Object.entries(rawSchemaJson)) {
                     const doc = (schemaDoc ?? {}) as Record<string, unknown>;
-                    const name = typeof doc['name'] === 'string' ? doc['name'] : null;
-                    return {
-                        schemaId: iri,
-                        name,
-                        isProjectSchema: projectIris.has(iri),
-                        docType: docTypeByIri.get(iri) ?? 'unknown',
-                    };
-                }).sort((a, b) => {
-                    if (a.isProjectSchema && !b.isProjectSchema) return -1;
-                    if (!a.isProjectSchema && b.isProjectSchema) return 1;
-                    return (a.name ?? '').localeCompare(b.name ?? '');
-                });
+                    schemaNamesByIri.set(iri, typeof doc['name'] === 'string' ? doc['name'] : null);
+                }
+                policySchemas = PgProjectRepository.buildPolicySchemas(
+                    schemaNamesByIri,
+                    (pr.policyMapping ?? {}) as Record<string, unknown[]>,
+                );
             }
         }
 
@@ -570,6 +626,40 @@ export class PgProjectRepository extends ProjectRepository {
             messageType: r.type,
             schemaName: (r.vc_schema_iri ? schemaNameMap.get(r.vc_schema_iri) : undefined) ?? null,
         }));
+    }
+
+    // Builds the PolicySchemaRow list the DTO uses to classify linked VCs,
+    // from a policy's {schemaIri -> name} map and its policyMapping.
+    private static buildPolicySchemas(
+        schemaNamesByIri: Map<string, string | null>,
+        policyMapping: Record<string, unknown[]>,
+    ): PolicySchemaRow[] {
+        const projectIris = new Set<string>();
+        const docTypeByIri = new Map<string, string>();
+        for (const entries of Object.values(policyMapping)) {
+            if (!Array.isArray(entries)) continue;
+            for (const entry of entries) {
+                if (!entry || typeof entry !== 'object') continue;
+                const e = entry as Record<string, unknown>;
+                if (e['isProjectSchema'] === true && typeof e['schemaIri'] === 'string') {
+                    projectIris.add(e['schemaIri'] as string);
+                }
+                if (typeof e['schemaIri'] === 'string' && typeof e['docType'] === 'string') {
+                    docTypeByIri.set(e['schemaIri'] as string, e['docType'] as string);
+                }
+            }
+        }
+
+        return [...schemaNamesByIri.entries()].map(([iri, name]) => ({
+            schemaId: iri,
+            name,
+            isProjectSchema: projectIris.has(iri),
+            docType: docTypeByIri.get(iri) ?? 'unknown',
+        })).sort((a, b) => {
+            if (a.isProjectSchema && !b.isProjectSchema) return -1;
+            if (!a.isProjectSchema && b.isProjectSchema) return 1;
+            return (a.name ?? '').localeCompare(b.name ?? '');
+        });
     }
 
     private static mapRow(

@@ -35,6 +35,14 @@ export interface LinkedSchema {
     linkedVcs: LinkedVc[];
 }
 
+export interface Milestone {
+    key: string;
+    label: string;
+    state: 'complete' | 'current' | 'expected' | 'pending';
+    date: string | null;
+    dateType: 'actual' | 'expected' | null;
+}
+
 export interface Project {
     id: string;
     name: string;
@@ -74,6 +82,10 @@ export interface Project {
     rawVc?: Record<string, any>;
     decodeMethod?: string | null;
     metadata?: Record<string, unknown> | null;
+    lifecycleStage?: string;
+    expectedIssuanceYear?: string | null;
+    projectedVolume?: number | null;
+    milestones?: Milestone[];
 }
 
 export interface Credit {
