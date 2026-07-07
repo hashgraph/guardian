@@ -411,7 +411,7 @@ async function downloadProjects() {
 </script>
 
 <template>
-  <div class="w-full max-w-[1600px] mx-auto space-y-0">
+  <div class="space-y-0">
     <div class="px-4 sm:px-6 pt-6 pb-4">
       <h1 class="text-2xl font-bold text-foreground tracking-tight">
         {{ $t("projects.title") }}
@@ -421,17 +421,7 @@ async function downloadProjects() {
       </p>
     </div>
 
-    <div v-if="registryDidFilter" class="px-6 pb-2">
-        <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
-            <span class="text-muted-foreground">{{ $t('projects.filteredByRegistry') }}</span>
-            <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('projects.unknownRegistry') }}</span>
-            <NuxtLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
-                {{ $t('projects.clearRegistryFilter') }} ×
-            </NuxtLink>
-        </div>
-    </div>
-
-    <div v-if="registryDidFilter" class="px-6 pb-2">
+    <div v-if="registryDidFilter" class="px-4 sm:px-6 pb-2">
         <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
             <span class="text-muted-foreground">{{ $t('projects.filteredByRegistry') }}</span>
             <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('projects.unknownRegistry') }}</span>
@@ -663,28 +653,27 @@ async function downloadProjects() {
                   <td class="py-3.5 px-4 align-middle text-muted-foreground truncate">
                     <div v-if="displayCountry(p)" class="flex items-center gap-2 max-w-full">
                       <CountryFlag :code="resolvedCode(p)" size="sm" class="shrink-0" />
-                      <span class="truncate" :title="displayCountry(p) ?? ''">
-                        {{ displayCountry(p) }}
-                      </span>
+                      <div class="min-w-0 flex-1">
+                        <TruncatedText :text="displayCountry(p)" />
+                      </div>
                     </div>
                     <span v-else class="text-muted-foreground/50 text-xs pl-1">—</span>
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs truncate">
-                    <span class="truncate block" :title="p.registry">{{ p.registry }}</span>
+                    <TruncatedText :text="p.registry" />
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle max-w-[200px]">
                     <span
-                      class="block w-full truncate text-xs bg-muted/60 text-muted-foreground border border-muted rounded px-2 py-1 font-mono cursor-help"
-                      :title="p.methodology"
+                      class="block w-full text-xs bg-muted/60 text-muted-foreground border border-muted rounded px-2 py-1 font-mono"
                     >
-                      {{ p.methodology }}
+                      <TruncatedText :text="p.methodology" />
                     </span>
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs truncate">
-                    <span class="truncate block" :title="p.sector">{{ p.sector }}</span>
+                    <TruncatedText :text="p.sector" />
                   </td>
                   
                   <td class="py-3.5 px-4 align-middle text-center tabular-nums font-semibold text-sm">
