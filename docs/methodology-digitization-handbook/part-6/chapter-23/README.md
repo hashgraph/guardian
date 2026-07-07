@@ -41,7 +41,7 @@ For dry-run operations, the typical URL structure is:
 
 ### VM0033 Policy API Structure
 
-Submitting data via APIs is much faster than manual form filling if schema is too big. Using the [VM0033 policy JSON](../../_shared/artifacts/vm0033-policy.json) we analyzed, here's how API endpoints map to actual policy blocks:
+Submitting data via APIs is much faster than manual form filling if schema is too big. Using the [VM0033 policy JSON](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/vm0033-policy.json) we analyzed, here's how API endpoints map to actual policy blocks:
 
 **VM0033 Key Block IDs from Policy JSON:**
 
@@ -70,7 +70,7 @@ POST https://guardianservice.app/api/v1/policies/689d5badaf8487e6c32c8a2a/blocks
 
 ```
 
-![Authorization header can be extracted via dev tools console](<../../../.gitbook/assets/image-1 (10).png>)
+![Authorization header can be extracted via dev tools console](<../../../.gitbook/assets/image-1 (10) (1).png>)
 
 ## Dry-Run API Operations
 

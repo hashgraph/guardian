@@ -57,7 +57,7 @@ VM0033's policy metadata defines its scope and stakeholders:
 
 VM0033 implements role-based navigation enabling each stakeholder type to access relevant workflow sections:
 
-![Navigation structure configuration](<../../../.gitbook/assets/image-1 (7).png>)
+![Navigation structure configuration](<../../../.gitbook/assets/image-1 (7) (1).png>)
 
 _Figure 15.2: VM0033's role-based navigation configuration_
 
@@ -69,7 +69,7 @@ _Figure 15.2: VM0033's role-based navigation configuration_
 * Validation & Verification Oversight
 * Trust Chain and Token History
 
-![Actual render in dry run](<../../../.gitbook/assets/image-2 (6).png>)
+![Actual render in dry run](<../../../.gitbook/assets/image-2 (6) (1).png>)
 
 **Project\_Proponent Navigation:**
 
@@ -153,7 +153,7 @@ The VVB approval interface starts with an `interfaceDocumentsSourceBlock` that d
 }
 ```
 
-![VVB approval flow under Verra header](<../../../.gitbook/assets/image-3 (3).png>)
+![VVB approval flow under Verra header](<../../../.gitbook/assets/image-3 (3) (1).png>)
 
 **How This Creates the UI:**
 
@@ -164,7 +164,7 @@ The VVB approval interface starts with an `interfaceDocumentsSourceBlock` that d
 * **Revoke Column**: Revoke button (only for approved VVBs when `bindGroup` matches "documents\_approved")
 * **Status Column**: Plain text showing current status
 
-![VVB Approval Grid Interface](<../../../.gitbook/assets/image-4 (2).png>)
+![VVB Approval Grid Interface](<../../../.gitbook/assets/image-4 (2) (1).png>)
 
 #### 2. Document Source Configuration - The Filtering Engine
 
@@ -311,7 +311,7 @@ The approval buttons are defined in a separate `buttonBlock` that gets embedded 
   * Triggers event to `update_approve_document_status_2` block
   * Red styling (`btn-reject`)
 
-![Reject dialog showing reason input field](<../../../.gitbook/assets/image-5 (1).png>)
+![Reject dialog showing reason input field](<../../../.gitbook/assets/image-5 (1) (1).png>)
 
 #### 4. Status Update Processing
 
@@ -392,7 +392,7 @@ The project submission starts with a `requestVcDocumentBlock` that generates for
 }
 ```
 
-![New project submission flow](../../../.gitbook/assets/image-6.png)
+![New project submission flow](<../../../.gitbook/assets/image-6 (2).png>)
 
 **How This Creates the Project Form:**
 
@@ -402,7 +402,7 @@ The project submission starts with a `requestVcDocumentBlock` that generates for
 * **Empty Presets**: No pre-populated fields (`presetFields: []`), users fill all data manually. They can be set as needed.
 * **Permission Control**: Only Project\_Proponents can access this form
 
-![Project Submission Dialog](../../../.gitbook/assets/image-7.png)
+![Project Submission Dialog](<../../../.gitbook/assets/image-7 (2).png>)
 
 #### 2. Dual Storage Strategy Implementation
 
@@ -632,9 +632,9 @@ The Project\_Proponent interface uses VM0033's `Project_Proponent_header` contai
 * **Status Tracking**: Displays project progression through certification stages
 * **Action Buttons**: "New Project" for submissions, status-specific actions
 
-![Project\_Proponent Projects Grid](../../../.gitbook/assets/image-8.png)
+![Project\_Proponent Projects Grid](<../../../.gitbook/assets/image-8 (2).png>)
 
-![Projects List UI](../../../.gitbook/assets/image-9.png)
+![Projects List UI](<../../../.gitbook/assets/image-9 (2).png>)
 
 ### 2. New Project Submission (`new_project`)
 

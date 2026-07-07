@@ -19,7 +19,7 @@ After completing this chapter, you will be able to:
 
 * Completed Chapter 18: Custom Logic Block Development
 * Understanding of Guardian workflow blocks from Part IV
-* Access to AR Tool 14 artifacts: [AR-Tool-14.json](../../_shared/artifacts/AR-Tool-14.json) and [ar-am-tool-14-v4.1.pdf](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf)
+* Access to AR Tool 14 artifacts: [AR-Tool-14.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) and [ar-am-tool-14-v4.1.pdf](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ar-am-tool-14-v4.1.pdf)
 * Familiarity with [extractDataBlock documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
 
 ## What is AR Tool 14?
@@ -35,7 +35,7 @@ AR Tool 14 is a **CDM (Clean Development Mechanism) methodological tool** for "E
 
 ### Key Calculation Methods
 
-From the [AR Tool 14 PDF](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf), the tool supports multiple approaches:
+From the [AR Tool 14 PDF](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ar-am-tool-14-v4.1.pdf), the tool supports multiple approaches:
 
 1. **Measurement of sample plots** - Stratified random sampling and double sampling
 2. **Modelling approaches** - Tree growth and stand development models
@@ -91,7 +91,7 @@ The extractDataBlock is Guardian's mechanism for working with embedded schema da
 
 ### AR Tool 14 Schema Integration
 
-In our AR Tool 14 implementation, the extractDataBlock references schema `#632fd070-d788-49ae-889b-cd281c6c7194&1.0.0` which is published version of Tool 14 schema. You can see schema excel within [PDD-schema.xlsx](../../_shared/artifacts/PDD-schema.xlsx):
+In our AR Tool 14 implementation, the extractDataBlock references schema `#632fd070-d788-49ae-889b-cd281c6c7194&1.0.0` which is published version of Tool 14 schema. You can see schema excel within [PDD-schema.xlsx](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/PDD-schema.xlsx):
 
 ```json
 {
@@ -148,7 +148,7 @@ const parentDocument = {
 
 ### Production JavaScript Implementation
 
-The AR Tool 14 customLogicBlock contains the actual calculation engine. From our [AR-Tool-14.json](../../_shared/artifacts/AR-Tool-14.json) artifact, here's the implementation structure:
+The AR Tool 14 customLogicBlock contains the actual calculation engine. From our [AR-Tool-14.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) artifact, here's the implementation structure:
 
 ```javascript
 // Core calculation function from AR Tool 14 production code
@@ -402,7 +402,7 @@ function performCalculations(data) {
 
 Guardian Tools are designed to be called from parent methodology policies. Here's how VM0033 would integrate AR Tool 14:
 
-![Tool integration in new project submission flow](<../../../.gitbook/assets/image-1 (9).png>)
+![Tool integration in new project submission flow](<../../../.gitbook/assets/image-1 (9) (1).png>)
 
 ### Tool Event Configuration
 
@@ -499,10 +499,10 @@ Chapter 21 will demonstrate comprehensive testing and validation frameworks for 
 
 ## References and Further Reading
 
-* [AR Tool 14 Guardian Implementation](../../_shared/artifacts/AR-Tool-14.json) - Complete tool policy configuration
-* [AR Tool 14 PDF Methodology](../../_shared/artifacts/ar-am-tool-14-v4.1.pdf) - Original CDM methodology document
+* [AR Tool 14 Guardian Implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) - Complete tool policy configuration
+* [AR Tool 14 PDF Methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ar-am-tool-14-v4.1.pdf) - Original CDM methodology document
 * [Guardian extractDataBlock Documentation](../../../guardian/standard-registry/policies/policy-creation/introduction/externaldatablock.md)
-* [Guardian customLogicBlock Documentation](../../../available-policy-workflow-blocks/customlogicblock.md)
+* [Guardian customLogicBlock Documentation](https://github.com/hashgraph/guardian/blob/develop/docs/available-policy-workflow-blocks/customlogicblock.md)
 
 ***
 

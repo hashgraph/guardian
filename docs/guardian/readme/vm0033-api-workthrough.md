@@ -2,7 +2,7 @@
 icon: webhook
 ---
 
-# VM0033 API Workthrough
+# VM0033 API Walkthrough
 
 Below is complete API flow to execute Verra VM0033 Methodology:
 
@@ -832,7 +832,7 @@ Waiting while `blocks.uiMetaData.title` would be equal "Waiting for approval":
 
 Change the project status from “Waiting to be Added” to “Waiting to Validate”:
 
-<figure><img src="../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 ```json5
 {
@@ -3322,7 +3322,7 @@ Successful response looks like:
 
 #### 6.13 Approve Verification Report
 
-<figure><img src="../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Wait until the verification report status changes to “Submitted”:**
 

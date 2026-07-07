@@ -171,7 +171,7 @@ Guardian's integration with Hedera Hashgraph provides immutable record-keeping e
 * **Design**: Consistent, intuitive interfaces with methodology-specific flexibility
 * **Coordination**: Notification systems for stakeholder coordination across extended time periods with audit trails
 
-See [Hedera integration](../../../guardian-architecture/reference-architecture.md) for detailed technical specifications.
+See [Hedera integration](https://github.com/hashgraph/guardian/blob/develop/docs/guardian-architecture/reference-architecture.md) for detailed technical specifications.
 
 ## Mapping VM0033 Complexity to Guardian Capabilities
 
@@ -226,7 +226,7 @@ VM0033 methodology demonstrates how Guardian's flexible architecture accommodate
 * [Schema System](../../../guardian/standard-registry/schemas/) - Data structure management
 * [Roles & Permissions](../../../guardian/standard-registry/roles-and-permissions/) - Stakeholder management
 * [Artifacts Collection](../../_shared/artifacts/) - Working examples, test cases, and validation tools
-* [Excel Artifact Extractor](../../_shared/artifacts/excel_artifact_extractor.py) - Python tool for data extraction and validation
+* [Excel Artifact Extractor](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py) - Python tool for data extraction and validation
 
 ### Key Capabilities Covered
 

@@ -83,7 +83,7 @@ Optional: Also, include newly recorded steps (steps that were recorded after pol
 
 14. We should be able to see all the recorded steps when clicked on "Run"
 
-<figure><img src="../../../../.gitbook/assets/image (17) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (17) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 15. We can also view the Playback information:
 

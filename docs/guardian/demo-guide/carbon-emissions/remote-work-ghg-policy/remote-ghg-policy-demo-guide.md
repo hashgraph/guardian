@@ -24,7 +24,7 @@ When the Operator ID and Operator Key generates, click the submit button.
 
 When the Employer profile has been created, click on the Policies tab
 
-<figure><img src="../../../../.gitbook/assets/Screen Shot 2022-12-14 at 1.23.09 PM.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Screen Shot 2022-12-14 at 1.23.09 PM (1).png" alt=""><figcaption></figcaption></figure>
 
 In the Policies tab, click on the “Go” button to begin the Remote Work GHG Policy operations.
 
@@ -84,7 +84,7 @@ On the Profile screen, select “GHG Remote Work” and then “Generate” the 
 
 When the Employee profile has been created, click on the Policies tab.
 
-<figure><img src="../../../../.gitbook/assets/Screen Shot 2022-12-14 at 1.26.36 PM.png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/Screen Shot 2022-12-14 at 1.26.36 PM (1).png" alt=""><figcaption></figcaption></figure>
 
 In the Policies tab, click on the “Go” button to begin the Remote Work GHG Policy operations.
 
