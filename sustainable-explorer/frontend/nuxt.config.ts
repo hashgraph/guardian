@@ -44,6 +44,7 @@ export default defineNuxtConfig({
         { path: '~/components/auth', pathPrefix: false },
         { path: '~/components/admin', pathPrefix: false },
         { path: '~/components/account', pathPrefix: false },
+        { path: '~/components/saved-search', pathPrefix: false },
     ],
 
     imports: {

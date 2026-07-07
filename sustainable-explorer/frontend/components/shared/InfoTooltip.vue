@@ -1,9 +1,17 @@
 <script setup lang="ts">
 import { Info } from 'lucide-vue-next';
 
-defineProps<{
+const props = defineProps<{
     text: string;
 }>();
+
+// Default usage (no slot content) renders the standalone Info icon as its own
+// trigger, as before. Passing content via the default slot instead lets this
+// same floating-tooltip design wrap an existing interactive element (e.g. a
+// button) — in that case we don't want the icon-only affordances (help
+// cursor, swallowing the click) since they'd fight with the wrapped control.
+const slots = useSlots();
+const hasCustomTrigger = computed(() => !!slots.default);
 
 const show = ref(false);
 const triggerRef = ref<HTMLElement | null>(null);
@@ -34,6 +42,7 @@ function updatePosition() {
 }
 
 function onEnter() {
+    if (!props.text) return; // e.g. a wrapped button that's only conditionally at-limit
     updatePosition();
     show.value = true;
 }
@@ -41,17 +50,27 @@ function onEnter() {
 function onLeave() {
     show.value = false;
 }
+
+// Only swallow the click for the icon-only trigger — that's needed so clicking
+// the icon doesn't also activate whatever it's sitting next to (e.g. a
+// checkbox's <label>). When wrapping real interactive content, clicks must
+// bubble normally (e.g. FilterBar's click-outside-to-close listener).
+function onClick(e: MouseEvent) {
+    if (!hasCustomTrigger.value) e.stopPropagation();
+}
 </script>
 
 <template>
     <span
         ref="triggerRef"
-        class="inline-flex cursor-help"
+        :class="['inline-flex', !hasCustomTrigger && 'cursor-help']"
         @mouseenter="onEnter"
         @mouseleave="onLeave"
-        @click.stop
+        @click="onClick"
     >
-        <Info class="h-3 w-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors" />
+        <slot>
+            <Info class="h-3 w-3 text-muted-foreground/40 hover:text-muted-foreground transition-colors" />
+        </slot>
 
         <Teleport to="body">
             <Transition
@@ -63,7 +82,7 @@ function onLeave() {
                 leave-to-class="opacity-0"
             >
                 <div
-                    v-if="show"
+                    v-if="show && text"
                     :style="tooltipStyle"
                     class="pointer-events-none"
                 >

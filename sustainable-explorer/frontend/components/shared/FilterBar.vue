@@ -503,10 +503,20 @@ if (import.meta.client) {
             </Transition>
         </div>
 
-        <!-- Clear filters -->
+        <!-- Extra text-style action (e.g. Save Search) rendered immediately
+             before Clear, matching its plain-text look. Distinct from the
+             default slot below (which stays right-aligned for e.g. Download
+             Data buttons) so adding this doesn't affect other FilterBar usages. -->
+        <slot name="before-clear" />
+
+        <!-- Clear filters. No horizontal padding: the parent's `gap-2` already
+             spaces flex children, but that gap sits outside a pill button's
+             border while it would sit outside this borderless button's own
+             padding too — doubling the visible gap. Dropping px-* here keeps
+             the gap visually equal to the gap between two bordered pills. -->
         <button
             v-if="hasActiveFilters"
-            class="inline-flex items-center gap-1 rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors"
             @click="emit('clear')"
         >
             <X class="h-3 w-3" />

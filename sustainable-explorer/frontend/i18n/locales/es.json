@@ -477,13 +477,6 @@
             "developer": "Desarrollador",
             "sdgs": "ODS"
         },
-        "presets": {
-            "goldStandard": "Gold Standard",
-            "sdg13": "ODS 13: Acción por el clima",
-            "vintage2022": "Añada 2022",
-            "issuingEnergy": "Emitiendo Energía",
-            "glycolRecycling": "Reciclaje de Glicol"
-        },
         "notFound": "Proyecto no encontrado",
         "details": {
             "projectDetails": "Detalles del proyecto",
@@ -547,12 +540,6 @@
         "searchPlaceholder": "Buscar emisiones...",
         "quickFilters": "Filtros rápidos:",
         "downloadData": "Descargar datos",
-        "presets": {
-            "fungible": "Tokens fungibles",
-            "nonFungible": "No fungibles (NFTs)",
-            "minted2024": "Acuñados en 2024",
-            "minted2025": "Acuñados en 2025"
-        },
         "issuancesFound": "{count} emisiones encontradas",
         "totalSupply": "Suministro total:",
         "registries": "Registros:",
@@ -640,6 +627,21 @@
             "registrySubtitle": "Obtenido a través de la cadena token → proyecto → metodología",
             "noRegistry": "Sin registro vinculado"
         }
+    },
+    "savedSearch": {
+        "dialogTitle": "Guardar búsqueda",
+        "dialogSubtitle": "Guarda tus filtros actuales para volver a aplicarlos más tarde",
+        "nameLabel": "Nombre",
+        "namePlaceholder": "p. ej. Gold Standard Kenia",
+        "summaryTitle": "Filtros activos",
+        "saveButton": "Guardar búsqueda",
+        "empty": "No hay filtros rápidos disponibles",
+        "cancel": "Cancelar",
+        "ok": "Aceptar",
+        "duplicateName": "Ya existe una búsqueda guardada con este nombre",
+        "duplicateCriteria": "Este conjunto exacto de filtros ya está guardado como \"{name}\"",
+        "saveError": "No se pudo guardar la búsqueda. Inténtalo de nuevo",
+        "limitReachedTooltip": "Has alcanzado el máximo de {max} búsquedas guardadas"
     },
     "methodologies": {
         "title": "Metodologías",
