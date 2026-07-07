@@ -291,6 +291,7 @@
         "close": "Close",
         "viewOnExplorer": "View on Explorer",
         "viewOnHashScan": "View on HashScan",
+        "viewOnIndexer": "View on Indexer",
         "viewRawData": "View Raw Data",
         "rawData": "Raw Data",
         "lines": "lines",

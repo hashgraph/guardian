@@ -291,6 +291,7 @@
         "close": "Cerrar",
         "viewOnExplorer": "Ver en el explorador",
         "viewOnHashScan": "Ver en HashScan",
+        "viewOnIndexer": "Ver en el indexador",
         "viewRawData": "Ver datos brutos",
         "rawData": "Datos brutos",
         "lines": "líneas",

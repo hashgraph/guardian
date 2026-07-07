@@ -836,9 +836,6 @@ const emissions = computed(() => {
                     </button>
                 </div>
 
-                <!-- Hedera On-Chain References -->
-                <HederaReferences :project="project" :network="network" />
-
                 <!-- Pipeline (moved from the former Pipeline tab) -->
                 <ClientOnly>
                     <ProjectPolicyCanvas :project="project" />
