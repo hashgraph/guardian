@@ -13,6 +13,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { fileURLToPath } from 'node:url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { IGenerateDidBatch } from '../policy-actions/generate-did.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
@@ -219,6 +220,7 @@ export class CustomLogicBlock {
                     }
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
+                const didBatch: IGenerateDidBatch = {};
                 const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
                         await triggerEvents(null);
@@ -240,14 +242,11 @@ export class CustomLogicBlock {
                         if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else {
-                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user);
+                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
                     }
                     if (Array.isArray(result)) {
-                        const items: IPolicyDocument[] = [];
-                        for (const r of result) {
-                            items.push(await processing(r))
-                        }
+                        const items = await this.processItems(result, processing, ref);
                         await triggerEvents(items);
                         if (final) {
                             try {
@@ -490,6 +489,39 @@ export class CustomLogicBlock {
     }
 
     /**
+     * Process result items with bounded concurrency
+     * @param items
+     * @param task
+     * @param ref
+     */
+    private async processItems(
+        items: any[],
+        task: (json: any) => Promise<IPolicyDocument>,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument[]> {
+        // Recording and replay consume UUID/DID sequences in order, so they require sequential processing.
+        let limit = 1;
+        if (!ref.components.runAndRecordController) {
+            const configured = parseInt(process.env.CUSTOM_LOGIC_CONCURRENCY, 10);
+            limit = Number.isFinite(configured) && configured > 0 ? configured : 10;
+        }
+        limit = Math.min(limit, items.length);
+        const results = new Array<IPolicyDocument>(items.length);
+        let index = 0;
+        const workers: Promise<void>[] = [];
+        for (let i = 0; i < limit; i++) {
+            workers.push((async () => {
+                while (index < items.length) {
+                    const current = index++;
+                    results[current] = await task(items[current]);
+                }
+            })());
+        }
+        await Promise.all(workers);
+        return results;
+    }
+
+    /**
      * Generate document metadata
      * @param documents
      * @param user
@@ -576,7 +608,8 @@ export class CustomLogicBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         actionStatusId: string,
-        user?: PolicyUser
+        user?: PolicyUser,
+        didBatch?: IGenerateDidBatch
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -623,7 +656,7 @@ export class CustomLogicBlock {
             user: owner,
             relayerAccount,
             userId
-        }, actionStatusId);
+        }, actionStatusId, didBatch);
         if (newId) {
             vcSubject.id = newId;
         }
