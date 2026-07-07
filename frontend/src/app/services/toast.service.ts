@@ -4,6 +4,11 @@ import { MessageTranslationService } from './message-translation-service/message
 
 type ToastSeverity = 'success' | 'info' | 'warn' | 'error';
 
+export interface ToastOptions {
+    logMessage?: string;
+    sticky?: boolean;
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -24,14 +29,16 @@ export class ToastService {
         this.add('info', detail, summary, { life: this.TRANSIENT_LIFE });
     }
 
-    public warn(detail: string, summary = '', logMessage?: string): void {
-        const logUrl = logMessage ? `/admin/logs?message=${btoa(logMessage)}` : undefined;
-        this.add('warn', detail, summary, { sticky: true, data: { logUrl } });
+    public warn(detail: string, summary = '', options: ToastOptions = {}): void {
+        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : undefined;
+        const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
+        this.add('warn', detail, summary, { ...timing, data: { logUrl } });
     }
 
-    public error(detail: string, summary = '', logMessage?: string): void {
-        const logUrl = logMessage ? `/admin/logs?message=${btoa(logMessage)}` : undefined;
-        this.add('error', detail, summary, { sticky: true, data: { logUrl } });
+    public error(detail: string, summary = '', options: ToastOptions = {}): void {
+        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : undefined;
+        const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
+        this.add('error', detail, summary, { ...timing, data: { logUrl } });
     }
 
     public processAsyncError(error: any): void {

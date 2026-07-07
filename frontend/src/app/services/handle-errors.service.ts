@@ -104,7 +104,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 !this.excludeErrorCodes.includes(String(error.status)) &&
                 !this.excludeErrorTexts.includes(String(result.text))
             ) {
-                this.toastService.error(result.text, result.header, result.text);
+                this.toastService.error(result.text, result.header, { logMessage: result.text, sticky: true });
             }
         }
     }
