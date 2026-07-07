@@ -22,7 +22,6 @@ import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dia
 import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
-import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
@@ -140,7 +139,6 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private settingsService: SettingsService,
         private appThemeService: AppThemeService,
         private menuLayoutService: MenuLayoutService,
-        private toastr: ToastrService
     ) {
         this.profile = null;
         this.balance = null;
@@ -985,7 +983,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     copyToClipboard(value: string | null | undefined): void {
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {
-            this.toastr.success('Copied to clipboard', '', { timeOut: 2000, positionClass: 'toast-bottom-right' });
+            this.toastService.success('Copied to clipboard');
         }).catch((err) => {
             console.error(err);
         });

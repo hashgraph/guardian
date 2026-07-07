@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, }
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 import { PolicyStatus } from '@guardian/interfaces';
 
 /**
@@ -35,7 +35,7 @@ export class TransformationButtonBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private cdref: ChangeDetectorRef,
-        private toastr: ToastrService
+        private toastService: ToastService
     ) {
     }
 
@@ -124,20 +124,11 @@ export class TransformationButtonBlockComponent implements OnInit {
                     const token = localStorage.getItem('accessToken') as string;
                     this.policyEngineService
                         .sendData(data.url, data.data, token).subscribe((data) => {
-                            this.toastr.success(`The data was sent to ${data.url}`, '', {
-                                timeOut: 3000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true,
-                            });
+                            // Todo: original calls had enableHtml: true. HTML won't render in PrimeNG default template (deferred)
+                            this.toastService.success(`The data was sent to ${data.url}`, '');
                         }, (error) => {
                             console.log(error);
-                            this.toastr.error(`An error occurred while sending the data to ${data.url}`, '', {
-                                timeOut: 3000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true,
-                            });
+                            this.toastService.error(`An error occurred while sending the data to ${data.url}`, '');
                         })
                 }
 

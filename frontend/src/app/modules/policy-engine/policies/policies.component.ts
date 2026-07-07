@@ -52,7 +52,6 @@ import { Popover as OverlayPanel } from 'primeng/popover';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
-import { ToastrService } from 'ngx-toastr';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
@@ -728,7 +727,6 @@ export class PoliciesComponent implements OnInit {
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
-        private toastr: ToastrService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
@@ -1201,12 +1199,7 @@ export class PoliciesComponent implements OnInit {
             this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     this.loading = false;
-                    this.toastr.success(`All schemas of topic ${policy.topicId} was successfully deleted`, '', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true,
-                    });
+                    this.toastService.success(`All schemas of topic ${policy.topicId} was successfully deleted`);
                 },
                 (e) => {
                     this.loading = false;
