@@ -508,16 +508,26 @@ export class CustomLogicBlock {
         limit = Math.min(limit, items.length);
         const results = new Array<IPolicyDocument>(items.length);
         let index = 0;
+        let failed = false;
         const workers: Promise<void>[] = [];
         for (let i = 0; i < limit; i++) {
             workers.push((async () => {
-                while (index < items.length) {
+                while (!failed && index < items.length) {
                     const current = index++;
-                    results[current] = await task(items[current]);
+                    try {
+                        results[current] = await task(items[current]);
+                    } catch (error) {
+                        failed = true;
+                        throw error;
+                    }
                 }
             })());
         }
-        await Promise.all(workers);
+        const settled = await Promise.allSettled(workers);
+        const failure = settled.find((s) => s.status === 'rejected');
+        if (failure) {
+            throw (failure as PromiseRejectedResult).reason;
+        }
         return results;
     }
 

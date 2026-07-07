@@ -146,6 +146,43 @@ describe('@unit customLogicBlock bulk processing (#6346)', () => {
         };
         await assert.rejects(() => processItems(items, task), /boom on item 1/);
     });
+
+    it('stops scheduling new items after a failure', async () => {
+        process.env.CUSTOM_LOGIC_CONCURRENCY = '2';
+        const started = [];
+        const gates = new Map();
+        const task = (json) => new Promise((resolve, reject) => {
+            started.push(json.i);
+            gates.set(json.i, { resolve: () => resolve(json), reject });
+        });
+        const items = Array.from({ length: 6 }, (_, i) => ({ i }));
+        const pending = processItems(items, task);
+        await flush();
+        assert.deepEqual(started, [0, 1], 'two items in flight');
+        gates.get(0).reject(new Error('boom on item 0'));
+        await flush();
+        gates.get(1).resolve();
+        await assert.rejects(() => pending, /boom on item 0/);
+        assert.deepEqual(started, [0, 1], 'no new items start after the failure');
+    });
+
+    it('awaits in-flight items before rejecting', async () => {
+        process.env.CUSTOM_LOGIC_CONCURRENCY = '2';
+        const gates = new Map();
+        const task = (json) => new Promise((resolve, reject) => {
+            gates.set(json.i, { resolve: () => resolve(json), reject });
+        });
+        const items = Array.from({ length: 4 }, (_, i) => ({ i }));
+        let settled = false;
+        const pending = processItems(items, task);
+        pending.catch(() => { settled = true; });
+        await flush();
+        gates.get(0).reject(new Error('boom on item 0'));
+        await flush();
+        assert.equal(settled, false, 'pool keeps waiting for the in-flight item');
+        gates.get(1).resolve();
+        await assert.rejects(() => pending, /boom on item 0/);
+    });
 });
 
 describe('@unit GenerateDID.local batch reuse (#6346)', () => {
