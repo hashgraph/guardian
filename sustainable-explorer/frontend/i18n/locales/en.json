@@ -686,6 +686,21 @@
             "noRegistry": "No registry linked"
         }
     },
+    "savedSearch": {
+        "dialogTitle": "Save Search",
+        "dialogSubtitle": "Save your current filters to reapply them later",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Gold Standard Kenya",
+        "summaryTitle": "Active Filters",
+        "saveButton": "Save Search",
+        "empty": "No quick filters available",
+        "cancel": "Cancel",
+        "ok": "OK",
+        "duplicateName": "A saved search with this name already exists",
+        "duplicateCriteria": "This exact set of filters is already saved as \"{name}\"",
+        "saveError": "Could not save search — please try again",
+        "limitReachedTooltip": "You've reached the maximum of {max} saved searches"
+    },
     "methodologies": {
         "title": "Methodologies",
         "subtitle": "Published policy workflows for sustainability verification",

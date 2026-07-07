@@ -9,6 +9,7 @@ import {
   Columns2,
   Download,
   Loader2,
+  Save,
 } from "lucide-vue-next";
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
 import { formatCredits } from "~/lib/format";
@@ -24,6 +25,8 @@ import {
   buildProjectCsvRows,
 } from "~/lib/csv-export";
 import { mapApiProject } from "~/composables/useProjects";
+import type { SavedSearchCriteria } from "~/composables/useSavedSearches";
+import SavedSearchesRow from "~/components/saved-search/SavedSearchesRow.vue";
 
 const { t } = useI18n();
 const { network } = useNetwork();
@@ -161,40 +164,18 @@ const {
   excludeFromQuery: ["registryDid"],
 });
 
-const presets = computed(() => [
-  {
-    label: t("projects.presets.goldStandard"),
-    filters: { registry: "Gold Standard" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.sdg13"),
-    filters: { sdgs: "13" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.vintage2022"),
-    filters: { vintage: "2022|2022" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.issuingEnergy"),
-    filters: { status: "Issuing", sector: "Energy" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.glycolRecycling"),
-    filters: { sector: "Glycol Recycling" } as Record<string, string>,
-  },
-  {
-    label: t("projects.presets.pipeline"),
-    filters: { isPipeline: "true" } as Record<string, string>,
-  },
-]);
-
-function isPresetActive(preset: { filters: Record<string, string> }): boolean {
-  const af = activeFilters.value;
-  const entries = Object.entries(preset.filters);
-  return (
-    entries.length > 0 && entries.every(([key, value]) => af[key] === value)
-  );
+// applyPreset()'s sort.key is typed against this page's specific row union
+// (keyof the mapped project row), while a saved search's criteria.sort.key is
+// a plain string (saved searches are page-agnostic). The value is guaranteed
+// valid at runtime — it was produced by this same page's own sortKey when the
+// search was saved — so the cast here is safe, matching the `sortKey as
+// string | null` cast already used elsewhere in this file's template.
+function applySavedSearch(criteria: SavedSearchCriteria) {
+  applyPreset(criteria as any);
 }
+
+const { isAuthenticated } = useAuth();
+const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null);
 
 // Summary statistics for filtered results
 const summaryStats = computed(() => {
@@ -294,6 +275,42 @@ const filters = computed<FilterOption[]>(() => [
     })),
   },
 ]);
+
+// Human-friendly rendering of a filter value for the Save Search dialog's
+// "Active Filters" summary. Range filters (vintage) are stored pipe-joined
+// ("2022|2022") per useFilteredPagination's convention — shown as "A – B".
+function formatFilterValue(value: string): string {
+  if (!value.includes("|")) return value;
+  const [from, to] = value.split("|");
+  if (from && to) return `${from} – ${to}`;
+  return from || to || value;
+}
+
+const filterSummary = computed(() => {
+  const items: { label: string; value: string }[] = [];
+  if (searchQuery.value.trim()) {
+    items.push({ label: t("common.search"), value: searchQuery.value.trim() });
+  }
+  items.push(
+    ...filters.value
+      .filter(
+        (f) => activeFilters.value[f.key] && activeFilters.value[f.key] !== "all",
+      )
+      .map((f) => ({
+        label: f.label,
+        value: formatFilterValue(activeFilters.value[f.key]),
+      })),
+  );
+  return items;
+});
+
+const statusColor: Record<string, string> = {
+  Registered: "bg-slate-100 text-slate-600",
+  "Under Validation": "bg-stat-amber/10 text-stat-amber",
+  Verified: "bg-stat-blue/10 text-stat-blue",
+  Issuing: "bg-stat-green/10 text-stat-green",
+  Completed: "bg-purple-50 text-purple-600",
+};
 
 const skeletonRows = computed(() =>
   Array.from({ length: pageSize.value }, (_, i) => i),
@@ -434,29 +451,46 @@ async function downloadProjects() {
         :search-placeholder="$t('projects.searchPlaceholder')"
         @filter="setFilter"
         @clear="clearFilters"
-      />
+      >
+        <template #before-clear>
+          <InfoTooltip
+            v-if="isAuthenticated"
+            v-show="savedSearchesRef?.hasActiveFilters"
+            :text="savedSearchesRef?.atLimit ? $t('savedSearch.limitReachedTooltip', { max: savedSearchesRef?.limit }) : ''"
+          >
+            <button
+              :class="[
+                'inline-flex items-center gap-1 rounded-md py-1.5 text-xs transition-colors',
+                savedSearchesRef?.atLimit
+                  ? 'text-muted-foreground/50 cursor-not-allowed'
+                  : 'text-muted-foreground hover:text-primary',
+              ]"
+              @click="!savedSearchesRef?.atLimit && savedSearchesRef?.open()"
+            >
+              <Save class="h-3 w-3" />
+              {{ $t("savedSearch.saveButton") }}
+            </button>
+          </InfoTooltip>
+        </template>
+      </FilterBar>
 
       <!-- Preset Templates -->
       <div class="flex items-center gap-2 mt-3 flex-wrap">
         <span class="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
           <Sparkles class="h-3 w-3" /> {{ $t("projects.quickFilters") }}
         </span>
-        <div class="flex flex-wrap gap-1.5 items-center">
-          <button
-            v-for="preset in presets"
-            :key="preset.label"
-            :class="[
-              'inline-flex items-center rounded-full border px-2.5 py-0.5 text-[11px] font-medium transition-colors',
-              isPresetActive(preset)
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-muted-foreground/20 text-muted-foreground hover:bg-muted hover:text-foreground',
-            ]"
-            @click="applyPreset({ filters: preset.filters })"
-          >
-            {{ preset.label }}
-          </button>
-        </div>
-        
+
+        <SavedSearchesRow
+          ref="savedSearchesRef"
+          section="projects"
+          :search-query="searchQuery"
+          :active-filters="activeFilters"
+          :sort-key="sortKey as string | null"
+          :sort-dir="sortDir"
+          :summary="filterSummary"
+          @apply="applySavedSearch"
+        />
+
         <button
           :disabled="downloading"
           class="sm:ml-auto inline-flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"

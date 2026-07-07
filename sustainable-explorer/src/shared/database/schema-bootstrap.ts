@@ -423,6 +423,11 @@ export async function bootstrapSystemSchema(dataSource: DataSource): Promise<voi
     await dataSource.query(
         `CREATE INDEX IF NOT EXISTS "IDX_quick_filters_userId" ON "quick_filters" ("userId")`,
     );
+    // Prevents duplicate saved-search names (case-insensitive) per user/network/section.
+    await dataSource.query(
+        `CREATE UNIQUE INDEX IF NOT EXISTS "UQ_quick_filters_user_network_section_name"
+            ON "quick_filters" ("userId", "network", "section", lower("name"))`,
+    );
 
     // audit_log: per-actor timeline + global recent-events.
     await dataSource.query(

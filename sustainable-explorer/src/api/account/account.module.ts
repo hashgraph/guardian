@@ -7,10 +7,13 @@ import { RateLimitRequestService } from './rate-limit-request.service';
 import { DashboardPreferencesController } from './dashboard-preferences.controller';
 import { DashboardPreferencesService } from './dashboard-preferences.service';
 import { DashboardPreferencesRepository } from './dashboard-preferences.repository';
+import { QuickFiltersController } from './quick-filters.controller';
+import { QuickFiltersService } from './quick-filters.service';
+import { QuickFiltersRepository } from './quick-filters.repository';
 
 /**
- * Account module — authenticated user self-service (API keys today; saved
- * dashboards / quick filters / rate-limit requests in later phases).
+ * Account module — authenticated user self-service (API keys, saved
+ * dashboards, saved searches / quick filters, rate-limit requests).
  *
  * Imports AuthModule for the guards (JwtAuthGuard, CsrfGuard). SystemDataSource
  * is injected from the @Global SystemDatabaseModule; ConfigService is global.
@@ -20,7 +23,19 @@ import { DashboardPreferencesRepository } from './dashboard-preferences.reposito
  */
 @Module({
     imports: [AuthModule],
-    controllers: [AccountController, RateLimitRequestController, DashboardPreferencesController],
-    providers: [ApiKeyService, RateLimitRequestService, DashboardPreferencesService, DashboardPreferencesRepository],
+    controllers: [
+        AccountController,
+        RateLimitRequestController,
+        DashboardPreferencesController,
+        QuickFiltersController,
+    ],
+    providers: [
+        ApiKeyService,
+        RateLimitRequestService,
+        DashboardPreferencesService,
+        DashboardPreferencesRepository,
+        QuickFiltersService,
+        QuickFiltersRepository,
+    ],
 })
 export class AccountModule {}

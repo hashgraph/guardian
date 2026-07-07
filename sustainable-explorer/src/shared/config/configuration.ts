@@ -233,6 +233,15 @@ export default registerAs('app', () => {
             guestPerHour: parseInt(process.env.RATE_LIMIT_GUEST_PER_HOUR || '600', 10),
         },
 
+        // Saved searches (quick_filters). Scoped per user+network+section (NOT
+        // global per-user like rateLimit above), matching how the feature is
+        // scoped everywhere else.
+        quickFilters: {
+            // Max saved searches a single user may hold per network+section
+            // (default 10); enforced with a count pre-check at creation.
+            maxPerUser: parseInt(process.env.QUICK_FILTERS_MAX_PER_USER || '10', 10),
+        },
+
         // Initial admin — break-glass admin seeded on first boot. MUST be set via
         // environment / secret manager; do NOT commit real values.
         initialAdmin: {
