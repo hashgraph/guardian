@@ -21,7 +21,11 @@ function buildService(requestImpl) {
 const natsError = (code, message) => Object.assign(new Error(message ?? code), { code });
 
 describe('NatsService.requestOrThrow fast-fail', () => {
-    beforeEach(() => sinon.stub(JwtServicesValidator, 'sign').resolves('token'));
+    beforeEach(() => {
+        sinon.stub(JwtServicesValidator, 'sign').resolves('token');
+        // The reply is now verified before its body is trusted; default to valid.
+        sinon.stub(JwtServicesValidator, 'verify').resolves();
+    });
     afterEach(() => sinon.restore());
 
     it('returns the response body on success', async () => {
@@ -73,5 +77,26 @@ describe('NatsService.requestOrThrow fast-fail', () => {
     it('rethrows unexpected transport errors unchanged', async () => {
         const svc = buildService(async () => { throw new Error('connection closed'); });
         await assert.rejects(svc.requestOrThrow('s', {}, 10), /connection closed/);
+    });
+
+    it('verifies the reply serviceToken and rejects (401) when it is invalid', async () => {
+        JwtServicesValidator.verify.rejects(new Error('bad token'));
+        const svc = buildService(async () => ({
+            data: { body: { ok: true } },
+            headers: { get: () => 'forged' },
+        }));
+        await assert.rejects(
+            svc.requestOrThrow('p1-CHECK_IF_ALIVE', {}, 1000),
+            (e) => e.message === 'bad token' && e.code === 401
+        );
+    });
+
+    it('fails a corrupt reply with a generic message (500) without leaking decode internals', async () => {
+        const svc = buildService(async () => ({ data: 'corrupt' }));
+        svc.codec.decode = async () => { throw new Error('ECONNREFUSED https://ipfs/directLink/secret'); };
+        await assert.rejects(
+            svc.requestOrThrow('s', {}, 10),
+            (e) => e.message === 'Failed to decode reply payload' && e.code === 500
+        );
     });
 });

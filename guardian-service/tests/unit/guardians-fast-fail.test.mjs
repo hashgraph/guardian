@@ -40,6 +40,16 @@ describe('GuardiansService.checkIfPolicyAlive fast-fail', () => {
         const svc = svcWith(async () => null);
         assert.equal(await svc.checkIfPolicyAlive('p1'), false);
     });
+
+    it('reports alive on REQUEST_TIMEOUT (a responder exists) to avoid a spurious reload', async () => {
+        const svc = svcWith(async () => { throw requestTimeout(); });
+        assert.equal(await svc.checkIfPolicyAlive('p1'), true);
+    });
+
+    it('reports alive on a responder-side error rather than falsely declaring the policy dead', async () => {
+        const svc = svcWith(async () => { throw Object.assign(new Error('boom'), { code: 500 }); });
+        assert.equal(await svc.checkIfPolicyAlive('p1'), true);
+    });
 });
 
 describe('GuardiansService.sendPolicyMessage fast-fail', () => {

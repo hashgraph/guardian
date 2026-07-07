@@ -44,8 +44,15 @@ export class GuardiansService extends NatsService {
         try {
             const alive = await this.requestOrThrow<boolean>(subject, {}, 1000, { policyId });
             return !!alive;
-        } catch {
-            return false;
+        } catch (error: any) {
+            // Only a genuine "no responders" proves the policy is not loaded.
+            // Any other failure (slow responder, decode/auth error) means a
+            // subscriber exists, so report the policy alive rather than let
+            // generateModel issue a spurious GENERATE_POLICY reload.
+            if (error?.code === 'NO_RESPONDERS') {
+                return false;
+            }
+            return true;
         }
     }
 

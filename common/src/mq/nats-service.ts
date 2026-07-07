@@ -301,7 +301,28 @@ export abstract class NatsService {
             throw error;
         }
 
-        const message = (await this.codec.decode(msg.data)) as IMessageResponse<T>;
+        // Mirror the replySubject handler in init(): guard the decode so a
+        // failure (e.g. a directLink fetch that ECONNREFUSEs when the responder
+        // died mid-request) fails this request with a generic message instead of
+        // leaking internal exception text (the directLink URL).
+        let message: IMessageResponse<T>;
+        try {
+            message = (await this.codec.decode(msg.data)) as IMessageResponse<T>;
+        } catch (e: any) {
+            console.error('Reply decode failed:', e.message);
+            throw new MessageError('Failed to decode reply payload', 500);
+        }
+
+        // Verify the reply's serviceToken before trusting the body, so with
+        // QM_VERIFICATION enabled the reply-side auth check is not dropped.
+        const serviceToken = msg.headers?.get('serviceToken');
+        try {
+            await JwtServicesValidator.verify(serviceToken);
+        } catch (e: any) {
+            console.error('Reply validation failed:', e.message);
+            throw new MessageError(e.message, 401);
+        }
+
         if (message && message.error) {
             throw new MessageError(message.error, message.code);
         }
