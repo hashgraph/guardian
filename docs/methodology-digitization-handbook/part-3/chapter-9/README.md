@@ -2,11 +2,11 @@
 
 This chapter teaches you how to build Guardian schemas step-by-step for PDD implementation. You'll learn the exact field-by-field process used for VM0033, translating methodology analysis from Part II into working Guardian schema structures.
 
-By the end of this chapter, you'll know how to create the [VM0033 PDD schema](../../_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
+By the end of this chapter, you'll know how to create the [VM0033 PDD schema](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
 
 ## Guardian Schema Development Process
 
-Complex Guardian schemas can be built using Excel templates that define the data structure, and then imported into Guardian. The [schema template](../../_shared/artifacts/schema-template-excel.xlsx) shows all available field types and their configuration options.
+Complex Guardian schemas can be built using Excel templates that define the data structure, and then imported into Guardian. The [schema template](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/schema-template-excel.xlsx) shows all available field types and their configuration options.
 
 **Alternative Schema Building Methods:**
 
@@ -17,15 +17,15 @@ Complex Guardian schemas can be built using Excel templates that define the data
 Excel-first approach also enables easier collaboration with carbon domain experts and non-technical stakeholders to provide better feedback with back-and-forth when schemas are complex.
 {% endhint %}
 
-![PDD Schema Screenshot](<../../../.gitbook/assets/image-2 (1) (1).png>)
+![PDD Schema Screenshot](<../../../.gitbook/assets/image-2 (1) (1) (1).png>)
 
 ### Schema Template Structure
 
 Every Guardian schema follows this Excel structure:
 
-| Required Field | Field Type             | Parameter         | Visibility        | Description          | Allow Multiple Answers | Test Value    |
-| -------------- | ---------------------- | ----------------- | ----------------- | -------------------- | ---------------------- | ------------- |
-| Yes/No         | String/Number/Enum/etc | Reference to enum | TRUE/FALSE/hidden | User-facing label    | Yes/No                 | Sample value  |
+| Required Field | Field Type             | Parameter         | Visibility        | Description       | Allow Multiple Answers | Test Value   |
+| -------------- | ---------------------- | ----------------- | ----------------- | ----------------- | ---------------------- | ------------ |
+| Yes/No         | String/Number/Enum/etc | Reference to enum | TRUE/FALSE/hidden | User-facing label | Yes/No                 | Sample value |
 
 **Field Configuration Meaning**:
 
@@ -41,7 +41,7 @@ Every Guardian schema follows this Excel structure:
 
 Let's build a PDD schema step-by-step, starting with the main schema definition like VM0033's "Project Description (Auto)" tab.
 
-![Project description tab Excel Screenshot](<../../../.gitbook/assets/image (38).png>)
+![Project description tab Excel Screenshot](<../../../.gitbook/assets/image (38) (4).png>)
 
 ### Step 1: Create Main Schema Header
 
@@ -345,7 +345,7 @@ Before importing to Guardian, verify:
 5. **Review and rename field keys** for meaningful calculation code
 6. Update the schema ID in relevant policy workflow block
 
-![alt text](<../../../.gitbook/assets/image-1 (1) (1).png>)
+![alt text](<../../../.gitbook/assets/image-1 (1) (1) (1).png>)
 
 #### Important: Field Key Management
 
@@ -364,7 +364,7 @@ When Guardian imports Excel schemas, it generates default field keys that may no
    * `carbon_stock_baseline_t` instead of `carbonStockBaselineT`
    * `emission_reduction_total` instead of `emissionReductionTotal`
 
-![Guardian schema UI showing field key editing interface](<../../../.gitbook/assets/image-3 (1).png>)
+![Guardian schema UI showing field key editing interface](<../../../.gitbook/assets/image-3 (1) (1).png>)
 
 **Why This Matters**: Meaningful field keys make calculation code much easier to write and maintain:
 

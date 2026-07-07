@@ -16,11 +16,11 @@ Guardian offers three ways to configure workflow blocks:
 2. **Events Tab**: Graphical event connection management
 3. **JSON Tab**: Direct JSON manipulation for advanced configurations
 
-![Guardian Block Configuration - Properties Tab](<../../../.gitbook/assets/image (73).png>)
+![Guardian Block Configuration - Properties Tab](<../../../.gitbook/assets/image (73) (2).png>)
 
-![Guardian Block Configuration - Events Tab](<../../../.gitbook/assets/image-1 (5).png>)
+![Guardian Block Configuration - Events Tab](<../../../.gitbook/assets/image-1 (5) (1).png>)
 
-![Guardian Block Configuration - JSON Tab](<../../../.gitbook/assets/image-2 (4).png>)
+![Guardian Block Configuration - JSON Tab](<../../../.gitbook/assets/image-2 (4) (1).png>)
 
 ### Block Structure Basics
 
@@ -99,7 +99,7 @@ Transforms your Part III schemas into interactive forms. VM0033 uses this for PD
 
 Stores submitted documents to database or Hedera blockchain with status tracking.
 
-![Guardian sendToGuardianBlock Configuration](<../../../.gitbook/assets/image-3 (2).png>)
+![Guardian sendToGuardianBlock Configuration](<../../../.gitbook/assets/image-3 (2) (1).png>)
 
 **Database Storage Configuration:**
 
@@ -640,7 +640,7 @@ Events connect blocks together, creating automated workflows. Guardian provides 
 
 The Events tab provides an intuitive interface for connecting blocks:
 
-![Guardian Events Tab Configuration](<../../../.gitbook/assets/image-4 (1) (1).png>)
+![Guardian Events Tab Configuration](<../../../.gitbook/assets/image-4 (1) (1) (1).png>)
 
 **Event Configuration Fields:**
 

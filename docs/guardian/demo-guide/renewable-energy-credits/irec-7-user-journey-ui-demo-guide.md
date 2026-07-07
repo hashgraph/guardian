@@ -20,7 +20,7 @@ Here in this demo from the standard registry creating a new account, importing t
 
 The first step is that you will need to either login in to your account that you have previously created or create a new account. To create a new account just click **“Create new”** or if you are logging just simply add your details to Log in.
 
-<figure><img src="../../../.gitbook/assets/image (72).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (72) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Standard Registry’ for demo purposes.**
 
@@ -32,7 +32,7 @@ For this demo we will Create a new account.
 
 You will need to follow the step below to Configure your account if you have selected **“Create new”**. And select the account type, in this case you will want to select “Standard Registry”
 
-<figure><img src="../../../.gitbook/assets/image (139).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (139) (1).png" alt=""><figcaption></figcaption></figure>
 
 You will then need to add your User name, Password and Confirm Password, then you will click on **“Create”**.
 
@@ -44,7 +44,7 @@ Once you have added the correct details to configure your account, you will need
 
 Afterwards, you will need to configure your account. You will need to enter the details shown in the image below.
 
-<figure><img src="../../../.gitbook/assets/image (146).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (146) (1).png" alt=""><figcaption></figcaption></figure>
 
 Once completed your information that you have provided will start to process.
 
@@ -112,7 +112,7 @@ We will also see the Registrant creating an account, filling out their Registrat
 
 The first step is that you will need to either login in to your account that you have previously created or create a new account. To create a new account just click **“Create new”** or if you are logging just simply add your details to Log in.
 
-<figure><img src="../../../.gitbook/assets/image (55).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (55) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Note: You can also access the ‘Demo Admin Panel’ where you can just select the ‘Registrant’ for demo purposes.**
 
