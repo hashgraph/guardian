@@ -649,7 +649,7 @@ function openRawData() {
                                     <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
                                     <div class="flex items-start gap-3">
                                         <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
-                                            <DonutChart :segments="activeMapDetail.sectors" :size="90" />
+                                            <DonutChart :segments="activeMapDetail.sectors" :size="90" :hollow="true" />
                                         </div>
                                         <div class="space-y-1.5 flex-1 min-w-0">
                                             <div v-for="s in activeMapDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
@@ -742,7 +742,7 @@ function openRawData() {
                         {{ $t('registries.detail.charts.methodologiesTitle') }}
                     </h3>
                     <div v-if="methodologySegments.length > 0" class="flex items-start gap-5">
-                        <DonutChart :segments="methodologySegments" :size="150" />
+                        <DonutChart :segments="methodologySegments" :size="150" :hollow="true" />
                         <div class="space-y-2 flex-1 min-w-0 pt-1">
                             <div
                                 v-for="s in methodologySegments"
@@ -769,7 +769,7 @@ function openRawData() {
                         {{ $t('registries.detail.charts.sectorsTitle') }}
                     </h3>
                     <div v-if="sectorSegments.length > 0" class="flex items-start gap-5">
-                        <DonutChart :segments="sectorSegments" :size="150" />
+                        <DonutChart :segments="sectorSegments" :size="150" :hollow="true" />
                         <div class="space-y-2 flex-1 min-w-0 pt-1">
                             <div
                                 v-for="s in sectorSegments"

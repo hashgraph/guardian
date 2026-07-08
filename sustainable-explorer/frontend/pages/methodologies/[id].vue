@@ -1176,7 +1176,7 @@ function getResolvedField(fieldKey: string) {
                         <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
                         <div class="flex items-start gap-3">
                           <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
-                            <DonutChart :segments="activeGeoDetail.sectors" :size="90" />
+                            <DonutChart :segments="activeGeoDetail.sectors" :size="90" :hollow="true" />
                           </div>
                           <div class="space-y-1.5 flex-1 min-w-0">
                             <div v-for="s in activeGeoDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">

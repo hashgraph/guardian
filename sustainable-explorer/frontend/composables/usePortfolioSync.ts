@@ -22,7 +22,7 @@ export function usePortfolioSync() {
     async function hydrateFromApi(): Promise<{
         watchlist: WatchlistItem[];
         widgets: Record<string, boolean>;
-        customCharts: { title: string; type: string; xAxis: string; yAxis: string }[];
+        customCharts: { id?: string; title: string; type: string; xAxis: string; yAxis: string }[];
         watchlistFilters: Record<string, string>;
     } | null> {
         if (!isAuthenticated.value || !import.meta.client) return null;

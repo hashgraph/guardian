@@ -1228,6 +1228,7 @@
             "pageOf": "{current} of {total}"
         },
         "removeWidget": "Remove widget",
+        "editWidget": "Edit",
         "noData": "No data available",
         "sdgGoalsCount": "{n} goals",
         "lastFive": "Last 5",
@@ -1324,7 +1325,9 @@
             },
             "chartBuilder": {
                 "title": "Add Custom Chart",
+                "editTitle": "Edit Custom Chart",
                 "subtitle": "{used}/5 custom charts used — choose type and data source",
+                "editSubtitle": "Update the chart type, data source, or title",
                 "chartTitle": "Chart Title",
                 "titlePlaceholder": "e.g. Credits by Sector",
                 "chartType": "Chart Type",
@@ -1332,8 +1335,11 @@
                 "yAxis": "Y-Axis (Metric)",
                 "types": {
                     "line": "Line",
-                    "bar": "Bar",
-                    "donut": "Donut"
+                    "column": "Vertical Bar",
+                    "bar": "Horizontal Bar",
+                    "pie": "Pie",
+                    "donut": "Donut",
+                    "radar": "Radar"
                 },
                 "axes": {
                     "month": "Time — Month",
@@ -1347,7 +1353,8 @@
                     "retirements": "Retirement Volume"
                 },
                 "note": "Charts reflect your active watchlist. Up to 5 custom charts total.",
-                "add": "Add Chart"
+                "add": "Add Chart",
+                "update": "Update Chart"
             }
         }
     }

@@ -1220,6 +1220,7 @@
             "pageOf": "{current} de {total}"
         },
         "removeWidget": "Eliminar widget",
+        "editWidget": "Editar",
         "noData": "Sin datos disponibles",
         "sdgGoalsCount": "{n} objetivos",
         "lastFive": "Últimos 5",
@@ -1316,7 +1317,9 @@
             },
             "chartBuilder": {
                 "title": "Agregar gráfico personalizado",
+                "editTitle": "Editar gráfico personalizado",
                 "subtitle": "{used}/5 gráficos personalizados usados — elige tipo y fuente de datos",
+                "editSubtitle": "Actualiza el tipo de gráfico, la fuente de datos o el título",
                 "chartTitle": "Título del gráfico",
                 "titlePlaceholder": "p. ej. Créditos por sector",
                 "chartType": "Tipo de gráfico",
@@ -1324,8 +1327,11 @@
                 "yAxis": "Eje Y (Métrica)",
                 "types": {
                     "line": "Línea",
-                    "bar": "Barras",
-                    "donut": "Dona"
+                    "column": "Barras verticales",
+                    "bar": "Barras horizontales",
+                    "pie": "Circular",
+                    "donut": "Dona",
+                    "radar": "Radar"
                 },
                 "axes": {
                     "month": "Tiempo — Mes",
@@ -1339,7 +1345,8 @@
                     "retirements": "Volumen de retiros"
                 },
                 "note": "Los gráficos reflejan tu lista de seguimiento activa. Hasta 5 gráficos personalizados en total.",
-                "add": "Agregar gráfico"
+                "add": "Agregar gráfico",
+                "update": "Actualizar gráfico"
             }
         }
     }

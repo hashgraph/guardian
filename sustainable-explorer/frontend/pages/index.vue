@@ -510,7 +510,7 @@ const filteredStats = computed(() => {
                                         <h4 class="text-xs font-semibold text-foreground mb-3">{{ $t('dashboard.sector') }}</h4>
                                         <div class="flex items-start gap-3 w-[250px]">
                                             <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
-                                                <DonutChart :segments="activeDetail.sectors" :size="90" />
+                                                <DonutChart :segments="activeDetail.sectors" :size="90" :hollow="true" />
                                             </div>
                                             <div class="space-y-1.5 flex-1 min-w-0">
                                                 <div v-for="s in activeDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
@@ -627,7 +627,7 @@ const filteredStats = computed(() => {
                     <div class="rounded-xl border bg-card p-5">
                         <h3 class="text-sm font-semibold text-foreground mb-4">{{ $t('dashboard.bySector') }}</h3>
                         <div class="flex items-start gap-5">
-                            <DonutChart :segments="sectorChartSegments" :size="140" />
+                            <DonutChart :segments="sectorChartSegments" :size="140" :hollow="true" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
                                 <NuxtLink
                                     v-for="s in sectorDonutRows"
@@ -652,7 +652,7 @@ const filteredStats = computed(() => {
                     <div class="rounded-xl border bg-card p-5">
                         <h3 class="text-sm font-semibold text-foreground mb-4">{{ $t('dashboard.byRegistry') }}</h3>
                         <div class="flex items-start gap-5">
-                            <DonutChart :segments="registryChartSegments" :size="140" />
+                            <DonutChart :segments="registryChartSegments" :size="140" :hollow="true" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
                                 <NuxtLink
                                     v-for="s in registryDonutRows"
