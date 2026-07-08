@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ArrowRight } from 'lucide-vue-next';
 import { formatCredits } from '~/lib/format';
+import { useGeocodedCountries } from '~/composables/useGeocodedCountries';
+import { isValidCountryName } from '~/lib/utils';
 import type { Project } from '~/types/models';
 
 const props = defineProps<{
@@ -8,6 +10,20 @@ const props = defineProps<{
 }>();
 
 const { t } = useI18n();
+
+// Same resolution + validation used elsewhere for project country display
+// (e.g. usePortfolioDashboard.ts's countryRaw/topCountries): raw
+// project.country/flag can be garbage (a stray coordinate, an IPFS URI, a
+// bare geometry type) leaked in from a geo/file field during mapping —
+// resolvedName reverse-geocodes from lat/lng when the country was
+// unrecognized, and isValidCountryName filters out whatever's left that
+// still isn't a real place name.
+const { resolvedCode, resolvedName } = useGeocodedCountries(computed(() => [props.project]));
+
+const displayCountry = computed(() => {
+    const name = resolvedName(props.project);
+    return name && isValidCountryName(name) ? name : null;
+});
 
 // Reused from the Projects table's status vocabulary/colors (projects/index.vue)
 // so this card's status badge matches the rest of the app rather than
@@ -65,8 +81,13 @@ const creditingPeriod = computed(() => {
             </div>
             <div class="flex items-center gap-1.5 text-[11px] text-muted-foreground">
                 <span class="text-primary font-medium truncate">{{ project.registry }}</span>
-                <span class="text-border">·</span>
-                <span class="truncate">{{ project.flag }} {{ project.country }}</span>
+                <template v-if="displayCountry">
+                    <span class="text-border">·</span>
+                    <span class="flex items-center gap-1 min-w-0">
+                        <CountryFlag :code="resolvedCode(project)" size="sm" class="shrink-0" />
+                        <span class="truncate">{{ displayCountry }}</span>
+                    </span>
+                </template>
             </div>
             <!-- Always reserved at 2 lines' height (present or not) so every
                  card's stats/methodology/SDG rows below line up across a row,
