@@ -1,0 +1,58 @@
+{
+  "id": "urn:uuid:80434b93-cfb2-4431-a6fc-5e218f5085a7",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937",
+  "issuanceDate": "2026-07-08T10:29:41.978Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "schema:c478f451-9bb5-4bde-aaa7-b51d4f4da292"
+  ],
+  "credentialSubject": [
+    {
+      "field0": "example",
+      "field21": 365,
+      "field22": 0.5,
+      "field23": 2,
+      "field25": 0.0015,
+      "field26": 0.0006,
+      "field27": 0.02,
+      "field1": "example",
+      "field2": "example",
+      "field7": "example",
+      "field8": "example",
+      "field9": "example",
+      "field10": 95,
+      "field11": 100,
+      "field12": 713972729,
+      "field13": 0.95,
+      "field14": 1,
+      "field15": 0.1,
+      "field16": 100,
+      "field17": 1,
+      "field18": 1,
+      "field19": true,
+      "field20": "example",
+      "policyId": "6a4e0763c3ea7ae4b8a5d5de",
+      "guardianVersion": "3.6.0",
+      "ref": "urn:uuid:a61b0c3e-51b9-4125-847f-e70cbe5c88b8",
+      "field3": 242469.422604774,
+      "field6": 237619.75996467852,
+      "field4": 0.274188,
+      "field5": 4849.38845209548,
+      "@context": [
+        "schema:c478f451-9bb5-4bde-aaa7-b51d4f4da292"
+      ],
+      "id": "urn:uuid:d0977737-fac1-4965-962c-77f65b27aaae",
+      "type": "c478f451-9bb5-4bde-aaa7-b51d4f4da292"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-07-08T10:29:42Z",
+    "verificationMethod": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19.._1Fki8GXfCa1n4kRkaG18Dc_UhAMvJ9ythn0iTvGHb_P11--Po3jq0AzWphX4EGGSoxRxbOh_kAV_tm0hAVWAw"
+  }
+}
