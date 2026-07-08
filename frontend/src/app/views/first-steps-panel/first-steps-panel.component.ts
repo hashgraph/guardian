@@ -78,8 +78,11 @@ export class FirstStepsPanelComponent implements OnInit {
         return this.firstSteps.isOpen();
     }
 
-    disable(): void {
-        this.firstSteps.setEnabled(false);
+    hide(): void {
+        // The header X hides the drawer but keeps First Steps enabled, so the
+        // user can reopen it from the "First Steps" side-menu item. Disabling
+        // the feature stays in the profile Configuration card.
+        this.firstSteps.setOpen(false);
     }
 
     onResizeStart(event: MouseEvent): void {

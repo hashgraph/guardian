@@ -55,6 +55,12 @@ export class FirstStepsService {
         this.applyPanelClass();
     }
 
+    // Whether First Steps is available for the current user's role. The side-menu
+    // item reads this so it only appears for a role that has First Steps.
+    public isAvailable(): boolean {
+        return this.available;
+    }
+
     private readStoredEnabled(): boolean {
         try {
             return localStorage.getItem(FIRST_STEPS_ENABLED_KEY) === 'true';

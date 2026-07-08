@@ -55,19 +55,28 @@
     color: var(--color-grey-5, #848fa9);
 }
 
-/* "Disable" control, styled like the Experimental UI banner turn-off link. */
-.first-steps-disable {
+/* Close (hide) control — hides the drawer without disabling the feature. */
+.first-steps-close {
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
     padding: 0;
     border: 0;
-    border-bottom: 1px solid var(--guardian-font-color, #23252e);
+    border-radius: 6px;
     background: transparent;
-    color: var(--guardian-font-color, #23252e);
-    font-size: 13px;
-    font-weight: 600;
-    line-height: 18px;
-    white-space: nowrap;
+    color: var(--color-grey-5, #848fa9);
+    font-size: 16px;
+    line-height: 1;
     cursor: pointer;
+    transition: background 0.15s ease-in-out, color 0.15s ease-in-out;
+
+    &:hover {
+        background: var(--color-grey-2, #eff3f7);
+        color: var(--guardian-font-color, #23252e);
+    }
 }
 
 /*

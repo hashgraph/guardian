@@ -102,6 +102,18 @@
 </ng-template>
 
 <ng-template #footerActions>
+  @if (firstSteps.isAvailable() && firstSteps.isEnabled()) {
+    <div class="item">
+      <i class="pi pi-book item-icon"></i>
+      <div [class.hidden-logotype]="menuCollapsed && layout === 'vertical'" class="span-icon">
+        <span>First Steps</span>
+        <p-toggleswitch
+          [ngModel]="firstSteps.isOpen()"
+          (onChange)="firstSteps.setOpen($event.checked)">
+        </p-toggleswitch>
+      </div>
+    </div>
+  }
   <div
     [class.current]="activeLink.startsWith('/notifications')"
     [routerLink]="'/notifications'"

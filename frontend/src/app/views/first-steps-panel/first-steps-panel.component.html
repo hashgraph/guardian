@@ -14,7 +14,9 @@
           <h2 class="first-steps-title">First Steps</h2>
           <p class="first-steps-subtitle">A quick tutorial to get you started with Guardian.</p>
         </div>
-        <button type="button" class="first-steps-disable" (click)="disable()">Disable</button>
+        <button type="button" class="first-steps-close" (click)="hide()" aria-label="Hide First Steps" title="Hide">
+          <i class="pi pi-times"></i>
+        </button>
       </div>
 
       @if (loadFailed) {
