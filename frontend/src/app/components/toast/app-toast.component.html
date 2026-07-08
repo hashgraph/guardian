@@ -1,0 +1,26 @@
+<p-toast position="bottom-right">
+    <ng-template pTemplate="message" let-message>
+        <span [class]="'p-toast-message-icon pi ' + getSeverityIcon(message.severity)"></span>
+        <div class="p-toast-message-text">
+            @if (message.summary) {
+                <span class="p-toast-summary">{{ message.summary }}</span>
+            }
+            <div class="p-toast-detail">{{ message.detail }}</div>
+            @if (message.data?.logUrl && canReadLogs) {
+                <a class="toast-logs-link" [href]="message.data.logUrl">See logs</a>
+            }
+        </div>
+    </ng-template>
+</p-toast>
+
+<p-toast key="ws-reconnect-sticky" position="bottom-right">
+    <ng-template pTemplate="message" let-message>
+        <span [class]="'p-toast-message-icon pi ' + getSeverityIcon(message.severity)"></span>
+        <div class="p-toast-message-text">
+            @if (message.summary) {
+                <span class="p-toast-summary">{{ message.summary }}</span>
+            }
+            <div class="p-toast-detail">{{ message.detail }}</div>
+        </div>
+    </ng-template>
+</p-toast>

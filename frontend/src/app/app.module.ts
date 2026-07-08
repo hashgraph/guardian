@@ -153,6 +153,7 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
 import { TreeTableModule } from 'primeng/treetable';
 import { MenubarModule } from 'primeng/menubar';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
+import { AppToastComponent } from './components/toast/app-toast.component';
 
 const GuardianPreset = definePreset(Aura, {
     semantic: {
@@ -248,7 +249,8 @@ const GuardianPreset = definePreset(Aura, {
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
-        OtpCodesDialogComponent
+        OtpCodesDialogComponent,
+        AppToastComponent
     ],
     exports: [],
     bootstrap: [AppComponent],

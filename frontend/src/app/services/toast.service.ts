@@ -31,13 +31,17 @@ export class ToastService {
     }
 
     public warn(detail: string, summary = '', options: ToastOptions = {}): void {
-        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : options.logUrl;
+        const logUrl = options.logMessage
+            ? `/admin/logs?message=${btoa(options.logMessage)}`
+            : options.logUrl;
         const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
         this.add('warn', detail, summary, { ...timing, data: { logUrl } });
     }
 
     public error(detail: string, summary = '', options: ToastOptions = {}): void {
-        const logUrl = options.logMessage ? `/admin/logs?message=${btoa(options.logMessage)}` : options.logUrl;
+        const logUrl = options.logMessage
+            ? `/admin/logs?message=${btoa(options.logMessage)}`
+            : options.logUrl;
         const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
         this.add('error', detail, summary, { ...timing, data: { logUrl } });
     }
