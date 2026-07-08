@@ -16,6 +16,13 @@ const RADIX = 10;
 export async function Migration(initConfig: any, migrations?: string[]) {
     const orm = await MikroORM.init<MongoDriver>({
       ...initConfig,
+      // Never build indexes during init(): MikroORM.init() runs ensureIndexes()
+      // itself before returning, outside the migration lock and against
+      // pre-migration data, so a unique-index build races across replicas and
+      // throws E11000 on not-yet-deduped rows. Force it off here (overriding
+      // whatever the caller passed) and build the indexes inside the lock,
+      // after the backfill migrations have run.
+      ensureIndexes: false,
       extensions: [Migrator],
       driverOptions: {
           minPoolSize: parseInt(process.env.MIN_POOL_SIZE ?? DEFAULT_MIN_POOL_SIZE, RADIX),
@@ -41,6 +48,11 @@ export async function Migration(initConfig: any, migrations?: string[]) {
             }
         }
         await migrator.up();
+
+        // Build indexes now that the backfill migrations have deduped the data,
+        // still under the lock so unique-index creation is serialized across
+        // replicas. Idempotent: re-creating an existing index is a no-op.
+        await orm.getSchemaGenerator().ensureIndexes();
     });
     return orm;
 };

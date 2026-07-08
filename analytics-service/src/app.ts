@@ -30,7 +30,6 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false,
         },
-        ensureIndexes: true,
     }, [
         'v2-21-0',
     ]),

@@ -36,7 +36,6 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false
         },
-        ensureIndexes: true,
         entities
     }, []),
     NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
