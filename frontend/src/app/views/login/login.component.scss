@@ -65,7 +65,10 @@ form {
     width: 60%;
     height: 100%;
     overflow: hidden;
-    background: var(--linear-gradient);
+    background:
+        radial-gradient(70% 55% at 12% 6%, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 55%),
+        radial-gradient(85% 85% at 88% 104%, rgba(12, 22, 74, 0.42) 0%, rgba(12, 22, 74, 0) 60%),
+        var(--linear-gradient);
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -296,7 +299,7 @@ form {
     column-gap: 8px;
 
     span:not(.primary-text-button) {
-        color: var(--color-grey-black-1, #181818);
+        color: var(--color-grey-5, #848FA9);
     }
 
     span {
@@ -313,8 +316,8 @@ form {
     font-family: var(--font-family-inter, Inter, sans-serif);
     font-size: 14px;
     font-style: normal;
-    font-weight: 500;
-    line-height: 30px;
+    font-weight: 600;
+    line-height: 18px;
     cursor: pointer;
 }
 
@@ -365,33 +368,6 @@ form {
 
     &:not(:first-child) {
         margin-top: 18px;
-    }
-}
-
-.demo-roles {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.demo-role {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-background, #FFF);
-    color: var(--color-grey-black-1, #181818);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
-
-    &:hover {
-        background: var(--guardian-hover, #F0F3FC);
-        border-color: var(--color-primary, #4169E2);
     }
 }
 

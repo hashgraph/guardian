@@ -9,6 +9,7 @@ import {ProfileService} from 'src/app/services/profile.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
 import {environment} from 'src/environments/environment';
 import {AuthService} from '../../services/auth.service';
+import {getUserInitials} from '../../utils';
 
 /**
  * Header and Navigation
@@ -199,8 +200,8 @@ export class HeaderComponent implements OnInit {
         }).join('\r\n');
     }
 
-    public getInitials(name: string): string {
-        return (name || '').substring(0, 2).toUpperCase();
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
     }
 
     public isActiveLink(type: string): boolean {

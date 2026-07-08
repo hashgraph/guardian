@@ -159,33 +159,6 @@ a[hidden="true"] {
     margin-top: 18px;
 }
 
-.demo-roles {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-}
-
-.demo-role {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 10px 12px;
-    border-radius: 10px;
-    border: 1px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-background, #FFF);
-    color: var(--color-grey-black-1, #181818);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s ease-in-out, border-color 0.2s ease-in-out;
-}
-
-.demo-role:hover {
-    background: var(--guardian-hover, #F0F3FC);
-    border-color: var(--color-primary, #4169E2);
-}
-
 .demo-users-list {
     display: flex;
     flex-direction: column;

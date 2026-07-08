@@ -22,6 +22,7 @@ import { DemoService } from '../../services/demo.service';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
+import { getUserInitials } from '../../utils';
 
 /**
  * Login page.
@@ -125,8 +126,8 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.vcSubmitDialogRef = null;
     }
 
-    public getInitials(name: string): string {
-        return (name || '').substring(0, 2).toUpperCase();
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
     }
 
     public getPoliciesRolesTooltip(policyRoles: any) {

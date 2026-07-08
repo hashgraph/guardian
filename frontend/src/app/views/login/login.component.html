@@ -6,17 +6,6 @@
   </button>
   <p-popover #demoMenu [styleClass]="'demo-menu'" [focusOnShow]="false">
     <div class="demo-panel">
-      <span class="demo-panel-label">Quick roles</span>
-      <div class="demo-roles">
-        <button type="button" class="demo-role" (click)="authState.doLogin('StandardRegistry','test')">Standard Registry</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('Installer','test')">Installer</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('Installer2','test')">Installer 2</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('Auditor','test')">Auditor</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('Registrant','test')">Registrant</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('VVB','test')">VVB</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('ProjectProponent','test')">Project Proponent</button>
-        <button type="button" class="demo-role" (click)="authState.doLogin('Verra','test')">Verra</button>
-      </div>
       <span class="demo-panel-label">Registered users</span>
       <div class="demo-users-list">
         <div class="demo-user"
@@ -94,11 +83,11 @@
             <label class="p-field-label" for="password">Password</label>
             <div class="input-icon-wrapper">
               <i class="pi pi-lock input-leading-icon"></i>
-              <input #password [feedback]="false" [showPassword]="false"
+              <input #password
                 class="p-field-input has-leading-icon has-trailing-icon"
                 formControlName="password"
                 id="password"
-                pPassword placeholder="Password"/>
+                pInputText placeholder="Password" type="password"/>
               <button
                 (click)="password.type === 'password' ? password.type = 'text' : password.type = 'password'"
                 [icon]="'pi pi-eye'" class="input-trailing-btn p-button-rounded p-button-secondary p-button-text" pButton
