@@ -1257,7 +1257,7 @@
             "topCountriesSub": "Countries ranked by total credits issued",
             "topRegistries": "Top Registries",
             "recentIssuances": "Recent Issuances",
-            "topSdgs": "Top SDGs by Project Count",
+            "topSdgs": "Top 10 SDGs by Project Count",
             "networkActivity": "Network Activity",
             "retirementTrend": "Retirement Trend",
             "syncStatus": "Last Sync Timestamp",

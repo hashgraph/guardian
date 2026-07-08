@@ -171,7 +171,7 @@ const topSdgs = computed(() => {
     const useCredits = chartMode.value === 'credits';
     const sorted = [...filteredSdgStats.value]
         .sort((a, b) => (useCredits ? b.credits - a.credits : b.projects - a.projects))
-        .slice(0, 8);
+        .slice(0, 10);
     return sorted.map(s => ({
         name: s.name,
         count: useCredits ? s.credits : s.projects,
