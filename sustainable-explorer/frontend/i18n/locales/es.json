@@ -1205,6 +1205,20 @@
             "description": "Agrega proyectos a tu lista de seguimiento para ver estadísticas y gráficos personalizados.",
             "cta": "Gestionar lista de seguimiento"
         },
+        "watchedProjects": {
+            "title": "Proyectos en seguimiento",
+            "subtitle": "Proyectos de tu lista de seguimiento · haz clic en una tarjeta para ver los detalles",
+            "issued": "Emitidos",
+            "retired": "Retirados",
+            "transferred": "Transferidos",
+            "methodology": "Metodología",
+            "creditingPeriod": "Período de acreditación",
+            "sdgsLabel": "{n} ODS",
+            "open": "Abrir",
+            "scrollLeft": "Desplazar a la izquierda",
+            "scrollRight": "Desplazar a la derecha",
+            "pageOf": "{current} de {total}"
+        },
         "removeWidget": "Eliminar widget",
         "noData": "Sin datos disponibles",
         "sdgGoalsCount": "{n} objetivos",

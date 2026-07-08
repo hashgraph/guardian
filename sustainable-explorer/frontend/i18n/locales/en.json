@@ -1213,6 +1213,20 @@
             "description": "Add projects to your watchlist to see personalized stats and charts.",
             "cta": "Manage Watchlist"
         },
+        "watchedProjects": {
+            "title": "Watched Projects",
+            "subtitle": "Projects from your watchlist · click any card to view details",
+            "issued": "Issued",
+            "retired": "Retired",
+            "transferred": "Transferred",
+            "methodology": "Methodology",
+            "creditingPeriod": "Crediting Period",
+            "sdgsLabel": "{n} SDGs",
+            "open": "Open",
+            "scrollLeft": "Scroll left",
+            "scrollRight": "Scroll right",
+            "pageOf": "{current} of {total}"
+        },
         "removeWidget": "Remove widget",
         "noData": "No data available",
         "sdgGoalsCount": "{n} goals",

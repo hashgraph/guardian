@@ -20,6 +20,9 @@ import {
     PackageOpen,
     ListPlus,
     Globe,
+    Eye,
+    ChevronLeft,
+    ChevronRight,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { formatCredits, formatSmartCredits } from '~/lib/format';
@@ -33,6 +36,7 @@ import { DEFAULT_WIDGETS } from '~/composables/usePortfolioWidgets';
 import type { WatchlistItem, WatchlistItemType } from '~/composables/usePortfolioWatchlist';
 import type { NetworkId } from '~/composables/useNetwork';
 import type { RadarPoint } from '~/components/shared/RadarChart.vue';
+import type { Project } from '~/types/models';
 
 // The customizable dashboard is a logged-in-only feature — guests get
 // redirected home (with the sign-in modal opened) rather than a functional
@@ -503,6 +507,85 @@ watch(chipsRowRef, (el) => {
     }
 });
 
+// ── Watched Projects carousel ────────────────────────────────────────────────
+// Paged, not free-scrolling: the outer row is `overflow-hidden` and an inner
+// track is translated by whole multiples of 100% so a "page" is always
+// exactly `watchedCardsPerPage` full cards — never a partial card peeking in,
+// and never wider than the row itself (a free-scrolling row here was
+// overflowing the whole page horizontally instead of scrolling locally).
+const watchedContainerWidth = ref(0);
+
+function updateWatchedContainerWidth(): void {
+    watchedContainerWidth.value = window.innerWidth;
+}
+
+// Viewport-width breakpoints (not the narrower content-area width, and not
+// literal Tailwind bp values) — tuned by eye for when each card count stops
+// looking cramped, since the sidebar nav eats a fixed chunk of the viewport
+// that plain Tailwind breakpoints don't account for.
+const watchedCardsPerPage = computed(() => {
+    const w = watchedContainerWidth.value;
+    if (w >= 1920) return 5;
+    if (w >= 1510) return 4;
+    if (w >= 1170) return 3;
+    if (w >= 875) return 2;
+    return 1;
+});
+
+// Fixed per-card width (not flex-1) so a partial last page — fewer cards
+// than a full page — doesn't stretch those cards wider than every other
+// page's cards; the row just ends with empty space instead.
+const watchedCardWidth = computed(() => {
+    const n = watchedCardsPerPage.value;
+    return `calc((100% - ${(n - 1) * 12}px) / ${n})`;
+});
+
+// Each "page" needs a *definite pixel* width, measured from the actual
+// viewport box (not `w-full`/percentage). A percentage width on a
+// flex-shrink:0 child of the track is ambiguous — the track has no explicit
+// width of its own, so browsers can resolve "100%" against the track's
+// content-driven size instead of the viewport's, which both let a sliver of
+// the next page peek through and made translateX(N%) (relative to the
+// track's own, now-ambiguous, box) jump by the wrong amount. Measuring in
+// pixels sidesteps that entirely.
+const watchedViewportRef = ref<HTMLElement | null>(null);
+const watchedViewportPx = ref(0);
+let _watchedRO: ResizeObserver | null = null;
+
+watch(watchedViewportRef, (el) => {
+    _watchedRO?.disconnect();
+    _watchedRO = null;
+    if (el) {
+        _watchedRO = new ResizeObserver(() => { watchedViewportPx.value = el.clientWidth; });
+        _watchedRO.observe(el);
+        watchedViewportPx.value = el.clientWidth;
+    }
+});
+
+const watchedPages = computed(() => {
+    const size = watchedCardsPerPage.value;
+    const pages: Project[][] = [];
+    for (let i = 0; i < filteredProjects.value.length; i += size) {
+        pages.push(filteredProjects.value.slice(i, i + size));
+    }
+    return pages;
+});
+
+const watchedPageIndex = ref(0);
+
+// Snap back into range whenever the page count shrinks — a resize to a
+// narrower breakpoint (fewer cards per page, more pages) is always still in
+// range, but a resize to a wider one can leave a stale index past the end.
+watch(watchedPages, (pages) => {
+    if (watchedPageIndex.value > pages.length - 1) watchedPageIndex.value = Math.max(0, pages.length - 1);
+});
+
+function goWatchedPage(direction: 'left' | 'right'): void {
+    watchedPageIndex.value = direction === 'left'
+        ? Math.max(0, watchedPageIndex.value - 1)
+        : Math.min(watchedPages.value.length - 1, watchedPageIndex.value + 1);
+}
+
 // ── True only after the client has mounted and the server hydration below has
 // had a chance to run. Guards ALL chart sections so the first visible render
 // never flashes the unfiltered "all network" dataset before the user's saved
@@ -627,6 +710,8 @@ watch(watchlistItems, () => { void recalcChips(); }, { deep: true });
 
 onMounted(async () => {
     window.addEventListener('keydown', onKeydown);
+    window.addEventListener('resize', updateWatchedContainerWidth);
+    updateWatchedContainerWidth();
     // Without a localStorage pre-population step, state starts empty on
     // mount — wait for the server hydration to resolve before flipping
     // clientReady, so the skeleton stays up rather than flashing the
@@ -639,7 +724,9 @@ onMounted(async () => {
 });
 onUnmounted(() => {
     window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('resize', updateWatchedContainerWidth);
     _chipsRO?.disconnect();
+    _watchedRO?.disconnect();
 });
 </script>
 
@@ -814,6 +901,77 @@ onUnmounted(() => {
                         @remove="setWidget('activeProjects', false)"
                     />
                 </template>
+            </div>
+        </div>
+
+        <!-- WATCHED PROJECTS -->
+        <div v-if="filteredProjects.length > 0" class="border-t">
+            <div class="flex items-center justify-between px-6 py-4 flex-wrap gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-wrap">
+                    <Eye class="h-4 w-4 text-primary shrink-0" />
+                    <h2 class="text-sm font-semibold text-foreground shrink-0">{{ $t('portfolio.watchedProjects.title') }}</h2>
+                    <span class="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary shrink-0">
+                        {{ filteredProjects.length }}
+                    </span>
+                    <span class="text-xs text-muted-foreground truncate">{{ $t('portfolio.watchedProjects.subtitle') }}</span>
+                </div>
+                <!-- Same page-button pattern as components/shared/Pagination.vue
+                     (the table pagination control) — prev/next arrows plus
+                     numbered pages, collapsing to an ellipsis past 7 pages. -->
+                <div v-if="watchedPages.length > 1" class="flex items-center gap-2 shrink-0">
+                    <button
+                        class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors"
+                        :class="watchedPageIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted hover:text-foreground'"
+                        :disabled="watchedPageIndex === 0"
+                        :aria-label="$t('portfolio.watchedProjects.scrollLeft')"
+                        @click="goWatchedPage('left')"
+                    >
+                        <ChevronLeft class="h-3.5 w-3.5" />
+                    </button>
+
+                    <span class="text-xs text-muted-foreground tabular-nums">
+                        {{ $t('portfolio.watchedProjects.pageOf', { current: watchedPageIndex + 1, total: watchedPages.length }) }}
+                    </span>
+
+                    <button
+                        class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors"
+                        :class="watchedPageIndex === watchedPages.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted hover:text-foreground'"
+                        :disabled="watchedPageIndex === watchedPages.length - 1"
+                        :aria-label="$t('portfolio.watchedProjects.scrollRight')"
+                        @click="goWatchedPage('right')"
+                    >
+                        <ChevronRight class="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
+            <!-- overflow-hidden clips everything outside the current page — the
+                 row can never grow wider than its own box, so it can't drag the
+                 whole page into horizontal scroll the way free-scrolling did.
+                 The ref/measurement lives on this unpadded inner div (not the
+                 px-6 wrapper around it) so clientWidth reflects the actual
+                 space available to the cards, not that plus the page padding. -->
+            <div class="px-6 pb-5">
+                <div ref="watchedViewportRef" class="overflow-hidden">
+                    <div
+                        class="flex transition-transform duration-300 ease-out"
+                        :style="{ transform: `translateX(-${watchedPageIndex * watchedViewportPx}px)` }"
+                    >
+                        <div
+                            v-for="(page, pageIdx) in watchedPages"
+                            :key="pageIdx"
+                            class="flex gap-3 shrink-0"
+                            :style="{ width: `${watchedViewportPx}px` }"
+                        >
+                            <WatchedProjectCard
+                                v-for="p in page"
+                                :key="p.id"
+                                :project="p"
+                                class="shrink-0"
+                                :style="{ width: watchedCardWidth }"
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
