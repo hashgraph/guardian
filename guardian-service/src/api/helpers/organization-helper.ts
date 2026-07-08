@@ -500,13 +500,17 @@ export async function enrollOrganizationMember({
     const wallet = new Wallet();
 
     // ------------------------
-    // <-- Resolve organization
+    // <-- Resolve organization + role in one dual-auth pre-flight
     // ------------------------
+    // Single call replaces the old owner-scoped GET_ORGANIZATION + GET_ORG_ROLE pair: it also
+    // authorizes the caller (SR owner or a MEMBER_MANAGE admin, per R1/R2) so a delegated admin's
+    // enrollment can reach this far. This pre-flight is best-effort — ENROLL_ORG_MEMBER re-runs
+    // the authoritative dual-auth + R1/R2 check at persist time.
     notifier.startStep(STEP_RESOLVE_ORG);
-    const org = await users.sendMessage<IOrganizationRecord>(
-        AuthEvents.GET_ORGANIZATION,
-        { id: payload.organizationId, owner, userId: logId }
+    const access = await users.validateOrgManagementAccess(
+        payload.organizationId, payload.orgRoleId, owner, logId
     );
+    const org = access?.organization as IOrganizationRecord;
     if (!org) {
         throw new Error('Organization not found');
     }
@@ -514,24 +518,15 @@ export async function enrollOrganizationMember({
         throw new Error('Organization is not published');
     }
     notifier.completeStep(STEP_RESOLVE_ORG);
-    // ------------------------
-    // Resolve organization -->
-    // ------------------------
 
-    // ------------------------
-    // <-- Resolve role (for orgRoleName denorm in attributes)
-    // ------------------------
     notifier.startStep(STEP_RESOLVE_ROLE);
-    const role = await users.sendMessage<IOrgRoleRecord>(
-        AuthEvents.GET_ORG_ROLE,
-        { id: payload.orgRoleId, owner, userId: logId }
-    );
+    const role = access.orgRole as IOrgRoleRecord;
     if (!role || role.organizationId !== org.id) {
         throw new Error('Invalid role for this organization');
     }
     notifier.completeStep(STEP_RESOLVE_ROLE);
     // ------------------------
-    // Resolve role -->
+    // Resolve organization + role -->
     // ------------------------
 
     // ------------------------

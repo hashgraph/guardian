@@ -1,7 +1,7 @@
-import { OrgRolePermission } from '@guardian/interfaces';
+import { OrgRolePermission, OrgTokenPermission } from '@guardian/interfaces';
 import type { PolicyUser } from '../policy-user.js';
 
-const ORG_TOKEN_PERMISSION_ERRORS: Record<OrgRolePermission, string> = {
+const ORG_TOKEN_PERMISSION_ERRORS: Record<OrgTokenPermission, string> = {
     [OrgRolePermission.TOKEN_MINTING]: 'Insufficient organization permissions for token minting',
     [OrgRolePermission.TOKEN_TRANSFER]: 'Insufficient organization permissions for token transfer',
     [OrgRolePermission.TOKEN_RETIREMENT]: 'Insufficient organization permissions for token retirement',
@@ -18,7 +18,7 @@ export function getOrgTokenPermissionError(
     user: Pick<PolicyUser, 'organization' | 'organizationRolePermissions'>,
     orgAccountId: string | null,
     operationAccount: string,
-    permission: OrgRolePermission
+    permission: OrgTokenPermission
 ): string | null {
     if (!user?.organization || !orgAccountId || !operationAccount) {
         return null;

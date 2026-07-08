@@ -60,4 +60,21 @@ describe('Org token permission guard (pure decision core)', function () {
             'Insufficient organization permissions for token transfer'
         );
     });
+
+    it('allows minting when MEMBER_MANAGE is present alongside TOKEN_MINTING', function () {
+        assert.isNull(getOrgTokenPermissionError(
+            member([OrgRolePermission.TOKEN_MINTING, OrgRolePermission.MEMBER_MANAGE]),
+            ORG_ACCOUNT, ORG_ACCOUNT, OrgRolePermission.TOKEN_MINTING
+        ));
+    });
+
+    it('MEMBER_MANAGE alone is invisible to the token guard — mint is denied', function () {
+        assert.equal(
+            getOrgTokenPermissionError(
+                member([OrgRolePermission.MEMBER_MANAGE]),
+                ORG_ACCOUNT, ORG_ACCOUNT, OrgRolePermission.TOKEN_MINTING
+            ),
+            'Insufficient organization permissions for token minting'
+        );
+    });
 });

@@ -63,6 +63,88 @@ function ownerFilter(owner: IOwner | undefined | null): string {
 }
 
 /**
+ * Result of resolving whether the caller may manage a given organization: either the SR owner
+ * (unrestricted, exactly today's behaviour) or an active member whose OrgRole carries
+ * MEMBER_MANAGE (R1/R2 ceilings apply at the call site — see `roleCarriesMemberManage` /
+ * `isPermissionSubset`).
+ */
+type OrgManagementAuth =
+    | { organization: Organization, actor: 'owner' }
+    | { organization: Organization, actor: 'admin', adminRole: OrgRole };
+
+/**
+ * Resolve whether the caller may manage the given organization's membership: the SR owner
+ * (`Organization.owner === owner.creator`) or an active `OrganizationMember` whose `OrgRole`
+ * carries `MEMBER_MANAGE`. Throws with `notFoundMessage` (default: the org-not-found wording
+ * every owner-scoped handler already used) when neither applies — same opaque error style as
+ * today's owner filter, so callers can `await` this and let their existing try/catch surface it.
+ */
+async function resolveOrgManagementAuth(
+    entityRepository: DatabaseServer,
+    owner: IOwner,
+    organizationId: string,
+    notFoundMessage = 'Invalid organization'
+): Promise<OrgManagementAuth> {
+    const creator = ownerFilter(owner);
+
+    const organization = await entityRepository.findOne(Organization, { id: organizationId });
+    if (!organization) {
+        throw new Error(notFoundMessage);
+    }
+    if (organization.owner === creator) {
+        return { organization, actor: 'owner' };
+    }
+
+    const member = await entityRepository.findOne(OrganizationMember, {
+        did: creator,
+        organizationId,
+        active: true
+    });
+    const adminRole = member?.orgRoleId
+        ? await entityRepository.findOne(OrgRole, { id: member.orgRoleId })
+        : null;
+    if (roleCarriesMemberManage(adminRole)) {
+        return { organization, actor: 'admin', adminRole };
+    }
+
+    throw new Error(notFoundMessage);
+}
+
+/**
+ * R1 — true when a role's permission set carries MEMBER_MANAGE. Used to reject any admin-branch
+ * operation that grants MEMBER_MANAGE or targets a member whose current role carries it
+ * (including the admin themselves) — only the SR owner branch may touch admins.
+ */
+function roleCarriesMemberManage(role: OrgRole | null | undefined): boolean {
+    return !!role?.permissions?.includes(OrgRolePermission.MEMBER_MANAGE);
+}
+
+/**
+ * R2 — subset ceiling: on the admin branch, an assigned role's permissions must be a subset of
+ * the admin's own role's permissions. The SR owner branch has no ceiling.
+ */
+function isPermissionSubset(adminRole: OrgRole, assignedRole: OrgRole | null | undefined): boolean {
+    const adminPermissions = new Set(adminRole?.permissions ?? []);
+    return (assignedRole?.permissions ?? []).every((permission) => adminPermissions.has(permission));
+}
+
+/**
+ * Shallow-copy an Organization without its `walletToken` (vault key handle) for responses on the
+ * delegated-admin (MEMBER_MANAGE) branch — a USER-admin never sees the org's vault credential
+ * locator; only the SR owner branch and internal NATS-only callers (e.g.
+ * VALIDATE_ORG_MANAGEMENT_ACCESS, which guardian-service needs it to sign with) keep it. Copies
+ * rather than mutating the loaded entity so the original stays intact for any other consumer.
+ */
+function redactWalletToken(organization: Organization): Organization {
+    // Cast through `unknown`: the object-literal copy carries every own data property but not
+    // the entity's prototype methods — irrelevant here since the result only ever flows out as a
+    // MessageResponse body (serialized over NATS), never invoked as an Organization instance.
+    const copy = { ...organization } as unknown as Organization;
+    delete copy.walletToken;
+    return copy;
+}
+
+/**
  * Standard pagination shape borrowed from RoleService.GET_ROLES.
  */
 function buildPaging(pageIndex: any, pageSize: any): any {
@@ -148,7 +230,11 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * List organizations owned by the caller
+         * List organizations owned by the caller, plus — if the caller is an active member whose
+         * role carries MEMBER_MANAGE — the single organization they administer (their discovery
+         * path for that organizationId). Deduped and name-filtered like the owned query; the
+         * admin case adds at most one row, so it is only appended on the first page to avoid it
+         * reappearing on every subsequent page.
          */
         this.getMessages(AuthEvents.GET_ORGANIZATIONS,
             async (msg: {
@@ -165,6 +251,7 @@ export class OrganizationService extends NatsService {
                     }
                     const { owner, filters, pageIndex, pageSize } = msg;
                     const creator = ownerFilter(owner);
+                    const entityRepository = new DatabaseServer();
 
                     const otherOptions = buildPaging(pageIndex, pageSize);
                     const options: any = { owner: creator };
@@ -172,8 +259,31 @@ export class OrganizationService extends NatsService {
                         options.name = { $regex: '.*' + filters.name + '.*' };
                     }
 
-                    const [items, count] = await new DatabaseServer().findAndCount(Organization, options, otherOptions);
-                    return new MessageResponse({ items, count });
+                    const [items, count] = await entityRepository.findAndCount(Organization, options, otherOptions);
+                    let resultItems = items;
+                    let resultCount = count;
+
+                    if (!otherOptions.offset) {
+                        const adminMember = await entityRepository.findOne(OrganizationMember, {
+                            did: creator,
+                            active: true
+                        });
+                        const adminRole = adminMember?.orgRoleId
+                            ? await entityRepository.findOne(OrgRole, { id: adminMember.orgRoleId })
+                            : null;
+                        if (roleCarriesMemberManage(adminRole)) {
+                            const adminOrg = await entityRepository.findOne(Organization, {
+                                id: adminMember.organizationId
+                            });
+                            const matchesName = !filters?.name || (adminOrg?.name ?? '').includes(filters.name);
+                            if (adminOrg && matchesName && !resultItems.some((item) => item.id === adminOrg.id)) {
+                                resultItems = [...resultItems, redactWalletToken(adminOrg)];
+                                resultCount += 1;
+                            }
+                        }
+                    }
+
+                    return new MessageResponse({ items: resultItems, count: resultCount });
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);
@@ -181,7 +291,11 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * Get one organization by id (owner-scoped)
+         * Get one organization by id — owner-scoped, plus a dual-auth admin branch
+         * (MEMBER_MANAGE). Also invoked internally by guardian-service publish/enroll flows with
+         * SR owners: the owner branch returns exactly what the owner-scoped lookup always
+         * returned (the org, or `null` when it isn't found/owned) — never a MessageError — so
+         * those flows stay byte-for-byte unchanged.
          */
         this.getMessages(AuthEvents.GET_ORGANIZATION,
             async (msg: { id: string, owner: IOwner, userId: string | null }) => {
@@ -191,8 +305,16 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid get organization parameters');
                     }
                     const { id, owner } = msg;
-                    const creator = ownerFilter(owner);
-                    const item = await new DatabaseServer().findOne(Organization, { id, owner: creator });
+                    const entityRepository = new DatabaseServer();
+                    let auth: OrgManagementAuth;
+                    try {
+                        auth = await resolveOrgManagementAuth(entityRepository, owner, id);
+                    } catch {
+                        return new MessageResponse(null);
+                    }
+                    const item = auth.actor === 'admin'
+                        ? redactWalletToken(auth.organization)
+                        : auth.organization;
                     return new MessageResponse(item);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
@@ -372,7 +494,8 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * List OrgRoles for an organization owned by the caller
+         * List OrgRoles for an organization — owner-scoped, plus a dual-auth admin branch
+         * (MEMBER_MANAGE).
          */
         this.getMessages(AuthEvents.GET_ORG_ROLES,
             async (msg: { organizationId: string, owner: IOwner, userId: string | null }) => {
@@ -382,16 +505,9 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid list org roles parameters');
                     }
                     const { organizationId, owner } = msg;
-                    const creator = ownerFilter(owner);
                     const entityRepository = new DatabaseServer();
 
-                    const org = await entityRepository.findOne(Organization, {
-                        id: organizationId,
-                        owner: creator
-                    });
-                    if (!org) {
-                        return new MessageError('Invalid organization');
-                    }
+                    await resolveOrgManagementAuth(entityRepository, owner, organizationId);
 
                     const items = await entityRepository.find(OrgRole, { organizationId });
                     return new MessageResponse(items);
@@ -555,7 +671,10 @@ export class OrganizationService extends NatsService {
         // ============================================================
 
         /**
-         * Enroll a user into an organization with a role.
+         * Enroll a user into an organization with a role. Owner-scoped, plus a dual-auth admin
+         * branch (MEMBER_MANAGE): R1 — the assigned role must not carry MEMBER_MANAGE (only the
+         * SR owner branch may mint admins); R2 — the assigned role's permissions must be a
+         * subset of the admin's own role's permissions.
          * Optionally carries the on-ledger enrollment messageId so guardian-service can record
          * the RegistrationMessage(Init) reference published on the org topic.
          */
@@ -577,16 +696,9 @@ export class OrganizationService extends NatsService {
                     if (!did) {
                         return new MessageError('Member DID is required');
                     }
-                    const creator = ownerFilter(owner);
                     const entityRepository = new DatabaseServer();
 
-                    const org = await entityRepository.findOne(Organization, {
-                        id: organizationId,
-                        owner: creator
-                    });
-                    if (!org) {
-                        return new MessageError('Invalid organization');
-                    }
+                    const auth = await resolveOrgManagementAuth(entityRepository, owner, organizationId);
 
                     const role = await entityRepository.findOne(OrgRole, {
                         id: orgRoleId,
@@ -594,6 +706,12 @@ export class OrganizationService extends NatsService {
                     });
                     if (!role) {
                         return new MessageError('Invalid role for this organization');
+                    }
+
+                    if (auth.actor === 'admin') {
+                        if (roleCarriesMemberManage(role) || !isPermissionSubset(auth.adminRole, role)) {
+                            return new MessageError('Invalid organization');
+                        }
                     }
 
                     const user = await UserUtils.getUser({ did }, UserProp.RAW);
@@ -628,7 +746,8 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * List members of an organization owned by the caller
+         * List members of an organization — owner-scoped, plus a dual-auth admin branch
+         * (MEMBER_MANAGE).
          */
         this.getMessages(AuthEvents.GET_ORG_MEMBERS,
             async (msg: {
@@ -645,16 +764,9 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid list members parameters');
                     }
                     const { organizationId, owner, filters, pageIndex, pageSize } = msg;
-                    const creator = ownerFilter(owner);
                     const entityRepository = new DatabaseServer();
 
-                    const org = await entityRepository.findOne(Organization, {
-                        id: organizationId,
-                        owner: creator
-                    });
-                    if (!org) {
-                        return new MessageError('Invalid organization');
-                    }
+                    await resolveOrgManagementAuth(entityRepository, owner, organizationId);
 
                     const options: any = { organizationId };
                     if (filters) {
@@ -682,7 +794,8 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * Get one member by id (owner-scoped via the parent org)
+         * Get one member by id — owner-scoped via the parent org, plus a dual-auth admin branch
+         * (MEMBER_MANAGE).
          */
         this.getMessages(AuthEvents.GET_ORG_MEMBER,
             async (msg: { id: string, owner: IOwner, userId: string | null }) => {
@@ -692,20 +805,13 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid get member parameters');
                     }
                     const { id, owner } = msg;
-                    const creator = ownerFilter(owner);
                     const entityRepository = new DatabaseServer();
 
                     const item = await entityRepository.findOne(OrganizationMember, { id });
                     if (!item) {
                         return new MessageResponse(null);
                     }
-                    const org = await entityRepository.findOne(Organization, {
-                        id: item.organizationId,
-                        owner: creator
-                    });
-                    if (!org) {
-                        return new MessageError('Invalid member');
-                    }
+                    await resolveOrgManagementAuth(entityRepository, owner, item.organizationId, 'Invalid member');
                     return new MessageResponse(item);
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
@@ -822,7 +928,11 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * Update a member's role (validates the new role belongs to the same org)
+         * Update a member's role (validates the new role belongs to the same org). Owner-scoped,
+         * plus a dual-auth admin branch (MEMBER_MANAGE): R1 — the member's CURRENT role must not
+         * carry MEMBER_MANAGE (covers self-demotion, since the admin's own row carries it) and
+         * the NEW role must not carry it either; R2 — the new role's permissions must be a subset
+         * of the admin's own role's permissions.
          */
         this.getMessages(AuthEvents.UPDATE_ORG_MEMBER_ROLE,
             async (msg: { id: string, orgRoleId: string, owner: IOwner, userId: string | null }) => {
@@ -832,20 +942,15 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid update member role parameters');
                     }
                     const { id, orgRoleId, owner } = msg;
-                    const creator = ownerFilter(owner);
                     const entityRepository = new DatabaseServer();
 
                     const member = await entityRepository.findOne(OrganizationMember, { id });
                     if (!member) {
                         return new MessageError('Invalid member');
                     }
-                    const org = await entityRepository.findOne(Organization, {
-                        id: member.organizationId,
-                        owner: creator
-                    });
-                    if (!org) {
-                        return new MessageError('Invalid member');
-                    }
+                    const auth = await resolveOrgManagementAuth(
+                        entityRepository, owner, member.organizationId, 'Invalid member'
+                    );
 
                     const role = await entityRepository.findOne(OrgRole, {
                         id: orgRoleId,
@@ -853,6 +958,18 @@ export class OrganizationService extends NatsService {
                     });
                     if (!role) {
                         return new MessageError('Invalid role for this organization');
+                    }
+
+                    if (auth.actor === 'admin') {
+                        const currentRole = member.orgRoleId
+                            ? await entityRepository.findOne(OrgRole, { id: member.orgRoleId })
+                            : null;
+                        if (roleCarriesMemberManage(currentRole) || roleCarriesMemberManage(role)) {
+                            return new MessageError('Invalid member');
+                        }
+                        if (!isPermissionSubset(auth.adminRole, role)) {
+                            return new MessageError('Invalid member');
+                        }
                     }
 
                     member.orgRoleId = orgRoleId;
@@ -866,7 +983,9 @@ export class OrganizationService extends NatsService {
             });
 
         /**
-         * Remove a member (hard delete to free the @Unique(did) constraint)
+         * Remove a member (hard delete to free the @Unique(did) constraint). Owner-scoped, plus a
+         * dual-auth admin branch (MEMBER_MANAGE): R1 — the member's current role must not carry
+         * MEMBER_MANAGE (covers self-removal, since the admin's own row carries it).
          */
         this.getMessages(AuthEvents.REMOVE_ORG_MEMBER,
             async (msg: { id: string, owner: IOwner, userId: string | null }) => {
@@ -876,19 +995,23 @@ export class OrganizationService extends NatsService {
                         return new MessageError('Invalid remove member parameters');
                     }
                     const { id, owner } = msg;
-                    const creator = ownerFilter(owner);
                     const entityRepository = new DatabaseServer();
 
                     const member = await entityRepository.findOne(OrganizationMember, { id });
                     if (!member) {
                         return new MessageError('Invalid member');
                     }
-                    const org = await entityRepository.findOne(Organization, {
-                        id: member.organizationId,
-                        owner: creator
-                    });
-                    if (!org) {
-                        return new MessageError('Invalid member');
+                    const auth = await resolveOrgManagementAuth(
+                        entityRepository, owner, member.organizationId, 'Invalid member'
+                    );
+
+                    if (auth.actor === 'admin') {
+                        const currentRole = member.orgRoleId
+                            ? await entityRepository.findOne(OrgRole, { id: member.orgRoleId })
+                            : null;
+                        if (roleCarriesMemberManage(currentRole)) {
+                            return new MessageError('Invalid member');
+                        }
                     }
 
                     await entityRepository.remove(OrganizationMember, member);
@@ -1099,6 +1222,54 @@ export class OrganizationService extends NatsService {
                         assigned: true
                     });
                     return new MessageResponse(items);
+                } catch (error) {
+                    await logger.error(error, ['AUTH_SERVICE'], userId);
+                    return new MessageError(error);
+                }
+            });
+
+        /**
+         * Validate that the caller (SR owner or MEMBER_MANAGE admin) may manage the given
+         * organization, and — when `orgRoleId` is supplied — that role is a valid assignment
+         * target under R1/R2 on the admin branch. Internal NATS-only pre-flight for
+         * guardian-service's enroll orchestration; the authoritative re-check remains in
+         * ENROLL_ORG_MEMBER, since this event must be safe to call speculatively without itself
+         * performing the enrollment.
+         */
+        this.getMessages(AuthEvents.VALIDATE_ORG_MANAGEMENT_ACCESS,
+            async (msg: {
+                organizationId: string,
+                orgRoleId?: string,
+                owner: IOwner,
+                userId: string | null
+            }) => {
+                const userId = msg?.userId;
+                try {
+                    if (!msg) {
+                        return new MessageError('Invalid validate org management access parameters');
+                    }
+                    const { organizationId, orgRoleId, owner } = msg;
+                    const entityRepository = new DatabaseServer();
+
+                    const auth = await resolveOrgManagementAuth(entityRepository, owner, organizationId);
+
+                    let orgRole: OrgRole | null = null;
+                    if (orgRoleId) {
+                        orgRole = await entityRepository.findOne(OrgRole, {
+                            id: orgRoleId,
+                            organizationId
+                        });
+                        if (!orgRole) {
+                            return new MessageError('Invalid role for this organization');
+                        }
+                        if (auth.actor === 'admin') {
+                            if (roleCarriesMemberManage(orgRole) || !isPermissionSubset(auth.adminRole, orgRole)) {
+                                return new MessageError('Invalid organization');
+                            }
+                        }
+                    }
+
+                    return new MessageResponse({ organization: auth.organization, orgRole });
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
                     return new MessageError(error);

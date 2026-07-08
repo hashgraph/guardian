@@ -272,6 +272,7 @@ export enum Permissions {
     ORGANIZATIONS_ORG_ROLE_MANAGE = 'ORGANIZATIONS_ORG_ROLE_MANAGE',
     ORGANIZATIONS_ORG_MEMBER_MANAGE = 'ORGANIZATIONS_ORG_MEMBER_MANAGE',
     ORGANIZATIONS_ORG_POLICY_ASSIGN = 'ORGANIZATIONS_ORG_POLICY_ASSIGN',
+    ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE = 'ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE',
 }
 
 /**
@@ -1491,6 +1492,13 @@ export const PermissionsArray: {
             dependOn: [
                 Permissions.ORGANIZATIONS_ORGANIZATION_READ
             ]
+        },
+        {
+            name: Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE,
+            category: PermissionCategories.ORGANIZATIONS,
+            entity: PermissionEntities.ORG_MEMBER,
+            action: PermissionActions.MANAGE,
+            disabled: true
         }
     ];
 
@@ -1504,6 +1512,7 @@ export const UserDefaultPermission: Permissions[] = [
     Permissions.PROFILES_BALANCE_READ,
     Permissions.CREDENTIALS_USER_READ,
     Permissions.CREDENTIALS_USER_WRITE,
+    Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE,
 ];
 
 export const SRDefaultPermission: Permissions[] = [

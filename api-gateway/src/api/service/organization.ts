@@ -69,14 +69,26 @@ function coerceBool(value: unknown): boolean | undefined {
 /**
  * Organization REST surface.
  *
- * All endpoints are owner-scoped through @Auth + EntityOwner(user). Record-layer CRUD goes
- * directly to auth-service via the Users helper (mirroring the relayer-accounts / permissions
- * controllers). On-ledger publish + member enrollment go through guardian-service via the
- * Guardians helper, which in turn delegates to the orchestration handlers added in Phase 3.
+ * Dual-auth model: every endpoint is gated through @Auth + EntityOwner(user), but that gate is
+ * coarse — it only proves the caller may reach the handler, not that they may act on *this*
+ * organization. The authoritative decision is resolved handler-side in auth-service
+ * (`resolveOrgManagementAuth`): either the SR owner (`Organization.owner === owner.creator`, no
+ * ceiling — the historical behaviour every route originally had), or a delegated organization
+ * administrator — an active `OrganizationMember` of the organization whose `OrgRole` carries
+ * `OrgRolePermission.MEMBER_MANAGE`. Member-management writes and the read routes below OR in
+ * `Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE` (granted to every user by default, disabled
+ * in the role-builder) alongside their SR-only permission so a delegated admin's request can
+ * reach the handler at all; the handler then enforces R1 (only the SR owner branch may grant
+ * MEMBER_MANAGE or touch a member who already holds it) and R2 (an admin may only assign a role
+ * whose permissions are a subset of their own). Record-layer CRUD goes directly to auth-service
+ * via the Users helper (mirroring the relayer-accounts / permissions controllers). On-ledger
+ * publish + member enrollment go through guardian-service via the Guardians helper, which in
+ * turn delegates to the orchestration handlers added in Phase 3.
  *
  * Intentionally NOT exposed at REST: GET_ORG_MEMBERSHIP_BY_DID, GET_POLICY_ORGS,
  * GET_POLICIES_FOR_ORG, GET_ORG_POLICY_IDS_FOR_USER, GET_ORG_HEDERA_INFO,
- * GET_ORG_CONTEXT_BY_DID, GET_ORG_MEMBER_DIDS — those are internal NATS-only lookups.
+ * GET_ORG_CONTEXT_BY_DID, GET_ORG_MEMBER_DIDS, VALIDATE_ORG_MANAGEMENT_ACCESS — those are
+ * internal NATS-only lookups.
  */
 @Controller('organizations')
 @ApiTags('organizations')
@@ -127,11 +139,15 @@ export class OrganizationApi {
      * List organizations owned by the calling SR (paged).
      */
     @Get('/')
-    @Auth(Permissions.ORGANIZATIONS_ORGANIZATION_READ)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'List organizations owned by the active Standard Registry.',
         description:
-            'Returns a paginated list of organizations owned by the calling Standard Registry. Supports filtering by name (case-insensitive partial match).'
+            'Returns a paginated list of organizations owned by the calling Standard Registry. Supports filtering by name (case-insensitive partial match). ' +
+            'If the caller is instead an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE), the single organization they administer is also included — their discovery path for that organization\'s id.'
     })
     @ApiQuery({
         name: 'name',
@@ -190,10 +206,13 @@ export class OrganizationApi {
      * Get one organization by id.
      */
     @Get('/:id')
-    @Auth(Permissions.ORGANIZATIONS_ORGANIZATION_READ)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'Get one organization by id.',
-        description: 'Returns the organization identified by the path parameter. Must be owned by the calling Standard Registry.'
+        description: 'Returns the organization identified by the path parameter. Must be owned by the calling Standard Registry, or the calling organization administrator\'s own organization (an active member whose OrgRole carries MEMBER_MANAGE).'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiOkResponse({ description: 'Successful operation.', type: OrganizationDTO })
@@ -323,7 +342,7 @@ export class OrganizationApi {
     @Auth(Permissions.ORGANIZATIONS_ORG_ROLE_MANAGE)
     @ApiOperation({
         summary: 'Create a role under an organization.',
-        description: 'Creates a named role under the organization with a subset of OrgRolePermission (TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER). Role names are unique within an organization.'
+        description: 'Creates a named role under the organization with a subset of OrgRolePermission (TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER, MEMBER_MANAGE). MEMBER_MANAGE makes members holding the role organization administrators, able to manage their own organization\'s non-admin membership; granting or revoking it is always Standard-Registry-only. Role names are unique within an organization.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiBody({ description: 'Role name + optional permissions list.', type: CreateOrgRoleDTO, required: true })
@@ -347,10 +366,13 @@ export class OrganizationApi {
      * List OrgRoles under an organization.
      */
     @Get('/:id/roles')
-    @Auth(Permissions.ORGANIZATIONS_ORGANIZATION_READ)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'List roles under an organization.',
-        description: 'Returns all OrgRoles defined under the organization.'
+        description: 'Returns all OrgRoles defined under the organization. Callable by the owning Standard Registry, or by an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE) for their own organization.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiOkResponse({ description: 'Successful operation.', isArray: true, type: OrgRoleDTO })
@@ -432,11 +454,15 @@ export class OrganizationApi {
      * Enroll a member: publish RegistrationMessage(Init) on the org topic + persist the row.
      */
     @Post('/:id/members')
-    @Auth(Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'Enroll a user as a member of an organization.',
         description:
-            'Validates the member first (user exists, not already in an organization), then publishes a RegistrationMessage(Init) on the organization topic (carrying member DID + role name as attributes), then persists the OrganizationMember record with the resulting messageId. A user can belong to at most one organization (enforced by @Unique(did)).'
+            'Validates the member first (user exists, not already in an organization), then publishes a RegistrationMessage(Init) on the organization topic (carrying member DID + role name as attributes), then persists the OrganizationMember record with the resulting messageId. A user can belong to at most one organization (enforced by @Unique(did)). ' +
+            'Callable by the owning Standard Registry (no restriction), or by an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE) enrolling into their own organization — subject to server-side rules: an admin cannot assign a role that itself carries MEMBER_MANAGE, and the assigned role\'s permissions must be a subset of the admin\'s own role\'s permissions.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiBody({ description: 'Member DID + target OrgRole identifier.', type: EnrollMemberDTO, required: true })
@@ -468,10 +494,13 @@ export class OrganizationApi {
      * List members of an organization (paged).
      */
     @Get('/:id/members')
-    @Auth(Permissions.ORGANIZATIONS_ORGANIZATION_READ)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'List members of an organization.',
-        description: 'Returns a paginated list of OrganizationMember rows. Supports filtering by active flag, OrgRole id, and member DID.'
+        description: 'Returns a paginated list of OrganizationMember rows. Supports filtering by active flag, OrgRole id, and member DID. Callable by the owning Standard Registry, or by an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE) for their own organization.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiQuery({ name: 'active', type: Boolean, required: false, description: 'Filter by active flag (true/false). Omit to return all.', example: true })
@@ -527,10 +556,13 @@ export class OrganizationApi {
      * Get a single member by id.
      */
     @Get('/:id/members/:memberId')
-    @Auth(Permissions.ORGANIZATIONS_ORGANIZATION_READ)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORGANIZATION_READ,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'Get an organization member by id.',
-        description: 'Returns one OrganizationMember row by its database identifier. Owner-scoped via the parent organization.'
+        description: 'Returns one OrganizationMember row by its database identifier. Scoped via the parent organization: the owning Standard Registry, or an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE) for their own organization.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiParam({ name: 'memberId', type: String, required: true, description: 'OrganizationMember identifier', example: Examples.DB_ID_2 })
@@ -554,10 +586,14 @@ export class OrganizationApi {
      * Update a member's role (record-layer only; no on-ledger message).
      */
     @Put('/:id/members/:memberId/role')
-    @Auth(Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'Update an organization member\'s role.',
-        description: 'Re-assigns the OrgRole of an existing OrganizationMember. The new role must belong to the same organization.'
+        description: 'Re-assigns the OrgRole of an existing OrganizationMember. The new role must belong to the same organization. ' +
+            'Callable by the owning Standard Registry (no restriction), or by an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE) re-assigning a member of their own organization — subject to server-side rules: an admin cannot re-role a member who currently holds MEMBER_MANAGE (including themselves) or assign a role that itself carries MEMBER_MANAGE, and the new role\'s permissions must be a subset of the admin\'s own role\'s permissions.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiParam({ name: 'memberId', type: String, required: true, description: 'OrganizationMember identifier', example: Examples.DB_ID_2 })
@@ -583,10 +619,14 @@ export class OrganizationApi {
      * Remove a member (hard delete to free the @Unique(did) constraint).
      */
     @Delete('/:id/members/:memberId')
-    @Auth(Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE)
+    @Auth(
+        Permissions.ORGANIZATIONS_ORG_MEMBER_MANAGE,
+        Permissions.ORGANIZATIONS_ORG_MEMBER_SELF_MANAGE
+    )
     @ApiOperation({
         summary: 'Remove an organization member.',
-        description: 'Removes an OrganizationMember row. The delete is hard (not soft) so the @Unique(did) constraint is freed and the user can be enrolled in another organization.'
+        description: 'Removes an OrganizationMember row. The delete is hard (not soft) so the @Unique(did) constraint is freed and the user can be enrolled in another organization. ' +
+            'Callable by the owning Standard Registry (no restriction), or by an organization administrator (an active member whose OrgRole carries MEMBER_MANAGE) removing a member of their own organization — subject to server-side rules: an admin cannot remove a member who currently holds MEMBER_MANAGE (including themselves).'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiParam({ name: 'memberId', type: String, required: true, description: 'OrganizationMember identifier', example: Examples.DB_ID_2 })

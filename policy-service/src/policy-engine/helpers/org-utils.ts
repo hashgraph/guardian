@@ -1,5 +1,5 @@
 import { Users } from '@guardian/common';
-import { OrgRolePermission } from '@guardian/interfaces';
+import type { OrgTokenPermission } from '@guardian/interfaces';
 import { BlockActionError } from '../errors/index.js';
 import { getOrgTokenPermissionError } from './org-token-permission.js';
 import type { AnyBlockType } from '../policy-engine.interface.js';
@@ -82,7 +82,7 @@ export async function checkOrgTokenPermission(
     ref: AnyBlockType,
     user: PolicyUser,
     operationAccount: string,
-    permission: OrgRolePermission,
+    permission: OrgTokenPermission,
     userId: string | null
 ): Promise<void> {
     if (!user?.organization || !operationAccount) {

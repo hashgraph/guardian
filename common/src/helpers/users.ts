@@ -404,4 +404,46 @@ export class Users extends NatsService {
     ): Promise<string[]> {
         return await this.sendMessage(AuthEvents.GET_ORG_MEMBER_DIDS, { organizationId, userId });
     }
+
+    /**
+     * Validate that the caller (SR owner or MEMBER_MANAGE admin) may manage the given
+     * organization, and — when `orgRoleId` is supplied — that role is a valid assignment target
+     * under R1/R2 on the admin branch. Internal lookup for guardian-service's enroll pre-flight;
+     * the authoritative re-check remains at the persist handler (e.g. ENROLL_ORG_MEMBER).
+     * @param organizationId
+     * @param orgRoleId
+     * @param owner
+     * @param userId
+     */
+    public async validateOrgManagementAccess(
+        organizationId: string,
+        orgRoleId: string | null,
+        owner: IOwner,
+        userId: string | null
+    ): Promise<{
+        organization: {
+            id: string,
+            name?: string,
+            description?: string,
+            owner?: string,
+            did?: string,
+            walletToken?: string,
+            hederaAccountId?: string,
+            topicId?: string,
+            parentTopicId?: string,
+            status?: string
+        },
+        orgRole: {
+            id: string,
+            organizationId?: string,
+            name?: string,
+            description?: string,
+            permissions?: OrgRolePermission[]
+        } | null
+    }> {
+        return await this.sendMessage(
+            AuthEvents.VALIDATE_ORG_MANAGEMENT_ACCESS,
+            { organizationId, orgRoleId, owner, userId }
+        );
+    }
 }
