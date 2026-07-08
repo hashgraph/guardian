@@ -266,7 +266,7 @@ export class OrgRoleDTO {
 
     @ApiProperty({
         type: [String],
-        description: 'Subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER',
+        description: 'Subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER, MEMBER_MANAGE',
         required: false,
         example: ['TOKEN_MINTING', 'TOKEN_TRANSFER']
     })
@@ -301,7 +301,7 @@ export class CreateOrgRoleDTO {
 
     @ApiProperty({
         type: [String],
-        description: 'Subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER',
+        description: 'Subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER, MEMBER_MANAGE',
         required: false,
         example: ['TOKEN_MINTING']
     })
@@ -337,7 +337,7 @@ export class UpdateOrgRoleDTO {
 
     @ApiProperty({
         type: [String],
-        description: 'New permissions list — subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER',
+        description: 'New permissions list — subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER, MEMBER_MANAGE',
         required: false,
         example: ['TOKEN_MINTING', 'TOKEN_TRANSFER']
     })
