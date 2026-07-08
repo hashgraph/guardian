@@ -4134,6 +4134,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get All Virtual Users
      * @param policyId
      * @param savepointIds
+     * @param virtualKey
+     * @param document
+     * @param userId Real (authenticated) user requesting the list. When
+     * provided, each returned user's `active` field is recomputed against
+     * that real user's own selected persona (`ActiveVirtualUser` pointer)
+     * instead of the legacy shared `active` column, so concurrent dry-run
+     * testers each see their own persona highlighted.
      * @virtual
      */
     public static async getVirtualUsers(
@@ -4141,6 +4148,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         savepointIds?: string[],
         virtualKey?: boolean,
         document?: boolean,
+        userId?: string | null,
     ): Promise<DryRun[]> {
         const filter: any = {
             dryRunId: policyId,
@@ -4167,6 +4175,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 createDate: 1
             }
         });
+
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            for (const user of users) {
+                user.active = !!pointer?.did && pointer.did === user.did;
+            }
+        }
 
         if (virtualKey) {
             for (const user of users) {

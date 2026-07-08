@@ -415,5 +415,66 @@ describe('DatabaseServer', function () {
 				assert.equal(pointerB.did, 'did:b');
 			});
 		});
+
+		describe('getVirtualUsers', function () {
+			it('recomputes active per real user instead of trusting the stored shared flag when userId is given', async function () {
+				const users = [
+					{did: 'did:a', active: true},
+					{did: 'did:b', active: false},
+				];
+				findStub.resolves(users);
+				findOneStub.withArgs(sinon.match({dryRunClass: 'ActiveVirtualUser', userId: 'user-b'})).resolves({did: 'did:b'});
+
+				const result = await DatabaseServer.getVirtualUsers('policy-1', undefined, false, false, 'user-b');
+
+				assert.equal(result[0].active, false);
+				assert.equal(result[1].active, true);
+			});
+
+			it('marks every persona inactive for a real user with no pointer yet', async function () {
+				const users = [
+					{did: 'did:a', active: true},
+					{did: 'did:b', active: false},
+				];
+				findStub.resolves(users);
+				findOneStub.withArgs(sinon.match({dryRunClass: 'ActiveVirtualUser', userId: 'user-c'})).resolves(null);
+
+				const result = await DatabaseServer.getVirtualUsers('policy-1', undefined, false, false, 'user-c');
+
+				assert.equal(result[0].active, false);
+				assert.equal(result[1].active, false);
+			});
+
+			it('keeps two real users seeing independently highlighted personas for the same policy', async function () {
+				const usersForA = [{did: 'did:a', active: false}, {did: 'did:b', active: false}];
+				const usersForB = [{did: 'did:a', active: false}, {did: 'did:b', active: false}];
+				findOneStub.withArgs(sinon.match({dryRunClass: 'ActiveVirtualUser', userId: 'user-a'})).resolves({did: 'did:a'});
+				findOneStub.withArgs(sinon.match({dryRunClass: 'ActiveVirtualUser', userId: 'user-b'})).resolves({did: 'did:b'});
+
+				findStub.resolves(usersForA);
+				const resultA = await DatabaseServer.getVirtualUsers('policy-1', undefined, false, false, 'user-a');
+				assert.equal(resultA.find((u) => u.did === 'did:a').active, true);
+				assert.equal(resultA.find((u) => u.did === 'did:b').active, false);
+
+				findStub.resolves(usersForB);
+				const resultB = await DatabaseServer.getVirtualUsers('policy-1', undefined, false, false, 'user-b');
+				assert.equal(resultB.find((u) => u.did === 'did:a').active, false);
+				assert.equal(resultB.find((u) => u.did === 'did:b').active, true);
+			});
+
+			it('falls back to the raw stored active flag when userId is omitted (legacy/background callers)', async function () {
+				const users = [
+					{did: 'did:a', active: false},
+					{did: 'did:b', active: true},
+				];
+				findStub.resolves(users);
+
+				const result = await DatabaseServer.getVirtualUsers('policy-1');
+
+				assert.equal(result[0].active, false);
+				assert.equal(result[1].active, true);
+				assert.equal(findOneStub.called, false);
+			});
+		});
 	});
 });
