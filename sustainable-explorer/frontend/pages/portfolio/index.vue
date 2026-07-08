@@ -17,6 +17,9 @@ import {
     RefreshCw,
     Layers,
     CheckCircle2,
+    PackageOpen,
+    ListPlus,
+    Globe,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { formatCredits, formatSmartCredits } from '~/lib/format';
@@ -27,6 +30,9 @@ import {
 } from '~/lib/chart-colors';
 import { SectorType, SECTOR_I18N_KEYS } from '~/types/enums';
 import { DEFAULT_WIDGETS } from '~/composables/usePortfolioWidgets';
+import type { WatchlistItem, WatchlistItemType } from '~/composables/usePortfolioWatchlist';
+import type { NetworkId } from '~/composables/useNetwork';
+import type { RadarPoint } from '~/components/shared/RadarChart.vue';
 
 // The customizable dashboard is a logged-in-only feature — guests get
 // redirected home (with the sign-in modal opened) rather than a functional
@@ -43,7 +49,7 @@ const {
 } = useDashboard();
 const { projects: allProjects } = useProjects();   // full list for watchlist modal candidates
 
-const { watchlistItems, addItem, removeItem, hasItem, count: watchlistCount } = usePortfolioWatchlist();
+const { watchlistItems, removeItem, count: watchlistCount } = usePortfolioWatchlist();
 const { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
 const { isAuthenticated } = useAuth();
 const { hydrateFromApi, pushType } = usePortfolioSync();
@@ -54,28 +60,10 @@ const {
     hasActiveFilters: hasActiveWatchlistFilters,
     filterOptions: watchlistFilterOptions,
     matchesFilters: matchesWatchlistFilters,
-    activeFilterChips: watchlistFilterChips,
-    activeFilterSummary: watchlistFilterSummary,
 } = usePortfolioWatchlistFilters();
 
-// Icon/color per filter category for the small removable chips shown in the
-// watchlist bar. Static (not interpolated) class strings so Tailwind's
-// content scanner picks them up — same pattern the old per-type watchlist
-// breakdown chips used before this feature replaced them with filters.
-const watchlistFilterChipIcon: Record<string, typeof Flag> = {
-    country: Flag,
-    methodology: Layers,
-    registry: Building2,
-};
-const watchlistFilterChipClass: Record<string, string> = {
-    country: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-    methodology: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-    registry: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-};
-
-// All chart data filtered by the active watchlist (falls back to full dataset when empty)
+// All chart data filtered by the active watchlist (empty watchlist ⇒ empty portfolio)
 const {
-    isFiltered,
     filteredProjects,
     totalCreditsIssued,
     activeProjectsCount,
@@ -86,6 +74,8 @@ const {
     registries,
     countryRaw,
     topCountries,
+    mapCountries,
+    mapPoints,
     buildIssuanceSeries,
     recentIssuances,
     filteredSdgStats,
@@ -182,34 +172,45 @@ const topSdgs = computed(() => {
     const sorted = [...filteredSdgStats.value]
         .sort((a, b) => (useCredits ? b.credits - a.credits : b.projects - a.projects))
         .slice(0, 8);
-    const max = (useCredits ? sorted[0]?.credits : sorted[0]?.projects) ?? 1;
-    return sorted.map(s => {
-        const val = useCredits ? s.credits : s.projects;
-        return {
-            name: s.name,
-            count: val,
-            width: max > 0 ? Math.round((val / max) * 100) : 0,
-            color: s.color,
-        };
-    });
+    return sorted.map(s => ({
+        name: s.name,
+        count: useCredits ? s.credits : s.projects,
+        color: s.color,
+    }));
 });
 
-// SDG coverage bar viz (all SDGs) — filtered by watchlist, mode-aware
-const sdgCoverage = computed(() => {
+// Shared numeric x-axis (0..niceMax) for the Top SDGs bar chart — SDGs have
+// no target/goal, so bars are plotted against a real "nice" scale (rounded
+// to a clean step like 1/2/5/10…) rather than each bar being sized relative
+// to the top-ranked item, which would misleadingly look like progress
+// toward a goal.
+const sdgAxis = computed(() => {
+    const max = Math.max(...topSdgs.value.map(s => s.count), 0);
+    if (max <= 0) return { max: 1, ticks: [0, 1] };
+    const rawStep = max / 4;
+    const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+    const residual = rawStep / magnitude;
+    const step = Math.max(1, Math.round(
+        residual > 5 ? 10 * magnitude : residual > 2 ? 5 * magnitude : residual > 1 ? 2 * magnitude : magnitude,
+    ));
+    const axisMax = Math.ceil(max / step) * step;
+    const ticks: number[] = [];
+    for (let v = 0; v <= axisMax; v += step) ticks.push(v);
+    return { max: axisMax, ticks };
+});
+
+// SDG coverage radar (all SDGs) — filtered by watchlist, mode-aware. Axis
+// labels use just the SDG number ("1".."17") since 17 axes is too tight for
+// full names around the perimeter; the full name shows in the hover tooltip.
+const sdgCoverage = computed<RadarPoint[]>(() => {
     const useCredits = chartMode.value === 'credits';
     const sorted = [...filteredSdgStats.value].sort((a, b) => a.id - b.id);
-    const max = Math.max(...sorted.map(s => useCredits ? s.credits : s.projects), 1);
-    return sorted.map(s => {
-        const val = useCredits ? s.credits : s.projects;
-        return {
-            id: s.id,
-            name: `SDG ${s.id}`,
-            shortName: s.name.length > 20 ? `${s.name.slice(0, 18)}…` : s.name,
-            projects: val,
-            width: max > 0 ? Math.round((val / max) * 100) : 0,
-            color: s.color || 'var(--color-primary)',
-        };
-    });
+    return sorted.map(s => ({
+        id: s.id,
+        label: String(s.id),
+        fullLabel: s.name,
+        value: useCredits ? s.credits : s.projects,
+    }));
 });
 
 
@@ -256,13 +257,36 @@ const showChartBuilderModal = ref(false);
 // persisted country/methodology/registry filters (usePortfolioWatchlistFilters).
 const watchlistSearch = ref('');
 
+// Draft selection edited while the modal is open. Add/Remove/Add All only
+// mutate this — the committed `watchlistItems` (and therefore the whole
+// portfolio dashboard) only changes when "Update Watchlist" is clicked.
+const pendingWatchlist = ref<WatchlistItem[]>([]);
+
+function pendingHasItem(id: string, type: WatchlistItemType): boolean {
+    return pendingWatchlist.value.some(i => i.id === id && i.type === type);
+}
+
+function pendingAddItem(item: WatchlistItem): void {
+    if (pendingHasItem(item.id, item.type)) return;
+    pendingWatchlist.value = [...pendingWatchlist.value, item];
+}
+
+function pendingRemoveItem(id: string, type: WatchlistItemType): void {
+    pendingWatchlist.value = pendingWatchlist.value.filter(i => !(i.id === id && i.type === type));
+}
+
+// When checked, shows only the items currently in the pending draft —
+// bypasses Country/Methodology/Registry so the user can review their full
+// selection regardless of the filters currently applied. Search still narrows.
+const showSelectedOnly = ref(false);
+
 const watchlistCandidates = computed(() => {
     const q = watchlistSearch.value.toLowerCase();
-    return allProjects.value
-        .filter(p =>
-            (!q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q)) &&
-            matchesWatchlistFilters(p),
-        )
+    const base = showSelectedOnly.value
+        ? allProjects.value.filter(p => pendingHasItem(p.id, 'project'))
+        : allProjects.value.filter(p => matchesWatchlistFilters(p));
+    return base
+        .filter(p => !q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q))
         .map(p => ({
             id: p.id,
             type: 'project' as const,
@@ -271,25 +295,35 @@ const watchlistCandidates = computed(() => {
         }));
 });
 
+// Merges every currently-filtered/searched candidate into the pending draft
+// in one shot — no network calls (the full project list is already loaded)
+// and no per-item mutation, so this stays O(n) even for large result sets.
+function addAllMatching() {
+    const additions = watchlistCandidates.value.filter(c => !pendingHasItem(c.id, c.type));
+    pendingWatchlist.value = [...pendingWatchlist.value, ...additions];
+    toast(t('portfolio.modal.watchlist.addAllSuccess', { count: additions.length }));
+}
+
 function openWatchlist() {
-    showWatchlistModal.value = true;
+    pendingWatchlist.value = [...watchlistItems.value];
     watchlistSearch.value = '';
+    showSelectedOnly.value = false;
+    showWatchlistModal.value = true;
+}
+
+// Discards the draft — used by Cancel, the header close button, backdrop
+// click, and Escape. Only "Update Watchlist" commits pendingWatchlist.
+function closeWatchlistModal() {
+    showWatchlistModal.value = false;
+}
+
+function updateWatchlist() {
+    watchlistItems.value = pendingWatchlist.value;
+    showWatchlistModal.value = false;
 }
 
 function clearWatchlist() {
     watchlistItems.value = [];
-}
-
-// Used by the "filtered" banner's single Clear action — watchlist and
-// filters are two different ways of scoping the dashboard (see
-// usePortfolioDashboard's precedence), so "go back to seeing everything"
-// has to reset both, not just whichever one currently has priority.
-// Clearing the watchlist first means it's already empty by the time
-// watchlistFilters changes, so the clear-on-filter-change watcher's
-// "watchlist non-empty" guard is false and no spurious Undo toast fires.
-function clearWatchlistAndFilters() {
-    watchlistItems.value = [];
-    clearWatchlistFilters();
 }
 
 // Chart builder
@@ -483,28 +517,70 @@ const displayReady = computed(() => clientReady.value && !dataPending.value);
 // spurious PUT calls when it overwrites refs with server data on page load.
 const hydrating = ref(false);
 
+// The network whose data local watchlist/widgets/filters/customCharts refs
+// currently reflect. Watchlists (and the rest of these preferences) are
+// stored per-network server-side (see usePortfolioSync) — this lets a
+// network switch tell them apart from a same-network re-hydration.
+let hydratedNetwork: NetworkId | null = null;
+
 // Applies server-fetched preferences to local reactive state.
+//
+// `sameNetwork` distinguishes a same-network refresh (login / re-mount) from
+// a network switch. This is the ONLY place these refs are mutated at
+// hydration time, and every mutation sits inside the
+// `hydrating = true … await nextTick(); hydrating = false` bracket below —
+// the await flushes the deep persist watchers while `hydrating` is still
+// true, so none of them can fire a spurious PUT. (A previous version reset
+// these refs in the network-switch watcher itself, *before* calling
+// applyRemote, then flipped `hydrating` back to false synchronously. Because
+// Vue's deep watchers flush asynchronously, that reset was still observed by
+// the persist watchers below with `hydrating === false` during the
+// `await hydrateFromApi()` gap, scheduling a stray 800ms-delayed PUT of an
+// empty watchlist against the newly-switched-to network — which then fired
+// *after* the real data had been restored locally, silently wiping it back
+// to empty on the server. Keeping every mutation inside this single guarded
+// bracket removes that window structurally instead of patching its timing.)
 async function applyRemote(
     remote: Awaited<ReturnType<typeof hydrateFromApi>>,
+    sameNetwork: boolean,
 ): Promise<void> {
-    if (!remote) return;
     hydrating.value = true;
+    if (!remote) {
+        // Fetch failed / not authenticated. A network switch must still not
+        // leave the previous network's data on screen; a same-network
+        // refresh leaves current in-memory state untouched.
+        if (!sameNetwork) {
+            watchlistItems.value = [];
+            watchlistFilters.value = {};
+            widgets.value = { ...DEFAULT_WIDGETS };
+            customCharts.value = [];
+        }
+        await nextTick();
+        hydrating.value = false;
+        return;
+    }
     const remoteWatchlist = remote.watchlist ?? [];
     if (remoteWatchlist.length > 0) {
         // Server has saved items — server is the source of truth.
         watchlistItems.value = remoteWatchlist;
-    } else if (watchlistItems.value.length > 0) {
-        // Server returned empty but the current session already added items
-        // this hasn't hit the server yet (e.g. mid-debounce, or a network
-        // switch racing the initial save) — push them up rather than
-        // dropping them silently.
+    } else if (sameNetwork && watchlistItems.value.length > 0) {
+        // Same-network re-hydration: the server returned empty but this
+        // session already added items that haven't hit the server yet
+        // (mid-debounce) — push them up rather than dropping them. Gated on
+        // `sameNetwork` so a network switch can never re-upload one
+        // network's watchlist onto another's — that case falls to the
+        // `else` below, which adopts the new network's empty state instead.
         pushType('watchlist', watchlistItems.value, 0);
+    } else {
+        watchlistItems.value = [];
     }
     const remoteFilters = remote.watchlistFilters ?? {};
     if (Object.keys(remoteFilters).length > 0) {
         watchlistFilters.value = remoteFilters;
-    } else if (hasActiveWatchlistFilters.value) {
+    } else if (sameNetwork && hasActiveWatchlistFilters.value) {
         pushType('watchlist_filters', watchlistFilters.value, 0);
+    } else {
+        watchlistFilters.value = {};
     }
     widgets.value = { ...DEFAULT_WIDGETS, ...(remote.widgets ?? {}) };
     customCharts.value = (remote.customCharts ?? []).slice(0, 5);
@@ -518,45 +594,23 @@ watch(watchlistItems,   () => { if (!hydrating.value) pushType('watchlist',     
 watch(widgets,          () => { if (!hydrating.value) pushType('widgets',           widgets.value);        }, { deep: true });
 watch(customCharts,     () => { if (!hydrating.value) pushType('custom_charts',     customCharts.value);   }, { deep: true });
 
-// Explicit project picks and filters are two different ways of scoping the
-// dashboard (see usePortfolioDashboard's precedence). Letting both linger at
-// once is confusing — the watchlist would silently keep winning while the
-// user thinks their filter change did something. So changing a filter while
-// projects are watchlisted clears the watchlist, handing scope to the filter.
-// This mirrors the app's existing convention for reversible destructive
-// actions (e.g. API key revoke) — act immediately, no blocking confirm
-// dialog, but surface an "Undo" toast rather than losing the selection
-// silently. Guarded so Undo (which restores both refs) doesn't re-trigger itself.
-const suppressFilterClearWatchlist = ref(false);
-watch(watchlistFilters, (_newFilters, oldFilters) => {
-    if (!hydrating.value && !suppressFilterClearWatchlist.value && watchlistItems.value.length > 0) {
-        const previousWatchlist = watchlistItems.value;
-        const previousFilters = oldFilters ? { ...oldFilters } : {};
-        watchlistItems.value = [];
-        toast(
-            previousWatchlist.length === 1
-                ? t('portfolio.watchlistClearedByFilterSingular')
-                : t('portfolio.watchlistClearedByFilter', { count: previousWatchlist.length }),
-            {
-                action: {
-                    label: t('common.undo'),
-                    onClick: async () => {
-                        suppressFilterClearWatchlist.value = true;
-                        watchlistItems.value = previousWatchlist;
-                        watchlistFilters.value = previousFilters;
-                        await nextTick();
-                        suppressFilterClearWatchlist.value = false;
-                    },
-                },
-            },
-        );
-    }
+// Country/Methodology/Registry filters only narrow the "Manage Watchlist"
+// modal's candidate list (see usePortfolioWatchlistFilters) — they no longer
+// affect the committed watchlist or the dashboard, so this just persists the
+// filter selection for next time the modal opens.
+watch(watchlistFilters, () => {
     if (!hydrating.value) pushType('watchlist_filters', watchlistFilters.value);
 }, { deep: true });
 
 // Re-hydrate when the user logs in while on this page, or switches network.
-watch([isAuthenticated, network], async ([authed]) => {
-    if (authed) await applyRemote(await hydrateFromApi());
+// All "discard the previous network's local state" logic lives inside
+// applyRemote (gated on sameNetwork) — this handler never mutates the
+// watchlist/filters/widgets refs itself.
+watch([isAuthenticated, network], async ([authed, net]) => {
+    if (!authed) return;
+    const sameNetwork = hydratedNetwork === null || net === hydratedNetwork;
+    await applyRemote(await hydrateFromApi(), sameNetwork);
+    hydratedNetwork = net;
 });
 
 // Keyboard close
@@ -578,7 +632,8 @@ onMounted(async () => {
     // clientReady, so the skeleton stays up rather than flashing the
     // unfiltered "all network" dataset before the user's saved
     // watchlist/filters arrive.
-    if (isAuthenticated.value) await applyRemote(await hydrateFromApi());
+    if (isAuthenticated.value) await applyRemote(await hydrateFromApi(), true);
+    hydratedNetwork = network.value;
     clientReady.value = true;
     void recalcChips();
 });
@@ -615,101 +670,97 @@ onUnmounted(() => {
                         <LayoutGrid class="h-3.5 w-3.5" />
                         {{ $t('portfolio.widgetLibrary') }}
                     </button>
-                    <button
-                        class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                        @click="openWatchlist()"
-                    >
-                        <Star class="h-3.5 w-3.5" />
-                        {{ $t('portfolio.manageWatchlist') }}
-                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- WATCHLIST BAR -->
+        <!-- WATCHLIST CARD (identity/chips when populated, empty state when not) -->
         <div class="px-6 pb-4">
             <div class="rounded-xl border bg-card p-4">
-                <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div class="flex items-center justify-between gap-2 flex-wrap mb-3">
                     <div class="flex items-center gap-2 flex-wrap">
                         <Star class="h-3.5 w-3.5 text-stat-amber fill-stat-amber shrink-0" />
                         <span class="text-sm font-medium text-foreground">{{ $t('portfolio.watchlist') }}</span>
-                        <span class="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        <Skeleton v-if="!displayReady" class="h-4 w-6 rounded-full" />
+                        <span v-else class="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                             {{ watchlistCount }}
                         </span>
-                        <span v-if="watchlistFilterChips.length > 0" class="text-muted-foreground/40 text-[11px]">·</span>
+                    </div>
+                    <div v-if="displayReady && watchlistItems.length > 0" class="flex items-center gap-3">
                         <button
-                            v-for="chip in watchlistFilterChips"
-                            :key="chip.key"
-                            type="button"
-                            :title="`${chip.full} — click to clear`"
-                            class="group inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors"
-                            :class="watchlistFilterChipClass[chip.key]"
-                            @click="setWatchlistFilter(chip.key, '')"
+                            class="inline-flex items-center gap-1 rounded-md py-1 text-[11px] transition-colors text-muted-foreground hover:text-primary"
+                            @click="clearWatchlist()"
                         >
-                            <component :is="watchlistFilterChipIcon[chip.key]" class="h-2.5 w-2.5 shrink-0" />
-                            <span class="truncate max-w-[120px]">{{ chip.chipText }}</span>
-                            <X class="h-2.5 w-2.5 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            <X class="h-3 w-3" />
+                            {{ $t('portfolio.clearWatchlist') }}
+                        </button>
+                        <button
+                            class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            @click="openWatchlist()"
+                        >
+                            <Star class="h-3.5 w-3.5" />
+                            {{ $t('portfolio.manageWatchlist') }}
                         </button>
                     </div>
-                    <button
-                        class="text-xs font-medium text-primary hover:underline"
-                        @click="openWatchlist()"
-                    >
-                        + {{ $t('portfolio.addItems') }}
-                    </button>
                 </div>
-                <div v-if="watchlistItems.length > 0" class="flex items-center gap-2 min-w-0">
-                    <div ref="chipsRowRef" class="flex flex-nowrap gap-2 overflow-hidden flex-1 min-w-0">
-                        <WatchlistChip
-                            v-for="(item, idx) in watchlistItems"
-                            :key="item.id"
-                            v-show="idx < visibleChipCount"
-                            :label="item.name"
-                            @remove="removeItem(item.id, item.type)"
-                        />
+
+                <!-- While hydrating we don't yet know whether this network's
+                     watchlist is empty — show a neutral placeholder rather
+                     than committing to either the chip row or the "empty"
+                     message, which would otherwise flash briefly on every
+                     reload/network switch before flipping to the real state. -->
+                <Skeleton v-if="!displayReady" class="h-9 rounded-lg" />
+                <template v-else-if="watchlistItems.length > 0">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <div ref="chipsRowRef" class="flex flex-nowrap gap-2 overflow-hidden flex-1 min-w-0">
+                            <WatchlistChip
+                                v-for="(item, idx) in watchlistItems"
+                                :key="item.id"
+                                v-show="idx < visibleChipCount"
+                                :label="item.name"
+                                @remove="removeItem(item.id, item.type)"
+                            />
+                        </div>
+                        <button
+                            v-if="hiddenChipCount > 0"
+                            class="shrink-0 whitespace-nowrap rounded-full border bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            @click="openWatchlist()"
+                        >
+                            +{{ hiddenChipCount }} more
+                        </button>
                     </div>
+                </template>
+                <div v-else class="flex flex-col items-center text-center gap-2 py-6">
+                    <PackageOpen class="h-6 w-6 text-muted-foreground" />
+                    <p class="text-sm font-semibold text-foreground">{{ $t('portfolio.empty.title') }}</p>
+                    <p class="text-xs text-muted-foreground max-w-md">{{ $t('portfolio.empty.description') }}</p>
                     <button
-                        v-if="hiddenChipCount > 0"
-                        class="shrink-0 whitespace-nowrap rounded-full border bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        class="mt-1 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                         @click="openWatchlist()"
                     >
-                        +{{ hiddenChipCount }} more
-                    </button>
-                </div>
-                <div v-else class="text-center py-2 text-xs text-muted-foreground">
-                    {{ $t('portfolio.watchlistEmpty') }}
-                    <button class="text-primary font-medium hover:underline ml-1" @click="openWatchlist()">
-                        {{ $t('portfolio.addItemsCta') }}
+                        <Star class="h-3.5 w-3.5" />
+                        {{ $t('portfolio.empty.cta') }}
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- FILTER ACTIVE BANNER -->
-        <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 -translate-y-1"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 -translate-y-1"
-        >
-            <div v-if="isFiltered" class="mx-6 mb-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-2.5 flex items-center gap-2.5">
-                <Star class="h-3.5 w-3.5 text-primary shrink-0 fill-primary/30" />
-                <span v-if="watchlistCount > 0" class="text-xs text-foreground">
-                    Showing data for <span class="font-semibold text-primary">{{ watchlistCount }} watchlisted {{ watchlistCount === 1 ? 'item' : 'items' }}</span> — all charts and KPIs are filtered.
-                </span>
-                <span v-else class="text-xs text-foreground">
-                    Showing data for projects matching <span class="font-semibold text-primary">{{ watchlistFilterSummary }}</span> — all charts and KPIs are filtered.
-                </span>
-                <button
-                    class="ml-auto text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                    @click="clearWatchlistAndFilters()"
-                >
-                    Clear filter
-                </button>
+        <!-- LOADING PLACEHOLDER — shown while hydrating, before we know
+             whether this network's watchlist actually has anything in it.
+             Deliberately title-less/generic: the real sections below reveal
+             their titles only once we're certain there's something to show
+             under them, so a reload/network switch never flashes a full
+             scaffold of chart titles for a portfolio that turns out empty. -->
+        <div v-if="!displayReady" class="px-6 pb-8 space-y-4">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Skeleton v-for="n in 4" :key="n" class="h-28 rounded-xl" />
             </div>
-        </Transition>
+            <Skeleton class="h-[28rem] rounded-xl" />
+            <Skeleton class="h-64 rounded-xl" />
+        </div>
+
+        <!-- STATS & CHARTS — only once we're certain the watchlist has items. -->
+        <template v-else-if="watchlistCount > 0">
 
         <!-- KPI CARDS -->
         <div class="px-6 pb-5">
@@ -763,6 +814,34 @@ onUnmounted(() => {
                         @remove="setWidget('activeProjects', false)"
                     />
                 </template>
+            </div>
+        </div>
+
+        <!-- PROJECT DISTRIBUTION (map) -->
+        <div v-if="widgetVisible('projectMap')" class="border-t">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div>
+                    <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">
+                        {{ $t('dashboard.projectDistribution') }}
+                        <InfoTooltip :text="$t('dashboard.projectDistributionTooltip')" />
+                    </h2>
+                    <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.projectDistributionSub') }}</p>
+                </div>
+                <button
+                    class="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                    :title="$t('portfolio.removeWidget')"
+                    @click="setWidget('projectMap', false)"
+                >
+                    <X class="h-3.5 w-3.5" />
+                </button>
+            </div>
+            <div class="px-6 pb-6">
+                <Skeleton v-if="!displayReady" class="h-[28rem] rounded-xl" />
+                <div v-else class="rounded-xl border bg-card overflow-hidden">
+                    <div class="h-[28rem]">
+                        <ProjectMap :countries="mapCountries" :points="mapPoints" auto-fit />
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -928,27 +1007,23 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- SDG Coverage (horizontal bars — no radar/Chart.js) -->
+                    <!-- SDG Coverage Radar -->
                     <div v-if="widgetVisible('sdgRadar')" class="rounded-xl border bg-card p-5">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.sdgCoverage') }}</h3>
-                            <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('sdgRadar', false)"><X class="h-3.5 w-3.5" /></button>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                    {{ $t('portfolio.sdgGoalsCount', { n: sdgCoverage.length }) }}
+                                </span>
+                                <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('sdgRadar', false)"><X class="h-3.5 w-3.5" /></button>
+                            </div>
                         </div>
                         <Skeleton v-if="!displayReady" class="h-64 rounded-xl" />
-                        <div v-else class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                            <div v-for="sdg in sdgCoverage" :key="sdg.id" class="flex items-center gap-2">
-                                <span class="text-[10px] font-semibold text-muted-foreground w-8 shrink-0 tabular-nums">{{ sdg.name }}</span>
-                                <div class="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full transition-all duration-500"
-                                        :style="{ width: `${sdg.width}%`, backgroundColor: sdg.color }"
-                                    />
-                                </div>
-                                <span class="text-[10px] text-muted-foreground tabular-nums w-6 text-right shrink-0">{{ sdg.projects }}</span>
-                            </div>
-                            <div v-if="sdgCoverage.length === 0" class="py-4 text-center text-xs text-muted-foreground">
-                                {{ $t('portfolio.noData') }}
-                            </div>
+                        <div v-else-if="sdgCoverage.length > 0" class="flex items-center justify-center">
+                            <RadarChart :points="sdgCoverage" color="hsl(142, 76%, 36%)" />
+                        </div>
+                        <div v-else class="py-4 text-center text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
                         </div>
                     </div>
 
@@ -1087,20 +1162,54 @@ onUnmounted(() => {
                     </div>
                     <div class="px-6 pb-6">
                         <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
-                        <div v-else class="rounded-xl border bg-card p-5 space-y-3">
-                            <div v-for="sdg in topSdgs" :key="sdg.name" class="flex items-center gap-3">
-                                <span class="text-xs text-foreground min-w-[110px] truncate">{{ sdg.name }}</span>
-                                <div class="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full transition-all duration-500"
-                                        :style="{ width: `${sdg.width}%`, backgroundColor: sdg.color || 'var(--color-primary)' }"
-                                    />
+                        <div v-else-if="topSdgs.length > 0" class="rounded-xl border bg-card p-5">
+                            <!-- Horizontal bar chart plotted against a real numeric x-axis
+                                 (see sdgAxis) — SDGs have no target/goal, so bars are
+                                 compared on a shared scale rather than sized relative to
+                                 the top-ranked item or filled as a "percent complete" track. -->
+                            <div class="flex gap-3">
+                                <div class="flex flex-col gap-3 shrink-0">
+                                    <div v-for="sdg in topSdgs" :key="sdg.name" class="h-6 flex items-center max-w-[130px]">
+                                        <span class="min-w-0 truncate text-xs text-foreground" :title="sdg.name">{{ sdg.name }}</span>
+                                    </div>
                                 </div>
-                                <span class="text-xs text-muted-foreground tabular-nums min-w-[28px] text-right shrink-0">{{ sdg.count }}</span>
+                                <div class="relative flex-1 min-w-0">
+                                    <!-- Y-axis + gridlines, spanning the full bar stack -->
+                                    <div
+                                        v-for="(tick, i) in sdgAxis.ticks"
+                                        :key="i"
+                                        class="absolute top-0 bottom-5 w-px"
+                                        :class="i === 0 ? 'bg-border' : 'bg-border/50'"
+                                        :style="{ left: `${(tick / sdgAxis.max) * 100}%` }"
+                                    />
+                                    <!-- Bars -->
+                                    <div class="flex flex-col gap-3">
+                                        <div v-for="sdg in topSdgs" :key="sdg.name" class="relative h-6">
+                                            <InfoTooltip
+                                                :text="`${sdg.name}: ${sdg.count}`"
+                                                class="absolute inset-y-0 left-0 items-center transition-all duration-500"
+                                                :style="{ width: `${Math.max((sdg.count / sdgAxis.max) * 100, 2)}%` }"
+                                            >
+                                                <div class="h-full w-full rounded-r-md" :style="{ backgroundColor: sdg.color || 'var(--color-primary)' }" />
+                                                <span class="ml-2 text-xs font-medium text-foreground tabular-nums whitespace-nowrap">{{ sdg.count }}</span>
+                                            </InfoTooltip>
+                                        </div>
+                                    </div>
+                                    <!-- X-axis -->
+                                    <div class="relative h-5 mt-2 border-t border-border">
+                                        <span
+                                            v-for="(tick, i) in sdgAxis.ticks"
+                                            :key="i"
+                                            class="absolute top-1.5 text-[10px] text-muted-foreground tabular-nums"
+                                            :class="i === 0 ? 'left-0' : i === sdgAxis.ticks.length - 1 ? 'right-0' : '-translate-x-1/2'"
+                                            :style="i !== 0 && i !== sdgAxis.ticks.length - 1 ? { left: `${(tick / sdgAxis.max) * 100}%` } : {}"
+                                        >{{ tick }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div v-if="topSdgs.length === 0" class="py-4 text-center text-xs text-muted-foreground">
-                                {{ $t('portfolio.noData') }}
-                            </div>
+                        </div>
+                        <div v-else class="rounded-xl border bg-card p-5 py-4 text-center text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
                         </div>
                     </div>
                 </div>
@@ -1310,6 +1419,8 @@ onUnmounted(() => {
             </button>
         </div>
 
+        </template>
+
         <!-- ══════════════════════════════════════════════ -->
         <!-- MODAL: MANAGE WATCHLIST                       -->
         <!-- ══════════════════════════════════════════════ -->
@@ -1325,7 +1436,7 @@ onUnmounted(() => {
                 <div
                     v-if="showWatchlistModal"
                     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-                    @click.self="showWatchlistModal = false"
+                    @click.self="closeWatchlistModal()"
                 >
                     <div class="bg-card rounded-2xl w-full max-w-2xl max-h-[82vh] flex flex-col shadow-2xl">
                         <!-- Header -->
@@ -1334,7 +1445,7 @@ onUnmounted(() => {
                                 <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.modal.watchlist.title') }}</h2>
                                 <p class="text-xs text-muted-foreground mt-1">{{ $t('portfolio.modal.watchlist.subtitle') }}</p>
                             </div>
-                            <button class="text-muted-foreground hover:text-foreground transition-colors" @click="showWatchlistModal = false">
+                            <button class="text-muted-foreground hover:text-foreground transition-colors" @click="closeWatchlistModal()">
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -1350,6 +1461,26 @@ onUnmounted(() => {
                                 @filter="setWatchlistFilter"
                                 @clear="clearWatchlistFilters"
                             />
+                            <div class="mt-2 flex items-center justify-between gap-3 flex-wrap">
+                                <label class="inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                                        :checked="showSelectedOnly"
+                                        @change="(e) => { showSelectedOnly = (e.target as HTMLInputElement).checked; }"
+                                    />
+                                    {{ $t('portfolio.modal.watchlist.showSelectedOnly') }}
+                                </label>
+                                <button
+                                    v-if="watchlistCandidates.length > 0"
+                                    type="button"
+                                    class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs transition-colors text-muted-foreground hover:text-primary"
+                                    @click="addAllMatching()"
+                                >
+                                    <ListPlus class="h-3 w-3" />
+                                    {{ $t('portfolio.modal.watchlist.addAll') }}
+                                </button>
+                            </div>
                         </div>
                         <!-- Search -->
                         <div class="px-6 py-3 border-b shrink-0">
@@ -1367,9 +1498,9 @@ onUnmounted(() => {
                                     <p v-if="item.meta" class="text-[11px] text-muted-foreground mt-0.5">{{ item.meta }}</p>
                                 </div>
                                 <button
-                                    v-if="hasItem(item.id, item.type)"
+                                    v-if="pendingHasItem(item.id, item.type)"
                                     class="flex items-center gap-1 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/5 transition-colors shrink-0"
-                                    @click="removeItem(item.id, item.type)"
+                                    @click="pendingRemoveItem(item.id, item.type)"
                                 >
                                     <X class="h-3 w-3" />
                                     {{ $t('portfolio.modal.watchlist.remove') }}
@@ -1377,7 +1508,7 @@ onUnmounted(() => {
                                 <button
                                     v-else
                                     class="flex items-center gap-1 rounded-lg border border-primary/30 px-3 py-1.5 text-xs text-primary hover:bg-primary/5 transition-colors shrink-0"
-                                    @click="addItem({ id: item.id, type: item.type, name: item.name, meta: item.meta })"
+                                    @click="pendingAddItem({ id: item.id, type: item.type, name: item.name, meta: item.meta })"
                                 >
                                     <Plus class="h-3 w-3" />
                                     {{ $t('portfolio.modal.watchlist.add') }}
@@ -1389,13 +1520,21 @@ onUnmounted(() => {
                         </div>
                         <!-- Footer -->
                         <div class="px-6 py-4 border-t flex items-center justify-between shrink-0">
-                            <span class="text-xs text-muted-foreground">{{ $t('portfolio.modal.watchlist.footer', { count: watchlistCount }) }}</span>
-                            <button
-                                class="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                                @click="showWatchlistModal = false"
-                            >
-                                {{ $t('portfolio.modal.watchlist.done') }}
-                            </button>
+                            <span class="text-xs text-muted-foreground">{{ $t('portfolio.modal.watchlist.footer', { count: pendingWatchlist.length }) }}</span>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    class="rounded-lg px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                    @click="closeWatchlistModal()"
+                                >
+                                    {{ $t('portfolio.modal.watchlist.cancel') }}
+                                </button>
+                                <button
+                                    class="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                                    @click="updateWatchlist()"
+                                >
+                                    {{ $t('portfolio.modal.watchlist.update') }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1450,7 +1589,7 @@ onUnmounted(() => {
                                                 :class="widgetVisible(w.key) ? 'bg-primary/15' : 'bg-muted'"
                                             >
                                                 <component
-                                                    :is="{ certificate: Coins, stack: Layers, flame: Flame, plant: FolderKanban, 'chart-line': TrendingUp, 'chart-bar': BarChart2, 'chart-donut': PieChart, target: Target, flag: Flag, building: Building2, activity: Activity, refresh: RefreshCw }[w.iconName] ?? Activity"
+                                                    :is="{ certificate: Coins, stack: Layers, flame: Flame, plant: FolderKanban, 'chart-line': TrendingUp, 'chart-bar': BarChart2, 'chart-donut': PieChart, target: Target, globe: Globe, flag: Flag, building: Building2, activity: Activity, refresh: RefreshCw }[w.iconName] ?? Activity"
                                                     class="h-3.5 w-3.5"
                                                     :class="widgetVisible(w.key) ? 'text-primary' : 'text-muted-foreground'"
                                                 />

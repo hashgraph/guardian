@@ -51,6 +51,13 @@ export function usePortfolioSync() {
         delay = 800,
     ): void {
         if (!isAuthenticated.value || !import.meta.client) return;
+        // Capture the active network NOW, at schedule time — not inside the
+        // setTimeout callback. Reading network.value there would attribute the
+        // save to whichever network is active when the timer fires (up to
+        // `delay` ms later), so a save queued just before a network switch
+        // would land on the wrong network's row instead of the one it was
+        // authored on.
+        const targetNetwork = network.value;
         if (timers[type]) clearTimeout(timers[type]!);
         timers[type] = setTimeout(() => {
             void apiFetch('/api/v1/me/dashboard', {
@@ -58,7 +65,7 @@ export function usePortfolioSync() {
                 baseURL: baseURL(),
                 credentials: 'include',
                 headers: { 'x-csrf-token': readCsrfCookie() },
-                body: { network: network.value, type, layout },
+                body: { network: targetNetwork, type, layout },
             }).catch(() => {
                 // Silently swallow. No local fallback (Portfolio has no
                 // localStorage layer) — a failed save is only lost from the

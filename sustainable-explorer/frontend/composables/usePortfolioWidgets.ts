@@ -8,6 +8,7 @@ export type WidgetKey =
     | 'projectsSector'
     | 'projectsByRegistry'
     | 'sdgRadar'
+    | 'projectMap'
     | 'topCountries'
     | 'topRegistries'
     | 'recentIssuances'
@@ -26,6 +27,7 @@ export const DEFAULT_WIDGETS: Record<WidgetKey, boolean> = {
     projectsSector: true,
     projectsByRegistry: true,
     sdgRadar: true,
+    projectMap: true,
     topCountries: true,
     topRegistries: true,
     recentIssuances: true,
@@ -71,6 +73,7 @@ const WIDGET_GROUPS: WidgetGroup[] = [
             { key: 'projectsSector', labelKey: 'portfolio.sections.projectsBySector', descKey: 'portfolio.widgetDesc.projectsSector', iconName: 'chart-donut' },
             { key: 'projectsByRegistry', labelKey: 'portfolio.sections.projectsByRegistry', descKey: 'portfolio.widgetDesc.projectsByRegistry', iconName: 'chart-donut' },
             { key: 'sdgRadar', labelKey: 'portfolio.sections.sdgCoverage', descKey: 'portfolio.widgetDesc.sdgRadar', iconName: 'target' },
+            { key: 'projectMap', labelKey: 'portfolio.sections.projectMap', descKey: 'portfolio.widgetDesc.projectMap', iconName: 'globe' },
         ],
     },
     {

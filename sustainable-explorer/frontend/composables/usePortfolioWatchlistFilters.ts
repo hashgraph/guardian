@@ -7,11 +7,12 @@ import { naturalCompare, isValidCountryName } from '~/lib/utils';
 const FILTER_OPTIONS_LIMIT = 1000;
 
 /**
- * Multi-select Country/Methodology/Registry filters for the Watchlist.
- * Portfolio is a logged-in-only feature — state is a useState singleton,
- * hydrated from and synced to the server via usePortfolioSync. Selecting
- * filters (even with no projects individually watchlisted) narrows the whole
- * portfolio dashboard — see usePortfolioDashboard.
+ * Multi-select Country/Methodology/Registry filters for the "Manage
+ * Watchlist" modal. Portfolio is a logged-in-only feature — state is a
+ * useState singleton, hydrated from and synced to the server via
+ * usePortfolioSync. These filters only narrow the modal's candidate list;
+ * they never affect the committed watchlist or the portfolio dashboard
+ * itself — see usePortfolioDashboard.
  */
 export function usePortfolioWatchlistFilters() {
     const { t } = useI18n();
@@ -98,41 +99,6 @@ export function usePortfolioWatchlistFilters() {
         return true;
     }
 
-    // One entry per active filter key. A single selected value is shown by
-    // name ("Brazil") since that's the common case and far more useful than
-    // an opaque "(1)"; multiple values collapse to a count ("Country (2)")
-    // to keep the summary bounded. `full` includes the filter label (used in
-    // the banner, which has no icon to signal the category); `chipText` omits
-    // it for the watchlist-bar chips, which carry a category icon instead.
-    interface ActiveFilterChip {
-        key: string;
-        label: string;
-        full: string;
-        chipText: string;
-    }
-
-    const activeFilterChips = computed<ActiveFilterChip[]>(() => {
-        const chips: ActiveFilterChip[] = [];
-        for (const f of filterOptions.value) {
-            const val = watchlistFilters.value[f.key];
-            if (!val) continue;
-            const values = val.split('|').filter(Boolean);
-            if (values.length === 0) continue;
-            const isSingle = values.length === 1;
-            chips.push({
-                key: f.key,
-                label: f.label,
-                full: isSingle ? `${f.label}: ${values[0]}` : `${f.label} (${values.length})`,
-                chipText: isSingle ? values[0]! : `${f.label} (${values.length})`,
-            });
-        }
-        return chips;
-    });
-
-    // Short summary for the page-level "filtered" banner, e.g. "Country: Brazil · Registry (2)".
-    const activeFilterSummary = computed(() =>
-        activeFilterChips.value.map(c => c.full).join(' · '));
-
     return {
         watchlistFilters,
         setFilter,
@@ -141,7 +107,5 @@ export function usePortfolioWatchlistFilters() {
         filterOptions,
         matchesFilters,
         resolvedCountryName,
-        activeFilterChips,
-        activeFilterSummary,
     };
 }
