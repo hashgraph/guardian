@@ -199,6 +199,10 @@ export class HeaderComponent implements OnInit {
         }).join('\r\n');
     }
 
+    public getInitials(name: string): string {
+        return (name || '').substring(0, 2).toUpperCase();
+    }
+
     public isActiveLink(type: string): boolean {
         switch (type) {
             case 'SR_UP':

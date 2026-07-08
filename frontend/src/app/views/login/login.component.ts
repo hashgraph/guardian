@@ -57,6 +57,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     backgroundImageData: string;
     companyName: string;
+    companyLogoUrl: string;
     brandingLoading: boolean = true;
     error?: string;
 
@@ -95,6 +96,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
             this.brandingService.getBrandingData().then((res) => {
                 this.backgroundImageData = res.loginBannerUrl;
                 this.companyName = res.companyName;
+                this.companyLogoUrl = res.companyLogoUrl;
                 this.brandingLoading = false;
             });
 
@@ -121,6 +123,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.destroy$.complete();
         this.qrCodeDialogRef = null;
         this.vcSubmitDialogRef = null;
+    }
+
+    public getInitials(name: string): string {
+        return (name || '').substring(0, 2).toUpperCase();
     }
 
     public getPoliciesRolesTooltip(policyRoles: any) {
