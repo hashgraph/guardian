@@ -1,8 +1,0 @@
-[
-  {
-    "iri": "#db884e2d-a681-40d4-b24c-0e0d848fb868&1.0.0",
-    "name": "Monitoring Report",
-    "description": "VMR0015 monitoring report — AMS-III.AV. parameters (QPW_y, m, X_boil, nwb, EF_fuel, f_i, BL_fuel, appliances passing/total) plus PE/LE; BE and ER computed on submission.",
-    "version": "1.0.0"
-  }
-]
