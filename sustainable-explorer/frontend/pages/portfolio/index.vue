@@ -17,6 +17,16 @@ import {
     RefreshCw,
     Layers,
     CheckCircle2,
+    PackageOpen,
+    ListPlus,
+    Globe,
+    Eye,
+    ChevronLeft,
+    ChevronRight,
+    BarChartHorizontal,
+    Donut,
+    Radar,
+    SquarePen,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { formatCredits, formatSmartCredits } from '~/lib/format';
@@ -25,8 +35,13 @@ import {
     DONUT_OTHER_COLOR,
     mergeTopBinsWithOther,
 } from '~/lib/chart-colors';
+import { niceAxis } from '~/lib/chart-scale';
 import { SectorType, SECTOR_I18N_KEYS } from '~/types/enums';
 import { DEFAULT_WIDGETS } from '~/composables/usePortfolioWidgets';
+import type { WatchlistItem, WatchlistItemType } from '~/composables/usePortfolioWatchlist';
+import type { NetworkId } from '~/composables/useNetwork';
+import type { RadarPoint } from '~/components/shared/RadarChart.vue';
+import type { Project } from '~/types/models';
 
 // The customizable dashboard is a logged-in-only feature — guests get
 // redirected home (with the sign-in modal opened) rather than a functional
@@ -43,7 +58,7 @@ const {
 } = useDashboard();
 const { projects: allProjects } = useProjects();   // full list for watchlist modal candidates
 
-const { watchlistItems, addItem, removeItem, hasItem, count: watchlistCount } = usePortfolioWatchlist();
+const { watchlistItems, removeItem, count: watchlistCount } = usePortfolioWatchlist();
 const { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
 const { isAuthenticated } = useAuth();
 const { hydrateFromApi, pushType } = usePortfolioSync();
@@ -54,28 +69,10 @@ const {
     hasActiveFilters: hasActiveWatchlistFilters,
     filterOptions: watchlistFilterOptions,
     matchesFilters: matchesWatchlistFilters,
-    activeFilterChips: watchlistFilterChips,
-    activeFilterSummary: watchlistFilterSummary,
 } = usePortfolioWatchlistFilters();
 
-// Icon/color per filter category for the small removable chips shown in the
-// watchlist bar. Static (not interpolated) class strings so Tailwind's
-// content scanner picks them up — same pattern the old per-type watchlist
-// breakdown chips used before this feature replaced them with filters.
-const watchlistFilterChipIcon: Record<string, typeof Flag> = {
-    country: Flag,
-    methodology: Layers,
-    registry: Building2,
-};
-const watchlistFilterChipClass: Record<string, string> = {
-    country: 'bg-sky-500/10 text-sky-600 dark:text-sky-400',
-    methodology: 'bg-violet-500/10 text-violet-600 dark:text-violet-400',
-    registry: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400',
-};
-
-// All chart data filtered by the active watchlist (falls back to full dataset when empty)
+// All chart data filtered by the active watchlist (empty watchlist ⇒ empty portfolio)
 const {
-    isFiltered,
     filteredProjects,
     totalCreditsIssued,
     activeProjectsCount,
@@ -86,6 +83,8 @@ const {
     registries,
     countryRaw,
     topCountries,
+    mapCountries,
+    mapPoints,
     buildIssuanceSeries,
     recentIssuances,
     filteredSdgStats,
@@ -181,35 +180,33 @@ const topSdgs = computed(() => {
     const useCredits = chartMode.value === 'credits';
     const sorted = [...filteredSdgStats.value]
         .sort((a, b) => (useCredits ? b.credits - a.credits : b.projects - a.projects))
-        .slice(0, 8);
-    const max = (useCredits ? sorted[0]?.credits : sorted[0]?.projects) ?? 1;
-    return sorted.map(s => {
-        const val = useCredits ? s.credits : s.projects;
-        return {
-            name: s.name,
-            count: val,
-            width: max > 0 ? Math.round((val / max) * 100) : 0,
-            color: s.color,
-        };
-    });
+        .slice(0, 10);
+    return sorted.map(s => ({
+        name: s.name,
+        count: useCredits ? s.credits : s.projects,
+        color: s.color,
+    }));
 });
 
-// SDG coverage bar viz (all SDGs) — filtered by watchlist, mode-aware
-const sdgCoverage = computed(() => {
+// Shared numeric x-axis (0..niceMax) for the Top SDGs bar chart — SDGs have
+// no target/goal, so bars are plotted against a real "nice" scale (rounded
+// to a clean step like 1/2/5/10…) rather than each bar being sized relative
+// to the top-ranked item, which would misleadingly look like progress
+// toward a goal.
+const sdgAxis = computed(() => niceAxis(Math.max(...topSdgs.value.map(s => s.count), 0)));
+
+// SDG coverage radar (all SDGs) — filtered by watchlist, mode-aware. Axis
+// labels use just the SDG number ("1".."17") since 17 axes is too tight for
+// full names around the perimeter; the full name shows in the hover tooltip.
+const sdgCoverage = computed<RadarPoint[]>(() => {
     const useCredits = chartMode.value === 'credits';
     const sorted = [...filteredSdgStats.value].sort((a, b) => a.id - b.id);
-    const max = Math.max(...sorted.map(s => useCredits ? s.credits : s.projects), 1);
-    return sorted.map(s => {
-        const val = useCredits ? s.credits : s.projects;
-        return {
-            id: s.id,
-            name: `SDG ${s.id}`,
-            shortName: s.name.length > 20 ? `${s.name.slice(0, 18)}…` : s.name,
-            projects: val,
-            width: max > 0 ? Math.round((val / max) * 100) : 0,
-            color: s.color || 'var(--color-primary)',
-        };
-    });
+    return sorted.map(s => ({
+        id: s.id,
+        label: String(s.id),
+        fullLabel: s.name,
+        value: useCredits ? s.credits : s.projects,
+    }));
 });
 
 
@@ -256,13 +253,36 @@ const showChartBuilderModal = ref(false);
 // persisted country/methodology/registry filters (usePortfolioWatchlistFilters).
 const watchlistSearch = ref('');
 
+// Draft selection edited while the modal is open. Add/Remove/Add All only
+// mutate this — the committed `watchlistItems` (and therefore the whole
+// portfolio dashboard) only changes when "Update Watchlist" is clicked.
+const pendingWatchlist = ref<WatchlistItem[]>([]);
+
+function pendingHasItem(id: string, type: WatchlistItemType): boolean {
+    return pendingWatchlist.value.some(i => i.id === id && i.type === type);
+}
+
+function pendingAddItem(item: WatchlistItem): void {
+    if (pendingHasItem(item.id, item.type)) return;
+    pendingWatchlist.value = [...pendingWatchlist.value, item];
+}
+
+function pendingRemoveItem(id: string, type: WatchlistItemType): void {
+    pendingWatchlist.value = pendingWatchlist.value.filter(i => !(i.id === id && i.type === type));
+}
+
+// When checked, shows only the items currently in the pending draft —
+// bypasses Country/Methodology/Registry so the user can review their full
+// selection regardless of the filters currently applied. Search still narrows.
+const showSelectedOnly = ref(false);
+
 const watchlistCandidates = computed(() => {
     const q = watchlistSearch.value.toLowerCase();
-    return allProjects.value
-        .filter(p =>
-            (!q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q)) &&
-            matchesWatchlistFilters(p),
-        )
+    const base = showSelectedOnly.value
+        ? allProjects.value.filter(p => pendingHasItem(p.id, 'project'))
+        : allProjects.value.filter(p => matchesWatchlistFilters(p));
+    return base
+        .filter(p => !q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q))
         .map(p => ({
             id: p.id,
             type: 'project' as const,
@@ -271,31 +291,46 @@ const watchlistCandidates = computed(() => {
         }));
 });
 
+// Merges every currently-filtered/searched candidate into the pending draft
+// in one shot — no network calls (the full project list is already loaded)
+// and no per-item mutation, so this stays O(n) even for large result sets.
+function addAllMatching() {
+    const additions = watchlistCandidates.value.filter(c => !pendingHasItem(c.id, c.type));
+    pendingWatchlist.value = [...pendingWatchlist.value, ...additions];
+    toast(t('portfolio.modal.watchlist.addAllSuccess', { count: additions.length }));
+}
+
 function openWatchlist() {
-    showWatchlistModal.value = true;
+    pendingWatchlist.value = [...watchlistItems.value];
     watchlistSearch.value = '';
+    showSelectedOnly.value = false;
+    showWatchlistModal.value = true;
+}
+
+// Discards the draft — used by Cancel, the header close button, backdrop
+// click, and Escape. Only "Update Watchlist" commits pendingWatchlist.
+function closeWatchlistModal() {
+    showWatchlistModal.value = false;
+}
+
+function updateWatchlist() {
+    watchlistItems.value = pendingWatchlist.value;
+    showWatchlistModal.value = false;
 }
 
 function clearWatchlist() {
     watchlistItems.value = [];
 }
 
-// Used by the "filtered" banner's single Clear action — watchlist and
-// filters are two different ways of scoping the dashboard (see
-// usePortfolioDashboard's precedence), so "go back to seeing everything"
-// has to reset both, not just whichever one currently has priority.
-// Clearing the watchlist first means it's already empty by the time
-// watchlistFilters changes, so the clear-on-filter-change watcher's
-// "watchlist non-empty" guard is false and no spurious Undo toast fires.
-function clearWatchlistAndFilters() {
-    watchlistItems.value = [];
-    clearWatchlistFilters();
-}
-
 // Chart builder
-type ChartType = 'line' | 'bar' | 'donut';
+// 'bar' is kept as the horizontal-bar value (not renamed) so charts synced
+// before this change keep rendering correctly — it used to be the only bar
+// orientation, now BarChart renders it with orientation="horizontal".
+// 'column' is the new vertical-bar type.
+type ChartType = 'line' | 'bar' | 'column' | 'pie' | 'donut' | 'radar';
 
 interface CustomChartConfig {
+    id: string;
     title: string;
     type: ChartType;
     xAxis: string;
@@ -306,6 +341,9 @@ const chartTitle = ref('');
 const chartType = ref<ChartType>('line');
 const xAxis = ref('month');
 const yAxis = ref('credits');
+// Set while editing an existing chart (see openChartBuilder/saveCustomChart)
+// — null means the modal is in "add" mode.
+const editingChartId = ref<string | null>(null);
 
 const xAxisOptions = computed(() => [
     { value: 'month', label: t('portfolio.modal.chartBuilder.axes.month') },
@@ -366,7 +404,8 @@ function getChartRawData(cfg: CustomChartConfig): { label: string; value: number
     return [];
 }
 
-// Donut segments with colours
+// Donut/Pie segments with colours (DonutChart's `hollow` prop distinguishes
+// the two visually — same segment data either way).
 function getChartSegments(cfg: CustomChartConfig) {
     const rows = getChartRawData(cfg);
     if (rows.length === 0) return [];
@@ -374,35 +413,55 @@ function getChartSegments(cfg: CustomChartConfig) {
     return rows.map((r, i) => ({ label: r.label, value: r.value, color: colors[i] ?? DONUT_OTHER_COLOR }));
 }
 
-// Bar rows with percentage widths
-function getChartBarRows(cfg: CustomChartConfig) {
-    const rows = getChartRawData(cfg);
-    const max = Math.max(...rows.map(r => r.value), 1);
-    return rows.slice(0, 10).map(r => ({
-        label: r.label,
-        value: r.value,
-        display: formatCredits(r.value),
-        width: Math.round((r.value / max) * 100),
-    }));
+// RadarChart needs at least 3 axes to draw a meaningful shape.
+function getChartRadarPoints(cfg: CustomChartConfig): RadarPoint[] {
+    return getChartRawData(cfg).map((r, i) => ({ id: i, label: r.label, fullLabel: r.label, value: r.value }));
 }
 
-function addCustomChart() {
-    if (!chartTitle.value.trim() || customCharts.value.length >= 5) return;
-    customCharts.value = [...customCharts.value, {
-        title: chartTitle.value.trim(),
-        type: chartType.value,
-        xAxis: xAxis.value,
-        yAxis: yAxis.value,
-    }];
+function resetChartForm(): void {
     chartTitle.value = '';
     chartType.value = 'line';
     xAxis.value = 'month';
     yAxis.value = 'credits';
-    showChartBuilderModal.value = false;
+    editingChartId.value = null;
 }
 
-function removeCustomChart(i: number) {
-    customCharts.value = customCharts.value.filter((_, idx) => idx !== i);
+// Opens the builder in "add" mode (no arg) or "edit" mode (existing chart,
+// form pre-filled) — the same modal/save path handles both.
+function openChartBuilder(existing?: CustomChartConfig): void {
+    if (existing) {
+        editingChartId.value = existing.id;
+        chartTitle.value = existing.title;
+        chartType.value = existing.type;
+        xAxis.value = existing.xAxis;
+        yAxis.value = existing.yAxis;
+    } else {
+        resetChartForm();
+    }
+    showChartBuilderModal.value = true;
+}
+
+function saveCustomChart(): void {
+    if (!chartTitle.value.trim()) return;
+    const patch = {
+        title: chartTitle.value.trim(),
+        type: chartType.value,
+        xAxis: xAxis.value,
+        yAxis: yAxis.value,
+    };
+    if (editingChartId.value) {
+        const id = editingChartId.value;
+        customCharts.value = customCharts.value.map(c => c.id === id ? { ...c, ...patch } : c);
+    } else {
+        if (customCharts.value.length >= 5) return;
+        customCharts.value = [...customCharts.value, { id: crypto.randomUUID(), ...patch }];
+    }
+    showChartBuilderModal.value = false;
+    resetChartForm();
+}
+
+function removeCustomChart(id: string): void {
+    customCharts.value = customCharts.value.filter(c => c.id !== id);
 }
 
 // ── Watchlist chip overflow ──────────────────────────────────────────────────
@@ -469,6 +528,85 @@ watch(chipsRowRef, (el) => {
     }
 });
 
+// ── Watched Projects carousel ────────────────────────────────────────────────
+// Paged, not free-scrolling: the outer row is `overflow-hidden` and an inner
+// track is translated by whole multiples of 100% so a "page" is always
+// exactly `watchedCardsPerPage` full cards — never a partial card peeking in,
+// and never wider than the row itself (a free-scrolling row here was
+// overflowing the whole page horizontally instead of scrolling locally).
+const watchedContainerWidth = ref(0);
+
+function updateWatchedContainerWidth(): void {
+    watchedContainerWidth.value = window.innerWidth;
+}
+
+// Viewport-width breakpoints (not the narrower content-area width, and not
+// literal Tailwind bp values) — tuned by eye for when each card count stops
+// looking cramped, since the sidebar nav eats a fixed chunk of the viewport
+// that plain Tailwind breakpoints don't account for.
+const watchedCardsPerPage = computed(() => {
+    const w = watchedContainerWidth.value;
+    if (w >= 1920) return 5;
+    if (w >= 1510) return 4;
+    if (w >= 1170) return 3;
+    if (w >= 875) return 2;
+    return 1;
+});
+
+// Fixed per-card width (not flex-1) so a partial last page — fewer cards
+// than a full page — doesn't stretch those cards wider than every other
+// page's cards; the row just ends with empty space instead.
+const watchedCardWidth = computed(() => {
+    const n = watchedCardsPerPage.value;
+    return `calc((100% - ${(n - 1) * 12}px) / ${n})`;
+});
+
+// Each "page" needs a *definite pixel* width, measured from the actual
+// viewport box (not `w-full`/percentage). A percentage width on a
+// flex-shrink:0 child of the track is ambiguous — the track has no explicit
+// width of its own, so browsers can resolve "100%" against the track's
+// content-driven size instead of the viewport's, which both let a sliver of
+// the next page peek through and made translateX(N%) (relative to the
+// track's own, now-ambiguous, box) jump by the wrong amount. Measuring in
+// pixels sidesteps that entirely.
+const watchedViewportRef = ref<HTMLElement | null>(null);
+const watchedViewportPx = ref(0);
+let _watchedRO: ResizeObserver | null = null;
+
+watch(watchedViewportRef, (el) => {
+    _watchedRO?.disconnect();
+    _watchedRO = null;
+    if (el) {
+        _watchedRO = new ResizeObserver(() => { watchedViewportPx.value = el.clientWidth; });
+        _watchedRO.observe(el);
+        watchedViewportPx.value = el.clientWidth;
+    }
+});
+
+const watchedPages = computed(() => {
+    const size = watchedCardsPerPage.value;
+    const pages: Project[][] = [];
+    for (let i = 0; i < filteredProjects.value.length; i += size) {
+        pages.push(filteredProjects.value.slice(i, i + size));
+    }
+    return pages;
+});
+
+const watchedPageIndex = ref(0);
+
+// Snap back into range whenever the page count shrinks — a resize to a
+// narrower breakpoint (fewer cards per page, more pages) is always still in
+// range, but a resize to a wider one can leave a stale index past the end.
+watch(watchedPages, (pages) => {
+    if (watchedPageIndex.value > pages.length - 1) watchedPageIndex.value = Math.max(0, pages.length - 1);
+});
+
+function goWatchedPage(direction: 'left' | 'right'): void {
+    watchedPageIndex.value = direction === 'left'
+        ? Math.max(0, watchedPageIndex.value - 1)
+        : Math.min(watchedPages.value.length - 1, watchedPageIndex.value + 1);
+}
+
 // ── True only after the client has mounted and the server hydration below has
 // had a chance to run. Guards ALL chart sections so the first visible render
 // never flashes the unfiltered "all network" dataset before the user's saved
@@ -483,31 +621,76 @@ const displayReady = computed(() => clientReady.value && !dataPending.value);
 // spurious PUT calls when it overwrites refs with server data on page load.
 const hydrating = ref(false);
 
+// The network whose data local watchlist/widgets/filters/customCharts refs
+// currently reflect. Watchlists (and the rest of these preferences) are
+// stored per-network server-side (see usePortfolioSync) — this lets a
+// network switch tell them apart from a same-network re-hydration.
+let hydratedNetwork: NetworkId | null = null;
+
 // Applies server-fetched preferences to local reactive state.
+//
+// `sameNetwork` distinguishes a same-network refresh (login / re-mount) from
+// a network switch. This is the ONLY place these refs are mutated at
+// hydration time, and every mutation sits inside the
+// `hydrating = true … await nextTick(); hydrating = false` bracket below —
+// the await flushes the deep persist watchers while `hydrating` is still
+// true, so none of them can fire a spurious PUT. (A previous version reset
+// these refs in the network-switch watcher itself, *before* calling
+// applyRemote, then flipped `hydrating` back to false synchronously. Because
+// Vue's deep watchers flush asynchronously, that reset was still observed by
+// the persist watchers below with `hydrating === false` during the
+// `await hydrateFromApi()` gap, scheduling a stray 800ms-delayed PUT of an
+// empty watchlist against the newly-switched-to network — which then fired
+// *after* the real data had been restored locally, silently wiping it back
+// to empty on the server. Keeping every mutation inside this single guarded
+// bracket removes that window structurally instead of patching its timing.)
 async function applyRemote(
     remote: Awaited<ReturnType<typeof hydrateFromApi>>,
+    sameNetwork: boolean,
 ): Promise<void> {
-    if (!remote) return;
     hydrating.value = true;
+    if (!remote) {
+        // Fetch failed / not authenticated. A network switch must still not
+        // leave the previous network's data on screen; a same-network
+        // refresh leaves current in-memory state untouched.
+        if (!sameNetwork) {
+            watchlistItems.value = [];
+            watchlistFilters.value = {};
+            widgets.value = { ...DEFAULT_WIDGETS };
+            customCharts.value = [];
+        }
+        await nextTick();
+        hydrating.value = false;
+        return;
+    }
     const remoteWatchlist = remote.watchlist ?? [];
     if (remoteWatchlist.length > 0) {
         // Server has saved items — server is the source of truth.
         watchlistItems.value = remoteWatchlist;
-    } else if (watchlistItems.value.length > 0) {
-        // Server returned empty but the current session already added items
-        // this hasn't hit the server yet (e.g. mid-debounce, or a network
-        // switch racing the initial save) — push them up rather than
-        // dropping them silently.
+    } else if (sameNetwork && watchlistItems.value.length > 0) {
+        // Same-network re-hydration: the server returned empty but this
+        // session already added items that haven't hit the server yet
+        // (mid-debounce) — push them up rather than dropping them. Gated on
+        // `sameNetwork` so a network switch can never re-upload one
+        // network's watchlist onto another's — that case falls to the
+        // `else` below, which adopts the new network's empty state instead.
         pushType('watchlist', watchlistItems.value, 0);
+    } else {
+        watchlistItems.value = [];
     }
     const remoteFilters = remote.watchlistFilters ?? {};
     if (Object.keys(remoteFilters).length > 0) {
         watchlistFilters.value = remoteFilters;
-    } else if (hasActiveWatchlistFilters.value) {
+    } else if (sameNetwork && hasActiveWatchlistFilters.value) {
         pushType('watchlist_filters', watchlistFilters.value, 0);
+    } else {
+        watchlistFilters.value = {};
     }
     widgets.value = { ...DEFAULT_WIDGETS, ...(remote.widgets ?? {}) };
-    customCharts.value = (remote.customCharts ?? []).slice(0, 5);
+    // Backfill id for charts synced before it existed — deep-watched below,
+    // so the backfilled id persists to the server on the next debounced push.
+    customCharts.value = (remote.customCharts ?? []).slice(0, 5)
+        .map(c => ({ ...c, id: c.id ?? crypto.randomUUID(), type: c.type as ChartType }));
     await nextTick();
     hydrating.value = false;
 }
@@ -518,45 +701,23 @@ watch(watchlistItems,   () => { if (!hydrating.value) pushType('watchlist',     
 watch(widgets,          () => { if (!hydrating.value) pushType('widgets',           widgets.value);        }, { deep: true });
 watch(customCharts,     () => { if (!hydrating.value) pushType('custom_charts',     customCharts.value);   }, { deep: true });
 
-// Explicit project picks and filters are two different ways of scoping the
-// dashboard (see usePortfolioDashboard's precedence). Letting both linger at
-// once is confusing — the watchlist would silently keep winning while the
-// user thinks their filter change did something. So changing a filter while
-// projects are watchlisted clears the watchlist, handing scope to the filter.
-// This mirrors the app's existing convention for reversible destructive
-// actions (e.g. API key revoke) — act immediately, no blocking confirm
-// dialog, but surface an "Undo" toast rather than losing the selection
-// silently. Guarded so Undo (which restores both refs) doesn't re-trigger itself.
-const suppressFilterClearWatchlist = ref(false);
-watch(watchlistFilters, (_newFilters, oldFilters) => {
-    if (!hydrating.value && !suppressFilterClearWatchlist.value && watchlistItems.value.length > 0) {
-        const previousWatchlist = watchlistItems.value;
-        const previousFilters = oldFilters ? { ...oldFilters } : {};
-        watchlistItems.value = [];
-        toast(
-            previousWatchlist.length === 1
-                ? t('portfolio.watchlistClearedByFilterSingular')
-                : t('portfolio.watchlistClearedByFilter', { count: previousWatchlist.length }),
-            {
-                action: {
-                    label: t('common.undo'),
-                    onClick: async () => {
-                        suppressFilterClearWatchlist.value = true;
-                        watchlistItems.value = previousWatchlist;
-                        watchlistFilters.value = previousFilters;
-                        await nextTick();
-                        suppressFilterClearWatchlist.value = false;
-                    },
-                },
-            },
-        );
-    }
+// Country/Methodology/Registry filters only narrow the "Manage Watchlist"
+// modal's candidate list (see usePortfolioWatchlistFilters) — they no longer
+// affect the committed watchlist or the dashboard, so this just persists the
+// filter selection for next time the modal opens.
+watch(watchlistFilters, () => {
     if (!hydrating.value) pushType('watchlist_filters', watchlistFilters.value);
 }, { deep: true });
 
 // Re-hydrate when the user logs in while on this page, or switches network.
-watch([isAuthenticated, network], async ([authed]) => {
-    if (authed) await applyRemote(await hydrateFromApi());
+// All "discard the previous network's local state" logic lives inside
+// applyRemote (gated on sameNetwork) — this handler never mutates the
+// watchlist/filters/widgets refs itself.
+watch([isAuthenticated, network], async ([authed, net]) => {
+    if (!authed) return;
+    const sameNetwork = hydratedNetwork === null || net === hydratedNetwork;
+    await applyRemote(await hydrateFromApi(), sameNetwork);
+    hydratedNetwork = net;
 });
 
 // Keyboard close
@@ -573,18 +734,23 @@ watch(watchlistItems, () => { void recalcChips(); }, { deep: true });
 
 onMounted(async () => {
     window.addEventListener('keydown', onKeydown);
+    window.addEventListener('resize', updateWatchedContainerWidth);
+    updateWatchedContainerWidth();
     // Without a localStorage pre-population step, state starts empty on
     // mount — wait for the server hydration to resolve before flipping
     // clientReady, so the skeleton stays up rather than flashing the
     // unfiltered "all network" dataset before the user's saved
     // watchlist/filters arrive.
-    if (isAuthenticated.value) await applyRemote(await hydrateFromApi());
+    if (isAuthenticated.value) await applyRemote(await hydrateFromApi(), true);
+    hydratedNetwork = network.value;
     clientReady.value = true;
     void recalcChips();
 });
 onUnmounted(() => {
     window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('resize', updateWatchedContainerWidth);
     _chipsRO?.disconnect();
+    _watchedRO?.disconnect();
 });
 </script>
 
@@ -603,7 +769,7 @@ onUnmounted(() => {
                 <div class="flex items-center gap-2 flex-wrap shrink-0">
                     <button
                         class="flex items-center gap-1.5 rounded-lg border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted/60 transition-colors"
-                        @click="showChartBuilderModal = true"
+                        @click="openChartBuilder()"
                     >
                         <TrendingUp class="h-3.5 w-3.5" />
                         {{ $t('portfolio.addCustomChart') }}
@@ -615,101 +781,97 @@ onUnmounted(() => {
                         <LayoutGrid class="h-3.5 w-3.5" />
                         {{ $t('portfolio.widgetLibrary') }}
                     </button>
-                    <button
-                        class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                        @click="openWatchlist()"
-                    >
-                        <Star class="h-3.5 w-3.5" />
-                        {{ $t('portfolio.manageWatchlist') }}
-                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- WATCHLIST BAR -->
+        <!-- WATCHLIST CARD (identity/chips when populated, empty state when not) -->
         <div class="px-6 pb-4">
             <div class="rounded-xl border bg-card p-4">
-                <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div class="flex items-center justify-between gap-2 flex-wrap mb-3">
                     <div class="flex items-center gap-2 flex-wrap">
                         <Star class="h-3.5 w-3.5 text-stat-amber fill-stat-amber shrink-0" />
                         <span class="text-sm font-medium text-foreground">{{ $t('portfolio.watchlist') }}</span>
-                        <span class="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        <Skeleton v-if="!displayReady" class="h-4 w-6 rounded-full" />
+                        <span v-else class="rounded-full bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
                             {{ watchlistCount }}
                         </span>
-                        <span v-if="watchlistFilterChips.length > 0" class="text-muted-foreground/40 text-[11px]">·</span>
+                    </div>
+                    <div v-if="displayReady && watchlistItems.length > 0" class="flex items-center gap-3">
                         <button
-                            v-for="chip in watchlistFilterChips"
-                            :key="chip.key"
-                            type="button"
-                            :title="`${chip.full} — click to clear`"
-                            class="group inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium transition-colors"
-                            :class="watchlistFilterChipClass[chip.key]"
-                            @click="setWatchlistFilter(chip.key, '')"
+                            class="inline-flex items-center gap-1 rounded-md py-1 text-[11px] transition-colors text-muted-foreground hover:text-primary"
+                            @click="clearWatchlist()"
                         >
-                            <component :is="watchlistFilterChipIcon[chip.key]" class="h-2.5 w-2.5 shrink-0" />
-                            <span class="truncate max-w-[120px]">{{ chip.chipText }}</span>
-                            <X class="h-2.5 w-2.5 shrink-0 opacity-50 group-hover:opacity-100 transition-opacity" />
+                            <X class="h-3 w-3" />
+                            {{ $t('portfolio.clearWatchlist') }}
+                        </button>
+                        <button
+                            class="flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                            @click="openWatchlist()"
+                        >
+                            <Star class="h-3.5 w-3.5" />
+                            {{ $t('portfolio.manageWatchlist') }}
                         </button>
                     </div>
-                    <button
-                        class="text-xs font-medium text-primary hover:underline"
-                        @click="openWatchlist()"
-                    >
-                        + {{ $t('portfolio.addItems') }}
-                    </button>
                 </div>
-                <div v-if="watchlistItems.length > 0" class="flex items-center gap-2 min-w-0">
-                    <div ref="chipsRowRef" class="flex flex-nowrap gap-2 overflow-hidden flex-1 min-w-0">
-                        <WatchlistChip
-                            v-for="(item, idx) in watchlistItems"
-                            :key="item.id"
-                            v-show="idx < visibleChipCount"
-                            :label="item.name"
-                            @remove="removeItem(item.id, item.type)"
-                        />
+
+                <!-- While hydrating we don't yet know whether this network's
+                     watchlist is empty — show a neutral placeholder rather
+                     than committing to either the chip row or the "empty"
+                     message, which would otherwise flash briefly on every
+                     reload/network switch before flipping to the real state. -->
+                <Skeleton v-if="!displayReady" class="h-9 rounded-lg" />
+                <template v-else-if="watchlistItems.length > 0">
+                    <div class="flex items-center gap-2 min-w-0">
+                        <div ref="chipsRowRef" class="flex flex-nowrap gap-2 overflow-hidden flex-1 min-w-0">
+                            <WatchlistChip
+                                v-for="(item, idx) in watchlistItems"
+                                :key="item.id"
+                                v-show="idx < visibleChipCount"
+                                :label="item.name"
+                                @remove="removeItem(item.id, item.type)"
+                            />
+                        </div>
+                        <button
+                            v-if="hiddenChipCount > 0"
+                            class="shrink-0 whitespace-nowrap rounded-full border bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                            @click="openWatchlist()"
+                        >
+                            +{{ hiddenChipCount }} more
+                        </button>
                     </div>
+                </template>
+                <div v-else class="flex flex-col items-center text-center gap-2 py-6">
+                    <PackageOpen class="h-6 w-6 text-muted-foreground" />
+                    <p class="text-sm font-semibold text-foreground">{{ $t('portfolio.empty.title') }}</p>
+                    <p class="text-xs text-muted-foreground max-w-md">{{ $t('portfolio.empty.description') }}</p>
                     <button
-                        v-if="hiddenChipCount > 0"
-                        class="shrink-0 whitespace-nowrap rounded-full border bg-muted/60 px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                        class="mt-1 flex items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
                         @click="openWatchlist()"
                     >
-                        +{{ hiddenChipCount }} more
-                    </button>
-                </div>
-                <div v-else class="text-center py-2 text-xs text-muted-foreground">
-                    {{ $t('portfolio.watchlistEmpty') }}
-                    <button class="text-primary font-medium hover:underline ml-1" @click="openWatchlist()">
-                        {{ $t('portfolio.addItemsCta') }}
+                        <Star class="h-3.5 w-3.5" />
+                        {{ $t('portfolio.empty.cta') }}
                     </button>
                 </div>
             </div>
         </div>
 
-        <!-- FILTER ACTIVE BANNER -->
-        <Transition
-            enter-active-class="transition-all duration-200 ease-out"
-            enter-from-class="opacity-0 -translate-y-1"
-            enter-to-class="opacity-100 translate-y-0"
-            leave-active-class="transition-all duration-150 ease-in"
-            leave-from-class="opacity-100 translate-y-0"
-            leave-to-class="opacity-0 -translate-y-1"
-        >
-            <div v-if="isFiltered" class="mx-6 mb-3 rounded-lg border border-primary/25 bg-primary/5 px-4 py-2.5 flex items-center gap-2.5">
-                <Star class="h-3.5 w-3.5 text-primary shrink-0 fill-primary/30" />
-                <span v-if="watchlistCount > 0" class="text-xs text-foreground">
-                    Showing data for <span class="font-semibold text-primary">{{ watchlistCount }} watchlisted {{ watchlistCount === 1 ? 'item' : 'items' }}</span> — all charts and KPIs are filtered.
-                </span>
-                <span v-else class="text-xs text-foreground">
-                    Showing data for projects matching <span class="font-semibold text-primary">{{ watchlistFilterSummary }}</span> — all charts and KPIs are filtered.
-                </span>
-                <button
-                    class="ml-auto text-[11px] text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                    @click="clearWatchlistAndFilters()"
-                >
-                    Clear filter
-                </button>
+        <!-- LOADING PLACEHOLDER — shown while hydrating, before we know
+             whether this network's watchlist actually has anything in it.
+             Deliberately title-less/generic: the real sections below reveal
+             their titles only once we're certain there's something to show
+             under them, so a reload/network switch never flashes a full
+             scaffold of chart titles for a portfolio that turns out empty. -->
+        <div v-if="!displayReady" class="px-6 pb-8 space-y-4">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <Skeleton v-for="n in 4" :key="n" class="h-28 rounded-xl" />
             </div>
-        </Transition>
+            <Skeleton class="h-[28rem] rounded-xl" />
+            <Skeleton class="h-64 rounded-xl" />
+        </div>
+
+        <!-- STATS & CHARTS — only once we're certain the watchlist has items. -->
+        <template v-else-if="watchlistCount > 0">
 
         <!-- KPI CARDS -->
         <div class="px-6 pb-5">
@@ -764,6 +926,215 @@ onUnmounted(() => {
                     />
                 </template>
             </div>
+        </div>
+
+        <!-- WATCHED PROJECTS -->
+        <div v-if="filteredProjects.length > 0" class="border-t">
+            <div class="flex items-center justify-between px-6 py-4 flex-wrap gap-2">
+                <div class="flex items-center gap-2 min-w-0 flex-wrap">
+                    <Eye class="h-4 w-4 text-primary shrink-0" />
+                    <h2 class="text-sm font-semibold text-foreground shrink-0">{{ $t('portfolio.watchedProjects.title') }}</h2>
+                    <span class="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[11px] font-semibold text-primary shrink-0">
+                        {{ filteredProjects.length }}
+                    </span>
+                    <span class="text-xs text-muted-foreground truncate">{{ $t('portfolio.watchedProjects.subtitle') }}</span>
+                </div>
+                <!-- Same page-button pattern as components/shared/Pagination.vue
+                     (the table pagination control) — prev/next arrows plus
+                     numbered pages, collapsing to an ellipsis past 7 pages. -->
+                <div v-if="watchedPages.length > 1" class="flex items-center gap-2 shrink-0">
+                    <button
+                        class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors"
+                        :class="watchedPageIndex === 0 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted hover:text-foreground'"
+                        :disabled="watchedPageIndex === 0"
+                        :aria-label="$t('portfolio.watchedProjects.scrollLeft')"
+                        @click="goWatchedPage('left')"
+                    >
+                        <ChevronLeft class="h-3.5 w-3.5" />
+                    </button>
+
+                    <span class="text-xs text-muted-foreground tabular-nums">
+                        {{ $t('portfolio.watchedProjects.pageOf', { current: watchedPageIndex + 1, total: watchedPages.length }) }}
+                    </span>
+
+                    <button
+                        class="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors"
+                        :class="watchedPageIndex === watchedPages.length - 1 ? 'opacity-30 cursor-not-allowed' : 'hover:bg-muted hover:text-foreground'"
+                        :disabled="watchedPageIndex === watchedPages.length - 1"
+                        :aria-label="$t('portfolio.watchedProjects.scrollRight')"
+                        @click="goWatchedPage('right')"
+                    >
+                        <ChevronRight class="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
+            <!-- overflow-hidden clips everything outside the current page — the
+                 row can never grow wider than its own box, so it can't drag the
+                 whole page into horizontal scroll the way free-scrolling did.
+                 The ref/measurement lives on this unpadded inner div (not the
+                 px-6 wrapper around it) so clientWidth reflects the actual
+                 space available to the cards, not that plus the page padding. -->
+            <div class="px-6 pb-5">
+                <div ref="watchedViewportRef" class="overflow-hidden">
+                    <div
+                        class="flex transition-transform duration-300 ease-out"
+                        :style="{ transform: `translateX(-${watchedPageIndex * watchedViewportPx}px)` }"
+                    >
+                        <div
+                            v-for="(page, pageIdx) in watchedPages"
+                            :key="pageIdx"
+                            class="flex gap-3 shrink-0"
+                            :style="{ width: `${watchedViewportPx}px` }"
+                        >
+                            <WatchedProjectCard
+                                v-for="p in page"
+                                :key="p.id"
+                                :project="p"
+                                class="shrink-0"
+                                :style="{ width: watchedCardWidth }"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PROJECT DISTRIBUTION (map) -->
+        <div v-if="widgetVisible('projectMap')" class="border-t">
+            <div class="flex items-center justify-between px-6 py-4">
+                <div>
+                    <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">
+                        {{ $t('dashboard.projectDistribution') }}
+                        <InfoTooltip :text="$t('dashboard.projectDistributionTooltip')" />
+                    </h2>
+                    <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.projectDistributionSub') }}</p>
+                </div>
+                <button
+                    class="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                    :title="$t('portfolio.removeWidget')"
+                    @click="setWidget('projectMap', false)"
+                >
+                    <X class="h-3.5 w-3.5" />
+                </button>
+            </div>
+            <div class="px-6 pb-6">
+                <Skeleton v-if="!displayReady" class="h-[28rem] rounded-xl" />
+                <div v-else class="rounded-xl border bg-card overflow-hidden">
+                    <div class="h-[28rem]">
+                        <ProjectMap :countries="mapCountries" :points="mapPoints" auto-fit />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CUSTOM CHARTS -->
+        <div v-if="customCharts.length > 0" class="border-t">
+            <div class="px-6 py-4">
+                <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.sections.customCharts') }}</h2>
+            </div>
+            <div class="px-6 pb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <template v-if="!displayReady">
+                    <Skeleton v-for="i in customCharts.length" :key="i" class="h-52 rounded-xl" />
+                </template>
+                <div v-for="chart in displayReady ? customCharts : []" :key="chart.id" class="rounded-xl border bg-card p-5">
+                    <!-- Card header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2 min-w-0">
+                            <component
+                                :is="{ line: TrendingUp, column: BarChart2, bar: BarChartHorizontal, pie: PieChart, donut: Donut, radar: Radar }[chart.type] ?? BarChart2"
+                                class="h-3.5 w-3.5 text-muted-foreground shrink-0"
+                            />
+                            <span class="text-sm font-semibold text-foreground truncate">{{ chart.title }}</span>
+                        </div>
+                        <div class="flex items-center gap-4 shrink-0">
+                            <button
+                                class="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                :title="$t('portfolio.editWidget')"
+                                @click="openChartBuilder(chart)"
+                            >
+                                <SquarePen class="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                                class="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
+                                :title="$t('portfolio.removeWidget')"
+                                @click="removeCustomChart(chart.id)"
+                            >
+                                <X class="h-3.5 w-3.5" />
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- LINE chart → TrendLineChart -->
+                    <template v-if="chart.type === 'line'">
+                        <TrendLineChart
+                            :data="getChartRawData(chart)"
+                            color="hsl(162, 63%, 41%)"
+                            fill-color="hsl(162, 63%, 41%, 0.08)"
+                            :empty-text="$t('portfolio.noData')"
+                        />
+                        <div class="flex justify-between mt-3 pt-2 border-t">
+                            <span class="text-[10px] text-muted-foreground">{{ getChartRawData(chart).length }} points</span>
+                            <span class="text-[10px] font-medium text-foreground tabular-nums">
+                                {{ formatCredits(getChartRawData(chart).reduce((s, r) => s + r.value, 0)) }} total
+                            </span>
+                        </div>
+                    </template>
+
+                    <!-- COLUMN chart → BarChart (vertical) -->
+                    <template v-else-if="chart.type === 'column'">
+                        <BarChart :data="getChartRawData(chart)" orientation="vertical" :empty-text="$t('portfolio.noData')" />
+                    </template>
+
+                    <!-- BAR chart → BarChart (horizontal) -->
+                    <template v-else-if="chart.type === 'bar'">
+                        <BarChart :data="getChartRawData(chart)" orientation="horizontal" :empty-text="$t('portfolio.noData')" />
+                    </template>
+
+                    <!-- PIE / DONUT chart → DonutChart + legend (pie = filled, donut = ring) -->
+                    <template v-else-if="chart.type === 'pie' || chart.type === 'donut'">
+                        <div v-if="getChartSegments(chart).length > 0" class="flex items-start gap-4">
+                            <DonutChart :segments="getChartSegments(chart)" :size="100" :hollow="chart.type === 'donut'" />
+                            <div class="space-y-1.5 flex-1 min-w-0 max-h-52 overflow-y-auto pt-1 pr-1">
+                                <div
+                                    v-for="seg in getChartSegments(chart).slice(0, 8)"
+                                    :key="seg.label"
+                                    class="flex items-center gap-1.5 min-w-0"
+                                >
+                                    <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: seg.color }" />
+                                    <span class="text-[10px] text-muted-foreground truncate flex-1">{{ seg.label }}</span>
+                                    <span class="text-[10px] font-medium text-foreground tabular-nums shrink-0">{{ formatCredits(seg.value) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
+                        </div>
+                    </template>
+
+                    <!-- RADAR chart → RadarChart -->
+                    <template v-else-if="chart.type === 'radar'">
+                        <div v-if="getChartRadarPoints(chart).length >= 3" class="flex items-center justify-center">
+                            <RadarChart :points="getChartRadarPoints(chart)" color="hsl(162, 63%, 41%)" />
+                        </div>
+                        <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- ADD CUSTOM CHART CTA -->
+        <div class="px-6 pb-8">
+            <button
+                class="w-full rounded-xl border-2 border-dashed border-border/60 bg-transparent py-4 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                :disabled="customCharts.length >= 5"
+                @click="customCharts.length < 5 && openChartBuilder()"
+            >
+                <Plus class="h-4 w-4" />
+                {{ customCharts.length < 5 ? $t('portfolio.addCustomChart') : $t('portfolio.chartLimitReached') }}
+            </button>
         </div>
 
         <!-- ROW 1: Issuance Trend + Vintage Distribution -->
@@ -894,7 +1265,7 @@ onUnmounted(() => {
                         </div>
                         <Skeleton v-if="!displayReady" class="h-32 rounded-xl" />
                         <div v-else class="flex items-start gap-4">
-                            <DonutChart :segments="sectorChartSegments" :size="120" />
+                            <DonutChart :segments="sectorChartSegments" :size="120" :hollow="true" />
                             <div class="space-y-1.5 flex-1 min-w-0 pt-1">
                                 <div v-for="s in sectorDonutRows" :key="s.label" class="flex items-center gap-2 min-w-0">
                                     <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
@@ -915,7 +1286,7 @@ onUnmounted(() => {
                         </div>
                         <Skeleton v-if="!displayReady" class="h-32 rounded-xl" />
                         <div v-else class="flex items-start gap-4">
-                            <DonutChart :segments="registryChartSegments" :size="120" />
+                            <DonutChart :segments="registryChartSegments" :size="120" :hollow="true" />
                             <div class="space-y-1.5 flex-1 min-w-0 pt-1">
                                 <div v-for="s in registryDonutRows" :key="s.label" class="flex items-center gap-2 min-w-0">
                                     <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: s.color }" />
@@ -928,27 +1299,23 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- SDG Coverage (horizontal bars — no radar/Chart.js) -->
+                    <!-- SDG Coverage Radar -->
                     <div v-if="widgetVisible('sdgRadar')" class="rounded-xl border bg-card p-5">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-sm font-semibold text-foreground">{{ $t('portfolio.sections.sdgCoverage') }}</h3>
-                            <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('sdgRadar', false)"><X class="h-3.5 w-3.5" /></button>
+                            <div class="flex items-center gap-2">
+                                <span class="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
+                                    {{ $t('portfolio.sdgGoalsCount', { n: sdgCoverage.length }) }}
+                                </span>
+                                <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('sdgRadar', false)"><X class="h-3.5 w-3.5" /></button>
+                            </div>
                         </div>
                         <Skeleton v-if="!displayReady" class="h-64 rounded-xl" />
-                        <div v-else class="space-y-2 max-h-64 overflow-y-auto pr-1">
-                            <div v-for="sdg in sdgCoverage" :key="sdg.id" class="flex items-center gap-2">
-                                <span class="text-[10px] font-semibold text-muted-foreground w-8 shrink-0 tabular-nums">{{ sdg.name }}</span>
-                                <div class="flex-1 h-3 bg-muted/40 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full transition-all duration-500"
-                                        :style="{ width: `${sdg.width}%`, backgroundColor: sdg.color }"
-                                    />
-                                </div>
-                                <span class="text-[10px] text-muted-foreground tabular-nums w-6 text-right shrink-0">{{ sdg.projects }}</span>
-                            </div>
-                            <div v-if="sdgCoverage.length === 0" class="py-4 text-center text-xs text-muted-foreground">
-                                {{ $t('portfolio.noData') }}
-                            </div>
+                        <div v-else-if="sdgCoverage.length > 0" class="flex items-center justify-center">
+                            <RadarChart :points="sdgCoverage" color="hsl(142, 76%, 36%)" />
+                        </div>
+                        <div v-else class="py-4 text-center text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
                         </div>
                     </div>
 
@@ -1087,20 +1454,54 @@ onUnmounted(() => {
                     </div>
                     <div class="px-6 pb-6">
                         <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
-                        <div v-else class="rounded-xl border bg-card p-5 space-y-3">
-                            <div v-for="sdg in topSdgs" :key="sdg.name" class="flex items-center gap-3">
-                                <span class="text-xs text-foreground min-w-[110px] truncate">{{ sdg.name }}</span>
-                                <div class="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full transition-all duration-500"
-                                        :style="{ width: `${sdg.width}%`, backgroundColor: sdg.color || 'var(--color-primary)' }"
-                                    />
+                        <div v-else-if="topSdgs.length > 0" class="rounded-xl border bg-card p-5">
+                            <!-- Horizontal bar chart plotted against a real numeric x-axis
+                                 (see sdgAxis) — SDGs have no target/goal, so bars are
+                                 compared on a shared scale rather than sized relative to
+                                 the top-ranked item or filled as a "percent complete" track. -->
+                            <div class="flex gap-3">
+                                <div class="flex flex-col gap-3 shrink-0">
+                                    <div v-for="sdg in topSdgs" :key="sdg.name" class="h-6 flex items-center max-w-[130px]">
+                                        <span class="min-w-0 truncate text-xs text-foreground" :title="sdg.name">{{ sdg.name }}</span>
+                                    </div>
                                 </div>
-                                <span class="text-xs text-muted-foreground tabular-nums min-w-[28px] text-right shrink-0">{{ sdg.count }}</span>
+                                <div class="relative flex-1 min-w-0">
+                                    <!-- Y-axis + gridlines, spanning the full bar stack -->
+                                    <div
+                                        v-for="(tick, i) in sdgAxis.ticks"
+                                        :key="i"
+                                        class="absolute top-0 bottom-5 w-px"
+                                        :class="i === 0 ? 'bg-border' : 'bg-border/50'"
+                                        :style="{ left: `${(tick / sdgAxis.max) * 100}%` }"
+                                    />
+                                    <!-- Bars -->
+                                    <div class="flex flex-col gap-3">
+                                        <div v-for="sdg in topSdgs" :key="sdg.name" class="relative h-6">
+                                            <InfoTooltip
+                                                :text="`${sdg.name}: ${sdg.count}`"
+                                                class="absolute inset-y-0 left-0 items-center transition-all duration-500"
+                                                :style="{ width: `${Math.max((sdg.count / sdgAxis.max) * 100, 2)}%` }"
+                                            >
+                                                <div class="h-full w-full rounded-r-md" :style="{ backgroundColor: sdg.color || 'var(--color-primary)' }" />
+                                                <span class="ml-2 text-xs font-medium text-foreground tabular-nums whitespace-nowrap">{{ sdg.count }}</span>
+                                            </InfoTooltip>
+                                        </div>
+                                    </div>
+                                    <!-- X-axis -->
+                                    <div class="relative h-5 mt-2 border-t border-border">
+                                        <span
+                                            v-for="(tick, i) in sdgAxis.ticks"
+                                            :key="i"
+                                            class="absolute top-1.5 text-[10px] text-muted-foreground tabular-nums"
+                                            :class="i === 0 ? 'left-0' : i === sdgAxis.ticks.length - 1 ? 'right-0' : '-translate-x-1/2'"
+                                            :style="i !== 0 && i !== sdgAxis.ticks.length - 1 ? { left: `${(tick / sdgAxis.max) * 100}%` } : {}"
+                                        >{{ tick }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div v-if="topSdgs.length === 0" class="py-4 text-center text-xs text-muted-foreground">
-                                {{ $t('portfolio.noData') }}
-                            </div>
+                        </div>
+                        <div v-else class="rounded-xl border bg-card p-5 py-4 text-center text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
                         </div>
                     </div>
                 </div>
@@ -1210,105 +1611,7 @@ onUnmounted(() => {
             </div>
         </div>
 
-        <!-- CUSTOM CHARTS -->
-        <div v-if="customCharts.length > 0" class="border-t">
-            <div class="px-6 py-4">
-                <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.sections.customCharts') }}</h2>
-            </div>
-            <div class="px-6 pb-6 grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <template v-if="!displayReady">
-                    <Skeleton v-for="i in customCharts.length" :key="i" class="h-52 rounded-xl" />
-                </template>
-                <div v-for="(chart, i) in displayReady ? customCharts : []" :key="i" class="rounded-xl border bg-card p-5">
-                    <!-- Card header -->
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center gap-2">
-                            <component
-                                :is="chart.type === 'line' ? TrendingUp : chart.type === 'bar' ? BarChart2 : PieChart"
-                                class="h-3.5 w-3.5 text-muted-foreground"
-                            />
-                            <span class="text-sm font-semibold text-foreground">{{ chart.title }}</span>
-                        </div>
-                        <button
-                            class="text-muted-foreground/40 hover:text-muted-foreground transition-colors"
-                            :title="$t('portfolio.removeWidget')"
-                            @click="removeCustomChart(i)"
-                        >
-                            <X class="h-3.5 w-3.5" />
-                        </button>
-                    </div>
-
-                    <!-- LINE chart → TrendLineChart -->
-                    <template v-if="chart.type === 'line'">
-                        <TrendLineChart
-                            :data="getChartRawData(chart)"
-                            color="hsl(162, 63%, 41%)"
-                            fill-color="hsl(162, 63%, 41%, 0.08)"
-                            :empty-text="$t('portfolio.noData')"
-                        />
-                        <div class="flex justify-between mt-3 pt-2 border-t">
-                            <span class="text-[10px] text-muted-foreground">{{ getChartRawData(chart).length }} points</span>
-                            <span class="text-[10px] font-medium text-foreground tabular-nums">
-                                {{ formatCredits(getChartRawData(chart).reduce((s, r) => s + r.value, 0)) }} total
-                            </span>
-                        </div>
-                    </template>
-
-                    <!-- BAR chart → horizontal progress bars -->
-                    <template v-else-if="chart.type === 'bar'">
-                        <div v-if="getChartBarRows(chart).length > 0" class="space-y-2 max-h-52 overflow-y-auto pr-1">
-                            <div v-for="row in getChartBarRows(chart)" :key="row.label" class="flex items-center gap-2">
-                                <span class="text-[11px] text-foreground truncate min-w-0 flex-1">{{ row.label }}</span>
-                                <div class="w-24 h-2 bg-muted/40 rounded-full overflow-hidden shrink-0">
-                                    <div
-                                        class="h-full rounded-full bg-primary/70 transition-all duration-500"
-                                        :style="{ width: `${row.width}%` }"
-                                    />
-                                </div>
-                                <span class="text-[10px] text-muted-foreground tabular-nums w-12 text-right shrink-0">{{ row.display }}</span>
-                            </div>
-                        </div>
-                        <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
-                            {{ $t('portfolio.noData') }}
-                        </div>
-                    </template>
-
-                    <!-- DONUT chart → DonutChart + legend -->
-                    <template v-else-if="chart.type === 'donut'">
-                        <div v-if="getChartSegments(chart).length > 0" class="flex items-start gap-4">
-                            <DonutChart :segments="getChartSegments(chart)" :size="100" />
-                            <div class="space-y-1.5 flex-1 min-w-0 overflow-y-auto max-h-28 pt-1 pr-1">
-                                <div
-                                    v-for="seg in getChartSegments(chart).slice(0, 8)"
-                                    :key="seg.label"
-                                    class="flex items-center gap-1.5 min-w-0"
-                                >
-                                    <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: seg.color }" />
-                                    <span class="text-[10px] text-muted-foreground truncate flex-1">{{ seg.label }}</span>
-                                    <span class="text-[10px] font-medium text-foreground tabular-nums shrink-0">{{ formatCredits(seg.value) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
-                            {{ $t('portfolio.noData') }}
-                        </div>
-                    </template>
-
-                </div>
-            </div>
-        </div>
-
-        <!-- ADD CUSTOM CHART CTA -->
-        <div class="px-6 pb-8">
-            <button
-                class="w-full rounded-xl border-2 border-dashed border-border/60 bg-transparent py-4 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="customCharts.length >= 5"
-                @click="customCharts.length < 5 && (showChartBuilderModal = true)"
-            >
-                <Plus class="h-4 w-4" />
-                {{ customCharts.length < 5 ? $t('portfolio.addCustomChart') : $t('portfolio.chartLimitReached') }}
-            </button>
-        </div>
+        </template>
 
         <!-- ══════════════════════════════════════════════ -->
         <!-- MODAL: MANAGE WATCHLIST                       -->
@@ -1325,7 +1628,7 @@ onUnmounted(() => {
                 <div
                     v-if="showWatchlistModal"
                     class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-                    @click.self="showWatchlistModal = false"
+                    @click.self="closeWatchlistModal()"
                 >
                     <div class="bg-card rounded-2xl w-full max-w-2xl max-h-[82vh] flex flex-col shadow-2xl">
                         <!-- Header -->
@@ -1334,7 +1637,7 @@ onUnmounted(() => {
                                 <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.modal.watchlist.title') }}</h2>
                                 <p class="text-xs text-muted-foreground mt-1">{{ $t('portfolio.modal.watchlist.subtitle') }}</p>
                             </div>
-                            <button class="text-muted-foreground hover:text-foreground transition-colors" @click="showWatchlistModal = false">
+                            <button class="text-muted-foreground hover:text-foreground transition-colors" @click="closeWatchlistModal()">
                                 <X class="h-5 w-5" />
                             </button>
                         </div>
@@ -1350,6 +1653,26 @@ onUnmounted(() => {
                                 @filter="setWatchlistFilter"
                                 @clear="clearWatchlistFilters"
                             />
+                            <div class="mt-2 flex items-center justify-between gap-3 flex-wrap">
+                                <label class="inline-flex items-center gap-2 text-xs text-muted-foreground select-none cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        class="h-3.5 w-3.5 rounded border-border accent-primary cursor-pointer"
+                                        :checked="showSelectedOnly"
+                                        @change="(e) => { showSelectedOnly = (e.target as HTMLInputElement).checked; }"
+                                    />
+                                    {{ $t('portfolio.modal.watchlist.showSelectedOnly') }}
+                                </label>
+                                <button
+                                    v-if="watchlistCandidates.length > 0"
+                                    type="button"
+                                    class="inline-flex items-center gap-1 rounded-md py-1.5 text-xs transition-colors text-muted-foreground hover:text-primary"
+                                    @click="addAllMatching()"
+                                >
+                                    <ListPlus class="h-3 w-3" />
+                                    {{ $t('portfolio.modal.watchlist.addAll') }}
+                                </button>
+                            </div>
                         </div>
                         <!-- Search -->
                         <div class="px-6 py-3 border-b shrink-0">
@@ -1367,9 +1690,9 @@ onUnmounted(() => {
                                     <p v-if="item.meta" class="text-[11px] text-muted-foreground mt-0.5">{{ item.meta }}</p>
                                 </div>
                                 <button
-                                    v-if="hasItem(item.id, item.type)"
+                                    v-if="pendingHasItem(item.id, item.type)"
                                     class="flex items-center gap-1 rounded-lg border border-destructive/30 px-3 py-1.5 text-xs text-destructive hover:bg-destructive/5 transition-colors shrink-0"
-                                    @click="removeItem(item.id, item.type)"
+                                    @click="pendingRemoveItem(item.id, item.type)"
                                 >
                                     <X class="h-3 w-3" />
                                     {{ $t('portfolio.modal.watchlist.remove') }}
@@ -1377,7 +1700,7 @@ onUnmounted(() => {
                                 <button
                                     v-else
                                     class="flex items-center gap-1 rounded-lg border border-primary/30 px-3 py-1.5 text-xs text-primary hover:bg-primary/5 transition-colors shrink-0"
-                                    @click="addItem({ id: item.id, type: item.type, name: item.name, meta: item.meta })"
+                                    @click="pendingAddItem({ id: item.id, type: item.type, name: item.name, meta: item.meta })"
                                 >
                                     <Plus class="h-3 w-3" />
                                     {{ $t('portfolio.modal.watchlist.add') }}
@@ -1389,13 +1712,21 @@ onUnmounted(() => {
                         </div>
                         <!-- Footer -->
                         <div class="px-6 py-4 border-t flex items-center justify-between shrink-0">
-                            <span class="text-xs text-muted-foreground">{{ $t('portfolio.modal.watchlist.footer', { count: watchlistCount }) }}</span>
-                            <button
-                                class="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
-                                @click="showWatchlistModal = false"
-                            >
-                                {{ $t('portfolio.modal.watchlist.done') }}
-                            </button>
+                            <span class="text-xs text-muted-foreground">{{ $t('portfolio.modal.watchlist.footer', { count: pendingWatchlist.length }) }}</span>
+                            <div class="flex items-center gap-2">
+                                <button
+                                    class="rounded-lg px-4 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                    @click="closeWatchlistModal()"
+                                >
+                                    {{ $t('portfolio.modal.watchlist.cancel') }}
+                                </button>
+                                <button
+                                    class="rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                                    @click="updateWatchlist()"
+                                >
+                                    {{ $t('portfolio.modal.watchlist.update') }}
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1450,7 +1781,7 @@ onUnmounted(() => {
                                                 :class="widgetVisible(w.key) ? 'bg-primary/15' : 'bg-muted'"
                                             >
                                                 <component
-                                                    :is="{ certificate: Coins, stack: Layers, flame: Flame, plant: FolderKanban, 'chart-line': TrendingUp, 'chart-bar': BarChart2, 'chart-donut': PieChart, target: Target, flag: Flag, building: Building2, activity: Activity, refresh: RefreshCw }[w.iconName] ?? Activity"
+                                                    :is="{ certificate: Coins, stack: Layers, flame: Flame, plant: FolderKanban, 'chart-line': TrendingUp, 'chart-bar': BarChart2, 'chart-donut': PieChart, target: Target, globe: Globe, flag: Flag, building: Building2, activity: Activity, refresh: RefreshCw }[w.iconName] ?? Activity"
                                                     class="h-3.5 w-3.5"
                                                     :class="widgetVisible(w.key) ? 'text-primary' : 'text-muted-foreground'"
                                                 />
@@ -1503,8 +1834,12 @@ onUnmounted(() => {
                         <!-- Header -->
                         <div class="flex items-start justify-between px-6 py-5 border-b">
                             <div>
-                                <h2 class="text-base font-semibold text-foreground">{{ $t('portfolio.modal.chartBuilder.title') }}</h2>
-                                <p class="text-xs text-muted-foreground mt-1">{{ $t('portfolio.modal.chartBuilder.subtitle', { used: customCharts.length, max: 5 }) }}</p>
+                                <h2 class="text-base font-semibold text-foreground">
+                                    {{ editingChartId ? $t('portfolio.modal.chartBuilder.editTitle') : $t('portfolio.modal.chartBuilder.title') }}
+                                </h2>
+                                <p class="text-xs text-muted-foreground mt-1">
+                                    {{ editingChartId ? $t('portfolio.modal.chartBuilder.editSubtitle') : $t('portfolio.modal.chartBuilder.subtitle', { used: customCharts.length, max: 5 }) }}
+                                </p>
                             </div>
                             <button class="text-muted-foreground hover:text-foreground transition-colors" @click="showChartBuilderModal = false">
                                 <X class="h-5 w-5" />
@@ -1528,8 +1863,11 @@ onUnmounted(() => {
                                     <button
                                         v-for="ct in [
                                             { type: 'line', icon: TrendingUp, label: $t('portfolio.modal.chartBuilder.types.line') },
-                                            { type: 'bar', icon: BarChart2, label: $t('portfolio.modal.chartBuilder.types.bar') },
-                                            { type: 'donut', icon: PieChart, label: $t('portfolio.modal.chartBuilder.types.donut') },
+                                            { type: 'column', icon: BarChart2, label: $t('portfolio.modal.chartBuilder.types.column') },
+                                            { type: 'bar', icon: BarChartHorizontal, label: $t('portfolio.modal.chartBuilder.types.bar') },
+                                            { type: 'pie', icon: PieChart, label: $t('portfolio.modal.chartBuilder.types.pie') },
+                                            { type: 'donut', icon: Donut, label: $t('portfolio.modal.chartBuilder.types.donut') },
+                                            { type: 'radar', icon: Radar, label: $t('portfolio.modal.chartBuilder.types.radar') },
                                         ]"
                                         :key="ct.type"
                                         class="flex flex-col items-center gap-2 rounded-xl border py-3 text-xs font-medium transition-all duration-150"
@@ -1568,11 +1906,11 @@ onUnmounted(() => {
                             </button>
                             <button
                                 class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-                                :disabled="!chartTitle.trim() || customCharts.length >= 5"
-                                @click="addCustomChart()"
+                                :disabled="!chartTitle.trim() || (!editingChartId && customCharts.length >= 5)"
+                                @click="saveCustomChart()"
                             >
-                                <Plus class="h-3.5 w-3.5" />
-                                {{ $t('portfolio.modal.chartBuilder.add') }}
+                                <component :is="editingChartId ? SquarePen : Plus" class="h-3.5 w-3.5" />
+                                {{ editingChartId ? $t('portfolio.modal.chartBuilder.update') : $t('portfolio.modal.chartBuilder.add') }}
                             </button>
                         </div>
                     </div>

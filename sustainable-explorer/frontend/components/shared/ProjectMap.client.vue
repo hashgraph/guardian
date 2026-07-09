@@ -215,5 +215,5 @@ watch(() => props.points, () => {
 
 
 <template>
-    <div ref="mapContainer" class="h-full w-full" />
+    <div ref="mapContainer" class="h-full w-full isolate" />
 </template>

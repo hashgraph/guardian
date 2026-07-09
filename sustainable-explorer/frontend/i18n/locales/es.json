@@ -1194,18 +1194,35 @@
         "addCustomChart": "Agregar gráfico personalizado",
         "widgetLibrary": "Biblioteca de widgets",
         "manageWatchlist": "Gestionar lista de seguimiento",
+        "clearWatchlist": "Eliminar lista de seguimiento",
         "watchlist": "Lista de seguimiento",
         "watchlistTypeLabels": {
             "project": "Proyectos",
             "projectSingular": "Proyecto"
         },
-        "addItems": "Agregar elementos",
-        "watchlistEmpty": "Aún no hay elementos.",
-        "watchlistClearedByFilter": "Lista de seguimiento eliminada ({count} elementos) — ahora los filtros controlan tu panel",
-        "watchlistClearedByFilterSingular": "Lista de seguimiento eliminada (1 elemento) — ahora los filtros controlan tu panel",
-        "addItemsCta": "Agregar proyectos →",
+        "empty": {
+            "title": "Tu portafolio está vacío",
+            "description": "Agrega proyectos a tu lista de seguimiento para ver estadísticas y gráficos personalizados.",
+            "cta": "Gestionar lista de seguimiento"
+        },
+        "watchedProjects": {
+            "title": "Proyectos en seguimiento",
+            "subtitle": "Proyectos de tu lista de seguimiento · haz clic en una tarjeta para ver los detalles",
+            "issued": "Emitidos",
+            "retired": "Retirados",
+            "transferred": "Transferidos",
+            "methodology": "Metodología",
+            "creditingPeriod": "Período de acreditación",
+            "sdgsLabel": "{n} ODS",
+            "open": "Abrir",
+            "scrollLeft": "Desplazar a la izquierda",
+            "scrollRight": "Desplazar a la derecha",
+            "pageOf": "{current} de {total}"
+        },
         "removeWidget": "Eliminar widget",
+        "editWidget": "Editar",
         "noData": "Sin datos disponibles",
+        "sdgGoalsCount": "{n} objetivos",
         "lastFive": "Últimos 5",
         "chartLimitReached": "Límite de gráficos alcanzado (5/5)",
         "syncedLabel": "Sincronizado —",
@@ -1242,11 +1259,12 @@
             "projectsByRegistry": "Proyectos por registro",
             "byRegistry": "por registro",
             "sdgCoverage": "Cobertura ODS",
+            "projectMap": "Distribución de proyectos",
             "topCountries": "Principales países anfitriones por créditos",
             "topCountriesSub": "Países clasificados por total de créditos emitidos",
             "topRegistries": "Principales registros",
             "recentIssuances": "Emisiones recientes",
-            "topSdgs": "Principales ODS por cantidad de proyectos",
+            "topSdgs": "Principales 10 ODS por cantidad de proyectos",
             "networkActivity": "Actividad de la red",
             "retirementTrend": "Tendencia de retiros",
             "syncStatus": "Última marca de sincronización",
@@ -1266,6 +1284,7 @@
             "projectsSector": "Gráfico de dona de proyectos o créditos por sector",
             "projectsByRegistry": "Gráfico de dona de proyectos o créditos por registro",
             "sdgRadar": "Barras de cobertura para los 17 ODS",
+            "projectMap": "Mapa mundial de las ubicaciones de proyectos en tu lista de seguimiento",
             "topCountries": "Países anfitriones clasificados por créditos totales",
             "topRegistries": "Registros más activos por política y cantidad de proyectos",
             "recentIssuances": "Los 5 tokens acuñados más recientemente",
@@ -1284,7 +1303,11 @@
                 },
                 "add": "Agregar",
                 "remove": "Eliminar",
-                "done": "Listo",
+                "update": "Actualizar lista de seguimiento",
+                "cancel": "Cancelar",
+                "addAll": "Agregar todos los proyectos a la lista de seguimiento",
+                "addAllSuccess": "{count} proyectos agregados",
+                "showSelectedOnly": "Mostrar solo seleccionados",
                 "footer": "{count} elementos en total · no se permiten duplicados"
             },
             "widgets": {
@@ -1294,7 +1317,9 @@
             },
             "chartBuilder": {
                 "title": "Agregar gráfico personalizado",
+                "editTitle": "Editar gráfico personalizado",
                 "subtitle": "{used}/5 gráficos personalizados usados — elige tipo y fuente de datos",
+                "editSubtitle": "Actualiza el tipo de gráfico, la fuente de datos o el título",
                 "chartTitle": "Título del gráfico",
                 "titlePlaceholder": "p. ej. Créditos por sector",
                 "chartType": "Tipo de gráfico",
@@ -1302,8 +1327,11 @@
                 "yAxis": "Eje Y (Métrica)",
                 "types": {
                     "line": "Línea",
-                    "bar": "Barras",
-                    "donut": "Dona"
+                    "column": "Barras verticales",
+                    "bar": "Barras horizontales",
+                    "pie": "Circular",
+                    "donut": "Dona",
+                    "radar": "Radar"
                 },
                 "axes": {
                     "month": "Tiempo — Mes",
@@ -1317,7 +1345,8 @@
                     "retirements": "Volumen de retiros"
                 },
                 "note": "Los gráficos reflejan tu lista de seguimiento activa. Hasta 5 gráficos personalizados en total.",
-                "add": "Agregar gráfico"
+                "add": "Agregar gráfico",
+                "update": "Actualizar gráfico"
             }
         }
     }
