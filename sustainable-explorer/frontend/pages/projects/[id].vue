@@ -864,14 +864,14 @@ const emissions = computed(() => {
                                 Methodology Field Mapping
                             </h2>
                             <p class="text-[11px] text-muted-foreground mt-0.5">
-                                <NuxtLink
+                                <AppLink
                                     v-if="project.instanceTopicId"
                                     :to="`/methodologies/${project.instanceTopicId}`"
                                     class="text-primary hover:underline transition-colors inline-flex items-center gap-1"
                                     @click.stop
                                 >
                                     {{ fullMethodologyName }}
-                                </NuxtLink>
+                                </AppLink>
                                 <span v-else>{{ fullMethodologyName }}</span>
                                 — how project fields map to schema fields
                             </p>

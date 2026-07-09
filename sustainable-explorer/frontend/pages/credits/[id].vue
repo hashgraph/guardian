@@ -373,13 +373,13 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                         {{ $t('credits.detail.connectedProject') }}
                     </div>
                     <div class="text-sm font-medium text-foreground">
-                        <NuxtLink
+                        <AppLink
                             v-if="connectedProject?.projectId && connectedProject?.project"
                             :to="`/projects/${encodeURIComponent(connectedProject.projectId)}`"
                             class="text-primary hover:underline transition-colors"
                         >
                             {{ connectedProject.project }}
-                        </NuxtLink>
+                        </AppLink>
                         <span v-else>{{ connectedProject?.project ?? '—' }}</span>
                     </div>
                 </div>
@@ -609,23 +609,23 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                     <div class="px-5 py-4 space-y-2">
                         <template v-if="projects.length">
                             <div v-for="p in projects" :key="p.projectId ?? p.project ?? ''">
-                                <NuxtLink
+                                <AppLink
                                     v-if="p.projectId && p.project"
                                     :to="`/projects/${encodeURIComponent(p.projectId)}`"
                                     class="text-sm text-primary hover:underline transition-colors"
                                 >
                                     {{ p.project }}
-                                </NuxtLink>
+                                </AppLink>
                                 <span v-else class="text-sm text-muted-foreground">{{ p.project ?? p.projectId }}</span>
                             </div>
                         </template>
-                        <NuxtLink
+                        <AppLink
                             v-else-if="credit.projectId && credit.project"
                             :to="`/projects/${encodeURIComponent(credit.projectId)}`"
                             class="text-sm text-primary hover:underline transition-colors"
                         >
                             {{ credit.project }}
-                        </NuxtLink>
+                        </AppLink>
                         <span v-else class="text-sm text-muted-foreground">{{ $t('credits.detail.noProject') }}</span>
                     </div>
                 </div>
@@ -642,13 +642,13 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                         </p>
                     </div>
                     <div class="px-5 py-4">
-                        <NuxtLink
+                        <AppLink
                             v-if="credit.methodologyId && credit.methodology"
                             :to="`/methodologies/${encodeURIComponent(credit.methodologyId)}`"
                             class="text-sm text-primary hover:underline transition-colors"
                         >
                             {{ credit.methodology }}
-                        </NuxtLink>
+                        </AppLink>
                         <span v-else-if="credit.methodology" class="text-sm text-foreground">{{ credit.methodology }}</span>
                         <span v-else class="text-sm text-muted-foreground">{{ $t('credits.detail.noMethodology') }}</span>
                     </div>
@@ -666,13 +666,13 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                         </p>
                     </div>
                     <div class="px-5 py-4">
-                        <NuxtLink
+                        <AppLink
                             v-if="credit.registryDid && credit.registry"
                             :to="`/registries/${encodeURIComponent(credit.registryDid)}`"
                             class="text-sm text-primary hover:underline transition-colors"
                         >
                             {{ credit.registry }}
-                        </NuxtLink>
+                        </AppLink>
                         <span v-else class="text-sm text-muted-foreground">{{ $t('credits.detail.noRegistry') }}</span>
                     </div>
                 </div>

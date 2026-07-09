@@ -409,9 +409,9 @@ async function downloadMethodologies() {
         <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
             <span class="text-muted-foreground">{{ $t('methodologies.filteredByRegistry') }}</span>
             <span v-if="registriesData" class="font-medium text-foreground">{{ registryFilterName ?? $t('methodologies.unknownRegistry') }}</span>
-            <NuxtLink to="/methodologies" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <AppLink to="/methodologies" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {{ $t('methodologies.clearRegistryFilter') }} ×
-            </NuxtLink>
+            </AppLink>
         </div>
     </div>
 
@@ -562,14 +562,14 @@ async function downloadMethodologies() {
                   </div>
                 </td>
                 <td class="py-3 px-4">
-                  <NuxtLink
+                  <AppLink
                     v-if="r.registryDid"
                     :to="`/registries?did=${encodeURIComponent(r.registryDid)}`"
                     :title="r.registryDid"
                     class="text-sm text-foreground hover:text-primary hover:underline transition-colors break-words"
                   >
                     {{ r.registryName || r.registryDid }}
-                  </NuxtLink>
+                  </AppLink>
                   <span v-else class="text-xs text-muted-foreground">—</span>
                 </td>
                 <td class="py-3 px-4">
@@ -589,7 +589,7 @@ async function downloadMethodologies() {
                   </span>
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums font-medium">
-                  <NuxtLink
+                  <AppLink
                     v-if="r.sourceTimestamp && r.stats.instanceIssuanceCount > 0"
                     :to="`/credits?methodologyId=${encodeURIComponent(r.sourceTimestamp)}`"
                     :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount
@@ -599,7 +599,7 @@ async function downloadMethodologies() {
                     @click.stop
                   >
                     {{ formatCredits(r.stats.instanceIssuanceCount) }}
-                  </NuxtLink>
+                  </AppLink>
                   <span
                     v-else
                     :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount

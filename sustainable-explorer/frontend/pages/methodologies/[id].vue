@@ -970,10 +970,10 @@ function getResolvedField(fieldKey: string) {
         <p class="text-xs text-muted-foreground mb-4">
           {{ $t('methodologies.detail.notFoundDesc', { id, network }) }}
         </p>
-        <NuxtLink
+        <AppLink
           to="/methodologies"
           class="text-sm text-primary hover:underline"
-          >← {{ $t('methodologies.detail.backLink') }}</NuxtLink
+          >← {{ $t('methodologies.detail.backLink') }}</AppLink
         >
       </div>
     </template>
@@ -1164,13 +1164,13 @@ function getResolvedField(fieldKey: string) {
                         </button>
                       </div>
                       <!-- Project count -->
-                      <NuxtLink
+                      <AppLink
                         :to="{ path: '/projects', query: { country: activeGeoDetail.country } }"
                         class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
                       >
                         <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeGeoDetail.projects.toLocaleString() }}</div>
                         <div class="text-[11px] text-muted-foreground mt-0.5">Active Projects →</div>
-                      </NuxtLink>
+                      </AppLink>
                       <!-- Sector breakdown -->
                       <div v-if="activeGeoDetail.sectors.length > 0">
                         <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>

@@ -381,14 +381,13 @@
         "noRegistries": "No registries match the selected filters",
         "issuanceTrend": "Issuance Trend",
         "issuanceTrendTooltip": "Issuance volume over time derived from project creation dates.",
-        "volumeMillions": "Volume (millions)",
+        "volumeMillions": "Volume (credits)",
         "monthly": "Monthly",
         "quarterly": "Quarterly",
         "yearly": "Yearly",
         "months": "months",
         "quarters": "quarters",
         "years": "years",
-        "mTotal": "M total",
         "noIssuanceData": "No issuance data matches the selected filters",
         "analytics": "Analytics",
         "retirementTrend": "Retirement Trend",
@@ -1232,7 +1231,7 @@
         "noData": "No data available",
         "sdgGoalsCount": "{n} goals",
         "lastFive": "Last 5",
-        "chartLimitReached": "Chart limit reached (5/5)",
+        "chartLimitReached": "Chart limit reached ({max}/{max})",
         "syncedLabel": "Synced —",
         "syncedSub": "Hedera Mainnet · {projects} projects indexed",
         "kpi": {
@@ -1268,7 +1267,7 @@
             "byRegistry": "by Registry",
             "sdgCoverage": "SDG Coverage",
             "projectMap": "Project Distribution",
-            "topCountries": "Top Host Countries by Credits",
+            "topCountries": "Top 10 Host Countries by Credits",
             "topCountriesSub": "Countries ranked by total credits issued",
             "topRegistries": "Top Registries",
             "recentIssuances": "Recent Issuances",
@@ -1307,7 +1306,8 @@
                 "filters": {
                     "country": "Country",
                     "methodology": "Methodology",
-                    "registry": "Registry"
+                    "registry": "Registry",
+                    "sdgs": "SDGs"
                 },
                 "add": "Add",
                 "remove": "Remove",
@@ -1326,7 +1326,7 @@
             "chartBuilder": {
                 "title": "Add Custom Chart",
                 "editTitle": "Edit Custom Chart",
-                "subtitle": "{used}/5 custom charts used — choose type and data source",
+                "subtitle": "{used}/{max} custom charts used — choose type and data source",
                 "editSubtitle": "Update the chart type, data source, or title",
                 "chartTitle": "Chart Title",
                 "titlePlaceholder": "e.g. Credits by Sector",
@@ -1352,7 +1352,9 @@
                     "projects": "Project Count",
                     "retirements": "Retirement Volume"
                 },
-                "note": "Charts reflect your active watchlist. Up to 5 custom charts total.",
+                "note": "Charts reflect your active watchlist. Up to {max} custom charts total.",
+                "duplicateName": "A chart with this name already exists.",
+                "duplicateConfig": "You already have a chart with this configuration: \"{name}\" ({config}).",
                 "add": "Add Chart",
                 "update": "Update Chart"
             }
