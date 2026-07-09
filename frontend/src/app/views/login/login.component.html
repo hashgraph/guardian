@@ -52,10 +52,19 @@
       }
       <span class="login-brand-name">{{ companyName }}</span>
     </div>
-    <div class="login-banner-caption">
-      <p class="login-banner-title">Verifiable digital environmental assets</p>
-      <p class="login-banner-subtitle">Auditable, transparent, and trusted on the public ledger.</p>
-    </div>
+    @if (!backgroundImageData) {
+      <div class="login-banner-content">
+        <div class="login-banner-caption">
+          <p class="login-banner-title">Verifiable digital environmental assets</p>
+          <p class="login-banner-subtitle">Auditable, transparent, and trusted on the public ledger.</p>
+        </div>
+        <ul class="login-banner-features">
+          <li><i class="pi pi-check"></i><span>Tokenized carbon &amp; environmental assets</span></li>
+          <li><i class="pi pi-check"></i><span>Immutable on-chain audit trail</span></li>
+          <li><i class="pi pi-check"></i><span>Policy-driven, automated workflows</span></li>
+        </ul>
+      </div>
+    }
   </div>
 
   <div [class.w-100]="brandingLoading" class="login-form">
@@ -67,7 +76,7 @@
           }
           <span class="login-brand-name">{{ companyName }}</span>
         </div>
-        <h1>Welcome back</h1>
+        <h1>Welcome</h1>
         <p class="login-subtitle">Log in to your account</p>
         <form [formGroup]="loginForm">
           <div class="form-input-container">
