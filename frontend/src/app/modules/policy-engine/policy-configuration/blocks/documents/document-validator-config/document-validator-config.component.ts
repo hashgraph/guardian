@@ -121,7 +121,6 @@ export class DocumentValidatorConfigComponent implements OnInit {
             onlyAssignByGroupDocuments: false,
             filters: [],
             conditions: [],
-            failMessage: 'Validation failed',
         });
         this.onSave();
     }

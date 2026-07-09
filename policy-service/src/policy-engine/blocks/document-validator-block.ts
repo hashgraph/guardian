@@ -93,26 +93,15 @@ export class DocumentValidatorBlock {
         const l = JSON.stringify(left);
         const r = JSON.stringify(right);
         switch (type) {
-            case 'not_equal': return `value ${l} must not equal ${r}`;
-            case 'in':        return `value ${l} is not in ${r}`;
-            case 'not_in':    return `value ${l} must not be in ${r}`;
-            case 'gt':        return `value ${l} is not greater than ${r}`;
-            case 'gte':       return `value ${l} is not greater than or equal to ${r}`;
-            case 'lt':        return `value ${l} is not less than ${r}`;
-            case 'lte':       return `value ${l} is not less than or equal to ${r}`;
+            case 'not_equal': return `Value ${l} must not equal ${r}`;
+            case 'in':        return `Value ${l} is not in ${r}`;
+            case 'not_in':    return `Value ${l} must not be in ${r}`;
+            case 'gt':        return `Value ${l} is not greater than ${r}`;
+            case 'gte':       return `Value ${l} is not greater than or equal to ${r}`;
+            case 'lt':        return `Value ${l} is not less than ${r}`;
+            case 'lte':       return `Value ${l} is not less than or equal to ${r}`;
             default:          return `got ${l}, expected ${r}`;
         }
-    }
-
-    private buildSourceHint(detail: string, matched: number, total: number): string {
-        if (matched === total) { return 'Matches all sources - not blocking'; }
-        const m = detail.match(/^value (.+?) (?:is|must)/) ?? detail.match(/^got (.+?),/);
-        const raw = m ? m[1].replace(/^"|"$/g, '') : null;
-        const val = raw !== null ? `"${raw}"` : null;
-        if (matched === 0) {
-            return val ? `${val} not found in any source` : 'Not found in any source';
-        }
-        return val ? `${val} valid in some sources` : 'Valid in some sources';
     }
 
     private buildSourceFilter(
@@ -184,8 +173,6 @@ export class DocumentValidatorBlock {
             ? await ref.databaseServer.getVpDocuments(filter as any) as any[]
             : await ref.databaseServer.getVcDocuments(filter as any) as any[];
 
-        const title = sourceValidation.failMessage || ref.tag;
-
         if (!sourceDocuments?.length) {
             const filterSummary = (sourceValidation.filters || [])
                 .map((f: any) => {
@@ -196,9 +183,9 @@ export class DocumentValidatorBlock {
                 })
                 .join(', ');
             const detail = filterSummary
-                ? `no source documents matched filter(s): ${filterSummary}`
-                : 'no matching source documents found';
-            return `${title}: ${detail}`;
+                ? `No source documents matched filter(s): ${filterSummary}`
+                : 'No matching source documents found';
+            return `Validation failed\n\n${detail}`;
         }
 
         const conditions = sourceValidation.conditions || [];
@@ -206,21 +193,23 @@ export class DocumentValidatorBlock {
             return null;
         }
 
-        const failureMap = new Map<string, { field: string, detail: string, count: number }>();
+        const failureMap = new Map<string, { field: string, type: string, leftValue: any, detail: string, count: number }>();
         for (const sourceDoc of sourceDocuments) {
             let failed = false;
             const counted = new Set<string>();
-            for (const condition of conditions) {
+            for (let ci = 0; ci < conditions.length; ci++) {
+                const condition = conditions[ci];
                 const coerceDeep = (v: any) => Array.isArray(v) ? v.map((e: any) => this.coerceValue(e)) : this.coerceValue(v);
                 const left  = coerceDeep(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
                 const right = coerceDeep(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
                 if (!this.evaluateCrossCondition(left, condition.type, right)) {
-                    if (!failureMap.has(condition.field)) {
-                        failureMap.set(condition.field, { field: condition.field, detail: this.describeCrossConditionFailure(condition.type, left, right), count: 0 });
+                    const key = `${condition.field}\0${ci}`;
+                    if (!failureMap.has(key)) {
+                        failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, detail: this.describeCrossConditionFailure(condition.type, left, right), count: 0 });
                     }
-                    if (!counted.has(condition.field)) {
-                        failureMap.get(condition.field).count++;
-                        counted.add(condition.field);
+                    if (!counted.has(key)) {
+                        failureMap.get(key).count++;
+                        counted.add(key);
                     }
                     failed = true;
                 }
@@ -237,12 +226,20 @@ export class DocumentValidatorBlock {
         const schemaName = schema?.name ?? null;
 
         const N = failureMap.size;
-        let msg = `Checked ${N} field${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}`;
-        for (const { field, detail, count } of Array.from(failureMap.values())) {
-            const matched = total - count;
+        let msg = `Validation failed\n\nChecked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}`;
+        for (const { field, type, leftValue, detail, count } of Array.from(failureMap.values())) {
             const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
             const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
-            const hint = this.buildSourceHint(detail, matched, total);
+            let hint: string;
+            if (count < total) {
+                hint = 'Matches some sources, conflicts with other fields';
+            } else if (type === 'in') {
+                hint = `Value ${JSON.stringify(leftValue)} not found in any sources`;
+            } else if (type === 'not_in') {
+                hint = `Value ${JSON.stringify(leftValue)} must not appear in sources`;
+            } else {
+                hint = detail;
+            }
             msg += `\n\n${label}\n(${hint})`;
         }
         return msg;

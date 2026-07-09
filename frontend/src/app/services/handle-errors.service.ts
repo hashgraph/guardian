@@ -82,6 +82,9 @@ export class HandleErrorsService implements HttpInterceptor {
                 }
                 if (errorObject.type) {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : errorObject.type}`;
+                } else if (!translatedMessage.wasTranslated && translatedMessage.text.startsWith('Validation failed')) {
+                    header = 'Validation failed';
+                    text = this.messageToText(translatedMessage.text.replace(/^Validation failed\n+/, ''));
                 } else {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }

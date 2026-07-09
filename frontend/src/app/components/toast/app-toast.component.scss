@@ -1,5 +1,8 @@
 .p-toast-detail {
     white-space: pre-line;
+    word-break: break-word;
+    max-height: 180px;
+    overflow-y: auto;
 }
 
 .toast-logs-link {

@@ -205,15 +205,6 @@
         </td>
       </tr>
 
-      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Fail Message</td>
-        <td class="propRowCell">
-          <input class="prop-input" [(ngModel)]="validation.failMessage"
-            [readonly]="readonly" (blur)="onSave()">
-        </td>
-      </tr>
-
       <!-- Source Filters -->
       <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.sourceFilters, vi)"
