@@ -15,7 +15,7 @@ describe('PolicyUtils.getSchemaContext', () => {
     });
 
     it('returns a synthetic context in dry run mode', () => {
-        assert.equal(PolicyUtils.getSchemaContext({ dryRun: 'dry' }, schema()), 'schema#MyType');
+        assert.equal(PolicyUtils.getSchemaContext({ dryRun: 'dry' }, schema()), 'schema:MyType');
     });
 });
 
@@ -61,7 +61,7 @@ describe('PolicyUtils.checkDocumentSchema', () => {
     });
 
     it('uses the dry run context when in dry run mode', () => {
-        const doc = vcDocument({ '@context': ['schema#MyType'], type: 'MyType' });
+        const doc = vcDocument({ '@context': ['schema:MyType'], type: 'MyType' });
         assert.isTrue(PolicyUtils.checkDocumentSchema({ dryRun: 'dry' }, doc, schema()));
     });
 });
