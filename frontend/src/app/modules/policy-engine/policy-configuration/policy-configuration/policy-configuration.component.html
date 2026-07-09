@@ -910,22 +910,24 @@
                 }
                 @if (moduleDescription) {
                   <div class="pc-tabs">
-                    <div class="pc-tabs-headers">
-                      <div (click)="select('descriptionModule')"
-                        [attr.selected]="options.descriptionModule" class="tab-header">
-                        Description
-                      </div>
-                      <div (click)="select('inputsModule')" [attr.selected]="options.inputsModule"
-                        class="tab-header">
-                        Inputs
-                      </div>
-                      <div (click)="select('outputsModule')" [attr.selected]="options.outputsModule"
-                        class="tab-header">
-                        Outputs
-                      </div>
-                      <div (click)="select('variablesModule')" [attr.selected]="options.variablesModule"
-                        class="tab-header">
-                        Variables
+                    <div class="pc-tabs-headers pc-tabs-headers--segment">
+                      <div class="segment-track">
+                        <div (click)="select('descriptionModule')"
+                          [attr.selected]="options.descriptionModule" class="tab-header">
+                          <span class="tab-header-label">Description</span>
+                        </div>
+                        <div (click)="select('inputsModule')" [attr.selected]="options.inputsModule"
+                          class="tab-header">
+                          <span class="tab-header-label">Inputs</span>
+                        </div>
+                        <div (click)="select('outputsModule')" [attr.selected]="options.outputsModule"
+                          class="tab-header">
+                          <span class="tab-header-label">Outputs</span>
+                        </div>
+                        <div (click)="select('variablesModule')" [attr.selected]="options.variablesModule"
+                          class="tab-header">
+                          <span class="tab-header-label">Variables</span>
+                        </div>
                       </div>
                     </div>
                     <div [attr.readonly]="!isTree" class="pc-tabs-content">

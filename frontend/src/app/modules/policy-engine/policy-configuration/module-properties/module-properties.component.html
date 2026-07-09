@@ -15,11 +15,12 @@
 
         @if (type == 'Main') {
           <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')"
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName" (click)="onHide(propHidden, 'main')"
               [attr.collapse]="propHidden.main">
-              <i class="pi pi-caret-down"></i>
+              <i class="pi pi-chevron-down chevron-icon"></i>
+              <span>Module</span>
             </td>
-            <td class="propHeaderCell cellName">Module</td>
             <td class="propHeaderCell"></td>
           </tr>
           <!-- Meta Data  -->
@@ -64,11 +65,12 @@
           <!-- Variables  -->
           @for (item of variables; track item; let i = $index) {
             <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)"
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" (click)="onHide(propHidden.variables, i)"
                 [attr.collapse]="propHidden.variables[i]">
-                <i class="pi pi-caret-down"></i>
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>Variable</span>
               </td>
-              <td class="propHeaderCell cellName">Variable</td>
               <td class="propHeaderCell">
                 <div>{{ item.name }}</div>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(item)">
@@ -157,12 +159,13 @@
           <!-- Inputs  -->
           @for (item of inputs; track item; let i = $index) {
             <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.inputs, i)"
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" (click)="onHide(propHidden.inputs, i)"
                 [attr.collapse]="propHidden.inputs[i]">
-                <i class="pi pi-caret-down"></i>
-              </td>
-              <td class="propHeaderCell cellName">
-                Input Events
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>
+                  Input Events
+                </span>
               </td>
               <td class="propHeaderCell">
                 <div>{{ item.name }}</div>
@@ -208,12 +211,13 @@
           <!-- Outputs  -->
           @for (item of outputs; track item; let i = $index) {
             <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.outputs, i)"
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" (click)="onHide(propHidden.outputs, i)"
                 [attr.collapse]="propHidden.outputs[i]">
-                <i class="pi pi-caret-down"></i>
-              </td>
-              <td class="propHeaderCell cellName">
-                Output Events
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>
+                  Output Events
+                </span>
               </td>
               <td class="propHeaderCell">
                 <div>{{ item.name }}</div>

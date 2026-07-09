@@ -334,6 +334,38 @@
                 padding-right: 34px;
             }
 
+            .propRowCell.wrapper-readonly-prop {
+                height: auto;
+                min-height: var(--pc-row-height);
+                box-sizing: border-box;
+                border: none !important;
+                border-radius: 0 !important;
+                background: var(--pc-background-color);
+                padding: 2px 4px !important;
+            }
+
+            .propRowCell.wrapper-readonly-prop > .readonly-prop {
+                position: static;
+                display: flex;
+                align-items: center;
+                height: var(--pc-control-height) !important;
+                min-height: var(--pc-control-height);
+                box-sizing: border-box;
+                border: 1px solid var(--pc-control-border-color);
+                border-radius: var(--pc-control-border-radius);
+                padding: 4px 8px;
+                width: 100%;
+                background: var(--guardian-background, #fff);
+                color: var(--guardian-font-color, #23252E) !important;
+                font-size: var(--pc-row-font-size);
+                font-family: var(--pc-row-font-family);
+                font-weight: 400;
+                line-height: 18px;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
+            }
+
             .required-fields {
                 position: relative !important;
                 width: 8px !important;

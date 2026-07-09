@@ -90,9 +90,10 @@
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    width: 18px !important;
-    height: 18px !important;
-    border-radius: 4px;
+    width: 20px !important;
+    min-width: 20px !important;
+    height: 20px !important;
+    border-radius: 5px;
     overflow: visible !important;
 }
 
@@ -111,7 +112,7 @@
 .prop-output-icon i,
 .prop-output-icon svg {
     position: static !important;
-    font-size: 10px !important;
+    font-size: 11px !important;
     height: auto;
     width: auto;
 }
