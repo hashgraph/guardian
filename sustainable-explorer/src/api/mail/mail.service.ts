@@ -6,6 +6,7 @@ import {
     passwordResetEmailTemplate,
     welcomeEmailTemplate,
     accountDeactivatedEmailTemplate,
+    accountReactivatedEmailTemplate,
 } from './templates';
 
 /**
@@ -158,6 +159,18 @@ export class MailService {
      */
     async sendDeactivationEmail(to: string, userName = ''): Promise<void> {
         const { subject, html, text } = accountDeactivatedEmailTemplate(userName);
+        await this.send(to, subject, html, text);
+    }
+
+    /**
+     * Sends an account-reactivation notice.
+     *
+     * @param to        Recipient address (logged).
+     * @param loginLink App root URL (login is a modal — no /login route).
+     * @param userName  Display name for the greeting line (optional).
+     */
+    async sendReactivationEmail(to: string, loginLink: string, userName = ''): Promise<void> {
+        const { subject, html, text } = accountReactivatedEmailTemplate(userName, loginLink);
         await this.send(to, subject, html, text);
     }
 }
