@@ -381,14 +381,13 @@
         "noRegistries": "Ningún registro coincide con los filtros seleccionados",
         "issuanceTrend": "Tendencia de emisiones",
         "issuanceTrendTooltip": "Volumen de emisiones a lo largo del tiempo derivado de las fechas de creación de proyectos.",
-        "volumeMillions": "Volumen (millones)",
+        "volumeMillions": "Volumen (créditos)",
         "monthly": "Mensual",
         "quarterly": "Trimestral",
         "yearly": "Anual",
         "months": "meses",
         "quarters": "trimestres",
         "years": "años",
-        "mTotal": "M total",
         "noIssuanceData": "No hay datos de emisiones que coincidan con los filtros seleccionados",
         "analytics": "Analíticas",
         "retirementTrend": "Tendencia de retiros",
@@ -1224,7 +1223,7 @@
         "noData": "Sin datos disponibles",
         "sdgGoalsCount": "{n} objetivos",
         "lastFive": "Últimos 5",
-        "chartLimitReached": "Límite de gráficos alcanzado (5/5)",
+        "chartLimitReached": "Límite de gráficos alcanzado ({max}/{max})",
         "syncedLabel": "Sincronizado —",
         "syncedSub": "Hedera Mainnet · {projects} proyectos indexados",
         "kpi": {
@@ -1260,7 +1259,7 @@
             "byRegistry": "por registro",
             "sdgCoverage": "Cobertura ODS",
             "projectMap": "Distribución de proyectos",
-            "topCountries": "Principales países anfitriones por créditos",
+            "topCountries": "Principales 10 países anfitriones por créditos",
             "topCountriesSub": "Países clasificados por total de créditos emitidos",
             "topRegistries": "Principales registros",
             "recentIssuances": "Emisiones recientes",
@@ -1299,7 +1298,8 @@
                 "filters": {
                     "country": "País",
                     "methodology": "Metodología",
-                    "registry": "Registro"
+                    "registry": "Registro",
+                    "sdgs": "ODS"
                 },
                 "add": "Agregar",
                 "remove": "Eliminar",
@@ -1318,7 +1318,7 @@
             "chartBuilder": {
                 "title": "Agregar gráfico personalizado",
                 "editTitle": "Editar gráfico personalizado",
-                "subtitle": "{used}/5 gráficos personalizados usados — elige tipo y fuente de datos",
+                "subtitle": "{used}/{max} gráficos personalizados usados — elige tipo y fuente de datos",
                 "editSubtitle": "Actualiza el tipo de gráfico, la fuente de datos o el título",
                 "chartTitle": "Título del gráfico",
                 "titlePlaceholder": "p. ej. Créditos por sector",
@@ -1344,7 +1344,9 @@
                     "projects": "Cantidad de proyectos",
                     "retirements": "Volumen de retiros"
                 },
-                "note": "Los gráficos reflejan tu lista de seguimiento activa. Hasta 5 gráficos personalizados en total.",
+                "note": "Los gráficos reflejan tu lista de seguimiento activa. Hasta {max} gráficos personalizados en total.",
+                "duplicateName": "Ya existe un gráfico con este nombre.",
+                "duplicateConfig": "Ya tienes un gráfico con esta configuración: \"{name}\" ({config}).",
                 "add": "Agregar gráfico",
                 "update": "Actualizar gráfico"
             }

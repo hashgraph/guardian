@@ -1,6 +1,7 @@
 import type { Project } from '~/types/models';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { naturalCompare, isValidCountryName } from '~/lib/utils';
+import { SDG_LIST } from '~/lib/sdgs';
 
 // Both endpoints are paginated with no "all" mode; methodology/registry
 // catalogs are small enough that a single high-limit page covers them.
@@ -78,10 +79,18 @@ export function usePortfolioWatchlistFilters() {
             .map(r => ({ value: r.name, label: r.name }))
             .sort((a, b) => a.label.localeCompare(b.label)));
 
+    const sdgOptions = computed(() =>
+        SDG_LIST.map(s => ({
+            value: String(s.id),
+            label: `SDG ${s.id}: ${s.name}`,
+            icon: `/sdgs/E-WEB-Goal-${String(s.id).padStart(2, '0')}.png`,
+        })));
+
     const filterOptions = computed<FilterOption[]>(() => [
         { key: 'country', label: t('portfolio.modal.watchlist.filters.country'), multiSelect: true, searchable: true, options: countryOptions.value },
         { key: 'methodology', label: t('portfolio.modal.watchlist.filters.methodology'), multiSelect: true, searchable: true, options: methodologyOptions.value },
         { key: 'registry', label: t('portfolio.modal.watchlist.filters.registry'), multiSelect: true, searchable: true, options: registryOptions.value },
+        { key: 'sdgs', label: t('portfolio.modal.watchlist.filters.sdgs'), multiSelect: true, options: sdgOptions.value },
     ]);
 
     // Matches by normalized display name — same join the Projects table's own
@@ -95,6 +104,9 @@ export function usePortfolioWatchlistFilters() {
 
         const registry = watchlistFilters.value.registry;
         if (registry && !registry.split('|').some(name => norm(name) === norm(p.registry))) return false;
+
+        const sdgs = watchlistFilters.value.sdgs;
+        if (sdgs && !sdgs.split('|').some(id => p.sdgs.includes(Number(id)))) return false;
 
         return true;
     }

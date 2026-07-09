@@ -338,7 +338,7 @@ function onSearchKeydown(e: KeyboardEvent) {
         <nav v-if="breadcrumbs.length > 0" class="flex items-center gap-1.5 min-w-0">
             <template v-for="(crumb, idx) in breadcrumbs" :key="idx">
                 <ChevronRight v-if="idx > 0" class="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
-                <NuxtLink
+                <AppLink
                     v-if="crumb.to"
                     :to="crumb.to"
                     class="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
@@ -346,7 +346,7 @@ function onSearchKeydown(e: KeyboardEvent) {
                 >
                     <component :is="crumb.icon" v-if="crumb.icon" class="h-3.5 w-3.5" />
                     <span class="hidden md:inline">{{ crumb.label }}</span>
-                </NuxtLink>
+                </AppLink>
                 <span
                     v-else
                     class="flex items-center gap-1 text-xs font-medium text-foreground min-w-0 max-w-[140px] md:max-w-[240px]"

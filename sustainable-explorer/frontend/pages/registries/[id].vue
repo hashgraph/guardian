@@ -284,9 +284,9 @@ function openRawData() {
                 <p class="text-xs text-muted-foreground mb-4">
                     {{ $t('registries.detail.notFoundDesc', { id: registryId, network }) }}
                 </p>
-                <NuxtLink to="/registries" class="text-sm text-primary hover:underline">
+                <AppLink to="/registries" class="text-sm text-primary hover:underline">
                     ← {{ $t('registries.detail.backLink') }}
-                </NuxtLink>
+                </AppLink>
             </div>
         </template>
 
@@ -348,7 +348,7 @@ function openRawData() {
 
             <!-- ── Stats Cards ─────────────────────────────────────────── -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <NuxtLink
+                <AppLink
                     :to="`/methodologies?registryDid=${encodeURIComponent(registry.did)}`"
                     class="group rounded-xl border bg-card px-5 py-5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:border-border/80"
                 >
@@ -364,9 +364,9 @@ function openRawData() {
                         {{ registry.stats.policyCount.toLocaleString() }}
                     </div>
                     <p class="text-xs text-muted-foreground mt-1">{{ $t('dashboard.stats.methodologiesSub') }}</p>
-                </NuxtLink>
+                </AppLink>
 
-                <NuxtLink
+                <AppLink
                     :to="`/projects?registryDid=${encodeURIComponent(registry.did)}`"
                     class="group rounded-xl border bg-card px-5 py-5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:border-border/80"
                 >
@@ -382,9 +382,9 @@ function openRawData() {
                         {{ registry.stats.projectCount.toLocaleString() }}
                     </div>
                     <p class="text-xs text-muted-foreground mt-1">{{ $t('dashboard.stats.projectsSub') }}</p>
-                </NuxtLink>
+                </AppLink>
 
-                <NuxtLink
+                <AppLink
                     :to="`/credits?registryDid=${encodeURIComponent(registry.did)}&linkedOnly=true`"
                     class="group rounded-xl border bg-card px-5 py-5 transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md hover:border-border/80"
                 >
@@ -400,7 +400,7 @@ function openRawData() {
                         {{ formatCredits(registryMinted) }}
                     </div>
                     <p class="text-xs text-muted-foreground mt-1">{{ $t('dashboard.stats.totalIssuancesSub') }}</p>
-                </NuxtLink>
+                </AppLink>
             </div>
 
             <!-- ── Details / Advanced Tab Card ──────────────────────── -->
@@ -637,13 +637,13 @@ function openRawData() {
                                     </button>
                                 </div>
                                 <!-- Project count -->
-                                <NuxtLink
+                                <AppLink
                                     :to="{ path: '/projects', query: { country: activeMapDetail.country } }"
                                     class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
                                 >
                                     <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeMapDetail.projects.toLocaleString() }}</div>
                                     <div class="text-[11px] text-muted-foreground mt-0.5">Active Projects →</div>
-                                </NuxtLink>
+                                </AppLink>
                                 <!-- Sector breakdown -->
                                 <div v-if="activeMapDetail.sectors.length > 0">
                                     <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
@@ -681,11 +681,11 @@ function openRawData() {
                         </h2>
                         <p class="text-xs text-muted-foreground mt-0.5">{{ $t('registries.detail.topMethodologies.subtitle') }}</p>
                     </div>
-                    <NuxtLink
+                    <AppLink
                         v-if="registry.did"
                         :to="`/methodologies?registryDid=${encodeURIComponent(registry.did)}`"
                         class="text-xs font-medium text-primary hover:underline"
-                    >{{ $t('common.viewAll') }}</NuxtLink>
+                    >{{ $t('common.viewAll') }}</AppLink>
                 </div>
 
                 <!-- Loading -->
@@ -700,7 +700,7 @@ function openRawData() {
 
                 <!-- Data -->
                 <div v-else-if="topMethodologies.length > 0" class="divide-y">
-                    <NuxtLink
+                    <AppLink
                         v-for="(m, i) in topMethodologies"
                         :key="m.id"
                         :to="m.topicId ? `/methodologies/${encodeURIComponent(m.topicId)}` : undefined"
@@ -723,7 +723,7 @@ function openRawData() {
                                 <div class="text-[10px] text-muted-foreground">{{ $t('registries.detail.topMethodologies.issuances') }}</div>
                             </div>
                         </div>
-                    </NuxtLink>
+                    </AppLink>
                 </div>
 
                 <!-- Empty -->

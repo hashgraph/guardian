@@ -95,7 +95,7 @@ const portfolioItem = computed(() => ({
              tooltip activates only when collapsed so icon-only items remain
              discoverable. -->
         <nav class="flex-1 space-y-0.5 px-2 pt-1 overflow-y-auto overflow-x-hidden">
-            <NuxtLink
+            <AppLink
                 v-for="item in navItems"
                 :key="item.to"
                 :to="item.to"
@@ -117,13 +117,13 @@ const portfolioItem = computed(() => ({
                 >
                     <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                 </Transition>
-            </NuxtLink>
+            </AppLink>
 
             <!-- Divider + Portfolio pinned below all main nav items — the
                  customizable dashboard is per-user, so guests never see the tab. -->
             <template v-if="isAuthenticated">
                 <div class="mx-1 my-1.5 h-px bg-border/60" />
-                <NuxtLink
+                <AppLink
                     :to="portfolioItem.to"
                     :title="collapsed ? portfolioItem.label : undefined"
                     class="group relative flex items-center gap-3 rounded-lg px-3 py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:scale-y-0 before:rounded-r-full before:bg-primary before:transition-transform before:duration-200 before:ease-out"
@@ -143,7 +143,7 @@ const portfolioItem = computed(() => ({
                     >
                         <span v-if="!collapsed" class="truncate">{{ portfolioItem.label }}</span>
                     </Transition>
-                </NuxtLink>
+                </AppLink>
             </template>
         </nav>
 

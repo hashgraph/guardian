@@ -425,9 +425,9 @@ async function downloadProjects() {
         <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
             <span class="text-muted-foreground">{{ $t('projects.filteredByRegistry') }}</span>
             <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('projects.unknownRegistry') }}</span>
-            <NuxtLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+            <AppLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {{ $t('projects.clearRegistryFilter') }} ×
-            </NuxtLink>
+            </AppLink>
         </div>
     </div>
 
@@ -641,13 +641,13 @@ async function downloadProjects() {
                     </button>
                   </td>
                   <td class="py-3.5 px-4 align-middle font-medium">
-                    <NuxtLink
+                    <AppLink
                       :to="`/projects/${p.id}`"
                       :title="p.name"
                       class="block line-clamp-2 text-foreground hover:text-primary transition-colors leading-relaxed"
                     >
                       {{ p.name }}
-                    </NuxtLink>
+                    </AppLink>
                   </td>
                   
                   <td class="py-3.5 px-4 align-middle text-muted-foreground truncate">
@@ -677,14 +677,14 @@ async function downloadProjects() {
                   </td>
                   
                   <td class="py-3.5 px-4 align-middle text-center tabular-nums font-semibold text-sm">
-                    <NuxtLink
+                    <AppLink
                       v-if="p.projectKey && p.issuanceCount"
                       :to="`/credits?projectKey=${encodeURIComponent(p.projectKey)}`"
                       class="text-foreground hover:text-primary hover:underline transition-colors"
                       @click.stop
                     >
                       {{ p.issuanceCount }}
-                    </NuxtLink>
+                    </AppLink>
                     <span v-else class="text-muted-foreground/60">{{ p.issuanceCount ?? 0 }}</span>
                   </td>
                   

@@ -54,7 +54,7 @@ export function useMintStats(filters?: Ref<{ registry?: string; developer?: stri
         for (const entry of monthly) {
             const d = new Date(entry.month);
             if (isNaN(d.getTime())) continue;
-            const val = entry.amount / 1_000_000;
+            const val = entry.amount;
             let sortKey: string;
             let label: string;
 

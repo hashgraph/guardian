@@ -63,7 +63,7 @@ const creditingPeriod = computed(() => {
 </script>
 
 <template>
-    <NuxtLink
+    <AppLink
         :to="`/projects/${project.id}`"
         class="flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow hover:shadow-md hover:border-primary/40"
     >
@@ -137,5 +137,5 @@ const creditingPeriod = computed(() => {
                 <ArrowRight class="h-2.5 w-2.5" />
             </span>
         </div>
-    </NuxtLink>
+    </AppLink>
 </template>

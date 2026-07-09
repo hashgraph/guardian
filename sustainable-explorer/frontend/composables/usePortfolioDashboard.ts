@@ -145,6 +145,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
                 policies: r.policies.size,
                 projects: r.projects,
                 credits: formatCredits(creditsByReg[r.name] ?? 0),
+                creditsRaw: creditsByReg[r.name] ?? 0,
             }))
             .sort((a, b) => b.projects - a.projects);
     });
@@ -227,7 +228,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
 
     const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    // Issuance trend series (period-bucketed, in millions of credits).
+    // Issuance trend series (period-bucketed, raw credit amounts).
     // Labels match useMintStats format: "Jun '23" / "Q2 '23" / "2023".
     function buildIssuanceSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
         const buckets = new Map<string, { sortKey: string; label: string; value: number }>();
@@ -249,7 +250,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
                 label = `${MONTH_NAMES[d.getMonth()]} '${yy}`;
             }
             if (!buckets.has(sortKey)) buckets.set(sortKey, { sortKey, label, value: 0 });
-            buckets.get(sortKey)!.value += (c.supply ?? 0) / 1_000_000;
+            buckets.get(sortKey)!.value += (c.supply ?? 0);
         }
         return [...buckets.values()]
             .sort((a, b) => a.sortKey.localeCompare(b.sortKey))

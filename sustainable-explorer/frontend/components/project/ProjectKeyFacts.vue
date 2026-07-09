@@ -58,13 +58,13 @@ function tip(iwaPaths: string): string {
                     Methodology
                     <InfoTooltip :text="tip('QualityStandard.name')" />
                 </div>
-                <NuxtLink
+                <AppLink
                     v-if="project.instanceTopicId"
                     :to="`/methodologies/${project.instanceTopicId}`"
                     class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors"
                 >
                     {{ fullMethodologyName }}
-                </NuxtLink>
+                </AppLink>
                 <div v-else class="text-sm font-medium text-foreground">{{ fullMethodologyName || '—' }}</div>
             </div>
 
@@ -74,13 +74,13 @@ function tip(iwaPaths: string): string {
                     Registry
                     <InfoTooltip :text="tip('OriginationProcessAgreement.name')" />
                 </div>
-                <NuxtLink
+                <AppLink
                     v-if="project.registry && project.registryDid"
                     :to="`/registries?did=${encodeURIComponent(project.registryDid)}`"
                     class="text-sm font-medium text-foreground hover:text-primary hover:underline transition-colors break-all"
                 >
                     {{ project.registry }}
-                </NuxtLink>
+                </AppLink>
                 <div v-else class="text-sm font-medium text-foreground break-all">{{ project.registry || '—' }}</div>
             </div>
 

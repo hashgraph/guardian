@@ -220,9 +220,9 @@ async function downloadCredits() {
             <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
                 <span class="text-muted-foreground">{{ $t('credits.filteredByProject') }}</span>
                 <span class="font-medium text-foreground">{{ projectFilterName ?? $t('credits.unknownProject') }}</span>
-                <NuxtLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <AppLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                     {{ $t('credits.clearProjectFilter') }} ×
-                </NuxtLink>
+                </AppLink>
             </div>
         </div>
 
@@ -230,9 +230,9 @@ async function downloadCredits() {
             <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
                 <span class="text-muted-foreground">{{ $t('credits.filteredByMethodology') }}</span>
                 <span class="font-medium text-foreground">{{ methodologyFilterName ?? $t('credits.unknownMethodology') }}</span>
-                <NuxtLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <AppLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                     {{ $t('credits.clearMethodologyFilter') }} ×
-                </NuxtLink>
+                </AppLink>
             </div>
         </div>
 
@@ -240,9 +240,9 @@ async function downloadCredits() {
             <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
                 <span class="text-muted-foreground">{{ $t('credits.filteredByRegistry') }}</span>
                 <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('credits.unknownRegistry') }}</span>
-                <NuxtLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                <AppLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                     {{ $t('credits.clearRegistryFilter') }} ×
-                </NuxtLink>
+                </AppLink>
             </div>
         </div>
 
@@ -361,14 +361,14 @@ async function downloadCredits() {
                                 <td class="py-3 px-4 text-right tabular-nums font-medium whitespace-nowrap">{{ c.supplyFormatted }}</td>
                                 <td class="py-3 px-4 text-muted-foreground text-xs tabular-nums whitespace-nowrap">{{ formatDate(c.mintDate) }}</td>
                                 <td class="py-3 px-4 max-w-[200px]">
-                                    <NuxtLink
+                                    <AppLink
                                         v-if="c.projectId && c.projectDisplay"
                                         :to="`/projects/${encodeURIComponent(c.projectId)}`"
                                         class="block text-muted-foreground hover:text-primary hover:underline transition-colors"
                                         @click.stop
                                     >
                                         <TruncatedText :text="c.projectDisplay" />
-                                    </NuxtLink>
+                                    </AppLink>
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
                                 <td class="py-3 px-4 max-w-[180px] text-muted-foreground">
@@ -376,7 +376,7 @@ async function downloadCredits() {
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
                                 <td class="py-3 px-4 whitespace-nowrap">
-                                    <NuxtLink
+                                    <AppLink
                                         v-if="c.registryDid && c.registry"
                                         :to="`/registries/${encodeURIComponent(c.registryDid)}`"
                                         class="text-muted-foreground hover:text-primary hover:underline transition-colors"
@@ -384,7 +384,7 @@ async function downloadCredits() {
                                         @click.stop
                                     >
                                         {{ c.registry }}
-                                    </NuxtLink>
+                                    </AppLink>
                                     <span v-else class="text-muted-foreground">{{ c.registry ?? '-' }}</span>
                                 </td>
                                 <td class="py-3 px-3 text-center">

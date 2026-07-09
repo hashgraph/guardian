@@ -4,6 +4,9 @@ const props = defineProps<{
   color?: string;
   fillColor?: string;
   unit?: string;
+  /** Overrides the default `${value}${unit}` tooltip formatting — e.g. formatSmartCredits
+   *  for series whose values are raw (not pre-scaled to millions). */
+  formatValue?: (value: number) => string;
   emptyText?: string;
 }>();
 
@@ -97,13 +100,17 @@ const tooltipText = computed(() => {
   if (!pt) return "";
   let display = "0";
   if (pt.value !== 0) {
-    // Find the smallest precision that yields a non-zero rounded value so
-    // tiny amounts never display as "0M".
-    const decimals =
-      ([1, 2, 3, 4] as const).find(
-        (d) => Math.round(pt.value * 10 ** d) / 10 ** d !== 0,
-      ) ?? 4;
-    display = `${Math.round(pt.value * 10 ** decimals) / 10 ** decimals}${unit.value}`;
+    if (props.formatValue) {
+      display = props.formatValue(pt.value);
+    } else {
+      // Find the smallest precision that yields a non-zero rounded value so
+      // tiny amounts never display as "0M".
+      const decimals =
+        ([1, 2, 3, 4] as const).find(
+          (d) => Math.round(pt.value * 10 ** d) / 10 ** d !== 0,
+        ) ?? 4;
+      display = `${Math.round(pt.value * 10 ** decimals) / 10 ** decimals}${unit.value}`;
+    }
   }
   return `${pt.label}: ${display}`;
 });

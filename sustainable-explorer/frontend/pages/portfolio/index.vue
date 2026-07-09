@@ -27,6 +27,8 @@ import {
     Donut,
     Radar,
     SquarePen,
+    AlertTriangle,
+    Clock,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { formatCredits, formatSmartCredits } from '~/lib/format';
@@ -98,15 +100,13 @@ const issuancePeriod = ref<TimePeriod>('monthly');
 const retirementPeriod = ref<TimePeriod>('monthly');
 
 const issuanceSeriesData = computed(() => buildIssuanceSeries(issuancePeriod.value));
-// Sum raw values (stored in millions), convert back to credits, then smart-format.
-// Avoids "0M total" when total credits < 100 000.
 const issuanceSeriesTotal = computed(() =>
-    formatSmartCredits(issuanceSeriesData.value.reduce((s, d) => s + d.value, 0) * 1_000_000),
+    formatSmartCredits(issuanceSeriesData.value.reduce((s, d) => s + d.value, 0)),
 );
 
 const retirementSeriesData = computed(() => buildRetirementSeries(retirementPeriod.value));
 const retirementSeriesTotal = computed(() =>
-    formatSmartCredits(retirementSeriesData.value.reduce((s, d) => s + d.value, 0) * 1_000_000),
+    formatSmartCredits(retirementSeriesData.value.reduce((s, d) => s + d.value, 0)),
 );
 
 // Chart mode for sector/registry donuts
@@ -337,6 +337,8 @@ interface CustomChartConfig {
     yAxis: string;
 }
 
+const MAX_CUSTOM_CHARTS = 10;
+
 const chartTitle = ref('');
 const chartType = ref<ChartType>('line');
 const xAxis = ref('month');
@@ -392,7 +394,7 @@ function getChartRawData(cfg: CustomChartConfig): { label: string; value: number
     if (xAxis === 'registry') {
         return registries.value.map(r => ({
             label: r.name,
-            value: yAxis === 'projects' ? r.projects : r.policies,
+            value: yAxis === 'projects' ? r.projects : r.creditsRaw,
         }));
     }
     if (xAxis === 'sdg') {
@@ -417,6 +419,34 @@ function getChartSegments(cfg: CustomChartConfig) {
 function getChartRadarPoints(cfg: CustomChartConfig): RadarPoint[] {
     return getChartRawData(cfg).map((r, i) => ({ id: i, label: r.label, fullLabel: r.label, value: r.value }));
 }
+
+function chartConfigLabel(cfg: { type: ChartType; xAxis: string; yAxis: string }): string {
+    const typeLabel = t(`portfolio.modal.chartBuilder.types.${cfg.type}`);
+    const xLabel = xAxisOptions.value.find(o => o.value === cfg.xAxis)?.label ?? cfg.xAxis;
+    const yLabel = yAxisOptions.value.find(o => o.value === cfg.yAxis)?.label ?? cfg.yAxis;
+    return `${typeLabel} · ${xLabel} / ${yLabel}`;
+}
+
+// Same xAxis+yAxis+type combination as an existing chart (excluding the one
+// currently being edited) — flagged so users don't unknowingly recreate a
+// chart they already have under a different title.
+const duplicateConfigChart = computed(() =>
+    customCharts.value.find(c =>
+        c.id !== editingChartId.value
+        && c.type === chartType.value
+        && c.xAxis === xAxis.value
+        && c.yAxis === yAxis.value,
+    ) ?? null);
+
+// Case/whitespace-insensitive name collision against other saved charts.
+const duplicateNameChart = computed(() => {
+    const name = chartTitle.value.trim().toLowerCase();
+    if (!name) return null;
+    return customCharts.value.find(c =>
+        c.id !== editingChartId.value
+        && c.title.trim().toLowerCase() === name,
+    ) ?? null;
+});
 
 function resetChartForm(): void {
     chartTitle.value = '';
@@ -443,6 +473,7 @@ function openChartBuilder(existing?: CustomChartConfig): void {
 
 function saveCustomChart(): void {
     if (!chartTitle.value.trim()) return;
+    if (duplicateNameChart.value || duplicateConfigChart.value) return;
     const patch = {
         title: chartTitle.value.trim(),
         type: chartType.value,
@@ -453,7 +484,7 @@ function saveCustomChart(): void {
         const id = editingChartId.value;
         customCharts.value = customCharts.value.map(c => c.id === id ? { ...c, ...patch } : c);
     } else {
-        if (customCharts.value.length >= 5) return;
+        if (customCharts.value.length >= MAX_CUSTOM_CHARTS) return;
         customCharts.value = [...customCharts.value, { id: crypto.randomUUID(), ...patch }];
     }
     showChartBuilderModal.value = false;
@@ -689,7 +720,7 @@ async function applyRemote(
     widgets.value = { ...DEFAULT_WIDGETS, ...(remote.widgets ?? {}) };
     // Backfill id for charts synced before it existed — deep-watched below,
     // so the backfilled id persists to the server on the next debounced push.
-    customCharts.value = (remote.customCharts ?? []).slice(0, 5)
+    customCharts.value = (remote.customCharts ?? []).slice(0, MAX_CUSTOM_CHARTS)
         .map(c => ({ ...c, id: c.id ?? crypto.randomUUID(), type: c.type as ChartType }));
     await nextTick();
     hydrating.value = false;
@@ -1036,9 +1067,9 @@ onUnmounted(() => {
                 <template v-if="!displayReady">
                     <Skeleton v-for="i in customCharts.length" :key="i" class="h-52 rounded-xl" />
                 </template>
-                <div v-for="chart in displayReady ? customCharts : []" :key="chart.id" class="rounded-xl border bg-card p-5">
+                <div v-for="chart in displayReady ? customCharts : []" :key="chart.id" class="rounded-xl border bg-card p-5 flex flex-col">
                     <!-- Card header -->
-                    <div class="flex items-center justify-between mb-4">
+                    <div class="flex items-center justify-between mb-4 shrink-0">
                         <div class="flex items-center gap-2 min-w-0">
                             <component
                                 :is="{ line: TrendingUp, column: BarChart2, bar: BarChartHorizontal, pie: PieChart, donut: Donut, radar: Radar }[chart.type] ?? BarChart2"
@@ -1064,63 +1095,69 @@ onUnmounted(() => {
                         </div>
                     </div>
 
-                    <!-- LINE chart → TrendLineChart -->
-                    <template v-if="chart.type === 'line'">
-                        <TrendLineChart
-                            :data="getChartRawData(chart)"
-                            color="hsl(162, 63%, 41%)"
-                            fill-color="hsl(162, 63%, 41%, 0.08)"
-                            :empty-text="$t('portfolio.noData')"
-                        />
-                        <div class="flex justify-between mt-3 pt-2 border-t">
-                            <span class="text-[10px] text-muted-foreground">{{ getChartRawData(chart).length }} points</span>
-                            <span class="text-[10px] font-medium text-foreground tabular-nums">
-                                {{ formatCredits(getChartRawData(chart).reduce((s, r) => s + r.value, 0)) }} total
-                            </span>
-                        </div>
-                    </template>
+                    <!-- Chart body — grows to fill the card's grid-stretched height and
+                         centers its content vertically, so a chart shorter than the row's
+                         tallest sibling (e.g. a 4-bar chart next to a 9-row one) uses the
+                         available space evenly instead of leaving it all beneath. -->
+                    <div class="flex-1 flex flex-col justify-center">
+                        <!-- LINE chart → TrendLineChart -->
+                        <template v-if="chart.type === 'line'">
+                            <TrendLineChart
+                                :data="getChartRawData(chart)"
+                                color="hsl(162, 63%, 41%)"
+                                fill-color="hsl(162, 63%, 41%, 0.08)"
+                                :format-value="formatSmartCredits"
+                                :empty-text="$t('portfolio.noData')"
+                            />
+                            <div class="flex justify-between mt-3 pt-2 border-t">
+                                <span class="text-[10px] text-muted-foreground">{{ getChartRawData(chart).length }} points</span>
+                                <span class="text-[10px] font-medium text-foreground tabular-nums">
+                                    {{ formatSmartCredits(getChartRawData(chart).reduce((s, r) => s + r.value, 0)) }} total
+                                </span>
+                            </div>
+                        </template>
 
-                    <!-- COLUMN chart → BarChart (vertical) -->
-                    <template v-else-if="chart.type === 'column'">
-                        <BarChart :data="getChartRawData(chart)" orientation="vertical" :empty-text="$t('portfolio.noData')" />
-                    </template>
+                        <!-- COLUMN chart → BarChart (vertical) -->
+                        <template v-else-if="chart.type === 'column'">
+                            <BarChart :data="getChartRawData(chart)" orientation="vertical" :empty-text="$t('portfolio.noData')" />
+                        </template>
 
-                    <!-- BAR chart → BarChart (horizontal) -->
-                    <template v-else-if="chart.type === 'bar'">
-                        <BarChart :data="getChartRawData(chart)" orientation="horizontal" :empty-text="$t('portfolio.noData')" />
-                    </template>
+                        <!-- BAR chart → BarChart (horizontal) -->
+                        <template v-else-if="chart.type === 'bar'">
+                            <BarChart :data="getChartRawData(chart)" orientation="horizontal" :empty-text="$t('portfolio.noData')" />
+                        </template>
 
-                    <!-- PIE / DONUT chart → DonutChart + legend (pie = filled, donut = ring) -->
-                    <template v-else-if="chart.type === 'pie' || chart.type === 'donut'">
-                        <div v-if="getChartSegments(chart).length > 0" class="flex items-start gap-4">
-                            <DonutChart :segments="getChartSegments(chart)" :size="100" :hollow="chart.type === 'donut'" />
-                            <div class="space-y-1.5 flex-1 min-w-0 max-h-52 overflow-y-auto pt-1 pr-1">
-                                <div
-                                    v-for="seg in getChartSegments(chart).slice(0, 8)"
-                                    :key="seg.label"
-                                    class="flex items-center gap-1.5 min-w-0"
-                                >
-                                    <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: seg.color }" />
-                                    <span class="text-[10px] text-muted-foreground truncate flex-1">{{ seg.label }}</span>
-                                    <span class="text-[10px] font-medium text-foreground tabular-nums shrink-0">{{ formatCredits(seg.value) }}</span>
+                        <!-- PIE / DONUT chart → DonutChart + legend (pie = filled, donut = ring) -->
+                        <template v-else-if="chart.type === 'pie' || chart.type === 'donut'">
+                            <div v-if="getChartSegments(chart).length > 0" class="flex items-start gap-4">
+                                <DonutChart :segments="getChartSegments(chart)" :size="100" :hollow="chart.type === 'donut'" />
+                                <div class="space-y-1.5 flex-1 min-w-0 max-h-52 overflow-y-auto pt-1 pr-1">
+                                    <div
+                                        v-for="seg in getChartSegments(chart).slice(0, 8)"
+                                        :key="seg.label"
+                                        class="flex items-center gap-1.5 min-w-0"
+                                    >
+                                        <span class="h-2 w-2 shrink-0 rounded-full" :style="{ backgroundColor: seg.color }" />
+                                        <span class="text-[10px] text-muted-foreground truncate flex-1">{{ seg.label }}</span>
+                                        <span class="text-[10px] font-medium text-foreground tabular-nums shrink-0">{{ formatCredits(seg.value) }}</span>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
-                            {{ $t('portfolio.noData') }}
-                        </div>
-                    </template>
+                            <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
+                                {{ $t('portfolio.noData') }}
+                            </div>
+                        </template>
 
-                    <!-- RADAR chart → RadarChart -->
-                    <template v-else-if="chart.type === 'radar'">
-                        <div v-if="getChartRadarPoints(chart).length >= 3" class="flex items-center justify-center">
-                            <RadarChart :points="getChartRadarPoints(chart)" color="hsl(162, 63%, 41%)" />
-                        </div>
-                        <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
-                            {{ $t('portfolio.noData') }}
-                        </div>
-                    </template>
-
+                        <!-- RADAR chart → RadarChart -->
+                        <template v-else-if="chart.type === 'radar'">
+                            <div v-if="getChartRadarPoints(chart).length >= 3" class="flex items-center justify-center">
+                                <RadarChart :points="getChartRadarPoints(chart)" color="hsl(162, 63%, 41%)" />
+                            </div>
+                            <div v-else class="flex items-center justify-center h-24 text-xs text-muted-foreground">
+                                {{ $t('portfolio.noData') }}
+                            </div>
+                        </template>
+                    </div>
                 </div>
             </div>
         </div>
@@ -1129,11 +1166,11 @@ onUnmounted(() => {
         <div class="px-6 pb-8">
             <button
                 class="w-full rounded-xl border-2 border-dashed border-border/60 bg-transparent py-4 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="customCharts.length >= 5"
-                @click="customCharts.length < 5 && openChartBuilder()"
+                :disabled="customCharts.length >= MAX_CUSTOM_CHARTS"
+                @click="customCharts.length < MAX_CUSTOM_CHARTS && openChartBuilder()"
             >
                 <Plus class="h-4 w-4" />
-                {{ customCharts.length < 5 ? $t('portfolio.addCustomChart') : $t('portfolio.chartLimitReached') }}
+                {{ customCharts.length < MAX_CUSTOM_CHARTS ? $t('portfolio.addCustomChart') : $t('portfolio.chartLimitReached', { max: MAX_CUSTOM_CHARTS }) }}
             </button>
         </div>
 
@@ -1163,7 +1200,7 @@ onUnmounted(() => {
                                     {{ p === 'monthly' ? $t('dashboard.monthly') : p === 'quarterly' ? $t('dashboard.quarterly') : $t('dashboard.yearly') }}
                                 </button>
                             </div>
-                            <NuxtLink to="/analytics" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.analytics') }}</NuxtLink>
+                            <AppLink to="/analytics" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.analytics') }}</AppLink>
                             <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" :title="$t('portfolio.removeWidget')" @click="setWidget('issuanceTrend', false)">
                                 <X class="h-3.5 w-3.5" />
                             </button>
@@ -1176,6 +1213,7 @@ onUnmounted(() => {
                                 :data="issuanceSeriesData"
                                 color="hsl(142, 76%, 36%)"
                                 fill-color="hsl(142, 76%, 36%, 0.08)"
+                                :format-value="formatSmartCredits"
                                 :empty-text="$t('dashboard.noIssuanceData')"
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
@@ -1364,7 +1402,7 @@ onUnmounted(() => {
                             <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.topRegistriesSub') }}</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <NuxtLink to="/registries" class="text-xs font-medium text-primary hover:underline">{{ $t('common.viewAll') }}</NuxtLink>
+                            <AppLink to="/registries" class="text-xs font-medium text-primary hover:underline">{{ $t('common.viewAll') }}</AppLink>
                             <button class="text-muted-foreground/40 hover:text-muted-foreground transition-colors" @click="setWidget('topRegistries', false)"><X class="h-3.5 w-3.5" /></button>
                         </div>
                     </div>
@@ -1389,7 +1427,7 @@ onUnmounted(() => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <NuxtLink
+                                    <AppLink
                                         v-for="org in registries"
                                         :key="org.name"
                                         :to="{ path: '/registries', query: { displayName: org.name } }"
@@ -1404,7 +1442,7 @@ onUnmounted(() => {
                                             <td class="py-2.5 px-2 sm:px-3 text-right tabular-nums text-primary font-medium text-xs">{{ org.projects }}</td>
                                             <td class="py-2.5 px-2 sm:px-3 text-right tabular-nums text-muted-foreground text-xs">{{ org.credits }}</td>
                                         </tr>
-                                    </NuxtLink>
+                                    </AppLink>
                                     <tr v-if="registries.length === 0">
                                         <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noRegistries') }}</td>
                                     </tr>
@@ -1538,6 +1576,10 @@ onUnmounted(() => {
                                         <p class="text-sm font-medium text-foreground">{{ item.action }}</p>
                                         <p class="text-xs text-muted-foreground truncate">{{ item.detail }}</p>
                                     </div>
+                                    <div class="flex items-center gap-1 shrink-0">
+                                        <Clock class="h-3 w-3 text-muted-foreground/50" />
+                                        <span class="text-[11px] text-muted-foreground/70">{{ item.time }}</span>
+                                    </div>
                                 </div>
                             </div>
                             <div v-else class="rounded-xl border bg-card py-8 text-center text-sm text-muted-foreground">
@@ -1579,6 +1621,7 @@ onUnmounted(() => {
                                 :data="retirementSeriesData"
                                 color="hsl(24, 95%, 53%)"
                                 fill-color="hsl(24, 95%, 53%, 0.08)"
+                                :format-value="formatSmartCredits"
                                 :empty-text="$t('dashboard.noRetirementData')"
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
@@ -1838,7 +1881,7 @@ onUnmounted(() => {
                                     {{ editingChartId ? $t('portfolio.modal.chartBuilder.editTitle') : $t('portfolio.modal.chartBuilder.title') }}
                                 </h2>
                                 <p class="text-xs text-muted-foreground mt-1">
-                                    {{ editingChartId ? $t('portfolio.modal.chartBuilder.editSubtitle') : $t('portfolio.modal.chartBuilder.subtitle', { used: customCharts.length, max: 5 }) }}
+                                    {{ editingChartId ? $t('portfolio.modal.chartBuilder.editSubtitle') : $t('portfolio.modal.chartBuilder.subtitle', { used: customCharts.length, max: MAX_CUSTOM_CHARTS }) }}
                                 </p>
                             </div>
                             <button class="text-muted-foreground hover:text-foreground transition-colors" @click="showChartBuilderModal = false">
@@ -1855,6 +1898,9 @@ onUnmounted(() => {
                                     :placeholder="$t('portfolio.modal.chartBuilder.titlePlaceholder')"
                                     class="text-sm"
                                 />
+                                <p v-if="duplicateNameChart" class="mt-1.5 text-[11px] text-destructive">
+                                    {{ $t('portfolio.modal.chartBuilder.duplicateName') }}
+                                </p>
                             </div>
                             <!-- Chart Type -->
                             <div>
@@ -1890,10 +1936,17 @@ onUnmounted(() => {
                                     <SingleSelect v-model="yAxis" :options="yAxisOptions" />
                                 </div>
                             </div>
+                            <!-- Duplicate configuration warning -->
+                            <div v-if="duplicateConfigChart" class="flex items-start gap-2 rounded-lg bg-amber-50 dark:bg-amber-950/30 p-3">
+                                <AlertTriangle class="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                                <p class="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                                    {{ $t('portfolio.modal.chartBuilder.duplicateConfig', { name: duplicateConfigChart.title, config: chartConfigLabel(duplicateConfigChart) }) }}
+                                </p>
+                            </div>
                             <!-- Info note -->
                             <div class="flex items-start gap-2 rounded-lg bg-muted/40 p-3">
                                 <Activity class="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-                                <p class="text-[11px] text-muted-foreground leading-relaxed">{{ $t('portfolio.modal.chartBuilder.note') }}</p>
+                                <p class="text-[11px] text-muted-foreground leading-relaxed">{{ $t('portfolio.modal.chartBuilder.note', { max: MAX_CUSTOM_CHARTS }) }}</p>
                             </div>
                         </div>
                         <!-- Footer -->
@@ -1906,7 +1959,7 @@ onUnmounted(() => {
                             </button>
                             <button
                                 class="flex items-center gap-1.5 rounded-lg bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
-                                :disabled="!chartTitle.trim() || (!editingChartId && customCharts.length >= 5)"
+                                :disabled="!chartTitle.trim() || !!duplicateNameChart || !!duplicateConfigChart || (!editingChartId && customCharts.length >= MAX_CUSTOM_CHARTS)"
                                 @click="saveCustomChart()"
                             >
                                 <component :is="editingChartId ? SquarePen : Plus" class="h-3.5 w-3.5" />

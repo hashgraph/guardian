@@ -140,13 +140,13 @@ function fmtDate(d: string | null) {
             <!-- Admins don't request increases — show an approver-oriented panel instead. -->
             <div v-if="isAdmin" class="mt-4 flex flex-1 flex-col items-center justify-center gap-3 border-t pt-5 text-center">
                 <p class="max-w-xs text-sm text-muted-foreground">{{ $t('rateLimit.adminNote') }}</p>
-                <NuxtLink
+                <AppLink
                     v-if="summary.rateLimitEnforced"
                     to="/admin/users"
                     class="inline-flex items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted"
                 >
                     {{ $t('rateLimit.reviewRequests') }}
-                </NuxtLink>
+                </AppLink>
                 <span
                     v-else
                     class="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-md border px-4 py-2 text-sm font-medium opacity-50"
