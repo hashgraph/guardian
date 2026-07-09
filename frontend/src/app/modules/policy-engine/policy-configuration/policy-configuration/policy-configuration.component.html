@@ -33,9 +33,10 @@
             <i class="pi pi-chevron-down policy-identity-caret"></i>
           </div>
           @if (policyTemplate.isDraft) {
-            <div class="status-badge status-badge--draft">
+            <div (click)="publishMenu.toggle($event)" class="status-badge status-badge--draft" title="Draft">
               <i class="pi pi-pencil"></i>
               <span>Draft</span>
+              <i class="pi pi-sort-down-fill status-badge-caret"></i>
             </div>
           }
           @if (policyTemplate.isDryRun) {
@@ -173,23 +174,6 @@
             <i class="pi pi-save"></i>
             <span>Save</span>
           </div>
-          @if (policyTemplate.isDraft) {
-            @if (user.POLICIES_POLICY_REVIEW) {
-              <div (click)="tryPublishPolicy()" class="top-toolbar-group all-status publish-primary"
-                title="Publish">
-                <i class="pi pi-globe"></i>
-                <span>Publish</span>
-                <div class="expand-group" (click)="$event.stopPropagation(); publishMenu.toggle($event)">
-                  <i class="pi pi-sort-down-fill"></i>
-                </div>
-              </div>
-            } @else {
-              <div (click)="tryRunPolicy()" class="top-toolbar-btn all-status" title="Dry Run">
-                <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
-                <span class="dry-run-color">Dry Run</span>
-              </div>
-            }
-          }
         }
         @if (rootType === 'Module') {
           @if (moduleTemplate.isDraft) {
@@ -1191,6 +1175,13 @@
 </p-popover>
 
 <p-popover #publishMenu>
+  @if (user.POLICIES_POLICY_REVIEW) {
+    <div (click)="tryPublishPolicy(); publishMenu.hide()" class="toolbar-menu all-status publish-color"
+      title="Release version into public domain.">
+      <i class="pi pi-globe publish-color"></i>
+      <span class="publish-color">Publish</span>
+    </div>
+  }
   <div (click)="tryRunPolicy(); publishMenu.hide()" class="toolbar-menu all-status dry-run-color"
     title="Run without making any persistent changes or executing transaction.">
     <svg-icon src="/assets/images/icons/build.svg" svgClass="icon-style-build dry-run-color"></svg-icon>
