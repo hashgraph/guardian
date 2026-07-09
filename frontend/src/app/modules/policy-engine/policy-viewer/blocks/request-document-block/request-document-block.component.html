@@ -15,6 +15,24 @@
 
             <div class="schema-form" [attr.dryRun]="dryRun" [attr.restoreData]="restoreData">
 
+                <div class="draft-file-actions">
+                    <p-splitButton
+                        label="Save draft to file"
+                        icon="pi pi-download"
+                        [model]="saveFileMenuItems"
+                        (onClick)="onExportDraft()"
+                        styleClass="draft-split-button"
+                        menuStyleClass="draft-split-menu"
+                        appendTo="body">
+                    </p-splitButton>
+                    <input
+                        #draftFileInput
+                        type="file"
+                        accept="application/json,.json"
+                        hidden
+                        (change)="onImportDraft($event)">
+                </div>
+
                 <div *ngIf="restoreData" class="restore-data">
                     <svg-icon class="svg-icon"
                         src="/assets/images/icons/info.svg"

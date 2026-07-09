@@ -639,3 +639,52 @@
         margin-top: 8px;
     }
 }
+
+.draft-file-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+:host ::ng-deep .draft-split-button.p-splitbutton {
+    display: inline-flex;
+    position: relative;
+    overflow: visible;
+    border-radius: 6px;
+
+    .p-button {
+        color: var(--guardian-primary-color);
+        background-color: var(--guardian-secondary-color);
+        border: 1px solid var(--guardian-primary-color);
+        box-shadow: none;
+        font-family: var(--guardian-font-family);
+        font-size: var(--guardian-primary-font-size);
+        padding: 6px 16px;
+        pointer-events: auto;
+
+        &:enabled:hover {
+            background-color: rgba(0, 0, 0, 0.04);
+        }
+
+        &:focus {
+            box-shadow: none;
+            outline: none;
+        }
+    }
+
+    .p-splitbutton-defaultbutton {
+        gap: 8px;
+        border-top-left-radius: 6px;
+        border-bottom-left-radius: 6px;
+    }
+
+    .p-splitbutton-menubutton {
+        flex: 0 0 auto;
+        width: 24px;
+        min-width: 24px;
+        padding: 0;
+        border-left: 1px solid var(--guardian-primary-color);
+        border-top-right-radius: 6px;
+        border-bottom-right-radius: 6px;
+    }
+}

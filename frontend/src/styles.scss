@@ -849,3 +849,10 @@ svg-icon.svg-icon-32 {
         color: white;
     }
 }
+
+// Draft-to-file split button popup (appended to body by p-splitButton)
+.draft-split-menu.p-tieredmenu {
+    width: max-content;
+    min-width: 0;
+    max-width: 320px;
+}
