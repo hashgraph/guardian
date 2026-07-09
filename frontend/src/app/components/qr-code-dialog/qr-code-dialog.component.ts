@@ -39,7 +39,6 @@ export class QrCodeDialogComponent implements OnDestroy {
         this.wsService.meecoVerifyVPFailed$
             .pipe(takeUntil(this.destroy$))
             .subscribe((event) => {
-                // TODO: original call had enableHtml: true. HTML won't render in PrimeNG default template (deferred)
                 this.toastService.error(
                     `${event.error}.`,
                     'Submission for VP presentation request failed.'

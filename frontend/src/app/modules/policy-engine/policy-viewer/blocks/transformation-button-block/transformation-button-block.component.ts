@@ -124,7 +124,6 @@ export class TransformationButtonBlockComponent implements OnInit {
                     const token = localStorage.getItem('accessToken') as string;
                     this.policyEngineService
                         .sendData(data.url, data.data, token).subscribe((data) => {
-                            // Todo: original calls had enableHtml: true. HTML won't render in PrimeNG default template (deferred)
                             this.toastService.success(`The data was sent to ${data.url}`, '');
                         }, (error) => {
                             console.log(error);

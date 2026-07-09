@@ -247,15 +247,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             for (let j = 0; j < block.errors.length; j++) {
                                 const error = block.errors[j];
                                 if (block.id) {
-                                    text.push(
-                                        `<div>${block.id}: ${error}</div>`
-                                    );
+                                    text.push(`${block.id}: ${error}`);
                                 } else {
-                                    text.push(`<div>${error}</div>`);
+                                    text.push(error);
                                 }
                             }
                         }
-                        const msg = text.join('');
+                        const msg = text.join('\n');
                         this.toastService.error(
                             msg,
                             'The policy is invalid',
@@ -303,15 +301,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             for (let j = 0; j < block.errors.length; j++) {
                                 const error = block.errors[j];
                                 if (block.id) {
-                                    text.push(
-                                        `<div>${block.id}: ${error}</div>`
-                                    );
+                                    text.push(`${block.id}: ${error}`);
                                 } else {
-                                    text.push(`<div>${error}</div>`);
+                                    text.push(error);
                                 }
                             }
                         }
-                        const msg = text.join('');
+                        const msg = text.join('\n');
                         this.toastService.error(
                             msg,
                             'The tool is invalid',

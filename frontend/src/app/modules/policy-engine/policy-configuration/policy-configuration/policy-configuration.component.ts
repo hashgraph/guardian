@@ -1135,7 +1135,7 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private errorMessage(errors: string[], type: string) {
         if (errors && errors.length) {
-            const text = errors.map((text) => `<div>${text}</div>`).join('');
+            const text = errors.join('\n');
             this.toastService.error(text, `The ${type} is invalid`, { sticky: true });
         }
     }

@@ -341,13 +341,13 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                     ) {
                         const error = block.errors[j];
                         if (block.id) {
-                            text.push(`<div>${block.id}: ${error}</div>`);
+                            text.push(`${block.id}: ${error}`);
                         } else {
-                            text.push(`<div>${error}</div>`);
+                            text.push(error);
                         }
                     }
                 }
-                const msg = text.join('');
+                const msg = text.join('\n');
                 this.toastService.error(msg, 'The module is invalid', { sticky: true, logMessage: msg });
                 this._configurationErrors.set(element.uuid, errors);
                 this.router.navigate(['module-configuration'], {
