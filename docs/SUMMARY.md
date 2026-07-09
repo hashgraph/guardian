@@ -1099,8 +1099,8 @@
 
 ## First Steps
 
-* [First steps with digital environmental assets (simplified)](<README (1).md>)
-* [First steps with digital environmental assets (complex)](first-steps/first-steps-with-digital-environmental-assets-complex.md)
+* [First steps \[Standard Registry\]](<README (1).md>)
+* [First steps \[Default User\]](first-steps/first-steps-with-digital-environmental-assets-complex.md)
 
 ## AI-ToolKit
 
