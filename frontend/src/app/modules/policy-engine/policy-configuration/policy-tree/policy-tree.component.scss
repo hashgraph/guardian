@@ -377,13 +377,13 @@
     overflow: visible;
     display: none;
     align-items: center;
-    position: absolute;
     right: 12px;
     top: 0px;
 }
 
 .module-menu.block-menu {
     top: 7px;
+    margin-top: 7px;
 }
 
 .action-button {
@@ -495,6 +495,7 @@
 
 .tree[move-actions="1"] .block-container[selected="true"] .module-menu.block-menu {
     top: -26px;
+    margin-top: -26px;
 }
 
 .tree[move-actions="1"] .block-container[selected="true"] {

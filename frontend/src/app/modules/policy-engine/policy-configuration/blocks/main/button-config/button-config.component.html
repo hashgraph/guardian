@@ -6,8 +6,11 @@
       <td class="propRowCol"></td>
       <td class="propRowCell cellName" pTooltip="Enable Individual Filters" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable Individual Filters</td>
       <td class="propRowCell">
-        <input class="prop-input" type="checkbox" [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
-          [readonly]="readonly" (blur)="onSave()">
+        <p-toggleswitch
+          [(ngModel)]="properties.uiMetaData.enableIndividualFilters"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
       </td>
     </tr>
     <tr class="propHeader" [attr.collapse]="propHidden.metaData">

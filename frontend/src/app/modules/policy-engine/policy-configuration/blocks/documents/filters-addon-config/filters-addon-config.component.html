@@ -38,65 +38,25 @@
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Can Be Empty</td>
       <td class="propRowCell">
-        <input class="prop-input" type="checkbox" [(ngModel)]="properties.canBeEmpty" [readonly]="readonly"
-          (blur)="onSave()">
+        <p-toggleswitch
+          [(ngModel)]="properties.canBeEmpty"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
       </td>
     </tr>
     <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Field</td>
+      <td class="propRowCell cellName">Url</td>
       <td class="propRowCell">
-        <document-path [(value)]="properties.field" [readonly]="readonly" [displayTooltip]="true"
-        (change)="onSave()"></document-path>
+        <input class="prop-input" [(ngModel)]="properties.url" [readonly]="readonly" (blur)="onSave()">
       </td>
     </tr>
-    @if (properties.type == 'dropdown') {
-      <tr class="propRow">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
-          [attr.collapse]="propHidden.dropdownGroup">
-          <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propRowCell cellName">Dropdown Options</td>
-        <td class="propRowCell">
-        </td>
-      </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Option Name</td>
-        <td class="propRowCell">
-          <document-path [(value)]="properties.optionName" [readonly]="readonly" [displayTooltip]="true"
-          (change)="onSave()"></document-path>
-        </td>
-      </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.dropdownGroup">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Option Value</td>
-        <td class="propRowCell">
-          <document-path [(value)]="properties.optionValue" [readonly]="readonly" [displayTooltip]="true"
-          (change)="onSave()"></document-path>
-        </td>
-      </tr>
-    }
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
-      </td>
-      <td class="propHeaderCell cellName">UI</td>
-      <td class="propHeaderCell"></td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Title</td>
+      <td class="propRowCell cellName">Headers</td>
       <td class="propRowCell">
-        <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
-      </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Button Content</td>
-      <td class="propRowCell">
-        <input class="prop-input" [(ngModel)]="properties.uiMetaData.content" [readonly]="readonly"
-          (blur)="onSave()">
+        <input class="prop-input" [(ngModel)]="properties.headers" [readonly]="readonly" (blur)="onSave()">
       </td>
     </tr>
   </table>

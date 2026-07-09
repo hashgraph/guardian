@@ -1,47 +1,22 @@
-<!-- UI Prop -->
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
-  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    @if (properties.blockType=='interfaceStepBlock') {
-      <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Cyclic</td>
-        <td class="propRowCell">
-          <input class="prop-input" type="checkbox" [(ngModel)]="properties.cyclic" [readonly]="readonly"
-            (blur)="onSave()">
-        </td>
-      </tr>
-    }
-    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+    <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
+    <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propHeaderCell cellName" [attr.collapse]="propHidden.main">
-        <i class="pi pi-chevron-down chevron-icon"></i>
-        <span>UI</span>
-      </td>
-      <td class="propHeaderCell"></td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Title</td>
+      <td class="propRowCell cellName">Description</td>
       <td class="propRowCell">
-        <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
+        <input class="prop-input" [(ngModel)]="properties.description" [readonly]="readonly" (blur)="onSave()">
       </td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.main">
+    <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Type</td>
+      <td class="propRowCell cellName">Cyclic</td>
       <td class="propRowCell">
-        <p-select [(ngModel)]="properties.uiMetaData.type"
-          [options]="uiMetaDataTypeOptions"
+        <p-toggleswitch
+          [(ngModel)]="properties.cyclic"
           [disabled]="readonly"
-          (onChange)="onSave()"
-          placeholder="Select UI Metadata Type"
-          optionLabel="label"
-          optionValue="value"
-          [appendTo]="'body'"
-          panelStyleClass="pc-select-panel"
-          >
-        </p-select>
+          (onChange)="onSave()">
+        </p-toggleswitch>
       </td>
     </tr>
   </table>

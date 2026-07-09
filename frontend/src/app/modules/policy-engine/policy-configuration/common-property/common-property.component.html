@@ -112,8 +112,11 @@
                 } {{ property.label }}
               </td>
               <td class="propRowCell">
-                <input class="prop-input prop-checkbox" type="checkbox" [(ngModel)]="value" [readonly]="readonly"
-                  (change)="onSave()">
+                <p-toggleswitch
+                  [(ngModel)]="value"
+                  [disabled]="readonly"
+                  (onChange)="onSave()">
+                </p-toggleswitch>
                 @if (property.text) {
                   <span class="prop-text">{{ property.text }}</span>
                 }

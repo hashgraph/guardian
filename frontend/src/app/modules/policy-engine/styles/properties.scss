@@ -22,7 +22,9 @@
     --pc-warning-border-light: var(--color-accent-yellow-1, #DA9B22);
     --pc-warning-bg-light: var(--guardian-warning-background, #FFF6E3);
     --pc-warning-shadow: var(--guardian-shadow, #00000014);
-    --pc-control-height: 30px;
+    --pc-control-height: 28px;
+    --pc-control-border-color: var(--guardian-grey-color-2, #E1E7EF);
+    --pc-control-border-radius: 6px;
 
     .properties {
         --col-name-width: 116px;
@@ -289,6 +291,11 @@
                 font-size: var(--pc-row-font-size);
                 min-height: var(--pc-row-height);
 
+                &:not(.cellName) {
+                    padding-left: 4px;
+                    padding-right: 4px;
+                }
+
                 p-select,
                 p-multiselect,
                 select-schema,
@@ -335,26 +342,35 @@
                 color: var(--pc-required-color) !important;
             }
 
-            input {
+            .propRowCell > input.prop-input {
                 height: var(--pc-control-height);
                 box-sizing: border-box;
-                border: 1px solid var(--pc-border-color);
-                border-radius: 6px;
-                padding: 2px 8px;
+                border: 1px solid var(--pc-control-border-color);
+                border-radius: var(--pc-control-border-radius);
+                padding: 4px 8px;
                 outline: none;
                 width: 100%;
-                font-size: 13px;
+                font-size: var(--pc-row-font-size);
                 font-family: var(--pc-row-font-family);
+                font-style: var(--pc-row-font-style);
+                font-weight: 400;
+                line-height: 18px;
                 background: var(--guardian-background, #fff);
-                color: var(--guardian-font-color, #000);
+                color: var(--guardian-font-color, #23252E);
 
-                &:hover {
-                    border: 1px solid var(--guardian-primary-color);
+                &:enabled:hover {
+                    border-color: var(--guardian-primary-color);
                 }
 
-                &:focus {
-                    border: 1px solid var(--guardian-primary-color);
-                    box-shadow: 0 0 0 3px color-mix(in srgb, var(--guardian-primary-color) 15%, transparent);
+                &:enabled:focus {
+                    border-color: var(--guardian-primary-color);
+                    box-shadow: none;
+                }
+
+                &:disabled {
+                    color: var(--guardian-disabled-color, #848FA9);
+                    background: var(--guardian-grey-background, #F9FAFC);
+                    cursor: not-allowed;
                 }
 
                 &[readonly] {
@@ -366,39 +382,61 @@
                 &[type="checkbox"].prop-input {
                     appearance: none;
                     -webkit-appearance: none;
+                    position: relative;
+                    display: inline-block;
                     flex: 0 0 auto;
                     width: 40px;
-                    height: 20px;
+                    height: 22px;
                     margin: 4px 0;
                     padding: 0;
                     border: none !important;
-                    border-radius: 20px;
-                    background-color: var(--pc-border-color, #E1E7EF);
-                    background-image: radial-gradient(circle at center, #fff 7px, rgba(0, 0, 0, 0) 8px);
-                    background-repeat: no-repeat;
-                    background-size: 20px 20px;
-                    background-position: left center;
+                    border-radius: 999px;
+                    vertical-align: middle;
+                    background: var(--guardian-grey-color-3, #CBD5E1);
                     cursor: pointer;
-                    transition: background-color 0.15s ease, background-position 0.15s ease;
+                    transition: background-color 0.15s ease, box-shadow 0.15s ease;
+
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        top: 3px;
+                        left: 3px;
+                        width: 16px;
+                        height: 16px;
+                        border-radius: 50%;
+                        background: var(--guardian-background, #fff);
+                        box-shadow: 0 1px 2px var(--guardian-shadow, #00000026);
+                        transition: transform 0.15s ease;
+                    }
 
                     &:hover {
                         border: none !important;
+                        background: var(--guardian-grey-color-4, #AAB7C4);
                     }
 
                     &:focus {
-                        box-shadow: none;
+                        box-shadow: 0 0 0 3px color-mix(in srgb, var(--guardian-primary-color) 18%, transparent);
                     }
 
                     &:checked {
-                        background-color: var(--guardian-primary-color);
-                        background-position: right center;
+                        background: var(--guardian-primary-color);
+
+                        &::before {
+                            transform: translateX(18px);
+                        }
                     }
                 }
 
                 &[readonly][type="checkbox"].prop-input {
                     pointer-events: none;
-                    filter: grayscale(1);
+                    opacity: 0.6;
                 }
+            }
+
+            > p-toggleswitch {
+                display: inline-flex;
+                flex-shrink: 0;
+                vertical-align: middle;
             }
 
             textarea {
@@ -782,29 +820,43 @@
         p-select,
         p-multiselect {
             width: 100%;
+            min-width: 0;
+            max-width: 100%;
             height: var(--pc-control-height);
             min-height: var(--pc-control-height);
             box-sizing: border-box;
-            border-radius: 6px;
-            border: 1px solid var(--pc-border-color);
+            border-radius: var(--pc-control-border-radius);
+            border: 1px solid var(--pc-control-border-color);
             background: var(--guardian-background, #fff);
+            color: var(--guardian-font-color, #23252E);
             box-shadow: none;
+            outline: 0 none;
             display: flex !important;
             flex-direction: row;
             flex-wrap: nowrap;
             align-items: center;
             overflow: hidden;
-            font-size: 13px;
+            font-size: var(--pc-row-font-size);
             font-family: var(--pc-row-font-family);
+            font-style: var(--pc-row-font-style);
+            font-weight: 400;
 
             &:not(.p-disabled):hover {
                 border-color: var(--guardian-primary-color);
             }
 
+            &:not(.p-disabled).p-focus,
             &.p-focus,
             &.p-inputwrapper-focus {
                 border-color: var(--guardian-primary-color);
-                box-shadow: 0 0 0 3px color-mix(in srgb, var(--guardian-primary-color) 15%, transparent);
+                box-shadow: none;
+            }
+
+            &.p-disabled,
+            &[readonly="true"] {
+                color: var(--guardian-disabled-color, #848FA9);
+                background: var(--guardian-grey-background, #F9FAFC);
+                cursor: not-allowed;
             }
         }
 
@@ -813,14 +865,24 @@
             flex: 1 1 auto;
             min-width: 0;
             height: 100%;
-            padding: 0 10px;
-            font-size: 13px;
+            padding: 4px 8px;
+            font-size: var(--pc-row-font-size);
+            font-family: var(--pc-row-font-family);
+            font-style: var(--pc-row-font-style);
+            font-weight: 400;
+            line-height: 18px;
             color: var(--guardian-font-color, #23252E);
             display: flex;
             align-items: center;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
+        }
+
+        p-multiselect .p-multiselect-label-container {
+            flex: 1 1 auto;
+            min-width: 0;
+            height: 100%;
         }
 
         p-select .p-select-label.p-placeholder,
@@ -836,7 +898,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--guardian-font-color-secondary, #848FA9);
+            color: var(--guardian-font-color, #23252E);
+        }
+
+        p-select .p-select-dropdown-icon,
+        p-multiselect .p-multiselect-dropdown-icon {
+            width: 12px;
+            height: 12px;
+            font-size: 12px;
         }
 
         // PrimeNG p-checkbox is used in some config editors instead of a
@@ -946,6 +1015,10 @@
 // overlays, so this stays global on purpose without leaking to other
 // p-select/p-multiSelect usages elsewhere in the app.
 ::ng-deep .pc-select-panel {
+    border: 1px solid var(--guardian-border-color, var(--guardian-grey-color-2, #E1E7EF));
+    border-radius: 8px;
+    background: var(--guardian-background, #fff);
+    color: var(--guardian-font-color, #23252E);
     font-family: 'Inter', sans-serif;
     font-size: 13px;
 
@@ -957,9 +1030,18 @@
     .p-select-filter,
     .p-multiselect-filter {
         height: 32px;
-        border-radius: 8px;
+        border: 1px solid var(--guardian-border-color, var(--guardian-grey-color-2, #E1E7EF));
+        border-radius: 6px;
         font-size: 13px;
         font-family: 'Inter', sans-serif;
+        color: var(--guardian-font-color, #23252E);
+        background: var(--guardian-background, #fff);
+
+        &:enabled:hover,
+        &:enabled:focus {
+            border-color: var(--guardian-primary-color, #4169E2);
+            box-shadow: none;
+        }
     }
 
     .p-select-list,
@@ -974,6 +1056,7 @@
         border-radius: 6px;
         font-size: 13px;
         font-family: 'Inter', sans-serif;
+        color: var(--guardian-font-color, #23252E);
     }
 
     .p-checkbox {

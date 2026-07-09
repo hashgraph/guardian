@@ -170,12 +170,9 @@
 }
 
 ::ng-deep .propRowCell input.prop-input {
-    min-height: 30px;
-    font-size: 13px;
-    color: var(--guardian-font-color, var(--color-grey-6));
-    background: var(--guardian-background, #fff);
-    border-color: var(--guardian-border-color, #E1E7EF);
-    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    min-height: var(--pc-control-height, 28px);
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 ::ng-deep p-select .p-select,
