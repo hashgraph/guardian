@@ -38,15 +38,14 @@ export class FirstStepsPanelComponent implements OnInit {
 
     ngOnInit(): void {
         // Hide until the current user's role is confirmed. The service is a
-        // singleton, so `available` can be stale (true) from a previous account
-        // on the same browser session; without this reset the drawer would flash
-        // open for a non-registry user before the new role resolves.
-        this.firstSteps.setAvailable(false);
+        // singleton, so the role/open state can be stale from a previous account
+        // on the same browser session; reset it before the new role resolves.
+        this.firstSteps.setRole(null);
         this.auth.sessions().subscribe((user: IUser | null) => {
             const permissions = new UserPermissions(user);
             const page = FIRST_STEPS_PAGES[permissions.role];
-            // Gate by role: First Steps only activates for roles in FIRST_STEPS_PAGES.
-            this.firstSteps.setAvailable(!!page);
+            // Gate by role, and select that role's per-role open/close store.
+            this.firstSteps.setRole(page ? permissions.role : null);
             if (page) {
                 this.loadContent(CONTENT_BASE + page);
             }
