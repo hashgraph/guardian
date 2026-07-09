@@ -42,15 +42,7 @@ import { LocationType } from '@guardian/interfaces';
 })
 export class DocumentValidatorBlock {
     private coerceValue(value: any): any {
-        if (typeof value !== 'string') { return value; }
-        if (value === 'null') { return null; }
-        if (value === 'true') { return true; }
-        if (value === 'false') { return false; }
-        const num = Number(value);
-        if (!isNaN(num) && value.trim() !== '') { return num; }
-        const d = new Date(value);
-        if (!isNaN(d.getTime())) { return d.getTime(); }
-        return value;
+        return PolicyUtils.coerceComparable(value);
     }
 
     private resolveDocumentValue(path: string, document: IPolicyDocument): any {

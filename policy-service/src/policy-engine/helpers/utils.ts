@@ -421,16 +421,21 @@ export class PolicyUtils {
     }
 
     /**
-     * Coerce a value to the best comparable type: number → ISO Date → string.
-     * Strings that don't start with YYYY-MM-DD are never passed to new Date(),
-     * so free-form strings like "Jan 1 2024" are left as-is.
+     * Coerce a string config/document value to the best comparable type:
+     * 'null'/'true'/'false' -> primitives, numeric string -> number,
+     * ISO date string (YYYY-MM-DD…) -> timestamp number, anything else -> string.
      */
-    private static coerceComparable(v: any): any {
+    public static coerceComparable(v: any): any {
         if (typeof v !== 'string') { return v; }
+        if (v === 'null') { return null; }
+        if (v === 'true') { return true; }
+        if (v === 'false') { return false; }
         const n = Number(v);
         if (!isNaN(n) && v.trim() !== '') { return n; }
-        const d = new Date(v);
-        if (!isNaN(d.getTime())) { return d; }
+        if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) { return d.getTime(); }
+        }
         return v;
     }
 
