@@ -16,6 +16,7 @@
     "@guardian/interfaces": "file:../interfaces",
     "@primeuix/themes": "2.0.3",
     "@tmcw/togeojson": "^7.1.2",
+    "@xmldom/xmldom": "~0.9.10",
     "ag-grid-angular": "34.2.0",
     "ag-grid-community": "34.2.0",
     "ajv": "^8.17.1",
@@ -37,7 +38,6 @@
     "ngx-drag-drop": "^21.0.6",
     "ngx-file-drop": "^16.0.0",
     "ngx-mask": "^18.0.4",
-    "ngx-toastr": "^20.0.5",
     "ol": "^9.2.2",
     "pako": "2.1.0",
     "papaparse": "5.5.4",
@@ -47,7 +47,6 @@
     "shapefile": "^0.6.6",
     "textarea-caret": "^3.1.0",
     "to-px": "^1.1.0",
-    "@xmldom/xmldom": "~0.9.10",
     "zone.js": "~0.16.2"
   },
   "devDependencies": {

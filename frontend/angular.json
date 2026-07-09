@@ -107,7 +107,6 @@
                             "./node_modules/leader-line/leader-line.min.js"
                         ],
                         "styles": [
-                          "./node_modules/ngx-toastr/toastr.css",
                           "./node_modules/primeicons/primeicons.css",
                           "node_modules/ol/ol.css",
                           "src/styles.scss"

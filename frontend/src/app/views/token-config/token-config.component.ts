@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
 import { ProfileService } from '../../services/profile.service';
 import { TokenService } from '../../services/token.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContractType, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -82,7 +81,7 @@ export class TokenConfigComponent implements OnInit {
         private relayerAccountsService: RelayerAccountsService,
         private profileService: ProfileService,
         private tokenService: TokenService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private policyEngineService: PolicyEngineService,
         private contractService: ContractService,
@@ -377,7 +376,7 @@ export class TokenConfigComponent implements OnInit {
     }
 
     onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
