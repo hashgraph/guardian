@@ -1064,6 +1064,58 @@
         height: 16px;
     }
 
+    .right-bottom-toolbar .properties .propHeader .cellName {
+        display: flex !important;
+        align-items: center !important;
+        font-size: 10.5px !important;
+        height: 28px !important;
+        min-height: 28px !important;
+        padding-top: 4px !important;
+        padding-bottom: 0 !important;
+        overflow: visible !important;
+    }
+
+    .right-bottom-toolbar .properties .propHeader .cellName span,
+    .right-bottom-toolbar .properties .propHeader .cellName .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        height: 24px !important;
+        line-height: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties .propHeader .cellName .chevron-icon {
+        justify-content: center !important;
+        width: 14px !important;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell > input.prop-input {
+        height: var(--pc-control-height) !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties p-select .p-select-label,
+    .right-bottom-toolbar .properties p-multiselect .p-multiselect-label {
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties .common-properties-button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: var(--pc-control-height) !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
     .p-checkbox-box {
         width: 16px;
         height: 16px;

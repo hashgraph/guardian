@@ -421,6 +421,78 @@
     }
 }
 
+.policy-configuration::ng-deep .right-bottom-toolbar {
+    .pc-tabs-content {
+        padding: 0 12px 12px;
+        overflow: auto;
+        box-sizing: border-box;
+    }
+
+    .properties {
+        --col-name-width: 90px;
+        --pc-row-font-size: 12px;
+    }
+
+    .properties .propRow .cellName {
+        padding-right: 6px;
+        white-space: nowrap;
+    }
+
+    .properties .propRow .propRowCell {
+        padding-top: 2px;
+        padding-bottom: 2px;
+    }
+
+    .properties .propRowCell:not(.cellName) {
+        padding-left: 0;
+        padding-right: 0;
+    }
+
+    .properties .propHeader .cellName,
+    .properties .propHeader .cellName span,
+    .properties .propRow .cellName span {
+        white-space: nowrap;
+    }
+
+    .properties .propHeader .cellName {
+        display: flex !important;
+        align-items: center;
+        height: 28px;
+        min-height: 28px;
+        overflow: visible;
+        padding: 4px 0 0 !important;
+    }
+
+    .properties .propHeader .cellName span {
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        line-height: 24px;
+    }
+
+    .properties .propHeader .cellName .chevron-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 24px;
+        line-height: 1;
+    }
+
+    .properties .propRowCell > input.prop-input,
+    .properties .propRowCell > p-select,
+    .properties .propRowCell > p-multiselect,
+    .properties .propRowCell > select-schema,
+    .properties .propRowCell > select-block {
+        width: 100%;
+    }
+
+    .properties .propRowCell > select-schema .p-select,
+    .properties .propRowCell > select-block .p-select {
+        width: 100%;
+    }
+}
+
 .top-toolbar {
     .delimiter {
         width: 1px;
@@ -902,12 +974,21 @@
 }
 
 .inspector-subsection {
-    margin-top: 4px;
+    position: relative;
     padding: 12px;
-    border-top: 1px solid var(--pc-border-color);
+    border-top: none;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 3px;
+        left: 0;
+        right: 0;
+        border-top: 1px solid var(--pc-border-color);
+    }
 
     .inspector-subsection-label {
-        font-size: 11px;
+        font-size: 10.5px;
         font-weight: 600;
         letter-spacing: 0.04em;
         text-transform: uppercase;
@@ -933,7 +1014,7 @@
 
     ::ng-deep .artifact-row {
         padding: 8px 10px;
-        font-size: 13px;
+        font-size: 11.5px;
         border-bottom: 1px solid var(--pc-border-color);
         color: var(--guardian-font-color, #23252E);
     }
@@ -1950,11 +2031,12 @@
         grid-template-columns: none !important;
         align-items: center;
         justify-content: center;
-        font-size: 13px;
+        font-size: 11.5px;
         font-weight: 500;
-        line-height: 1;
+        line-height: 24px;
         color: var(--guardian-font-color-secondary, #8a8f9c);
         background: transparent !important;
+        box-sizing: border-box;
         transition: background 0.15s ease, color 0.15s ease;
 
         &:hover {

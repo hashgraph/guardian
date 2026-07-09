@@ -13,7 +13,7 @@ import { ArtifactService } from 'src/app/services/artifact.service';
     standalone: false
 })
 export class ArtifactPropertiesComponent implements OnInit {
-    policyArtifacts!: IArtifact[]
+    policyArtifacts: IArtifact[] = [];
 
     @Input('policyId') policyId!: string;
     @Input('block') currentBlock!: any;

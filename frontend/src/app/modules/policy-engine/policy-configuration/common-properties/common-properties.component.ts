@@ -245,6 +245,9 @@ export class CommonPropertiesComponent implements OnInit {
         if (!block) {
             return;
         }
+        if (block === currentBlock && !this.canApplyPermissionsToChildren()) {
+            return;
+        }
         if (block.children) {
             block.children.forEach(child => this.onChildrenApply(child, currentBlock));
         }
@@ -254,6 +257,10 @@ export class CommonPropertiesComponent implements OnInit {
         if (block === currentBlock) {
             this.module.emitUpdate();
         }
+    }
+
+    canApplyPermissionsToChildren(): boolean {
+        return !this.readonly && !!this.block?.children?.length;
     }
 
     getPreparedInputEvents(item: PolicyEvent): { label: string, value: string }[] {
