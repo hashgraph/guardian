@@ -127,3 +127,83 @@
     overflow: auto;
     position: relative;
 }
+
+.psd-content::ng-deep {
+    policy-properties {
+        display: block;
+        width: 100%;
+    }
+
+    .properties {
+        --col-name-width: 156px;
+        --pc-row-height: 32px;
+        --pc-control-height: 30px;
+        --pc-row-font-size: 13px;
+    }
+
+    .properties .propRow .cellName {
+        padding-top: 7px;
+        padding-right: 12px;
+        white-space: normal;
+    }
+
+    .properties .propRowCell:not(.cellName) {
+        padding: 1px 4px;
+    }
+
+    .properties .propRowCell > input.prop-input,
+    .properties .propRowCell > p-select,
+    .properties .propRowCell > p-multiselect,
+    .properties .propRowCell > .readonly-prop {
+        width: 100%;
+        height: var(--pc-control-height);
+        min-height: var(--pc-control-height);
+        box-sizing: border-box;
+        border: 1px solid var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        background: var(--guardian-background, #fff);
+        color: var(--guardian-font-color, #23252E);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        font-weight: 400;
+        line-height: 18px;
+    }
+
+    .properties .propRowCell > input.prop-input,
+    .properties .propRowCell > .readonly-prop {
+        padding: 4px 8px;
+    }
+
+    .properties .propRowCell > .readonly-prop {
+        position: static;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .properties .propRowCell > input.prop-input[readonly] {
+        border-color: var(--pc-control-border-color) !important;
+        background: var(--guardian-grey-background, #F9FAFC) !important;
+        color: var(--guardian-font-color-secondary, #848FA9);
+    }
+
+    .properties p-select .p-select-label,
+    .properties p-multiselect .p-multiselect-label {
+        align-items: center;
+        box-sizing: border-box;
+        height: 100%;
+        padding: 4px 8px;
+        line-height: 18px;
+    }
+
+    .properties .propRowCell > textarea {
+        min-height: 86px;
+        border-color: var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        color: var(--guardian-font-color, #23252E);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+    }
+}
