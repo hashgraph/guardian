@@ -102,7 +102,7 @@ export class PolicyConfigurationComponent implements OnInit {
     public searchModule: string = '';
     public storage: PolicyStorage;
     public copyBlocksMode: boolean = false;
-    public eventVisible: string = 'Selected';
+    public eventVisible: string = 'All';
     public blockPickerQuery: string = '';
     private _allBlocks: any[] = [];
     public blockSearchData: any = null;
