@@ -1,5 +1,6 @@
 import { formatCredits } from '~/lib/format';
 import { isValidCountryName } from '~/lib/utils';
+import { allocateDonutColors } from '~/lib/chart-colors';
 import { SectorType } from '~/types/enums';
 import type { WatchlistItem } from '~/composables/usePortfolioWatchlist';
 import type { ActivityItem, MapCountry, MapPoint } from '~/types/models';
@@ -189,15 +190,6 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
             .slice(0, 10);
     });
 
-    const topCountries = computed(() => {
-        const max = Math.max(...countryRaw.value.map(c => c.credits), 1);
-        return countryRaw.value.map(c => ({
-            name: c.name,
-            val: formatCredits(c.credits),
-            width: Math.round((c.credits / max) * 100),
-        }));
-    });
-
     // World-map countries — bucketed by reverse-geocoded ISO3 code (falls back
     // to the project's own countryCode), excluding the 'UNK' bucket so unknown
     // projects don't paint an arbitrary country shape. Mirrors useDashboard.ts.
@@ -225,6 +217,68 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     const mapPoints = computed<MapPoint[]>(() => filteredProjects.value
         .filter(p => typeof p.lat === 'number' && typeof p.lng === 'number' && (p.lat !== 0 || p.lng !== 0))
         .map(p => ({ name: p.name, lat: p.lat, lng: p.lng, credits: formatCredits(p.credits) })));
+
+    // Country detail for the map's click-through side panel — mirrors
+    // useDashboard.ts's getCountryDetail, scoped to watchlisted projects.
+    // Matches on the same resolvedCode(p) || p.countryCode bucketing used to
+    // build mapCountries, so the panel covers reverse-geocoded projects too.
+    function getCountryDetail(code: string) {
+        const countryData = mapCountries.value.find(c => c.countryCode === code);
+        if (!countryData) return null;
+
+        const countryProjects = filteredProjects.value.filter(p => (resolvedCode(p) || p.countryCode) === code);
+        const totalProjects = countryProjects.length;
+
+        const catCredits: Record<string, number> = {};
+        const catCounts: Record<string, number> = {};
+        let totalCredits = 0;
+        for (const p of countryProjects) {
+            const sector = p.sector || SectorType.Undefined;
+            catCredits[sector] = (catCredits[sector] || 0) + p.credits;
+            catCounts[sector] = (catCounts[sector] || 0) + 1;
+            totalCredits += p.credits;
+        }
+
+        const useCreditsWeight = totalCredits > 0;
+        const denom = useCreditsWeight ? totalCredits : (totalProjects || 1);
+
+        const orderedSectors = Object.keys(catCounts)
+            .map(label => ({
+                label,
+                value: Math.round(((useCreditsWeight ? catCredits[label] : catCounts[label]) / denom) * 100),
+            }))
+            .sort((a, b) => b.value - a.value);
+
+        const sectorColors = allocateDonutColors(orderedSectors.length, `portfolio-country-sector-${code}`);
+        const sectors = orderedSectors.map((s, i) => ({
+            label: s.label,
+            value: s.value,
+            color: sectorColors[i] ?? '#d4d4d8',
+        }));
+
+        const regCredits: Record<string, number> = {};
+        const regCounts: Record<string, number> = {};
+        for (const p of countryProjects) {
+            const registry = p.registry || 'Unknown';
+            regCredits[registry] = (regCredits[registry] || 0) + p.credits;
+            regCounts[registry] = (regCounts[registry] || 0) + 1;
+        }
+        const registriesBreakdown = Object.keys(regCounts)
+            .map(name => {
+                const numerator = useCreditsWeight ? regCredits[name] : regCounts[name];
+                return { name, pct: Math.round((numerator / denom) * 1000) / 10 };
+            })
+            .sort((a, b) => b.pct - a.pct)
+            .slice(0, 3);
+
+        return {
+            name: countryData.country,
+            projects: countryData.projects,
+            credits: countryData.credits,
+            sectors,
+            registries: registriesBreakdown,
+        };
+    }
 
     const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
@@ -365,9 +419,9 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         vintageMax,
         registries,
         countryRaw,
-        topCountries,
         mapCountries,
         mapPoints,
+        getCountryDetail,
         buildIssuanceSeries,
         recentIssuances,
         filteredSdgStats,
