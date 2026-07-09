@@ -1233,11 +1233,11 @@
         "lastFive": "Last 5",
         "chartLimitReached": "Chart limit reached ({max}/{max})",
         "syncedLabel": "Synced —",
-        "syncedSub": "Hedera Mainnet · {projects} projects indexed",
+        "syncedSub": "{network} · {projects} projects indexed",
         "kpi": {
             "totalIssued": {
                 "label": "Total Credits Issued",
-                "sub": "Issued on-chain (mainnet)",
+                "sub": "Issued on-chain ({network})",
                 "footer": "On-chain verified"
             },
             "activeSupply": {
@@ -1252,7 +1252,7 @@
             },
             "activeProjects": {
                 "label": "Active Projects",
-                "sub": "Verified on mainnet",
+                "sub": "Verified on {network}",
                 "footer": "{n} in watchlist"
             }
         },

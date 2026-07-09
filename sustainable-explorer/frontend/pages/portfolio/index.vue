@@ -84,15 +84,25 @@ const {
     vintageMax,
     registries,
     countryRaw,
-    topCountries,
     mapCountries,
     mapPoints,
+    getCountryDetail,
     buildIssuanceSeries,
     recentIssuances,
     filteredSdgStats,
     recentActivity,
     dataPending,
 } = usePortfolioDashboard(watchlistItems);
+
+// Project Distribution map — click-through side panel, mirrors pages/index.vue.
+const selectedCountry = ref<string | null>(null);
+const activeMapDetail = computed(() => {
+    if (!selectedCountry.value) return null;
+    return getCountryDetail(selectedCountry.value);
+});
+function onMapCountryClick(code: string) {
+    selectedCountry.value = selectedCountry.value === code ? null : code;
+}
 
 // Period toggles
 type TimePeriod = 'monthly' | 'quarterly' | 'yearly';
@@ -195,6 +205,10 @@ const topSdgs = computed(() => {
 // toward a goal.
 const sdgAxis = computed(() => niceAxis(Math.max(...topSdgs.value.map(s => s.count), 0)));
 
+// Shared numeric x-axis for the Top Countries bar chart — mirrors sdgAxis,
+// same rationale (plot against a clean rounded scale, not each other).
+const countryAxis = computed(() => niceAxis(Math.max(...countryRaw.value.map(c => c.credits), 0)));
+
 // SDG coverage radar (all SDGs) — filtered by watchlist, mode-aware. Axis
 // labels use just the SDG number ("1".."17") since 17 axes is too tight for
 // full names around the perimeter; the full name shows in the hover tooltip.
@@ -236,7 +250,7 @@ const kpiTotalRetired = computed(() => formatCredits(totalRetired.value));
 const kpiActiveProjects = computed(() => activeProjectsCount.value.toLocaleString());
 
 // Sync status
-const { network } = useNetwork();
+const { network, currentNetwork } = useNetwork();
 const { data: syncStatus } = useSyncSummaryApi({ network });
 const lastSyncFormatted = computed(() => {
     const raw = syncStatus.value?.lastSyncedAt;
@@ -915,7 +929,7 @@ onUnmounted(() => {
                         v-if="widgetVisible('totalIssued')"
                         :label="$t('portfolio.kpi.totalIssued.label')"
                         :value="kpiTotalIssued"
-                        :sub="$t('portfolio.kpi.totalIssued.sub')"
+                        :sub="$t('portfolio.kpi.totalIssued.sub', { network: network })"
                         :footer="$t('portfolio.kpi.totalIssued.footer')"
                         footer-accent="text-primary"
                         :icon="Coins"
@@ -947,7 +961,7 @@ onUnmounted(() => {
                         v-if="widgetVisible('activeProjects')"
                         :label="$t('portfolio.kpi.activeProjects.label')"
                         :value="kpiActiveProjects"
-                        :sub="$t('portfolio.kpi.activeProjects.sub')"
+                        :sub="$t('portfolio.kpi.activeProjects.sub', { network: network })"
                         :footer="$t('portfolio.kpi.activeProjects.footer', { n: watchlistCount })"
                         footer-accent="text-primary"
                         :icon="FolderKanban"
@@ -1051,8 +1065,19 @@ onUnmounted(() => {
             <div class="px-6 pb-6">
                 <Skeleton v-if="!displayReady" class="h-[28rem] rounded-xl" />
                 <div v-else class="rounded-xl border bg-card overflow-hidden">
-                    <div class="h-[28rem]">
-                        <ProjectMap :countries="mapCountries" :points="mapPoints" auto-fit />
+                    <!-- Fixed height regardless of side-panel visibility so the
+                         map doesn't jump (resize Leaflet) on every click. -->
+                    <div class="flex h-[28rem]">
+                        <!-- Map -->
+                        <div class="flex-1 relative">
+                            <ProjectMap :countries="mapCountries" :points="mapPoints" auto-fit @country-click="onMapCountryClick" />
+                        </div>
+
+                        <CountryDetailPanel
+                            :detail="activeMapDetail"
+                            :country-code="selectedCountry"
+                            @close="selectedCountry = null"
+                        />
                     </div>
                 </div>
             </div>
@@ -1160,18 +1185,6 @@ onUnmounted(() => {
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- ADD CUSTOM CHART CTA -->
-        <div class="px-6 pb-8">
-            <button
-                class="w-full rounded-xl border-2 border-dashed border-border/60 bg-transparent py-4 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="customCharts.length >= MAX_CUSTOM_CHARTS"
-                @click="customCharts.length < MAX_CUSTOM_CHARTS && openChartBuilder()"
-            >
-                <Plus class="h-4 w-4" />
-                {{ customCharts.length < MAX_CUSTOM_CHARTS ? $t('portfolio.addCustomChart') : $t('portfolio.chartLimitReached', { max: MAX_CUSTOM_CHARTS }) }}
-            </button>
         </div>
 
         <!-- ROW 1: Issuance Trend + Vintage Distribution -->
@@ -1376,20 +1389,52 @@ onUnmounted(() => {
                     </div>
                     <div class="px-6 pb-6">
                         <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
-                        <div v-else class="rounded-xl border bg-card p-5 space-y-3">
-                            <div v-for="c in topCountries" :key="c.name" class="flex items-center gap-3">
-                                <span class="text-xs text-foreground min-w-[90px] truncate">{{ c.name }}</span>
-                                <div class="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full bg-primary/70 transition-all duration-500"
-                                        :style="{ width: `${c.width}%` }"
-                                    />
+                        <div v-else-if="countryRaw.length > 0" class="rounded-xl border bg-card p-5">
+                            <!-- Horizontal bar chart plotted against a real numeric x-axis
+                                 (see countryAxis), mirrors the Top SDGs bar chart. -->
+                            <div class="flex gap-3">
+                                <div class="flex flex-col gap-3 shrink-0">
+                                    <div v-for="c in countryRaw" :key="c.name" class="h-6 flex items-center max-w-[130px]">
+                                        <span class="min-w-0 truncate text-xs text-foreground" :title="c.name">{{ c.name }}</span>
+                                    </div>
                                 </div>
-                                <span class="text-xs text-muted-foreground tabular-nums min-w-[40px] text-right shrink-0">{{ c.val }}</span>
+                                <div class="relative flex-1 min-w-0">
+                                    <!-- Y-axis + gridlines, spanning the full bar stack -->
+                                    <div
+                                        v-for="(tick, i) in countryAxis.ticks"
+                                        :key="i"
+                                        class="absolute top-0 bottom-5 w-px"
+                                        :class="i === 0 ? 'bg-border' : 'bg-border/50'"
+                                        :style="{ left: `${(tick / countryAxis.max) * 100}%` }"
+                                    />
+                                    <!-- Bars -->
+                                    <div class="flex flex-col gap-3">
+                                        <div v-for="c in countryRaw" :key="c.name" class="relative h-6">
+                                            <InfoTooltip
+                                                :text="`${c.name}: ${formatCredits(c.credits)}`"
+                                                class="absolute inset-y-0 left-0 items-center transition-all duration-500"
+                                                :style="{ width: `${Math.max((c.credits / countryAxis.max) * 100, 2)}%` }"
+                                            >
+                                                <div class="h-full w-full rounded-r-md bg-primary/70" />
+                                                <span class="ml-2 text-xs font-medium text-foreground tabular-nums whitespace-nowrap">{{ formatCredits(c.credits) }}</span>
+                                            </InfoTooltip>
+                                        </div>
+                                    </div>
+                                    <!-- X-axis -->
+                                    <div class="relative h-5 mt-2 border-t border-border">
+                                        <span
+                                            v-for="(tick, i) in countryAxis.ticks"
+                                            :key="i"
+                                            class="absolute top-1.5 text-[10px] text-muted-foreground tabular-nums"
+                                            :class="i === 0 ? 'left-0' : i === countryAxis.ticks.length - 1 ? 'right-0' : '-translate-x-1/2'"
+                                            :style="i !== 0 && i !== countryAxis.ticks.length - 1 ? { left: `${(tick / countryAxis.max) * 100}%` } : {}"
+                                        >{{ formatCredits(tick) }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div v-if="topCountries.length === 0" class="py-4 text-center text-xs text-muted-foreground">
-                                {{ $t('portfolio.noData') }}
-                            </div>
+                        </div>
+                        <div v-else class="rounded-xl border bg-card p-5 py-4 text-center text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
                         </div>
                     </div>
                 </div>
@@ -1648,7 +1693,7 @@ onUnmounted(() => {
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-foreground">{{ $t('portfolio.syncedLabel') }} {{ lastSyncFormatted }}</p>
-                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('portfolio.syncedSub', { projects: activeProjectsCount }) }}</p>
+                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('portfolio.syncedSub', { network: currentNetwork.label, projects: activeProjectsCount }) }}</p>
                     </div>
                 </div>
             </div>
