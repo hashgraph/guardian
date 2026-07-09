@@ -141,9 +141,9 @@ If the formula contains an error, or the system is unable to calculate the resul
 
 If the evaluation was successful the result field would be highlighted in amber (if the value ‘failed’ the evaluation) or in green (if it was a ‘success’).
 
-![](<../../../../.gitbook/assets/19 (1) (1) (2).png>)
+![](<../../../../.gitbook/assets/19 (1) (1).png>)
 
-![](<../../../../.gitbook/assets/19 (1) (1) (2).png>)
+![](<../../../../.gitbook/assets/19 (1) (1).png>)
 
 Once all editing is done the template must be saved.
 

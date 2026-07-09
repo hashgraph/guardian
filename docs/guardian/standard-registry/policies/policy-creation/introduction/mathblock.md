@@ -46,7 +46,7 @@ To define a formula, complete the following steps:
 * Specify the formula name.
 * Add () after the formula name and list any parameters inside. Separate parameters with a comma (,).
 
-<figure><img src="../../../../../.gitbook/assets/image (3) (1) (5) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 * Create the expression using math notation or an alternative format (LaTeX, MathJSON).
 
@@ -54,7 +54,7 @@ To define a formula, complete the following steps:
 
 In some cases, switching between math notation, LaTeX and MathJSON can help you verify or correct a formula. You can edit in any format; the system automatically synchronizes changes across formats.
 
-<figure><img src="../../../../../.gitbook/assets/image (5) (1) (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (5) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 You can reuse defined formulas in other formulas (by name) and in the code on the Advanced tab.
 
@@ -167,7 +167,7 @@ Guardian provides the following built-in functions for looking up values in arra
 
 For complex scenarios where formulas are not sufficient for the required data transformations, use the Advanced (Optional) tab to add logic in JavaScript.
 
-<figure><img src="../../../../../.gitbook/assets/image (7) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (7) (1).png" alt=""><figcaption></figcaption></figure>
 
 In code, you can reference all defined formulas and variables by name.
 
@@ -271,7 +271,7 @@ Once a policy is published, Guardian generates Formula-Linked Definitions (FLDs)
 
 <figure><img src="../../../../../.gitbook/assets/image (21) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../../.gitbook/assets/image (22) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (22) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note:** The _mathBlock_ code section is not used when automatically generating FLDs and is not represented in any way in the resulting visuals.

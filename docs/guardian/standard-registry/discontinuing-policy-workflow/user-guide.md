@@ -43,7 +43,7 @@
 8. Blocks : Block mapping (while state migrating is enabled)
 9. Clicking OK you will start an asynchronous migration task
 
-<figure><img src="../../../.gitbook/assets/image (602) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (602).png" alt=""><figcaption></figcaption></figure>
 
 ![image9.png](<../../../.gitbook/assets/7 (13).png>)
 

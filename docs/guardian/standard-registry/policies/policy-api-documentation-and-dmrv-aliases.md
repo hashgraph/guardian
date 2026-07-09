@@ -67,7 +67,7 @@ Errors appear below the corresponding row.
 1. Go to **Policies → Manage Policies**.
 2. Click the **Documentation** button (book icon) on a policy row.
 
-<div align="left"><figure><img src="../../../.gitbook/assets/image (3) (1) (5).png" alt="" width="375"><figcaption></figcaption></figure></div>
+<div align="left"><figure><img src="../../../.gitbook/assets/image (3) (1).png" alt="" width="375"><figcaption></figcaption></figure></div>
 
 3. The dialog shows all configured endpoints:
 

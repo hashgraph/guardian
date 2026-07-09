@@ -93,7 +93,7 @@ Standard Registry can view all Relayer Accounts and balances for all users opera
 
 Unless the policy is configured to send minted tokens to a specific account, tokens minted under Relayer Account configuration will be sent to the Relayer Account associated with the VC document on the basis of which the mint operation has been triggered.
 
-<figure><img src="../../.gitbook/assets/image (11) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (11) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../.gitbook/assets/image (12) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

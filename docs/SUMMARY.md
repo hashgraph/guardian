@@ -1099,8 +1099,8 @@
 
 ## First Steps
 
-* [First steps \[Standard Registry\]](<README (1).md>)
-* [First steps \[Default User\]](first-steps/first-steps-with-digital-environmental-assets-complex.md)
+* [First steps \[Standard Registry\]](first-steps/standard-registry.md)
+* [First steps \[Default User\]](first-steps/default-user.md)
 
 ## AI-ToolKit
 

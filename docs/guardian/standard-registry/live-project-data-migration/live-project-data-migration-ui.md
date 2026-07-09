@@ -13,7 +13,7 @@ To perform export press ‘**Export policy data**’ option in the Policy menu.
 
 The operation is available for dry-run and published policies.
 
-<figure><img src="../../../.gitbook/assets/image (593) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (593).png" alt=""><figcaption></figcaption></figure>
 
 ## 2. Importing/Exporting Keys for Dry Run Policies
 
@@ -21,7 +21,7 @@ To export/import virtual users’ keys and DID documents for dry-run policies pr
 
 They can be imported into another dry-run policy, where data was migrated from the current policy.
 
-<figure><img src="../../../.gitbook/assets/image (593) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (593).png" alt=""><figcaption></figcaption></figure>
 
 ## 3. Migrating Policy State to Destination Policy
 
@@ -53,7 +53,7 @@ When state migration is selected block mapping could be used to optimize the mig
 
 For Policies with dynamic tokens mapping of token templates might be required.
 
-<figure><img src="../../../.gitbook/assets/image (602) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (602).png" alt=""><figcaption></figcaption></figure>
 
 ## 6. Rerunning Migration
 

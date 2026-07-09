@@ -14,7 +14,7 @@ Add values to help users and enable testing. These are helpful but not mandatory
 * **Suggested Value**: Recommended value shown to guide users
 * **Test Value**: Value used for testing schema functionality
 
-![Schema edit interface showing test, suggested and default values](<../../../.gitbook/assets/image (61) (1).png>)
+![Schema edit interface showing test, suggested and default values](<../../../.gitbook/assets/image (6).png>)
 
 **Example Values Setup**:
 
@@ -44,7 +44,7 @@ Use Guardian's preview feature to test your schema before deployment.
 5. Test sub-schema loading and visibility
 6. Check file upload fields accept appropriate formats
 
-![alt text](<../../../.gitbook/assets/image-1 (3) (1).png>)
+![alt text](<../../../.gitbook/assets/image-1 (2).png>)
 
 **Test These Elements**:
 
@@ -68,7 +68,7 @@ Insert your new schema UUIDs where documents are requested or listed in policy w
 4. Replace old UUID with new schema UUID
 5. Save policy configuration
 
-![JSON edit mode for a block](<../../../.gitbook/assets/image-2 (2) (1).png>)
+![JSON edit mode for a block](<../../../.gitbook/assets/image-2 (1).png>)
 
 ### 4. Verify Test Artifact Completeness
 

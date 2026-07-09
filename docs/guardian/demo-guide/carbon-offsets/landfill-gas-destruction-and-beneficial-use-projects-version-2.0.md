@@ -225,7 +225,7 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 ![](<../../../.gitbook/assets/16 (1).png>)
 
-![](<../../../.gitbook/assets/17 (1) (3).png>)
+![](<../../../.gitbook/assets/17 (1).png>)
 
 ![](<../../../.gitbook/assets/18 (1).png>)
 
@@ -315,9 +315,9 @@ Emission Reduction Ton (ERT), which represents a verified reduction of one metri
 
 <figure><img src="../../../.gitbook/assets/image (770).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (771) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (771).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (771) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (771).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../.gitbook/assets/image (773).png" alt=""><figcaption></figcaption></figure>
 

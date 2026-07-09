@@ -832,7 +832,7 @@ Waiting while `blocks.uiMetaData.title` would be equal "Waiting for approval":
 
 Change the project status from “Waiting to be Added” to “Waiting to Validate”:
 
-<figure><img src="../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (7) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ```json5
 {

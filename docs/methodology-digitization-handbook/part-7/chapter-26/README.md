@@ -118,7 +118,7 @@ For example, if your workflow is: `Document Submission → Tool 1 Processing →
 
 You can view intermediate document versions in the **History** tab of input data to debug calculation progressions.
 
-![Custom Logic Testing Interface](<../../../.gitbook/assets/image (210).png>)
+![Custom Logic Testing Interface](<../../../.gitbook/assets/image (68).png>)
 
 **Debugging Steps**:
 

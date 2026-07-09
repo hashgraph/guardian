@@ -113,7 +113,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
     <figure><img src="../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (3).png" alt=""><figcaption></figcaption></figure>
 6. The Standard Registry can now add the project to the project pipeline by selecting “Add”.
 
-![](<../../../.gitbook/assets/14 (10) (1).png>)
+![](<../../../.gitbook/assets/14 (10).png>)
 
 7. Now, we create a new user and assign its role as the VVB.
 
@@ -129,7 +129,7 @@ Verified Carbon Unit (VCU) credits, each equivalent to one tonne of CO2.
 
 10. Log in as the Project Proponent and assign the VVB to the project using the dropdown.
 
-![](<../../../.gitbook/assets/14 (10) (1).png>)
+![](<../../../.gitbook/assets/14 (10).png>)
 
 11. Once the VVB is assigned, the VVB will now have access to the project for validation/verification.
 
