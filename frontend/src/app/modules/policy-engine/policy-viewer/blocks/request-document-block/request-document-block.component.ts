@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, ElementRef, } from '@angular/core';
-import { MenuItem } from 'primeng/api';
 import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -72,8 +71,6 @@ export class RequestDocumentBlockComponent
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
     @ViewChild('draftFileInput', { static: false }) draftFileInput!: ElementRef<HTMLInputElement>;
-
-    public saveFileMenuItems: MenuItem[] = [];
 
     public isExist = false;
     public disabled = false;
@@ -168,13 +165,6 @@ export class RequestDocumentBlockComponent
         (window as any).__request = (window as any).__request || {};
         (window as any).__request[this.id] = this;
         this.initForm(this.dataForm);
-        this.saveFileMenuItems = [
-            {
-                label: 'Restore from draft file',
-                icon: 'pi pi-upload',
-                command: () => this.triggerImportDraft()
-            }
-        ];
     }
 
     ngOnDestroy(): void {

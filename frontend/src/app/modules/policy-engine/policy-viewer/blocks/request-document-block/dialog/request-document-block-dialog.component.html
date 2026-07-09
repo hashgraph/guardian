@@ -243,26 +243,46 @@
             [attr.visible]="config.visible()"
             [attr.id]="config.id"
             class="dialog-button">
-            <p-splitButton
-                *ngIf="config.id === 'save'; else plainButton"
-                [label]="getButtonName(config)"
-                [model]="saveFileMenuItems"
+            <button
+                (click)="config.fn()"
                 [disabled]="ifDisabledBtn(config)"
-                (onClick)="config.fn()"
-                styleClass="draft-split-button"
-                menuStyleClass="draft-split-menu"
-                appendTo="body">
-            </p-splitButton>
-            <ng-template #plainButton>
-                <button
-                    (click)="config.fn()"
-                    [disabled]="ifDisabledBtn(config)"
-                    class="guardian-button guardian-button-{{config.type}}"
-                >
-                    <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
-                    {{getButtonName(config)}}
-                </button>
-            </ng-template>
+                class="guardian-button guardian-button-{{config.type}}"
+            >
+                <svg-icon *ngIf="config.iconPath" src="{{config.iconPath}}" svgClass="save-icon-color"></svg-icon>
+                {{getButtonName(config)}}
+            </button>
+        </div>
+        <div class="dialog-button">
+            <button
+                (click)="onExportDraft()"
+                class="guardian-button guardian-button-secondary"
+                type="button"
+            >
+                <div class="guardian-button-icon">
+                    <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/export-file.svg"
+                        svgClass="icon-color-primary"
+                    ></svg-icon>
+                </div>
+                <div class="guardian-button-label">Save draft to file</div>
+            </button>
+        </div>
+        <div class="dialog-button">
+            <button
+                (click)="triggerImportDraft()"
+                class="guardian-button guardian-button-secondary"
+                type="button"
+            >
+                <div class="guardian-button-icon">
+                    <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/import-file.svg"
+                        svgClass="icon-color-primary"
+                    ></svg-icon>
+                </div>
+                <div class="guardian-button-label">Restore from draft file</div>
+            </button>
         </div>
         <div *ngIf="lastSavedAt" class="last-autosave">
             {{ minutesAgo$ | async }}

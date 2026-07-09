@@ -16,15 +16,34 @@
             <div class="schema-form" [attr.dryRun]="dryRun" [attr.restoreData]="restoreData">
 
                 <div class="draft-file-actions">
-                    <p-splitButton
-                        label="Save draft to file"
-                        icon="pi pi-download"
-                        [model]="saveFileMenuItems"
-                        (onClick)="onExportDraft()"
-                        styleClass="draft-split-button"
-                        menuStyleClass="draft-split-menu"
-                        appendTo="body">
-                    </p-splitButton>
+                    <button
+                        (click)="onExportDraft()"
+                        class="guardian-button guardian-button-secondary"
+                        type="button"
+                    >
+                        <div class="guardian-button-icon">
+                            <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/export-file.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Save draft to file</div>
+                    </button>
+                    <button
+                        (click)="triggerImportDraft()"
+                        class="guardian-button guardian-button-secondary"
+                        type="button"
+                    >
+                        <div class="guardian-button-icon">
+                            <svg-icon
+                                class="icon-btn svg-icon"
+                                src="/assets/images/icons/import-file.svg"
+                                svgClass="icon-color-primary"
+                            ></svg-icon>
+                        </div>
+                        <div class="guardian-button-label">Restore from draft file</div>
+                    </button>
                     <input
                         #draftFileInput
                         type="file"

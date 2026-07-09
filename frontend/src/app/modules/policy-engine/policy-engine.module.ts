@@ -129,7 +129,6 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { TabMenuModule } from 'primeng/tabmenu';
 import { TooltipModule } from 'primeng/tooltip';
-import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabViewModule } from 'primeng/tabview';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
@@ -354,7 +353,6 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         DynamicDialogModule,
         TabMenuModule,
         TooltipModule,
-        SplitButtonModule,
         TabViewModule,
         RadioButtonModule,
         PasswordModule,

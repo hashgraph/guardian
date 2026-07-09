@@ -1,5 +1,4 @@
 import { ChangeDetectorRef, Component, ElementRef, ViewChild } from '@angular/core';
-import { MenuItem } from 'primeng/api';
 import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { RequestDocumentBlockComponent } from '../request-document-block.component';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -102,7 +101,6 @@ export class RequestDocumentBlockDialog {
     }
 
     public isLargeSize: boolean = true;
-    public saveFileMenuItems: MenuItem[] = [];
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
     @ViewChild('draftFileInput', { static: false }) draftFileInput!: ElementRef<HTMLInputElement>;
         
@@ -145,18 +143,6 @@ export class RequestDocumentBlockDialog {
             }
         });
         this.buttonNames['submit'] = (this.edit && !this.draft) ? 'Validate & Update' : 'Validate & Create';
-        this.saveFileMenuItems = [
-            {
-                label: 'Save draft to file',
-                icon: 'pi pi-download',
-                command: () => this.onExportDraft()
-            },
-            {
-                label: 'Restore from draft file',
-                icon: 'pi pi-upload',
-                command: () => this.triggerImportDraft()
-            }
-        ];
     }
 
     ngOnDestroy(): void {
