@@ -135,20 +135,63 @@
     }
 
     .properties {
-        --col-name-width: 156px;
+        --col-name-width: 184px;
         --pc-row-height: 32px;
-        --pc-control-height: 30px;
+        --pc-control-height: 28px;
         --pc-row-font-size: 13px;
     }
 
+    .properties .propRow {
+        height: var(--pc-row-height);
+    }
+
+    .properties .propRow:has(textarea) {
+        height: calc(var(--pc-control-height) + 2px);
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName.main-section-cell {
+        position: relative;
+        display: table-cell !important;
+        overflow: visible;
+        padding-left: 0 !important;
+        vertical-align: middle;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName.main-section-cell .chevron-icon {
+        position: absolute;
+        top: 50%;
+        left: -16px;
+        width: 14px;
+        height: 14px;
+        line-height: 14px;
+        transform: translateY(-50%);
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName.main-section-cell[collapse="true"] .chevron-icon {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName.main-section-cell span {
+        display: block;
+    }
+
     .properties .propRow .cellName {
-        padding-top: 7px;
+        padding-top: 0;
         padding-right: 12px;
+        line-height: 16px;
+        vertical-align: middle;
         white-space: normal;
     }
 
+    .properties .propRow:has(textarea) .cellName {
+        padding-top: 0;
+        vertical-align: middle;
+    }
+
     .properties .propRowCell:not(.cellName) {
-        padding: 1px 4px;
+        height: var(--pc-row-height);
+        padding: 2px 4px;
+        vertical-align: middle;
     }
 
     .properties .propRowCell > input.prop-input,
@@ -167,11 +210,25 @@
         font-size: var(--pc-row-font-size);
         font-weight: 400;
         line-height: 18px;
+        vertical-align: middle;
     }
 
     .properties .propRowCell > input.prop-input,
     .properties .propRowCell > .readonly-prop {
-        padding: 4px 8px;
+        padding: 3px 8px;
+    }
+
+    .properties .propRowCell > p-select,
+    .properties .propRowCell > p-multiselect {
+        display: flex !important;
+        align-items: center;
+    }
+
+    .properties p-multiselect .p-multiselect-label-container {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        min-width: 0;
     }
 
     .properties .propRowCell > .readonly-prop {
@@ -193,17 +250,59 @@
     .properties p-multiselect .p-multiselect-label {
         align-items: center;
         box-sizing: border-box;
+        display: flex;
         height: 100%;
-        padding: 4px 8px;
+        padding: 3px 8px;
         line-height: 18px;
     }
 
+    .properties p-select .p-select-dropdown,
+    .properties p-multiselect .p-multiselect-dropdown {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .properties .propRow:has(textarea) .propRowCell:not(.cellName) {
+        height: calc(var(--pc-control-height) + 2px);
+        padding-top: 1px;
+        padding-bottom: 1px;
+        vertical-align: middle;
+    }
+
+    .properties .propRow:has(textarea) + .propRow .propRowCell {
+        padding-top: 1px;
+    }
+
+    .properties .topic-description-row {
+        height: calc(var(--pc-row-height) + 1px);
+    }
+
+    .properties .topic-description-row .propRowCell {
+        padding-bottom: 3px;
+    }
+
+    .properties .propRow:has(+ .propHeader) {
+        height: calc(var(--pc-row-height) + 6px);
+    }
+
+    .properties .propRow:has(+ .propHeader) .propRowCell {
+        padding-bottom: 6px;
+    }
+
     .properties .propRowCell > textarea {
-        min-height: 86px;
+        display: block;
+        height: var(--pc-control-height);
+        min-height: var(--pc-control-height);
         border-color: var(--pc-control-border-color);
         border-radius: var(--pc-control-border-radius);
+        background: var(--guardian-background, #fff);
         color: var(--guardian-font-color, #23252E);
         font-family: var(--pc-row-font-family);
         font-size: var(--pc-row-font-size);
+        line-height: 18px;
+        padding: 3px 8px;
+        resize: vertical;
     }
 }

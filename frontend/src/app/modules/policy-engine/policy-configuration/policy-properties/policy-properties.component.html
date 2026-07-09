@@ -4,12 +4,12 @@
       <table class="properties">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
         @if (type == 'Main') {
-          <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
-              [attr.collapse]="propHidden.metaData">
-              <i class="pi pi-caret-down"></i>
+          <tr class="propHeader" (click)="onHide(propHidden, 'metaData')">
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName main-section-cell" [attr.collapse]="propHidden.metaData">
+              <i class="pi pi-chevron-down chevron-icon"></i>
+              <span>Policy</span>
             </td>
-            <td class="propHeaderCell cellName">Policy</td>
             <td class="propHeaderCell"></td>
           </tr>
           <tr class="propRow" [attr.collapse]="propHidden.metaData">
@@ -54,7 +54,7 @@
               <input class="prop-input" [ngModel]="policy.version" readonly>
             </td>
           </tr>
-          <tr class="propRow" [attr.collapse]="propHidden.metaData">
+          <tr class="propRow topic-description-row" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Topic Description</td>
             <td class="propRowCell">
@@ -86,12 +86,12 @@
               </p-select>
             </td>
           </tr>
-          <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'categorization')"
-              [attr.collapse]="propHidden.categorization">
-              <i class="pi ppi-caret-down"></i>
+          <tr class="propHeader" (click)="onHide(propHidden, 'categorization')">
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName main-section-cell" [attr.collapse]="propHidden.categorization">
+              <i class="pi pi-chevron-down chevron-icon"></i>
+              <span>Categorization</span>
             </td>
-            <td class="propHeaderCell cellName">Categorization</td>
             <td class="propHeaderCell"></td>
           </tr>
           <tr [attr.collapse]="propHidden.categorization" class="propRow">
