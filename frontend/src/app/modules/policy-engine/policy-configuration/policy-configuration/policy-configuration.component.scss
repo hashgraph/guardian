@@ -337,10 +337,10 @@
 
 .right-toolbar {
     height: 100%;
-    width: 340px !important;
-    flex: 0 0 340px !important;
-    min-width: 340px;
-    max-width: 340px;
+    width: 340px;
+    flex: 0 0 340px;
+    min-width: 280px;
+    max-width: 500px;
     position: relative;
     box-sizing: border-box;
     border: 1px solid var(--pc-main-grid-border);
@@ -352,11 +352,6 @@
     flex-direction: column;
     background: var(--pc-background-color);
     z-index: 1;
-}
-
-// The inspector is a fixed-width rail; drop the resize handle in front of it.
-.main-container > .resizing:has(+ .right-toolbar) {
-    display: none;
 }
 
 .right-top-toolbar {
