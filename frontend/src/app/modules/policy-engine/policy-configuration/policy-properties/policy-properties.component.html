@@ -242,15 +242,15 @@
             <ng-container class="213">
               <div class="navigation">
                 <tr class="propHeader">
+                  <td class="propRowCol"></td>
                   <td (click)="onHide(propHidden.navigationRoles, role)"
                     [attr.collapse]="propHidden.navigationRoles[role]"
-                    class="propRowCol cellCollapse">
+                    class="propHeaderCell cellName">
                     @if (policy.policyRoles && policy.policyRoles.length) {
-                      <i
-                      class="pi pi-caret-down"></i>
+                      <i class="pi pi-chevron-down chevron-icon"></i>
                     }
+                    <span>{{ role }}</span>
                   </td>
-                  <td class="propHeaderCell cellName">{{ role }}</td>
                   <td class="propHeaderCell">
                     @if (true) {
                       <div (click)="addStep(role)" class="propAdd">
@@ -265,16 +265,16 @@
                     @for (step of nav.steps; track step; let s = $index) {
                       @if (!propHidden.navigationRoles[role]) {
                         <tr class="propHeader subRow stepRow">
+                          <td class="propRowCol"></td>
                           <td (click)="onHide(propHidden.navigationSteps, role + s)"
                             [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                            class="propRowCol cellCollapse">
+                            class="propHeaderCell cellName">
                             @if (policy.policyRoles && policy.policyRoles.length) {
-                              <i
-                              class="pi pi-caret-down"></i>
+                              <i class="pi pi-chevron-down chevron-icon"></i>
                             }
+                            <span>{{ step.name || ('Step #' + (s + 1)) }}</span>
                           </td>
-                          <td class="propHeaderCell cellName">{{ step.name || ('Step #' + (s + 1)) }}</td>
-                          <td class="propHeaderCell cellName">
+                          <td class="propHeaderCell step-actions">
                             <span (click)="onRemoveStep(role, step)" [attr.readonly]="readonly"
                               class="remove-step">
                               <i class="pi pi-trash"></i>
