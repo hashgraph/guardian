@@ -339,20 +339,21 @@
         }
         @if (type == 'Groups') {
           @for (item of policyGroups; track item; let i = $index) {
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.groupsGroup, i)"
+            <tr class="propHeader groups-header">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" (click)="onHide(propHidden.groupsGroup, i)"
                 [attr.collapse]="propHidden.groupsGroup[i]">
-                <i class="pi pi-caret-down"></i>
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>Group</span>
               </td>
-              <td class="propHeaderCell cellName">Group</td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
+              <td class="propHeaderCell group-actions">
+                <span class="group-name">{{ item.name }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveGroup(item)">
                   <i class="pi pi-trash"></i>
                 </span>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Name</td>
               <td class="propRowCell">
@@ -360,7 +361,7 @@
                   (input)="onEditGroup(item)">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Creator role</td>
               <td class="propRowCell">
@@ -376,7 +377,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Members roles</td>
               <td class="propRowCell">
@@ -392,7 +393,7 @@
                 </p-multiSelect>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Relationship Type</td>
               <td class="propRowCell">
@@ -409,7 +410,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Access Type</td>
               <td class="propRowCell">
@@ -427,17 +428,15 @@
               </td>
             </tr>
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow group-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell group-add-cell" colspan="2">
+              <div class="propAdd groups-add" (click)="addGroup()">
+                <i class="pi pi-plus"></i>
+                <span>Add Group</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addGroup()">
-              <i class="pi pi-plus"></i>
-              <span>Add Group</span>
-            </div>
-          </div>
         }
         @if (type == 'Topics') {
           <!-- Topics  -->
