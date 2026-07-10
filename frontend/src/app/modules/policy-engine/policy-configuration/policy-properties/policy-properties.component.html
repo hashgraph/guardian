@@ -207,14 +207,15 @@
 
         @if (type == 'Role') {
           <!-- Roles  -->
-          <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'rolesGroup')"
+          <tr class="propHeader roles-header">
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName" (click)="onHide(propHidden, 'rolesGroup')"
               [attr.collapse]="propHidden.rolesGroup">
               @if (policy.policyRoles && policy.policyRoles.length) {
-                <i class="pi pi-caret-down"></i>
+                <i class="pi pi-chevron-down chevron-icon"></i>
               }
+              <span>Roles</span>
             </td>
-            <td class="propHeaderCell cellName">Roles</td>
             <td class="propHeaderCell">
               <div class="propAdd" (click)="addRoles()">
                 <i class="pi pi-plus toolbar-icons"></i>
@@ -223,7 +224,7 @@
             </td>
           </tr>
           @for (item of roles; track item; let i = $index) {
-            <tr class="propRow subRow" [attr.collapse]="propHidden.rolesGroup">
+            <tr class="propRow subRow role-row" [attr.collapse]="propHidden.rolesGroup">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Role {{ i }}</td>
               <td class="propRowCell remove-cell">

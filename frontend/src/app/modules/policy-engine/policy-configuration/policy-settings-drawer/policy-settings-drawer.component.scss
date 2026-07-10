@@ -478,4 +478,107 @@
     .properties .navigation .propRow.subRow .propRowCell:not(.cellName) {
         vertical-align: middle;
     }
+
+    .properties .roles-header > .propRowCol {
+        cursor: default;
+    }
+
+    .properties .roles-header > .propHeaderCell {
+        vertical-align: middle;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
+
+    .properties .roles-header > .propHeaderCell.cellName {
+        display: flex !important;
+        align-items: center;
+        gap: 6px;
+        height: 30px;
+        min-height: 30px;
+        padding: 0 4px 0 0 !important;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .properties .roles-header > .propHeaderCell.cellName span {
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        height: 24px;
+        line-height: 24px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .properties .roles-header > .propHeaderCell.cellName .chevron-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 14px;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transition: transform 0.12s ease;
+    }
+
+    .properties .roles-header > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .properties .roles-header > .propHeaderCell:last-child {
+        text-align: right;
+    }
+
+    .properties .roles-header .propAdd {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        width: auto;
+        min-width: 0;
+        height: 24px;
+        padding: 0;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .properties .roles-header .propAdd i,
+    .properties .roles-header .propAdd svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .role-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .role-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .role-row .propRowCell.cellName {
+        padding-left: 26px !important;
+        padding-top: 0;
+        vertical-align: middle;
+    }
+
+    .properties .role-row .propRowCell.remove-cell {
+        height: var(--pc-row-height);
+        padding: 2px 34px 2px 4px;
+        vertical-align: middle;
+    }
+
+    .properties .role-row .remove-prop {
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+    }
 }
