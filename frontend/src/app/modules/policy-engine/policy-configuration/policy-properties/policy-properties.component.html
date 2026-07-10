@@ -532,27 +532,28 @@
         @if (type == 'Tokens') {
           <!-- Tokens  -->
           @for (item of tokens; track item; let i = $index) {
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.tokensGroup, i)"
+            <tr class="propHeader tokens-header">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" (click)="onHide(propHidden.tokensGroup, i)"
                 [attr.collapse]="propHidden.tokensGroup[i]">
-                <i class="pi pi-caret-down"></i>
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>Token</span>
               </td>
-              <td class="propHeaderCell cellName">Token</td>
-              <td class="propHeaderCell">
-                <div>{{ item.templateTokenTag }}</div>
+              <td class="propHeaderCell token-actions">
+                <span class="token-name">{{ item.templateTokenTag }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveToken(item)">
                   <i class="pi pi-trash"></i>
                 </span>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Template Token Tag</td>
               <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="item.templateTokenTag" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Token Name</td>
               <td class="propRowCell">
@@ -560,7 +561,7 @@
                   [(ngModel)]="item.tokenName" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Token Symbol</td>
               <td class="propRowCell">
@@ -568,7 +569,7 @@
                   [(ngModel)]="item.tokenSymbol" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Token Type</td>
               <td class="propRowCell">
@@ -586,7 +587,7 @@
               </td>
             </tr>
             @if (item.tokenType==='fungible') {
-              <tr class="propRow subRow"
+              <tr class="propRow subRow token-row"
                 [attr.collapse]="propHidden.tokensGroup[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Decimals</td>
@@ -596,7 +597,7 @@
                 </td>
               </tr>
             }
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable Admin</td>
               <td class="propRowCell">
@@ -612,7 +613,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable Freeze</td>
               <td class="propRowCell">
@@ -628,7 +629,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable KYC</td>
               <td class="propRowCell">
@@ -644,7 +645,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable Wipe</td>
               <td class="propRowCell">
@@ -662,7 +663,7 @@
               </td>
             </tr>
             @if (item.enableWipe) {
-              <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+              <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Wipe Contract</td>
                 <td class="propRowCell">
@@ -680,17 +681,15 @@
               </tr>
             }
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow token-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell token-add-cell" colspan="2">
+              <div class="propAdd tokens-add" (click)="addToken()">
+                <i class="pi pi-plus"></i>
+                <span>Add Token</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addToken()">
-              <i class="pi pi-plus"></i>
-              <span>Add Token</span>
-            </div>
-          </div>
         }
       </table>
     </div>
