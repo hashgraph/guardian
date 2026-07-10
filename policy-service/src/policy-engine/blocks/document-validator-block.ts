@@ -9,7 +9,7 @@ import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { FilterQuery } from '@mikro-orm/core';
 import { VcDocument, VpDocument } from '@guardian/common';
-import { LocationType } from '@guardian/interfaces';
+import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, LocationType } from '@guardian/interfaces';
 
 /**
  * Document Validator
@@ -166,7 +166,7 @@ export class DocumentValidatorBlock {
         sourceValidation: any,
         document: IPolicyDocument,
         user: any
-    ): Promise<string | null> {
+    ): Promise<{ message: string; data?: IDocumentValidatorBlockError } | null> {
         const filter = this.buildSourceFilter(sourceValidation, ref, document, user);
 
         const sourceDocuments: any[] = sourceValidation.dbCollection === 'VpDocument'
@@ -185,7 +185,7 @@ export class DocumentValidatorBlock {
             const detail = filterSummary
                 ? `No source documents matched filter(s): ${filterSummary}`
                 : 'No matching source documents found';
-            return `Validation failed\n\n${detail}`;
+            return { message: `Validation failed: ${detail}` };
         }
 
         const conditions = sourceValidation.conditions || [];
@@ -226,7 +226,8 @@ export class DocumentValidatorBlock {
         const schemaName = schema?.name ?? null;
 
         const N = failureMap.size;
-        let msg = `Validation failed\n\nChecked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}`;
+        const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}`;
+        const conditionResults: IDocumentValidatorBlockError['conditions'] = [];
         for (const { field, type, leftValue, detail, count } of Array.from(failureMap.values())) {
             const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
             const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
@@ -240,9 +241,16 @@ export class DocumentValidatorBlock {
             } else {
                 hint = detail;
             }
-            msg += `\n\n${label}\n(${hint})`;
+            conditionResults.push({ label, hint, matched: total - count, total });
         }
-        return msg;
+        return {
+            message: `Validation failed: ${summary}`,
+            data: {
+                type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR,
+                summary,
+                conditions: conditionResults,
+            },
+        };
     }
 
     /**
@@ -269,9 +277,9 @@ export class DocumentValidatorBlock {
         ref: IPolicyValidatorBlock,
         event: IPolicyEvent<IPolicyEventState>,
         document: IPolicyDocument
-    ): Promise<string> {
+    ): Promise<{ message: string; data?: IBlockErrorData } | null> {
         if (!document) {
-            return `Invalid document`;
+            return { message: 'Invalid document' };
         }
 
         const documentRef = PolicyUtils.getDocumentRef(document);
@@ -301,26 +309,26 @@ export class DocumentValidatorBlock {
         }
 
         if (!document) {
-            return `Document does not exist`;
+            return { message: 'Document does not exist' };
         }
 
         const documentType = PolicyUtils.getDocumentType(document);
 
         if (options.documentType === 'vc-document') {
             if (documentType !== 'VerifiableCredential') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         } else if (options.documentType === 'vp-document') {
             if (documentType !== 'VerifiablePresentation') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         } else if (options.documentType === 'related-vc-document') {
             if (documentType !== 'VerifiableCredential') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         } else if (options.documentType === 'related-vp-document') {
             if (documentType !== 'VerifiablePresentation') {
-                return `Invalid document type`;
+                return { message: 'Invalid document type' };
             }
         }
 
@@ -329,29 +337,29 @@ export class DocumentValidatorBlock {
 
         if (options.checkOwnerDocument) {
             if (document.owner !== userDID) {
-                return `Invalid owner`;
+                return { message: 'Invalid owner' };
             }
         }
         if (options.checkOwnerByGroupDocument) {
             if (document.group !== userGroup) {
-                return `Invalid group`;
+                return { message: 'Invalid group' };
             }
         }
         if (options.checkAssignDocument) {
             if (document.assignedTo !== userDID) {
-                return `Invalid assigned user`;
+                return { message: 'Invalid assigned user' };
             }
         }
         if (options.checkAssignByGroupDocument) {
             if (document.assignedToGroup !== userGroup) {
-                return `Invalid assigned group`;
+                return { message: 'Invalid assigned group' };
             }
         }
 
         if (options.schema) {
             const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
             if (!PolicyUtils.checkDocumentSchema(ref, document, schema)) {
-                return `Invalid document schema`;
+                return { message: 'Invalid document schema' };
             }
         }
 
@@ -360,7 +368,7 @@ export class DocumentValidatorBlock {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
                     const actual = PolicyUtils.getObjectValue(document, filter.field);
                     const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
-                    return `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}`;
+                    return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}` };
                 }
             }
         }
@@ -381,13 +389,13 @@ export class DocumentValidatorBlock {
      * Run block logic
      * @param event
      */
-    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<string> {
+    public async run(event: IPolicyEvent<IPolicyEventState>): Promise<{ message: string; data?: IBlockErrorData } | null> {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyValidatorBlock>(this);
 
         const document = event?.data?.data;
 
         if (!document) {
-            return `Invalid document`;
+            return { message: 'Invalid document' };
         }
 
         if (Array.isArray(document)) {
@@ -422,7 +430,7 @@ export class DocumentValidatorBlock {
 
         const error = await ref.run(event);
         if (error) {
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
+            throw new BlockActionError(error.message, ref.blockType, ref.uuid, error.data);
         }
         // event.actionStatus.saveResult(event.data);
 

@@ -179,7 +179,7 @@ export class ExternalTopicBlock {
      * @param user
      * @param state
      */
-    protected async validateDocuments(user: PolicyUser, state: any): Promise<string> {
+    protected async validateDocuments(user: PolicyUser, state: any): Promise<{ message: string; data?: any } | null> {
         const validators = this.getValidators();
         for (const validator of validators) {
             const error = await validator.run({
