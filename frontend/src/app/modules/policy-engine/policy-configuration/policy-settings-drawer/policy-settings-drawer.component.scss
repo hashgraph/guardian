@@ -149,30 +149,59 @@
         height: calc(var(--pc-control-height) + 2px);
     }
 
-    .properties .propHeader > .propHeaderCell.cellName.main-section-cell {
-        position: relative;
+    .properties .propHeader {
+        height: 40px;
+    }
+
+    .properties .propHeader > .propRowCol {
+        cursor: default;
+    }
+
+    .properties .propHeader > .propHeaderCell {
+        height: 40px;
+        vertical-align: middle !important;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName {
         display: table-cell !important;
-        overflow: visible;
-        padding-left: 0 !important;
+        vertical-align: middle !important;
+        height: 40px;
+        padding: 5px 4px 5px 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName span {
+        display: inline-block;
         vertical-align: middle;
+        max-width: 100%;
+        line-height: 24px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
-    .properties .propHeader > .propHeaderCell.cellName.main-section-cell .chevron-icon {
-        position: absolute;
-        top: 50%;
-        left: -16px;
+    .properties .propHeader > .propHeaderCell.cellName .chevron-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
         width: 14px;
-        height: 14px;
-        line-height: 14px;
-        transform: translateY(-50%);
+        height: 24px;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
     }
 
-    .properties .propHeader > .propHeaderCell.cellName.main-section-cell[collapse="true"] .chevron-icon {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .properties .propHeader > .propHeaderCell.cellName.main-section-cell span {
-        display: block;
+    .properties .propHeader > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
     }
 
     .properties .propRow .cellName {
@@ -354,55 +383,6 @@
         display: none !important;
     }
 
-    .properties .navigation > .propHeader > .propRowCol {
-        cursor: default;
-    }
-
-    .properties .navigation > .propHeader > .propHeaderCell {
-        vertical-align: middle;
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .properties .navigation > .propHeader > .propHeaderCell.cellName {
-        display: flex !important;
-        align-items: center;
-        gap: 6px;
-        height: 30px;
-        min-height: 30px;
-        padding: 0 4px 0 0 !important;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    .properties .navigation > .propHeader > .propHeaderCell.cellName span {
-        display: inline-flex;
-        align-items: center;
-        min-width: 0;
-        height: 24px;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .properties .navigation > .propHeader > .propHeaderCell.cellName .chevron-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 14px;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transition: transform 0.12s ease;
-    }
-
-    .properties .navigation > .propHeader > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
-        transform: rotate(-90deg);
-    }
-
     .properties .navigation > .propHeader:not(.stepRow) > .propHeaderCell:last-child {
         text-align: right;
     }
@@ -506,55 +486,6 @@
         vertical-align: middle;
     }
 
-    .properties .roles-header > .propRowCol {
-        cursor: default;
-    }
-
-    .properties .roles-header > .propHeaderCell {
-        vertical-align: middle;
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .properties .roles-header > .propHeaderCell.cellName {
-        display: flex !important;
-        align-items: center;
-        gap: 6px;
-        height: 30px;
-        min-height: 30px;
-        padding: 0 4px 0 0 !important;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    .properties .roles-header > .propHeaderCell.cellName span {
-        display: inline-flex;
-        align-items: center;
-        min-width: 0;
-        height: 24px;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .properties .roles-header > .propHeaderCell.cellName .chevron-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 14px;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transition: transform 0.12s ease;
-    }
-
-    .properties .roles-header > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
-        transform: rotate(-90deg);
-    }
-
     .properties .roles-header > .propHeaderCell:last-child {
         text-align: right;
     }
@@ -609,10 +540,6 @@
         padding: 0;
     }
 
-    .properties .groups-header > .propRowCol {
-        cursor: default;
-    }
-
     .properties .groups-header:hover {
         background: transparent !important;
     }
@@ -620,53 +547,6 @@
     .properties .groups-header:hover > .propRowCol,
     .properties .groups-header:hover > .propHeaderCell {
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
-    }
-
-    .properties .groups-header > .propHeaderCell {
-        vertical-align: middle;
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .properties .groups-header > .propHeaderCell.cellName {
-        display: flex !important;
-        align-items: center;
-        gap: 6px;
-        height: 30px;
-        min-height: 30px;
-        padding: 0 4px 0 0 !important;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    .properties .groups-header > .propHeaderCell.cellName span {
-        display: inline-flex;
-        align-items: center;
-        min-width: 0;
-        height: 24px;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .properties .groups-header > .propHeaderCell.cellName .chevron-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 14px;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        background: transparent !important;
-        box-shadow: none;
-        transition: transform 0.12s ease;
-    }
-
-    .properties .groups-header > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
-        transform: rotate(-90deg);
     }
 
     .properties .groups-header > .group-actions {
@@ -756,10 +636,6 @@
         white-space: nowrap;
     }
 
-    .properties .topics-header > .propRowCol {
-        cursor: default;
-    }
-
     .properties .topics-header:hover {
         background: transparent !important;
     }
@@ -767,53 +643,6 @@
     .properties .topics-header:hover > .propRowCol,
     .properties .topics-header:hover > .propHeaderCell {
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
-    }
-
-    .properties .topics-header > .propHeaderCell {
-        vertical-align: middle;
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .properties .topics-header > .propHeaderCell.cellName {
-        display: flex !important;
-        align-items: center;
-        gap: 6px;
-        height: 30px;
-        min-height: 30px;
-        padding: 0 4px 0 0 !important;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    .properties .topics-header > .propHeaderCell.cellName span {
-        display: inline-flex;
-        align-items: center;
-        min-width: 0;
-        height: 24px;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .properties .topics-header > .propHeaderCell.cellName .chevron-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 14px;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        background: transparent !important;
-        box-shadow: none;
-        transition: transform 0.12s ease;
-    }
-
-    .properties .topics-header > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
-        transform: rotate(-90deg);
     }
 
     .properties .topics-header > .topic-actions {
@@ -912,10 +741,6 @@
         white-space: nowrap;
     }
 
-    .properties .tokens-header > .propRowCol {
-        cursor: default;
-    }
-
     .properties .tokens-header:hover {
         background: transparent !important;
     }
@@ -923,53 +748,6 @@
     .properties .tokens-header:hover > .propRowCol,
     .properties .tokens-header:hover > .propHeaderCell {
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
-    }
-
-    .properties .tokens-header > .propHeaderCell {
-        vertical-align: middle;
-        padding-top: 5px !important;
-        padding-bottom: 5px !important;
-    }
-
-    .properties .tokens-header > .propHeaderCell.cellName {
-        display: flex !important;
-        align-items: center;
-        gap: 6px;
-        height: 30px;
-        min-height: 30px;
-        padding: 0 4px 0 0 !important;
-        overflow: hidden;
-        white-space: nowrap;
-    }
-
-    .properties .tokens-header > .propHeaderCell.cellName span {
-        display: inline-flex;
-        align-items: center;
-        min-width: 0;
-        height: 24px;
-        line-height: 24px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .properties .tokens-header > .propHeaderCell.cellName .chevron-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        flex: 0 0 14px;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        background: transparent !important;
-        box-shadow: none;
-        transition: transform 0.12s ease;
-    }
-
-    .properties .tokens-header > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
-        transform: rotate(-90deg);
     }
 
     .properties .tokens-header > .token-actions {
