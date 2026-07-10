@@ -232,7 +232,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part3 = (userRole: UserRole) => {
             this.dialogService.open(RegisterDialogComponent, {
                 header: 'Sign Up Request',
-                width: '80%',
+                width: '40%',
                 modal: true,
             })!.onClose.subscribe((userData) => {
                 if (userData) {
@@ -244,7 +244,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part2 = () => {
             this.dialogService.open(AccountTypeSelectorDialogComponent, {
                 header: 'Select Account Type',
-                width: '80%',
+                width: '40%',
                 modal: true,
             })!.onClose.subscribe((userRole) => {
                 if (userRole) {
