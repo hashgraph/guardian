@@ -185,7 +185,14 @@ export class DocumentValidatorBlock {
             const detail = filterSummary
                 ? `No source documents matched filter(s): ${filterSummary}`
                 : 'No matching source documents found';
-            return { message: `Validation failed: ${detail}` };
+            return {
+                message: `Validation failed: ${detail}`,
+                data: {
+                    type: BlockErrorType.DOCUMENT_VALIDATOR_BLOCK_ERROR,
+                    summary: detail,
+                    conditions: []
+                }
+            };
         }
 
         const conditions = sourceValidation.conditions || [];
@@ -226,7 +233,7 @@ export class DocumentValidatorBlock {
         const schemaName = schema?.name ?? null;
 
         const N = failureMap.size;
-        const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}`;
+        const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}:`;
         const conditionResults: IDocumentValidatorBlockError['conditions'] = [];
         for (const { field, type, leftValue, detail, count } of Array.from(failureMap.values())) {
             const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;

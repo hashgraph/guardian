@@ -292,7 +292,7 @@ export class RequestVcDocumentBlock {
             return item;
         } catch (error) {
             ref.error(`setData: ${PolicyUtils.getErrorMessage(error)}`);
-            throw new BlockActionError(error, ref.blockType, ref.uuid);
+            throw new BlockActionError(error, ref.blockType, ref.uuid, error.data);
         }
     }
 

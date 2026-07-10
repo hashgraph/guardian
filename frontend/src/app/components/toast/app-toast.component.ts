@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { IUser, UserPermissions } from '@guardian/interfaces';
+import { BlockErrorType, IUser, UserPermissions } from '@guardian/interfaces';
 import { Subscription } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 
@@ -10,6 +10,7 @@ import { ProfileService } from 'src/app/services/profile.service';
     standalone: false
 })
 export class AppToastComponent implements OnInit, OnDestroy {
+    public readonly BlockErrorType = BlockErrorType;
     public canReadLogs: boolean = false;
 
     private subscription = new Subscription();
