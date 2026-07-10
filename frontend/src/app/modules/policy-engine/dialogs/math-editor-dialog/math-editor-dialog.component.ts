@@ -5,7 +5,6 @@ import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.componen
 import { SchemaVariables } from '../../structures';
 import { Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
-import { FieldData } from 'src/app/modules/common/models/schema-node';
 import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MathGroups } from './math-model/math-groups';
@@ -186,6 +185,10 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     private latexCursorSave: { formula: MathFormula; start: number; end: number } | null = null;
     private mathLiveMap = new Map<string, MathLiveComponent>();
 
+    public activePathItem: FieldLink | null = null;
+    public pathSuggestions: string[] = [];
+    public fieldWarnings = new Map<string, boolean>();
+
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
 
@@ -240,6 +243,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.engine.from(this.expression);
         this.engine.validate();
         this.updateSchema();
+        for (const item of this.engine.variables.getItems()) {
+            this._updateFieldWarning(item);
+        }
     }
 
     ngAfterContentInit() {
@@ -322,10 +328,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     }
 
     public deleteVariable(variable: FieldLink) {
+        this.fieldWarnings.delete(variable.id);
         this.engine.deleteVariable(variable);
     }
 
     public deleteOutput(output: FieldLink) {
+        this.fieldWarnings.delete(output.id);
         this.engine.deleteOutput(output);
     }
 
@@ -458,12 +466,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
         const groups = [];
         const schemas = this.schemas.filter((s) => s !== this.inputSchema && s.entity !== 'NONE');
-        for (const item of schemas) {
+        for (const s of schemas) {
             groups.push({
-                id: item.iri,
-                name: item.name,
-                subName: item.iri,
-                view: this.createSchemaView(item),
+                id: s.iri,
+                name: s.name,
+                subName: s.iri,
+                view: this.createSchemaView(s),
                 highlighted: false,
                 searchHighlighted: false,
             })
@@ -494,6 +502,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 item.field = result.value;
                 item.schema = result.group || schema?.iri || null;
                 item.update();
+                this._updateFieldWarning(item);
             }
         });
     }
@@ -567,15 +576,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    public getFieldPath(type: 'input' | 'output', schema: string | null, link: string): string {
-        const field = this.getField(type, schema, link);
-        if (field) {
-            return field.path;
-        } else {
-            return '';
-        }
-    }
-
     public getItemValue(value: any) {
         if (value === undefined || value === null) {
             return '';
@@ -593,6 +593,66 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         $event.preventDefault();
         $event.stopPropagation();
         item.field = null;
+        item.update();
+        this._updateFieldWarning(item);
+    }
+
+    public onPathChange(item: FieldLink, value: string): void {
+        item.field = value;
+        item.update();
+        this._computePathSuggestions(item);
+        this._updateFieldWarning(item);
+    }
+
+    public onPathKeyup(event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            this.activePathItem = null;
+            this.pathSuggestions = [];
+        }
+    }
+
+    public onPathBlur(item: FieldLink): void {
+        setTimeout(() => {
+            if (this.activePathItem === item) {
+                this.activePathItem = null;
+                this.pathSuggestions = [];
+            }
+        }, 200);
+    }
+
+    public selectPathSuggestion(item: FieldLink, path: string): void {
+        item.field = path;
+        item.update();
+        this._updateFieldWarning(item);
+        this.activePathItem = null;
+        this.pathSuggestions = [];
+    }
+
+    private _updateFieldWarning(item: FieldLink): void {
+        this.fieldWarnings.set(item.id, !!(item.field && !this.getField('input', item.schema, item.field)));
+    }
+
+    private _computePathSuggestions(item: FieldLink): void {
+        const prefix = item.field || '';
+        if (!prefix) {
+            this.pathSuggestions = [];
+            this.activePathItem = null;
+            return;
+        }
+        const map = item.schema
+            ? this.schemaFieldMap.get(item.schema)
+            : this.inputSchemaFieldMap;
+        if (!map) {
+            this.pathSuggestions = [];
+            this.activePathItem = null;
+            return;
+        }
+        const suggestions = Array.from(map.keys())
+            .filter(p => p.includes(prefix))
+            .sort((a, b) => a.length - b.length)
+            .slice(0, 10);
+        this.pathSuggestions = suggestions;
+        this.activePathItem = suggestions.length ? item : null;
     }
 
     public onStep(
