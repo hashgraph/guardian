@@ -231,7 +231,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         const part3 = (userRole: UserRole) => {
             this.dialogService.open(RegisterDialogComponent, {
-                header: 'Sign Up Request',
+                header: 'Sign Up',
                 width: '40%',
                 modal: true,
             })!.onClose.subscribe((userData) => {
