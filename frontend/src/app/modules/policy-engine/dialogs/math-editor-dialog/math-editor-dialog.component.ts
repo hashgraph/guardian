@@ -648,7 +648,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             return;
         }
         const suggestions = Array.from(map.keys())
-            .filter(p => p !== prefix && p.startsWith(prefix))
+            .filter(p => p.includes(prefix))
             .sort((a, b) => a.length - b.length)
             .slice(0, 10);
         this.pathSuggestions = suggestions;
