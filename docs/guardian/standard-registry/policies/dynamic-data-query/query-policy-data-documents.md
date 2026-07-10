@@ -8,7 +8,7 @@ Returns a paginated list of Verifiable Credential (VC) documents committed by a 
 
 ## Authentication
 
-This endpoint requires a valid JWT Bearer token. The authenticated user must hold at least one of the following permissions: `POLICIES_POLICY_READ`, `POLICIES_POLICY_EXECUTE`, `POLICIES_POLICY_AUDIT`, `POLICIES_POLICY_MANAGE`.
+This endpoint requires a valid JWT Bearer token. The authenticated user must hold at least one of the following permissions: `POLICIES_POLICY_AUDIT`, `POLICIES_POLICY_MANAGE`. `POLICIES_POLICY_MANAGE` callers are restricted to policies owned by their own Standard Registry tenant (a policy from a different tenant returns `403 Forbidden`); `POLICIES_POLICY_AUDIT` (the Auditor role) is exempt from this restriction, since Auditors are a cross-organization role by design.
 
 ---
 
@@ -19,9 +19,9 @@ This endpoint requires a valid JWT Bearer token. The authenticated user must hol
 | Parameter    | Type   | Required | Description |
 |--------------|--------|----------|-------------|
 | `policyId`   | string | Yes      | MongoDB ObjectId of the published policy |
-| `schemaName` | string | Yes      | Human-readable schema name as registered in the policy (e.g. `Installer Activity Report`) |
+| `schemaName` | string | Yes      | Human-readable schema name as registered in the policy (e.g. `Installer Activity Report`). If multiple versions of a schema with this name exist under the policy's topic, the latest version is used |
 | `filters`    | string | No       | URL-encoded JSON filter map. See [Filters](#filters) below |
-| `sort`       | string | No       | Field to sort by. Prefix `-` for descending (e.g. `-createDate`, `-document.credentialSubject[0].field3`) |
+| `sort`       | string | No       | Field to sort by. Prefix `-` for descending (e.g. `-createDate`, `owner`). Limited to system fields (same set as the filter whitelist below, minus `option.*`/`document.*`); default is `-createDate` |
 | `page`       | number | No       | 1-based page number. Default: `1` |
 | `pageSize`   | number | No       | Results per page. Min `1`, max `200`. Default: `20` |
 
@@ -41,15 +41,15 @@ The `filters` parameter is a URL-encoded JSON object. Each key is a field name a
 
 | Operator | Description | Value type |
 |----------|-------------|------------|
-| `eq` | Equals | any |
-| `ne` | Not equal | any |
-| `in` | Value in list — exact match | array |
-| `nin` | Value not in list | array |
-| `gt` | Greater than | number or date string |
-| `gte` | Greater than or equal | number or date string |
-| `lt` | Less than | number or date string |
-| `lte` | Less than or equal | number or date string |
-| `contains` | Case-insensitive partial string match | string |
+| `eq` | Equals | string, number, boolean, or `null` |
+| `ne` | Not equal | string, number, boolean, or `null` |
+| `in` | Value in list — exact match | array of string, number, or boolean (no `null`, no nested objects/arrays) |
+| `nin` | Value not in list | array of string, number, or boolean (no `null`, no nested objects/arrays) |
+| `gt` | Greater than | string, number, or boolean (no `null`) |
+| `gte` | Greater than or equal | string, number, or boolean (no `null`) |
+| `lt` | Less than | string, number, or boolean (no `null`) |
+| `lte` | Less than or equal | string, number, or boolean (no `null`) |
+| `contains` | Case-insensitive partial string match | string, max 256 characters |
 
 **Example — single filter (Compliance Score greater than or equal to 80):**
 
@@ -158,8 +158,8 @@ The `filters` parameter is a URL-encoded JSON object. Each key is a field name a
 
 | Status | Description |
 |--------|-------------|
-| `400 Bad Request` | Missing required parameter, invalid JSON in `filters`, unknown filter field, unsupported operator, or `contains` used with a non-string value |
+| `400 Bad Request` | Missing required parameter, invalid JSON in `filters`, unknown filter field, unsupported operator, non-primitive filter value, `contains` value over 256 characters, or an unsupported `sort` field |
 | `401 Unauthorized` | JWT token is missing or invalid |
-| `403 Forbidden` | Insufficient permissions, or the policy is not in `PUBLISH` status |
+| `403 Forbidden` | Insufficient permissions; the policy belongs to a different Standard Registry tenant; or the policy is not in `PUBLISH` status |
 | `404 Not Found` | Policy not found, or schema name not found under the policy topic |
 | `500 Internal Server Error` | Unexpected server failure |
