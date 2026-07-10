@@ -200,6 +200,7 @@ export class PolicyPropertiesComponent implements OnInit {
 
     addRoles() {
         this.policy.createRole('');
+        this.propHidden.rolesGroup = false;
         setTimeout(() => {
             if (this.body) {
                 this.body.nativeElement.scrollTop = 10000;
@@ -212,7 +213,10 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     onRemoveRole(role: PolicyRole) {
-        this.policy.removeRole(role)
+        this.policy.removeRole(role);
+        if (!this.policy.policyRoles.length) {
+            this.propHidden.rolesGroup = true;
+        }
     }
 
     addStep(role: string, index?: number) {
@@ -220,6 +224,7 @@ export class PolicyPropertiesComponent implements OnInit {
             index = this.navigation.find((nav: PolicyNavigationModel) => nav.role === role)?.steps.length || 0
         }
         this.policy.createStep(role, index);
+        this.propHidden.navigationRoles[role] = false;
         setTimeout(() => {
             if (this.body) {
                 this.body.nativeElement.scrollTop = 10000;
@@ -232,7 +237,11 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     onRemoveStep(role: string, step: PolicyNavigationStepModel) {
-        this.policy.removeStep(role, step)
+        this.policy.removeStep(role, step);
+        const navigation = this.policy.policyNavigation.find((nav: PolicyNavigationModel) => nav.role === role);
+        if (!navigation?.steps.length) {
+            this.propHidden.navigationRoles[role] = true;
+        }
     }
 
     addTopic() {

@@ -387,6 +387,11 @@
         text-align: right;
     }
 
+    .properties .navigation > .propHeader:not(.stepRow) > .propRowCol,
+    .properties .navigation > .propHeader:not(.stepRow) > .propHeaderCell {
+        border-top: 1px solid var(--pc-border-color);
+    }
+
     .properties .navigation .propAdd {
         display: inline-flex;
         align-items: center;
@@ -486,6 +491,36 @@
         vertical-align: middle;
     }
 
+    .properties .navigation-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .navigation-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .navigation-add-cell .navigation-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
     .properties .roles-header > .propHeaderCell:last-child {
         text-align: right;
     }
@@ -531,6 +566,46 @@
         height: var(--pc-row-height);
         padding: 2px 34px 2px 4px;
         vertical-align: middle;
+    }
+
+    .properties .roles-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .roles-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .roles-add-cell .roles-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .roles-add-cell .roles-add i,
+    .properties .roles-add-cell .roles-add svg,
+    .properties .navigation-add-cell .navigation-add i,
+    .properties .navigation-add-cell .navigation-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
     }
 
     .properties .role-row .remove-prop {

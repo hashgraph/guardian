@@ -211,16 +211,16 @@
             <td class="propRowCol"></td>
             <td class="propHeaderCell cellName" (click)="onHide(propHidden, 'rolesGroup')"
               [attr.collapse]="propHidden.rolesGroup">
-              @if (policy.policyRoles && policy.policyRoles.length) {
-                <i class="pi pi-chevron-down chevron-icon"></i>
-              }
+              <i class="pi pi-chevron-down chevron-icon"></i>
               <span>Roles</span>
             </td>
             <td class="propHeaderCell">
-              <div class="propAdd" (click)="addRoles()">
-                <i class="pi pi-plus toolbar-icons"></i>
-                <span>Add Role</span>
-              </div>
+              @if (!roles || !roles.length) {
+                <div class="propAdd" (click)="addRoles()">
+                  <i class="pi pi-plus toolbar-icons"></i>
+                  <span>Add Role</span>
+                </div>
+              }
             </td>
           </tr>
           @for (item of roles; track item; let i = $index) {
@@ -236,100 +236,107 @@
               </td>
             </tr>
           }
+          @if (roles && roles.length) {
+            <tr class="propRow roles-add-row" [attr.collapse]="propHidden.rolesGroup">
+              <td class="propRowCol"></td>
+              <td class="propRowCell roles-add-cell" colspan="2">
+                <div class="propAdd roles-add" (click)="addRoles()">
+                  <i class="pi pi-plus"></i>
+                  <span>Add Role</span>
+                </div>
+              </td>
+            </tr>
+          }
         }
         @if (type == 'Navigation') {
           <!-- Navigation  -->
           @for (role of navigationRoles; track role; let i = $index) {
             <ng-container class="213">
               <div class="navigation">
-                <tr class="propHeader">
-                  <td class="propRowCol"></td>
-                  <td (click)="onHide(propHidden.navigationRoles, role)"
-                    [attr.collapse]="propHidden.navigationRoles[role]"
-                    class="propHeaderCell cellName">
-                    @if (policy.policyRoles && policy.policyRoles.length) {
-                      <i class="pi pi-chevron-down chevron-icon"></i>
-                    }
-                    <span>{{ role }}</span>
-                  </td>
-                  <td class="propHeaderCell">
-                    @if (true) {
-                      <div (click)="addStep(role)" class="propAdd">
-                        <i class="pi pi-plus toolbar-icons"></i>
-                        <span>Add Step</span>
-                      </div>
-                    }
-                  </td>
-                </tr>
                 @for (nav of navigation; track nav) {
                   @if (nav.role === role) {
-                    @for (step of nav.steps; track step; let s = $index) {
-                      @if (!propHidden.navigationRoles[role]) {
-                        <tr class="propHeader subRow stepRow">
-                          <td class="propRowCol"></td>
-                          <td (click)="onHide(propHidden.navigationSteps, role + s)"
-                            [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                            class="propHeaderCell cellName">
-                            @if (policy.policyRoles && policy.policyRoles.length) {
+                    <tr class="propHeader">
+                      <td class="propRowCol"></td>
+                      <td (click)="onHide(propHidden.navigationRoles, role)"
+                        [attr.collapse]="propHidden.navigationRoles[role]"
+                        class="propHeaderCell cellName">
+                        <i class="pi pi-chevron-down chevron-icon"></i>
+                        <span>{{ role }}</span>
+                      </td>
+                      <td class="propHeaderCell">
+                        @if (!nav.steps || !nav.steps.length) {
+                          <div (click)="addStep(role)" class="propAdd">
+                            <i class="pi pi-plus toolbar-icons"></i>
+                            <span>Add Step</span>
+                          </div>
+                        }
+                      </td>
+                    </tr>
+                    @if (nav.steps && nav.steps.length) {
+                      @for (step of nav.steps; track step; let s = $index) {
+                        @if (!propHidden.navigationRoles[role]) {
+                          <tr class="propHeader subRow stepRow">
+                            <td class="propRowCol"></td>
+                            <td (click)="onHide(propHidden.navigationSteps, role + s)"
+                              [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                              class="propHeaderCell cellName">
                               <i class="pi pi-chevron-down chevron-icon"></i>
-                            }
-                            <span>{{ step.name || ('Step #' + (s + 1)) }}</span>
+                              <span>{{ step.name || ('Step #' + (s + 1)) }}</span>
+                            </td>
+                            <td class="propHeaderCell step-actions">
+                              <span (click)="onRemoveStep(role, step)" [attr.readonly]="readonly"
+                                class="remove-step">
+                                <i class="pi pi-trash"></i>
+                              </span>
+                            </td>
+                          </tr>
+                        }
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow">
+                          <td class="propRowCol"></td>
+                          <td class="propRowCell cellName">Name</td>
+                          <td class="propRowCell">
+                            <input (input)="onEditStep(step)" [(ngModel)]="step.name"
+                              [readonly]="readonly"
+                              class="prop-input">
                           </td>
-                          <td class="propHeaderCell step-actions">
-                            <span (click)="onRemoveStep(role, step)" [attr.readonly]="readonly"
-                              class="remove-step">
-                              <i class="pi pi-trash"></i>
-                            </span>
+                        </tr>
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow">
+                          <td class="propRowCol"></td>
+                          <td class="propRowCell cellName">Block</td>
+                          <td class="propRowCell">
+                            <select-block
+                              (change)="onEditStep(step)"
+                              [(value)]="step.block"
+                              [blocks]="policy.allBlocks"
+                              [readonly]="readonly"
+                              [root]="policy"
+                              type="object"
+                            ></select-block>
+                          </td>
+                        </tr>
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow">
+                          <td class="propRowCol"></td>
+                          <td class="propRowCell cellName">Level</td>
+                          <td class="propRowCell">
+                            <input (input)="onEditStep(step)" [(ngModel)]="step.level"
+                              [readonly]="readonly"
+                              class="prop-input" type="number">
+                          </td>
+                        </tr>
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow navigation-add-row">
+                          <td class="propRowCol"></td>
+                          <td class="propRowCell navigation-add-cell" colspan="2">
+                            <div (click)="addStep(role, s + 1)" class="propAdd navigation-add">
+                              <i class="pi pi-plus"></i>
+                              <span>Add Step</span>
+                            </div>
                           </td>
                         </tr>
                       }
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Name</td>
-                        <td class="propRowCell">
-                          <input (input)="onEditStep(step)" [(ngModel)]="step.name"
-                            [readonly]="readonly"
-                            class="prop-input">
-                        </td>
-                      </tr>
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Block</td>
-                        <td class="propRowCell">
-                          <select-block
-                            (change)="onEditStep(step)"
-                            [(value)]="step.block"
-                            [blocks]="policy.allBlocks"
-                            [readonly]="readonly"
-                            [root]="policy"
-                            type="object"
-                          ></select-block>
-                        </td>
-                      </tr>
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Level</td>
-                        <td class="propRowCell">
-                          <input (input)="onEditStep(step)" [(ngModel)]="step.level"
-                            [readonly]="readonly"
-                            class="prop-input" type="number">
-                        </td>
-                      </tr>
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">
-                          <div (click)="addStep(role, s + 1)" class="propAdd">
-                            <i class="pi pi-plus"></i>
-                            <span>Add Step</span>
-                          </div>
-                        </td>
-                        <td class="propRowCell">
-                        </td>
-                      </tr>
                     }
                   }
                 }
