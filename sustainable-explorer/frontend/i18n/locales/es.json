@@ -35,14 +35,31 @@
         "sendResetLink": "Enviar enlace",
         "username": "Nombre de usuario",
         "errorGeneric": "Algo salió mal. Por favor, inténtalo de nuevo.",
-        "errorPasswordMismatch": "Las contraseñas no coinciden."
+        "errorPasswordMismatch": "Las contraseñas no coinciden.",
+        "firstNameRequired": "El nombre es obligatorio.",
+        "lastNameRequired": "El apellido es obligatorio.",
+        "emailRequired": "El correo electrónico es obligatorio.",
+        "emailInvalid": "Introduce un correo electrónico válido (p. ej. nombre{'@'}ejemplo.com).",
+        "passwordRequired": "La contraseña es obligatoria.",
+        "passwordWeak": "La contraseña no cumple los requisitos indicados abajo.",
+        "confirmRequired": "Confirma tu contraseña.",
+        "passwordsMatch": "Las contraseñas coinciden.",
+        "showPassword": "Mostrar contraseña",
+        "hidePassword": "Ocultar contraseña",
+        "required": "obligatorio",
+        "pwRuleLength": "Al menos {n} caracteres",
+        "pwRuleUpper": "Una letra mayúscula",
+        "pwRuleLower": "Una letra minúscula",
+        "pwRuleNumber": "Un número",
+        "pwRuleSpecial": "Un carácter especial"
     },
     "forcePassword": {
         "title": "Establece una nueva contraseña",
         "subtitle": "Tu cuenta requiere un cambio de contraseña antes de continuar.",
         "current": "Contraseña actual",
         "new": "Nueva contraseña",
-        "submit": "Actualizar contraseña"
+        "submit": "Actualizar contraseña",
+        "currentRequired": "Introduce tu contraseña actual."
     },
     "verify": {
         "verifying": "Verificando tu correo…",
@@ -69,7 +86,7 @@
         "roleUserDesc": "Funciones personalizadas y claves API",
         "roleAdminDesc": "Acceso completo, incluida la gestión de usuarios",
         "initialPassword": "Contraseña inicial",
-        "passwordNote": "Mínimo 12 caracteres. Se pedirá al usuario que la cambie en el primer inicio de sesión.",
+        "passwordNote": "Se pedirá al usuario que la cambie en el primer inicio de sesión.",
         "cancel": "Cancelar",
         "total": "Total",
         "active": "Activo",
@@ -101,6 +118,15 @@
         "activatedToast": "Usuario activado",
         "deactivatedToast": "Usuario desactivado",
         "roleChangedToast": "Rol actualizado",
+        "validation": {
+            "firstNameRequired": "El nombre es obligatorio.",
+            "lastNameRequired": "El apellido es obligatorio.",
+            "emailRequired": "El correo electrónico es obligatorio.",
+            "emailInvalid": "Introduce un correo electrónico válido.",
+            "passwordRequired": "La contraseña inicial es obligatoria.",
+            "passwordTooShort": "La contraseña debe tener al menos 12 caracteres.",
+            "countryRequired": "El país es obligatorio."
+        },
         "tabUsers": "Usuarios",
         "tabRequests": "Solicitudes de límite",
         "quota": {

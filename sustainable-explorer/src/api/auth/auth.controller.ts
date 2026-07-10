@@ -17,6 +17,7 @@ import {
     ApiResponse,
     ApiCookieAuth,
 } from '@nestjs/swagger';
+import { resolvePasswordPolicy, PasswordPolicy } from '@shared/config/configuration';
 import { AuthService, RequestCtx } from './auth.service';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LoginDto } from './dto/login.dto';
@@ -37,8 +38,10 @@ import { AuthenticatedUser, COOKIE_REFRESH } from './auth.types';
 
 interface MinimalRequest {
     ip?: string;
+    socket?: { remoteAddress?: string };
     headers: {
         'user-agent'?: string;
+        'x-forwarded-for'?: string;
         cookie?: string;
     };
     // req.cookies is populated by cookie-parser middleware (wired in main.ts).
@@ -54,10 +57,33 @@ interface MinimalResponse {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Extracts a consistent RequestCtx from an incoming request. */
+/**
+ * Normalises an IP for logging: drops an IPv4-mapped IPv6 prefix so
+ * "::ffff:203.0.113.5" is stored as "203.0.113.5". Returns null for blanks.
+ */
+function normaliseIp(ip: string | null | undefined): string | null {
+    const trimmed = (ip ?? '').trim();
+    if (!trimmed) return null;
+    return trimmed.startsWith('::ffff:') ? trimmed.slice('::ffff:'.length) : trimmed;
+}
+
+/**
+ * Extracts a consistent RequestCtx from an incoming request.
+ *
+ * Behind the reverse proxy, req.ip / socket.remoteAddress is the proxy's internal
+ * address (e.g. ::ffff:172.20.0.1), so every audit row would show the same IP.
+ * Prefer the first hop in X-Forwarded-For — the real client IP set by the trusted
+ * frontend proxy — falling back to req.ip and the raw socket address.
+ */
 function extractCtx(req: MinimalRequest): RequestCtx {
+    const xff = req.headers['x-forwarded-for'];
+    const forwarded = xff ? xff.split(',')[0] : '';
+    const ip =
+        normaliseIp(forwarded) ??
+        normaliseIp(req.ip) ??
+        normaliseIp(req.socket?.remoteAddress);
     return {
-        ip: req.ip ?? null,
+        ip,
         userAgent: req.headers['user-agent'] ?? null,
     };
 }
@@ -108,6 +134,20 @@ function extractRefreshToken(req: MinimalRequest): string {
 @Controller('api/v1/auth')
 export class AuthController {
     constructor(private readonly authService: AuthService) {}
+
+    // ── GET /password-policy ──────────────────────────────────────────────────
+
+    @Get('password-policy')
+    @ApiOperation({
+        summary: 'Get the active password-complexity policy',
+        description:
+            'Public. Returns the resolved policy (driven by PASSWORD_SECURITY_LEVEL) ' +
+            'so the frontend renders the exact rules the API enforces — one source of truth.',
+    })
+    @ApiResponse({ status: 200, description: 'The active password policy' })
+    passwordPolicy(): PasswordPolicy {
+        return resolvePasswordPolicy();
+    }
 
     // ── POST /signup ─────────────────────────────────────────────────────────
 

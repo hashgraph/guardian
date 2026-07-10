@@ -35,14 +35,31 @@
         "sendResetLink": "Send reset link",
         "username": "Username",
         "errorGeneric": "Something went wrong. Please try again.",
-        "errorPasswordMismatch": "Passwords do not match."
+        "errorPasswordMismatch": "Passwords do not match.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address (e.g. name{'@'}example.com).",
+        "passwordRequired": "Password is required.",
+        "passwordWeak": "Password does not meet the requirements below.",
+        "confirmRequired": "Please confirm your password.",
+        "passwordsMatch": "Passwords match.",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "required": "required",
+        "pwRuleLength": "At least {n} characters",
+        "pwRuleUpper": "One uppercase letter",
+        "pwRuleLower": "One lowercase letter",
+        "pwRuleNumber": "One number",
+        "pwRuleSpecial": "One special character"
     },
     "forcePassword": {
         "title": "Set a new password",
         "subtitle": "Your account requires a password change before you continue.",
         "current": "Current password",
         "new": "New password",
-        "submit": "Update password"
+        "submit": "Update password",
+        "currentRequired": "Please enter your current password."
     },
     "verify": {
         "verifying": "Verifying your email…",
@@ -69,7 +86,7 @@
         "roleUserDesc": "Personalised features and API keys",
         "roleAdminDesc": "Full access including User Management",
         "initialPassword": "Initial password",
-        "passwordNote": "Minimum 12 characters. The user will be asked to change it on first login.",
+        "passwordNote": "The user will be asked to change it on first login.",
         "cancel": "Cancel",
         "total": "Total",
         "active": "Active",
@@ -101,6 +118,15 @@
         "activatedToast": "User activated",
         "deactivatedToast": "User deactivated",
         "roleChangedToast": "Role updated",
+        "validation": {
+            "firstNameRequired": "First name is required.",
+            "lastNameRequired": "Last name is required.",
+            "emailRequired": "Email is required.",
+            "emailInvalid": "Enter a valid email address.",
+            "passwordRequired": "Initial password is required.",
+            "passwordTooShort": "Password must be at least 12 characters.",
+            "countryRequired": "Country is required."
+        },
         "tabUsers": "Users",
         "tabRequests": "Rate Limit Requests",
         "quota": {

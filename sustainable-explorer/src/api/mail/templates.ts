@@ -351,3 +351,57 @@ export function accountDeactivatedEmailTemplate(userName: string): EmailTemplate
 
     return { subject, html, text };
 }
+
+// ── accountReactivatedEmailTemplate ──────────────────────────────────────────
+
+/**
+ * Account reactivation notice — sent when an admin re-activates a user.
+ * Includes a Sign In CTA since the account can be used again immediately.
+ *
+ * @param userName   Display name for the greeting (greetingName() applied internally).
+ * @param loginLink  App root URL — login is a modal, there is no /login route.
+ */
+export function accountReactivatedEmailTemplate(userName: string, loginLink: string): EmailTemplate {
+    const subject = 'Your Sustainability Atlas Account Has Been Reactivated';
+
+    const bodyHtml = `
+      <h1 style="margin:0 0 12px;font-size:24px;font-weight:700;color:#111827;">
+        Account Reactivated
+      </h1>
+      <p style="margin:0 0 8px;font-size:15px;color:#374151;line-height:1.6;">
+        Dear ${greetingName(userName)},
+      </p>
+      <p style="margin:0 0 8px;font-size:15px;color:#374151;line-height:1.6;">
+        This email is to inform you that your access to Sustainability Atlas has been reactivated by a system administrator.
+      </p>
+      <p style="margin:0 0 8px;font-size:15px;color:#374151;line-height:1.6;">
+        You can now sign in again using your existing email address and password, and continue using the platform.
+      </p>
+      ${ctaButton(loginLink, 'Sign In')}
+      ${linkFallback(loginLink)}
+      <hr style="border:none;border-top:1px solid #e5e7eb;margin:28px 0 20px;">
+      <p style="margin:0;font-size:13px;color:${MUTED_COLOR};line-height:1.5;">
+        Best regards,<br>
+        Sustainability Atlas Team
+      </p>
+    `;
+
+    const html = emailWrapper('Account Reactivated', bodyHtml);
+
+    const text = [
+        'SUSTAINABILITY ATLAS — Your Sustainability Atlas Account Has Been Reactivated',
+        '',
+        `Dear ${greetingName(userName)},`,
+        '',
+        'This email is to inform you that your access to Sustainability Atlas has been reactivated by a system administrator.',
+        '',
+        'You can now sign in again using your existing email address and password, and continue using the platform.',
+        '',
+        loginLink,
+        '',
+        'Best regards,',
+        'Sustainability Atlas Team',
+    ].join('\n');
+
+    return { subject, html, text };
+}

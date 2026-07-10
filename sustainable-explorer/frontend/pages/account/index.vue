@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { LogOut, Pencil, KeyRound, Loader2, Building2, Briefcase, MapPin, CalendarDays, Activity, ChevronLeft, ChevronRight, X } from 'lucide-vue-next';
+import { LogOut, Pencil, KeyRound, Loader2, Building2, Briefcase, MapPin, CalendarDays, Activity, ChevronLeft, ChevronRight, X, Eye, EyeOff, Check, AlertCircle } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import type { MyActivityResult } from '~/composables/useAuth';
 
 definePageMeta({ middleware: 'auth' });
 
-const { user, isAdmin, updateProfile, fetchActivity, fetchMe, changePassword, logout } = useAuth();
+const { user, isAdmin, updateProfile, fetchActivity, fetchMe, changePassword, logout, passwordPolicy, fetchPasswordPolicy } = useAuth();
 const { t } = useI18n();
 const router = useRouter();
 
@@ -34,6 +34,14 @@ function apiError(err: unknown): string {
 const editing = ref(false);
 const savingProfile = ref(false);
 const form = reactive({ firstName: '', lastName: '', organisation: '', jobTitle: '', country: '' });
+// First / last name are required — same rule as sign-up (TC_USR_AS_03).
+const profileErrors = reactive({ firstName: '', lastName: '' });
+
+function validateProfile(): boolean {
+    profileErrors.firstName = form.firstName.trim() ? '' : t('auth.firstNameRequired');
+    profileErrors.lastName = form.lastName.trim() ? '' : t('auth.lastNameRequired');
+    return !profileErrors.firstName && !profileErrors.lastName;
+}
 
 function startEdit() {
     const u = user.value;
@@ -42,10 +50,13 @@ function startEdit() {
     form.organisation = u?.organisation ?? '';
     form.jobTitle = u?.jobTitle ?? '';
     form.country = u?.country ?? '';
+    profileErrors.firstName = '';
+    profileErrors.lastName = '';
     editing.value = true;
 }
 
 async function saveProfile() {
+    if (!validateProfile()) return;
     savingProfile.value = true;
     try {
         // Send trimmed strings; an empty string clears the field (the API maps "" → null).
@@ -70,17 +81,43 @@ const showPwModal = ref(false);
 const pw = reactive({ current: '', next: '', confirm: '' });
 const savingPw = ref(false);
 const pwError = ref('');
+// Visibility toggles + live validation — same policy as sign-up / reset (TC_USR_AS_02).
+const showPwCurrent = ref(false);
+const showPwNext = ref(false);
+const showPwConfirm = ref(false);
+const pwNextTouched = ref(false);
+const pwConfirmTouched = ref(false);
+const pwRules = computed(() => passwordRules(pw.next, passwordPolicy.value));
+const pwValid = computed(() => isPasswordValid(pw.next, passwordPolicy.value));
+const pwConfirmMatch = computed(() => pw.confirm.length > 0 && pw.next === pw.confirm);
+const pwConfirmMismatch = computed(() => pw.confirm.length > 0 && pw.next !== pw.confirm);
 
 function openPwModal() {
+    void fetchPasswordPolicy();
     pw.current = '';
     pw.next = '';
     pw.confirm = '';
     pwError.value = '';
+    pwNextTouched.value = false;
+    pwConfirmTouched.value = false;
+    showPwCurrent.value = false;
+    showPwNext.value = false;
+    showPwConfirm.value = false;
     showPwModal.value = true;
 }
 
 async function submitPassword() {
     pwError.value = '';
+    pwNextTouched.value = true;
+    pwConfirmTouched.value = true;
+    if (!pw.current) {
+        pwError.value = t('forcePassword.currentRequired');
+        return;
+    }
+    if (!pwValid.value) {
+        pwError.value = t('auth.passwordWeak');
+        return;
+    }
     if (pw.next !== pw.confirm) {
         pwError.value = t('auth.errorPasswordMismatch');
         return;
@@ -265,14 +302,26 @@ const memberSince = computed(() =>
                     <!-- Edit mode -->
                     <form v-else class="mt-6 grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2" @submit.prevent="saveProfile()">
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('account.fields.firstName') }}</label>
+                            <label class="mb-1 block text-xs font-medium text-foreground">
+                                {{ $t('account.fields.firstName') }} <span class="text-red-500">*</span>
+                            </label>
                             <input v-model="form.firstName" type="text" maxlength="120"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                                :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', profileErrors.firstName ? 'border-red-500' : '']"
+                                @input="profileErrors.firstName = ''" />
+                            <p v-if="profileErrors.firstName" class="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                                <AlertCircle class="h-3.5 w-3.5 shrink-0" /> {{ profileErrors.firstName }}
+                            </p>
                         </div>
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('account.fields.lastName') }}</label>
+                            <label class="mb-1 block text-xs font-medium text-foreground">
+                                {{ $t('account.fields.lastName') }} <span class="text-red-500">*</span>
+                            </label>
                             <input v-model="form.lastName" type="text" maxlength="120"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                                :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', profileErrors.lastName ? 'border-red-500' : '']"
+                                @input="profileErrors.lastName = ''" />
+                            <p v-if="profileErrors.lastName" class="mt-1 flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                                <AlertCircle class="h-3.5 w-3.5 shrink-0" /> {{ profileErrors.lastName }}
+                            </p>
                         </div>
                         <div class="sm:col-span-2">
                             <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('account.fields.email') }}</label>
@@ -422,23 +471,77 @@ const memberSince = computed(() =>
                         {{ pwError }}
                     </div>
 
-                    <form class="space-y-3" @submit.prevent="submitPassword()">
+                    <form novalidate class="space-y-3" @submit.prevent="submitPassword()">
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('forcePassword.current') }}</label>
-                            <input v-model="pw.current" type="password" required autocomplete="current-password"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <label class="mb-1 block text-xs font-medium text-foreground">
+                                {{ $t('forcePassword.current') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input v-model="pw.current" :type="showPwCurrent ? 'text' : 'password'" autocomplete="current-password"
+                                    class="w-full rounded-md border bg-background px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                                <button type="button"
+                                    :aria-label="showPwCurrent ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                                    @click="showPwCurrent = !showPwCurrent">
+                                    <EyeOff v-if="showPwCurrent" class="h-4 w-4" />
+                                    <Eye v-else class="h-4 w-4" />
+                                </button>
+                            </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('forcePassword.new') }}</label>
-                            <input v-model="pw.next" type="password" required minlength="12" autocomplete="new-password"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <label class="mb-1 block text-xs font-medium text-foreground">
+                                {{ $t('forcePassword.new') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input v-model="pw.next" :type="showPwNext ? 'text' : 'password'" autocomplete="new-password"
+                                    :class="['w-full rounded-md border bg-background px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary', pwNextTouched && !pwValid ? 'border-red-500' : '']"
+                                    @input="pwNextTouched = true" @blur="pwNextTouched = true" />
+                                <button type="button"
+                                    :aria-label="showPwNext ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                                    @click="showPwNext = !showPwNext">
+                                    <EyeOff v-if="showPwNext" class="h-4 w-4" />
+                                    <Eye v-else class="h-4 w-4" />
+                                </button>
+                            </div>
                         </div>
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.confirmPassword') }}</label>
-                            <input v-model="pw.confirm" type="password" required minlength="12" autocomplete="new-password"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <label class="mb-1 block text-xs font-medium text-foreground">
+                                {{ $t('auth.confirmPassword') }} <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <input v-model="pw.confirm" :type="showPwConfirm ? 'text' : 'password'" autocomplete="new-password"
+                                    :class="['w-full rounded-md border bg-background px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary', pwConfirmMismatch ? 'border-red-500' : pwConfirmMatch ? 'border-green-500' : '']"
+                                    @input="pwConfirmTouched = true" @blur="pwConfirmTouched = true" />
+                                <button type="button"
+                                    :aria-label="showPwConfirm ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                                    @click="showPwConfirm = !showPwConfirm">
+                                    <EyeOff v-if="showPwConfirm" class="h-4 w-4" />
+                                    <Eye v-else class="h-4 w-4" />
+                                </button>
+                            </div>
                         </div>
-                        <p class="text-xs text-muted-foreground">{{ $t('auth.passwordHint') }}</p>
+
+                        <!-- Live password strength rules -->
+                        <ul class="grid grid-cols-2 gap-x-3 gap-y-1">
+                            <li v-for="rule in pwRules" :key="rule.key"
+                                class="flex items-center gap-1.5 text-xs"
+                                :class="rule.ok ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'">
+                                <Check v-if="rule.ok" class="h-3.5 w-3.5 shrink-0" />
+                                <span v-else class="h-3.5 w-3.5 shrink-0 rounded-full border border-current" />
+                                {{ $t(rule.labelKey, rule.labelParams ?? {}) }}
+                            </li>
+                        </ul>
+
+                        <!-- Confirm-password match feedback (real-time) -->
+                        <p v-if="pwConfirmMismatch" class="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                            <AlertCircle class="h-3.5 w-3.5 shrink-0" /> {{ $t('auth.errorPasswordMismatch') }}
+                        </p>
+                        <p v-else-if="pwConfirmMatch" class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                            <Check class="h-3.5 w-3.5 shrink-0" /> {{ $t('auth.passwordsMatch') }}
+                        </p>
+
                         <div class="flex justify-end gap-2 pt-1">
                             <button type="button" class="rounded-md border px-4 py-2 text-sm font-medium hover:bg-muted" @click="showPwModal = false">
                                 {{ $t('account.cancel') }}

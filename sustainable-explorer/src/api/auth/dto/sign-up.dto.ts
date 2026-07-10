@@ -1,11 +1,21 @@
 import {
     IsEmail,
     IsString,
-    MinLength,
+    Matches,
     MaxLength,
     IsOptional,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {
+    resolvePasswordPolicy,
+    passwordPolicyPattern,
+    passwordPolicyMessage,
+} from '@shared/config/configuration';
+
+// Resolved once at module load — PASSWORD_SECURITY_LEVEL is fixed for a process.
+const PASSWORD_POLICY = resolvePasswordPolicy();
+const PASSWORD_PATTERN = passwordPolicyPattern(PASSWORD_POLICY);
+const PASSWORD_MESSAGE = passwordPolicyMessage(PASSWORD_POLICY);
 
 /**
  * DTO for self-service user registration.
@@ -20,17 +30,17 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
  */
 export class SignUpDto {
     @ApiProperty({ description: 'Email address (used as login identifier)' })
-    @IsEmail()
+    @IsEmail({}, { message: 'Please enter a valid email address (e.g. name@example.com).' })
     email: string;
 
     @ApiProperty({
-        description: 'Password (minimum 12 characters)',
-        minLength: 12,
+        description: `Password — ${PASSWORD_MESSAGE}`,
+        minLength: PASSWORD_POLICY.minLength,
         maxLength: 128,
     })
     @IsString()
-    @MinLength(12)
     @MaxLength(128)
+    @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })
     password: string;
 
     @ApiProperty({ description: 'First name', maxLength: 120 })

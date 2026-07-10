@@ -205,6 +205,18 @@ export class AdminUsersService {
             );
             // Invalidate the authz cache so RolesGuard picks up the reactivation immediately.
             void this.redis.del(`authz:user:${id}`);
+
+            // Best-effort reactivation notice — never fail the setStatus call on SMTP error.
+            try {
+                void this.mailService.sendReactivationEmail(
+                    target.email,
+                    (process.env.APP_PUBLIC_URL ?? '').replace(/\/$/, ''),
+                    [target.firstName, target.lastName].filter(Boolean).join(' ').trim(),
+                );
+            } catch (err: unknown) {
+                const msg = err instanceof Error ? err.message : String(err);
+                this.logger.error(`admin reactivate-user email failed for user ${id}: ${msg}`);
+            }
         }
 
         await this.audit(isActive ? 'admin.user_activate' : 'admin.user_deactivate', actor, id);

@@ -18,6 +18,78 @@ export function getDefaultMirrorNodeUrl(network: string): string {
     return urls[network] || urls['testnet'];
 }
 
+// ── Password policy ───────────────────────────────────────────────────────────
+
+export type PasswordSecurityLevel = 'low' | 'medium' | 'high';
+
+/**
+ * Resolved password-complexity policy. The single source of truth for BOTH the
+ * API (DTO validation + hashing floor) and the frontend (live rule UI, fetched
+ * from GET /auth/password-policy) — driven by one env var, PASSWORD_SECURITY_LEVEL.
+ */
+export interface PasswordPolicy {
+    level: PasswordSecurityLevel;
+    minLength: number;
+    requireUppercase: boolean;
+    requireLowercase: boolean;
+    requireNumber: boolean;
+    requireSpecial: boolean;
+}
+
+/**
+ * Maps PASSWORD_SECURITY_LEVEL (low | medium | high) to a concrete policy.
+ * Defaults to `medium` (12 chars + upper/lower/number) — the prior effective
+ * behaviour — for any unset or unrecognised value.
+ *   low    → min 8, no character-class requirements
+ *   medium → min 12, upper + lower + number
+ *   high   → min 16, upper + lower + number + special
+ */
+export function resolvePasswordPolicy(rawLevel?: string): PasswordPolicy {
+    const level = (rawLevel ?? process.env.PASSWORD_SECURITY_LEVEL ?? 'medium')
+        .trim()
+        .toLowerCase();
+
+    switch (level) {
+        case 'low':
+            return { level: 'low', minLength: 8, requireUppercase: false, requireLowercase: false, requireNumber: false, requireSpecial: false };
+        case 'high':
+            return { level: 'high', minLength: 16, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSpecial: true };
+        case 'medium':
+        default:
+            return { level: 'medium', minLength: 12, requireUppercase: true, requireLowercase: true, requireNumber: true, requireSpecial: false };
+    }
+}
+
+/**
+ * Builds a single validation regex from a policy: one lookahead per required
+ * character class, plus a `{minLength,}` length floor. [\s\S] is used instead of
+ * `.` so the check is newline-safe. Consumed by the password DTOs via @Matches.
+ */
+export function passwordPolicyPattern(policy: PasswordPolicy): RegExp {
+    const lookaheads: string[] = [];
+    if (policy.requireUppercase) lookaheads.push('(?=[\\s\\S]*[A-Z])');
+    if (policy.requireLowercase) lookaheads.push('(?=[\\s\\S]*[a-z])');
+    if (policy.requireNumber) lookaheads.push('(?=[\\s\\S]*\\d)');
+    if (policy.requireSpecial) lookaheads.push('(?=[\\s\\S]*[^A-Za-z0-9])');
+    return new RegExp(`^${lookaheads.join('')}[\\s\\S]{${policy.minLength},}$`);
+}
+
+/** Human-readable requirement sentence for a policy — used as the DTO error message. */
+export function passwordPolicyMessage(policy: PasswordPolicy): string {
+    const classes: string[] = [];
+    if (policy.requireUppercase) classes.push('an uppercase letter');
+    if (policy.requireLowercase) classes.push('a lowercase letter');
+    if (policy.requireNumber) classes.push('a number');
+    if (policy.requireSpecial) classes.push('a special character');
+
+    let msg = `Password must be at least ${policy.minLength} characters`;
+    if (classes.length) {
+        const last = classes.pop() as string;
+        msg += ' and include ' + (classes.length ? `${classes.join(', ')} and ${last}` : last);
+    }
+    return `${msg}.`;
+}
+
 /**
  * Configuration for a single Guardian instance whose Application Events Module
  * (AEM) HTTP stream is consumed by the guardian-sync process.
@@ -215,6 +287,10 @@ export default registerAs('app', () => {
             publicAppUrl: process.env.APP_PUBLIC_URL || '',
             // Minimum seconds between verification-email resends, per user.
             resendVerificationCooldownSeconds: parseInt(process.env.RESEND_VERIFICATION_COOLDOWN_SECONDS || '300', 10),
+            // Password complexity policy — driven by PASSWORD_SECURITY_LEVEL
+            // (low | medium | high). Enforced in the password DTOs and exposed to
+            // the frontend via GET /auth/password-policy so the two never diverge.
+            passwordPolicy: resolvePasswordPolicy(),
         },
 
         // Rate limits — applied GLOBALLY per user / API key (never per-network).

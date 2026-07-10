@@ -4,7 +4,7 @@ import {
     verifyPasswordRaw,
     getDummyHashAsync,
 } from '@shared/security/password-hash.util';
-import { MIN_PASSWORD_LENGTH } from './auth.types';
+import { resolvePasswordPolicy } from '@shared/config/configuration';
 
 /**
  * Thin @Injectable wrapper over the shared password-hash.util primitive.
@@ -12,7 +12,7 @@ import { MIN_PASSWORD_LENGTH } from './auth.types';
  * All hashing/verification logic lives in the util so both this DI-managed
  * service and the non-DI boot seeder (system-bootstrap.ts) share exactly one
  * implementation. This service adds only the NestJS integration layer:
- *   - MIN_PASSWORD_LENGTH enforcement (maps to BadRequestException → HTTP 400)
+ *   - Password-policy minimum-length enforcement (maps to BadRequestException → 400)
  *   - dummyVerify for unknown-email timing equalization
  *
  * Reads pepper/rounds via the util (process.env) to stay consistent with the
@@ -23,13 +23,15 @@ export class PasswordService {
     /**
      * Hashes a plaintext password.
      *
-     * Throws BadRequestException if the password is shorter than
-     * MIN_PASSWORD_LENGTH (12) so the controller gets an automatic HTTP 400.
+     * Defence-in-depth minimum-length check against the resolved password policy
+     * (PASSWORD_SECURITY_LEVEL) — the DTO @Matches validator is the primary gate;
+     * this guards non-DTO callers. A short password throws an automatic HTTP 400.
      */
     async hash(plain: string): Promise<string> {
-        if (plain.length < MIN_PASSWORD_LENGTH) {
+        const minLength = resolvePasswordPolicy().minLength;
+        if (plain.length < minLength) {
             throw new BadRequestException(
-                `Password must be at least ${MIN_PASSWORD_LENGTH} characters`,
+                `Password must be at least ${minLength} characters`,
             );
         }
         return hashPasswordRaw(plain);

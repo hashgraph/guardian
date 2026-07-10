@@ -1,10 +1,13 @@
 <script setup lang="ts">
-import { Loader2, CheckCircle2 } from 'lucide-vue-next';
+import { Loader2, CheckCircle2, Eye, EyeOff, Check, AlertCircle } from 'lucide-vue-next';
 
 const route = useRoute();
 const router = useRouter();
-const { resetPassword, openSignIn } = useAuth();
+const { resetPassword, openSignIn, passwordPolicy, fetchPasswordPolicy } = useAuth();
 const { t } = useI18n();
+
+// Load the server's password policy once so the live rules match what the API enforces.
+onMounted(() => { void fetchPasswordPolicy(); });
 
 const token = computed(() => (route.query.token as string | undefined)?.trim() ?? '');
 
@@ -14,10 +17,24 @@ const loading = ref(false);
 const error = ref('');
 const done = ref(false);
 
+// Visibility toggles + live validation — same shared policy as sign-up / change.
+const showNew = ref(false);
+const showConfirm = ref(false);
+const newTouched = ref(false);
+const pwRules = computed(() => passwordRules(newPassword.value, passwordPolicy.value));
+const pwValid = computed(() => isPasswordValid(newPassword.value, passwordPolicy.value));
+const confirmMatch = computed(() => confirm.value.length > 0 && newPassword.value === confirm.value);
+const confirmMismatch = computed(() => confirm.value.length > 0 && newPassword.value !== confirm.value);
+
 async function onSubmit() {
     error.value = '';
+    newTouched.value = true;
     if (!token.value) {
         error.value = t('reset.missingToken');
+        return;
+    }
+    if (!pwValid.value) {
+        error.value = t('auth.passwordWeak');
         return;
     }
     if (newPassword.value !== confirm.value) {
@@ -65,18 +82,59 @@ function goSignIn() {
                 {{ error }}
             </div>
 
-            <form class="mt-4 space-y-3" @submit.prevent="onSubmit()">
+            <form novalidate class="mt-4 space-y-3" @submit.prevent="onSubmit()">
                 <div>
-                    <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('reset.newPassword') }}</label>
-                    <input v-model="newPassword" type="password" required autocomplete="new-password" minlength="12"
-                        class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <label class="mb-1 block text-xs font-medium text-foreground">
+                        {{ $t('reset.newPassword') }} <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input v-model="newPassword" :type="showNew ? 'text' : 'password'" autocomplete="new-password"
+                            :class="['w-full rounded-md border bg-background px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary', newTouched && !pwValid ? 'border-red-500' : '']"
+                            @input="newTouched = true" @blur="newTouched = true" />
+                        <button type="button"
+                            :aria-label="showNew ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                            class="absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                            @click="showNew = !showNew">
+                            <EyeOff v-if="showNew" class="h-4 w-4" />
+                            <Eye v-else class="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
                 <div>
-                    <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.confirmPassword') }}</label>
-                    <input v-model="confirm" type="password" required autocomplete="new-password" minlength="12"
-                        class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <label class="mb-1 block text-xs font-medium text-foreground">
+                        {{ $t('auth.confirmPassword') }} <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <input v-model="confirm" :type="showConfirm ? 'text' : 'password'" autocomplete="new-password"
+                            :class="['w-full rounded-md border bg-background px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary', confirmMismatch ? 'border-red-500' : confirmMatch ? 'border-green-500' : '']" />
+                        <button type="button"
+                            :aria-label="showConfirm ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                            class="absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                            @click="showConfirm = !showConfirm">
+                            <EyeOff v-if="showConfirm" class="h-4 w-4" />
+                            <Eye v-else class="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
-                <p class="text-xs text-muted-foreground">{{ $t('auth.passwordHint') }}</p>
+
+                <!-- Live password strength rules -->
+                <ul class="grid grid-cols-2 gap-x-3 gap-y-1">
+                    <li v-for="rule in pwRules" :key="rule.key"
+                        class="flex items-center gap-1.5 text-xs"
+                        :class="rule.ok ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'">
+                        <Check v-if="rule.ok" class="h-3.5 w-3.5 shrink-0" />
+                        <span v-else class="h-3.5 w-3.5 shrink-0 rounded-full border border-current" />
+                        {{ $t(rule.labelKey, rule.labelParams ?? {}) }}
+                    </li>
+                </ul>
+
+                <!-- Confirm-password match feedback (real-time) -->
+                <p v-if="confirmMismatch" class="flex items-center gap-1 text-xs text-red-600 dark:text-red-400">
+                    <AlertCircle class="h-3.5 w-3.5 shrink-0" /> {{ $t('auth.errorPasswordMismatch') }}
+                </p>
+                <p v-else-if="confirmMatch" class="flex items-center gap-1 text-xs text-green-600 dark:text-green-400">
+                    <Check class="h-3.5 w-3.5 shrink-0" /> {{ $t('auth.passwordsMatch') }}
+                </p>
                 <button
                     type="submit" :disabled="loading"
                     class="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"

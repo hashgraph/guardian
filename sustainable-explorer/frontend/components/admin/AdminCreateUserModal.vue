@@ -6,6 +6,7 @@ const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void; (e: 'created'): void }>();
 
 const { create } = useAdminUsers();
+const { passwordPolicy, fetchPasswordPolicy } = useAuth();
 const { t } = useI18n();
 
 const role = ref<AdminRole>('system_user');
@@ -19,6 +20,19 @@ const country = ref('');
 const loading = ref(false);
 const error = ref('');
 
+// Live password rules driven by the server policy (same as sign-up).
+const pwRules = computed(() => passwordRules(password.value, passwordPolicy.value));
+const pwValid = computed(() => isPasswordValid(password.value, passwordPolicy.value));
+
+type FieldErrors = {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    password?: string;
+    country?: string;
+};
+const fieldErrors = ref<FieldErrors>({});
+
 function reset() {
     role.value = 'system_user';
     email.value = '';
@@ -28,11 +42,33 @@ function reset() {
     organisation.value = '';
     country.value = '';
     error.value = '';
+    fieldErrors.value = {};
     loading.value = false;
 }
 
-// Reset whenever the modal is (re)opened.
-watch(() => props.open, (open) => { if (open) reset(); });
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validate(): boolean {
+    const errors: FieldErrors = {};
+
+    if (!firstName.value.trim()) errors.firstName = t('userMgmt.validation.firstNameRequired');
+    if (!lastName.value.trim()) errors.lastName = t('userMgmt.validation.lastNameRequired');
+
+    const emailValue = email.value.trim();
+    if (!emailValue) errors.email = t('userMgmt.validation.emailRequired');
+    else if (!EMAIL_RE.test(emailValue)) errors.email = t('userMgmt.validation.emailInvalid');
+
+    if (!password.value) errors.password = t('userMgmt.validation.passwordRequired');
+    else if (!pwValid.value) errors.password = t('auth.passwordWeak');
+
+    if (!country.value.trim()) errors.country = t('userMgmt.validation.countryRequired');
+
+    fieldErrors.value = errors;
+    return Object.keys(errors).length === 0;
+}
+
+// Reset whenever the modal is (re)opened; load the active password policy too.
+watch(() => props.open, (open) => { if (open) { reset(); void fetchPasswordPolicy(); } });
 
 function close() {
     emit('close');
@@ -40,6 +76,7 @@ function close() {
 
 async function onSubmit() {
     error.value = '';
+    if (!validate()) return;
     loading.value = true;
     try {
         const body: AdminCreateUserBody = {
@@ -57,7 +94,12 @@ async function onSubmit() {
     } catch (err) {
         const e = err as { data?: { message?: string | string[] } };
         const m = e?.data?.message;
-        error.value = (Array.isArray(m) ? m[0] : m) || t('auth.errorGeneric');
+        const messages = Array.isArray(m) ? m : m ? [m] : [];
+        // Surface a friendly, field-level message instead of the raw
+        // class-validator text (e.g. "email should be email").
+        const emailMsg = messages.find((msg) => /email/i.test(msg));
+        if (emailMsg) fieldErrors.value = { ...fieldErrors.value, email: t('userMgmt.validation.emailInvalid') };
+        error.value = emailMsg ? '' : (messages[0] || t('auth.errorGeneric'));
     } finally {
         loading.value = false;
     }
@@ -123,27 +165,44 @@ async function onSubmit() {
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.firstName') }}</label>
+                                <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.firstName') }} <span class="text-red-500">*</span></label>
                                 <input v-model="firstName" type="text"
-                                    class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                                    :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', fieldErrors.firstName ? 'border-red-500' : '']"
+                                    @input="fieldErrors.firstName = ''" />
+                                <p v-if="fieldErrors.firstName" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldErrors.firstName }}</p>
                             </div>
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.lastName') }}</label>
+                                <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.lastName') }} <span class="text-red-500">*</span></label>
                                 <input v-model="lastName" type="text"
-                                    class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                                    :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', fieldErrors.lastName ? 'border-red-500' : '']"
+                                    @input="fieldErrors.lastName = ''" />
+                                <p v-if="fieldErrors.lastName" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldErrors.lastName }}</p>
                             </div>
                         </div>
 
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.email') }}</label>
-                            <input v-model="email" type="email" required autocomplete="off"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.email') }} <span class="text-red-500">*</span></label>
+                            <input v-model="email" type="email" autocomplete="off"
+                                :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', fieldErrors.email ? 'border-red-500' : '']"
+                                @input="fieldErrors.email = ''" />
+                            <p v-if="fieldErrors.email" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldErrors.email }}</p>
                         </div>
 
                         <div>
-                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('userMgmt.initialPassword') }}</label>
-                            <input v-model="password" type="password" required minlength="12" autocomplete="new-password"
-                                class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
+                            <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('userMgmt.initialPassword') }} <span class="text-red-500">*</span></label>
+                            <input v-model="password" type="password" autocomplete="new-password"
+                                :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', fieldErrors.password ? 'border-red-500' : '']"
+                                @input="fieldErrors.password = ''" />
+                            <p v-if="fieldErrors.password" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldErrors.password }}</p>
+                            <!-- Live password rules from the server policy -->
+                            <ul class="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1">
+                                <li v-for="rule in pwRules" :key="rule.key"
+                                    class="flex items-center gap-1.5 text-xs"
+                                    :class="rule.ok ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'">
+                                    <span class="h-1.5 w-1.5 shrink-0 rounded-full" :class="rule.ok ? 'bg-green-500' : 'bg-current opacity-40'" />
+                                    {{ $t(rule.labelKey, rule.labelParams ?? {}) }}
+                                </li>
+                            </ul>
                             <p class="mt-1 text-xs text-muted-foreground">{{ $t('userMgmt.passwordNote') }}</p>
                         </div>
 
@@ -154,8 +213,9 @@ async function onSubmit() {
                                     class="w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary" />
                             </div>
                             <div>
-                                <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.country') }}</label>
-                                <CountrySelect v-model="country" :placeholder="$t('country.placeholder')" />
+                                <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('auth.country') }} <span class="text-red-500">*</span></label>
+                                <CountrySelect v-model="country" :placeholder="$t('country.placeholder')" @update:model-value="fieldErrors.country = ''" />
+                                <p v-if="fieldErrors.country" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldErrors.country }}</p>
                             </div>
                         </div>
 

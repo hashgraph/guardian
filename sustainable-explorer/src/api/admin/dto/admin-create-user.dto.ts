@@ -2,12 +2,22 @@ import {
     IsEmail,
     IsString,
     IsIn,
-    MinLength,
+    Matches,
     MaxLength,
     IsOptional,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import type { AppRole } from '../../auth/auth.types';
+import {
+    resolvePasswordPolicy,
+    passwordPolicyPattern,
+    passwordPolicyMessage,
+} from '@shared/config/configuration';
+
+// Resolved once at module load — PASSWORD_SECURITY_LEVEL is fixed for a process.
+const PASSWORD_POLICY = resolvePasswordPolicy();
+const PASSWORD_PATTERN = passwordPolicyPattern(PASSWORD_POLICY);
+const PASSWORD_MESSAGE = passwordPolicyMessage(PASSWORD_POLICY);
 
 /**
  * DTO for an administrator creating a user account.
@@ -22,13 +32,13 @@ import type { AppRole } from '../../auth/auth.types';
  */
 export class AdminCreateUserDto {
     @ApiProperty({ description: 'Email address (login identifier)' })
-    @IsEmail()
+    @IsEmail({}, { message: 'Please enter a valid email address (e.g. name@example.com).' })
     email: string;
 
-    @ApiProperty({ description: 'Initial password (minimum 12 characters)', minLength: 12, maxLength: 128 })
+    @ApiProperty({ description: `Initial password — ${PASSWORD_MESSAGE}`, minLength: PASSWORD_POLICY.minLength, maxLength: 128 })
     @IsString()
-    @MinLength(12)
     @MaxLength(128)
+    @Matches(PASSWORD_PATTERN, { message: PASSWORD_MESSAGE })
     password: string;
 
     @ApiProperty({ description: 'Role to assign', enum: ['system_user', 'admin'] })
