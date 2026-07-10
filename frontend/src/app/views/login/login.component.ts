@@ -22,6 +22,7 @@ import { DemoService } from '../../services/demo.service';
 import { ChangePasswordComponent } from './change-password/change-password.component';
 import { ToastService } from 'src/app/services/toast.service';
 import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
+import { getUserInitials } from '../../utils';
 
 /**
  * Login page.
@@ -57,6 +58,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
 
     backgroundImageData: string;
     companyName: string;
+    companyLogoUrl: string;
     brandingLoading: boolean = true;
     error?: string;
 
@@ -95,6 +97,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
             this.brandingService.getBrandingData().then((res) => {
                 this.backgroundImageData = res.loginBannerUrl;
                 this.companyName = res.companyName;
+                this.companyLogoUrl = res.companyLogoUrl;
                 this.brandingLoading = false;
             });
 
@@ -121,6 +124,10 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         this.destroy$.complete();
         this.qrCodeDialogRef = null;
         this.vcSubmitDialogRef = null;
+    }
+
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
     }
 
     public getPoliciesRolesTooltip(policyRoles: any) {
@@ -224,8 +231,8 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
 
         const part3 = (userRole: UserRole) => {
             this.dialogService.open(RegisterDialogComponent, {
-                header: 'Sign Up Request',
-                width: '80%',
+                header: 'Sign Up',
+                width: '40%',
                 modal: true,
             })!.onClose.subscribe((userData) => {
                 if (userData) {
@@ -237,7 +244,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
         const part2 = () => {
             this.dialogService.open(AccountTypeSelectorDialogComponent, {
                 header: 'Select Account Type',
-                width: '80%',
+                width: '40%',
                 modal: true,
             })!.onClose.subscribe((userRole) => {
                 if (userRole) {
