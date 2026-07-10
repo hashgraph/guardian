@@ -384,8 +384,8 @@ form {
     box-shadow: unset !important;
 }
 
-::ng-deep .p-popover-content .p-button:focus,
-::ng-deep .p-popover-content .p-button:focus-visible {
+::ng-deep .demo-menu .p-button:focus,
+::ng-deep .demo-menu .p-button:focus-visible {
     outline: none !important;
 }
 
