@@ -441,34 +441,35 @@
         @if (type == 'Topics') {
           <!-- Topics  -->
           @for (item of topics; track item; let i = $index) {
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.topicsGroup, i)"
+            <tr class="propHeader topics-header">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" (click)="onHide(propHidden.topicsGroup, i)"
                 [attr.collapse]="propHidden.topicsGroup[i]">
-                <i class="pi pi-caret-down"></i>
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span>Topic</span>
               </td>
-              <td class="propHeaderCell cellName">Topic</td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
+              <td class="propHeaderCell topic-actions">
+                <span class="topic-name">{{ item.name }}</span>
                 <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveTopic(item)">
                   <i class="pi pi-trash"></i>
                 </span>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Name</td>
               <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Description</td>
               <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="item.description" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Type</td>
               <td class="propRowCell">
@@ -484,7 +485,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Static</td>
               <td class="propRowCell">
@@ -494,7 +495,7 @@
                 </p-toggleswitch>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Memo Parameters Object</td>
               <td class="propRowCell">
@@ -510,7 +511,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Memo</td>
               <td class="propRowCell">
@@ -518,17 +519,15 @@
               </td>
             </tr>
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow topic-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell topic-add-cell" colspan="2">
+              <div class="propAdd topics-add" (click)="addTopic()">
+                <i class="pi pi-plus"></i>
+                <span>Add Topic</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addTopic()">
-              <i class="pi pi-plus"></i>
-              <span>Add Topic</span>
-            </div>
-          </div>
         }
         @if (type == 'Tokens') {
           <!-- Tokens  -->
