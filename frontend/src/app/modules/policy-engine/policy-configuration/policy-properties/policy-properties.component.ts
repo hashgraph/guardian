@@ -122,7 +122,9 @@ export class PolicyPropertiesComponent implements OnInit {
     ngOnChanges(changes: SimpleChanges) {
         this.roles = this.policy.policyRoles;
         this.navigationRoles = [
-            ...this.policy.policyRoles.map(item => item.name),
+            ...this.policy.policyRoles
+                .map(item => item.name)
+                .filter((name): name is string => typeof name === 'string' && name.trim().length > 0),
             'NO_ROLE',
             'OWNER'
         ];

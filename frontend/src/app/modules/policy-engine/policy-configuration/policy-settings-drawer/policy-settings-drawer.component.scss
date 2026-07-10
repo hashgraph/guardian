@@ -433,6 +433,28 @@
         height: 30px;
     }
 
+    .properties .navigation .stepRow:hover {
+        background: transparent !important;
+    }
+
+    .properties .navigation .stepRow:hover > .propRowCol {
+        background: transparent !important;
+    }
+
+    .properties .navigation .stepRow:hover > .propHeaderCell {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
+    }
+
+    .properties .navigation .stepRow .chevron-icon {
+        background: transparent !important;
+        box-shadow: none;
+    }
+
+    .properties .navigation .stepRow:hover > .propHeaderCell.cellName .chevron-icon {
+        background: transparent !important;
+        box-shadow: none;
+    }
+
     .properties .navigation .stepRow > .propHeaderCell.cellName {
         flex-wrap: nowrap;
         min-width: 0;
@@ -455,9 +477,14 @@
         width: 24px !important;
         height: 24px;
         border-radius: 6px;
-        color: var(--pc-del-color);
+        color: var(--guardian-font-color-secondary, #848FA9);
         line-height: 1;
         vertical-align: middle;
+    }
+
+    .properties .navigation .remove-step:hover {
+        color: var(--pc-del-color);
+        background: color-mix(in srgb, var(--pc-del-color) 10%, transparent);
     }
 
     .properties .navigation .remove-step i,
