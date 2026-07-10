@@ -1,0 +1,3 @@
+{
+    "node-option": ["loader=esmock", "no-warnings"]
+}

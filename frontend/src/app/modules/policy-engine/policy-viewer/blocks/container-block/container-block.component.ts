@@ -12,6 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     selector: 'container-block',
     templateUrl: './container-block.component.html',
     styleUrls: ['./container-block.component.scss'],
+    standalone: false
 })
 export class ContainerBlockComponent implements OnInit, OnDestroy {
     @Input('id') id!: string;

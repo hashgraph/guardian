@@ -11,6 +11,7 @@ import { catchError, finalize } from 'rxjs/operators';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../../../../services/guardian-dialog.service';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { GlobalDocumentType } from "@guardian/interfaces";
 
@@ -39,7 +40,8 @@ export interface WriterGetDataResponse {
     selector: 'global-events-writer-block',
     templateUrl: './global-events-writer-block.component.html',
     styleUrls: ['./global-events-writer-block.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
+    standalone: false
 })
 export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
     @Input('id')
@@ -378,7 +380,7 @@ export class GlobalEventsWriterBlockComponent implements OnInit, OnDestroy {
                     { name: 'Create', class: 'primary' },
                 ],
             },
-        });
+        })!;
 
         this.confirmDialogRef.onClose.subscribe((action: string | null) => {
             this.confirmDialogRef = null;

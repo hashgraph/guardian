@@ -1,30 +1,43 @@
-# Export report data in a csv file format
+# Export Statistic Definition as ZIP File
 
-{% swagger method="get" path="" baseUrl="/analytics/reports/{uuid}/export/csv" summary="Export report data in a csv file format" %}
-{% swagger-description %}
-Returns a csv file
-{% endswagger-description %}
+**`GET /api/v1/policy-statistics/{definitionId}/export/file`**
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Report Identifier
-{% endswagger-parameter %}
+Returns a zip file containing the full statistic definition configuration for backup or transfer.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```
-content:
-            application/json:
-              schema:
-                type: string
-                format: binary
-```
-{% endswagger-response %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+**Permission:** `Permissions.STATISTICS_STATISTIC_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `definitionId` | string | Yes | Statistic definition identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The response is a binary zip archive. The `Content-Type` is `application/zip` and the `Content-Disposition` header indicates the filename.
+
 ```
-content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/InternalServerErrorDTO"
+Content-Disposition: attachment; filename=theme_1704067200000
+Content-Type: application/zip
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid or missing `definitionId` |
+| `500 Internal Server Error` | Unexpected server failure |

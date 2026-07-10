@@ -1,12 +1,19 @@
-<div *ngIf="loader"
-     style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+@if (loader) {
+  <div
+    style="display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}
 <div [class.signed-in]="authState.value | async" [style.opacity]="loader ? '0' : '1'" class="app">
-    <!--    <div class="background"></div>-->
-    <!--<app-header></app-header>-->
-    <app-new-header *ngIf="url !== 'login'" [remoteContainerMethod]="resizeMenu"></app-new-header>
-    <div class="content" id="main-content">
-        <router-outlet></router-outlet>
-    </div>
+  <!--    <div class="background"></div>-->
+  <!--<app-header></app-header>-->
+  @if (!isLoginPage) {
+    <app-new-header [remoteContainerMethod]="resizeMenu"></app-new-header>
+  }
+  @if (!isLoginPage) {
+    <app-next-gen-banner></app-next-gen-banner>
+  }
+  <div class="content" id="main-content">
+    <router-outlet></router-outlet>
+  </div>
 </div>

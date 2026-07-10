@@ -18,6 +18,7 @@ import {
 import type { LatLngExpression } from "leaflet"
 import { useDashboardStats } from "@/hooks/useDashboardStats"
 import { useAllPolicyVcs } from "@/hooks/usePolicyVcDocuments"
+import { usePolicyNetwork } from "@/providers/PolicyNetworkProvider"
 
 // Known project deployment locations with approximate coordinates
 // These are derived from PDD host country fields in the Guardian VC data
@@ -55,6 +56,7 @@ function PulsingDot({ count }: { count: number | null }) {
 }
 
 export function DeviceMap() {
+  const { policy } = usePolicyNetwork()
   const { totalDevices, isLoading } = useDashboardStats()
   const { data: mrvReports } = useAllPolicyVcs("daily_mrv_report")
 
@@ -82,7 +84,7 @@ export function DeviceMap() {
           </div>
           {latestMrvTs && (
             <Link
-              href={`/verify?ts=${encodeURIComponent(latestMrvTs)}`}
+              href={`/policy/${policy.slug}/verify?ts=${encodeURIComponent(latestMrvTs)}`}
               className="text-xs text-primary hover:underline whitespace-nowrap"
             >
               View all devices &rarr;

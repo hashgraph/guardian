@@ -9,6 +9,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'confirmation-dialog',
     templateUrl: './confirmation-dialog.component.html',
     styleUrls: ['./confirmation-dialog.component.scss'],
+    standalone: false
 })
 export class ConfirmationDialog {
     value: UntypedFormControl = new UntypedFormControl('', Validators.required);

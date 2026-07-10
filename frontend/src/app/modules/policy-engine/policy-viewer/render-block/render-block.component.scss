@@ -5,11 +5,11 @@
     bottom: 0;
     top: 0;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height-policy);
@@ -40,7 +40,7 @@
 }
 
 .empty-component {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;

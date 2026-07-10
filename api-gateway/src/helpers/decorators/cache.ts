@@ -5,7 +5,7 @@ import { CacheInterceptor } from '#helpers';
 
 //constants
 import { CACHE, META_DATA } from '#constants';
-import process from 'process';
+import process from 'node:process';
 
 const enableCache = process.env.ENABLE_CACHE;
 

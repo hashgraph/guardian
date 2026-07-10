@@ -102,7 +102,7 @@ export class WizardService {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Confirm') {
                 callback(Object.assign(value, { saveState: true }));
@@ -138,7 +138,7 @@ export class WizardService {
                 tokens,
                 state: preset
             }
-        });
+        })!;
         dialogRef
             .onClose
             .subscribe(
@@ -216,7 +216,7 @@ export class WizardService {
                         name: 'New policy',
                     }].concat(options),
                 }
-            });
+            })!;
             selectorDialog.onClose.subscribe((value) => {
                 if (!value?.ok) {
                     return;

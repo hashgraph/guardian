@@ -7,7 +7,8 @@ import { evaluateKeyboard } from './keyboards/evaluate-keyboard';
 @Component({
     selector: 'math-live',
     templateUrl: './mathlive.component.html',
-    styleUrls: ['./mathlive.component.scss']
+    styleUrls: ['./mathlive.component.scss'],
+    standalone: false
 })
 export class MathLiveComponent implements OnInit, OnDestroy {
     @ViewChild('mathLiveContent', { static: true }) mathLiveContent: ElementRef;

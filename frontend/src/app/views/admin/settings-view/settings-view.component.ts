@@ -7,7 +7,8 @@ import { Subscription } from 'rxjs'
 @Component({
     selector: 'app-settings-view',
     templateUrl: './settings-view.component.html',
-    styleUrls: ['./settings-view.component.scss']
+    styleUrls: ['./settings-view.component.scss'],
+    standalone: false
 })
 export class SettingsViewComponent implements OnInit, OnDestroy{
     dataForm = this.fb.group({

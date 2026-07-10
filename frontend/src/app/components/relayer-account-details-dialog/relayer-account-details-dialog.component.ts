@@ -7,6 +7,7 @@ import { RelayerAccountsService } from 'src/app/services/relayer-accounts.servic
     selector: 'relayer-account-details-dialog',
     templateUrl: './relayer-account-details-dialog.component.html',
     styleUrls: ['./relayer-account-details-dialog.component.scss'],
+    standalone: false
 })
 export class RelayerAccountDetailsDialog {
     public loading = true;
@@ -89,7 +90,7 @@ export class RelayerAccountDetailsDialog {
                 viewDocument: true,
                 canExport: false,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

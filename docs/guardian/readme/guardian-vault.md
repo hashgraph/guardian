@@ -1,6 +1,6 @@
 # Guardian Vault
 
-Guardian Vault is intended to provide supports in securely storing sensitive data such as api keys, secrets, wallets and private keys, etc. Instead of keeping keys and secrets in env files or database in plain format, Vault is designed to encrypt data and restrict access according to per service Access Policies and Roles.
+Guardian Vault is intended to provide support in securely storing sensitive data such as api keys, secrets, wallets and private keys, etc. Instead of keeping keys and secrets in env files or database in plain format, Vault is designed to encrypt data and restrict access according to per service Access Policies and Roles.
 
 Although Cloud infrastructures like Google, Azure and AWS offer secure Secret Manager Service to make the configuration very simple without the burden of deployment process, there are on-premise native technologies such as Hashicorp Vault that provide Cloud Agnostic solutions. Currently, Guardian supports **AWS Secrets Manager** and **Hashicorp Vault** as its core secrets manager.
 

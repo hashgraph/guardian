@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 
 function readEnvFile(filePath) {
-    const envFile = path.resolve(__dirname, filePath);
+    const envFile = path.resolve(import.meta.dirname, filePath);
     return fs
         .readFileSync(envFile, { encoding: 'utf8' })
         .split('\n')

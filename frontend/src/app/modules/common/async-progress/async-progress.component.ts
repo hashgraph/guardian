@@ -13,6 +13,7 @@ import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuratio
     selector: 'async-progress',
     templateUrl: './async-progress.component.html',
     styleUrls: ['./async-progress.component.scss'],
+    standalone: false
 })
 export class AsyncProgressComponent implements OnInit, OnDestroy {
     public action: TaskAction | string;

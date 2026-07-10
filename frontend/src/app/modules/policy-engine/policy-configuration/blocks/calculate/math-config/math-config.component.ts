@@ -11,7 +11,8 @@ import { MathEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs
     selector: 'math-config',
     templateUrl: './math-config.component.html',
     styleUrls: ['./math-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class MathConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -73,7 +74,7 @@ export class MathConfigComponent implements OnInit {
                 expression: this.properties.expression,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.properties.expression = result.expression;

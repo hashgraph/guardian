@@ -1,448 +1,492 @@
-<div
-    *ngIf="!readonly"
+@if (!readonly) {
+  <div
     [formGroup]="form"
     cdkDrag
     cdkDragLockAxis="y"
     class="custom-field"
     [attr.error]="!!error"
->
+    >
     <div cdkDragHandle class="left-side-panel">
-        <svg-icon class="icon-btn svg-icon"
-            src="/assets/images/icons/equal.svg"
-            svgClass="icon-color-close">
-        </svg-icon>
+      <svg-icon class="icon-btn svg-icon"
+        src="/assets/images/icons/equal.svg"
+        svgClass="icon-color-close">
+      </svg-icon>
     </div>
     <div class="fields-main-container">
-        <ng-template [ngIf]="field.controlKey.invalid && field.controlKey.errors">
-            <small
-                *ngIf="field.controlKey.hasError('key')"
-                class="error-message"
+      @if (field.controlKey.invalid && field.controlKey.errors) {
+        @if (field.controlKey.hasError('key')) {
+          <small
+            class="error-message"
             >
-                Key contains invalid characters.
-            </small>
-            <small
-                *ngIf="field.controlKey.hasError('systemName')"
-                class="error-message"
+            Key contains invalid characters.
+          </small>
+        }
+        @if (field.controlKey.hasError('systemName')) {
+          <small
+            class="error-message"
             >
-                Key has a system name.
-            </small>
-        </ng-template>
-
-        <div *ngIf="error" class="extended-config">
-            <div class="input-field-container error-text">
-                <div>{{ error.text }}</div>
-                <div *ngIf="error.message" class="error-text-message">{{ error.message }}</div>
-            </div>
-        </div>
-
-        <div [attr.extended]="extended" class="extended-config">
-            <div *ngIf="extended" class="input-field-container guardian-input-container">
-                <label class="form-label">Key</label>
-                <input
-                    [formControl]="field.controlKey"
-                    pInputText
-                    placeholder="Field name"
-                    type="text"
-                />
-            </div>
-
-            <div *ngIf="extended" class="input-field-container guardian-input-container">
-                <label class="form-label">Title</label>
-                <input
-                    [formControl]="field.controlTitle"
-                    pInputText
-                    placeholder="Field title"
-                    type="text"
-                />
-            </div>
-
-            <div
-                *ngIf="extended"
-                class="guardian-icon-button custom-fields-remove"
-                (click)="onRemove(field)">
-                <svg-icon
-                    class="icon-btn"
-                    src="/assets/images/icons/delete.svg"
-                    svgClass="icon-color-delete">
-                </svg-icon>
-            </div>
-        </div>
-
+            Key has a system name.
+          </small>
+        }
+      }
+      @if (error) {
         <div class="extended-config">
-            <div *ngIf="!helpText" class="input-field-container guardian-input-container">
-                <label class="form-label">* Description</label>
-                <input
-                    [formControl]="field.controlDescription"
-                    pInputText
-                    placeholder="Field description"
-                    type="text"
-                />
-            </div>
-            <div
-                *ngIf="!helpText && !extended"
-                class="guardian-icon-button custom-fields-remove"
-                (click)="onRemove(field)">
-                <svg-icon
-                    class="icon-btn"
-                    src="/assets/images/icons/delete.svg"
-                    svgClass="icon-color-delete">
-                </svg-icon>
-            </div>
+          <div class="input-field-container error-text">
+            <div>{{ error.text }}</div>
+            @if (error.message) {
+              <div class="error-text-message">{{ error.message }}</div>
+            }
+          </div>
         </div>
-
-        <div class="extended-config">
-            <div *ngIf="helpText" class="input-field-container guardian-input-container">
-                <label class="form-label">Help Text</label>
-                <input
-                    [formControl]="field.controlDescription"
-                    pInputText
-                    placeholder="Field description"
-                    type="text"
-                />
-            </div>
-
-            <div *ngIf="isString" class="input-field-container guardian-input-container">
-                <label class="form-label">Pattern</label>
-                <input
-                    [formControl]="field.controlPattern"
-                    pInputText
-                    placeholder="[0-9]"
-                    type="text"
-                />
-            </div>
-
-            <div
-                *ngIf="helpText && !extended"
-                class="guardian-icon-button custom-fields-remove"
-                (click)="onRemove(field)">
-                <svg-icon
-                    class="icon-btn"
-                    src="/assets/images/icons/delete.svg"
-                    svgClass="icon-color-delete">
-                </svg-icon>
-            </div>
+      }
+      <div [attr.extended]="extended" class="extended-config">
+        @if (extended) {
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">Key</label>
+            <input
+              [formControl]="field.controlKey"
+              pInputText
+              placeholder="Field name"
+              type="text"
+              />
+          </div>
+        }
+        @if (extended) {
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">Title</label>
+            <input
+              [formControl]="field.controlTitle"
+              pInputText
+              placeholder="Field title"
+              type="text"
+              />
+          </div>
+        }
+        @if (extended) {
+          <div
+            class="guardian-icon-button custom-fields-remove"
+            (click)="onRemove(field)">
+            <svg-icon
+              class="icon-btn"
+              src="/assets/images/icons/delete.svg"
+              svgClass="icon-color-delete">
+            </svg-icon>
+          </div>
+        }
+      </div>
+      <div class="extended-config">
+        @if (!helpText) {
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">* Description</label>
+            <input
+              [formControl]="field.controlDescription"
+              pInputText
+              placeholder="Field description"
+              type="text"
+              />
+          </div>
+        }
+        @if (!helpText && !extended) {
+          <div
+            class="guardian-icon-button custom-fields-remove"
+            (click)="onRemove(field)">
+            <svg-icon
+              class="icon-btn"
+              src="/assets/images/icons/delete.svg"
+              svgClass="icon-color-delete">
+            </svg-icon>
+          </div>
+        }
+      </div>
+      <div class="extended-config">
+        @if (helpText) {
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">Help Text</label>
+            <input
+              [formControl]="field.controlDescription"
+              pInputText
+              placeholder="Field description"
+              type="text"
+              />
+          </div>
+        }
+        @if (isString) {
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">Pattern</label>
+            <input
+              [formControl]="field.controlPattern"
+              pInputText
+              placeholder="[0-9]"
+              type="text"
+              />
+          </div>
+        }
+        @if (helpText && !extended) {
+          <div
+            class="guardian-icon-button custom-fields-remove"
+            (click)="onRemove(field)">
+            <svg-icon
+              class="icon-btn"
+              src="/assets/images/icons/delete.svg"
+              svgClass="icon-color-delete">
+            </svg-icon>
+          </div>
+        }
+      </div>
+      <div class="extended-config">
+        <div class="dropdown-field guardian-input-container">
+          <label class="form-label">Property</label>
+          <p-select
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel width-825"
+            [filterBy]="'title'"
+            [filter]="true"
+            [formControl]="property"
+            [options]="properties"
+            [showClear]="true"
+            appendTo="body"
+            optionLabel="title"
+            optionValue="title"
+            placeholder="Select a property"
+          ></p-select>
         </div>
-
-        <div class="extended-config">
-            <div class="dropdown-field guardian-input-container">
-                <label class="form-label">Property</label>
-                <p-dropdown
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel width-825"
-                    [filterBy]="'title'"
-                    [filter]="true"
-                    [formControl]="property"
-                    [options]="properties"
-                    [showClear]="true"
-                    appendTo="body"
-                    optionLabel="title"
-                    optionValue="title"
-                    placeholder="Select a property"
-                ></p-dropdown>
-            </div>
-        </div>
-
-        <div class="custom-fields-main-container">
-            <div class="dropdown-field max-width-50 guardian-input-container">
-                <label class="form-label">Field type</label>
-                <p-dropdown
-                    class="guardian-dropdown"
-                    panelStyleClass="guardian-dropdown-panel width-825"
-                    (onChange)="onTypeChange($event)"
-                    [formControl]="field.controlType"
-                    [group]="true"
-                    [options]="groupedFieldTypes"
-                    appendTo="body"
-                    optionLabel="label"
-                    optionValue="value"
-                    placeholder="Type"
-                >
-                    <ng-template let-item pTemplate="item">
-                        <div class="align-items-center">
-                            <span *ngIf="item.component" class="sub-schema-component">{{ item.component }}:</span>
-                            <span class="sub-schema-name">{{ item.label }}</span>
-                            <span *ngIf="item.version" class="sub-schema-version">{{ item.version }}</span>
-                        </div>
-                    </ng-template>
-                </p-dropdown>
-            </div>
-
-            <div *ngIf="unit" class="input-field-container guardian-input-container">
-                <label class="form-label">Unit</label>
-                <input
-                    [formControl]="field.controlUnit"
-                    pInputText
-                    placeholder="Unit"
-                    type="text"
-                />
-            </div>
-
-            <ng-container *ngIf="helpText; else notHelpText">
-                <div class="checkbox-field-container">
-                    <p-checkbox 
-                        class="guardian-checkbox-secondary checkbox-24" 
-                        binary="true" 
-                        [formControl]="field.controlBold"
-                        label="Bold"></p-checkbox>
-                </div>
-
-                <div class="input-field-container guardian-input-container">
-                    <label class="form-label">Color</label>
-                    <input
-                        [formControl]="field.controlColor"
-                        pInputText
-                        placeholder="Color"
-                        type="text"
-                    />
-                </div>
-
-                <div class="input-field-container guardian-input-container" style="width: 175px">
-                    <label class="form-label">Font</label>
-                    <input
-                        [formControl]="field.controlSize"
-                        pInputText
-                        placeholder="Font size in px"
-                        type="text"
-                    />
-                </div>
-
-                <button 
-                    (click)="onHepTextReset()" 
-                    class="guardian-button guardian-button-secondary reset-btn">
-                    <div class="guardian-button-icon">
-                        <svg-icon 
-                            class="icon-btn svg-icon" 
-                            src="/assets/images/icons/restart_alt.svg"
-                            svgClass="icon-color-primary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-button-label">Reset</div>
-                </button>
-            </ng-container>
-
-            <ng-template #notHelpText>
-                <div class="dropdown-field guardian-input-container">
-                    <label class="form-label">Required</label>
-                    <p-dropdown
-                        class="guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                        [formControl]="fieldType"
-                        [options]="fieldTypes"
-                        appendTo="body"
-                        optionLabel="label"
-                        optionValue="value"
-                        placeholder="Required"
-                    ></p-dropdown>
-                </div>
-
-                <div *ngIf="!field.autocalculated.value" class="checkbox-field-container">
-                    <p-checkbox 
-                        class="guardian-checkbox-secondary checkbox-24"
-                        [formControl]="field.controlArray" 
-                        [binary]="true"
-                        label="Allow multiple answers"></p-checkbox>
-                </div>
-
-                <div class="checkbox-field-container">
-                    <p-checkbox 
-                        class="guardian-checkbox-secondary checkbox-24"
-                        [formControl]="field.isUpdatable" 
-                        [binary]="true"
-                        label="Updatable Field">
-                    </p-checkbox>
-                </div>
-
-                <div *ngIf="field.autocalculated.value" class="checkbox-field-container auto-calculate">
-                    <label class="form-label">Expression</label>
-                    <div class="expression-btn-row">
-                        <button
-                            (click)="onEditExpression()"
-                            class="edit-button secondary"
-                            [ngClass]="{'danger': !this.field.expression.value}"
-                            label="Edit expression"
-                            pButton>
-                        </button>
-                        <i class="pi pi-question-circle expression-help-icon"
-                           pTooltip="Use schema field names to build JavaScript expressions.&#10;Operators: +, -, *, /, %, ==, !=, <, >, &&, ||, ? :&#10;Functions: Math.round(), Math.abs(), Math.min(), Math.max()&#10;Example: field1 > 100 ? field1 * 0.9 : field1"
-                           tooltipPosition="right"
-                           [escape]="false"></i>
-                    </div>
-                </div>
-
-                <div *ngIf="canBePrivate" class="checkbox-field-container private">
-                    <p-checkbox 
-                        class="guardian-checkbox-secondary checkbox-24"
-                        [formControl]="field.controlPrivate" 
-                        [binary]="true"
-                        label="Private"></p-checkbox>
-                </div>
+      </div>
+      <div class="custom-fields-main-container">
+        <div class="dropdown-field max-width-50 guardian-input-container">
+          <label class="form-label">Field type</label>
+          <p-select
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel width-825"
+            (onChange)="onTypeChange($event)"
+            [formControl]="field.controlType"
+            [group]="true"
+            [options]="groupedFieldTypes"
+            appendTo="body"
+            optionLabel="label"
+            optionValue="value"
+            placeholder="Type"
+            >
+            <ng-template let-item pTemplate="item">
+              <div class="align-items-center">
+                @if (item.component) {
+                  <span class="sub-schema-component">{{ item.component }}:</span>
+                }
+                <span class="sub-schema-name">{{ item.label }}</span>
+                @if (item.version) {
+                  <span class="sub-schema-version">{{ item.version }}</span>
+                }
+              </div>
             </ng-template>
+          </p-select>
         </div>
-        <div *ngIf="enum && !loading" class="enum-options-container">
-            <div *ngIf="field.controlEnum.value.length" class="form-group enum-form-field">
-                <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
-                <div class="p-chips" aria-label="Enum values">
-                    <div class="p-chips-container">
-                        
-                        <div
-                            class="p-chips-token"
-                            *ngFor="let keyword of keywords">
-                            <span class="p-chips-token-label">{{ keyword }}</span>
-                        </div>
-                        <div class="p-chips-token" *ngIf="keywords.length < field.enum.length">
-                            <span class="p-chips-token-label">...</span>
-                        </div>
-                        
-                    </div>
-                </div>
-            </div>
-
-            <button 
-                (click)="onEditEnum()" 
-                class="guardian-button guardian-button-secondary enum-edit-button"
-                [ngClass]="{ 'enum-edit-button-only': !field.enum.length }">
-                <div class="guardian-button-icon">
-                    <svg-icon 
-                        class="icon-btn svg-icon" 
-                        src="/assets/images/icons/edit.svg"
-                        svgClass="icon-color-primary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Edit values</div>
-            </button>
-        </div>
-
-        <div *ngIf="geoJson && !loading" class="geojson-options-container">
-            <div class="dropdown-field guardian-input-container">
-                <label class="form-label">GeoJSON types</label>
-                <p-multiSelect
-                    class="guardian-dropdown"
-                    [options]="geoJsonOptions"
-                    [formControl]="geoJsonControl"
-                    optionLabel="label"
-                    optionValue="value"
-                    display="chip"
-                    defaultLabel="Select geometry types"
-                    [showClear]="true"
-                    appendTo="body">
-                </p-multiSelect>
-            </div>
-
-            <div *ngIf="geoKeywords.length" class="form-group geojson-form-field">
-                <label class="form-label">Selected geometries</label>
-                <div class="p-chips" aria-label="GeoJSON values">
-                    <div class="p-chips-container">
-                        <div class="p-chips-token" *ngFor="let g of geoKeywords">
-                            <span class="p-chips-token-label">{{ g }}</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div *ngIf="!helpText && presetFormFields" class="selected-values">
-            <div>
-                <span class="selected-values__title">Selected values</span>
-            </div>
-            <div class="selected-values__action">
-                <button
-                    class="guardian-button guardian-button-secondary selected-values__show-button"
-                    (click)="isShowMore=!isShowMore">
-                    {{ isShowMore ? 'Show Less' : 'Show More' }}
-                </button>
-            </div>
-            <div class="default-values" [attr.hide]="!isShowMore">
-                <div class="default-values__content">
-                    <app-schema-form-root
-                        [fields]="presetFormFields"
-                        [preset]="presetValues"
-                        [showButtons]="false"
-                        [likeDryRun]="true"
-                        (form)="initDefaultForm($event)"
-                    ></app-schema-form-root>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div *ngIf="loading" class="loading">
-        <p-progressSpinner [style]="{ width: '65px', height: '65px' }"></p-progressSpinner>
-    </div>
-</div>
-
-<div *ngIf="readonly" class="readonly-custom-field">
-    <div class="readonly-extended-config" [attr.extended]="extended">
-        <div *ngIf="extended" class="input-field-container guardian-input-container">
-            <label class="form-label" htmlFor="key">Key</label>
+        @if (unit) {
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">Unit</label>
             <input
-                [disabled]="true"
-                [value]="value?.name"
-                id="key"
-                pInputText
-                placeholder="Field name"
-                type="text"
-            />
-        </div>
-
-        <div *ngIf="extended" class="input-field-container guardian-input-container">
-            <label class="form-label" htmlFor="title">Title</label>
-            <input
-                [disabled]="true"
-                [value]="value?.title"
-                id="title"
-                pInputText
-                placeholder="Field title"
-                type="text"
-            />
-        </div>
-    </div>
-
-    <div class="custom-fields-main-container">
-        <div class="input-field-container guardian-input-container">
-            <label class="form-label" htmlFor="description">* Description</label>
-            <input
-                [disabled]="true"
-                [value]="value?.description"
-                id="description"
-                pInputText
-                placeholder="Field description"
-                type="text"
-            />
-        </div>
-    </div>
-
-    <div class="custom-fields-main-container">
-        <div class="input-field-container guardian-input-container">
-            <label class="form-label" htmlFor="fieldType">Field type</label>
-            <input
-                [disabled]="true"
-                [value]="value?.type"
-                id="fieldType"
-                pInputText
-                placeholder="Field type"
-                type="text"
-            />
-        </div>
-        <div class="checkbox-field-container">
+              [formControl]="field.controlUnit"
+              pInputText
+              placeholder="Unit"
+              type="text"
+              />
+          </div>
+        }
+        @if (helpText) {
+          <div class="checkbox-field-container">
             <p-checkbox
+              class="guardian-checkbox-secondary checkbox-24"
+              binary="true"
+              [formControl]="field.controlBold"
+            [inputId]="field.name + '-fieldBold'"></p-checkbox>
+            <label class="p-checkbox-label" [attr.for]="field.name + '-fieldBold'">Bold</label>
+          </div>
+          <div class="input-field-container guardian-input-container">
+            <label class="form-label">Color</label>
+            <input
+              [formControl]="field.controlColor"
+              pInputText
+              placeholder="Color"
+              type="text"
+              />
+          </div>
+          <div class="input-field-container guardian-input-container" style="width: 175px">
+            <label class="form-label">Font</label>
+            <input
+              [formControl]="field.controlSize"
+              pInputText
+              placeholder="Font size in px"
+              type="text"
+              />
+          </div>
+          <button
+            (click)="onHepTextReset()"
+            class="guardian-button guardian-button-secondary reset-btn">
+            <div class="guardian-button-icon">
+              <svg-icon
+                class="icon-btn svg-icon"
+                src="/assets/images/icons/restart_alt.svg"
+                svgClass="icon-color-primary">
+              </svg-icon>
+            </div>
+            <div class="guardian-button-label">Reset</div>
+          </button>
+        } @else {
+          <div class="dropdown-field guardian-input-container">
+            <label class="form-label">Required</label>
+            <p-select
+              class="guardian-dropdown"
+              panelStyleClass="guardian-dropdown-panel"
+              [formControl]="fieldType"
+              [options]="fieldTypes"
+              appendTo="body"
+              optionLabel="label"
+              optionValue="value"
+              placeholder="Required"
+            ></p-select>
+          </div>
+          @if (!field.autocalculated.value) {
+            <div class="checkbox-field-container">
+              <p-checkbox
                 class="guardian-checkbox-secondary checkbox-24"
-                [ngModel]="value?.required"
-                [disabled]="readonly"
+                [formControl]="field.controlArray"
                 [binary]="true"
-                [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
-                label="Required Field"
-            >
-            </p-checkbox>
-        </div>
-        <div class="checkbox-field-container">
+              [inputId]="field.name + '-fieldAllowMultiple'"></p-checkbox>
+              <label class="p-checkbox-label" [attr.for]="field.name + '-fieldAllowMultiple'">Allow multiple answers</label>
+            </div>
+          }
+          <div class="checkbox-field-container">
             <p-checkbox
-                class="guardian-checkbox-secondary checkbox-24"
-                [ngModel]="value?.required"
-                [disabled]="readonly"
-                [binary]="false"
-                [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
-                label="Allow multiple answers"
-            >
+              class="guardian-checkbox-secondary checkbox-24"
+              [formControl]="field.isUpdatable"
+              [binary]="true"
+              [inputId]="field.name + '-fieldUpdatable'">
             </p-checkbox>
+            <label class="p-checkbox-label" [attr.for]="field.name + '-fieldUpdatable'">Updatable Field</label>
+          </div>
+          @if (field.autocalculated.value) {
+            <div class="checkbox-field-container auto-calculate">
+              <label class="form-label">Expression</label>
+              <div class="expression-btn-row">
+                <button
+                  (click)="onEditExpression()"
+                  class="edit-button secondary"
+                  [ngClass]="{'danger': !this.field.expression.value}"
+                  label="Edit expression"
+                  pButton>
+                </button>
+                <i class="pi pi-question-circle expression-help-icon"
+                  pTooltip="Use schema field names to build JavaScript expressions.&#10;Operators: +, -, *, /, %, ==, !=, <, >, &&, ||, ? :&#10;Functions: Math.round(), Math.abs(), Math.min(), Math.max()&#10;Example: field1 > 100 ? field1 * 0.9 : field1"
+                  tooltipPosition="right"
+                [escape]="false"></i>
+              </div>
+            </div>
+          }
+          @if (canBePrivate) {
+            <div class="checkbox-field-container private">
+              <p-checkbox
+                class="guardian-checkbox-secondary checkbox-24"
+                [formControl]="field.controlPrivate"
+                [binary]="true"
+              [inputId]="field.name + '-fieldPrivate'"></p-checkbox>
+              <label class="p-checkbox-label" [attr.for]="field.name + '-fieldPrivate'">Private</label>
+            </div>
+          }
+        }
+      </div>
+      @if (enum && !loading) {
+          <div class="input-field-container guardian-input-container enum-name-field">
+              <label class="form-label" htmlFor="enumName">Enum name</label>
+              <input
+                  [formControl]="field.controlEnumName"
+                  id="enumName"
+                  pInputText
+                  placeholder="Enum name"
+                  type="text"
+              />
+          </div>
+        <div class="enum-options-container">
+          @if (field.controlEnum.value.length) {
+            <div class="form-group enum-form-field">
+              <label [htmlFor]="'enumValues'" class="form-label">Enum data</label>
+              <div class="p-chips" aria-label="Enum values">
+                <div class="p-chips-container">
+                  @for (keyword of keywords; track keyword) {
+                    <div
+                      class="p-chips-token"
+                      >
+                      <span class="p-chips-token-label">{{ keyword }}</span>
+                    </div>
+                  }
+                  @if (keywords.length < field.enum.length) {
+                    <div class="p-chips-token">
+                      <span class="p-chips-token-label">...</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+          <button
+            (click)="onEditEnum()"
+            class="guardian-button guardian-button-secondary enum-edit-button"
+            [ngClass]="{ 'enum-edit-button-only': !field.enum.length }">
+            <div class="guardian-button-icon">
+              <svg-icon
+                class="icon-btn svg-icon"
+                src="/assets/images/icons/edit.svg"
+                svgClass="icon-color-primary">
+              </svg-icon>
+            </div>
+            <div class="guardian-button-label">Edit values</div>
+          </button>
         </div>
+      }
+      @if (geoJson && !loading) {
+        <div class="geojson-options-container">
+          <div class="dropdown-field guardian-input-container">
+            <label class="form-label">GeoJSON types</label>
+            <p-multiSelect
+              class="guardian-dropdown"
+              [options]="geoJsonOptions"
+              [formControl]="geoJsonControl"
+              optionLabel="label"
+              optionValue="value"
+              display="chip"
+              defaultLabel="Select geometry types"
+              [showClear]="true"
+              appendTo="body">
+            </p-multiSelect>
+          </div>
+          @if (geoKeywords.length) {
+            <div class="form-group geojson-form-field">
+              <label class="form-label">Selected geometries</label>
+              <div class="p-chips" aria-label="GeoJSON values">
+                <div class="p-chips-container">
+                  @for (g of geoKeywords; track g) {
+                    <div class="p-chips-token">
+                      <span class="p-chips-token-label">{{ g }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      @if (!helpText && presetFormFields) {
+        <div class="selected-values">
+          <div>
+            <span class="selected-values__title">Selected values</span>
+          </div>
+          <div class="selected-values__action">
+            <button
+              class="guardian-button guardian-button-secondary selected-values__show-button"
+              (click)="isShowMore=!isShowMore">
+              {{ isShowMore ? 'Show Less' : 'Show More' }}
+            </button>
+          </div>
+          @if (isShowMore) {
+            <div class="default-values">
+              <div class="default-values__content">
+                <app-schema-form-root
+                  [fields]="presetFormFields"
+                  [preset]="presetValues"
+                  [showButtons]="false"
+                  [likeDryRun]="true"
+                  (form)="initDefaultForm($event)"
+                ></app-schema-form-root>
+              </div>
+            </div>
+          }
+        </div>
+      }
     </div>
-</div>
+    @if (loading) {
+      <div class="loading">
+        <p-progressSpinner [style]="{ width: '65px', height: '65px' }"></p-progressSpinner>
+      </div>
+    }
+  </div>
+}
+
+@if (readonly) {
+  <div class="readonly-custom-field">
+    <div class="readonly-extended-config" [attr.extended]="extended">
+      @if (extended) {
+        <div class="input-field-container guardian-input-container">
+          <label class="form-label" htmlFor="key">Key</label>
+          <input
+            [disabled]="true"
+            [value]="value?.name"
+            id="key"
+            pInputText
+            placeholder="Field name"
+            type="text"
+            />
+        </div>
+      }
+      @if (extended) {
+        <div class="input-field-container guardian-input-container">
+          <label class="form-label" htmlFor="title">Title</label>
+          <input
+            [disabled]="true"
+            [value]="value?.title"
+            id="title"
+            pInputText
+            placeholder="Field title"
+            type="text"
+            />
+        </div>
+      }
+    </div>
+    <div class="custom-fields-main-container">
+      <div class="input-field-container guardian-input-container">
+        <label class="form-label" htmlFor="description">* Description</label>
+        <input
+          [disabled]="true"
+          [value]="value?.description"
+          id="description"
+          pInputText
+          placeholder="Field description"
+          type="text"
+          />
+      </div>
+    </div>
+    <div class="custom-fields-main-container">
+      <div class="input-field-container guardian-input-container">
+        <label class="form-label" htmlFor="fieldType">Field type</label>
+        <input
+          [disabled]="true"
+          [value]="value?.type"
+          id="fieldType"
+          pInputText
+          placeholder="Field type"
+          type="text"
+          />
+      </div>
+      <div class="checkbox-field-container">
+        <p-checkbox
+          class="guardian-checkbox-secondary checkbox-24"
+          [ngModel]="value?.required"
+          [disabled]="readonly"
+          [binary]="true"
+          [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
+          [inputId]="'fieldRequired-' + value?.name"
+          >
+        </p-checkbox>
+        <label class="p-checkbox-label" [attr.for]="'fieldRequired-' + value?.name">Required Field</label>
+      </div>
+      <div class="checkbox-field-container">
+        <p-checkbox
+          class="guardian-checkbox-secondary checkbox-24"
+          [ngModel]="value?.required"
+          [disabled]="readonly"
+          [binary]="false"
+          [styleClass]="readonly ? 'p-disabled' : 'primary-checkbox'"
+          [inputId]="'fieldAllowMultiple-' + value?.name"
+          >
+        </p-checkbox>
+        <label class="p-checkbox-label" [attr.for]="'fieldAllowMultiple-' + value?.name">Allow multiple answers</label>
+      </div>
+    </div>
+  </div>
+}

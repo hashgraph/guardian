@@ -1,32 +1,45 @@
-# Returns Tools and its artifacts in zip format
+# Returns Tool and Its Artifacts in Zip Format
 
-{% swagger method="get" path="" baseUrl="/tools/{id}/export/file" summary="Return tool and its artifacts in a zip file format for the specified tool." %}
-{% swagger-description %}
-Returns a zip file containing the published tool and all associated artifacts, i.e. schemas and VCs. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`GET /api/v1/tools/{id}/export/file`**
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Tool ID
-{% endswagger-parameter %}
+Returns a zip file containing the published tool and all associated artifacts such as schemas and VCs.
 
-{% swagger-response status="200: OK" description="Successful operation. Response zip file." %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% endswagger-response %}
+**Permission:** `Permissions.TOOLS_TOOL_READ`
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+---
 
-{% endswagger-response %}
+## Request
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+### Path Parameters
 
-{% endswagger-response %}
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Tool ID (MongoDB ObjectId) |
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns a binary ZIP file.
+
+**Response Headers:**
+
+| Header | Value |
+|--------|-------|
+| `Content-Type` | `application/zip` |
+| `Content-Disposition` | `attachment; filename=tool_<timestamp>` |
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `id` is missing or invalid |
+| `500 Internal Server Error` | Unexpected server failure |

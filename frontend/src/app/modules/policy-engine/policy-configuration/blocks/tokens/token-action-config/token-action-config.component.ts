@@ -8,7 +8,8 @@ import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables }
     selector: 'token-action-config',
     templateUrl: './token-action-config.component.html',
     styleUrls: ['./token-action-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class TokenActionConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

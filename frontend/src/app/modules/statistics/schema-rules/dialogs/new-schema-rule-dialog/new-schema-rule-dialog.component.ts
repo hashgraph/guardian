@@ -6,6 +6,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'new-schema-rule-dialog',
     templateUrl: './new-schema-rule-dialog.component.html',
     styleUrls: ['./new-schema-rule-dialog.component.scss'],
+    standalone: false
 })
 export class NewSchemaRuleDialog {
     public loading = true;

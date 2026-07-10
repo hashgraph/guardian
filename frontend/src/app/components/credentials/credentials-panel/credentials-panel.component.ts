@@ -5,7 +5,8 @@ import { PolicyEngineService } from '../../../services/policy-engine.service';
 @Component({
     selector: 'app-credentials-panel',
     templateUrl: './credentials-panel.component.html',
-    styleUrls: ['./credentials-panel.component.scss']
+    styleUrls: ['./credentials-panel.component.scss'],
+    standalone: false
 })
 export class CredentialsPanelComponent implements OnInit {
     @Input() role: 'user' | 'sr' = 'user';

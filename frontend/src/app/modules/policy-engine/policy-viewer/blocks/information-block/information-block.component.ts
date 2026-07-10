@@ -11,6 +11,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     selector: 'app-information-block',
     templateUrl: './information-block.component.html',
     styleUrls: ['./information-block.component.scss'],
+    standalone: false
 })
 export class InformationBlockComponent implements OnInit {
     @Input('id') id!: string;

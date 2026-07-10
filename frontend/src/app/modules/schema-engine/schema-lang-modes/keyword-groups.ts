@@ -13,6 +13,7 @@ export const keyKeywords = [
     'property',
     'private',
     'enum',
+    'enumName',
     'textSize',
     'textColor',
     'textBold',

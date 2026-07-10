@@ -38,7 +38,7 @@
     flex-direction: column;
     height: 60%;
     font-size: xx-large;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .info-message {
@@ -61,27 +61,8 @@ a:visited {
     margin-top: 20px;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: var(--container-margin);
+.guardian-page {
     row-gap: 12px;
-}
-
-.container>.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.container>.header>h1 {
-    width: 100%;
-    color: #000;
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
 }
 
 .status-container {
@@ -94,7 +75,7 @@ a:visited {
 .status-container>.item {
     height: auto;
     border-radius: 16px;
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     padding: 16px 20px;
     box-shadow: 0 16px 24px 0 rgba(0, 0, 0, 0.08);
 
@@ -113,7 +94,7 @@ a:visited {
 }
 
 .status-container>.item>.header>span {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Inter, serif;
     font-size: 16px;
     font-style: normal;

@@ -132,7 +132,7 @@
                 }
 
                 &:hover {
-                    background: #f1f1f1;
+                    background: var(--guardian-grey-background, #f1f1f1);
                 }
             }
         }

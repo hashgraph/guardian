@@ -1,25 +1,53 @@
-# Returns the status of the current report
+# Returns Statistic Definition Relationships
 
-{% swagger method="get" path="" baseUrl="/analytics/report" summary="Returns the status of the current report" %}
-{% swagger-description %}
-Returns the status of the current report
-{% endswagger-description %}
+**`GET /api/v1/policy-statistics/{definitionId}/relationships`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```
-content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/ReportDTO"
-```
-{% endswagger-response %}
+Retrieves the relationship graph for the specified statistic definition, including linked policies, schemas, and documents.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.STATISTICS_STATISTIC_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `definitionId` | string | Yes | Statistic definition identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "Carbon Credit Issuance Statistics",
+  "policy": {
+    "id": "63e3e5e8a01b3c001234aaaa",
+    "name": "Carbon Credit Policy"
+  },
+  "schemas": [
+    {
+      "id": "63e3e5e8a01b3c001234bbbb",
+      "name": "Emission Reduction Schema"
+    }
+  ]
+}
 ```
-content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/InternalServerErrorDTO"
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid or missing `definitionId` |
+| `500 Internal Server Error` | Unexpected server failure |

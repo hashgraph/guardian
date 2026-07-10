@@ -1,33 +1,60 @@
 # Validates Selected Tool
 
-{% swagger method="post" path="" baseUrl="/tools/validate" summary="Validates selected tool." %}
-{% swagger-description %}
-Validates selected tool. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/tools/validate`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+Validates the configuration of the provided tool and returns a validation result.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_UPDATE` or `Permissions.TOOLS_TOOL_REVIEW`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "name": "My Tool",
+  "description": "Tool description",
+  "config": {
+    "blockType": "tool",
+    "children": []
+  }
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Human-readable name of the tool |
+| `description` | string | No | Brief description of the tool's purpose |
+| `config` | object | Yes | Tool configuration object to validate |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "valid": true,
+  "results": []
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `valid` | boolean | Whether the tool configuration is valid |
+| `results` | array | List of validation errors (empty when valid) |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

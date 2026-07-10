@@ -20,6 +20,9 @@ const background = (rgb: string): any => {
 export class Table {
     private readonly _fieldHeaders: Map<string, TableHeader>;
     private readonly _schemaHeaders: Map<string, TableHeader>;
+    // Backward-compat aliases: old column/label names to canonical Dictionary key
+    private readonly _fieldAliases: Map<string, string>;
+    private readonly _schemaAliases: Map<string, string>;
 
     public readonly schemaNameStyle: Partial<ExcelJS.Style>;
     public readonly schemaHeadersStyle: Partial<ExcelJS.Style>;
@@ -222,6 +225,13 @@ export class Table {
                 .setStyle(this.fieldHeadersStyle)
                 .setWidth(50)
         );
+        // Backward-compat aliases (separate map so they don't inflate _fieldHeaders.size)
+        this._fieldAliases = new Map([
+            ['Question', Dictionary.QUESTION],
+            ['Answer',   Dictionary.ANSWER],
+            ['Default',  Dictionary.DEFAULT],
+            ['Suggest',  Dictionary.SUGGEST],
+        ]);
 
         this._schemaHeaders = new Map<string, TableHeader>();
         this._schemaHeaders.set(Dictionary.SCHEMA_NAME,
@@ -232,6 +242,10 @@ export class Table {
             new TableHeader(Dictionary.SCHEMA_DESCRIPTION, false)
                 .setStyle(this.schemaHeadersStyle)
         );
+        // Backward-compat aliases (separate map so they don't inflate _schemaHeaders.size)
+        this._schemaAliases = new Map([
+            ['Description', Dictionary.SCHEMA_DESCRIPTION],
+        ]);
         this._schemaHeaders.set(Dictionary.SCHEMA_TYPE,
             new TableHeader(Dictionary.SCHEMA_TYPE, false)
                 .setStyle(this.schemaHeadersStyle)
@@ -270,11 +284,13 @@ export class Table {
     }
 
     public setCol(name: string, col: number): void {
-        this._fieldHeaders.get(name)?.setPoint(col, -1);
+        const key = this._fieldAliases.get(name) ?? name;
+        this._fieldHeaders.get(key)?.setPoint(col, -1);
     }
 
     public setRow(name: string, row: number): void {
-        this._schemaHeaders.get(name)?.setPoint(-1, row);
+        const key = this._schemaAliases.get(name) ?? name;
+        this._schemaHeaders.get(key)?.setPoint(-1, row);
     }
 
     public setDefault(tool: boolean): void {
@@ -333,10 +349,10 @@ export class Table {
     }
 
     public isSchemaHeader(value: string): boolean {
-        return this._schemaHeaders.has(value);
+        return this._schemaHeaders.has(value) || this._schemaAliases.has(value);
     }
 
     public isFieldHeader(value: string): boolean {
-        return this._fieldHeaders.has(value);
+        return this._fieldHeaders.has(value) || this._fieldAliases.has(value);
     }
 }

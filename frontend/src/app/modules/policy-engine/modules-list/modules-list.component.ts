@@ -33,7 +33,8 @@ enum OperationMode {
 @Component({
     selector: 'app-modules-list',
     templateUrl: './modules-list.component.html',
-    styleUrls: ['./modules-list.component.css']
+    styleUrls: ['./modules-list.component.css'],
+    standalone: false
 })
 export class ModulesListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
@@ -60,6 +61,19 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     searchParam: string = '';
     deleteTokenVisible: boolean = false;
     private currentModule: any;
+
+    public get filteredModules(): any[] {
+        if (!this.modules) {
+            return [];
+        }
+        if (!this.searchParam) {
+            return this.modules;
+        }
+        return this.modules.filter((module) =>
+            module.name.includes(this.searchParam) ||
+            module.description.includes(this.searchParam)
+        );
+    }
 
     constructor(
         public tagsService: TagsService,
@@ -171,7 +185,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 title: 'Import module',
                 module,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
@@ -204,7 +218,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Module,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -220,7 +234,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'Module'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.itemId1 && result.itemId2) {
                 const items = btoa(JSON.stringify({
@@ -267,7 +281,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             header: 'New Module',
             width: '650px',
             styleClass: 'custom-dialog',
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const module = {

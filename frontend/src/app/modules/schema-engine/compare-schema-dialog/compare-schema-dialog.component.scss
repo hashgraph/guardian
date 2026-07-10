@@ -1,5 +1,5 @@
 .loading {
-  background: #fff;
+  background: var(--guardian-background, #fff);
   position: absolute;
   z-index: 99;
   left: 0;
@@ -36,7 +36,7 @@
 }
 
 .form-label {
-  color: #181818;
+  color: var(--color-grey-black-1, #181818);
   font-family: Inter, sans-serif;
   font-size: 12px;
   font-style: normal;
@@ -75,7 +75,7 @@
     border-radius: 8px;
   }
 
-  .p-dropdown {
+  .p-select {
     width: 100%;
   }
 
@@ -87,7 +87,7 @@
     box-shadow: none !important;
   }
 
-  .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+  .p-select-overlay .p-select-list .p-select-option {
     max-width: 250px;
     overflow: hidden;
     text-wrap: wrap;

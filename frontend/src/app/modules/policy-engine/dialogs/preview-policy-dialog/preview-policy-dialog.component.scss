@@ -3,7 +3,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     left: 0;
@@ -33,7 +33,7 @@
         font-weight: 600;
         line-height: 18px;
         text-align: left;
-        color: #000;
+        color: var(--guardian-font-color, #000);
         margin-bottom: 18px;
     }
 
@@ -48,7 +48,7 @@
             font-weight: 600;
             line-height: 14px;
             text-align: left;
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
             padding: 3px 0px;
         }
 
@@ -59,7 +59,7 @@
             line-height: 16px;
             text-align: left;
             padding: 12px 0px;
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
         }
 
         .field-input {
@@ -73,7 +73,7 @@
         }
 
         .field-array {
-            color: #181818;
+            color: var(--guardian-font-color, #181818);
             font-family: Inter, sans-serif;
             font-size: 14px;
             font-style: normal;
@@ -152,7 +152,7 @@
     &::ng-deep {
         .p-radiobutton .p-radiobutton-box.p-highlight {
             border-color: #4169E2 !important;
-            background: #fff !important;
+            background: var(--guardian-background, #fff) !important;
         }
 
         .p-radiobutton .p-radiobutton-box .p-radiobutton-icon {

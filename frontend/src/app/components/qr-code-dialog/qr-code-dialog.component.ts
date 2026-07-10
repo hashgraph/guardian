@@ -9,6 +9,7 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
     selector: 'app-qr-code-dialog',
     templateUrl: './qr-code-dialog.component.html',
     styleUrls: ['./qr-code-dialog.component.scss'],
+    standalone: false
 })
 export class QrCodeDialogComponent implements OnDestroy {
     private readonly destroy$ = new Subject<void>();

@@ -4,12 +4,18 @@
     right: 0;
     bottom: 0;
     top: 0;
-    display: block;
-    min-width: 1600px;
+    display: flex;
+    flex-direction: column;
+    min-width: 1130px;
+    padding: 42px 48px 48px;
+    box-sizing: border-box;
+    background: var(--color-background);
+    color: var(--guardian-font-color);
+    overflow: auto;
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -35,52 +41,56 @@
 .content-result {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-width: 1130px;
+    box-sizing: border-box;
 }
 
 .test-results-header {
-    position: sticky;
-    top: 0;
-    z-index: 10;
     display: flex;
     flex-direction: column;
-    border-bottom: 1px solid var(--guardian-border-color, #e0e0e0);
-    background: #fff;
+    gap: 0;
+    padding: var(--guardian-page-header-padding);
+    margin-bottom: var(--guardian-page-header-gap);
+    box-sizing: border-box;
     flex-shrink: 0;
 
     .header-row {
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 8px 48px;
-    }
-
-    .header-row-back {
-        border-bottom: 1px solid var(--guardian-border-color, #e0e0e0);
-        padding-top: 38px;
-        padding-bottom: 28px;
+        padding: 0;
     }
 
     .test-breadcrumb {
-        margin-left: 64px;
-        padding: 0 8px;
         display: flex;
         align-items: center;
+        color: var(--guardian-primary-color, #3f51b5);
+        font-size: 12px;
+        font-weight: 600;
 
         .breadcrumb-item {
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            color: var(--guardian-dry-run-color);
+            padding: 0;
+            color: inherit;
+            font-size: inherit;
+            font-weight: inherit;
+            line-height: 16px;
             user-select: none;
             cursor: default;
         }
 
         .breadcrumb-sep {
-            color: #848fa9;
-            font-size: 20px;
-            padding: 0 8px;
+            color: var(--guardian-grid-color, #848fa9);
+            font-size: 12px;
+            line-height: 16px;
+            padding: 0 4px;
+        }
+    }
+
+    .test-breadcrumb-clickable {
+        cursor: pointer;
+        width: max-content;
+
+        .breadcrumb-item {
+            cursor: pointer;
         }
     }
 
@@ -89,7 +99,7 @@
         flex-shrink: 0;
         padding: 0 8px;
 
-        .p-dropdown {
+        .p-select {
             height: 28px;
 
             .p-inputtext {
@@ -103,7 +113,7 @@
         flex-shrink: 0;
         padding: 0 8px;
 
-        .p-dropdown {
+        .p-select {
             height: 28px;
 
             .p-inputtext {
@@ -117,7 +127,7 @@
         flex-shrink: 0;
         padding: 0 8px;
 
-        .p-dropdown {
+        .p-select {
             height: 28px;
 
             .p-inputtext {
@@ -127,18 +137,97 @@
     }
 
     .test-total-info {
-        font-weight: bold;
-        font-size: 20px;
-        color: #686868;
-        flex-shrink: 0;
-        padding: 0 8px;
+        margin: 0;
+        font-family: var(--guardian-page-header-font-family);
+        font-size: var(--guardian-page-header-font-size);
+        font-weight: var(--guardian-page-header-font-weight);
+        color: var(--guardian-header-color, #000);
 
         span {
-            color: #e70000;
+            color: var(--guardian-failure-color, #e70000);
         }
 
         &[total="100"] span {
-            color: #008d0c;
+            color: var(--guardian-success-color, #008d0c);
         }
     }
+}
+
+/* Filter controls projected below the Description card inside app-compare-record.
+   Styled as a filter card, matching the filter row on the other comparison pages. */
+.record-compare-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-top: 16px;
+    margin-bottom: 0;
+    padding: 8px 12px;
+    background: var(--guardian-background, #fff);
+    border: 1px solid var(--guardian-border-color, #e1e7ef);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgb(0 0 0 / 6%);
+    box-sizing: border-box;
+
+    .merge-lvl {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .f1 {
+        width: max-content;
+        height: 40px;
+        margin-right: 0;
+        overflow: visible;
+
+        .p-fluid {
+            position: relative;
+            padding: 0;
+        }
+    }
+
+    .dropdown-border-label {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        transform: translateY(-50%);
+        background: transparent;
+        color: var(--guardian-grid-color, #848fa9);
+        font-family: Inter, sans-serif;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 16px;
+        pointer-events: none;
+        z-index: 1;
+    }
+}
+
+:host ::ng-deep .record-compare-controls .p-select {
+    width: max-content;
+    min-height: 40px;
+    height: 40px;
+    border-radius: 6px;
+    border-color: var(--guardian-grey-color-2, #E1E7EF);
+    box-shadow: none;
+}
+
+:host ::ng-deep .record-compare-controls .p-select-label {
+    display: flex;
+    align-items: center;
+    padding: 8px 34px 8px 88px;
+    color: var(--guardian-font-color, #23252e);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 16px;
+}
+
+:host ::ng-deep .record-compare-controls .filter-document .p-select-label {
+    padding-left: 104px;
+}
+
+:host ::ng-deep .record-compare-controls .filter-status .p-select-label {
+    padding-left: 68px;
 }

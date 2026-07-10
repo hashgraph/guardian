@@ -10,7 +10,8 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 @Component({
     selector: 'app-test-results',
     templateUrl: './test-results.component.html',
-    styleUrls: ['./test-results.component.scss']
+    styleUrls: ['./test-results.component.scss'],
+    standalone: false
 })
 export class TestResultsComponent implements OnInit {
     public loading: boolean = true;
@@ -117,6 +118,16 @@ export class TestResultsComponent implements OnInit {
         if (value === '__top__') {
             document.getElementById('doc-row-0')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             setTimeout(() => { this.selectedDoc = null; }, 0);
+        }
+    }
+
+    public onDocumentOpen(value: string): void {
+        this.selectedDoc = value;
+    }
+
+    public onDocumentClose(value: string): void {
+        if (this.selectedDoc === value) {
+            this.selectedDoc = null;
         }
     }
 

@@ -6,6 +6,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'app-custom-confirm-dialog',
     templateUrl: './custom-confirm-dialog.component.html',
     styleUrls: ['./custom-confirm-dialog.component.scss'],
+    standalone: false
 })
 export class CustomConfirmDialogComponent implements OnInit {
     public loading = true;

@@ -1,0 +1,19 @@
+.context {
+    position: relative;
+}
+
+.form-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 24px;
+
+    .form-label {
+        display: block;
+        margin-bottom: 8px;
+    }
+}
+
+.form-container {
+    height: 310px;
+    position: relative;
+}

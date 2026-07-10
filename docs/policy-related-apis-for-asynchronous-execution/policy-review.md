@@ -1,49 +1,51 @@
-# Policy Review
+# Policy Review — Preview from IPFS (Async)
 
-{% swagger method="post" path="" baseUrl="/policies/push/import/message/preview" summary="Previews the policy from IPFS without loading it into the local DB." %}
-{% swagger-description %}
-Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /policies/push/import/message/preview`**
 
-{% swagger-parameter in="body" name="messageId" type="String" required="true" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy.
-{% endswagger-parameter %}
+Previews a policy from IPFS asynchronously without importing it into the local database. Returns a task ID immediately; poll `GET /tasks/{taskId}` for the result.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Task'
+  "messageId": "1680000000.000000001"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | The Hedera message ID containing the IPFS CID of the policy |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `202 Accepted`
+
+```json
 {
-    // Response
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Preview policy message"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the preview result.
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Message ID is missing |
+| `500 Internal Server Error` | Unexpected server failure |

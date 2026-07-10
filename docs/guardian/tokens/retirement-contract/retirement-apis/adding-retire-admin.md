@@ -1,36 +1,40 @@
 # Adding Retire Admin
 
-{% swagger method="post" path="" baseUrl="/contracts/retire/{contractId}/admin/{hederaId}" summary="Add retire admin." %}
-{% swagger-description %}
-Add retire contract admin. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/contracts/retire/{contractId}/admin/{hederaId}`**
 
-{% swagger-parameter in="path" name="hederaId" type="String" required="true" %}
-Hedera Identifier
-{% endswagger-parameter %}
+Adds a retire contract admin for the specified Hedera account. Only Standard Registry users are allowed to make this request.
 
-{% swagger-parameter in="path" name="contractId" type="String" required="true" %}
-Contract Identifier
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.CONTRACTS_RETIRE_ADMIN_CREATE`
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+## Request
 
-{% endswagger-response %}
+### Path Parameters
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+| Parameter    | Type   | Required | Description                                |
+|--------------|--------|----------|--------------------------------------------|
+| `contractId` | string | Yes      | Contract identifier                        |
+| `hederaId`   | string | Yes      | Hedera account ID to grant admin rights to |
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'aggregate-config',
     templateUrl: './aggregate-config.component.html',
     styleUrls: ['./aggregate-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class AggregateConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

@@ -32,8 +32,8 @@ import {
 } from '@hiero-ledger/sdk';
 import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
-import process from 'process';
-import { MAX_REDIRECTS } from '../constants/index.js';
+import process from 'node:process';
+import {MAX_REDIRECTS} from '../constants/index.js';
 
 /**
  * Sleep helper

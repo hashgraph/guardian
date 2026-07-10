@@ -13,7 +13,7 @@
 }
 
 .guardian-dropdown {
-    &::ng-deep .p-dropdown {
+    &::ng-deep .p-select {
         width: 250px;
     }
 }
@@ -34,7 +34,7 @@
     width: 140px;
 }
 
-.guardian-user-page-filters p-dropdown {
+.guardian-user-page-filters p-select {
     margin-right: 18px;
 }
 

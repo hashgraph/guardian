@@ -9,7 +9,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
     selector: 'pagination-addon-block',
     templateUrl: './pagination-addon-block.component.html',
-    styleUrls: ['./pagination-addon-block.component.scss']
+    styleUrls: ['./pagination-addon-block.component.scss'],
+    standalone: false
 })
 export class PaginationAddonBlockComponent implements OnInit {
     @Input('id') id!: string;

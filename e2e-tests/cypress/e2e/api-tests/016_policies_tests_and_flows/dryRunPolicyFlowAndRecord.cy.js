@@ -4,6 +4,7 @@ import * as Authorization from "../../../support/authorization";
 
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const policyMessageId = Cypress.env('policy_for_compare2');
 
     let policyId, registrantDid, adminDid, approverDid, applicationDocumentId, deviceDocumentId, issueDocumentId;
 
@@ -12,7 +13,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
             cy.request({
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
-                body: { messageId: "1707126709.066208559" }, //iRec5
+                body: { messageId: policyMessageId },
                 headers: {
                     authorization,
                 },

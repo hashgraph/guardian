@@ -1,37 +1,39 @@
-# Removing Contract
+# Removing a Contract
 
-{% swagger method="delete" path="" baseUrl="/contracts/{contractId}" summary="Remove contract." %}
-{% swagger-description %}
-Remove smart-contract. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`DELETE /api/v1/contracts/{contractId}`**
 
-{% swagger-parameter in="path" name="contractId" type="String" required="true" %}
-Contract Identifier
-{% endswagger-parameter %}
+Removes a smart contract. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.CONTRACTS_CONTRACT_DELETE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `contractId` | string | Yes      | Contract identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                type: boolean
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

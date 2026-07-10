@@ -30,7 +30,8 @@ enum OperationMode {
 @Component({
     selector: 'app-tools-list',
     templateUrl: './tools-list.component.html',
-    styleUrls: ['./tools-list.component.scss']
+    styleUrls: ['./tools-list.component.scss'],
+    standalone: false
 })
 export class ToolsListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
@@ -93,6 +94,12 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         },
     ];
     private publishErrorMenuOption = [
+        {
+            id: 'Draft',
+            title: 'To Draft',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
         {
             id: 'Publish',
             title: 'Publish',
@@ -227,7 +234,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 tool: tool,
                 isFile: type === 'file'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
@@ -244,7 +251,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
-                                        redir: String(true)
+                                        redir: String(this.user.TOOLS_TOOL_UPDATE)
                                     },
                                 });
                             }, (e) => {
@@ -264,7 +271,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
-                                        redir: String(true)
+                                        redir: String(this.user.TOOLS_TOOL_UPDATE)
                                     },
                                 });
                             }, (e) => {
@@ -284,7 +291,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Tool,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -301,7 +308,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'Tool'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.itemId1 && result.itemId2) {
                 const items = btoa(JSON.stringify({
@@ -352,7 +359,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'tool'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const tool = {
@@ -391,7 +398,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -414,7 +421,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             header: 'Publish Tool',
             width: '600px',
             styleClass: 'guardian-dialog'
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.loading = true;
@@ -601,6 +608,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setToolVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draftTool(element);
         }
         setTimeout(() => this.publishMenuSelector = null, 0);
     }

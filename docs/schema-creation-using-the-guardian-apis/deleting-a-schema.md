@@ -1,61 +1,54 @@
 # Deleting a Schema
 
-### DELETING SCHEMA BASED ON SCHEMA ID
+**`DELETE /api/v1/schemas/{schemaId}`**
 
-{% swagger method="delete" path="" baseUrl="/schema/{schemaID}" summary="Deletes the schema" %}
-{% swagger-description %}
-Deletes the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Deletes the schema with the specified ID. Only users with the Standard Registry role are allowed to make this request. Published or demo-mode schemas cannot be deleted.
 
-{% swagger-parameter in="path" type="String" name="schemaID" required="true" %}
-Schema ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.SCHEMAS_SCHEMA_DELETE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | string | Yes | The internal database ID of the schema to delete |
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `includeChildren` | boolean | No | `false` | When `true`, also deletes all child schemas |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The deletion is processed asynchronously. The response contains a task object.
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Delete schema"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+Poll `GET /tasks/{taskId}` to retrieve the result.
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="422: Unprocessable Entity" description="" %}
-
-
-```
-Schema is published.
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions or schema is owned by another user |
+| `404 Not Found` | Schema with the provided ID does not exist |
+| `422 Unprocessable Entity` | Schema is already published or imported in demo mode |
+| `500 Internal Server Error` | Unexpected server failure |

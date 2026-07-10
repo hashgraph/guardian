@@ -3,7 +3,8 @@ import { ApiExtraModels, ApiNoContentResponse, ApiTags, ApiInternalServerErrorRe
 import {Auth, AuthUser} from '#auth';
 import { Permissions } from '@guardian/interfaces';
 import { BrandingDTO, InternalServerErrorDTO, ObjectExamples } from '#middlewares';
-import { ONLY_SR, Guardians, UseCache, InternalException, getCacheKey, CacheService } from '#helpers';
+import { ONLY_SR, Guardians, UseCache, InternalException, CacheService } from '#helpers';
+import { CACHE_PREFIXES } from '#constants';
 import {IAuthUser, PinoLogger} from '@guardian/common';
 
 /**
@@ -67,7 +68,9 @@ export class BrandingApi {
                 loginBannerUrl,
                 faviconUrl,
                 headerColor1,
-                termsAndConditions
+                termsAndConditions,
+                useCustomMenuColors,
+                useSolidBackground
             } = body;
 
             const data = {
@@ -78,12 +81,16 @@ export class BrandingApi {
                 loginBannerUrl,
                 faviconUrl,
                 headerColor1,
-                termsAndConditions
+                termsAndConditions,
+                useCustomMenuColors,
+                useSolidBackground
             };
             const guardians = new Guardians();
             await guardians.setBranding(user, JSON.stringify(data));
 
-            await this.cacheService.invalidate(getCacheKey([req.url], req.user))
+            // Branding is a global resource: drop every cached GET variant
+            // (per-user and anonymous tags alike), not just the saving user's.
+            await this.cacheService.invalidateAllTagsByPrefixes([`${CACHE_PREFIXES.TAG}${req.url.split('?')[0]}`]);
         } catch (error) {
             await InternalException(error, this.logger, user?.id);
         }

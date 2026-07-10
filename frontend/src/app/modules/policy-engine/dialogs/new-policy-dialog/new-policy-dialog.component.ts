@@ -17,6 +17,7 @@ import { PolicyCategoryType } from '@guardian/interfaces';
     selector: 'new-policy-dialog',
     templateUrl: './new-policy-dialog.component.html',
     styleUrls: ['./new-policy-dialog.component.scss'],
+    standalone: false
 })
 export class NewPolicyDialog {
     loading: boolean = false;

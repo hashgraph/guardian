@@ -24,6 +24,7 @@ import { IPFSService } from 'src/app/services/ipfs.service';
     selector: 'app-schema-rule-configuration',
     templateUrl: './schema-rule-configuration.component.html',
     styleUrls: ['./schema-rule-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaRuleConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
@@ -49,6 +50,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
 
     public nodeLoading: boolean = true;
     public searchField: string = '';
+    public tabIndex: number = 0;
 
     public stepper = [true, false, false];
 
@@ -445,8 +447,9 @@ export class SchemaRuleConfigurationComponent implements OnInit {
         }
     }
 
-    public schemaConfigChange($event: any) {
-        if ($event.index === 1) {
+    public schemaConfigChange(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        if (tabIndex === 1) {
             this.schemaFilterType = 2;
         } else {
             this.schemaFilterType = 1;
@@ -545,7 +548,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
             data: {
                 item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -561,7 +564,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
                 readonly: this.readonly,
                 enums: this.getEnums()
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const rule: FormulaRule | ConditionRule | RangeRule = result.rule;
@@ -586,7 +589,7 @@ export class SchemaRuleConfigurationComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.variables.delete(variable);

@@ -43,7 +43,7 @@ label {
 .mode-switch>label:after {
     content: '';
     width: 50%;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-radius: 6px;
     position: absolute;
     left: 2px;

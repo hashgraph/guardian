@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { Webhook } from '../entities/Webhook.js';
-import process from 'process';
+import process from 'node:process';
 import { DEFAULT_MONGO } from '#constants';
 
 export default class MongodbConnection {

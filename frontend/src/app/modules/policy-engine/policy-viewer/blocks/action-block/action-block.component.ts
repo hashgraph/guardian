@@ -16,6 +16,7 @@ import { BlockType } from '@guardian/interfaces';
     selector: 'action-block',
     templateUrl: './action-block.component.html',
     styleUrls: ['./action-block.component.scss'],
+    standalone: false
 })
 export class ActionBlockComponent implements OnInit {
     @Input('id') id!: string;

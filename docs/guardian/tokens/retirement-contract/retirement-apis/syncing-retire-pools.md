@@ -1,37 +1,41 @@
 # Syncing Retire Pools
 
-{% swagger method="post" path="" baseUrl="/contracts/retire/{contractId}/pools/sync" summary="Sync retire pools." %}
-{% swagger-description %}
-Sync retire contract pools. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/contracts/retire/{contractId}/pools/sync`**
 
-{% swagger-parameter in="path" name="contractId" type="String" required="false" %}
-Contract Identifier
-{% endswagger-parameter %}
+Synchronises the retire pools for the specified contract with on-chain data. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="200: OK" description="Sync Date" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.CONTRACTS_POOL_UPDATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `contractId` | string | Yes      | Contract identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+"2024-01-15T10:30:00.000Z"
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Date'
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+The response is an ISO 8601 date string representing the time the sync was completed.
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

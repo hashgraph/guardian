@@ -6,6 +6,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'mock-dialog',
     templateUrl: './mock-dialog.component.html',
     styleUrls: ['./mock-dialog.component.scss'],
+    standalone: false
 })
 export class MockDialog {
     public loading = true;

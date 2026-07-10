@@ -13,7 +13,8 @@ import { ToastrService } from "ngx-toastr";
 @Component({
     selector: 'app-otp-codes-dialog',
     templateUrl: './otp-codes-dialog.component.html',
-    styleUrls: ['./otp-codes-dialog.component.scss']
+    styleUrls: ['./otp-codes-dialog.component.scss'],
+    standalone: false
 })
 export class OtpCodesDialogComponent implements OnInit {
     public codes: string[] | undefined;

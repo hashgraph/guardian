@@ -39,7 +39,7 @@ import { ApiResponse } from '../api/helpers/api-response.js';
 import { IOwner, MessageAPI, PolicyStatus, UserRole, WorkerTaskType } from '@guardian/interfaces';
 import { Controller, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 
 interface ISearchResult {
     type: string,

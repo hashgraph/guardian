@@ -573,7 +573,25 @@ export class SendToGuardianBlock {
         //
         const hash = docObject.toCredentialHash();
         const messageHash = message.toHash();
-        if (options.dataType) {
+        if (options.dataSource) {
+            if (options.dataSource === 'auto') {
+                if (document.messageHash !== messageHash) {
+                    document = await this.sendToHedera(document, message, ref, userId, user);
+                    document.messageHash = messageHash;
+                }
+                document.hash = hash;
+                document = await this.sendToDatabase(document, type, ref, userId, user);
+            } else if (options.dataSource === 'database') {
+                document.hash = hash;
+                document = await this.sendToDatabase(document, type, ref, userId, user);
+            } else if (options.dataSource === 'hedera') {
+                document = await this.sendToHedera(document, message, ref, userId, user);
+                document.messageHash = messageHash;
+                document = await this.updateMessage(document, type, ref, userId);
+            } else {
+                throw new BlockActionError(`dataSource "${options.dataSource}" is unknown`, ref.blockType, ref.uuid);
+            }
+        } else if (options.dataType) {
             if (options.dataType === 'hedera') {
                 document = await this.sendToHedera(document, message, ref, userId, user);
                 document.messageHash = messageHash;
@@ -582,22 +600,13 @@ export class SendToGuardianBlock {
                 document.hash = hash;
                 document = await this.sendByType(document, ref, userId, user);
             }
-        } else if (options.dataSource === 'auto' || !options.dataSource) {
+        } else {
             if (document.messageHash !== messageHash) {
                 document = await this.sendToHedera(document, message, ref, userId, user);
                 document.messageHash = messageHash;
             }
             document.hash = hash;
             document = await this.sendToDatabase(document, type, ref, userId, user);
-        } else if (options.dataSource === 'database') {
-            document.hash = hash;
-            document = await this.sendToDatabase(document, type, ref, userId, user);
-        } else if (options.dataSource === 'hedera') {
-            document = await this.sendToHedera(document, message, ref, userId, user);
-            document.messageHash = messageHash;
-            document = await this.updateMessage(document, type, ref, userId);
-        } else {
-            throw new BlockActionError(`dataSource "${options.dataSource}" is unknown`, ref.blockType, ref.uuid);
         }
         return document;
     }

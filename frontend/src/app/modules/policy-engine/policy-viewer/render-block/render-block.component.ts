@@ -10,6 +10,7 @@ import { PolicyProgressService } from '../../services/policy-progress.service';
     selector: 'render-block',
     templateUrl: './render-block.component.html',
     styleUrls: ['./render-block.component.scss'],
+    standalone: false
 })
 export class RenderBlockComponent {
     @Input('block') block!: IBlock<any>;

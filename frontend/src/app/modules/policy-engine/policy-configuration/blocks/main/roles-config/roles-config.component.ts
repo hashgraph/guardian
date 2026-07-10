@@ -8,7 +8,8 @@ import { GroupVariables, IModuleVariables, PolicyBlock, RoleVariables } from '..
     selector: 'roles-config',
     templateUrl: './roles-config.component.html',
     styleUrls: ['./roles-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class RolesConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

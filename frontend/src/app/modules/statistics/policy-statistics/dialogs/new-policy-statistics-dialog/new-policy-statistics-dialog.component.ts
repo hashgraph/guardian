@@ -6,6 +6,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'new-policy-statistics-dialog',
     templateUrl: './new-policy-statistics-dialog.component.html',
     styleUrls: ['./new-policy-statistics-dialog.component.scss'],
+    standalone: false
 })
 export class NewPolicyStatisticsDialog {
     public loading = true;

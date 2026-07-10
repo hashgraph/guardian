@@ -18,7 +18,8 @@ import {
     selector: 'module',
     templateUrl: './module.component.html',
     styleUrls: ['./module.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ModuleComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

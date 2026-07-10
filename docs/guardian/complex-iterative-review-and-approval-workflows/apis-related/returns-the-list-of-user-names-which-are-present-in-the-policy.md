@@ -1,58 +1,46 @@
-# Returns the list of user names which are present in the policy
+# Returns the List of User Names Present in the Policy
 
-<mark style="color:green;">`GET`</mark> `/policy-repository/{policyId}/users`
+**`GET /api/v1/policy-repository/{policyId}/users`**
 
-Returns the list of user names which are present in the policy
+Returns the list of user names which are present in the target policy.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_AUDIT`
 
-**Body**
+---
 
-| Name     | Type   | Description |
-| -------- | ------ | ----------- |
-| policyId | string | Policy ID   |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
+| Parameter  | Type   | Required | Description       |
+|------------|--------|----------|-------------------|
+| `policyId` | string | Yes      | Policy identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "username": "example_user",
+    "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "role": "OWNER"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-{
-   description: Unauthorized.
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
-
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid `policyId` value |
+| `500 Internal Server Error` | Unexpected server failure |

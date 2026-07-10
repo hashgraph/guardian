@@ -1,0 +1,9 @@
+- tag: template
+  label: Template
+  icon: cards-blank
+- tag: contributing
+  label: Contributing
+  icon: pen-to-square
+- tag: new
+  label: New
+  icon: sparkles

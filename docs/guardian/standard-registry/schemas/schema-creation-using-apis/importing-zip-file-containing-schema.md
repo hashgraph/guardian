@@ -1,63 +1,56 @@
 # Importing Zip file containing Schema
 
-<mark style="color:green;">`POST`</mark> `/schemas/{topicId}/import/file`
+**`POST /schemas/{topicId}/import/file`**
 
 Imports new schema from a zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                      | Type    | Description |
-| ----------------------------------------- | ------- | ----------- |
-| topicId<mark style="color:red;">\*</mark> | Integer | Topic ID    |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
 
-#### Request Body
+---
 
-| Name                               | Type | Description                                 |
-| ---------------------------------- | ---- | ------------------------------------------- |
-| <mark style="color:red;">\*</mark> | file | A zip file containing schema to be imported |
+## Request
 
-{% tabs %}
-{% tab title="201: Created Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | String | Yes | Topic ID |
+
+### Request Body
+
+**Content-Type:** `application/zip`
+
+A zip file containing the schema to be imported.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+Returns an array of the imported schema objects.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "PUBLISHED",
+    "topicId": "f3b2a9c1e4d5678901234567"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
-
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error |
+| `500 Internal Server Error` | Unexpected server failure |

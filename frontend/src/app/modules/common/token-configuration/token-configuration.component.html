@@ -1,95 +1,107 @@
-<form *ngIf="dataForm" [formGroup]="dataForm" [attr.immutable]="readonly">
-    <div class="key-value immutable" *ngIf="!hideType">
+@if (dataForm) {
+  <form [formGroup]="dataForm" [attr.immutable]="readonly">
+    @if (!hideType) {
+      <div class="key-value immutable">
         <div class="switch-btn">
-            <label class="p-field-label" for="tokenName">Status</label>
-            <switch-button [on-label]="'Published'" [off-label]="'Draft'" [(value)]="notDraftToken"></switch-button>
+          <label class="p-field-label" for="tokenName">Status</label>
+          <switch-button [on-label]="'Published'" [off-label]="'Draft'" [(value)]="notDraftToken"></switch-button>
         </div>
+      </div>
+    }
+    <div class="p-field">
+      <label class="p-field-label" for="tokenName">* Token Name</label>
+      <input class="p-field-input" formControlName="tokenName" id="tokenName" type="text"/>
+      @if (dataForm.controls['tokenName'].invalid) {
+        <small class="p-error">Token name is invalid</small>
+      }
     </div>
     <div class="p-field">
-        <label class="p-field-label" for="tokenName">* Token Name</label>
-        <input class="p-field-input" formControlName="tokenName" id="tokenName" type="text"/>
-        <small *ngIf="dataForm.controls['tokenName'].invalid" class="p-error">Token name is invalid</small>
+      <label class="p-field-label" for="tokenSymbol">* Token Symbol</label>
+      <input aria-describedby="username2-help" class="p-field-input" formControlName="tokenSymbol" id="tokenSymbol"
+        type="text"/>
+      @if (dataForm.controls['tokenSymbol'].invalid) {
+        <small class="p-error">Token Symbol is invalid</small>
+      }
     </div>
     <div class="p-field">
-        <label class="p-field-label" for="tokenSymbol">* Token Symbol</label>
-        <input aria-describedby="username2-help" class="p-field-input" formControlName="tokenSymbol" id="tokenSymbol"
-               type="text"/>
-        <small *ngIf="dataForm.controls['tokenSymbol'].invalid" class="p-error">Token Symbol is invalid</small>
+      <label class="p-field-label">* Token Type</label>
+      <p-select formControlName="tokenType" [disabled]="readonly"
+        [options]="tokenTypes" optionLabel="name" optionValue="value"
+        (onChange)="onChangeType()"
+        [appendTo]="'body'">
+        <ng-template let-tokenType pTemplate="item">
+          <div class="dropdown-item">{{ tokenType.name }}</div>
+        </ng-template>
+      </p-select>
     </div>
-    <div class="p-field">
-        <label class="p-field-label">* Token Type</label>
-        <p-dropdown formControlName="tokenType" [disabled]="readonly"
-                    [options]="tokenTypes" optionLabel="name" optionValue="value"
-                    (onChange)="onChangeType()"
-                    [appendTo]="'body'">
-            <ng-template let-tokenType pTemplate="item">
-                <div class="dropdown-item">{{ tokenType.name }}</div>
-            </ng-template>
-        </p-dropdown>
-    </div>
-    <div *ngIf="ft" class="p-field immutable">
+    @if (ft) {
+      <div class="p-field immutable">
         <label class="p-field-label" for="decimals">Decimals</label>
         <input class="p-field-input" formControlName="decimals" id="decimals" type="text"/>
-    </div>
+      </div>
+    }
     <div class="keys-config immutable">
+      <div class="key-value">
+        <div class="key-name">
+          Admin Key
+        </div>
+        <div class="key-description">
+          The key which can perform token update and token delete operations on the token. If empty, the token can
+          be perceived as immutable.
+        </div>
+        <div class="switch-btn">
+          <switch-button [disalbed]="enableAdminDisabled" [(value)]="enableAdmin" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+        </div>
+      </div>
+      <div class="key-value">
+        <div class="key-name">
+          Wipe Key
+        </div>
+        <div class="key-description">
+          The key which can wipe the token balance of an account. If empty, wipe is not possible.
+        </div>
+        <div class="switch-btn">
+          <switch-button [disalbed]="enableWipeDisabled" [(value)]="enableWipe" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+        </div>
+      </div>
+      @if (enableWipe) {
         <div class="key-value">
-            <div class="key-name">
-                Admin Key
-            </div>
-            <div class="key-description">
-                The key which can perform token update and token delete operations on the token. If empty, the token can
-                be perceived as immutable.
-            </div>
-            <div class="switch-btn">
-                <switch-button [disalbed]="enableAdminDisabled" [(value)]="enableAdmin" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
-            </div>
+          <div class="key-name">
+            Wipe Contract
+          </div>
+          <div class="key-description">
+            The contract which can call wipe for token. If empty, wipe key will be used.
+          </div>
+          <p-select class="wipe-contract-dropdown" [appendTo]="'body'" [disabled]="readonly" formControlName="wipeContractId"
+            [options]="displayContracts" optionLabel="contractId" optionValue="contractId"
+            [showClear]="true" placeholder="Select wipe contract" emptyMessage="There are no wipe contracts">
+          </p-select>
         </div>
-        <div class="key-value">
-            <div class="key-name">
-                Wipe Key
-            </div>
-            <div class="key-description">
-                The key which can wipe the token balance of an account. If empty, wipe is not possible.
-            </div>
-            <div class="switch-btn">
-                <switch-button [disalbed]="enableWipeDisabled" [(value)]="enableWipe" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
-            </div>
+      }
+      <div class="key-value">
+        <div class="key-name">
+          Freeze Key
         </div>
-        <div class="key-value" *ngIf="enableWipe">
-            <div class="key-name">
-                Wipe Contract
-            </div>
-            <div class="key-description">
-                The contract which can call wipe for token. If empty, wipe key will be used.
-            </div>
-            <p-dropdown class="wipe-contract-dropdown" [appendTo]="'body'" [disabled]="readonly" formControlName="wipeContractId"
-                        [options]="displayContracts" optionLabel="contractId" optionValue="contractId"
-                        [showClear]="true" placeholder="Select wipe contract" emptyMessage="There are no wipe contracts">
-            </p-dropdown>
+        <div class="key-description">
+          The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is
+          not possible.
         </div>
-        <div class="key-value">
-            <div class="key-name">
-                Freeze Key
-            </div>
-            <div class="key-description">
-                The key which can sign to freeze or unfreeze an account for token transactions. If empty, freezing is
-                not possible.
-            </div>
-            <div class="switch-btn">
-                <switch-button [disalbed]="enableFreezeDisabled" [(value)]="enableFreeze" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
-            </div>
+        <div class="switch-btn">
+          <switch-button [disalbed]="enableFreezeDisabled" [(value)]="enableFreeze" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
         </div>
-        <div class="key-value">
-            <div class="key-name">
-                KYC Key
-            </div>
-            <div class="key-description">
-                The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not
-                required, and KYC grant or revoke operations are not possible.
-            </div>
-            <div class="switch-btn">
-                <switch-button [disalbed]="enableKYCDisabled" [(value)]="enableKYC" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
-            </div>
+      </div>
+      <div class="key-value">
+        <div class="key-name">
+          KYC Key
         </div>
+        <div class="key-description">
+          The key which can grant or revoke KYC of an account for the token's transactions. If empty, KYC is not
+          required, and KYC grant or revoke operations are not possible.
+        </div>
+        <div class="switch-btn">
+          <switch-button [disalbed]="enableKYCDisabled" [(value)]="enableKYC" [off-label]="'Disabled'" [on-label]="'Enabled'"></switch-button>
+        </div>
+      </div>
     </div>
-</form>
+  </form>
+}

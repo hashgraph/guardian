@@ -30,6 +30,7 @@ import { OtpDialogComponent } from './otp-dialog/otp-dialog.component';
     selector: 'app-login',
     templateUrl: './login.component.html',
     styleUrls: ['./login.component.scss'],
+    standalone: false
 })
 export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
     testUsers$: Observable<any[]>;
@@ -156,7 +157,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                         header: 'Enter Verification Code',
                         width: '40vw',
                         closable: false,
-                    }).onClose.subscribe(token => {
+                    })!.onClose.subscribe(token => {
                         if (token) {
                             this.login(login, password, token);
                         }
@@ -225,7 +226,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 header: 'Sign Up Request',
                 width: '80%',
                 modal: true,
-            }).onClose.subscribe((userData) => {
+            })!.onClose.subscribe((userData) => {
                 if (userData) {
                     registerAccount(userRole, userData);
                 }
@@ -237,7 +238,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 header: 'Select Account Type',
                 width: '80%',
                 modal: true,
-            }).onClose.subscribe((userRole) => {
+            })!.onClose.subscribe((userRole) => {
                 if (userRole) {
                     part3(userRole);
                 }
@@ -308,7 +309,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
             data: {
                 login: this.loginControl.value,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             if (data) {
                 console.log(data);
             }
@@ -324,7 +325,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                 message: 'Please update your password to comply with hardened Guardian security protocols.',
                 login,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
         });
     }
 
@@ -369,7 +370,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     }
                 );
 
-                this.vcSubmitDialogRef.onClose.subscribe(() => {
+                this.vcSubmitDialogRef!.onClose.subscribe(() => {
                     this.vcSubmitDialogRef = null;
                 });
             }
@@ -386,7 +387,7 @@ export class LoginComponent implements OnInit, OnDestroy, AfterViewChecked {
                     data: {
                         qrCodeData: event.redirectUri,
                     },
-                });
+                })!;
             }
 
             this.qrCodeDialogRef.onClose.subscribe(() => {

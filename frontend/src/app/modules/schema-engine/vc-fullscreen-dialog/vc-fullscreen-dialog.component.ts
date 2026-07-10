@@ -47,6 +47,7 @@ import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-d
     selector: 'vc-fullscreen-dialog',
     templateUrl: './vc-fullscreen-dialog.component.html',
     styleUrls: ['./vc-fullscreen-dialog.component.scss'],
+    standalone: false
 })
 export class VCFullscreenDialog {
     @ViewChild('discussionComponent', { static: false })
@@ -538,7 +539,7 @@ export class VCFullscreenDialog {
                 modal: true,
                 closable: true,
             }
-        );
+        )!;
 
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {

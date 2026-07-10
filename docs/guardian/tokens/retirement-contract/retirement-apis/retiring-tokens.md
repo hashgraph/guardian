@@ -1,37 +1,60 @@
 # Retiring Tokens
 
-{% swagger method="post" path="" baseUrl="/contracts/retire/pools/{poolId}/retire" summary="Retire tokens." %}
-{% swagger-description %}
-Retire tokens.
-{% endswagger-description %}
+**`POST /api/v1/contracts/retire/pools/{poolId}/retire`**
 
-{% swagger-parameter in="path" name="poolId" type="String" %}
-Pool Identifier
-{% endswagger-parameter %}
+Submits a token retirement request against the specified pool. Accessible by Standard Registry and User roles.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.CONTRACTS_RETIRE_REQUEST_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type   | Required | Description     |
+|-----------|--------|----------|-----------------|
+| `poolId`  | string | Yes      | Pool identifier |
+
+### Request Body
+
+```json
+[
+  {
+    "token": "0.0.5000001",
+    "count": 100,
+    "serials": []
+  }
+]
 ```
-content:
-            application/json:
-              schema:
-                type: boolean
+
+The request body is an array of token retirement entries.
+
+| Field     | Type   | Required | Description                                         |
+|-----------|--------|----------|-----------------------------------------------------|
+| `token`   | string | Yes      | Hedera token identifier to retire                   |
+| `count`   | number | Yes      | Number of tokens to retire                          |
+| `serials` | array  | No       | Specific serial numbers (for non-fungible tokens)   |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
- content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `400 Bad Request` | Request body must be an array |
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

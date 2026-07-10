@@ -1,49 +1,44 @@
-# User listing except Standard Registry and Auditor
+# User Listing (Excluding Standard Registry and Auditor)
 
-### DISPLAYING USERS
+**`GET /accounts/`**
 
-{% swagger method="get" path="" baseUrl="/accounts" summary="Returns a list of users, excluding Standard Registry and Auditors" %}
-{% swagger-description %}
-Returns all users except those with roles Standard Registry and Auditor. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Returns a list of all user accounts, excluding those with Standard Registry and Auditor roles.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Account'
-}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.ACCOUNTS_ACCOUNT_READ`
+
+---
+
+## Request
+
+No request body or parameters required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "username": "example_user",
+    "role": "USER",
+    "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "hederaAccountId": "0.0.4532001",
+    "confirmed": true,
+    "failed": false
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

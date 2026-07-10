@@ -1,6 +1,6 @@
 ---
 description: >-
-  This doc presents the step-by-step of  how to configure the Guardian
+  This doc presents the step-by-step of how to configure the Guardian
   application to allow authentication via the Meeco Wallet
 ---
 

@@ -3,7 +3,6 @@ import {
     decryptWithKeyDerivedFromString,
     encryptWithKeyDerivedFromString,
 } from '@meeco/cryppo';
-import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
 
 export class EncryptUtils {
     public static async encrypt(data: ArrayBuffer, key: string): Promise<ArrayBuffer> {
@@ -15,8 +14,7 @@ export class EncryptUtils {
         const result = await encryptWithKeyDerivedFromString({
             passphrase: key,
             data: new Uint8Array(decryptedData),
-            strategy: CipherStrategy.AES_GCM,
-            serializationVersion: SerializationFormat.latest_version,
+            strategy: CipherStrategy.AES_GCM
         });
         const encryptedSerialized = result.serialized;
         const encryptedData = Buffer.from(encryptedSerialized, 'utf8');

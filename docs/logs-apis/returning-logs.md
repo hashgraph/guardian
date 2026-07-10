@@ -1,95 +1,78 @@
 # Returning Logs
 
-## RETURNS LOGS
+**`POST /logs/`**
 
-{% swagger method="post" path="" baseUrl="/logs" summary="Returns logs." %}
-{% swagger-description %}
-Returns logs. For users with the Standard Registry role only.
-{% endswagger-description %}
+Returns a paginated list of system logs filtered by the provided criteria. For Standard Registry users only.
 
-{% swagger-parameter in="body" type="String" name="type" required="true" %}
-Type of Log
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="body" name="startDate" type="String" required="true" %}
-Start Date
-{% endswagger-parameter %}
+**Permission:** `Permissions.LOG_LOG_READ`
 
-{% swagger-parameter in="body" name="endDate" type="String" required="true" %}
-End Date
-{% endswagger-parameter %}
+---
 
-{% swagger-parameter in="body" name="attributes" type="Array" required="true" %}
-Attributes
-{% endswagger-parameter %}
+## Request
 
-{% swagger-parameter in="body" name="items" type="String" required="true" %}
-Items
-{% endswagger-parameter %}
+### Request Body
 
-{% swagger-parameter in="body" name="message" type="String" required="true" %}
-Log Message
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="pageSize" type="Number" required="true" %}
-Size of the Page
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="pageIndex" type="Number" required="true" %}
-Index of page
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="sortDirection" type="String" required="true" %}
-enum: [ASC, DESC]
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+```json
 {
-    application/json:
-              schema:
-                totalCount:
-			 type: number
-		logs:
-			 type: object
-			      properties:
-					type:
-					  type: string
-					datetime:
-					  type: string
-					message:
-					  type: string
-					attributes:
-					  type: array
-					items:
-				          type: string
+  "type": "INFO",
+  "startDate": "2024-01-01T00:00:00.000Z",
+  "endDate": "2024-12-31T23:59:59.999Z",
+  "attributes": ["API_GATEWAY"],
+  "message": "policy",
+  "pageIndex": 0,
+  "pageSize": 20,
+  "sortDirection": "DESC"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | No | Log level filter: `INFO`, `WARN`, `ERROR` |
+| `startDate` | string (ISO 8601) | No | Filter logs after this date |
+| `endDate` | string (ISO 8601) | No | Filter logs before this date |
+| `attributes` | string[] | No | Filter by log source attributes (e.g. `["API_GATEWAY"]`) |
+| `message` | string | No | Case-insensitive substring search within log messages |
+| `pageIndex` | number | No | Zero-based page index (default: `0`) |
+| `pageSize` | number | No | Items per page |
+| `sortDirection` | string | No | Sort order: `ASC` or `DESC` |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "totalCount": 142,
+  "logs": [
+    {
+      "type": "INFO",
+      "datetime": "2024-06-01T12:34:56.789Z",
+      "message": "Policy published successfully",
+      "attributes": ["API_GATEWAY"]
+    }
+  ]
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `totalCount` | number | Total number of matching log entries |
+| `logs` | array | Array of log entries |
+| `logs[].type` | string | Log level |
+| `logs[].datetime` | string | Timestamp of the log entry |
+| `logs[].message` | string | Log message text |
+| `logs[].attributes` | string[] | Source attributes |
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-     application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -30,6 +30,8 @@ interface MeecoApproveSubmissionResponse {
 export class WebSocketService {
     private static HEARTBEAT_DELAY = 30 * 1000;
     private static RECONNECT_NOTIFY_AFTER_MS = 15 * 1000;
+    private static SERVICES_STATUS_GRACE_MS = 5 * 1000;
+    private static SERVICES_STATUS_POLL_MS = 1000;
     private socket: WebSocketSubject<string> | null;
     private wsSubjectConfig: WebSocketSubjectConfig<string>;
     private socketSubscription: Subscription | null = null;
@@ -60,6 +62,7 @@ export class WebSocketService {
     private sendingEvent: boolean;
 
     private requiredServicesWrongStatus: boolean = false;
+    private servicesStatusCheckTimeout: any = null;
 
     public readonly meecoPresentVP$: Observable<any> = this.meecoPresentVPSubject.asObservable();
     public readonly meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
@@ -122,6 +125,10 @@ export class WebSocketService {
         }
         if (this.heartbeatTimeout) {
             clearTimeout(this.heartbeatTimeout);
+        }
+        if (this.servicesStatusCheckTimeout) {
+            clearTimeout(this.servicesStatusCheckTimeout);
+            this.servicesStatusCheckTimeout = null;
         }
 
         this.socketSubscription = null;
@@ -284,23 +291,7 @@ export class WebSocketService {
                 case MessageAPI.GET_STATUS:
                 case MessageAPI.UPDATE_STATUS:
                     this.updateStatus(data);
-
-                    const notReadyServices = this.serviesStates.filter((item: any) => !item.states.includes(ApplicationStates.READY));
-                    const allStatesReady = notReadyServices.length === 0;
-
-                    if (!allStatesReady && !this.requiredServicesWrongStatus) {
-                        this.requiredServicesWrongStatus = true;
-                        if (!['/status', '/admin/settings', '/admin/logs', '/login'].includes(location.pathname)) {
-                            const last = location.pathname === '/status' ? null : btoa(location.href);
-                            //this.router.navigate(['/status'], { queryParams: { last } });
-                            this.dialogService.open(ServiceUnavailableDialog, {
-                                closable: true,
-                                header: 'Something went wrong',
-                                width: '500px',
-                            });
-                        }
-                    }
-                    this.servicesReady.next(allStatesReady);
+                    this.evaluateServicesStatus();
                     break;
                 case MessageAPI.UPDATE_RECORD: {
                     this.recordUpdateSubject.next(data);
@@ -583,6 +574,52 @@ export class WebSocketService {
             }
             existsService.states = serviceStatus[serviceName]
         }
+    }
+
+    private isAllServicesReady(): boolean {
+        return this.serviesStates.every((item: any) => item.states.includes(ApplicationStates.READY));
+    }
+
+    // Alert on a not-ready service, but re-check across a short grace period
+    // first so a transient blip (e.g. a service restarting) is ignored, and
+    // re-arm on recovery so a later outage is reported again.
+    private evaluateServicesStatus() {
+        const allStatesReady = this.isAllServicesReady();
+
+        if (allStatesReady) {
+            if (this.servicesStatusCheckTimeout) {
+                clearTimeout(this.servicesStatusCheckTimeout);
+                this.servicesStatusCheckTimeout = null;
+            }
+            this.requiredServicesWrongStatus = false;
+        } else if (!this.requiredServicesWrongStatus && !this.servicesStatusCheckTimeout) {
+            this.scheduleServicesStatusCheck(Date.now() + WebSocketService.SERVICES_STATUS_GRACE_MS);
+        }
+
+        this.servicesReady.next(allStatesReady);
+    }
+
+    private scheduleServicesStatusCheck(deadline: number) {
+        this.send(MessageAPI.GET_STATUS, null);
+        this.servicesStatusCheckTimeout = setTimeout(() => {
+            this.servicesStatusCheckTimeout = null;
+            if (this.isAllServicesReady()) {
+                this.requiredServicesWrongStatus = false;
+                return;
+            }
+            if (Date.now() < deadline) {
+                this.scheduleServicesStatusCheck(deadline);
+                return;
+            }
+            this.requiredServicesWrongStatus = true;
+            if (!['/status', '/admin/settings', '/admin/logs', '/login'].includes(location.pathname)) {
+                this.dialogService.open(ServiceUnavailableDialog, {
+                    closable: true,
+                    header: 'Something went wrong',
+                    width: '500px',
+                });
+            }
+        }, WebSocketService.SERVICES_STATUS_POLL_MS);
     }
 
     public IsServicesReady() {

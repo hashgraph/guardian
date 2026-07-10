@@ -6,7 +6,7 @@ If you want to manually build every component with debug information, then build
 
 * [MongoDB](https://www.mongodb.com/) ,
 * [NodeJS](https://nodejs.org/)
-* [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/)
+* [Yarn](https://yarnpkg.com/getting-started/install)
 * [Nats](https://nats.io/)
 
 #### Build and start each component

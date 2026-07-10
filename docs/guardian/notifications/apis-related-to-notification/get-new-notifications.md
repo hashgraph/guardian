@@ -1,32 +1,45 @@
-# Get new Notifications
+# Get New Notifications
 
-{% swagger method="get" path="" baseUrl="/notifications/new" summary="Get new notifications" %}
-{% swagger-description %}
-Returns new notifications.
-{% endswagger-description %}
+**`GET /api/v1/notifications/new`**
 
-{% swagger-response status="200: OK" description="Successful operation. Suggested next and nested block types respectively." %}
+Returns all unread (new) notifications for the authenticated user along with their total count.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+---
+
+## Request
+
+No parameters required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "items": [
+    {
+      "id": "63e3e5e8a01b3c001234abcd",
+      "title": "Policy published",
+      "message": "Policy 'GHG Policy v1.0' has been published successfully.",
+      "read": false,
+      "type": "INFO",
+      "userId": "63e3e5e8a01b3c001234abce",
+      "createDate": "2024-01-15T10:30:00.000Z"
+    }
+  ],
+  "count": 1
+}
 ```
-content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/NotificationDTO'
 
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -1,7 +1,7 @@
 import { FindCursor } from 'mongodb';
 import { DeleteCache, RestoreEntity } from '@guardian/common';
 import { DiffActionType, ICollectionDiff, IDiffAction } from '../index.js';
-import crypto from 'crypto';
+import crypto from 'node:crypto';
 
 interface DiffResult<T extends RestoreEntity> {
     backup: ICollectionDiff<T>;

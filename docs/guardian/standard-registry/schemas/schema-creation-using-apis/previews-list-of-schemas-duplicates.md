@@ -1,65 +1,56 @@
 # Previews list of schemas duplicates
 
-<mark style="color:green;">`POST`</mark> `/schemas/import/schemas/duplicates`
+**`POST /schemas/import/schemas/duplicates`**
 
 Previews list of schema duplicates. Only users with the Standard Registry role are allowed to make the request.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
 
-**Body**
+---
 
-| Name                                          | Type   | Description              |
-| --------------------------------------------- | ------ | ------------------------ |
-| schemaNames<mark style="color:red;">\*</mark> | string | An array of schema names |
-| policyId<mark style="color:red;">\*</mark>    | String | Policy ID                |
+## Request
 
-**Response**
+### Request Body
 
-{% tabs %}
-{% tab title="200" %}
-```json5
+```json
 {
-  description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SchemaDTO'
+  "schemaNames": ["Schema A", "Schema B"],
+  "policyId": "f3b2a9c1e4d5678901234567"
 }
 ```
-{% endtab %}
 
-{% tab title="401" %}
-```json5
-{
-   description: Unauthorized.
-}
-```
-{% endtab %}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `schemaNames` | String[] | Yes | Array of schema names to check for duplicates |
+| `policyId` | String | Yes | Policy ID |
 
-{% tab title="403" %}
-```json5
-{
-description: Forbidden.
-}
-```
-{% endtab %}
+---
 
-{% tab title="500" %}
-```json5
-{
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of schema objects that are duplicates.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "PUBLISHED"
   }
+]
 ```
-{% endtab %}
-{% endtabs %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

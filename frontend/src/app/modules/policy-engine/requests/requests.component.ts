@@ -25,6 +25,7 @@ interface IColumn {
     selector: 'app-policy-requests',
     templateUrl: './requests.component.html',
     styleUrls: ['./requests.component.scss'],
+    standalone: false
 })
 export class PolicyRequestsComponent implements OnInit {
     public readonly title: string = 'Incoming Requests';
@@ -314,7 +315,7 @@ export class PolicyRequestsComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Approve') {
                 this.loading = true;
@@ -345,7 +346,7 @@ export class PolicyRequestsComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reject') {
                 this.loading = true;
@@ -376,7 +377,7 @@ export class PolicyRequestsComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Cancel') {
                 this.loading = true;
@@ -472,7 +473,7 @@ export class PolicyRequestsComponent implements OnInit {
                         title: 'Document',
                         type: 'JSON',
                     }
-                });
+                })!;
                 dialogRef.onClose.subscribe(async (result) => {
                 });
                 setTimeout(() => {

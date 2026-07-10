@@ -19,7 +19,8 @@ type ValueType = string | PolicyBlock | null | undefined;
     selector: 'select-block',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './select-block.component.html',
-    styleUrls: ['./select-block.component.scss']
+    styleUrls: ['./select-block.component.scss'],
+    standalone: false
 })
 export class SelectBlock implements AfterViewInit {
     private searchTimeout!: any;

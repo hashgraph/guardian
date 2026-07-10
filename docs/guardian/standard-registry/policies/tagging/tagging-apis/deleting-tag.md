@@ -1,37 +1,40 @@
 # Deleting Tag
 
-{% swagger method="delete" path="" baseUrl="/tags/{uuid}" summary="Delete tag." %}
-{% swagger-description %}
-Delete tag.
-{% endswagger-description %}
+**`DELETE /api/v1/tags/{uuid}`**
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Tag identifier
-{% endswagger-parameter %}
+Deletes the tag with the specified UUID.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TAGS_TAG_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `uuid` | string | Yes | Unique identifier (UUID) of the tag to delete |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                type: boolean
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid or missing `uuid` parameter |
+| `500 Internal Server Error` | Unexpected server failure |

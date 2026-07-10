@@ -2,7 +2,7 @@ import { SecretManager } from '@guardian/common';
 import { GenerateUUIDv4, IUser } from '@guardian/interfaces';
 import { InternalServerErrorException } from '@nestjs/common';
 import pkg from 'jsonwebtoken';
-import * as util from 'util';
+import * as util from 'node:util';
 
 const { sign, verify } = pkg;
 

@@ -6,7 +6,8 @@ import { GenerateUUIDv4 } from '@guardian/interfaces';
 @Component({
     selector: 'switch-button',
     templateUrl: './switch-button.component.html',
-    styleUrls: ['./switch-button.component.scss']
+    styleUrls: ['./switch-button.component.scss'],
+    standalone: false
 })
 export class SwitchButton {
     @Input('on-label') on!: string;

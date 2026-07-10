@@ -46,7 +46,7 @@ form {
 
 .f1 label {
     position: absolute;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     font-size: 11px;
     color: rgb(0 0 0 / 60%);
     line-height: 11px;
@@ -157,7 +157,7 @@ mat-accordion {
     font-size: 12px;
     top: -7px;
     left: 15px;
-    background: white;
+    background: var(--guardian-background, white);
     color: gray;
     padding: 0 4px;
 }
@@ -183,7 +183,7 @@ mat-accordion {
 
 ::ng-deep .p-dialog .p-button-ok {
     background-color: var(--primary-color);
-    color: var(--color-grey-white);
+    color: var(--guardian-on-primary-color);
 }
 
 ::ng-deep .p-dialog .p-button:hover {

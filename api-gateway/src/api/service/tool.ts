@@ -1194,7 +1194,7 @@ export class ToolsApi {
      */
     @Post('/import/file-metadata')
     @Auth(
-        Permissions.TOOL_MIGRATION_CREATE,
+        Permissions.TOOLS_TOOL_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -1353,7 +1353,7 @@ export class ToolsApi {
      */
     @Post('/push/import/file-metadata')
     @Auth(
-        Permissions.TOOL_MIGRATION_CREATE,
+        Permissions.TOOLS_TOOL_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({

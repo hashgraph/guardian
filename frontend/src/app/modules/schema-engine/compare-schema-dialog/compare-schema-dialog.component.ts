@@ -5,6 +5,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'compare-schema-dialog',
     templateUrl: './compare-schema-dialog.component.html',
     styleUrls: ['./compare-schema-dialog.component.scss'],
+    standalone: false
 })
 export class CompareSchemaDialog {
     loading = true;

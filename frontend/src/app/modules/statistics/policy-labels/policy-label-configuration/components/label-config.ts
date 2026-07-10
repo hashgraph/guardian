@@ -152,7 +152,7 @@ export class LabelConfig {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.selectedNavItem = null;

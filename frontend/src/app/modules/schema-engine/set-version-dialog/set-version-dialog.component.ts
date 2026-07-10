@@ -10,6 +10,7 @@ import { ModelHelper } from '@guardian/interfaces';
     selector: 'set-version-dialog',
     templateUrl: './set-version-dialog.component.html',
     styleUrls: ['./set-version-dialog.component.scss'],
+    standalone: false
 })
 export class SetVersionDialog {
     versionControl: UntypedFormControl = new UntypedFormControl('', [

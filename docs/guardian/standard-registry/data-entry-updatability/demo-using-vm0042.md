@@ -23,7 +23,7 @@ icon: computer
 
 <figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (3) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 6. We would now be able to change the document view to Edit mode if we need to change values of the fields, which were marked as Updatable field:
 

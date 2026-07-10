@@ -5,6 +5,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'score-dialog',
     templateUrl: './score-dialog.component.html',
     styleUrls: ['./score-dialog.component.scss'],
+    standalone: false
 })
 export class ScoreDialog {
     public loading = true;

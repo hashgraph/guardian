@@ -21,7 +21,8 @@
         font-family: Inter;
         font-size: 14px;
         font-weight: 400;
-        color: #000;
+        color: var(--guardian-font-color, #000);
+        background: var(--guardian-background, #fff);
         padding: 8px 16px;
 
         &:enabled:hover {
@@ -37,7 +38,7 @@
         }
     }
 
-    .p-dropdown {
+    .p-select {
         width: 100%;
     }
 
@@ -58,7 +59,8 @@
         font-family: Inter;
         font-size: 14px;
         font-weight: 400;
-        color: #000;
+        color: var(--guardian-font-color, #000);
+        background: var(--guardian-background, #fff);
         padding: 8px 16px;
 
         &:hover {
@@ -79,7 +81,8 @@
         font-family: Inter;
         font-size: 14px;
         font-weight: 400;
-        color: #000;
+        color: var(--guardian-font-color, #000);
+        background: var(--guardian-background, #fff);
         padding: 10px 16px;
     }
 }
@@ -95,7 +98,8 @@
     font-family: Inter;
     font-size: 14px;
     font-weight: 400;
-    color: #000;
+    color: var(--guardian-font-color, #000);
+    background: var(--guardian-background, #fff);
 
     &:enabled:hover {
         border-color: var(--guardian-primary-color, #4169E2);
@@ -114,6 +118,23 @@
     }
 }
 
+.p-input-icon-right {
+    position: relative;
+    display: inline-block;
+
+    > i:last-of-type {
+        position: absolute;
+        top: 50%;
+        right: 0.75rem;
+        margin-top: -0.5rem;
+        color: var(--input-icon-color);
+    }
+
+    > .p-inputtext {
+        padding-right: 2.5rem;
+    }
+}
+
 .guardian-search {
     display: flex;
     flex-direction: column;
@@ -125,6 +146,8 @@
         border-radius: 8px;
         outline: none;
         border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+        color: var(--guardian-font-color, #000);
+        background: var(--guardian-background, #fff);
 
         &:enabled:hover {
             border-color: var(--guardian-primary-color, #4169E2);

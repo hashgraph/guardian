@@ -1,37 +1,45 @@
 # Retrieves Hedera Message ID
 
-{% swagger method="get" path="" baseUrl="/tools/{id}/export/message" summary="Return Hedera message ID for the specified published tool." %}
-{% swagger-description %}
-Returns the Hedera message ID for the specified tool published onto IPFS. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`GET /api/v1/tools/{id}/export/message`**
 
-{% swagger-parameter in="path" name="id" type="String" required="true" %}
-Tool ID
-{% endswagger-parameter %}
+Returns the Hedera message ID for the specified tool published onto IPFS.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | string | Yes | Tool ID (MongoDB ObjectId) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "My Tool",
+  "messageId": "1700000000.000000001",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001"
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `id` is missing or invalid |
+| `500 Internal Server Error` | Unexpected server failure |

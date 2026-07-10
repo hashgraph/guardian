@@ -1,64 +1,60 @@
 # Returns all Artifacts
 
-{% swagger method="get" path="" baseUrl="/artifacts" summary="Returns all artifacts." %}
-{% swagger-description %}
+**`GET /artifacts`**
+
 Returns all artifacts.
-{% endswagger-description %}
 
-{% swagger-parameter in="query" name="policyID" type="String" required="true" %}
-Policy Identifier
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="true" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+**Permission:** `Permissions.ARTIFACTS_FILE_READ`
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="true" %}
-The numbers of items to return
-{% endswagger-parameter %}
+---
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Artifact'
-}
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `id` | String | No | Artifact identifier |
+| `type` | String | No | Filter by owner type: `tool` or `policy` |
+| `policyId` | String | No | Filter by policy identifier |
+| `toolId` | String | No | Filter by tool identifier |
+| `pageIndex` | Integer | No | The number of pages to skip before starting to collect the result set |
+| `pageSize` | Integer | No | The number of items to return |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of artifact objects. The total item count is provided in the `X-Total-Count` response header.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1-e4d5-6789-0123-456789abcdef",
+    "name": "country_emission_factors",
+    "type": "JSON",
+    "extention": "json",
+    "owner": "did:hedera:testnet:...",
+    "policyId": "f3b2a9c1e4d5678901234567",
+    "category": "policy",
+    "creator": "did:hedera:testnet:...",
+    "createDate": "2024-01-01T00:00:00.000Z",
+    "updateDate": "2024-01-01T00:00:00.000Z"
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

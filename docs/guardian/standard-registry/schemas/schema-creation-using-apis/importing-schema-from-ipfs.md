@@ -1,63 +1,60 @@
 # Importing Schema from IPFS
 
-<mark style="color:green;">`POST`</mark> `/schemas/{topicId}/import/message`
+**`POST /schemas/{topicId}/import/message`**
 
 Imports new schema from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                      | Type   | Description |
-| ----------------------------------------- | ------ | ----------- |
-| topicID<mark style="color:red;">\*</mark> | String | Topic ID    |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_CREATE`
 
-#### Request Body
+---
 
-| Name                               | Type   | Description                                                                                          |
-| ---------------------------------- | ------ | ---------------------------------------------------------------------------------------------------- |
-| <mark style="color:red;">\*</mark> | Object | Object that contains the identifier of the Hedera message which contains the IPFS CID of the schema. |
+## Request
 
-{% tabs %}
-{% tab title="201: Created Successful Operation" %}
-```javascript
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | String | Yes | Topic ID |
+
+### Request Body
+
+An object containing the identifier of the Hedera message which contains the IPFS CID of the schema.
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "messageId": "1700000000.000000001"
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+Returns an array of the imported schema objects.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "PUBLISHED",
+    "topicId": "f3b2a9c1e4d5678901234567"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
-
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error |
+| `500 Internal Server Error` | Unexpected server failure |

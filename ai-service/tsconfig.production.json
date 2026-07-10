@@ -1,22 +1,27 @@
 {
-    "compileOnSave": true,
     "compilerOptions": {
-        "skipLibCheck": true,
         "declaration": true,
         "emitDecoratorMetadata": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
-        "inlineSourceMap": false,
         "lib": [
-            "es6"
+            "ES2023"
         ],
         "module": "NodeNext",
-        "moduleResolution": "nodenext",
+        "moduleResolution": "NodeNext",
+        "noUnusedLocals": true,
+        "noUnusedParameters": false,
         "outDir": "dist/",
-        "target": "es2022",
         "paths": {
-          "#constants/*": ["./src/constants/*"]
-        }
+            "#constants/*": [
+                "./src/constants/*"
+            ]
+        },
+        "rootDir": "./src",
+        "skipLibCheck": true,
+        "sourceMap": false,
+        "strict": false,
+        "target": "ES2023"
     },
     "exclude": [
         "node_modules",

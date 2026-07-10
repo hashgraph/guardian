@@ -1,65 +1,57 @@
 # Returns all Schemas related to the topic
 
-<mark style="color:blue;">`GET`</mark> `/schemas/{topicId}`
+**`GET /schemas/{topicId}`**
 
 Returns all schemas by topicId.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                      | Type    | Description |
-| ----------------------------------------- | ------- | ----------- |
-| topicId<mark style="color:red;">\*</mark> | Integer | Topic ID    |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_READ`
 
-#### Query Parameters
+---
 
-| Name      | Type    | Description                                                           |
-| --------- | ------- | --------------------------------------------------------------------- |
-| pageIndex | Integer | The number of pages to skip before starting to collect the result set |
-| pageSize  | Integer | The numbers of items to return                                        |
+## Request
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `topicId` | String | Yes | Topic ID |
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `pageIndex` | Integer | No | The number of pages to skip before starting to collect the result set |
+| `pageSize` | Integer | No | The number of items to return |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of schema objects. The total item count is provided in the `X-Total-Count` response header.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Schema name",
+    "status": "PUBLISHED",
+    "topicId": "f3b2a9c1e4d5678901234567",
+    "version": "1.0.0"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

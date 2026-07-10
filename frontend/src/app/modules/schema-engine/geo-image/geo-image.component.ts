@@ -23,6 +23,7 @@ import { transformExtent } from 'ol/proj';
 @Component({
     selector: 'app-geo-image',
     template: `<div #map style="height: 515px; width: 100%;"></div>`,
+    standalone: false
 })
 export class GeoImageComponent implements AfterViewInit, OnChanges, OnDestroy {
     @Input() data?: { bbox?: number[] };

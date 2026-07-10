@@ -38,7 +38,7 @@
 .icon-btn {
     width: 32px;
     height: 32px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-radius: 8px;
     cursor: pointer;
     display: grid;
@@ -77,7 +77,7 @@
     height: 36px;
     border-radius: 8px;
     border: 1px solid #E5E7EB;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     padding: 10px 12px;
     font-size: 14px;
     line-height: 20px;
@@ -107,7 +107,7 @@
     left: calc(-1 * var(--dlg-pad-x));
     right: calc(-1 * var(--dlg-pad-x));
     height: 1px;
-    background: #E1E7EF;
+    background: var(--guardian-grey-background, #E1E7EF);
 }
 
 .action-buttons {

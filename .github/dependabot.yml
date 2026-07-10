@@ -4,13 +4,54 @@ updates:
     directory: "/"
     schedule:
       interval: weekly
+      day: monday
+      time: "14:00"
+      timezone: "UTC"
     open-pull-requests-limit: 10
     target-branch: "develop"
+    rebase-strategy: auto
+    assignees:
+      - "Pyatakov"
+    labels:
+      - "dependencies"
+      - "ci"
+    commit-message:
+      prefix: "ci"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   - package-ecosystem: npm
     directory: "/"
     schedule:
       interval: weekly
+      day: monday
+      time: "14:00"
+      timezone: "UTC"
     open-pull-requests-limit: 15
     target-branch: "develop"
     versioning-strategy: increase-if-necessary
+    rebase-strategy: auto
+    assignees:
+      - "Pyatakov"
+    labels:
+      - "dependencies"
+      - "npm"
+    commit-message:
+      prefix: "chore"
+    ignore:
+      # Review major bumps (produced by GitHub Actions separately) manually, since they often contain breaking changes
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
+    groups:
+      angular:
+        patterns:
+          - "@angular/*"
+          - "@angular-eslint/*"
+      nestjs:
+        patterns:
+          - "@nestjs/*"
+      micro-orm:
+        patterns:
+          - "@mikro-orm/*"

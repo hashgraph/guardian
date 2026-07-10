@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'switch-config',
     templateUrl: './switch-config.component.html',
     styleUrls: ['./switch-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class SwitchConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

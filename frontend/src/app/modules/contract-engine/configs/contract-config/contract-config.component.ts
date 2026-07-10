@@ -21,6 +21,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'contract-config',
     templateUrl: './contract-config.component.html',
     styleUrls: ['./contract-config.component.css'],
+    standalone: false
 })
 export class ContractConfigComponent implements OnInit, OnDestroy {
     public user: UserPermissions = new UserPermissions();
@@ -190,6 +191,11 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     ];
     type: ContractType = ContractType.WIPE;
 
+    public readonly contractTypeOptions = [
+        { label: 'Token Wiping Contracts', value: ContractType.WIPE },
+        { label: 'Token Retirement Contracts', value: ContractType.RETIRE },
+    ];
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
@@ -337,7 +343,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Import Contract',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -373,7 +379,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Create Contract',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
@@ -410,7 +416,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Enter Hedera Identifier',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
@@ -447,7 +453,7 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                 ],
                 title: 'Enter Hedera and Token identifiers',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (!result) {
                 return;
@@ -643,12 +649,12 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
                     .filter((token: Token) => !token.draftToken);
                 const dialogRef = this.dialog.open(SetPoolDialogComponent, {
                     width: '750px',
-                    styleClass: 'g-dialog set-pool-dialog',
+                    styleClass: 'guardian-dialog set-pool-dialog',
                     modal: true,
                     closable: false,
                     showHeader: false,
                     height: '450px'
-                });
+                })!;
                 dialogRef.onClose.subscribe(async (result) => {
                     if (result) {
                         result.tokens = result.tokens.map((item: any) => {
@@ -690,8 +696,9 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
 
     openWipeRequests(contract: any) {
         this.dialog.open(WipeRequestsDialogComponent, {
-            width: contract.version === '1.0.0' ? '650px' : '850px',
-            styleClass: 'g-dialog',
+            width: '800px',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
             data: contract,
@@ -701,7 +708,8 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openPools(contract: any) {
         this.dialog.open(RetirePoolsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog retire-pool-dialog',
+            styleClass: 'guardian-dialog retire-pool-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
             data: contract,
@@ -711,7 +719,8 @@ export class ContractConfigComponent implements OnInit, OnDestroy {
     openRetireRequests(contract: any) {
         this.dialog.open(RetireRequestsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
             data: contract,

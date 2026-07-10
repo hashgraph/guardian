@@ -1,24 +1,26 @@
 <div class="content-dropdown" [attr.readonly-block]="readonly">
-    <p-dropdown
-        class="guardian-dropdown"
-        panelStyleClass="guardian-dropdown-panel"
-        [(ngModel)]="currentValue"
-        [options]="documents"
-        [disabled]="disabled"
-        [showClear]="false"
-        appendTo="body"
-        optionLabel="name"
-        optionValue="value"
-        placeholder="Select"  
-        (onChange)="onDropdown($event.value)"    
+  <p-select
+    class="guardian-dropdown"
+    panelStyleClass="guardian-dropdown-panel"
+    [(ngModel)]="currentValue"
+    [options]="documents"
+    [disabled]="disabled"
+    [showClear]="false"
+    appendTo="body"
+    optionLabel="name"
+    optionValue="value"
+    placeholder="Select"
+    (onChange)="onDropdown($event.value)"
     >
-    </p-dropdown>
+  </p-select>
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

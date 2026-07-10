@@ -10,7 +10,7 @@ form {
     top: 0;
     right: 0;
     bottom: 0;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: flex;
     align-items: center;
     padding-left: 350px;
@@ -26,7 +26,7 @@ form {
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -113,7 +113,7 @@ form {
     flex-direction: column;
     grid-row-gap: 16px;
     row-gap: 16px;
-    background: #FFFFFF;
+    background: var(--guardian-background, #FFFFFF);
     box-shadow: 0px 4px 8px 0px #00000014;
     padding: 24px;
     border-radius: 8px;
@@ -158,13 +158,20 @@ form {
 
         .view-document-button {
             cursor: pointer;
+            color: var(--color-primary);
             display: flex;
             column-gap: 8px;
             height: 28px;
             padding: 6px 16px;
             align-items: center;
             border-radius: 6px;
-            border: 1px solid var(--color-secondary);
+            border: 1px solid var(--color-primary);
+
+            i,
+            ::ng-deep svg {
+                color: var(--color-primary);
+                fill: var(--color-primary);
+            }
 
             span {
                 width: min-content;
@@ -177,7 +184,7 @@ form {
 .profile .header h1 {
     margin-bottom: 48px;
     width: 100%;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, serif;
     font-size: 32px;
     font-style: normal;
@@ -344,7 +351,7 @@ a[disabled="true"] {
 .error-list p {
     font-size: 20px;
     margin: 0 0 16px 0;
-    color: #000000;
+    color: var(--guardian-font-color, #000000);
 }
 
 .error-list button {
@@ -404,7 +411,7 @@ a[disabled="true"] {
 
 :host::ng-deep {
     .hedera-form-item {
-        .p-dropdown {
+        .p-select {
             width: 100%;
             border-radius: 8px;
         }
@@ -550,7 +557,7 @@ a[disabled="true"] {
         flex-grow: 0;
         padding: 30px 0;
         width: 100%;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
     }
 }
 
@@ -670,7 +677,7 @@ a[disabled="true"] {
 }
 
 .user-profile-setup-title {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, sans-serif;
     font-size: 32px;
     font-style: normal;
@@ -820,7 +827,7 @@ a[disabled="true"] {
     align-items: center;
     height: 64px;
     border-top: 1px solid var(--color-grey-3, #e1e7ef);
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .apply-filters-button {
@@ -858,9 +865,9 @@ a[disabled="true"] {
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         height: 40px;
-        border: 1px solid var(--color-secondary);
+        border: 1px solid var(--color-primary);
         border-radius: 8px;
     }
 }
@@ -993,6 +1000,22 @@ a[disabled="true"] {
     display: flex;
     flex-direction: column;
 
+    &.checkbox-field {
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+
+        p-checkbox {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .p-checkbox-label {
+            margin: 0;
+            line-height: 1;
+        }
+    }
+
     &:not(:last-child) {
         margin-bottom: 16px;
     }
@@ -1068,7 +1091,7 @@ mat-radio-button {
 }
 
 .tabs-nav {
-    margin: 24px 0px;
+    margin: 15px 0 40px;
 }
 
 .guardian-button {
@@ -1241,7 +1264,7 @@ mat-radio-button {
     min-width: 110px !important;
 }
 
-:host ::ng-deep .p-tabview-nav-link {
+:host ::ng-deep .p-tab {
     text-decoration: none !important;
 }
 

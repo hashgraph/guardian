@@ -1,0 +1,12 @@
+@if (enabled) {
+  <div class="next-gen-banner">
+    <div class="next-gen-banner-line">
+      <i class="pi pi-star-fill next-gen-banner-star"></i>
+      <span class="next-gen-banner-text">
+        Experimental UI enabled.
+      </span>
+      <a class="next-gen-banner-link" [href]="feedbackMailto" target="_blank" rel="noopener noreferrer">Send feedback</a>
+    </div>
+    <button type="button" class="next-gen-banner-turn-off" (click)="turnOff()">Disable</button>
+  </div>
+}

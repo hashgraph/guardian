@@ -14,6 +14,7 @@ interface IItem {
     selector: 'compare-policy-dialog',
     templateUrl: './compare-policy-dialog.component.html',
     styleUrls: ['./compare-policy-dialog.component.scss'],
+    standalone: false
 })
 export class ComparePolicyDialog {
     public loading = true;
@@ -102,6 +103,7 @@ export class ComparePolicyDialog {
             this.items = this.items.filter((e) => e.value !== item.value);
         }
         this.updateMap();
+        this.onFilterPolicy();
     }
 
     private addItem(item: IItem): boolean {
@@ -216,6 +218,10 @@ export class ComparePolicyDialog {
 
     public onSelectLocalItem(item: any) {
         item._selected = !item._selected;
+        this.updateLocalIds();
+    }
+
+    public updateLocalIds(): void {
         this.localIds = this.localItems.filter((p) => p._selected);
     }
 

@@ -13,7 +13,8 @@ interface IOption {
 @Component({
     selector: 'menu-button',
     templateUrl: './menu-button.component.html',
-    styleUrls: ['./menu-button.component.scss']
+    styleUrls: ['./menu-button.component.scss'],
+    standalone: false
 })
 export class MenuButton {
     @Input('immediately') immediately: boolean = false;

@@ -76,8 +76,8 @@ REGISTRY_CONFIG = {
     "gold-standard": {
         "projects": "projects.csv",
         "credits": [
-            {"file": "GSF Registry Credits Export 2026-03-31-issuances.csv", "type": "issuance"},
-            {"file": "GSF Registry Credits Export 2026-03-31-retirements.csv", "type": "retirement"},
+            {"file": "GSF Registry Credits Export 2026-05-21-issuances.csv", "type": "issuance"},
+            {"file": "GSF Registry Credits Export 2026-05-21-retirements.csv", "type": "retirement"},
         ],
     },
     "american-carbon-registry": {
@@ -220,7 +220,7 @@ def process_credits(registry: str) -> pd.DataFrame | None:
             if not credit_path.exists():
                 print(f"  Credit file not found: {credit_path.name}")
                 continue
-            df = pd.read_csv(credit_path)
+            df = pd.read_csv(credit_path, encoding="latin-1", engine="python", on_bad_lines="warn")
             print(f"  Read {credit_path.name}: {len(df)} rows")
             # Normalize column names to match the expected mapping
             df = _normalize_apx_credit_columns(df, registry, entry["type"])
@@ -254,7 +254,10 @@ def process_projects(registry: str, credits: pd.DataFrame) -> pd.DataFrame | Non
     if not project_path.exists():
         return None
 
-    df = pd.read_csv(project_path)
+    if registry in APX_REGISTRIES:
+        df = pd.read_csv(project_path, encoding="latin-1", engine="python", on_bad_lines="warn")
+    else:
+        df = pd.read_csv(project_path)
     print(f"  Raw project rows: {len(df)}")
 
     if registry == "verra":
@@ -314,7 +317,14 @@ def _apply_corsia_eligible(df: pd.DataFrame, registry: str) -> pd.DataFrame:
             if not credit_path.exists():
                 continue
             try:
-                raw = pd.read_csv(credit_path, dtype=str, usecols=[pid_col, "CORSIA Eligible"])
+                raw = pd.read_csv(
+                    credit_path,
+                    dtype=str,
+                    usecols=[pid_col, "CORSIA Eligible"],
+                    encoding="latin-1",
+                    engine="python",
+                    on_bad_lines="warn",
+                )
             except (ValueError, KeyError):
                 continue
             eligible = raw[raw["CORSIA Eligible"].str.strip().str.lower() == "yes"]

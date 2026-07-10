@@ -18,7 +18,7 @@ import {
     Payload,
     Transport,
 } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { headers } from 'nats';
 
 @Controller()

@@ -62,7 +62,7 @@ Show how message channels are created and routing rules are defined.
 * The topic is activated.
 * It becomes the ingestion point for external VC messages.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (16).png" alt=""><figcaption></figcaption></figure>
 
 #### Writer Block(s)
 

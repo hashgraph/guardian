@@ -1,15 +1,40 @@
 # Adding Wipe Wiper
 
-{% swagger method="post" path="" baseUrl="/contracts/wipe/{contractId}/wiper/{hederaId}" summary="Add wipe wiper." %}
-{% swagger-description %}
-Add wipe contract wiper. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/contracts/wipe/{contractId}/wiper/{hederaId}`**
 
-{% swagger-parameter in="path" name="hederaId" type="String" required="true" %}
-Hedera Identifier
-{% endswagger-parameter %}
+Adds a wipe contract wiper for the specified Hedera account. Only Standard Registry users are allowed to make this request.
 
-{% swagger-parameter in="path" name="contractId" type="String" required="true" %}
-Contract Identifier
-{% endswagger-parameter %}
-{% endswagger %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.CONTRACTS_WIPER_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter    | Type   | Required | Description                                  |
+|--------------|--------|----------|----------------------------------------------|
+| `contractId` | string | Yes      | Contract identifier                          |
+| `hederaId`   | string | Yes      | Hedera account ID to grant wiper rights to   |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
+```
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

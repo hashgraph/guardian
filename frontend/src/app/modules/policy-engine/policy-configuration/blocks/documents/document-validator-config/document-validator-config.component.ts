@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, SchemaVariables} from '../../../../struct
     selector: 'document-validator-config',
     templateUrl: './document-validator-config.component.html',
     styleUrls: ['./document-validator-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class DocumentValidatorConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

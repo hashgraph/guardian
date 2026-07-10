@@ -23,6 +23,7 @@ interface SuggestionsOrderPriorityItem {
     selector: 'app-suggestions-configuration',
     templateUrl: './suggestions-configuration.component.html',
     styleUrls: ['./suggestions-configuration.component.scss'],
+    standalone: false
 })
 export class SuggestionsConfigurationComponent {
     isConfirmed: boolean = false;

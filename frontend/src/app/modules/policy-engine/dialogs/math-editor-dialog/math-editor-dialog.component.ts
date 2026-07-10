@@ -102,7 +102,8 @@ class Tooltip {
 @Component({
     selector: 'math-editor-dialog',
     templateUrl: './math-editor-dialog.component.html',
-    styleUrls: ['./math-editor-dialog.component.scss']
+    styleUrls: ['./math-editor-dialog.component.scss'],
+    standalone: false
 })
 export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     @ViewChild('contextBody', { static: false }) contextBodyRef: ElementRef;
@@ -480,7 +481,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: ['Select Schema', 'Select Field'],
                 value: item.field,
@@ -488,7 +488,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 view,
                 groups
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
@@ -507,13 +507,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: 'Select Field',
                 value: item.field,
                 view: this.createSchemaView(schema),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
@@ -687,12 +686,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: this.inputSchema?.name || 'Set Link',
                 view: this.createSchemaView(this.inputSchema),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
@@ -734,13 +732,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: 'Select components',
                 view: this.createComponentView(),
                 subName: false
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
@@ -872,8 +869,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    public onCodeChangeTab(tab: any) {
-        this.codeTab = tab.index === 0 ? 'general' : 'advanced';
+    public onCodeChangeTab(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.codeTab = tabIndex === 0 ? 'general' : 'advanced';
     }
 
     public cursorActivity($event: any) {
@@ -885,13 +883,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schemas: null,
                 schema: this.inputSchema,
                 policyId: this.policyId
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 this.inputDocumentValue = result;
@@ -905,13 +902,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schemas: schemas,
                 schema: null,
                 policyId: this.policyId
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 this.inputRelationshipsValue.push(result);
@@ -925,13 +921,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schema: schema,
                 policyId: this.policyId,
                 value: item.document
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.document = result.document;
@@ -1118,7 +1113,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 title: 'Rename',
                 button: 'Save'
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any) => {
             if (!result) {
                 return;
@@ -1143,7 +1138,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 pages.delete($event);

@@ -1,43 +1,55 @@
-<div *ngIf="type == 'selector' && visible" class="content" [attr.readonly-block]="readonly">
-    <ng-container *ngFor="let option of options">
-        <div *ngIf="option.name" class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
-            {{ option.name }}
+@if (type == 'selector' && visible) {
+  <div class="content" [attr.readonly-block]="readonly">
+    @for (option of options; track option) {
+      @if (option.name) {
+        <div class="btn-option {{option.uiClass}}" (click)="onSelect(option.value)">
+          {{ option.name }}
         </div>
-    </ng-container>
-</div>
+      }
+    }
+  </div>
+}
 
-<div *ngIf="type == 'download'" class="content" [attr.readonly-block]="readonly">
+@if (type == 'download') {
+  <div class="content" [attr.readonly-block]="readonly">
     <div class="btn-link" (click)="onDownload()">{{ content }}</div>
-</div>
+  </div>
+}
 
-<div *ngIf="type == 'dropdown'" class="content-dropdown" [attr.readonly-block]="readonly">
-    <p-dropdown
-        class="guardian-dropdown"
-        panelStyleClass="guardian-dropdown-panel"
-        [(ngModel)]="currentValue"
-        [options]="options"
-        optionLabel="name"
-        (onChange)="onDropdown()"
-        placeholder="Select"
-        [appendTo]="'body'"
-    >
-    </p-dropdown>
-</div>
+@if (type == 'dropdown') {
+  <div class="content-dropdown" [attr.readonly-block]="readonly">
+    <p-select
+      class="guardian-dropdown"
+      panelStyleClass="guardian-dropdown-panel"
+      [(ngModel)]="currentValue"
+      [options]="options"
+      optionLabel="name"
+      (onChange)="onDropdown()"
+      placeholder="Select"
+      [appendTo]="'body'"
+      >
+    </p-select>
+  </div>
+}
 
-<div *ngIf="type == 'transformation'" class="content" [attr.readonly-block]="readonly">
-    <p-button 
-        (click)="onTransformation()" 
-        class="transformation-button"
-        [disabled]="buttonLoading"
-    >
-        {{ title }}
+@if (type == 'transformation') {
+  <div class="content" [attr.readonly-block]="readonly">
+    <p-button
+      (click)="onTransformation()"
+      class="transformation-button"
+      [disabled]="buttonLoading"
+      >
+      {{ title }}
     </p-button>
-</div>
+  </div>
+}
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

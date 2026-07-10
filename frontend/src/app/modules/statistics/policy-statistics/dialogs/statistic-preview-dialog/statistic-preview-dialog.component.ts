@@ -7,6 +7,7 @@ import { FormulaEngine, GenerateUUIDv4 } from '@guardian/interfaces';
     selector: 'statistic-preview-dialog',
     templateUrl: './statistic-preview-dialog.component.html',
     styleUrls: ['./statistic-preview-dialog.component.scss'],
+    standalone: false
 })
 export class StatisticPreviewDialog {
     public loading = true;

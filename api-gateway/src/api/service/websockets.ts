@@ -1,5 +1,5 @@
 import WebSocket, { WebSocketServer } from 'ws'
-import { IncomingMessage, Server } from 'http';
+import { IncomingMessage, Server } from 'node:http';
 import { ExternalProviders, GenerateUUIDv4, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { generateNumberFromString, IAuthUser, MeecoApprovedSubmission, MessageResponse, NatsService, NotificationHelper, PinoLogger, Singleton } from '@guardian/common';
 import { NatsConnection } from 'nats';
@@ -57,6 +57,13 @@ export class WebSocketsService {
      */
     private wss: WebSocketServer;
 
+    // Silence allowed before a service is reported down. Kept above 2x the
+    // frontend heartbeat (30s) so a busy service answering late is not flagged.
+    private static readonly SERVICE_LIVENESS_TTL = 70 * 1000;
+    // Pause for the current poll's replies to land before broadcasting.
+    private static readonly STATUS_POLL_WAIT = 500;
+    // Last status reply per service instance (keyed by service channel, or name).
+    private readonly serviceLiveness = new Map<string, { name: string; state: string; lastSeen: number }>();
     /**
      * Get statuses mutex
      * @private
@@ -209,9 +216,7 @@ export class WebSocketsService {
     private async getStatusesHandler(
         type: MessageAPI.UPDATE_STATUS | MessageAPI.GET_STATUS
     ) {
-        const channel = new WebSocketsServiceChannel();
-
-        const statuses = {
+        const statuses: Record<string, string[]> = {
             // LOGGER_SERVICE: [],
             GUARDIAN_SERVICE: [],
             AUTH_SERVICE: [],
@@ -220,30 +225,22 @@ export class WebSocketsService {
             NOTIFICATION_SERVICE: [],
         };
 
-        const getStatuses = (): Promise<void> => {
-            channel.publish(MessageAPI.GET_STATUS);
-            return new Promise((resolve) => {
-                const sub = channel.subscribe(
-                    MessageAPI.SEND_STATUS,
-                    // tslint:disable-next-line:no-shadowed-variable
-                    (msg) => {
-                        const { name, state } = msg;
+        // Prompt replies; the persistent SEND_STATUS listener records them,
+        // including any that arrive after this wait (they count next time).
+        this.channel.publish(MessageAPI.GET_STATUS);
+        await new Promise((resolve) => setTimeout(resolve, WebSocketsService.STATUS_POLL_WAIT));
 
-                        if (!statuses[name]) {
-                            statuses[name] = [];
-                        }
-                        statuses[name].push(state);
-                    }
-                );
-
-                setTimeout(() => {
-                    sub.unsubscribe();
-                    resolve();
-                }, 300);
-            });
-        };
-
-        await getStatuses();
+        const now = Date.now();
+        this.serviceLiveness.forEach((info, key) => {
+            if (now - info.lastSeen > WebSocketsService.SERVICE_LIVENESS_TTL) {
+                this.serviceLiveness.delete(key);
+                return;
+            }
+            if (!statuses[info.name]) {
+                statuses[info.name] = [];
+            }
+            statuses[info.name].push(info.state);
+        });
 
         this.getStatusesClients.forEach((client: any) => {
             this.send(client, {
@@ -370,6 +367,18 @@ export class WebSocketsService {
             });
 
             return new MessageResponse({});
+        });
+
+        this.channel.subscribe(MessageAPI.SEND_STATUS, (msg) => {
+            const { name, state, serviceName } = msg || {};
+            if (!name) {
+                return;
+            }
+            this.serviceLiveness.set(serviceName || name, {
+                name,
+                state,
+                lastSeen: Date.now(),
+            });
         });
 
         this.channel.subscribe(MessageAPI.UPDATE_STATUS, async (msg) => {

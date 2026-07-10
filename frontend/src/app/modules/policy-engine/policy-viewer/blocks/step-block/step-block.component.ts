@@ -11,7 +11,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
     selector: 'step-block',
     templateUrl: './step-block.component.html',
-    styleUrls: ['./step-block.component.scss']
+    styleUrls: ['./step-block.component.scss'],
+    standalone: false
 })
 export class StepBlockComponent implements OnInit {
     private socket: Subscription | null;

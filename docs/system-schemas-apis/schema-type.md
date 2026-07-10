@@ -1,59 +1,61 @@
-# Schema Type
+# Returns Schema by Entity Type
 
-### FINDS THE SCHEMA USING SCHEMA TYPE
+**`GET /schemas/system/entity/{schemaEntity}`**
 
-{% swagger method="get" path="" baseUrl="/schemas/system/entity/{schemaEntity}" summary="Returns Schema by Schema Type" %}
-{% swagger-description %}
-Finds the schema using Schema Type.
-{% endswagger-description %}
+Returns the active system schema for the specified entity type.
 
-{% swagger-parameter in="path" name="schemaEntity" type="String" required="true" %}
-Schema Type 
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaEntity` | string | Yes | Entity type of the schema |
+
+Valid `schemaEntity` values:
+
+| Value | Description |
+|-------|-------------|
+| `STANDARD_REGISTRY` | Standard Registry entity schema |
+| `USER` | User entity schema |
+| `POLICY` | Policy entity schema |
+| `MINT_TOKEN` | Fungible token mint schema |
+| `WIPE_TOKEN` | Token wipe schema |
+| `MINT_NFTOKEN` | Non-fungible token mint schema |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Schema'
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "Standard Registry Schema",
+  "entity": "STANDARD_REGISTRY",
+  "status": "PUBLISHED",
+  "system": true,
+  "active": true,
+  "document": {
+    "$id": "#StandardRegistry",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {}
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="404: Not Found" description="Not Found" %}
-
-
-```
-Schema not found.
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `404 Not Found` | Schema not found for the given entity type |
+| `500 Internal Server Error` | Unexpected server failure |

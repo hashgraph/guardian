@@ -21,6 +21,7 @@ import {
     templateUrl: './request-addon-config.component.html',
     styleUrls: ['./request-addon-config.component.scss'],
     encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class RequestAddonConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

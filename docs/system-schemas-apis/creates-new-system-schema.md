@@ -1,56 +1,71 @@
 # Creates New System Schema
 
-### CREATES NEW SYSTEM SCHEMA
+**`POST /schemas/system/{username}`**
 
-{% swagger method="post" path="" baseUrl="/schemas/system/{username}" summary="Creates new System Schema" %}
-{% swagger-description %}
-Creates new system schema. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Creates a new system schema. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains valid Schema
-{% endswagger-parameter %}
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_CREATE`
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `username` | string | Yes | Username of the schema owner |
+
+### Request Body
+
+```json
 {
-    // Response
+  "name": "Example System Schema",
+  "description": "A system schema for standard registry data",
+  "entity": "STANDARD_REGISTRY",
+  "document": {
+    "$id": "#Example",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {}
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Schema name |
+| `description` | string | No | Schema description |
+| `entity` | string | Yes | Entity type: `STANDARD_REGISTRY`, `USER`, `POLICY`, `MINT_TOKEN`, `WIPE_TOKEN`, `MINT_NFTOKEN` |
+| `document` | object | Yes | JSON Schema definition |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
 {
-    // Response
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "Example System Schema",
+  "entity": "STANDARD_REGISTRY",
+  "status": "DRAFT",
+  "system": true,
+  "active": false,
+  "owner": "example_user"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid schema data |
+| `500 Internal Server Error` | Unexpected server failure |

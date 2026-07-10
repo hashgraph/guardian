@@ -21,7 +21,8 @@ import {
 @Component({
     selector: 'app-record-controller',
     templateUrl: './record-controller.component.html',
-    styleUrls: ['./record-controller.component.scss']
+    styleUrls: ['./record-controller.component.scss'],
+    standalone: false
 })
 export class RecordControllerComponent implements OnInit {
     @Input('policyId') policyId!: string;
@@ -151,7 +152,7 @@ export class RecordControllerComponent implements OnInit {
             },
             modal: true,
             closable: false
-        });
+        })!;
 
         dialogRef.onClose.subscribe((confirmed: boolean) => {
             if (confirmed) {
@@ -169,7 +170,7 @@ export class RecordControllerComponent implements OnInit {
                 name: this.policyTest.state.name,
                 description: this.policyTest.state.description
             }
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result: SavePolicyTestRecordResult | null) => {
             if (!result) {
@@ -250,7 +251,7 @@ export class RecordControllerComponent implements OnInit {
                 withRecords: this.withRecords,
                 policyId: this.policyId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.loading = true;
@@ -549,7 +550,7 @@ export class RecordControllerComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.overlay = this.recordId;
