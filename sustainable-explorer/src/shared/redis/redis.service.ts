@@ -23,11 +23,22 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
     private readonly logger = new Logger(RedisService.name);
     private client: Redis | null = null;
 
-    // INCR the bucket; set the window TTL only on the first hit; return [count, ttlMs].
+    // INCR the bucket; set the window TTL only on the first hit. Denied requests
+    // must NOT consume quota: if the counter would exceed the (dynamic) limit,
+    // DECR it back so the stored count never climbs above the active limit. This
+    // keeps blocked retries from inflating the counter — so when an admin RAISES
+    // the limit mid-window, the next request is allowed immediately instead of
+    // staying stuck behind an artificially inflated count. Returns [count, ttlMs];
+    // over-limit hits return limit+1 as a sentinel so the caller reports denied.
     private static readonly RATE_LIMIT_LUA = `
         local current = redis.call('INCR', KEYS[1])
         if current == 1 then
             redis.call('PEXPIRE', KEYS[1], ARGV[1])
+        end
+        local limit = tonumber(ARGV[2])
+        if current > limit then
+            redis.call('DECR', KEYS[1])
+            return {limit + 1, redis.call('PTTL', KEYS[1])}
         end
         return {current, redis.call('PTTL', KEYS[1])}
     `;
@@ -128,6 +139,7 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
                 1,
                 key,
                 String(windowSeconds * 1000),
+                String(limit),
             )) as [number, number];
 
             return {
