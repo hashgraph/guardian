@@ -13,15 +13,14 @@
         </p-toggleswitch>
       </td>
     </tr>
-    <tr class="propHeader" [attr.collapse]="propHidden.metaData">
+    <tr class="propHeader" (click)="onHide(propHidden, 'buttonsGroup')">
       <td class="propRowCol"></td>
-      <td class="propHeaderCell cellName button-section-header" (click)="onHide(propHidden, 'buttonsGroup')"
-        [attr.collapse]="propHidden.buttonsGroup">
+      <td class="propHeaderCell cellName button-section-header" [attr.collapse]="propHidden.buttonsGroup">
         <i class="pi pi-chevron-down chevron-icon"></i>
         <span>Buttons</span>
       </td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addButton()">
+        <div class="propAdd" (click)="$event.stopPropagation(); addButton()">
           <i class="pi pi-plus"></i>
           <span>Add Button</span>
         </div>

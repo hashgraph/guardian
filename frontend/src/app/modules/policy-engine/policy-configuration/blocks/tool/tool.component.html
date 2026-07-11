@@ -1,9 +1,9 @@
 @if (properties) {
   <table class="properties tool-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader">
+    <tr class="propHeader" (click)="onHide(propHidden, 'tool')">
       <td class="propRowCol"></td>
-      <td class="propHeaderCell cellName tool-section-header" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
+      <td class="propHeaderCell cellName tool-section-header" [attr.collapse]="propHidden.tool">
         <i class="pi pi-chevron-down chevron-icon"></i>
         <span>Tool</span>
       </td>
@@ -44,9 +44,9 @@
         <span class="readonly-prop">{{ tool.hash }}</span>
       </td>
     </tr>
-    <tr class="propHeader">
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
       <td class="propRowCol"></td>
-      <td class="propHeaderCell cellName tool-section-header" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+      <td class="propHeaderCell cellName tool-section-header" [attr.collapse]="propHidden.main">
         <i class="pi pi-chevron-down chevron-icon"></i>
         <span>Variables</span>
       </td>
@@ -56,7 +56,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol cellCollapse" (click)="onHide(variablesHidden, i)"
           [attr.collapse]="variablesHidden[i]">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">
           {{ item.name }}

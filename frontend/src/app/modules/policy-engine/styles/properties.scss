@@ -1248,124 +1248,6 @@
     }
 }
 
-// PrimeNG select/multiSelect overlays render via appendTo="body" and land
-// outside .policy-configuration's DOM subtree, so ::ng-deep scoping above
-// can't reach them. panelStyleClass="pc-select-panel" tags only our own
-// overlays, so this stays global on purpose without leaking to other
-// p-select/p-multiSelect usages elsewhere in the app.
-::ng-deep .pc-select-panel {
-    border: 1px solid var(--guardian-border-color, var(--guardian-grey-color-2, #E1E7EF));
-    border-radius: 8px;
-    background: var(--guardian-background, #fff);
-    color: var(--guardian-font-color, #23252E);
-    font-family: 'Inter', sans-serif;
-    font-size: 13px;
-
-    .p-select-header,
-    .p-multiselect-header {
-        padding: 8px;
-    }
-
-    .p-select-filter,
-    .p-multiselect-filter {
-        height: 32px;
-        border: 1px solid var(--guardian-border-color, var(--guardian-grey-color-2, #E1E7EF));
-        border-radius: 6px;
-        font-size: 13px;
-        font-family: 'Inter', sans-serif;
-        color: var(--guardian-font-color, #23252E);
-        background: var(--guardian-background, #fff);
-
-        &:enabled:hover,
-        &:enabled:focus {
-            border-color: var(--guardian-primary-color, #4169E2);
-            box-shadow: none;
-        }
-    }
-
-    .p-select-list,
-    .p-multiselect-list {
-        padding: 4px;
-        gap: 4px;
-    }
-
-    .p-select-option,
-    .p-multiselect-option {
-        display: flex;
-        align-items: center;
-        min-height: 32px;
-        padding: 8px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        font-family: 'Inter', sans-serif;
-        line-height: 16px;
-        color: var(--guardian-font-color, #23252E);
-    }
-
-    .p-checkbox {
-        width: 16px;
-        height: 16px;
-    }
-
-    .right-bottom-toolbar .properties .propHeader .cellName {
-        display: flex !important;
-        align-items: center !important;
-        font-size: 10.5px !important;
-        height: 28px !important;
-        min-height: 28px !important;
-        padding-top: 4px !important;
-        padding-bottom: 0 !important;
-        overflow: visible !important;
-    }
-
-    .right-bottom-toolbar .properties .propHeader .cellName span,
-    .right-bottom-toolbar .properties .propHeader .cellName .chevron-icon {
-        display: inline-flex !important;
-        align-items: center !important;
-        height: 24px !important;
-        line-height: 24px !important;
-    }
-
-    .right-bottom-toolbar .properties .propHeader .cellName .chevron-icon {
-        justify-content: center !important;
-        width: 14px !important;
-    }
-
-    .right-bottom-toolbar .properties .propRowCell > input.prop-input {
-        height: var(--pc-control-height) !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        line-height: normal !important;
-    }
-
-    .right-bottom-toolbar .properties p-select .p-select-label,
-    .right-bottom-toolbar .properties p-multiselect .p-multiselect-label {
-        box-sizing: border-box !important;
-        display: flex !important;
-        align-items: center !important;
-        height: 100% !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        line-height: normal !important;
-    }
-
-    .right-bottom-toolbar .properties .common-properties-button {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        height: var(--pc-control-height) !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        line-height: normal !important;
-    }
-
-    .p-checkbox-box {
-        width: 16px;
-        height: 16px;
-        border-radius: 4px;
-    }
-}
-
 .policy-configuration::ng-deep {
     .right-bottom-toolbar .properties.tool-properties {
         --pc-tool-row-height: var(--pc-row-height);
@@ -1501,7 +1383,307 @@
     }
 }
 
-.policy-configuration::ng-deep {
+// PrimeNG select/multiSelect overlays render via appendTo="body" and land
+// outside .policy-configuration's DOM subtree, so ::ng-deep scoping above
+// can't reach them. panelStyleClass="pc-select-panel" tags only our own
+// overlays, so this stays global on purpose without leaking to other
+// p-select/p-multiSelect usages elsewhere in the app.
+::ng-deep .pc-select-panel {
+    border: 1px solid var(--guardian-border-color, var(--guardian-grey-color-2, #E1E7EF));
+    border-radius: 8px;
+    background: var(--guardian-background, #fff);
+    color: var(--guardian-font-color, #23252E);
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+
+    .p-select-header,
+    .p-multiselect-header {
+        padding: 8px;
+    }
+
+    .p-select-filter,
+    .p-multiselect-filter {
+        height: 32px;
+        border: 1px solid var(--guardian-border-color, var(--guardian-grey-color-2, #E1E7EF));
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: 'Inter', sans-serif;
+        color: var(--guardian-font-color, #23252E);
+        background: var(--guardian-background, #fff);
+
+        &:enabled:hover,
+        &:enabled:focus {
+            border-color: var(--guardian-primary-color, #4169E2);
+            box-shadow: none;
+        }
+    }
+
+    .p-select-list,
+    .p-multiselect-list {
+        padding: 4px;
+        gap: 4px;
+    }
+
+    .p-select-option,
+    .p-multiselect-option {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
+        padding: 8px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        font-family: 'Inter', sans-serif;
+        line-height: 16px;
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    .p-checkbox {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+::ng-deep {
+    .right-bottom-toolbar .properties .propHeader {
+        height: 36px;
+    }
+
+    .right-bottom-toolbar .properties .propHeader .propHeaderCell {
+        height: 36px;
+        vertical-align: middle !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .right-bottom-toolbar .properties .propHeader .cellName {
+        display: table-cell !important;
+        vertical-align: middle !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        font-size: 10.5px !important;
+        padding: 4px 4px 4px 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis;
+        white-space: nowrap !important;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propHeader .cellName span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: 100%;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propHeader .cellName .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell > input.prop-input {
+        height: var(--pc-control-height) !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties p-select .p-select-label,
+    .right-bottom-toolbar .properties p-multiselect .p-multiselect-label {
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties .common-properties-button {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        height: var(--pc-control-height) !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties .event-add-row {
+        height: 40px;
+    }
+
+    .right-bottom-toolbar .properties .event-add-cell {
+        height: 40px;
+        padding: 4px 4px 12px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .right-bottom-toolbar .properties .event-add-cell .events-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties .event-add-cell .events-add i,
+    .right-bottom-toolbar .properties .event-add-cell .events-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties .event-add-cell .events-add span {
+        white-space: nowrap;
+    }
+
+    .p-checkbox-box {
+        width: 16px;
+        height: 16px;
+        border-radius: 4px;
+    }
+
+    // Properties-tab row model for non-Events inspector tables, including
+    // nested block-config tables (button-config and similar). Keep the
+    // normal About/Properties label width and row height; Events has its own
+    // wider dedicated model above.
+    .right-bottom-toolbar .properties:not(.events-properties) {
+        --pc-props-row-height: var(--pc-row-height);
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell {
+        height: var(--pc-props-row-height);
+        min-height: var(--pc-props-row-height);
+        vertical-align: middle;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell.cellName {
+        padding-top: 3px !important;
+        vertical-align: middle;
+        line-height: var(--pc-control-height);
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell.cellName span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell.cellName::before,
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell.cellName::after {
+        display: none;
+        content: none;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell:has(textarea) {
+        height: auto;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell:has(p-toggleswitch),
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow .propRowCell:has(p-checkbox) {
+        text-align: right;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRowCell > p-toggleswitch,
+    .right-bottom-toolbar .properties:not(.events-properties) .propRowCell > p-checkbox {
+        float: right;
+    }
+
+    .right-bottom-toolbar .properties .propHeader > .propHeaderCell:last-child {
+        text-align: right;
+    }
+
+    .right-bottom-toolbar .properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        width: auto;
+        min-width: 0;
+        height: 24px;
+        padding: 0;
+        overflow: visible;
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        letter-spacing: normal;
+        text-transform: none;
+        color: var(--guardian-primary-color);
+    }
+
+    .right-bottom-toolbar .properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties .propHeader .propAdd span,
+    .right-bottom-toolbar .properties .propRowCell > .propAdd span {
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell:has(> .propAdd) {
+        text-align: right;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        color: var(--guardian-font-color, #23252E);
+        font-weight: 500;
+    }
+
+    // Tables with dynamic custom properties get the wider Button-config
+    // label column so indented labels like "Active by default" fit.
+    .right-bottom-toolbar .properties:has(.custom-properties) {
+        --col-name-width: 184px;
+    }
+
+    // Custom-property Array ladder: group header at the root level, item
+    // rows one step in, item sub-properties one step deeper, so the
+    // hierarchy reads at a glance without the old tree connectors.
+    .right-bottom-toolbar .properties .propRow.array-item-row > .propRowCell.cellName {
+        padding-left: 16px !important;
+        color: var(--guardian-font-color, #23252E);
+        font-weight: 500;
+    }
+
+    .right-bottom-toolbar .properties .propRow[offset="1"] .propRowCell.cellName {
+        padding-left: 36px !important;
+    }
+
+    .right-bottom-toolbar .properties .propRow[offset="2"] .propRowCell.cellName {
+        padding-left: 46px !important;
+    }
+
     .right-bottom-toolbar .properties.button-properties {
         --col-name-width: 184px;
     }
@@ -1631,5 +1813,434 @@
         height: auto;
         font-size: 12px;
         line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.action-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .action-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .action-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .action-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .action-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 8px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 10px !important;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .subRow > .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.action-properties .subRow > .propRowCol.cellCollapse svg {
+        left: 24px;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.action-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.action-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.action-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.action-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .viewer-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .viewer-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .viewer-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .viewer-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.viewer-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.viewer-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.viewer-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.viewer-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.viewer-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.request-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .request-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .request-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .request-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .request-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.request-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.roles-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.roles-properties .roles-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.roles-properties .roles-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.roles-properties .roles-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.roles-properties .roles-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.token-properties .token-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.token-properties .token-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.token-properties .token-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.token-properties .token-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties .propRow > .propRowCell.not-editable-text {
+        vertical-align: middle;
+        text-align: right;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell document-path .container {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        width: 100%;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell document-path .select,
+    .right-bottom-toolbar .properties .propRowCell document-path .input-end {
+        flex: 1 1 50%;
+        min-width: 0;
+        height: var(--pc-control-height);
+        box-sizing: border-box;
+        border: 1px solid var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        background: var(--guardian-background, #fff);
+        color: var(--guardian-font-color, #23252E);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        padding: 3px 8px;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell document-path .input-end-tooltip {
+        flex: 0 0 auto;
+        color: var(--guardian-font-color-secondary, #848FA9);
     }
 }
