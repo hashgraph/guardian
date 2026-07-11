@@ -966,8 +966,12 @@
         display: flex;
         align-items: center;
         gap: var(--pc-section-header-chevron-gap);
-        height: var(--pc-section-header-height);
-        padding: 4px 104px 4px var(--pc-section-header-inset);
+        // Mirrors what the table's header cell actually renders: its padding sits
+        // inside the row height, and the 12/6 vertical padding around a 24px line
+        // is what makes the row 42px. Height must stay a minimum, not a cap.
+        box-sizing: border-box;
+        min-height: var(--pc-section-header-height);
+        padding: var(--pc-section-header-cell-padding-top) 104px var(--pc-section-header-cell-padding-bottom) calc(var(--pc-section-header-inset) + var(--pc-section-header-cell-inset));
         color: var(--pc-header-color, #23252E);
         font-family: var(--pc-row-font-family);
         font-size: var(--pc-section-header-font-size);
@@ -978,6 +982,10 @@
         cursor: pointer;
     }
 
+    .inspector-subsection-header:hover {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent);
+    }
+
     .inspector-subsection-header .chevron-icon {
         display: inline-flex;
         align-items: center;
@@ -985,7 +993,6 @@
         flex: 0 0 auto;
         width: 14px;
         height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
         font-size: var(--pc-section-header-chevron-size);
         line-height: 1;
         transition: transform 0.12s ease;
@@ -996,7 +1003,11 @@
     }
 
     .inspector-subsection-label {
-        display: inline-block;
+        // Same 24px box as the chevron, so the two centre on one line.
+        display: inline-flex;
+        align-items: center;
+        height: 24px;
+        line-height: 24px;
         min-width: 0;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1046,7 +1057,10 @@
 
     ::ng-deep .add-artifact-button {
         position: absolute;
-        top: 6px;
+        // Sits on the header's 24px line, not centred in the header box: the box's
+        // padding is asymmetric (12/6), so centring it would ride 3px above the label.
+        // The button is exactly as tall as the line, so it starts at the padding top.
+        top: var(--pc-section-header-cell-padding-top);
         right: 4px;
         width: max-content !important;
         min-width: 0 !important;

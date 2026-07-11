@@ -448,17 +448,14 @@
                 </tr>
               }
             }
-            <tr class="propRow propRowBottom">
-              <td class="propRowCol"></td>
-              <td class="propRowCell cellName"></td>
-              <td class="propRowCell"></td>
+            <tr class="event-add-row">
+              <td class="event-add-cell" colspan="3">
+                <div class="events-add" (click)="addEvent()">
+                  <i class="pi pi-plus"></i>
+                  <span>Add Event</span>
+                </div>
+              </td>
             </tr>
-            <div class="propBottom">
-              <div class="propAdd" (click)="addEvent()">
-                <i class="pi pi-plus"></i>
-                <span>Add Event</span>
-              </div>
-            </div>
           </table>
         }
       </div>

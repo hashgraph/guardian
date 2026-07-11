@@ -728,6 +728,11 @@
     display: none !important;
 }
 
+// Same for the tool block's left stripe: the icon + border already read as a tool.
+.tool-body .block-item::after {
+    display: none !important;
+}
+
 // #2 Root block: the collapse-all control already sits in the expand column,
 // so hide the root's own (redundant) caret to avoid two overlapping arrows.
 // Keep the column width so the block doesn't shift.

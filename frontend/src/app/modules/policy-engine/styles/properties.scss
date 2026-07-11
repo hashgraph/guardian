@@ -34,8 +34,16 @@
     --pc-section-header-letter-spacing: 0.06em;
     --pc-section-header-chevron-size: 11px;
     --pc-section-header-chevron-gap: 6px;
-    // 18px toggle column; the header label cell adds no left padding.
+    // Where a section header's chevron starts: the 18px toggle column, plus the
+    // 4px left inset the rendered header label cell keeps. Non-table headers
+    // must add both to land on the same column as About / Meta Data / Properties.
     --pc-section-header-inset: 18px;
+    --pc-section-header-cell-inset: 4px;
+    // The header label cell's own padding, which the table counts inside the row
+    // height: 12px above and 6px below a 24px line, so a header renders 42px, not
+    // the 36px minimum below. Non-table headers must restate both.
+    --pc-section-header-cell-padding-top: 12px;
+    --pc-section-header-cell-padding-bottom: 6px;
 
     .properties {
         --col-name-width: 116px;
@@ -1222,9 +1230,9 @@
 
     .right-bottom-toolbar .properties.events-properties .event-add-cell {
         height: 40px;
-        padding: 4px 4px 12px !important;
+        padding: 8px 4px !important;
         text-align: right;
-        vertical-align: top;
+        vertical-align: middle;
     }
 
     .right-bottom-toolbar .properties.events-properties .event-add-cell .events-add {
@@ -1244,6 +1252,12 @@
         font-weight: 500;
         line-height: 16px;
         white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
     .right-bottom-toolbar .properties.events-properties .event-add-cell .events-add i,
@@ -1260,138 +1274,31 @@
 }
 
 .policy-configuration::ng-deep {
-    .right-bottom-toolbar .properties.tool-properties {
-        --pc-tool-row-height: var(--pc-row-height);
-    }
+    // The Tool table deliberately carries NO header or row geometry of its own.
+    // It sits in the same panel as About and Meta Data, so it must render from the
+    // shared .propHeader / .propRow rules. Re-stating heights, paddings or control
+    // alignment here outranks those rules (.properties.tool-properties is more
+    // specific) and drifts away from them - which is exactly what gave this panel
+    // taller rows and a second header system. Only the caret geometry below and the
+    // readonly-value ellipsis are genuinely Tool-specific.
 
-    .right-bottom-toolbar .properties.tool-properties .propHeader {
-        height: 36px;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propHeader .propHeaderCell {
-        height: 36px;
-        vertical-align: middle !important;
-        padding-top: 4px !important;
-        padding-bottom: 4px !important;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propHeader .cellName {
-        display: table-cell !important;
-        vertical-align: middle !important;
-        height: 36px !important;
-        min-height: 36px !important;
-        padding: 4px 4px 4px 0 !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis;
-        white-space: nowrap !important;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propHeader .cellName span {
-        display: inline-block !important;
-        vertical-align: middle;
-        max-width: calc(100% - 24px);
-        height: 24px !important;
-        line-height: 24px !important;
+    // The shared .readonly-prop is a flex container, and text-overflow never fires
+    // on one - long values (Description, Owner, Hash) were cut off flat. Block
+    // layout lets them ellipsize; the line-height re-centres them in the cell, and
+    // the template's tooltip carries the full value.
+    .right-bottom-toolbar .properties.tool-properties .propRowCell > .readonly-prop {
+        display: block;
+        line-height: var(--pc-row-height);
         overflow: hidden;
-        text-overflow: ellipsis;
         white-space: nowrap;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propHeader .cellName .chevron-icon {
-        display: inline-flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        vertical-align: middle;
-        width: 14px !important;
-        height: 24px !important;
-        margin-right: 6px;
-        line-height: 1 !important;
-        background: transparent !important;
-        box-shadow: none;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell {
-        height: var(--pc-tool-row-height);
-        min-height: var(--pc-tool-row-height);
-        vertical-align: middle;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell.cellName {
-        vertical-align: middle;
-        line-height: var(--pc-control-height);
-        white-space: nowrap !important;
-        overflow: hidden;
         text-overflow: ellipsis;
     }
 
-    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell.cellName span {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell:has(textarea) {
-        height: auto;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRowCell > input.prop-input {
-        height: var(--pc-control-height) !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        line-height: normal !important;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties p-select .p-select-label,
-    .right-bottom-toolbar .properties.tool-properties p-multiselect .p-multiselect-label {
-        box-sizing: border-box !important;
-        display: flex !important;
-        align-items: center !important;
-        height: 100% !important;
-        padding-top: 0 !important;
-        padding-bottom: 0 !important;
-        line-height: normal !important;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRow.subRow .propRowCell.cellName::before,
-    .right-bottom-toolbar .properties.tool-properties .propRow.subRow .propRowCell.cellName::after {
-        display: none;
-        content: none;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse i {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 8px;
-        z-index: 4;
-        font-size: 11px;
-        line-height: 1;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        transform: translateY(-50%);
-    }
-
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse[collapse="true"] i {
-        transform: translateY(-50%) rotate(-90deg);
-    }
+    // The Variables rows' caret geometry is NOT defined here. The Tool table is
+    // listed alongside .module-properties in the shared nested-caret group below,
+    // because the Module block draws the identical Variables rows: caret at 24px,
+    // label inset 24px, 184px label column. The Button model (caret at 8px) is for
+    // rows nested under a section header and does not fit these.
 }
 
 // PrimeNG select/multiSelect overlays render via appendTo="body" and land
@@ -1533,11 +1440,17 @@
         height: 40px;
     }
 
+    // The readonly guard the old .propAdd markup inherited from its ancestor.
+    .right-bottom-toolbar *[readonly="true"] .event-add-cell .events-add {
+        pointer-events: none;
+        filter: grayscale(1);
+    }
+
     .right-bottom-toolbar .properties .event-add-cell {
         height: 40px;
-        padding: 4px 4px 12px !important;
+        padding: 8px 4px !important;
         text-align: right;
-        vertical-align: top;
+        vertical-align: middle;
     }
 
     .right-bottom-toolbar .properties .event-add-cell .events-add {
@@ -1557,6 +1470,12 @@
         font-weight: 500;
         line-height: 16px;
         white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
     }
 
     .right-bottom-toolbar .properties .event-add-cell .events-add i,
@@ -2539,7 +2458,8 @@
     .right-bottom-toolbar .properties.document-validator-properties,
     .right-bottom-toolbar .properties.source-addon-properties,
     .right-bottom-toolbar .properties.calculate-math-properties,
-    .right-bottom-toolbar .properties.module-properties {
+    .right-bottom-toolbar .properties.module-properties,
+    .right-bottom-toolbar .properties.tool-properties {
         --col-name-width: 184px;
     }
 
@@ -2603,7 +2523,8 @@
     .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse,
     .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse,
     .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse {
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse,
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse {
         position: relative;
         vertical-align: middle;
         overflow: visible;
@@ -2613,7 +2534,8 @@
     .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse::after,
     .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse::after,
     .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse::after,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse::after {
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse::after,
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse::after {
         content: "";
         position: absolute;
         top: 0;
@@ -2628,7 +2550,8 @@
     .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse i,
     .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse i,
     .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse i {
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse i {
         display: inline-flex;
         align-items: center;
         justify-content: center;
@@ -2649,7 +2572,8 @@
     .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse[collapse="true"] i,
     .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse[collapse="true"] i,
     .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse[collapse="true"] i {
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse[collapse="true"] i {
         transform: translateY(-50%) rotate(-90deg);
     }
 
@@ -2657,7 +2581,8 @@
     .right-bottom-toolbar .properties.document-validator-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
     .right-bottom-toolbar .properties.source-addon-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
     .right-bottom-toolbar .properties.calculate-math-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
-    .right-bottom-toolbar .properties.module-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+    .right-bottom-toolbar .properties.module-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
+    .right-bottom-toolbar .properties.tool-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
         padding-left: 24px !important;
     }
 
