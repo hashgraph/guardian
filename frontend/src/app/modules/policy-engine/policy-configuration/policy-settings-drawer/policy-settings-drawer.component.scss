@@ -129,7 +129,8 @@
 }
 
 .psd-content::ng-deep {
-    policy-properties {
+    policy-properties,
+    module-properties {
         display: block;
         width: 100%;
     }
@@ -914,6 +915,103 @@
     }
 
     .properties .token-add-cell .tokens-add span {
+        white-space: nowrap;
+    }
+
+    // Tool / Module sections (Description, Inputs, Outputs, Variables).
+    // Same model as the Tokens block above: the section header carries the item
+    // name as a secondary right-aligned label next to the delete action, nested
+    // rows drop the legacy tree connector and take the section indent, and the
+    // add action sits right aligned in its own row.
+    .properties .modules-header:hover > .propHeaderCell {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
+    }
+
+    .properties .modules-header > .module-actions {
+        height: 30px;
+        padding: 0 34px 0 4px !important;
+        line-height: 30px;
+        text-align: right;
+        vertical-align: middle;
+    }
+
+    .properties .modules-header .module-name {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 30px;
+    }
+
+    .properties .modules-header .remove-prop {
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+    }
+
+    .properties .module-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .module-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .module-row .propRowCell.cellName {
+        padding-left: 26px !important;
+        padding-top: 0;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .properties .module-row .propRowCell:not(.cellName) {
+        vertical-align: middle;
+    }
+
+    .properties .module-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .module-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .module-add-cell .modules-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .module-add-cell .modules-add i,
+    .properties .module-add-cell .modules-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .module-add-cell .modules-add span {
         white-space: nowrap;
     }
 }

@@ -10,13 +10,13 @@
   }
   <div class="table">
     <div class="table-body" #body>
-      <table class="properties">
+      <table class="properties module-properties">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
 
         @if (type == 'Main') {
-          <tr class="propHeader">
+          <tr class="propHeader modules-header" (click)="onHide(propHidden, 'main')">
             <td class="propRowCol"></td>
-            <td class="propHeaderCell cellName" (click)="onHide(propHidden, 'main')"
+            <td class="propHeaderCell cellName module-section-header"
               [attr.collapse]="propHidden.main">
               <i class="pi pi-chevron-down chevron-icon"></i>
               <span>Module</span>
@@ -64,21 +64,22 @@
         @if (type == 'Variables') {
           <!-- Variables  -->
           @for (item of variables; track item; let i = $index) {
-            <tr class="propHeader">
+            <tr class="propHeader modules-header" (click)="onHide(propHidden.variables, i)">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName" (click)="onHide(propHidden.variables, i)"
+              <td class="propHeaderCell cellName module-section-header"
                 [attr.collapse]="propHidden.variables[i]">
                 <i class="pi pi-chevron-down chevron-icon"></i>
                 <span>Variable</span>
               </td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(item)">
+              <td class="propHeaderCell module-actions">
+                <span class="module-name">{{ item.name }}</span>
+                <span class="remove-prop" [attr.readonly]="readonly"
+                  (click)="onRemoveVariable(item); $event.stopPropagation()">
                   <i class="pi pi-trash"></i>
                 </span>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.variables[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.variables[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">
                 <span class="required-fields">*</span>
@@ -89,7 +90,7 @@
                   (input)="onEditVariable(item)">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.variables[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.variables[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Description</td>
               <td class="propRowCell">
@@ -97,7 +98,7 @@
                   (input)="onEditVariable(item)">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.variables[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.variables[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">
                 <span class="required-fields">*</span>
@@ -119,7 +120,7 @@
             </tr>
             @if (item.type === 'Schema') {
               <tr [attr.collapse]="propHidden.variables[i]"
-                class="propRow subRow">
+                class="propRow subRow module-row">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">
                   Base schema
@@ -142,39 +143,38 @@
               </tr>
             }
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow module-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell module-add-cell" colspan="2">
+              <div class="propAdd modules-add" (click)="addVariable()">
+                <i class="pi pi-plus"></i>
+                <span>Add Variables</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addVariable()">
-              <i class="pi pi-plus"></i>
-              <span>Add Variables</span>
-            </div>
-          </div>
         }
 
         @if (type == 'Inputs') {
           <!-- Inputs  -->
           @for (item of inputs; track item; let i = $index) {
-            <tr class="propHeader">
+            <tr class="propHeader modules-header" (click)="onHide(propHidden.inputs, i)">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName" (click)="onHide(propHidden.inputs, i)"
+              <td class="propHeaderCell cellName module-section-header"
                 [attr.collapse]="propHidden.inputs[i]">
                 <i class="pi pi-chevron-down chevron-icon"></i>
                 <span>
                   Input Events
                 </span>
               </td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveInput(item)">
+              <td class="propHeaderCell module-actions">
+                <span class="module-name">{{ item.name }}</span>
+                <span class="remove-prop" [attr.readonly]="readonly"
+                  (click)="onRemoveInput(item); $event.stopPropagation()">
                   <i class="pi pi-trash"></i>
                 </span>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.inputs[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.inputs[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">
                 <span class="required-fields">*</span>
@@ -185,7 +185,7 @@
                   (input)="onEditInput(item)">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.inputs[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.inputs[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Description</td>
               <td class="propRowCell">
@@ -194,39 +194,38 @@
               </td>
             </tr>
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow module-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell module-add-cell" colspan="2">
+              <div class="propAdd modules-add" (click)="addInput()">
+                <i class="pi pi-plus"></i>
+                <span>Add Input Event</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addInput()">
-              <i class="pi pi-plus"></i>
-              <span>Add Input Event</span>
-            </div>
-          </div>
         }
 
         @if (type == 'Outputs') {
           <!-- Outputs  -->
           @for (item of outputs; track item; let i = $index) {
-            <tr class="propHeader">
+            <tr class="propHeader modules-header" (click)="onHide(propHidden.outputs, i)">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName" (click)="onHide(propHidden.outputs, i)"
+              <td class="propHeaderCell cellName module-section-header"
                 [attr.collapse]="propHidden.outputs[i]">
                 <i class="pi pi-chevron-down chevron-icon"></i>
                 <span>
                   Output Events
                 </span>
               </td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveOutput(item)">
+              <td class="propHeaderCell module-actions">
+                <span class="module-name">{{ item.name }}</span>
+                <span class="remove-prop" [attr.readonly]="readonly"
+                  (click)="onRemoveOutput(item); $event.stopPropagation()">
                   <i class="pi pi-trash"></i>
                 </span>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.outputs[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.outputs[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">
                 <span class="required-fields">*</span>
@@ -237,7 +236,7 @@
                   (input)="onEditOutput(item)">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.outputs[i]">
+            <tr class="propRow subRow module-row" [attr.collapse]="propHidden.outputs[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Description</td>
               <td class="propRowCell">
@@ -246,17 +245,15 @@
               </td>
             </tr>
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow module-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell module-add-cell" colspan="2">
+              <div class="propAdd modules-add" (click)="addOutput()">
+                <i class="pi pi-plus"></i>
+                <span>Add Output Event</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addOutput()">
-              <i class="pi pi-plus"></i>
-              <span>Add Output Event</span>
-            </div>
-          </div>
         }
 
       </table>

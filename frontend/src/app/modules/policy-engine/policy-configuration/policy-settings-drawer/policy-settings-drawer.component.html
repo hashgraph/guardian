@@ -5,7 +5,7 @@
   <div class="psd">
     <div class="psd-title">
       <i class="pi pi-cog"></i>
-      <span>Policy Details</span>
+      <span>{{ title }}</span>
       <button type="button" class="psd-close" (click)="close()" title="Close">
         <i class="pi pi-times"></i>
       </button>
@@ -20,7 +20,7 @@
         }
       </div>
       <div class="psd-content">
-        @if (policy && visible) {
+        @if (isPolicy && policy && visible) {
           <policy-properties
             [policy]="policy"
             [readonly]="readonly"
@@ -28,6 +28,13 @@
             [policyCategories]="policyCategories"
             [wipeContracts]="wipeContracts"
             [type]="section"></policy-properties>
+        }
+        @if (!isPolicy && module && visible) {
+          <module-properties
+            [module]="module"
+            [errors]="moduleErrors"
+            [readonly]="readonly"
+            [type]="section"></module-properties>
         }
       </div>
     </div>
