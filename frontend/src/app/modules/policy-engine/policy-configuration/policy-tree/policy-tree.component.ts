@@ -744,7 +744,9 @@ export class PolicyTreeComponent implements OnInit {
         let minOffset = 0;
         const blockMap: any = {};
         for (const block of data) {
-            const div = document.querySelector(`.block-container[block-id="${block.id}"] .block-body`);
+            // Anchor on the visible chip, not `.block-body`: the body also contains the action
+            // menu, which is shown on selection and stretches the box well past the chip.
+            const div = document.querySelector(`.block-container[block-id="${block.id}"] .block-item`);
             if (block.node.tag && div) {
                 const box = div.getBoundingClientRect();
                 const blocRect = new BlockRect(box, boxCanvas);
