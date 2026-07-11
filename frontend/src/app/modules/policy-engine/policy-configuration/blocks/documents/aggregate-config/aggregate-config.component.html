@@ -1,13 +1,13 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties aggregate-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
-        [attr.collapse]="propHidden.options">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'options')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName aggregate-section-header" [attr.collapse]="propHidden.options">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Options</span>
       </td>
-      <td class="propHeaderCell cellName">Options</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
@@ -37,25 +37,25 @@
         </td>
       </tr>
     }
-    @if (properties.aggregateType == 'cumulative') {
-      <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'expressionsGroup')"
-          [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
-          <i class="pi pi-caret-down"></i>
+    @if (properties.aggregateType == 'cumulative' && !propHidden.options) {
+      <tr class="propHeader" (click)="onHide(propHidden, 'expressionsGroup')">
+        <td class="propRowCol"></td>
+        <td class="propHeaderCell cellName aggregate-section-header" [attr.collapse]="propHidden.expressionsGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Expressions</span>
         </td>
-        <td class="propHeaderCell cellName">Expressions</td>
         <td class="propHeaderCell">
-          <div class="propAdd" (click)="addExpression()">
+          <div class="propAdd" (click)="addExpression(); $event.stopPropagation()">
             <i class="pi pi-plus"></i>
             <span>Add Expression</span>
           </div>
         </td>
       </tr>
       @for (expression of properties.expressions; track expression; let i = $index) {
-        <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.expressionsGroup">
+        <tr class="propRow" [attr.collapse]="propHidden.expressionsGroup">
           <td class="propRowCol cellCollapse" (click)="onHide(propHidden.expressions, i)"
             [attr.collapse]="propHidden.expressions[i]">
-            <i class="pi pi-caret-down"></i>
+            <i class="pi pi-chevron-down"></i>
           </td>
           <td class="propRowCell cellName">Expression {{ i }}</td>
           <td class="propRowCell">
@@ -66,7 +66,7 @@
           </td>
         </tr>
         <tr class="propRow subRow"
-          [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
+          [attr.collapse]="propHidden.expressionsGroup || propHidden.expressions[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Variable Name</td>
           <td class="propRowCell">
@@ -74,7 +74,7 @@
           </td>
         </tr>
         <tr class="propRow subRow"
-          [attr.collapse]="propHidden.options || propHidden.expressionsGroup || propHidden.expressions[i]">
+          [attr.collapse]="propHidden.expressionsGroup || propHidden.expressions[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Variable Value</td>
           <td class="propRowCell">
@@ -82,7 +82,7 @@
           </td>
         </tr>
       }
-      <tr class="propRow" [attr.collapse]="propHidden.main" [attr.collapse]="propHidden.options">
+      <tr class="propRow">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Condition</td>
         <td class="propRowCell">

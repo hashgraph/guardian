@@ -959,17 +959,20 @@
         border-top: 1px solid var(--pc-border-color);
     }
 
+    // This header is a div, so it cannot inherit the property tables' cell rules.
+    // It consumes the same --pc-section-header-* tokens instead, so the two stay
+    // in step. Do not hardcode sizes here.
     .inspector-subsection-header {
         display: flex;
         align-items: center;
-        gap: 6px;
-        height: 36px;
-        padding: 4px 104px 4px 18px;
+        gap: var(--pc-section-header-chevron-gap);
+        height: var(--pc-section-header-height);
+        padding: 4px 104px 4px var(--pc-section-header-inset);
         color: var(--pc-header-color, #23252E);
         font-family: var(--pc-row-font-family);
-        font-size: 10.5px;
+        font-size: var(--pc-section-header-font-size);
         font-weight: 600;
-        letter-spacing: normal;
+        letter-spacing: var(--pc-section-header-letter-spacing);
         line-height: 24px;
         text-transform: uppercase;
         cursor: pointer;
@@ -979,10 +982,11 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        flex: 0 0 auto;
         width: 14px;
         height: 24px;
         color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
+        font-size: var(--pc-section-header-chevron-size);
         line-height: 1;
         transition: transform 0.12s ease;
     }

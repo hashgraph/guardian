@@ -1,42 +1,335 @@
 <!-- Config Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties report-item-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'properties')" [attr.collapse]="propHidden.properties">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'properties')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName report-item-section-header" [attr.collapse]="propHidden.properties">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Properties</span>
       </td>
-      <td class="propHeaderCell cellName">Properties</td>
       <td class="propHeaderCell"></td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.properties">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Visible</td>
-      <td class="propRowCell">
-        <p-toggleswitch
-          [(ngModel)]="properties.visible"
-          [disabled]="readonly"
-          (onChange)="onSave()">
-        </p-toggleswitch>
-      </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.properties">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Multiple</td>
-      <td class="propRowCell">
-        <p-toggleswitch
-          [(ngModel)]="properties.multiple"
-          [disabled]="readonly"
-          (onChange)="onMultipleChange()">
-        </p-toggleswitch>
-      </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.properties">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Label</td>
-      <td class="propRowCell">
-        <input class="prop-input" [(ngModel)]="properties.uiMetaData.label" [readonly]="readonly" (blur)="onSave()">
-      </td>
-    </tr>
+    @if (!propHidden.properties) {
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Title</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="properties.title" [readonly]="readonly" (blur)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Description</td>
+        <td class="propRowCell">
+          <input class="prop-input" [(ngModel)]="properties.description" [readonly]="readonly" (blur)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Visible</td>
+        <td class="propRowCell">
+          <p-toggleswitch
+            [(ngModel)]="properties.visible"
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
+        </td>
+      </tr>
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Multiple</td>
+        <td class="propRowCell">
+          <p-toggleswitch
+            [(ngModel)]="properties.multiple"
+            [disabled]="readonly"
+            (onChange)="onMultipleChange(); onSave()">
+          </p-toggleswitch>
+        </td>
+      </tr>
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Icon Type</td>
+        <td class="propRowCell">
+          <p-select [(ngModel)]="properties.iconType"
+            [options]="iconTypeOptions"
+            [disabled]="readonly"
+            (onChange)="onSave()"
+            [appendTo]="'body'"
+            placeholder="Select Icon Type"
+            optionLabel="label"
+            optionValue="value">
+          </p-select>
+        </td>
+      </tr>
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Icon</td>
+        <td class="propRowCell">
+          <div class="icon-container">
+            <input class="prop-input icon-input" [(ngModel)]="properties.icon" [readonly]="readonly">
+            <input type="file" class="file-input" accept="image/*"
+              (change)="onFileSelected($event, properties)" #fileUpload>
+            @if (properties.iconType === 'custom' && !readonly) {
+              @switch (fileLoading) {
+                @case (true) {
+                  <p-progressSpinner
+                    [style]="{ width: '20px', height: '20px' }"
+                    class="file-spinner">
+                  </p-progressSpinner>
+                }
+                @case (false) {
+                  <button class="file-action-button" (click)="fileUpload.click()">
+                    <i class="pi pi-paperclip file-action-icon"></i>
+                  </button>
+                }
+              }
+            }
+            @if (properties.icon) {
+              <button class="file-action-button" (click)="iconPreview()">
+                <i class="pi pi-eye file-action-icon"></i>
+              </button>
+            }
+          </div>
+        </td>
+      </tr>
+      @if (properties.multiple) {
+        <tr class="propHeader" (click)="onHide(propHidden, 'dynamicFilterGroup')">
+          <td class="propRowCol"></td>
+          <td class="propHeaderCell cellName report-item-section-header" [attr.collapse]="propHidden.dynamicFilterGroup">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Dynamic Filters</span>
+          </td>
+          <td class="propHeaderCell">
+            <div class="propAdd" (click)="addDynamicFilter(); $event.stopPropagation()">
+              <i class="pi pi-plus"></i>
+              <span>Add Dynamic Filter</span>
+            </div>
+          </td>
+        </tr>
+        @for (item of properties.dynamicFilters; track item; let i = $index) {
+          <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
+            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.dynamicFilters, i)"
+              [attr.collapse]="propHidden.dynamicFilters[i]">
+              <i class="pi pi-chevron-down"></i>
+            </td>
+            <td class="propRowCell cellName">Dynamic Filter {{ i }}</td>
+            <td class="propRowCell">
+              @if (properties.dynamicFilters[i].field && properties.dynamicFilters[i].type && properties.dynamicFilters[i].nextItemField) {
+                <span class="not-editable-text">
+                  {{ properties.dynamicFilters[i].nextItemField }} {{ properties.dynamicFilters[i].type }}
+                  {{ properties.dynamicFilters[i].field }}
+                </span>
+              }
+              <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveDynamicFilter(i)">
+                <i class="pi pi-trash"></i>
+              </span>
+            </td>
+          </tr>
+          <tr class="propRow subRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Type</td>
+            <td class="propRowCell">
+              <p-select [(ngModel)]="properties.dynamicFilters[i].type"
+                [options]="filterTypeOptions"
+                [disabled]="readonly"
+                (onChange)="onSave()"
+                [appendTo]="'body'"
+                placeholder="Select Filter Type"
+                optionLabel="label"
+                optionValue="value">
+              </p-select>
+            </td>
+          </tr>
+          <tr class="propRow subRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Field Path</td>
+            <td class="propRowCell">
+              <document-path [(value)]="properties.dynamicFilters[i].field" [readonly]="readonly"
+              (change)="onSave()"></document-path>
+            </td>
+          </tr>
+          <tr class="propRow subRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName">Next Item Field Path</td>
+            <td class="propRowCell">
+              <document-path [(value)]="properties.dynamicFilters[i].nextItemField" [readonly]="readonly"
+                (change)="onSave()">
+              </document-path>
+            </td>
+          </tr>
+        }
+      }
+      <tr class="propHeader" (click)="onHide(propHidden, 'commonVariableGroup')">
+        <td class="propRowCol"></td>
+        <td class="propHeaderCell cellName report-item-section-header" [attr.collapse]="propHidden.commonVariableGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Common Variables</span>
+        </td>
+        <td class="propHeaderCell"></td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">policyId</td>
+        <td class="propRowCell not-editable-text">Current Policy ID</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">owner</td>
+        <td class="propRowCell not-editable-text">Document Owner</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">actionId</td>
+        <td class="propRowCell not-editable-text">Mint VC Document ID</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">actionSubjectId</td>
+        <td class="propRowCell not-editable-text">Mint Credential Subject ID</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentId</td>
+        <td class="propRowCell not-editable-text">First Source VC Document id</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentSubjectId</td>
+        <td class="propRowCell not-editable-text">First Source Credential Subject id</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentIds</td>
+        <td class="propRowCell not-editable-text">Source VC Document ids</td>
+      </tr>
+      <tr class="propRow" [attr.collapse]="propHidden.commonVariableGroup">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">documentSubjectIds</td>
+        <td class="propRowCell not-editable-text">Source Credential Subject ids</td>
+      </tr>
+      <tr class="propHeader" (click)="onHide(propHidden, 'variableGroup')">
+        <td class="propRowCol"></td>
+        <td class="propHeaderCell cellName report-item-section-header" [attr.collapse]="propHidden.variableGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Variables</span>
+        </td>
+        <td class="propHeaderCell">
+          <div class="propAdd" (click)="addVariable(); $event.stopPropagation()">
+            <i class="pi pi-plus"></i>
+            <span>Add Variable</span>
+          </div>
+        </td>
+      </tr>
+      @for (item of properties.variables; track item; let i = $index) {
+        <tr class="propRow" [attr.collapse]="propHidden.variableGroup">
+          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)"
+            [attr.collapse]="propHidden.variables[i]">
+            <i class="pi pi-chevron-down"></i>
+          </td>
+          <td class="propRowCell cellName">Variable {{ i }}</td>
+          <td class="propRowCell">
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(i)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Name</td>
+          <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="properties.variables[i].name" [readonly]="readonly"
+              (blur)="onSave()">
+          </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Value</td>
+          <td class="propRowCell">
+            <document-path [(value)]="properties.variables[i].value" [readonly]="readonly" [displayTooltip]="true"
+              (change)="onSave()">
+            </document-path>
+          </td>
+        </tr>
+      }
+      <tr class="propHeader" (click)="onHide(propHidden, 'filterGroup')">
+        <td class="propRowCol"></td>
+        <td class="propHeaderCell cellName report-item-section-header" [attr.collapse]="propHidden.filterGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Filters</span>
+        </td>
+        <td class="propHeaderCell">
+          <div class="propAdd" (click)="addFilter(); $event.stopPropagation()">
+            <i class="pi pi-plus"></i>
+            <span>Add Filter</span>
+          </div>
+        </td>
+      </tr>
+      @for (item of properties.filters; track item; let i = $index) {
+        <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
+          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)"
+            [attr.collapse]="propHidden.filters[i]">
+            <i class="pi pi-chevron-down"></i>
+          </td>
+          <td class="propRowCell cellName">Filter {{ i }}</td>
+          <td class="propRowCell">
+            @if (properties.filters[i].field && properties.filters[i].type && properties.filters[i].value) {
+              <span class="not-editable-text">
+                {{ properties.filters[i].field }} {{ properties.filters[i].type }} {{ properties.filters[i].value }}
+              </span>
+            }
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Type</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties.filters[i].type"
+              [options]="filterTypeOptions"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              placeholder="Select Filter Type"
+              optionLabel="label"
+              appendTo="body"
+              optionValue="value">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Variable Type</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="properties.filters[i].typeValue"
+              [options]="typeValueOptions"
+              [disabled]="readonly"
+              (onChange)="onSave()"
+              placeholder="Select Type Value"
+              optionLabel="label"
+              appendTo="body"
+              optionValue="value">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Field</td>
+          <td class="propRowCell">
+            <document-path [(value)]="properties.filters[i].field" [readonly]="readonly"
+            (change)="onSave()"></document-path>
+          </td>
+        </tr>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Value</td>
+          <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="properties.filters[i].value" [readonly]="readonly"
+              (blur)="onSave()">
+          </td>
+        </tr>
+      }
+    }
   </table>
 }

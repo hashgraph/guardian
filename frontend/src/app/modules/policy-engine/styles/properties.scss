@@ -26,6 +26,17 @@
     --pc-control-border-color: var(--guardian-grey-color-2, #E1E7EF);
     --pc-control-border-radius: 6px;
 
+    // Single source of truth for every collapsible section header in the
+    // inspector. The property tables use these, and so does the Artifacts
+    // subsection, which is a div and cannot inherit the table's cell rules.
+    --pc-section-header-height: 36px;
+    --pc-section-header-font-size: 10.5px;
+    --pc-section-header-letter-spacing: 0.06em;
+    --pc-section-header-chevron-size: 11px;
+    --pc-section-header-chevron-gap: 6px;
+    // 18px toggle column; the header label cell adds no left padding.
+    --pc-section-header-inset: 18px;
+
     .properties {
         --col-name-width: 116px;
         --col-value-width: 100%;
@@ -137,16 +148,16 @@
             .cellName {
                 display: flex;
                 align-items: flex-start;
-                gap: 6px;
+                gap: var(--pc-section-header-chevron-gap);
                 width: auto !important;
                 max-width: none !important;
                 min-width: 0 !important;
                 overflow: hidden;
                 white-space: normal;
                 box-sizing: border-box;
-                font-size: 12px;
+                font-size: var(--pc-section-header-font-size);
                 font-weight: 600;
-                letter-spacing: 0.06em;
+                letter-spacing: var(--pc-section-header-letter-spacing);
                 text-transform: uppercase;
                 color: var(--pc-header-color, #23252E);
                 padding: 12px 4px 6px 4px !important;
@@ -159,7 +170,7 @@
 
                 .chevron-icon {
                     flex: 0 0 auto;
-                    font-size: 11px;
+                    font-size: var(--pc-section-header-chevron-size);
                     transition: transform 0.12s ease;
                 }
 
@@ -1458,9 +1469,9 @@
     .right-bottom-toolbar .properties .propHeader .cellName {
         display: table-cell !important;
         vertical-align: middle !important;
-        height: 36px !important;
-        min-height: 36px !important;
-        font-size: 10.5px !important;
+        height: var(--pc-section-header-height) !important;
+        min-height: var(--pc-section-header-height) !important;
+        font-size: var(--pc-section-header-font-size) !important;
         padding: 4px 4px 4px 0 !important;
         overflow: hidden !important;
         text-overflow: ellipsis;
@@ -2211,6 +2222,1006 @@
     .right-bottom-toolbar .properties.token-properties .token-section-header[collapse="true"] .chevron-icon {
         transform: rotate(-90deg);
     }
+
+    .right-bottom-toolbar .properties.token-confirmation-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.token-confirmation-properties .token-confirmation-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.token-confirmation-properties .token-confirmation-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.token-confirmation-properties .token-confirmation-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.token-confirmation-properties .token-confirmation-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.send-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .send-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .send-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .send-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .send-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.send-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.send-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.send-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.send-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.send-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .http-request-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .http-request-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .http-request-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .http-request-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.http-request-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.http-request-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.http-request-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.http-request-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.http-request-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.timer-properties .timer-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.timer-properties .timer-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.timer-properties .timer-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.timer-properties .timer-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    // The final six converted block panels share one shape: a chevron-in-label
+    // section header, optional nested item carets, and an inline add action.
+    // They are grouped rather than repeated per marker.
+    .right-bottom-toolbar .properties.switch-properties,
+    .right-bottom-toolbar .properties.information-properties,
+    .right-bottom-toolbar .properties.document-validator-properties,
+    .right-bottom-toolbar .properties.source-addon-properties,
+    .right-bottom-toolbar .properties.calculate-math-properties,
+    .right-bottom-toolbar .properties.module-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties .switch-section-header,
+    .right-bottom-toolbar .properties .information-section-header,
+    .right-bottom-toolbar .properties .document-validator-section-header,
+    .right-bottom-toolbar .properties .source-addon-section-header,
+    .right-bottom-toolbar .properties .calculate-math-section-header,
+    .right-bottom-toolbar .properties .module-variables-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties .switch-section-header span,
+    .right-bottom-toolbar .properties .information-section-header span,
+    .right-bottom-toolbar .properties .document-validator-section-header span,
+    .right-bottom-toolbar .properties .source-addon-section-header span,
+    .right-bottom-toolbar .properties .calculate-math-section-header span,
+    .right-bottom-toolbar .properties .module-variables-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties .switch-section-header .chevron-icon,
+    .right-bottom-toolbar .properties .information-section-header .chevron-icon,
+    .right-bottom-toolbar .properties .document-validator-section-header .chevron-icon,
+    .right-bottom-toolbar .properties .source-addon-section-header .chevron-icon,
+    .right-bottom-toolbar .properties .calculate-math-section-header .chevron-icon,
+    .right-bottom-toolbar .properties .module-variables-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties .switch-section-header[collapse="true"] .chevron-icon,
+    .right-bottom-toolbar .properties .information-section-header[collapse="true"] .chevron-icon,
+    .right-bottom-toolbar .properties .document-validator-section-header[collapse="true"] .chevron-icon,
+    .right-bottom-toolbar .properties .source-addon-section-header[collapse="true"] .chevron-icon,
+    .right-bottom-toolbar .properties .calculate-math-section-header[collapse="true"] .chevron-icon,
+    .right-bottom-toolbar .properties .module-variables-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse,
+    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse,
+    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse,
+    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse,
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse::after,
+    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse::after,
+    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse::after,
+    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse::after,
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse[collapse="true"] i {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
+    .right-bottom-toolbar .properties.document-validator-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
+    .right-bottom-toolbar .properties.source-addon-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
+    .right-bottom-toolbar .properties.calculate-math-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
+    .right-bottom-toolbar .properties.module-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.document-validator-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.source-addon-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.calculate-math-properties .propHeader .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.switch-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.document-validator-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.source-addon-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.calculate-math-properties .propHeader .propAdd i {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    // p-datepicker carries `p-inputtext` on the host AND on its inner input,
+    // so the control renders a bordered box inside a bordered box. Neutralize
+    // the host and let the inner input take the shared control styling.
+    // The datetime-picker component's own .container adds a 5px left inset,
+    // which made the date fields narrower than the selects beside them.
+    .right-bottom-toolbar .properties .propRowCell datetime-picker,
+    .right-bottom-toolbar .properties .propRowCell datetime-picker .container {
+        display: block;
+        width: 100%;
+        padding: 0;
+        margin: 0;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell p-datepicker {
+        display: block;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell p-datepicker .p-datepicker-input {
+        width: 100%;
+        height: var(--pc-control-height);
+        box-sizing: border-box;
+        border: 1px solid var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        padding: 4px 8px;
+        outline: none;
+        background: var(--guardian-background, #fff);
+        color: var(--guardian-font-color, #23252E);
+        font-size: var(--pc-row-font-size);
+        font-family: var(--pc-row-font-family);
+        font-style: var(--pc-row-font-style);
+        font-weight: 400;
+        line-height: 18px;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .request-addon-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .request-addon-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .request-addon-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .request-addon-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.request-addon-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .report-item-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .report-item-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .report-item-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .report-item-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.report-item-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.report-item-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.report-item-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.report-item-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.report-item-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.wipe-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.wipe-properties .wipe-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.wipe-properties .wipe-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.wipe-properties .wipe-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.wipe-properties .wipe-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.wipe-properties .wipe-memo-prefix {
+        flex: 0 0 auto;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.token-action-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.token-action-properties .token-action-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.token-action-properties .token-action-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.token-action-properties .token-action-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.token-action-properties .token-action-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.mint-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.mint-properties .mint-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.mint-properties .mint-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.mint-properties .mint-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.mint-properties .mint-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.mint-properties .mint-memo-prefix {
+        flex: 0 0 auto;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .aggregate-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .aggregate-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .aggregate-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .aggregate-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 24px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 24px !important;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.aggregate-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.aggregate-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.aggregate-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.calculate-properties .calculate-row-header {
+        cursor: pointer;
+    }
+
+    .right-bottom-toolbar .properties.calculate-properties .calculate-row-header span {
+        display: inline-block;
+        vertical-align: middle;
+        max-width: calc(100% - 20px);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.calculate-properties .calculate-row-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.calculate-properties .calculate-row-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
 
     .right-bottom-toolbar .properties .propRow > .propRowCell.not-editable-text {
         vertical-align: middle;

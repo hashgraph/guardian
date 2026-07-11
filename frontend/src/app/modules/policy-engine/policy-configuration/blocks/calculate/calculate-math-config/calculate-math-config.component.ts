@@ -26,6 +26,8 @@ export class CalculateMathConfigComponent implements OnInit {
 
     properties!: any;
 
+    private equationsGroupInitialized = false;
+
     constructor() {
     }
 
@@ -43,6 +45,10 @@ export class CalculateMathConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.equations = this.properties.equations || [];
+        if (!this.equationsGroupInitialized) {
+            this.propHidden.equationsGroup = this.properties.equations.length === 0;
+            this.equationsGroupInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -54,10 +60,14 @@ export class CalculateMathConfigComponent implements OnInit {
             variable: '',
             formula: ''
         })
+        this.propHidden.equationsGroup = false;
     }
 
     onRemoveEquation(i: number) {
         this.properties.equations.splice(i, 1);
+        if (this.properties.equations.length === 0) {
+            this.propHidden.equationsGroup = true;
+        }
     }
 
     onSave() {

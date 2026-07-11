@@ -1,9 +1,9 @@
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties module-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader">
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
       <td class="propRowCol"></td>
-      <td class="propHeaderCell cellName module-variables-header" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+      <td class="propHeaderCell cellName module-variables-header" [attr.collapse]="propHidden.main">
         <i class="pi pi-chevron-down chevron-icon"></i>
         <span>Variables</span>
       </td>
@@ -13,7 +13,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol cellCollapse" (click)="onHide(variablesHidden, i)"
           [attr.collapse]="variablesHidden[i]">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">
           {{ item.name }}

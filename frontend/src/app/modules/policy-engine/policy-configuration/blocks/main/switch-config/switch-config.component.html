@@ -1,13 +1,13 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties switch-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
-        [attr.collapse]="propHidden.options">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'options')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName switch-section-header" [attr.collapse]="propHidden.options">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Options</span>
       </td>
-      <td class="propHeaderCell cellName">Options</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.options">
@@ -25,14 +25,14 @@
         </p-select>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
-        [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'conditionsGroup')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName switch-section-header" [attr.collapse]="propHidden.conditionsGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Conditions</span>
       </td>
-      <td class="propHeaderCell cellName">Conditions</td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addCondition()">
+        <div class="propAdd" (click)="addCondition(); $event.stopPropagation()">
           <i class="pi pi-plus"></i>
           <span>Add Condition</span>
         </div>
@@ -42,7 +42,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
           [attr.collapse]="propHidden.conditions[i]">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">Condition {{ i }}</td>
         <td class="propRowCell">

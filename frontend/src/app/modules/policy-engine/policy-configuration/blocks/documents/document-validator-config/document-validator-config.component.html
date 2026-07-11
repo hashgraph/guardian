@@ -1,6 +1,6 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties document-validator-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
@@ -72,14 +72,14 @@
         </p-toggleswitch>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
-        [attr.collapse]="propHidden.conditionsGroup">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'conditionsGroup')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName document-validator-section-header" [attr.collapse]="propHidden.conditionsGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Conditions</span>
       </td>
-      <td class="propHeaderCell cellName">Conditions</td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addCondition()">
+        <div class="propAdd" (click)="addCondition(); $event.stopPropagation()">
           <i class="pi pi-plus"></i>
           <span>Add Condition</span>
         </div>
@@ -89,7 +89,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
           [attr.collapse]="propHidden.conditions[i]">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">Condition {{ i }}</td>
         <td class="propRowCell">

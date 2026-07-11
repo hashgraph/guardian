@@ -1,6 +1,6 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties source-addon-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
@@ -74,9 +74,9 @@
       </td>
     </tr>
     <tr class="propRow">
-      <td class="propRowCol multi-line"></td>
-      <td class="propRowCell multi-line cellName">Hide previous versions</td>
-      <td class="propRowCell multi-line">
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Hide previous versions</td>
+      <td class="propRowCell">
         <p-toggleswitch
           [(ngModel)]="properties.hidePreviousVersions"
           [disabled]="readonly"
@@ -106,14 +106,14 @@
         </p-select>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'filtersGroup')"
-        [attr.collapse]="propHidden.filtersGroup">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'filtersGroup')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName source-addon-section-header" [attr.collapse]="propHidden.filtersGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Filters</span>
       </td>
-      <td class="propHeaderCell cellName">Filters</td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addField()">
+        <div class="propAdd" (click)="addField(); $event.stopPropagation()">
           <i class="pi pi-plus"></i>
           <span>Add Field</span>
         </div>
@@ -123,7 +123,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)"
           [attr.collapse]="propHidden.filters[i]">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">Field {{ i }}</td>
         <td class="propRowCell">
