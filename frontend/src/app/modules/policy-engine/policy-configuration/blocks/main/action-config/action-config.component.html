@@ -1,6 +1,6 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties action-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
@@ -16,11 +16,12 @@
         </p-select>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName action-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
       </td>
-      <td class="propHeaderCell cellName">UI</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -42,7 +43,7 @@
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionsGroup')"
           [attr.collapse]="propHidden.optionsGroup">
           @if (properties.uiMetaData.options.length) {
-            <i class="pi pi-caret-down"></i>
+            <i class="pi pi-chevron-down"></i>
           }
         </td>
         <td class="propRowCell cellName">Options</td>
@@ -57,7 +58,7 @@
         <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
           <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)"
             [attr.collapse]="propHidden.options[i]">
-            <i class="pi pi-caret-down"></i>
+            <i class="pi pi-chevron-down"></i>
           </td>
           <td class="propRowCell cellName">Options {{ i }}</td>
           <td class="propRowCell">{{ option.name }}</td>
@@ -124,7 +125,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
           [attr.collapse]="propHidden.dropdownGroup">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">Dropdown Options</td>
         <td class="propRowCell">
@@ -164,7 +165,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.main">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fileGroup')"
           [attr.collapse]="propHidden.fileGroup">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">File Options</td>
         <td class="propRowCell">

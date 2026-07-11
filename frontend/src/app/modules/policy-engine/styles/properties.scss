@@ -1081,10 +1081,22 @@
     }
 
     .right-bottom-toolbar .properties.events-properties .event-header-row .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         flex: 0 0 14px;
         width: 14px !important;
         height: 24px !important;
         margin-right: 0;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        transition: transform 0.12s ease;
+        transform: rotate(0deg);
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propHeader .cellName[collapse="true"] .event-header-row .chevron-icon {
+        transform: rotate(-90deg);
     }
 
     .right-bottom-toolbar .properties.events-properties .event-header-row .prop-icon,
@@ -1122,7 +1134,7 @@
 
     .right-bottom-toolbar .properties.events-properties .event-header-row .prop-icon-text {
         display: block !important;
-        flex: 1 1 auto;
+        flex: 0 1 auto;
         min-width: 0;
         max-width: 100%;
         height: 28px !important;
@@ -1351,5 +1363,273 @@
         width: 16px;
         height: 16px;
         border-radius: 4px;
+    }
+}
+
+.policy-configuration::ng-deep {
+    .right-bottom-toolbar .properties.tool-properties {
+        --pc-tool-row-height: var(--pc-row-height);
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propHeader {
+        height: 36px;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propHeader .propHeaderCell {
+        height: 36px;
+        vertical-align: middle !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propHeader .cellName {
+        display: table-cell !important;
+        vertical-align: middle !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 4px 4px 4px 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis;
+        white-space: nowrap !important;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propHeader .cellName span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propHeader .cellName .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell {
+        height: var(--pc-tool-row-height);
+        min-height: var(--pc-tool-row-height);
+        vertical-align: middle;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell.cellName {
+        vertical-align: middle;
+        line-height: var(--pc-control-height);
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell.cellName span {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRow .propRowCell:has(textarea) {
+        height: auto;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRowCell > input.prop-input {
+        height: var(--pc-control-height) !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties p-select .p-select-label,
+    .right-bottom-toolbar .properties.tool-properties p-multiselect .p-multiselect-label {
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        line-height: normal !important;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRow.subRow .propRowCell.cellName::before,
+    .right-bottom-toolbar .properties.tool-properties .propRow.subRow .propRowCell.cellName::after {
+        display: none;
+        content: none;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse i {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 8px;
+        z-index: 4;
+        font-size: 11px;
+        line-height: 1;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        transform: translateY(-50%);
+    }
+
+    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse[collapse="true"] i {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+}
+
+.policy-configuration::ng-deep {
+    .right-bottom-toolbar .properties.button-properties {
+        --col-name-width: 184px;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .button-section-header {
+        display: table-cell !important;
+        vertical-align: middle !important;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .button-section-header span {
+        display: inline-block !important;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        height: 24px !important;
+        line-height: 24px !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .button-section-header .chevron-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        vertical-align: middle;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1 !important;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .button-section-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse {
+        position: relative;
+        vertical-align: middle;
+        overflow: visible;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: 128px;
+        cursor: pointer;
+        z-index: 3;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse svg {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 50%;
+        left: 8px;
+        z-index: 4;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transform: translateY(-50%);
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse[collapse="true"] i,
+    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse[collapse="true"] svg {
+        transform: translateY(-50%) rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
+        padding-left: 10px !important;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .subRow > .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.button-properties .subRow > .propRowCol.cellCollapse svg {
+        left: 24px;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .subRow-2 > .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.button-properties .subRow-2 > .propRowCol.cellCollapse svg {
+        left: 34px;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .subRow-3 > .propRowCol.cellCollapse i,
+    .right-bottom-toolbar .properties.button-properties .subRow-3 > .propRowCol.cellCollapse svg {
+        left: 44px;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propHeader .propAdd,
+    .right-bottom-toolbar .properties.button-properties .propRowCell > .propAdd {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.button-properties .propHeader .propAdd i,
+    .right-bottom-toolbar .properties.button-properties .propHeader .propAdd svg,
+    .right-bottom-toolbar .properties.button-properties .propRowCell > .propAdd i,
+    .right-bottom-toolbar .properties.button-properties .propRowCell > .propAdd svg {
+        position: static;
+        margin: 0;
+        width: auto;
+        height: auto;
+        font-size: 12px;
+        line-height: 1;
     }
 }

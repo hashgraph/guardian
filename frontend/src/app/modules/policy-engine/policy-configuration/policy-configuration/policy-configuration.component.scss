@@ -416,62 +416,14 @@
     }
 }
 
+// The right inspector's property-table styling lives in styles/properties.scss
+// (single source of truth since the GH-3532 alignment iterations). Only the
+// tab-content layout rule belongs to this shell stylesheet.
 .policy-configuration::ng-deep .right-bottom-toolbar {
     .pc-tabs-content {
         padding: 0 12px 12px;
         overflow: auto;
         box-sizing: border-box;
-    }
-
-    .properties {
-        --col-name-width: 90px;
-        --pc-row-font-size: 12px;
-    }
-
-    .properties .propRow .cellName {
-        padding-right: 6px;
-        white-space: nowrap;
-    }
-
-    .properties .propRow .propRowCell {
-        padding-top: 2px;
-        padding-bottom: 2px;
-    }
-
-    .properties .propRowCell:not(.cellName) {
-        padding-left: 0;
-        padding-right: 0;
-    }
-
-    .properties .propHeader .cellName,
-    .properties .propHeader .cellName span,
-    .properties .propRow .cellName span {
-        white-space: nowrap;
-    }
-
-    .properties .propHeader .cellName {
-        display: flex !important;
-        align-items: center;
-        height: 28px;
-        min-height: 28px;
-        overflow: visible;
-        padding: 4px 0 0 !important;
-    }
-
-    .properties .propHeader .cellName span {
-        display: inline-flex;
-        align-items: center;
-        height: 24px;
-        line-height: 24px;
-    }
-
-    .properties .propHeader .cellName .chevron-icon {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 14px;
-        height: 24px;
-        line-height: 1;
     }
 
     .properties .propRowCell > input.prop-input,
@@ -995,32 +947,70 @@
 
 .inspector-subsection {
     position: relative;
-    padding: 12px;
+    padding: 0;
     border-top: none;
 
     &::before {
         content: "";
         position: absolute;
-        top: 3px;
+        top: 0;
         left: 0;
         right: 0;
         border-top: 1px solid var(--pc-border-color);
     }
 
-    .inspector-subsection-label {
+    .inspector-subsection-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        height: 36px;
+        padding: 4px 104px 4px 18px;
+        color: var(--pc-header-color, #23252E);
+        font-family: var(--pc-row-font-family);
         font-size: 10.5px;
         font-weight: 600;
-        letter-spacing: 0.04em;
+        letter-spacing: normal;
+        line-height: 24px;
         text-transform: uppercase;
-        color: var(--guardian-font-color-secondary, #8a8f9c);
-        padding: 0 0 8px;
+        cursor: pointer;
+    }
+
+    .inspector-subsection-header .chevron-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 24px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transition: transform 0.12s ease;
+    }
+
+    .inspector-subsection-header[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .inspector-subsection-label {
+        display: inline-block;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     ::ng-deep .artifact-container {
         margin-top: 0;
         height: auto;
-        align-items: stretch;
-        gap: 8px;
+        min-height: 0;
+        padding: 0 4px 6px 18px;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 4px;
+    }
+
+    &[collapse="true"] ::ng-deep .artifact-list {
+        display: none;
     }
 
     ::ng-deep .artifact-list {
@@ -1051,34 +1041,43 @@
     }
 
     ::ng-deep .add-artifact-button {
-        width: 100% !important;
-        height: 36px !important;
-        min-height: 36px !important;
+        position: absolute;
+        top: 6px;
+        right: 4px;
+        width: max-content !important;
+        min-width: 0 !important;
+        height: 24px !important;
+        min-height: 24px !important;
         margin-bottom: 0 !important;
-        border: 1px dashed var(--pc-border-color) !important;
-        border-radius: 8px !important;
+        padding: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
         box-shadow: none !important;
-        display: flex !important;
+        display: inline-flex !important;
         align-items: center;
         justify-content: center;
-        gap: 8px;
+        gap: 4px;
         color: var(--color-primary, #4169E2) !important;
+        font-family: var(--pc-row-font-family);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
 
         &:hover {
-            border-color: var(--color-primary, #4169E2) !important;
-            background: color-mix(in srgb, var(--color-primary, #4169E2) 8%, transparent) !important;
+            background: transparent !important;
         }
 
         i {
             color: var(--color-primary, #4169E2) !important;
-            font-size: 14px !important;
+            font-size: 12px !important;
             margin: 0 !important;
         }
 
         &::after {
             content: "Add artifact";
-            font-size: 13px;
+            font-size: 12px;
             font-weight: 500;
+            line-height: 16px;
             color: var(--color-primary, #4169E2);
         }
     }

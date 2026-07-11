@@ -164,6 +164,7 @@ export class PolicyConfigurationComponent implements OnInit {
     private indexedDb: IndexedDbRegistryService;
 
     public ignoreRules: IgnoreRule[] = [];
+    public artifactsCollapsed: boolean = false;
 
     /**
      * Available presets to validation.

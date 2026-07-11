@@ -1037,8 +1037,12 @@
                             (selectParent)="onSelect({ block: $event, isMultiSelect: false })"
                             class="readonly-status"
                           type="Common"></common-properties>
-                          <div class="inspector-subsection">
-                            <div class="inspector-subsection-label">Artifacts</div>
+                          <div class="inspector-subsection" [attr.collapse]="artifactsCollapsed">
+                            <div class="inspector-subsection-header" (click)="artifactsCollapsed = !artifactsCollapsed"
+                              [attr.collapse]="artifactsCollapsed">
+                              <i class="pi pi-chevron-down chevron-icon"></i>
+                              <span class="inspector-subsection-label">Artifacts</span>
+                            </div>
                             <artifact-properties [block]="currentBlock" [policyId]="policyId"
                               [readonly]="readonly" class="readonly-status"></artifact-properties>
                           </div>

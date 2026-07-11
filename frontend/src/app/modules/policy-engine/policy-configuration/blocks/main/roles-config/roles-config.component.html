@@ -1,6 +1,6 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties roles-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
@@ -34,11 +34,12 @@
         </p-multiSelect>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName roles-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
       </td>
-      <td class="propHeaderCell cellName">UI</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">

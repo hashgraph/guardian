@@ -1,6 +1,6 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties button-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
@@ -14,12 +14,12 @@
       </td>
     </tr>
     <tr class="propHeader" [attr.collapse]="propHidden.metaData">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'buttonsGroup')">
-        @if (properties.uiMetaData.buttons.length) {
-          <i class="pi pi-caret-down"></i>
-        }
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName button-section-header" (click)="onHide(propHidden, 'buttonsGroup')"
+        [attr.collapse]="propHidden.buttonsGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Buttons</span>
       </td>
-      <td class="propHeaderCell cellName">Buttons</td>
       <td class="propHeaderCell">
         <div class="propAdd" (click)="addButton()">
           <i class="pi pi-plus"></i>
@@ -31,7 +31,7 @@
       <tr class="propRow subRow" [attr.collapse]="propHidden.buttonsGroup">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'collapse')"
           [attr.collapse]="propHidden.buttons[i].collapse">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">Button {{ i }}</td>
         <td class="propRowCell not-editable-text">
@@ -121,13 +121,11 @@
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" title="Hide when discontinued">Hide when discontinued</td>
         <td class="propRowCell">
-          <p-checkbox
+          <p-toggleswitch
             [(ngModel)]="button.hideWhenDiscontinued"
-            [binary]="true"
-            [readonly]="readonly"
-            (blur)="onSave()"
-            [style]="{marginLeft: '8px'}"
-          ></p-checkbox>
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       <tr class="propRow subRow-2"
@@ -135,7 +133,7 @@
         <td class="propRowCol cellCollapse"
           (click)="onHide(propHidden.buttons[i], 'hideEventsGroup')"
           [attr.collapse]="propHidden.buttons[i].hideEventsGroup">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName"
           pTooltip="Configure read/write hide-events state in localStorage"
@@ -157,13 +155,11 @@
           Incoming hide events
         </td>
         <td class="propRowCell">
-          <p-checkbox
+          <p-toggleswitch
             [(ngModel)]="button.incomingHideEventsEnabled"
-            [binary]="true"
-            [readonly]="readonly"
-            (onChange)="onSave()"
-            [style]="{marginLeft: '8px'}"
-          ></p-checkbox>
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       <tr class="propRow subRow-3"
@@ -176,13 +172,11 @@
           Outgoing hide events
         </td>
         <td class="propRowCell">
-          <p-checkbox
+          <p-toggleswitch
             [(ngModel)]="button.outgoingHideEventsEnabled"
-            [binary]="true"
-            [readonly]="readonly"
-            (onChange)="onSave()"
-            [style]="{marginLeft: '8px'}"
-          ></p-checkbox>
+            [disabled]="readonly"
+            (onChange)="onSave()">
+          </p-toggleswitch>
         </td>
       </tr>
       @if (button.outgoingHideEventsEnabled === true) {
@@ -209,7 +203,7 @@
       <tr class="propRow subRow-2" [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], 'filtersGroup')"
           [attr.collapse]="propHidden.buttons[i].filtersGroup">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">Filters Option {{ i }}</td>
         <td class="propRowCell">
@@ -224,7 +218,7 @@
           [attr.collapse]="propHidden.buttonsGroup || propHidden.buttons[i].collapse || propHidden.buttons[i].filtersGroup">
           <td class="propRowCol cellCollapse" (click)="onHide(propHidden.buttons[i], j)"
             [attr.collapse]="propHidden.buttons[i][j]">
-            <i class="pi pi-caret-down"></i>
+            <i class="pi pi-chevron-down"></i>
           </td>
           <td class="propRowCell cellName">Filter {{ j }}</td>
           <td class="propRowCell">

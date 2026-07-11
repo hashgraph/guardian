@@ -1,12 +1,13 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties token-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader" [attr.collapse]="propHidden.main">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName token-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Main</span>
       </td>
-      <td class="propHeaderCell cellName">Main</td>
       <td class="propHeaderCell"></td>
     </tr>
     @if (!propHidden.main) {
@@ -23,7 +24,9 @@
       </tr>
       <tr class="propHeader">
         <td class="propRowCol"></td>
-        <td class="propHeaderCell cellName">Token Template</td>
+        <td class="propHeaderCell cellName">
+          <span>Token Template</span>
+        </td>
         <td class="propHeaderCell"></td>
       </tr>
       <tr class="propRow">

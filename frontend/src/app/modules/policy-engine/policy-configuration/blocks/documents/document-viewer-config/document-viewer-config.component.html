@@ -1,12 +1,13 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties viewer-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName viewer-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
       </td>
-      <td class="propHeaderCell cellName">UI</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -20,18 +21,21 @@
       <td class="propRowCol"></td>
       <td class="propRowCell cellName" pTooltip="Enable common sorting" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable common sorting</td>
       <td class="propRowCell">
-        <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
-          (blur)="onSave()">
+        <p-toggleswitch
+          [(ngModel)]="properties.uiMetaData.enableSorting"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
-        [attr.collapse]="propHidden.fieldsGroup">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'fieldsGroup')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName viewer-section-header" [attr.collapse]="propHidden.fieldsGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Fields</span>
       </td>
-      <td class="propHeaderCell cellName">Fields</td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addField()">
+        <div class="propAdd" (click)="$event.stopPropagation(); addField()">
           <i class="pi pi-plus"></i>
           <span>Add Field</span>
         </div>
@@ -41,7 +45,7 @@
       <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
         <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
           [attr.collapse]="propHidden.fields[i]">
-          <i class="pi pi-caret-down"></i>
+          <i class="pi pi-chevron-down"></i>
         </td>
         <td class="propRowCell cellName">{{ getFieldName(field, i) }}</td>
         <td class="propRowCell not-editable-text">
@@ -125,13 +129,11 @@
             Hide when discontinued
           </td>
           <td class="propRowCell">
-            <p-checkbox
+            <p-toggleswitch
               [(ngModel)]="field.hideWhenDiscontinued"
-              [binary]="true"
-              [readonly]="readonly"
-              (blur)="onSave()"
-              [style]="{marginLeft: '8px'}"
-            ></p-checkbox>
+              [disabled]="readonly"
+              (onChange)="onSave()">
+            </p-toggleswitch>
           </td>
         </tr>
         <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">

@@ -1,11 +1,12 @@
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
+  <table class="properties tool-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
-        <i class="pi pi-caret-down"></i>
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName tool-section-header" (click)="onHide(propHidden, 'tool')" [attr.collapse]="propHidden.tool">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Tool</span>
       </td>
-      <td class="propHeaderCell cellName">Tool</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.tool">
@@ -44,10 +45,11 @@
       </td>
     </tr>
     <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName tool-section-header" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Variables</span>
       </td>
-      <td class="propHeaderCell cellName">Variables</td>
       <td class="propHeaderCell"></td>
     </tr>
     @for (item of variables; track item; let i = $index) {
