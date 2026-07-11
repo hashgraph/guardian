@@ -1041,6 +1041,201 @@
     }
 }
 
+.policy-configuration::ng-deep {
+    .right-bottom-toolbar .properties.events-properties {
+        --col-name-width: 174px;
+        --pc-events-row-height: 34px;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propHeader {
+        height: 36px;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propHeader .propHeaderCell {
+        height: 36px;
+        vertical-align: middle !important;
+        padding-top: 4px !important;
+        padding-bottom: 4px !important;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propHeader .cellName {
+        display: table-cell !important;
+        vertical-align: middle !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        padding: 4px 4px 4px 0 !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis;
+        white-space: nowrap !important;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px;
+        width: 100%;
+        max-width: 100%;
+        height: 28px;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .chevron-icon {
+        flex: 0 0 14px;
+        width: 14px !important;
+        height: 24px !important;
+        margin-right: 0;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-icon,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-input-event,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-output-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex: 0 0 20px;
+        width: 20px !important;
+        min-width: 20px !important;
+        max-width: 20px !important;
+        height: 20px !important;
+        line-height: 1 !important;
+        overflow: visible !important;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-input-event,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-output-icon {
+        margin-right: 2px;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-icon svg-icon,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-icon svg,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-input-event i,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-output-icon i {
+        display: block;
+        position: static !important;
+        flex: 0 0 auto;
+        width: auto !important;
+        height: auto !important;
+        font-size: 12px !important;
+        line-height: 1 !important;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .prop-icon-text {
+        display: block !important;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: 100%;
+        height: 28px !important;
+        line-height: 28px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .remove-prop {
+        position: static !important;
+        top: auto;
+        right: auto;
+        transform: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 31px;
+        width: 31px;
+        height: 31px;
+        margin-left: auto;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-header-row .remove-prop i,
+    .right-bottom-toolbar .properties.events-properties .event-header-row .remove-prop svg {
+        position: static;
+        font-size: 16px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propRow.subRow .propRowCell {
+        height: var(--pc-events-row-height);
+        min-height: var(--pc-events-row-height);
+        padding-top: 3px !important;
+        padding-bottom: 3px !important;
+        vertical-align: middle;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propRow.subRow .propRowCell.cellName {
+        padding-top: 3px !important;
+        vertical-align: middle;
+        line-height: var(--pc-control-height);
+        white-space: nowrap !important;
+        text-overflow: ellipsis;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propRow.subRow .propRowCell.cellName::before,
+    .right-bottom-toolbar .properties.events-properties .propRow.subRow .propRowCell.cellName::after {
+        display: none;
+        content: none;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .propRow.subRow .propRowCell:has(> p-toggleswitch) {
+        text-align: right;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .wrapper-readonly-prop {
+        border: none;
+        border-radius: 0;
+        padding-left: 4px !important;
+        padding-right: 4px !important;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .current-elm {
+        height: var(--pc-control-height);
+        padding-top: 0;
+        font-size: var(--pc-row-font-size);
+        line-height: var(--pc-control-height);
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-add-row {
+        height: 40px;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-add-cell {
+        height: 40px;
+        padding: 4px 4px 12px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-add-cell .events-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-add-cell .events-add i,
+    .right-bottom-toolbar .properties.events-properties .event-add-cell .events-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .right-bottom-toolbar .properties.events-properties .event-add-cell .events-add span {
+        white-space: nowrap;
+    }
+}
+
 // PrimeNG select/multiSelect overlays render via appendTo="body" and land
 // outside .policy-configuration's DOM subtree, so ::ng-deep scoping above
 // can't reach them. panelStyleClass="pc-select-panel" tags only our own
@@ -1079,15 +1274,19 @@
     .p-select-list,
     .p-multiselect-list {
         padding: 4px;
-        gap: 2px;
+        gap: 4px;
     }
 
     .p-select-option,
     .p-multiselect-option {
+        display: flex;
+        align-items: center;
+        min-height: 32px;
         padding: 8px 10px;
         border-radius: 6px;
         font-size: 13px;
         font-family: 'Inter', sans-serif;
+        line-height: 16px;
         color: var(--guardian-font-color, #23252E);
     }
 

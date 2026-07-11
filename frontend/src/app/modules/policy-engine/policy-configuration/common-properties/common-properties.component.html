@@ -223,12 +223,12 @@
     <div class="table">
       <div class="table-body">
         @if (block) {
-          <table class="properties">
+          <table class="properties events-properties">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
             @if (defaultEvent) {
               <tr class="propHeader" (click)="onHide(propHidden, 'defaultEvent')">
                 <td class="propRowCol"></td>
-                <td class="propHeaderCell cellName fullCell" [attr.collapse]="propHidden.defaultEvent">
+                <td class="propHeaderCell cellName fullCell" colspan="2" [attr.collapse]="propHidden.defaultEvent">
                   <div class="event-header-row" [attr.disabled]="block.properties.stopPropagation">
                     <i class="pi pi-chevron-down chevron-icon"></i>
                     <span class="prop-icon prop-icon-event">
@@ -241,7 +241,6 @@
                     <span class="prop-icon-text">Default Event</span>
                   </div>
                 </td>
-                <td class="propHeaderCell"></td>
               </tr>
               <tr class="propRow subRow" [attr.collapse]="propHidden.defaultEvent">
                 <td class="propRowCol"></td>
@@ -307,7 +306,7 @@
               @if (isOutputEvent(item) || isInputEvent(item)) {
                 <tr class="propHeader" (click)="onHide(propHidden.eventsGroup, item.id)">
                   <td class="propRowCol"></td>
-                  <td class="propHeaderCell cellName fullCell" [attr.collapse]="propHidden.eventsGroup[item.id]">
+                  <td class="propHeaderCell cellName fullCell" colspan="2" [attr.collapse]="propHidden.eventsGroup[item.id]">
                     <div class="event-header-row" [attr.disabled]="item.disabled">
                       <i class="pi pi-chevron-down chevron-icon"></i>
                       <span class="prop-icon prop-icon-event" [attr.invalid]="isInvalid(item)">
@@ -330,12 +329,10 @@
                       @if (isOutputEvent(item)) {
                         <span class="prop-icon-text">Output Event</span>
                       }
+                      <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveEvent(item)">
+                        <i class="pi pi-trash"></i>
+                      </span>
                     </div>
-                  </td>
-                  <td class="propHeaderCell">
-                    <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveEvent(item)">
-                      <i class="pi pi-trash"></i>
-                    </span>
                   </td>
                 </tr>
                 <tr class="propRow subRow" [attr.collapse]="propHidden.eventsGroup[item.id]">
