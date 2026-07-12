@@ -26,7 +26,7 @@
             check your connection and try again.
           </p>
         } @else {
-          <div class="first-steps-content" [innerHTML]="contentHtml"></div>
+          <div class="first-steps-content" (click)="onContentClick($event)" [innerHTML]="contentHtml"></div>
         }
       </div>
 

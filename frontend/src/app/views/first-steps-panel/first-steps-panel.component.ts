@@ -1,4 +1,5 @@
 import { Component, HostListener, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { IUser, UserPermissions } from '@guardian/interfaces';
 import { environment } from 'src/environments/environment';
 import { FirstStepsService } from '../../services/first-steps.service';
@@ -31,7 +32,8 @@ export class FirstStepsPanelComponent implements OnInit {
 
     constructor(
         public firstSteps: FirstStepsService,
-        private auth: AuthService
+        private auth: AuthService,
+        private router: Router
     ) {
         this.restoreWidth();
     }
@@ -75,6 +77,30 @@ export class FirstStepsPanelComponent implements OnInit {
 
     get open(): boolean {
         return this.firstSteps.isOpen();
+    }
+
+    onContentClick(event: MouseEvent): void {
+        // The rendered markdown is bound with [innerHTML], so its anchors are plain DOM
+        // anchors the Router never sees. Without this, a Guardian link would reload the
+        // whole app and an external link would unload it.
+        const target = event.target;
+        const anchor = target instanceof Element ? target.closest('a') : null;
+        if (!(anchor instanceof HTMLAnchorElement)) {
+            return;
+        }
+        const raw = anchor.getAttribute('href');
+        if (!raw || raw.startsWith('#') || raw.startsWith('mailto:')) {
+            return;
+        }
+        // `anchor.href` is already resolved against the current origin, so an authored
+        // host-less path works on localhost, on dev, and on any customer domain.
+        const url = new URL(anchor.href, window.location.origin);
+        event.preventDefault();
+        if (url.origin === window.location.origin) {
+            this.router.navigateByUrl(url.pathname + url.search + url.hash);
+        } else {
+            window.open(url.href, '_blank', 'noopener');
+        }
     }
 
     hide(): void {

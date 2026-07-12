@@ -7,6 +7,8 @@
  * Any other GitBook block (`{% ... %}`) falls back to its inner markdown so the
  * page never shows raw `{% tag %}` text. A leading YAML front-matter block is
  * stripped. Output is bound through Angular's default [innerHTML] sanitizer.
+ * Links written as `app://<route>` are resolved to same-origin relative
+ * anchors; every other link opens in a new tab.
  */
 import { marked, TokenizerAndRendererExtension, Tokens } from 'marked';
 
@@ -17,6 +19,27 @@ interface WrapToken extends Tokens.Generic {
 function attr(params: string, name: string): string {
     const m = new RegExp(`${name}="([^"]*)"`).exec(params || '');
     return m ? m[1] : '';
+}
+
+// Authored in-app links carry no host: `app://policy-viewer`. The scheme is
+// resolved here into a root-relative path, because Angular's sanitizer rewrites an
+// unknown scheme to `unsafe:` and the anchor would stop working.
+const INTERNAL_SCHEME = 'app://';
+
+function resolveInternalHref(href: string): string | null {
+    if (!href.startsWith(INTERNAL_SCHEME)) {
+        return null;
+    }
+    const route = href.slice(INTERNAL_SCHEME.length).replace(/^\/+/, '');
+    return `/${route}`;
+}
+
+function escapeAttr(value: string): string {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
 }
 
 const hintExtension: TokenizerAndRendererExtension = {
@@ -160,6 +183,20 @@ const genericExtension: TokenizerAndRendererExtension = {
 
 marked.use({
     gfm: true,
+    renderer: {
+        link(href: string, title: string | null | undefined, text: string): string {
+            const safeHref = escapeAttr(href || '');
+            const titleAttr = title ? ` title="${escapeAttr(title)}"` : '';
+            if (!href || href.startsWith('#') || href.startsWith('mailto:')) {
+                return `<a href="${safeHref}"${titleAttr}>${text}</a>`;
+            }
+            const internal = resolveInternalHref(href);
+            if (internal) {
+                return `<a class="fs-link fs-link--internal" href="${escapeAttr(internal)}"${titleAttr}>${text}</a>`;
+            }
+            return `<a class="fs-link fs-link--external" href="${safeHref}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+        }
+    },
     extensions: [
         hintExtension,
         stepperExtension,

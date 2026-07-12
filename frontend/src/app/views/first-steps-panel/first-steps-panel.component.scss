@@ -212,6 +212,12 @@
         }
     }
 
+    .fs-link--external::after {
+        content: '\2197';
+        margin-left: 2px;
+        font-size: 11px;
+    }
+
     strong {
         color: var(--guardian-font-color, #23252e);
     }
