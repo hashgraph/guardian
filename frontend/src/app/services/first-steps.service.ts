@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
-import { UserRole } from '@guardian/interfaces';
 
 // Both the enabled flag and the drawer open/close are stored per role so each role
 // keeps its own state (the "2 stores" per concept), e.g.
@@ -10,17 +9,11 @@ const ENABLED_KEY_PREFIX = 'FIRST_STEPS_ENABLED_';
 const OPEN_KEY_PREFIX = 'FIRST_STEPS_OPEN_';
 const PANEL_OPEN_CLASS = 'first-steps-open';
 
-// Roles that are always enabled because their profile has no First Steps toggle to
-// turn it off. The default user has no toggle, so First Steps is always on for them;
-// Standard Registry stays toggleable from its profile Configuration card.
-const ALWAYS_ENABLED_ROLES: string[] = [UserRole.USER];
-
 @Injectable({
     providedIn: 'root'
 })
 export class FirstStepsService {
-    // Feature on/off for the active role. Toggleable roles persist it (see setEnabled
-    // / readStoredEnabled); always-enabled roles are true regardless.
+    // Feature on/off for the active role, persisted by setEnabled/readStoredEnabled.
     private readonly enabled$ = new BehaviorSubject<boolean>(false);
 
     // Drawer visibility for the active role. Persisted per role (see setRole /
@@ -37,8 +30,7 @@ export class FirstStepsService {
     }
 
     public setEnabled(value: boolean): void {
-        // Always-enabled roles (default user) have no toggle and cannot be turned off.
-        if (this.role === null || this.isAlwaysEnabled(this.role) || value === this.enabled$.value) {
+        if (this.role === null || value === this.enabled$.value) {
             return;
         }
         try {
@@ -84,10 +76,6 @@ export class FirstStepsService {
         this.applyPanelClass();
     }
 
-    private isAlwaysEnabled(role: string): boolean {
-        return ALWAYS_ENABLED_ROLES.includes(role);
-    }
-
     private persistOpen(): void {
         if (this.role === null) {
             return;
@@ -110,10 +98,6 @@ export class FirstStepsService {
     }
 
     private readStoredEnabled(role: string): boolean {
-        // Always-enabled roles (default user) ignore any stored value.
-        if (this.isAlwaysEnabled(role)) {
-            return true;
-        }
         try {
             return localStorage.getItem(ENABLED_KEY_PREFIX + role) === 'true';
         } catch {
