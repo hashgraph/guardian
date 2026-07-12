@@ -678,7 +678,7 @@
             "advanced": {
                 "title": "Advanced",
                 "tokenPolicy": "Token Policy Id",
-                "mintTokenId": "Mint Token",
+                "mintTokenId": "Token ID",
                 "tokenCreatedDate": "Token Created Date",
                 "issueDid": "Issue DID"
             },

@@ -673,7 +673,7 @@
             "advanced": {
                 "title": "Avanzado",
                 "tokenPolicy": "ID de política del token",
-                "mintTokenId": "Token acuñado",
+                "mintTokenId": "ID de token",
                 "tokenCreatedDate": "Fecha de creación del token",
                 "issueDid": "DID de emisión"
             },
