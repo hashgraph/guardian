@@ -31,6 +31,8 @@ import {
     Clock,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import { useDebounceFn, useIntersectionObserver } from '@vueuse/core';
+import { useWatchlistBrowse } from '~/composables/useWatchlistBrowse';
 import { formatCredits, formatSmartCredits } from '~/lib/format';
 import {
     allocateDonutColors,
@@ -53,25 +55,19 @@ definePageMeta({ middleware: 'auth' });
 
 const { t } = useI18n();
 
-const {
-    buildRetirementSeries,
-    totalRetired,
-    pending,
-} = useDashboard();
-const { projects: allProjects } = useProjects();   // full list for watchlist modal candidates
-
+// No retirement data source exists anywhere in the app yet (the main
+// Dashboard page's useDashboard() has the same stub) — these are local
+// no-op placeholders so the KPI/chart keep rendering their current 0/empty
+// state without pulling in useDashboard()'s full project catalog + mint-stats
+// + registry/methodology counts just to compute values that are always empty.
+const totalRetired = ref(0);
+function buildRetirementSeries(_period: TimePeriod): { label: string; value: number }[] {
+    return [];
+}
 const { watchlistItems, removeItem, count: watchlistCount } = usePortfolioWatchlist();
 const { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
 const { isAuthenticated } = useAuth();
 const { hydrateFromApi, pushType } = usePortfolioSync();
-const {
-    watchlistFilters,
-    setFilter: setWatchlistFilter,
-    clearFilters: clearWatchlistFilters,
-    hasActiveFilters: hasActiveWatchlistFilters,
-    filterOptions: watchlistFilterOptions,
-    matchesFilters: matchesWatchlistFilters,
-} = usePortfolioWatchlistFilters();
 
 // All chart data filtered by the active watchlist (empty watchlist ⇒ empty portfolio)
 const {
@@ -263,9 +259,50 @@ const showWatchlistModal = ref(false);
 const showWidgetLibraryModal = ref(false);
 const showChartBuilderModal = ref(false);
 
-// Watchlist modal — projects only. Uncapped; narrowed by search + the
-// persisted country/methodology/registry filters (usePortfolioWatchlistFilters).
+// Watchlist modal — server-paginated + filtered (useWatchlistBrowse), narrowed
+// further by the client-side country filter (usePortfolioWatchlistFilters —
+// country can't move server-side until the geocoding backfill lands, see
+// docs/portfolio-scaling-plan.md). Search is debounced into the server request.
 const watchlistSearch = ref('');
+const debouncedWatchlistSearch = ref('');
+const updateDebouncedWatchlistSearch = useDebounceFn((v: string) => { debouncedWatchlistSearch.value = v; }, 300);
+watch(watchlistSearch, v => updateDebouncedWatchlistSearch(v));
+
+// Same useState key usePortfolioWatchlistFilters uses internally — read
+// directly here so the browse composable's server filters don't have to wait
+// on that composable's full return value, which itself needs browseItems as
+// an input (methodology/registry/sdgs now apply server-side; only country
+// stays client-side there).
+const watchlistFiltersState = useState<Record<string, string>>('portfolio-watchlist-filters', () => ({}));
+const browseFilters = computed(() => ({
+    search: debouncedWatchlistSearch.value,
+    methodology: watchlistFiltersState.value.methodology,
+    registry: watchlistFiltersState.value.registry,
+    sdgs: watchlistFiltersState.value.sdgs,
+}));
+const {
+    items: browseItems,
+    total: browseTotal,
+    hasMore: browseHasMore,
+    loadMore: browseLoadMore,
+    reset: resetBrowse,
+    fetchAllMatchingIds,
+} = useWatchlistBrowse(browseFilters);
+
+// Infinite scroll: fetch the next page once the sentinel row scrolls into view.
+const watchlistScrollSentinelRef = ref<HTMLElement | null>(null);
+useIntersectionObserver(watchlistScrollSentinelRef, ([entry]) => {
+    if (entry?.isIntersecting && browseHasMore.value) void browseLoadMore();
+});
+
+const {
+    watchlistFilters,
+    setFilter: setWatchlistFilter,
+    clearFilters: clearWatchlistFilters,
+    hasActiveFilters: hasActiveWatchlistFilters,
+    filterOptions: watchlistFilterOptions,
+    matchesFilters: matchesWatchlistFilters,
+} = usePortfolioWatchlistFilters(browseItems, showWatchlistModal);
 
 // Draft selection edited while the modal is open. Add/Remove/Add All only
 // mutate this — the committed `watchlistItems` (and therefore the whole
@@ -287,29 +324,39 @@ function pendingRemoveItem(id: string, type: WatchlistItemType): void {
 
 // When checked, shows only the items currently in the pending draft —
 // bypasses Country/Methodology/Registry so the user can review their full
-// selection regardless of the filters currently applied. Search still narrows.
+// selection regardless of the filters currently applied.
 const showSelectedOnly = ref(false);
 
+// methodology/registry/sdgs are already applied server-side (browseFilters);
+// matchesWatchlistFilters only re-checks country (client-side, see above).
 const watchlistCandidates = computed(() => {
-    const q = watchlistSearch.value.toLowerCase();
     const base = showSelectedOnly.value
-        ? allProjects.value.filter(p => pendingHasItem(p.id, 'project'))
-        : allProjects.value.filter(p => matchesWatchlistFilters(p));
-    return base
-        .filter(p => !q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q))
-        .map(p => ({
-            id: p.id,
-            type: 'project' as const,
-            name: p.name,
-            meta: p.registry ?? '',
-        }));
+        ? browseItems.value.filter(p => pendingHasItem(p.id, 'project'))
+        : browseItems.value.filter(p => matchesWatchlistFilters(p));
+    return base.map(p => ({
+        id: p.id,
+        type: 'project' as const,
+        name: p.name,
+        meta: p.registry ?? '',
+    }));
 });
 
-// Merges every currently-filtered/searched candidate into the pending draft
-// in one shot — no network calls (the full project list is already loaded)
-// and no per-item mutation, so this stays O(n) even for large result sets.
-function addAllMatching() {
-    const additions = watchlistCandidates.value.filter(c => !pendingHasItem(c.id, c.type));
+// Adds every project matching the current filters to the pending draft.
+// Country is client-side-only (can't be sent to the server), so an active
+// country filter falls back to just the currently-loaded/visible candidates
+// (today's effective reach); otherwise fetches the full server-side matching
+// id set (GET /projects/ids — lean id+name pairs, not full rows) so "add all"
+// covers projects beyond whatever page has loaded so far.
+async function addAllMatching() {
+    let additions: WatchlistItem[];
+    if (watchlistFilters.value.country) {
+        additions = watchlistCandidates.value.filter(c => !pendingHasItem(c.id, c.type));
+    } else {
+        const matches = await fetchAllMatchingIds();
+        additions = matches
+            .filter(m => !pendingHasItem(m.id, 'project'))
+            .map(m => ({ id: m.id, type: 'project' as const, name: m.name, meta: '' }));
+    }
     pendingWatchlist.value = [...pendingWatchlist.value, ...additions];
     toast(t('portfolio.modal.watchlist.addAllSuccess', { count: additions.length }));
 }
@@ -317,8 +364,10 @@ function addAllMatching() {
 function openWatchlist() {
     pendingWatchlist.value = [...watchlistItems.value];
     watchlistSearch.value = '';
+    debouncedWatchlistSearch.value = '';
     showSelectedOnly.value = false;
     showWatchlistModal.value = true;
+    void resetBrowse();
 }
 
 // Discards the draft — used by Cancel, the header close button, backdrop
@@ -1736,7 +1785,7 @@ onUnmounted(() => {
                                 :filters="watchlistFilterOptions"
                                 :active-filters="watchlistFilters"
                                 :result-count="watchlistCandidates.length"
-                                :total-count="allProjects.length"
+                                :total-count="browseTotal"
                                 hide-search
                                 @filter="setWatchlistFilter"
                                 @clear="clearWatchlistFilters"
@@ -1796,6 +1845,9 @@ onUnmounted(() => {
                             </div>
                             <div v-if="watchlistCandidates.length === 0" class="py-8 text-center text-sm text-muted-foreground">
                                 {{ $t('common.noResults') }}
+                            </div>
+                            <div v-else-if="browseHasMore" ref="watchlistScrollSentinelRef" class="py-3 text-center text-xs text-muted-foreground">
+                                {{ $t('common.loading') }}
                             </div>
                         </div>
                         <!-- Footer -->

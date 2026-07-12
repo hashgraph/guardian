@@ -22,6 +22,7 @@ import { GuardianSyncController } from './controllers/guardian-sync.controller';
 import { SdgsController } from './controllers/sdgs.controller';
 import { DevelopersController } from './controllers/developers.controller';
 import { DashboardController } from './controllers/dashboard.controller';
+import { PortfolioController } from './controllers/portfolio.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
@@ -35,6 +36,7 @@ import { CreditsService } from './services/credits.service';
 import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
 import { DashboardService } from './services/dashboard.service';
+import { PortfolioStatsService } from './services/portfolio-stats.service';
 
 // Queue management
 import { QueueRegistry } from './queues/queue.registry';
@@ -68,6 +70,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         SdgsController,
         DevelopersController,
         DashboardController,
+        PortfolioController,
     ],
     providers: [
         NetworkDataSourceRegistry,
@@ -82,6 +85,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         SdgsService,
         DevelopersService,
         DashboardService,
+        PortfolioStatsService,
         QueueRegistry,
         QueueEventsBus,
         GuardianSyncService,

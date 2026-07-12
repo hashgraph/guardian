@@ -82,6 +82,10 @@ export const useCreditsApi = (opts: UseCreditsApiOptions) => {
                 if (trimmed) q[key] = trimmed;
             } else if (typeof raw === 'number') {
                 q[key] = raw;
+            } else if (Array.isArray(raw)) {
+                // Server's 'eq' operator splits a `|`-delimited value into = ANY(...).
+                const joined = raw.filter(Boolean).join('|');
+                if (joined) q[key] = joined;
             }
         }
         return q;
