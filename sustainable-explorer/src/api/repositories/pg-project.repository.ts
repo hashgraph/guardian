@@ -39,19 +39,21 @@ const SEARCH_TSVECTOR = `(
 )`;
 
 /**
- * LATERAL subquery joined into both findAll and findById to look up the
- * publishing registry's display name. Uses LATERAL so we can ORDER BY +
- * LIMIT 1 to handle the (rare) case of multiple REGISTRY rows for one DID.
+ * Derived table joined into both findAll and findById to look up the
+ * publishing registry's display name. A non-correlated `DISTINCT ON`
+ * (computed once, over the small REGISTRY row set) picks the latest row per
+ * registryDid to handle the (rare) case of multiple REGISTRY rows for one
+ * DID — cheaper than a per-row correlated LATERAL subquery.
  */
 const REGISTRY_NAME_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT "displayName" AS registry_name
+    LEFT JOIN (
+        SELECT DISTINCT ON ("registryDid")
+               "registryDid",
+               "displayName" AS registry_name
         FROM business_view
         WHERE "viewType" = 'REGISTRY'
-          AND "registryDid" = bv."registryDid"
-        ORDER BY "createdAt" DESC NULLS LAST
-        LIMIT 1
-    ) reg ON true
+        ORDER BY "registryDid", "createdAt" DESC NULLS LAST
+    ) reg ON reg."registryDid" = bv."registryDid"
 `;
 
 /**

@@ -30,6 +30,17 @@ let map: L.Map | null = null;
 let geoLayer: L.GeoJSON | null = null;
 let pointsLayer: L.LayerGroup | null = null;
 
+// Module-level cache — the world country-boundary GeoJSON is static, so
+// fetch and parse it at most once per session instead of on every mount
+// (the map component remounts on view-mode toggles). Served from a local
+// static asset (frontend/public/geo/countries.geojson) instead of a remote
+// GitHub URL to avoid an external, uncached network round trip on top of that.
+let geojsonPromise: Promise<any> | null = null;
+function loadCountriesGeoJson(): Promise<any> {
+    geojsonPromise ??= fetch('/geo/countries.geojson').then(r => r.json());
+    return geojsonPromise;
+}
+
 const maxProjects = computed(() => Math.max(...props.countries.map(c => c.projects), 1));
 
 function getColor(projects: number): string {
@@ -73,8 +84,7 @@ async function initMap() {
     }).addTo(map);
 
     try {
-        const response = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
-        const geojson = await response.json();
+        const geojson = await loadCountriesGeoJson();
 
         geoLayer = L.geoJSON(geojson, {
             style: (feature) => {

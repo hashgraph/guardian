@@ -22,7 +22,10 @@ export interface DashboardMintQuery {
  * Performance notes:
  *  - project_mint_link.project_key has idx_pml_project_key —
  *    the JOIN to business_view hits that index.
- *  - The LATERAL registry lookup is O(log n) per row.
+ *  - Registry display names are resolved via a non-correlated `DISTINCT ON`
+ *    derived table (computed once, over the small ~dozens-of-rows REGISTRY
+ *    set) instead of a per-row LATERAL subquery — cost stays flat regardless
+ *    of how many project_mint_link rows are being aggregated.
  *  - No per-project loop; the DB engine handles the aggregation in one plan.
  *  - We filter pml.amount > 0 and pml.token_id IS NOT NULL early so the
  *    aggregation only touches real mint rows.
@@ -61,14 +64,14 @@ export class PgDashboardRepository {
             JOIN business_view bv
                 ON bv."projectKey" = pml.project_key
                AND bv."viewType" = 'PROJECT'
-            LEFT JOIN LATERAL (
-                SELECT "displayName" AS registry_name
-                FROM business_view r
-                WHERE r."viewType" = 'REGISTRY'
-                  AND r."registryDid" = bv."registryDid"
-                ORDER BY r."createdAt" DESC NULLS LAST
-                LIMIT 1
-            ) reg ON true
+            LEFT JOIN (
+                SELECT DISTINCT ON ("registryDid")
+                       "registryDid",
+                       "displayName" AS registry_name
+                FROM business_view
+                WHERE "viewType" = 'REGISTRY'
+                ORDER BY "registryDid", "createdAt" DESC NULLS LAST
+            ) reg ON reg."registryDid" = bv."registryDid"
             WHERE ${where}
             GROUP BY sector, registry, month
             ORDER BY month ASC NULLS LAST
