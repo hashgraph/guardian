@@ -27,7 +27,7 @@ export class CreditQueryDto extends PaginationQueryDto {
     @IsString()
     tokenId?: string;
 
-    @ApiPropertyOptional({ description: 'Filter by exact project key (credentialSubject.id) — returns only issuances linked to this project' })
+    @ApiPropertyOptional({ description: 'Filter by exact project key (credentialSubject.id) — returns only issuances linked to this project. Supports a `|`-delimited list to scope to several projects at once.' })
     @IsOptional()
     @IsString()
     projectKey?: string;

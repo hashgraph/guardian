@@ -18,7 +18,8 @@ export type FilterOperator =
     | 'gt'
     | 'gte'
     | 'lt'
-    | 'lte';
+    | 'lte'
+    | 'contains-any';
 
 export interface FieldDefinition {
     /**
@@ -189,6 +190,22 @@ export class QueryBuilder {
                 if (!Array.isArray(value) || value.length === 0) return null;
                 this.params.push(value);
                 return `${sql} = ANY($${this.paramIdx++}::text[])`;
+
+            case 'contains-any': {
+                // JSONB array-of-numbers "match any" (e.g. sdgs). `?|`/`?` only match
+                // string array elements, so this ORs together `@>` containment checks
+                // against numeric JSON scalars instead — each one GIN-index-backed.
+                const parts = String(value)
+                    .split('|')
+                    .map(s => s.trim())
+                    .filter(s => s !== '' && Number.isInteger(Number(s)));
+                if (parts.length === 0) return null;
+                const clauses = parts.map(p => {
+                    this.params.push(String(Number(p)));
+                    return `${sql} @> $${this.paramIdx++}::jsonb`;
+                });
+                return `(${clauses.join(' OR ')})`;
+            }
 
             case 'gt':
                 this.params.push(value);

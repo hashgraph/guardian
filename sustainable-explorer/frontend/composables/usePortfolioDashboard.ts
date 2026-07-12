@@ -1,12 +1,15 @@
 import { formatCredits } from '~/lib/format';
 import { isValidCountryName } from '~/lib/utils';
 import { allocateDonutColors } from '~/lib/chart-colors';
+import { bucketMintSeries } from '~/lib/mint-series';
 import { SectorType } from '~/types/enums';
 import type { WatchlistItem } from '~/composables/usePortfolioWatchlist';
 import type { ActivityItem, MapCountry, MapPoint } from '~/types/models';
 import type { SdgStatsDto } from '~/composables/api/useSdgsApi';
 import { useGeocodedCountries } from '~/composables/useGeocodedCountries';
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { useWatchlistProjects } from '~/composables/useWatchlistProjects';
+import { usePortfolioStats } from '~/composables/usePortfolioStats';
 
 // Reverse of COUNTRY_ALPHA3 — used to display the human-readable name when a
 // project's country came from reverse-geocoding (we have the ISO3 but not
@@ -23,89 +26,54 @@ const CODE_TO_COUNTRY: Record<string, string> = Object.fromEntries(
  * narrow the modal's candidate list, see usePortfolioWatchlistFilters).
  */
 export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
-    const { projects, pending: projectsPending } = useProjects();
-    const { credits, pending: creditsPending } = useCredits();
+    // Projects visible in the portfolio — the batch endpoint already returns
+    // only the watchlisted set, so no further client-side filtering is needed.
+    const { projects: filteredProjects, pending: projectsPending } = useWatchlistProjects(watchlistItems);
     const { t } = useI18n();
     const { network } = useNetwork();
     const networkRef = computed(() => network.value);
     const { data: sdgsData } = useSdgsApi({ network: networkRef });
 
-    // O(1) lookup set of explicitly watchlisted project ids (all items are 'project'-typed now).
-    const watchedProjectIds = computed(() =>
-        new Set(watchlistItems.value.map(i => i.id)),
-    );
-
-    // Projects visible in the portfolio — only explicitly watchlisted projects.
-    const filteredProjects = computed(() =>
-        projects.value.filter(p => watchedProjectIds.value.has(p.id)),
-    );
-
     // Geocoded country names/codes for filteredProjects — resolves raw coordinate
     // strings (e.g. "32.5825" → "Israel") via Nominatim, mirroring the project table.
     const { resolvedName: resolvedCountryName, resolvedCode } = useGeocodedCountries(filteredProjects);
 
-    // Credits visible in the portfolio — joined via c.projectId = p.projectKey,
-    // the same key used everywhere else in this file (sectorBreakdown, countryRaw, etc.)
-    const filteredProjectKeys = computed(() =>
-        new Set(filteredProjects.value.map(p => p.projectKey).filter((k): k is string => !!k)),
+    // Server-aggregated credit stats for exactly this watchlist's project keys.
+    const projectKeys = computed(() =>
+        filteredProjects.value.map(p => p.projectKey).filter((k): k is string => !!k),
     );
-    const filteredCredits = computed(() =>
-        credits.value.filter(c => c.projectId != null && filteredProjectKeys.value.has(c.projectId)),
-    );
+    const { stats, pending: statsPending } = usePortfolioStats(projectKeys);
+
+    // projectKey → minted amount, built once and reused by every breakdown below
+    // instead of re-scanning raw credit rows per breakdown.
+    const amountByKey = computed(() => new Map(stats.value.byProjectKey.map(e => [e.projectKey, e.amount])));
 
     // KPIs
-    const totalCreditsIssued = computed(() =>
-        filteredCredits.value.reduce((s, c) => s + (c.supply ?? 0), 0),
-    );
+    const totalCreditsIssued = computed(() => stats.value.totalMinted);
     const activeProjectsCount = computed(() => filteredProjects.value.length);
 
     // Sector breakdown  { label, projectCount, creditCount }  — mirrors useDashboard shape.
-    // projectCount = projects in sector; creditCount = actual minted supply (c.supply)
-    // from filteredCredits joined via projectId → same data the main dashboard uses
-    // from mintStats.bySector, computed client-side so watchlist filtering works.
+    // projectCount = projects in sector; creditCount = per-project minted totals from
+    // portfolio-stats, distributed by sector — same total as totalCreditsIssued.
     const sectorBreakdown = computed(() => {
-        // Build projectId→sector map for the credit join (credits carry no sector field).
-        const pidToSector = new Map<string, string>();
-        for (const p of filteredProjects.value) {
-            if (p.projectKey != null) pidToSector.set(p.projectKey, p.sector || SectorType.Undefined);
-        }
-        // Accumulate real minted supply per sector.
-        const creditsBySector: Record<string, number> = {};
-        for (const c of filteredCredits.value) {
-            const sector = (c.projectId != null && pidToSector.get(c.projectId)) || SectorType.Undefined;
-            creditsBySector[sector] = (creditsBySector[sector] ?? 0) + (c.supply ?? 0);
-        }
-        // Build rows from projects (projectCount) then merge creditCount.
         const map: Record<string, { label: string; projectCount: number; creditCount: number }> = {};
         for (const p of filteredProjects.value) {
             const key = p.sector || SectorType.Undefined;
             if (!map[key]) map[key] = { label: key, projectCount: 0, creditCount: 0 };
             map[key].projectCount++;
-        }
-        for (const [sector, amount] of Object.entries(creditsBySector)) {
-            if (!map[sector]) map[sector] = { label: sector, projectCount: 0, creditCount: 0 };
-            map[sector].creditCount = amount;
+            map[key].creditCount += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
         }
         return Object.values(map).sort((a, b) => b.projectCount - a.projectCount);
     });
 
-    // Registry breakdown — same pattern: projectCount from projects, creditCount from
-    // filteredCredits.c.supply (credits carry c.registry directly, no join needed).
+    // Registry breakdown — same pattern.
     const registryBreakdown = computed(() => {
-        const creditsByReg: Record<string, number> = {};
-        for (const c of filteredCredits.value) {
-            const key = c.registry || 'Unknown';
-            creditsByReg[key] = (creditsByReg[key] ?? 0) + (c.supply ?? 0);
-        }
         const map: Record<string, { label: string; projectCount: number; creditCount: number }> = {};
         for (const p of filteredProjects.value) {
             const key = p.registry || 'Unknown';
             if (!map[key]) map[key] = { label: key, projectCount: 0, creditCount: 0 };
             map[key].projectCount++;
-        }
-        for (const [reg, amount] of Object.entries(creditsByReg)) {
-            if (!map[reg]) map[reg] = { label: reg, projectCount: 0, creditCount: 0 };
-            map[reg].creditCount = amount;
+            map[key].creditCount += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
         }
         return Object.values(map).sort((a, b) => b.projectCount - a.projectCount);
     });
@@ -129,16 +97,13 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     // Registries table  { name, policies, projects, credits }  — matches useDashboard shape
     const registries = computed(() => {
         const creditsByReg: Record<string, number> = {};
-        for (const c of filteredCredits.value) {
-            const key = c.registry || 'Unknown';
-            creditsByReg[key] = (creditsByReg[key] ?? 0) + (c.supply ?? 0);
-        }
         const map: Record<string, { name: string; policies: Set<string>; projects: number }> = {};
         for (const p of filteredProjects.value) {
             const key = p.registry || 'Unknown';
             if (!map[key]) map[key] = { name: key, policies: new Set(), projects: 0 };
             if (p.methodologyId) map[key].policies.add(p.methodologyId);
             map[key].projects++;
+            creditsByReg[key] = (creditsByReg[key] ?? 0) + ((p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0);
         }
         return Object.values(map)
             .map(r => ({
@@ -151,37 +116,17 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
             .sort((a, b) => b.projects - a.projects);
     });
 
-    // Top countries  { name, val, width }  — for horizontal bar chart
-    // Credits use c.supply from filteredCredits (same source as totalCreditsIssued),
-    // joined via c.projectId = p.projectKey so the numbers are always consistent.
+    // Top countries  { name, val, width }  — for horizontal bar chart. Credits come
+    // from portfolio-stats' per-project totals, joined via p.projectKey so the
+    // numbers stay consistent with totalCreditsIssued/sectorBreakdown/etc.
     const countryRaw = computed(() => {
-        // projectKey → geocoded country name
-        const pidToCountry = new Map<string, string>();
-        for (const p of filteredProjects.value) {
-            const name = resolvedCountryName(p);
-            if (p.projectKey != null && isValidCountryName(name))
-                pidToCountry.set(p.projectKey, name);
-        }
-
-        // Actual minted supply per country from credit issuances
-        const creditsByCountry: Record<string, number> = {};
-        for (const c of filteredCredits.value) {
-            const country = c.projectId != null ? pidToCountry.get(c.projectId) : undefined;
-            if (!country) continue;
-            creditsByCountry[country] = (creditsByCountry[country] ?? 0) + (c.supply ?? 0);
-        }
-
-        // Project counts from filteredProjects; merge in credit supply
         const map: Record<string, { credits: number; projects: number }> = {};
         for (const p of filteredProjects.value) {
             const name = resolvedCountryName(p);
             if (!isValidCountryName(name)) continue;
             if (!map[name]) map[name] = { credits: 0, projects: 0 };
             map[name].projects++;
-        }
-        for (const [country, amount] of Object.entries(creditsByCountry)) {
-            if (!map[country]) map[country] = { credits: 0, projects: 0 };
-            map[country].credits = amount;
+            map[name].credits += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
         }
 
         return Object.entries(map)
@@ -280,79 +225,48 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         };
     }
 
-    const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-
-    // Issuance trend series (period-bucketed, raw credit amounts).
-    // Labels match useMintStats format: "Jun '23" / "Q2 '23" / "2023".
+    // Issuance trend series (period-bucketed). Labels match useMintStats format:
+    // "Jun '23" / "Q2 '23" / "2023". Buckets the server's monthly series —
+    // shares its logic with useMintStats via bucketMintSeries.
     function buildIssuanceSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
-        const buckets = new Map<string, { sortKey: string; label: string; value: number }>();
-        for (const c of filteredCredits.value) {
-            if (!c.mintDate) continue;
-            const d = new Date(c.mintDate);
-            const yy = String(d.getFullYear()).slice(2);
-            let sortKey: string;
-            let label: string;
-            if (period === 'yearly') {
-                sortKey = String(d.getFullYear());
-                label = sortKey;
-            } else if (period === 'quarterly') {
-                const q = Math.floor(d.getMonth() / 3);
-                sortKey = `${d.getFullYear()}-Q${q}`;
-                label = `Q${q + 1} '${yy}`;
-            } else {
-                sortKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                label = `${MONTH_NAMES[d.getMonth()]} '${yy}`;
-            }
-            if (!buckets.has(sortKey)) buckets.set(sortKey, { sortKey, label, value: 0 });
-            buckets.get(sortKey)!.value += (c.supply ?? 0);
-        }
-        return [...buckets.values()]
-            .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
-            .map(({ label, value }) => ({ label, value }));
+        return bucketMintSeries(stats.value.mintSeries, period);
     }
 
-    // Recent issuances — last 5 by mintDate
-    const recentIssuances = computed(() =>
-        [...filteredCredits.value]
-            .filter(c => c.mintDate)
-            .sort((a, b) => new Date(b.mintDate!).getTime() - new Date(a.mintDate!).getTime())
-            .slice(0, 5)
-            .map(c => ({
-                name: c.name ?? c.tokenId,
-                type: c.type ?? 'Fungible',
-                amount: formatCredits(c.supply),
-                date: new Date(c.mintDate!).toLocaleDateString(undefined, {
+    // Recent issuances — last 5 by mintDate. The stats endpoint deliberately omits
+    // project name/type (client already has both from the batch-fetched project
+    // records), so join on projectKey here.
+    const recentIssuances = computed(() => {
+        const nameByKey = new Map(filteredProjects.value.map(p => [p.projectKey, p.name]));
+        return stats.value.recentIssuances
+            .filter(r => r.mintDate)
+            .map(r => ({
+                name: nameByKey.get(r.projectKey) ?? r.tokenId ?? r.projectKey,
+                type: 'Fungible' as const,
+                amount: formatCredits(r.amount ?? 0),
+                date: new Date(r.mintDate!).toLocaleDateString(undefined, {
                     month: 'short',
                     day: 'numeric',
                 }),
-            })),
-    );
+            }));
+    });
 
     // SDG stats filtered by watchlist — recomputes both project counts and
     // credit supply totals from the watchlisted data (rather than the API's
     // network-wide numbers) so the Issuances toggle shows correct
     // credit-weighted SDGs, and an empty watchlist yields all-zero counts.
+    // Credit amounts are distributed per project across each of its SDGs — no
+    // server-side SDG grouping, so no double-counting risk (a project's amount
+    // is added once per SDG it belongs to, same as before the cutover).
     const filteredSdgStats = computed<SdgStatsDto[]>(() => {
         const apiSdgs = sdgsData.value?.data ?? [];
 
-        // Project counts per SDG
         const projectCounts = new Map<number, number>();
+        const creditCounts = new Map<number, number>();
         for (const p of filteredProjects.value) {
+            const amount = (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
             for (const id of (p.sdgs ?? [])) {
                 projectCounts.set(id, (projectCounts.get(id) ?? 0) + 1);
-            }
-        }
-
-        // Credit supply per SDG — join filteredCredits → project SDGs
-        const projectSdgMap = new Map<string, number[]>();
-        for (const p of filteredProjects.value) {
-            if (p.projectKey != null && p.sdgs?.length) projectSdgMap.set(p.projectKey, p.sdgs);
-        }
-        const creditCounts = new Map<number, number>();
-        for (const c of filteredCredits.value) {
-            const sdgs = (c.projectId != null && projectSdgMap.get(c.projectId)) || [];
-            for (const sdgId of sdgs) {
-                creditCounts.set(sdgId, (creditCounts.get(sdgId) ?? 0) + (c.supply ?? 0));
+                creditCounts.set(id, (creditCounts.get(id) ?? 0) + amount);
             }
         }
 
@@ -403,14 +317,14 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         return activities;
     });
 
-    // True while either the project list or credit list is still loading.
-    // Guards chart sections against rendering with empty data on first SPA navigation
-    // (Nuxt 3 does not block client-side routing on useAsyncData — only SSR blocks).
-    const dataPending = computed(() => projectsPending.value || creditsPending.value);
+    // True while either the project batch fetch or the portfolio stats fetch is
+    // still loading. Guards chart sections against rendering with empty data on
+    // first SPA navigation (Nuxt 3 does not block client-side routing on
+    // useAsyncData — only SSR blocks).
+    const dataPending = computed(() => projectsPending.value || statsPending.value);
 
     return {
         filteredProjects,
-        filteredCredits,
         totalCreditsIssued,
         activeProjectsCount,
         sectorBreakdown,

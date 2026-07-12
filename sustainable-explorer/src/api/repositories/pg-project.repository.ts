@@ -110,6 +110,8 @@ export class PgProjectRepository extends ProjectRepository {
             status: query.status,
             policyTopicId: query.policyTopicId,
             instanceTopicId: query.instanceTopicId,
+            sourceTimestamp: query.sourceTimestamps,
+            sdgs: query.sdgs,
         });
 
         // Special: full-text search with ranking. The tsvector index covers

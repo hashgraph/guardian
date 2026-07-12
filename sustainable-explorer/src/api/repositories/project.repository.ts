@@ -72,6 +72,10 @@ export interface ProjectListQuery {
     status?: string;
     policyTopicId?: string;
     instanceTopicId?: string;
+    /** Restrict results to these sourceTimestamp IDs (watchlist batch fetch). */
+    sourceTimestamps?: string[];
+    /** `|`-delimited SDG numbers — match-any. */
+    sdgs?: string;
 }
 
 export interface ProjectListResult {
