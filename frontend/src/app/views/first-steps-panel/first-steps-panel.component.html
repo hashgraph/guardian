@@ -19,14 +19,23 @@
         </button>
       </div>
 
-      @if (loadFailed) {
-        <p class="first-steps-error">
-          First Steps content couldn't be loaded. It is fetched from the Guardian repository on GitHub —
-          check your connection and try again.
-        </p>
-      } @else {
-        <div class="first-steps-content" [innerHTML]="contentHtml"></div>
-      }
+      <div class="first-steps-body">
+        @if (loadFailed) {
+          <p class="first-steps-error">
+            First Steps content couldn't be loaded. It is fetched from the Guardian repository on GitHub —
+            check your connection and try again.
+          </p>
+        } @else {
+          <div class="first-steps-content" [innerHTML]="contentHtml"></div>
+        }
+      </div>
+
+      <footer class="first-steps-footer">
+        <span class="first-steps-footer-text">Done with this tutorial?</span>
+        <button type="button" class="first-steps-dismiss" (click)="firstSteps.setEnabled(false)">
+          Dismiss
+        </button>
+      </footer>
     </aside>
   </ng-template>
 </p-drawer>
