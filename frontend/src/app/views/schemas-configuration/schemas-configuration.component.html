@@ -1,0 +1,15 @@
+<div class="schemas-configuration-page">
+    <div class="page-header">
+        <h1 class="page-title">Schema Configuration</h1>
+        @if (policyId) {
+            <span class="policy-id-label">Policy: {{ policyId }}</span>
+        }
+    </div>
+    <div class="page-body">
+        @if (loading) {
+            <div class="loading-container">
+                <p-progressSpinner [style]="{ width: '65px', height: '65px' }"></p-progressSpinner>
+            </div>
+        }
+    </div>
+</div>
