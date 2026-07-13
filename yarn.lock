@@ -9056,7 +9056,7 @@ __metadata:
     "@types/node": "npm:24.13.2"
     axios: "npm:^1.16.1"
     commander: "npm:^11.1.0"
-    solc: "npm:0.8.35"
+    solc: "npm:0.8.36"
     typescript: "npm:^5.8.3"
     ws: "npm:^8.16.0"
   bin:
@@ -14778,9 +14778,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solc@npm:0.8.35":
-  version: 0.8.35
-  resolution: "solc@npm:0.8.35"
+"solc@npm:0.8.36":
+  version: 0.8.36
+  resolution: "solc@npm:0.8.36"
   dependencies:
     command-exists: "npm:^1.2.8"
     commander: "npm:^8.1.0"
@@ -14791,7 +14791,7 @@ __metadata:
     tmp: "npm:0.0.33"
   bin:
     solcjs: solc.js
-  checksum: 10c0/102f18249d23a3da00b2158620a6d837cae289d8fc75a1c2b7af8cf4137dd7328c395dba29bdc5fa8d738263ee20b910cac6fec7474da94f54dc712bc731800e
+  checksum: 10c0/8eb09890c1437367ee6d8f00b982478ad3023294c4d2e53165637d5528239f3e6980c074f26b761d4537215d01630dce7a247a5c2787c3500783d1c7a89fd224
   languageName: node
   linkType: hard
 
