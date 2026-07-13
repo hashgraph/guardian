@@ -235,7 +235,7 @@ const routes: Routes = [
         }
     },
     {
-        path: 'schema-configuration/:policyId',
+        path: 'schema-configuration',
         component: SchemasConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
