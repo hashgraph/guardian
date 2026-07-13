@@ -62,6 +62,7 @@ import { ExternalPolicyComponent } from './modules/policy-engine/external-polici
 import { PolicyRequestsComponent } from './modules/policy-engine/requests/requests.component';
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
+import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
 
 @Injectable({
     providedIn: 'root'
@@ -230,6 +231,20 @@ const routes: Routes = [
                 Permissions.CONTRACTS_WIPER_DELETE,
                 Permissions.CONTRACTS_POOL_UPDATE,
                 Permissions.CONTRACTS_POOL_DELETE
+            ]
+        }
+    },
+    {
+        path: 'schema-configuration/:policyId',
+        component: SchemasConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_SCHEMA_READ
             ]
         }
     },

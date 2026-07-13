@@ -65,6 +65,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
+import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -218,6 +219,7 @@ const GuardianPreset = definePreset(Aura, {
         ServiceStatusComponent,
         InfoComponent,
         SchemaConfigComponent,
+        SchemasConfigurationComponent,
         BrandingComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
