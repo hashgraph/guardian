@@ -1147,7 +1147,6 @@ function getResolvedField(fieldKey: string) {
                   <div
                     v-if="activeGeoDetail"
                     class="w-64 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card"
-                    style="scrollbar-gutter: stable;"
                   >
                     <div class="p-4 space-y-4">
                       <!-- Header -->
