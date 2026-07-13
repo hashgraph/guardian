@@ -459,18 +459,16 @@ const filteredStats = computed(() => {
                                  box can never grow beyond the declared width;
                                  inner truncate+min-w-0 keep text from forcing
                                  the column to flex outward.
-                                 `scrollbar-gutter: stable` (set inline so older
-                                 Tailwind builds without the arbitrary-property
-                                 plugin still apply it) reserves the vertical
-                                 scrollbar's ~15px gutter even when no scroll is
-                                 needed — without it the inner content width was
-                                 ~320px for short countries (Peru) but ~305px
-                                 for tall countries (India, many sectors), so
-                                 the panel APPEARED to widen/narrow per country. -->
+                                 No scrollbar-gutter reservation: reserving space
+                                 on either edge shows up as visible dead padding
+                                 whenever a country's content is short enough not
+                                 to scroll (which is most countries), so left/right
+                                 padding stays equal. The only cost is the native
+                                 scrollbar itself nudging content ~15px narrower
+                                 for the rare country whose list actually scrolls. -->
                             <div
                                 v-if="activeDetail"
                                 class="w-80 shrink-0 border-l overflow-y-auto overflow-x-hidden bg-card"
-                                style="scrollbar-gutter: stable;"
                             >
                                 <div class="p-4 space-y-5">
                                     <!-- Country header -->
