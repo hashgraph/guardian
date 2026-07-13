@@ -167,6 +167,19 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         CREATE INDEX IF NOT EXISTS idx_guardian_event_log_subject
         ON guardian_event_log (subject)
     `);
+
+    // ── Table: notification_watermarks ─────────────────────────────────────
+    // Per-network scan progress for NotificationScanService (API-side, no
+    // worker involvement). One row per event source ('issuance' today).
+    // No network column needed — this whole DB is already one network.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "notification_watermarks" (
+            "source"    varchar(30) NOT NULL,
+            "lastValue" varchar(40),
+            "updatedAt" timestamptz NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_notification_watermarks" PRIMARY KEY ("source")
+        )
+    `);
 }
 
 /**
@@ -443,6 +456,58 @@ export async function bootstrapSystemSchema(dataSource: DataSource): Promise<voi
     );
     await dataSource.query(
         `CREATE INDEX IF NOT EXISTS "IDX_auth_email_tokens_userId_type" ON "auth_email_tokens" ("userId", "type")`,
+    );
+
+    // ── Table: watchlist_subscriptions ──────────────────────────────────────
+    // Reverse index over the watchlist JSONB (user_dashboards, name='watchlist').
+    // "projectKey" holds WatchlistItem.id (= business_view.id), NOT
+    // project_mint_link.project_key — see NotificationScanService, which reads
+    // business_view per batch to resolve mint rows' project_key to the matching
+    // business_view.id before matching against this table.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "watchlist_subscriptions" (
+            "userId"     uuid         NOT NULL,
+            "network"    varchar(60)  NOT NULL,
+            "projectKey" varchar(120) NOT NULL,
+            "createdAt"  timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_watchlist_subscriptions" PRIMARY KEY ("userId", "network", "projectKey"),
+            CONSTRAINT "FK_watchlist_subscriptions_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "idx_watchlist_subscriptions_project" ON "watchlist_subscriptions" ("network", "projectKey")`,
+    );
+
+    // ── Table: notifications ────────────────────────────────────────────────
+    // "projectKey" stores business_view.id (same identifier watchlist_subscriptions
+    // uses) — never project_mint_link.project_key directly. "dedupeKey" (e.g.
+    // 'issuance:{mintConsensusTimestamp}') plus the UNIQUE("userId","dedupeKey")
+    // constraint makes the scan-and-insert step idempotent (ON CONFLICT DO NOTHING).
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS "notifications" (
+            "id"         uuid         NOT NULL DEFAULT gen_random_uuid(),
+            "userId"     uuid         NOT NULL,
+            "network"    varchar(60)  NOT NULL,
+            "type"       varchar(20)  NOT NULL,
+            "projectKey" varchar(120) NOT NULL,
+            "payload"    jsonb        NOT NULL,
+            "dedupeKey"  varchar(160) NOT NULL,
+            "isRead"     boolean      NOT NULL DEFAULT false,
+            "createdAt"  timestamptz  NOT NULL DEFAULT now(),
+            CONSTRAINT "PK_notifications" PRIMARY KEY ("id"),
+            CONSTRAINT "UQ_notifications_user_dedupe" UNIQUE ("userId", "dedupeKey"),
+            CONSTRAINT "FK_notifications_userId"
+                FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE
+        )
+    `);
+
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "idx_notifications_user_network_created" ON "notifications" ("userId", "network", "createdAt" DESC)`,
+    );
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "idx_notifications_user_unread" ON "notifications" ("userId", "network") WHERE "isRead" = false`,
     );
 }
 

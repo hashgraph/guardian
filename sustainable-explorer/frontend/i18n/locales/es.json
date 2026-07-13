@@ -1213,6 +1213,34 @@
         "copyId": "Copiar ID",
         "viewRawData": "Datos brutos en la blockchain"
     },
+    "notifications": {
+        "title": "Notificaciones",
+        "markAllRead": "Marcar todo como leído",
+        "empty": "Estás al día — aún no hay notificaciones.",
+        "loading": "Cargando notificaciones…",
+        "loadMore": "Cargar más",
+        "loadingMore": "Cargando…",
+        "clearAll": "Borrar todo",
+        "clearAllConfirm": "Haz clic de nuevo para confirmar",
+        "clearedToast": "Notificaciones eliminadas",
+        "clearError": "No se pudieron eliminar las notificaciones. Inténtalo de nuevo",
+        "toast": {
+            "newArrival": "Tienes una nueva notificación"
+        },
+        "types": {
+            "issuance": "Emisión",
+            "retirement": "Retiro",
+            "transfer": "Transferencia"
+        },
+        "description": {
+            "issuance": "Nueva emisión de {amount} créditos",
+            "issuanceNoAmount": "Nueva emisión",
+            "retirement": "{amount} créditos retirados",
+            "retirementNoAmount": "Créditos retirados",
+            "transfer": "{amount} créditos transferidos",
+            "transferNoAmount": "Créditos transferidos"
+        }
+    },
     "portfolio": {
         "title": "Mi Portafolio",
         "subtitle": "{count} elementos en la lista de seguimiento · los widgets reflejan tu selección",

@@ -1221,6 +1221,34 @@
         "copyId": "Copy ID",
         "viewRawData": "Raw Data on the blockchain"
     },
+    "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Mark all as read",
+        "empty": "You're all caught up — no notifications yet.",
+        "loading": "Loading notifications…",
+        "loadMore": "Load more",
+        "loadingMore": "Loading…",
+        "clearAll": "Clear all",
+        "clearAllConfirm": "Click again to confirm",
+        "clearedToast": "Notifications cleared",
+        "clearError": "Could not clear notifications — please try again",
+        "toast": {
+            "newArrival": "You have a new notification"
+        },
+        "types": {
+            "issuance": "Issuance",
+            "retirement": "Retirement",
+            "transfer": "Transfer"
+        },
+        "description": {
+            "issuance": "New issuance of {amount} credits",
+            "issuanceNoAmount": "New issuance",
+            "retirement": "{amount} credits retired",
+            "retirementNoAmount": "Credits retired",
+            "transfer": "{amount} credits transferred",
+            "transferNoAmount": "Credits transferred"
+        }
+    },
     "portfolio": {
         "title": "My Portfolio",
         "subtitle": "{count} watchlist items · widgets reflect your watchlist selection",
