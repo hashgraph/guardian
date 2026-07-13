@@ -8,6 +8,22 @@ data:
       listen  [::]:80;
       server_name  localhost;
 
+      # Hashed build assets (main.[hash].js etc.) - safe to cache forever
+      location ~* \.(?:js|css|woff2?|ttf|eot|svg|png|jpg|jpeg|gif|ico)$ {
+          root   /usr/share/nginx/html;
+          expires 1y;
+          add_header Cache-Control "public, immutable";
+          try_files $uri =404;
+      }
+
+      # index.html - never cache so a redeploy is picked up on next load
+      location = /index.html {
+          root   /usr/share/nginx/html;
+          add_header Cache-Control "no-cache, no-store, must-revalidate";
+          add_header Pragma "no-cache";
+          expires 0;
+      }
+
       location / {
           root   /usr/share/nginx/html;
           try_files $uri $uri/ /index.html;
