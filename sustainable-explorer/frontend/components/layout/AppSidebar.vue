@@ -150,7 +150,7 @@ const authedItems = computed(() => [
                     >
                         <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                     </Transition>
-                </AppLink>
+                </NuxtLink>
             </template>
         </nav>
 
