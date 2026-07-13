@@ -11,6 +11,7 @@ import { IDraftFileContext, RequestDraftFileService } from 'src/app/services/req
     selector: 'request-draft-file-actions',
     templateUrl: './draft-file-actions.component.html',
     styleUrls: ['./draft-file-actions.component.scss'],
+    standalone: false,
 })
 export class DraftFileActionsComponent {
     @Input() schema: { iri?: string | null; name?: string | null } | null | undefined;
