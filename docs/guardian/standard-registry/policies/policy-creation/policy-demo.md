@@ -77,7 +77,7 @@ When you click on Save to file, Policy is exported as a .zip file.
 
 **Note:** While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
 
-To get complete information about tools, please refer to [Tools](../../../../../Methodology%20Library/CDM/Tools/) section.
+To get complete information about tools, please refer to [Tools](https://github.com/hashgraph/guardian/blob/develop/Methodology%20Library/CDM/Tools/README.md) section.
 
 <figure><img src="../../../../.gitbook/assets/image (587).png" alt=""><figcaption></figcaption></figure>
 
@@ -112,8 +112,8 @@ After disconnection:
 
 * All documents created by you within that policy are marked accordingly to inform other policy participants that you have disconnected.
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (5).png" alt=""><figcaption></figcaption></figure>
 
 The disconnection operation is reversible. If necessary (for example, in case of accidental disconnection), you can reconnect to the policy at any time.
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>

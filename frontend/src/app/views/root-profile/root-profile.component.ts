@@ -8,7 +8,7 @@ import { IUser, Schema, SchemaEntity, UserPermissions } from '@guardian/interfac
 import { DemoService } from '../../services/demo.service';
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
 import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from '../../services/tasks.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -22,7 +22,6 @@ import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dia
 import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-dialog.component';
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import moment from 'moment';
-import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
@@ -128,7 +127,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private relayerAccountsService: RelayerAccountsService,
         private schemaService: SchemaService,
         private otherService: DemoService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private headerProps: HeaderPropsService,
         private dialogService: DialogService,
@@ -140,7 +139,6 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private settingsService: SettingsService,
         private appThemeService: AppThemeService,
         private menuLayoutService: MenuLayoutService,
-        private toastr: ToastrService
     ) {
         this.profile = null;
         this.balance = null;
@@ -501,7 +499,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
@@ -985,7 +983,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
     copyToClipboard(value: string | null | undefined): void {
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {
-            this.toastr.success('Copied to clipboard', '', { timeOut: 2000, positionClass: 'toast-bottom-right' });
+            this.toastService.success('Copied to clipboard');
         }).catch((err) => {
             console.error(err);
         });

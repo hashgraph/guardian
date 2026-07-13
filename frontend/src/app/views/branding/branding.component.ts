@@ -2,7 +2,7 @@ import {Component, ElementRef, OnDestroy, OnInit} from '@angular/core';
 import {UntypedFormControl, Validators} from '@angular/forms';
 import {Router} from '@angular/router';
 import {HttpClient} from '@angular/common/http';
-import {InformService} from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import {BrandingPayload, BrandingService} from 'src/app/services/branding.service';
 import {colorToGradient} from '../../static/color-remoter.function';
 import {Subscription} from 'rxjs';
@@ -66,7 +66,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
         private router: Router,
         private elRef: ElementRef,
         private http: HttpClient,
-        private informService: InformService,
+        private toastService: ToastService,
         private brandingService: BrandingService,
     ) {
         this.fontControl.valueChanges.subscribe((value) => {
@@ -129,11 +129,11 @@ export class BrandingComponent implements OnInit, OnDestroy {
             if (files && files[0]) {
                 if (files[0].size > maxSize) {
                     this.imageError = 'Maximum size allowed is ' + Math.round(maxSize / 1000) + 'KB';
-                    this.informService.errorMessage(this.imageError, 'Invalid image');
+                    this.toastService.error(this.imageError, 'Invalid image', { sticky: true, logMessage: this.imageError });
                     reject(this.imageError);
                 } else if (!allowedTypes.includes(files[0].type)) {
                     this.imageError = 'Only JPEG, JPG, GIF and PNG images are allowed.';
-                    this.informService.errorMessage(this.imageError, 'Invalid image');
+                    this.toastService.error(this.imageError, 'Invalid image', { sticky: true, logMessage: this.imageError });
                     reject(this.imageError);
                 } else {
                     const reader = new FileReader();
@@ -146,7 +146,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
 
                             if (imgHeight > maxHeight || imgWidth > maxWidth) {
                                 this.imageError = 'Maximum dimensions allowed ' + maxHeight + '*' + maxWidth + ' pixels.';
-                                this.informService.errorMessage(this.imageError, 'Invalid image');
+                                this.toastService.error(this.imageError, 'Invalid image', { sticky: true, logMessage: this.imageError });
                                 reject(this.imageError);
                             } else {
                                 const imgBase64Path = e.target.result;
@@ -304,7 +304,7 @@ export class BrandingComponent implements OnInit, OnDestroy {
             primaryColor: '#0031ff',
             companyName: 'GUARDIAN',
             companyLogoUrl: '/assets/images/logo.png',
-            loginBannerUrl: '/assets/bg.jpg',
+            loginBannerUrl: '',
             faviconUrl: 'favicon.ico',
             useCustomMenuColors: true,
             useSolidBackground: false

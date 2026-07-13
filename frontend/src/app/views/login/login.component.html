@@ -1,113 +1,106 @@
 <div *onlyForDemo class="demo-block">
-  <div class="user-content-button">
-    <div class="projects-link" routerLink="/projects">Projects</div>
-  </div>
-  <div class="user-content-button" (click)="demoMenu.toggle($event)">
-    <div class="example-icon admin-panel">
-      <span>Demo Admin Panel</span>
-    </div>
-  </div>
+  <a class="demo-nav-link" routerLink="/projects">Projects</a>
+  <button type="button" class="demo-nav-link demo-nav-link--accent" (click)="demoMenu.toggle($event)">
+    <span>Demo Admin Panel</span>
+    <i class="pi pi-chevron-down"></i>
+  </button>
   <p-popover #demoMenu [styleClass]="'demo-menu'" [focusOnShow]="false">
-    <div class="debug-user buttons">
-      <p-button
-        class="raised-button"
-        label="Standard Registry"
-        (onClick)="authState.doLogin('StandardRegistry','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="Installer"
-        (onClick)="authState.doLogin('Installer','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="Installer 2"
-        (onClick)="authState.doLogin('Installer2','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="Auditor"
-        (onClick)="authState.doLogin('Auditor','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="Registrant"
-        (onClick)="authState.doLogin('Registrant','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="VVB"
-        (onClick)="authState.doLogin('VVB','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="Project Proponent"
-        (onClick)="authState.doLogin('ProjectProponent','test')">
-      </p-button>
-      <p-button
-        class="raised-button"
-        label="Verra"
-        (onClick)="authState.doLogin('Verra','test')">
-      </p-button>
-    </div>
-    <div class="debug-user list">
-      <div class="current-user"
-        *ngFor="let user of testUsers$ | async as users; index as i; first as isFirst"
-        (click)="authState.doLogin(user.username, 'test')"
-                 [ngClass]="{
-                        'current-user-first' : isFirst,
-                        'current-user-last': i === users.length - 1
-                    }">
-        <div class="current-user-name">
-          <span
-            #usernameRef
-            class="username-ellipsis"
-            [pTooltip]="isOverflowingMap[i] ? user.username : null"
-            tooltipPosition="top"
-            tooltipStyleClass="one-line-tooltip"
-            >
-            {{ user.username }}
-          </span>
-          <span class="current-user-role">({{ user.role }})</span>
-        </div>
-        @if (user.policyRoles && user.policyRoles.length) {
-          <div class="current-user-policy-roles"
-            [pTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
-            tooltipStyleClass="policy-roles-tooltip">
-            <b>User participates in {{ user.policyRoles.length }} policies</b>
+    <div class="demo-panel">
+      <span class="demo-panel-label">Registered users</span>
+      <div class="demo-users-list">
+        <div class="demo-user"
+          *ngFor="let user of testUsers$ | async as users; index as i"
+          (click)="authState.doLogin(user.username, 'test')">
+          <div class="demo-user-avatar">{{ getInitials(user.username) }}</div>
+          <div class="demo-user-info">
+            <span
+              #usernameRef
+              class="demo-user-name"
+              [pTooltip]="isOverflowingMap[i] ? user.username : null"
+              tooltipPosition="top"
+              tooltipStyleClass="one-line-tooltip">
+              {{ user.username }}
+            </span>
+            <span class="demo-user-role">{{ user.role }}</span>
           </div>
-        }
+          @if (user.policyRoles && user.policyRoles.length) {
+            <span class="demo-user-policies"
+              [pTooltip]="getPoliciesRolesTooltip(user.policyRoles)"
+              tooltipStyleClass="policy-roles-tooltip">
+              {{ user.policyRoles.length }} policies
+            </span>
+          }
+        </div>
       </div>
     </div>
   </p-popover>
 </div>
+
 <div class="login-container">
-  <div style="width: 50vw; height: 100%; background: var(--linear-gradient);">
-    <img [src]="backgroundImageData" class="background-image">
+  <div class="login-banner">
+    @if (backgroundImageData) {
+      <img [src]="backgroundImageData" class="background-image" alt="">
+      <div class="login-banner-scrim"></div>
+    } @else {
+      <svg class="login-banner-watermark" viewBox="0 0 2500 2500" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path fill-rule="evenodd" d="M1250,0C559.64,0,0,559.64,0,1250S559.64,2500,1250,2500s1250-559.64,1250-1250S1940.36,0,1250,0ZM1758.12,1790.62H1599.38V1453.13H900.62v337.49H741.87V696.25H900.62v329.37h698.76V696.25h158.75Zm-850-463.75h698.75V1152.5H908.12Z"/>
+      </svg>
+    }
+    <div class="login-brand">
+      @if (companyLogoUrl) {
+        <img [src]="companyLogoUrl" class="login-brand-logo" alt="">
+      }
+      <span class="login-brand-name">{{ companyName }}</span>
+    </div>
+    @if (!backgroundImageData) {
+      <div class="login-banner-content">
+        <div class="login-banner-caption">
+          <p class="login-banner-title">Verifiable digital environmental assets</p>
+          <p class="login-banner-subtitle">Auditable, transparent, and trusted on the public ledger.</p>
+        </div>
+        <ul class="login-banner-features">
+          <li><i class="pi pi-check"></i><span>Tokenized carbon &amp; environmental assets</span></li>
+          <li><i class="pi pi-check"></i><span>Immutable on-chain audit trail</span></li>
+          <li><i class="pi pi-check"></i><span>Policy-driven, automated workflows</span></li>
+        </ul>
+      </div>
+    }
   </div>
+
   <div [class.w-100]="brandingLoading" class="login-form">
     @if (!brandingLoading && !loading) {
       <div class="form-container">
-        <h1>Welcome<br>to the {{ companyName }}</h1>
+        <div class="login-mobile-brand">
+          @if (companyLogoUrl) {
+            <img [src]="companyLogoUrl" class="login-brand-logo" alt="">
+          }
+          <span class="login-brand-name">{{ companyName }}</span>
+        </div>
+        <h1>Welcome</h1>
+        <p class="login-subtitle">Log in to your account</p>
         <form [formGroup]="loginForm">
           <div class="form-input-container">
             <label class="p-field-label" for="login">Username</label>
-            <input class="p-field-input" formControlName="login" id="login" pInputText
-              placeholder="Enter a Username"
-              type="text"/>
+            <div class="input-icon-wrapper">
+              <i class="pi pi-user input-leading-icon"></i>
+              <input class="p-field-input has-leading-icon" formControlName="login" id="login" pInputText
+                placeholder="Enter a username"
+                type="text"/>
+            </div>
           </div>
           <div class="form-input-container">
             <label class="p-field-label" for="password">Password</label>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <input #password [feedback]="false" [showPassword]="false" class="p-field-input"
+            <div class="input-icon-wrapper">
+              <i class="pi pi-lock input-leading-icon"></i>
+              <input #password
+                class="p-field-input has-leading-icon has-trailing-icon"
                 formControlName="password"
                 id="password"
-                pPassword placeholder="Password"/>
+                pInputText placeholder="Password" type="password"/>
               <button
                 (click)="password.type === 'password' ? password.type = 'text' : password.type = 'password'"
-                [icon]="'pi pi-eye'" class="p-button-rounded p-button-secondary p-button-text" pButton
-                type="button"
-              style="position: absolute; right: 20%;"></button>
+                [icon]="'pi pi-eye'" class="input-trailing-btn p-button-rounded p-button-secondary p-button-text" pButton
+                type="button"></button>
             </div>
           </div>
           @if (wrongNameOrPassword) {
@@ -115,11 +108,9 @@
               <div class="error-message">Invalid username or password</div>
             </div>
           }
-          <div style="display: flex; column-gap: 10px; align-items: center;">
-            <button (click)="onLogin()"
-              [disabled]="!this.loginForm.controls['login'].value || !this.loginForm.controls['password'].value"
+          <button (click)="onLogin()"
+            [disabled]="!this.loginForm.controls['login'].value || !this.loginForm.controls['password'].value"
             class="button full-width" label="Log In" pButton type="submit"></button>
-          </div>
           <div class="sign-up">
             <span>Don’t have an Account?</span>
             <span (click)="signUpInit()" class="primary-text-button">Sign Up</span>

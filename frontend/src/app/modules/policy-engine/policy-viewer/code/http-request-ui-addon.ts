@@ -1,7 +1,7 @@
-import { PolicyEngineService } from "src/app/services/policy-engine.service";
-import { DynamicMsalAuthService } from "../../services/dynamic-msal-auth.service";
-import { ToastrService } from "ngx-toastr";
-import { environment } from "src/environments/environment";
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { DynamicMsalAuthService } from '../../services/dynamic-msal-auth.service';
+import { ToastService } from 'src/app/services/toast.service';
+import { environment } from 'src/environments/environment';
 
 export class HttpRequestUIAddonCode {
     private readonly url: string;
@@ -13,13 +13,13 @@ export class HttpRequestUIAddonCode {
     private readonly authenticationScopes: any;
     private readonly policyEngineService: PolicyEngineService;
     private readonly dynamicMsalAuthService: DynamicMsalAuthService;
-    private readonly toastr: ToastrService;
+    private readonly toastService: ToastService;
     private readonly mockId: string | null;
     constructor(
         config: any,
         policyEngineService: PolicyEngineService,
         dynamicMsalAuthService: DynamicMsalAuthService,
-        toastr: ToastrService
+        toastService: ToastService
     ) {
         this.url = config.url;
         this.type = config.method;
@@ -30,7 +30,7 @@ export class HttpRequestUIAddonCode {
         this.authenticationScopes = config.authenticationScopes;
         this.policyEngineService = policyEngineService;
         this.dynamicMsalAuthService = dynamicMsalAuthService;
-        this.toastr = toastr;
+        this.toastService = toastService;
         this.mockId = config.mockId;
     }
 
@@ -56,12 +56,7 @@ export class HttpRequestUIAddonCode {
                 .customRequest(type, url, data.document, headers)
                 .subscribe((response: any) => {
                     data.document = response;
-                    this.toastr.success('Document was submitted successfully.', '', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true,
-                    });
+                    this.toastService.success('Document was submitted successfully.', '');
                     resolve(data);
                 }, (e) => {
                     reject(e);
@@ -80,12 +75,7 @@ export class HttpRequestUIAddonCode {
                 })
                 .subscribe((response: any) => {
                     data.document = response;
-                    this.toastr.success('Document was submitted successfully.', '', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true,
-                    });
+                    this.toastService.success('Document was submitted successfully.', '');
                     resolve(data);
                 }, (e) => {
                     reject(e);

@@ -372,6 +372,35 @@ form {
     }
 }
 
+.condition-field-error {
+    color: var(--red-500, #ef4444);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.if-field-group-label {
+    display: block;
+    font-weight: 600;
+    color: var(--color-grey-6, #3f4756);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.if-field-item-label {
+    display: block;
+    padding-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.if-field-selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .input-field-container {
     display: flex;
     flex-direction: column;
@@ -445,4 +474,59 @@ form {
 
 .if-label-mode {
     color: #848FA9;
+}
+
+.cross-targets-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+
+.cross-targets-label {
+    font-size: 12px;
+    color: #848FA9;
+    margin-right: 4px;
+}
+
+.cross-target-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f0fe;
+    border: 1px solid #a8c4f8;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #1a56db;
+
+    &--stale {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #dc2626;
+    }
+
+    .chip-remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0 0 0 2px;
+
+        &:hover {
+            color: #dc2626;
+        }
+    }
+}
+
+.cross-target-add-row {
+    margin: 6px 0 12px;
+
+    .cross-target-dropdown {
+        width: 100%;
+        max-width: 420px;
+    }
 }

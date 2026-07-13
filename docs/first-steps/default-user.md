@@ -1,15 +1,15 @@
 ---
 description: >-
-  This page describes first steps with the Guardian and digital environmental
-  assets for all users.
+  Get setup and take your first steps with the Hedera Guardian and digital
+  environmental assets.
 ---
 
-# First steps with digital environmental assets (complex)
+# First steps \[Default User]
 
 {% hint style="warning" %}
-This page is under development and part of the **3.7 Getting Started Epic**&#x20;
+This page is under development and part of the **3.7 Getting Started Epic**
 
-The purpose of this page is to create a friendly guide to help a new user take their first steps in the Hedera Guardian.&#x20;
+The purpose of this page is to create a friendly guide to help a new user take their first steps in the Hedera Guardian.
 
 This page is introduce users of high level concepts and is also dependent upon some custom setup such as roles, permissions, or test data which are under discussion.
 {% endhint %}
@@ -49,13 +49,11 @@ Policy's are digital workflows and are at the heart of the Guardian. Visit \[LIN
 
 <details>
 
-<summary>Publish your first policy to the Hedera testnet  </summary>
+<summary>Publish your first policy to the Hedera testnet</summary>
 
-Visit the \[LINK: REGISTRY] to publish your first policy. This is how registry operators would publish policies and begin accepting submissions.&#x20;
+Visit the \[LINK: REGISTRY] to publish your first policy. This is how registry operators would publish policies and begin accepting submissions.
 
 </details>
-
-
 {% endstep %}
 
 {% step %}
@@ -63,9 +61,9 @@ Visit the \[LINK: REGISTRY] to publish your first policy. This is how registry o
 
 <details>
 
-<summary>Project proponents submit data </summary>
+<summary>Project proponents submit data</summary>
 
-Visit a \[LINK: PROJECT] to view your policy running on testnet and submit data. This is how a project proponents would submit their project for verification and validation.&#x20;
+Visit a \[LINK: PROJECT] to view your policy running on testnet and submit data. This is how a project proponents would submit their project for verification and validation.
 
 </details>
 {% endstep %}
@@ -77,7 +75,7 @@ Visit a \[LINK: PROJECT] to view your policy running on testnet and submit data.
 
 <summary>Visit the Audit section to inspect documents</summary>
 
-Visit the \[LINK: AUDIT] interface to inspect the documents created after data was submitted for the policy. This is how auditors and VVBs would review projects submitted by project proponents.&#x20;
+Visit the \[LINK: AUDIT] interface to inspect the documents created after data was submitted for the policy. This is how auditors and VVBs would review projects submitted by project proponents.
 
 </details>
 {% endstep %}
