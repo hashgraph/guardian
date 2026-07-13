@@ -30,6 +30,26 @@ const DATE_ONLY_FIELD_KEYS = new Set<string>([
 ]);
 
 /**
+ * Maps a PROJECT_EXTRACT_FIELDS key to the businessData key(s) it can write,
+ * for the explicit-override mechanism below (an admin's manual field-picker
+ * save should win even on a VC whose schema isn't classified isProjectSchema).
+ */
+const OVERRIDE_BUSINESS_KEYS: Record<string, string[]> = {
+    name: ['name'],
+    country: ['country', 'countries'],
+    developer: ['developer'],
+    sector: ['sector'],
+    category: ['category'],
+    scale: ['scale'],
+    description: ['description'],
+    vintageRaw: ['vintage', 'createdAt'],
+    sdgOrCobenefits: ['sdgs', 'cobenefits'],
+    creditingPeriodStart: ['creditingPeriodStart'],
+    creditingPeriodEnd: ['creditingPeriodEnd'],
+    geo: ['lat', 'lng'],
+};
+
+/**
  * Per-VC project upsert service.
  *
  * Called from IpfsFetchProcessor when a VC-Document's IPFS content lands.
@@ -157,10 +177,21 @@ export class ProjectMapperService {
         // can't poison the project's country / name / etc. with its own
         // host_countries[].country (the root cause of "US, India" appearing
         // on projects whose project schema doesn't even define country).
+        // Field keys whose mapping entry (for THIS VC's schema) carries
+        // score=999 — the marker updateMapping() stamps on an admin's manual
+        // field-picker save (mapping-reprocess.service.ts:~475). This is
+        // deliberately independent of isProjectSchema: isProjectSchema now
+        // only reflects dedup-key classification (see Root cause B), so a
+        // manual remap onto a schema that isn't "the" project schema still
+        // needs its own signal to be trusted as authoritative for THAT
+        // field specifically — used below to force an overwrite even when
+        // this VC's schema isn't _fromProjectSchema.
         const crossSchemaFieldMap: Record<string, string> = {};
+        const explicitOverrideFields = new Set<string>();
         for (const [fieldKey, entries] of Object.entries(policyMapping)) {
             if (!Array.isArray(entries)) continue;
             let fallback: string | null = null;
+            let fallbackIsOverride = false;
             for (const entry of entries) {
                 if (entry.schemaType === 'mintToken' || entry.schemaType === 'standardRegistry') continue;
                 if (entry.source !== 'schema' || !entry.schemaIri || !entry.fieldPath) continue;
@@ -168,13 +199,18 @@ export class ProjectMapperService {
                 if (schemaUuidFromIri !== vcSchemaUuid) continue;
                 if (entry.isProjectSchema === true) {
                     crossSchemaFieldMap[fieldKey] = entry.fieldPath;
+                    if (entry.score === 999) explicitOverrideFields.add(fieldKey);
                     fallback = null;
                     break;
                 }
-                if (fallback === null) fallback = entry.fieldPath;
+                if (fallback === null) {
+                    fallback = entry.fieldPath;
+                    fallbackIsOverride = entry.score === 999;
+                }
             }
             if (!(fieldKey in crossSchemaFieldMap) && fallback !== null) {
                 crossSchemaFieldMap[fieldKey] = fallback;
+                if (fallbackIsOverride) explicitOverrideFields.add(fieldKey);
             }
         }
 
@@ -475,6 +511,24 @@ export class ProjectMapperService {
             newFields.metadata = resolvedProject.metadata;
         }
 
+        // Per-field admin overrides (explicitOverrideFields, built above from
+        // score=999 mapping entries) win even when this VC isn't
+        // _fromProjectSchema — otherwise a manually-corrected field is
+        // silently discarded forever by the gap-fill-only merge branch,
+        // since jsonb `||` treats key-presence (even a stale value) as
+        // "already filled". Only business keys we actually wrote this round
+        // are listed, so an override pick that produced no value here can't
+        // blank out an existing one.
+        const overrideBusinessKeys = new Set<string>();
+        for (const fieldKey of explicitOverrideFields) {
+            for (const bk of OVERRIDE_BUSINESS_KEYS[fieldKey] ?? []) {
+                if (newFields[bk] !== undefined) overrideBusinessKeys.add(bk);
+            }
+        }
+        if (overrideBusinessKeys.size > 0) {
+            newFields._explicitOverrideFields = [...overrideBusinessKeys];
+        }
+
         // Track this VC's contribution. The SQL UPDATE below dedupes by
         // consensusTimestamp so re-running upsert for the same VC is idempotent.
         newFields.linkedVcs = [{
@@ -513,8 +567,11 @@ export class ProjectMapperService {
             ON CONFLICT ("projectKey")
             WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
             DO UPDATE SET
-                -- Project-schema VCs override displayName; others fill gaps.
+                -- Project-schema VCs override displayName; others fill gaps —
+                -- unless this VC carries an explicit admin override for 'name'
+                -- (a manual field-picker save), which always wins.
                 "displayName"    = CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
+                                        OR EXCLUDED."businessData"->'_explicitOverrideFields' @> '"name"'::jsonb
                                         THEN COALESCE(NULLIF(EXCLUDED."displayName", ''), business_view."displayName")
                                         ELSE COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName")
                                    END,
@@ -526,9 +583,22 @@ export class ProjectMapperService {
                     -- existing values are kept by reversing the operand order
                     -- so existing data takes precedence.
                     CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
-                         THEN business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema')
-                         ELSE (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema') || business_view."businessData"
+                         THEN business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema' - '_explicitOverrideFields')
+                         ELSE (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema' - '_explicitOverrideFields') || business_view."businessData"
                     END
+                    -- Explicit per-field admin overrides always win, regardless
+                    -- of _fromProjectSchema — otherwise a manually-corrected
+                    -- field is silently discarded forever by the gap-fill-only
+                    -- branch above (jsonb concatenation treats key-presence,
+                    -- even a stale/empty value, as "already filled"). Scoped
+                    -- to just the fields the admin explicitly remapped, so an
+                    -- unrelated auto-detected field on the same VC can't
+                    -- piggyback its way into overwrite authority.
+                    || (
+                        SELECT COALESCE(jsonb_object_agg(key, EXCLUDED."businessData"->key), '{}'::jsonb)
+                        FROM jsonb_array_elements_text(COALESCE(EXCLUDED."businessData"->'_explicitOverrideFields', '[]'::jsonb)) AS key
+                        WHERE EXCLUDED."businessData" ? key
+                    )
                 ) || jsonb_build_object(
                     -- Only add credits/vcCount when this VC isn't already linked.
                     -- Makes reparse-all idempotent — clicking it twice doesn't double credits.
