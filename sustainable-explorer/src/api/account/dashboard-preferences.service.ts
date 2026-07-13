@@ -48,6 +48,17 @@ export class DashboardPreferencesService {
         const normalized = this.normalize(type, layout);
         const row = await this.repo.upsertType(userId, network, type, normalized);
         await this.redis.del(this.cacheKey(userId, network));
+
+        // Keep the watchlist_subscriptions reverse index (NotificationScanService's
+        // "who watches project X" lookup) in lockstep with every watchlist save.
+        // Pure system-DB bookkeeping — no cross-DB dependency added to this path.
+        if (type === 'watchlist') {
+            const refs = (normalized as WatchlistItem[])
+                .map((i) => i.id)
+                .filter((id): id is string => typeof id === 'string' && id.length > 0);
+            await this.repo.syncWatchlistSubscriptions(userId, network, refs);
+        }
+
         return { name: row.name, updatedAt: row.updatedAt };
     }
 

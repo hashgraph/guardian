@@ -246,6 +246,10 @@ export default registerAs('app', () => {
         // Materialized views
         mvRefreshInterval: parseInt(process.env.MV_REFRESH_INTERVAL || '60', 10),
 
+        // Notification scan (API-side, per-network leader-elected setInterval —
+        // see NotificationScanService). Seconds between issuance-scan ticks.
+        notifScanInterval: parseInt(process.env.NOTIF_SCAN_INTERVAL || '20', 10),
+
         // Mirror node polling
         mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '30000', 10),
 

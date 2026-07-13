@@ -511,6 +511,9 @@ function onSearchKeydown(e: KeyboardEvent) {
             </Transition>
         </div>
 
+        <!-- Right: watchlist notifications bell (self-gates on auth, renders nothing for guests) -->
+        <NotificationBell />
+
         <!-- Right: authentication (sign-in button or user dropdown) -->
         <AuthMenu />
     </header>
