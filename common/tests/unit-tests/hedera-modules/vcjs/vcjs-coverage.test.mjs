@@ -115,6 +115,133 @@ describe('VCJS coverage (offline paths)', function () {
             assert.deepEqual(schema.$defs.Foo.required, ['b']);
             assert.deepEqual(schema.$defs.Bar.required, []);
         });
+
+        describe('shared sub-schema sibling isolation', function () {
+            // Two root fields (`targeted` and `sibling`) both $ref the same #Sub entry.
+            // A condition in allOf targets only `targeted`. The fix must clone #Sub
+            // for `targeted` only — leaving `sibling` pointing at the unmodified original.
+            function makeSharedRefSchema() {
+                return {
+                    type: 'object',
+                    properties: {
+                        targeted: { $ref: '#Sub' },
+                        sibling:  { $ref: '#Sub' }
+                    },
+                    required: ['targeted', 'sibling'],
+                    allOf: [{
+                        if: {
+                            properties: { targeted: { properties: { a: { const: 1 } }, required: ['a'] } },
+                            required: ['targeted']
+                        },
+                        then: { properties: { targeted: { required: ['b'] } } },
+                        else: { properties: { targeted: { properties: { b: false } } } }
+                    }],
+                    $defs: {
+                        '#Sub': {
+                            $id: '#Sub',
+                            type: 'object',
+                            properties: {
+                                a: { type: 'number' },
+                                b: { type: 'number' }
+                            },
+                            required: ['a', 'b']
+                        }
+                    }
+                };
+            }
+
+            it('rewrites $ref only on the targeted container, not on sibling', function () {
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.prepareSchema(schema);
+
+                assert.notEqual(schema.properties.targeted.$ref, '#Sub',
+                    'targeted $ref should point to a per-container clone');
+                assert.equal(schema.properties.sibling.$ref, '#Sub',
+                    'sibling $ref must remain on the original entry');
+            });
+
+            it('clone receives a unique $id; original entry is untouched', function () {
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.prepareSchema(schema);
+
+                const cloneKey = schema.properties.targeted.$ref;
+                assert.exists(schema.$defs[cloneKey], 'clone must be present in $defs');
+                assert.equal(schema.$defs[cloneKey].$id, cloneKey,
+                    'clone $id must equal the clone key so AJV can resolve the rewritten $ref');
+                assert.equal(schema.$defs['#Sub'].$id, '#Sub',
+                    'original $id must not be changed');
+            });
+
+            it('strips conditional field from clone required without mutating the original', function () {
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.prepareSchema(schema);
+
+                const cloneKey = schema.properties.targeted.$ref;
+                assert.notInclude(schema.$defs[cloneKey].required ?? [], 'b',
+                    'b should be stripped from the clone required array');
+                assert.include(schema.$defs['#Sub'].required, 'b',
+                    'original required must not be mutated — sibling still needs b');
+            });
+
+            it('condition TRUE: targeted.b required, sibling.b independently required', async function () {
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.schemaLoader = async () => schema;
+
+                const result = await vcjs.verifySubject({
+                    type: 'T',
+                    targeted: { a: 1, b: 99 },
+                    sibling:  { a: 2, b: 7 }
+                });
+                assert.isTrue(result.ok, 'both fields provided — should be valid');
+            });
+
+            it('condition TRUE: missing targeted.b fails validation', async function () {
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.schemaLoader = async () => schema;
+
+                const result = await vcjs.verifySubject({
+                    type: 'T',
+                    targeted: { a: 1 },
+                    sibling:  { a: 2, b: 7 }
+                });
+                assert.isFalse(result.ok, 'targeted.b is required when condition is true');
+            });
+
+            it('condition FALSE: targeted has no b, sibling.b still required from base schema', async function () {
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.schemaLoader = async () => schema;
+
+                const result = await vcjs.verifySubject({
+                    type: 'T',
+                    targeted: { a: 2 },
+                    sibling:  { a: 3, b: 5 }
+                });
+                assert.isTrue(result.ok, 'sibling.b provided — should be valid');
+            });
+
+            it('condition FALSE: missing sibling.b fails — strip must not leak to untargeted sibling', async function () {
+                // Regression guard: the old IRI-keyed approach mutated the shared $defs entry,
+                // making b optional on sibling too. With per-container cloning, the original
+                // entry is never modified, so sibling.b remains required.
+                const vcjs = makeVcjs();
+                const schema = makeSharedRefSchema();
+                vcjs.schemaLoader = async () => schema;
+
+                const result = await vcjs.verifySubject({
+                    type: 'T',
+                    targeted: { a: 2 },
+                    sibling:  { a: 3 }
+                });
+                assert.isFalse(result.ok,
+                    'sibling.b must still be required — the required-strip must not leak from targeted to sibling');
+            });
+        });
     });
 
     describe('verifySubject', function () {

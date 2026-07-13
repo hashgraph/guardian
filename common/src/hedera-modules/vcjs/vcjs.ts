@@ -322,8 +322,9 @@ export class VCJS {
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
+        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
     }
 
     /**
@@ -354,6 +355,8 @@ export class VCJS {
      * @param schema Schema
      */
     private prepareSchema(schema: any) {
+        this.stripIfOnly(schema);
+
         const defsObj = schema.$defs;
         if (!defsObj) {
             return;
@@ -362,12 +365,200 @@ export class VCJS {
         const defsKeys = Object.keys(defsObj);
         for (const key of defsKeys) {
             const nestedSchema = defsObj[key];
+            this.stripIfOnly(nestedSchema);
             const required = nestedSchema.required;
             if (!required || required.length === 0) {
                 continue;
             }
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
+
+        if (!Array.isArray(schema.allOf)) {
+            return;
+        }
+        const rootProperties = schema.properties || {};
+
+        // Collect fields to strip keyed by container dot-path (not by IRI).
+        // Multiple conditions targeting the same container accumulate into one Set.
+        const stripByPath = new Map<string, Set<string>>();
+
+        const collectPath = (constraint: any, pathSoFar: string[], currentProps: any) => {
+            if (!constraint?.properties) { return; }
+            for (const [propKey, val] of Object.entries(constraint.properties) as [string, any][]) {
+                if (!val || typeof val !== 'object') { continue; }
+                const ref = currentProps[propKey]?.$ref;
+                if (!ref || !defsObj[ref]) { continue; }
+                const containerPath = [...pathSoFar, propKey];
+                const pathKey = containerPath.join('.');
+                if (Array.isArray(val.required)) {
+                    if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
+                    for (const f of val.required) { stripByPath.get(pathKey)!.add(f); }
+                }
+                if (val.properties) {
+                    for (const [fieldName, fieldVal] of Object.entries(val.properties) as [string, any][]) {
+                        if (fieldVal === false) {
+                            if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
+                            stripByPath.get(pathKey)!.add(fieldName);
+                        }
+                    }
+                    collectPath(val, containerPath, defsObj[ref]?.properties || {});
+                }
+            }
+        };
+
+        for (const condEntry of schema.allOf) {
+            if (!condEntry?.if) { continue; }
+            for (const branch of [condEntry.then, condEntry.else]) {
+                collectPath(branch, [], rootProperties);
+            }
+        }
+
+        if (!stripByPath.size) { return; }
+
+        // Pre-compute original IRIs for every path and its ancestors before any $ref rewrite.
+        const originalIriByPath = new Map<string, string>();
+        const computeOriginalIri = (pathArr: string[]): string | undefined => {
+            let props = rootProperties;
+            for (let i = 0; i < pathArr.length; i++) {
+                const ref = props[pathArr[i]]?.$ref;
+                if (!ref || !defsObj[ref]) { return undefined; }
+                if (i === pathArr.length - 1) { return ref; }
+                props = defsObj[ref]?.properties || {};
+            }
+            return undefined;
+        };
+
+        // Include all ancestor paths so passthrough clones can be created for them.
+        const allPathsNeeded = new Set<string>();
+        for (const pathKey of stripByPath.keys()) {
+            const parts = pathKey.split('.');
+            for (let d = 1; d <= parts.length; d++) {
+                allPathsNeeded.add(parts.slice(0, d).join('.'));
+            }
+        }
+        for (const pathKey of allPathsNeeded) {
+            const iri = computeOriginalIri(pathKey.split('.'));
+            if (iri) { originalIriByPath.set(pathKey, iri); }
+        }
+
+        // Process shortest paths first so parent clones exist before children need them.
+        const cloneKeys = new Map<string, string>();
+        const sortedPaths = [...allPathsNeeded].sort(
+            (a, b) => a.split('.').length - b.split('.').length
+        );
+
+        for (const pathKey of sortedPaths) {
+            const iri = originalIriByPath.get(pathKey);
+            if (!iri) { continue; }
+            const pathArr = pathKey.split('.');
+            const fieldsToStrip = stripByPath.get(pathKey);
+            const cloneKey = `${iri}__${pathArr.join('__')}`;
+
+            // Deep-copy original def so the shared entry is never mutated.
+            const clone = JSON.parse(JSON.stringify(defsObj[iri]));
+            // Give the clone a unique $id so AJV can resolve the rewritten $ref to
+            // it, without conflicting with the original entry's $id anchor.
+            clone.$id = cloneKey;
+            delete clone.$anchor;
+            delete clone.$dynamicAnchor;
+            if (fieldsToStrip?.size && Array.isArray(clone.required)) {
+                clone.required = clone.required.filter((r: string) => !fieldsToStrip.has(r));
+                if (!clone.required.length) { delete clone.required; }
+            }
+            defsObj[cloneKey] = clone;
+            cloneKeys.set(pathKey, cloneKey);
+
+            // Rewrite the $ref on this specific container only.
+            if (pathArr.length === 1) {
+                if (rootProperties[pathArr[0]]) {
+                    rootProperties[pathArr[0]] = { ...rootProperties[pathArr[0]], $ref: cloneKey };
+                }
+            } else {
+                const parentPathKey = pathArr.slice(0, -1).join('.');
+                const parentCloneKey = cloneKeys.get(parentPathKey);
+                const leafProp = pathArr[pathArr.length - 1];
+                if (parentCloneKey && defsObj[parentCloneKey]?.properties?.[leafProp]) {
+                    defsObj[parentCloneKey].properties[leafProp] = {
+                        ...defsObj[parentCloneKey].properties[leafProp],
+                        $ref: cloneKey,
+                    };
+                }
+            }
+        }
+    }
+
+    private stripIfOnly(schema: any) {
+        if (!Array.isArray(schema?.allOf)) {
+            return;
+        }
+        schema.allOf = schema.allOf.filter(
+            (entry: any) => !entry?.if || entry.then !== undefined || entry.else !== undefined
+        );
+        if (schema.allOf.length === 0) {
+            delete schema.allOf;
+        }
+    }
+
+    /**
+     * Converts the nested JSON Schema `if` node into a readable condition string
+     */
+    private describeIfCondition(node: any): string {
+        if (!node) { return ''; }
+        if (Array.isArray(node.anyOf)) {
+            return node.anyOf.map((b: any) => this.describeIfCondition(b)).filter(Boolean).join(' OR ');
+        }
+        if (Array.isArray(node.allOf)) {
+            return node.allOf.map((b: any) => this.describeIfCondition(b)).filter(Boolean).join(' AND ');
+        }
+        if (node.properties) {
+            return Object.entries(node.properties as Record<string, any>)
+                .map(([key, val]) => this.describeIfConditionLeaf(val, key))
+                .filter(Boolean)
+                .join(', ');
+        }
+        return '';
+    }
+
+    private describeIfConditionLeaf(node: any, leafKey: string): string {
+        if (!node) { return ''; }
+        if (node.const !== undefined) {
+            return `${leafKey} = '${node.const}'`;
+        }
+        if (node.properties) {
+            return Object.entries(node.properties as Record<string, any>)
+                .map(([key, val]) => this.describeIfConditionLeaf(val, key))
+                .filter(Boolean)
+                .join(', ');
+        }
+        if (Array.isArray(node.anyOf)) {
+            return node.anyOf.map((b: any) => this.describeIfConditionLeaf(b, leafKey)).filter(Boolean).join(' OR ');
+        }
+        if (Array.isArray(node.allOf)) {
+            return node.allOf.map((b: any) => this.describeIfConditionLeaf(b, leafKey)).filter(Boolean).join(' AND ');
+        }
+        return '';
+    }
+
+    /**
+     * Replaces AJV messages with a human-readable description
+     */
+    private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
+        if (!errors?.length || !Array.isArray(schema?.allOf)) {
+            return errors;
+        }
+        return errors.map(error => {
+            if (error.keyword !== 'false schema') { return error; }
+            const match = (error.schemaPath as string)?.match(/^#\/allOf\/(\d+)\/(then|else)\//);
+            if (!match) { return error; }
+            const condEntry = schema.allOf[parseInt(match[1], 10)];
+            if (!condEntry?.if) { return error; }
+            const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
+            const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
+            return {
+                ...error,
+                message: `Field '${fieldName}' is not allowed unless: ${condition}`,
+            };
+        });
     }
 
     /**
@@ -396,10 +587,10 @@ export class VCJS {
         this.prepareSchema(schema);
 
         const validate = await ajv.compileAsync(schema);
-
         const valid = validate(subject);
+        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
     }
 
     /**

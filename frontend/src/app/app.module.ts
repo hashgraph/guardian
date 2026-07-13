@@ -6,7 +6,8 @@ import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import { ToastrModule } from 'ngx-toastr';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
@@ -154,6 +155,7 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
 import { TreeTableModule } from 'primeng/treetable';
 import { MenubarModule } from 'primeng/menubar';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
+import { AppToastComponent } from './components/toast/app-toast.component';
 
 const GuardianPreset = definePreset(Aura, {
     semantic: {
@@ -250,7 +252,8 @@ const GuardianPreset = definePreset(Aura, {
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
-        OtpCodesDialogComponent
+        OtpCodesDialogComponent,
+        AppToastComponent
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -266,7 +269,7 @@ const GuardianPreset = definePreset(Aura, {
         FormulasModule,
         TagEngineModule,
         CompareModule,
-        ToastrModule.forRoot(),
+        ToastModule,
         QRCodeComponent,
         ButtonModule,
         InputTextModule,
@@ -301,6 +304,7 @@ const GuardianPreset = definePreset(Aura, {
         MenubarModule
     ],
     providers: [
+        MessageService,
         WebSocketService,
         AuthService,
         ProfileService,

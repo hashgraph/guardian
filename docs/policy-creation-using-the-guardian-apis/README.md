@@ -8,33 +8,33 @@ These APIs enable Standard Registry users to create, configure, publish, and man
 
 See [Prerequisite Steps](prerequesite-steps.md) before getting started.
 
----
+***
 
 ## Endpoints
 
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/policies` | List all policies | Yes |
-| POST | `/policies` | Create a new policy | Yes |
-| GET | `/policies/{policyId}` | Get policy configuration | Yes |
-| PUT | `/policies/{policyId}` | Update policy configuration | Yes |
-| PUT | `/policies/{policyId}/publish` | Publish a policy | Yes |
-| POST | `/policies/validate` | Validate policy configuration | Yes |
-| GET | `/policies/{policyId}/blocks` | Get root policy block data | Yes |
-| GET | `/policies/{policyId}/blocks/{uuid}` | Get block data by UUID | Yes |
-| POST | `/policies/{policyId}/blocks/{uuid}` | Send data to a block | Yes |
-| GET | `/policies/{policyId}/tag/{tagName}` | Get block ID by tag | Yes |
-| GET | `/policies/{policyId}/tag/{tagName}/blocks` | Get block data by tag | Yes |
-| POST | `/policies/{policyId}/tag/{tagName}/blocks` | Send data to block by tag | Yes |
-| GET | `/policies/{policyId}/groups` | List groups for the current user | Yes |
-| POST | `/policies/{policyId}/groups` | Set the active group | Yes |
-| GET | `/policies/{policyId}/export/file` | Export policy as zip | Yes |
-| GET | `/policies/{policyId}/export/message` | Export policy message ID | Yes |
-| POST | `/policies/import/file` | Import policy from zip | Yes |
-| POST | `/policies/import/message` | Import policy from IPFS | Yes |
-| POST | `/policies/import/message/preview` | Preview policy from IPFS | Yes |
+| Method | Endpoint                                    | Description                      | Auth Required |
+| ------ | ------------------------------------------- | -------------------------------- | ------------- |
+| GET    | `/policies`                                 | List all policies                | Yes           |
+| POST   | `/policies`                                 | Create a new policy              | Yes           |
+| GET    | `/policies/{policyId}`                      | Get policy configuration         | Yes           |
+| PUT    | `/policies/{policyId}`                      | Update policy configuration      | Yes           |
+| PUT    | `/policies/{policyId}/publish`              | Publish a policy                 | Yes           |
+| POST   | `/policies/validate`                        | Validate policy configuration    | Yes           |
+| GET    | `/policies/{policyId}/blocks`               | Get root policy block data       | Yes           |
+| GET    | `/policies/{policyId}/blocks/{uuid}`        | Get block data by UUID           | Yes           |
+| POST   | `/policies/{policyId}/blocks/{uuid}`        | Send data to a block             | Yes           |
+| GET    | `/policies/{policyId}/tag/{tagName}`        | Get block ID by tag              | Yes           |
+| GET    | `/policies/{policyId}/tag/{tagName}/blocks` | Get block data by tag            | Yes           |
+| POST   | `/policies/{policyId}/tag/{tagName}/blocks` | Send data to block by tag        | Yes           |
+| GET    | `/policies/{policyId}/groups`               | List groups for the current user | Yes           |
+| POST   | `/policies/{policyId}/groups`               | Set the active group             | Yes           |
+| GET    | `/policies/{policyId}/export/file`          | Export policy as zip             | Yes           |
+| GET    | `/policies/{policyId}/export/message`       | Export policy message ID         | Yes           |
+| POST   | `/policies/import/file`                     | Import policy from zip           | Yes           |
+| POST   | `/policies/import/message`                  | Import policy from IPFS          | Yes           |
+| POST   | `/policies/import/message/preview`          | Preview policy from IPFS         | Yes           |
 
----
+***
 
 ## Endpoint Details
 
@@ -58,4 +58,4 @@ See [Prerequisite Steps](prerequesite-steps.md) before getting started.
 * [Import a Policy](import-a-policy.md) — `POST /policies/import/message`
 * [Import from Zip File](import-from-zip-file.md) — `POST /policies/import/file`
 * [Policy Preview from IPFS](policy-preview-from-ipfs.md) — `POST /policies/import/message/preview`
-* [Dynamic Policy Fields Guide](dynamic-policy-fields.md) — Dynamic field configuration reference
+* [Dynamic Policy Fields Guide](https://github.com/hashgraph/guardian/blob/develop/docs/policy-creation-using-the-guardian-apis/dynamic-policy-fields.md) — Dynamic field configuration reference

@@ -87,7 +87,7 @@ In this case we will approve the submission
 
 <figure><img src="../../../.gitbook/assets/image (203) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (62).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (62) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Step 8 ( only continue once the Project Proponent is waiting to be added)**
 

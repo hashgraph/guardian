@@ -9,7 +9,7 @@ import { ProfileService } from '../../services/profile.service';
 import { DemoService } from '../../services/demo.service';
 import { SchemaService } from '../../services/schema.service';
 import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from '../../services/tasks.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
@@ -173,7 +173,7 @@ export class UserProfileComponent implements OnInit {
         private relayerAccountsService: RelayerAccountsService,
         private otherService: DemoService,
         private schemaService: SchemaService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
@@ -548,7 +548,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }

@@ -53,7 +53,7 @@ Each generated schema includes:
 
 {% stepper %}
 {% step %}
-#### Step 1 — Configure Your AI Client
+**Step 1 — Configure Your AI Client**
 
 For structured schema workflows:
 
@@ -73,7 +73,7 @@ This ensures controlled and repeatable schema construction.
 {% endstep %}
 
 {% step %}
-#### Step 2 — Design a Root Schema
+**Step 2 — Design a Root Schema**
 
 You may begin with a high-level root schema.
 
@@ -96,7 +96,7 @@ You can refine field types and requirements before generating the file.
 {% endstep %}
 
 {% step %}
-#### Step 3 — Generate the Excel Schema File
+**Step 3 — Generate the Excel Schema File**
 
 Once the structure is approved:
 
@@ -117,7 +117,7 @@ Both the Excel and JSON versions are stored.
 {% endstep %}
 
 {% step %}
-#### Step 4 — Extract Structure from Methodology Documents
+**Step 4 — Extract Structure from Methodology Documents**
 
 To extend schemas properly, first analyze the methodology structure.
 
@@ -139,7 +139,7 @@ This allows schema structure to mirror document structure.
 {% endstep %}
 
 {% step %}
-#### Step 5 — Create Subschemas
+**Step 5 — Create Subschemas**
 
 Subschemas can be created incrementally.
 
@@ -155,7 +155,7 @@ If a placeholder schema is referenced elsewhere, validation prevents unsafe remo
 {% endstep %}
 
 {% step %}
-#### Step 6 — Transform Tables into Structured Fields
+**Step 6 — Transform Tables into Structured Fields**
 
 Many methodology sections are presented as tables.
 
@@ -170,7 +170,7 @@ This creates machine-readable structure rather than static formatting.
 {% endstep %}
 
 {% step %}
-#### Step 7 — Extract and Interpret Formulas
+**Step 7 — Extract and Interpret Formulas**
 
 You can ask:
 
@@ -203,7 +203,7 @@ You can then:
 {% endstep %}
 
 {% step %}
-#### Step 8 — Iterative Refinement
+**Step 8 — Iterative Refinement**
 
 You remain the domain expert.
 

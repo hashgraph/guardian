@@ -407,6 +407,7 @@ export class XlsxToJson {
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
             const allFields = new Map<string, SchemaField>();
+            const fieldPaths = new Map<string, string[]>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -421,6 +422,7 @@ export class XlsxToJson {
                     allFields.set(field.title, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
+                    fieldPaths.set(field.title, parents.slice(0, groupIndex + 1).map(p => p.name));
                     if (groupIndex === 0) {
                         XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, fields, field);
                     } else {
@@ -475,6 +477,8 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     fields,
+                    allFields,
+                    fieldPaths,
                     conditionCache,
                     row,
                     xlsxResult
@@ -483,7 +487,6 @@ export class XlsxToJson {
                     conditionCache.push(condition);
                 }
             }
-
             row = table.end.r + 1;
             const expressions: XlsxExpressions = new XlsxExpressions();
             for (; row < range.e.r; row++) {
@@ -865,6 +868,8 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         fields: SchemaField[],
+        allFields: Map<string, SchemaField>,
+        fieldPaths: Map<string, string[]>,
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -872,15 +877,13 @@ export class XlsxToJson {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
         }
-        if (worksheet.getRow(row).getOutline()) {
-            return null;
-        }
 
         const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
-        const field = fields.find((f) => f.title === key.path);
+        const field = allFields.get(key.path) || fields.find((f) => f.title === key.path);
+        const targetPath = fieldPaths.get(key.path);
+        const isNested = targetPath && targetPath.length > 1;
 
         try {
-            //visibility
             if (worksheet.outColumnRange(table.getCol(Dictionary.VISIBILITY))) {
                 return;
             }
@@ -916,40 +919,49 @@ export class XlsxToJson {
             }
 
             if (result.type === 'const') {
-                field.hidden = field.hidden || !result.value;
+                if (field) { field.hidden = field.hidden || !result.value; }
                 return;
             }
 
+            const addToCondition = (holder: XlsxSchemaConditions, invert: boolean) => {
+                if (isNested && field) {
+                    holder.addTarget(field, targetPath, invert);
+                } else if (field) {
+                    holder.addField(field, invert);
+                }
+            };
+
             if (result.op && Array.isArray(result.items)) {
                 const resolved = result.items.map(it => {
-                    const target = fields.find(f => f.title === it.fieldPath);
-                    if (!target) {
+                    const trigger = allFields.get(it.fieldPath) || fields.find(f => f.title === it.fieldPath);
+                    if (!trigger) {
                         throw new Error(`Invalid target in ${result.op} condition: ${it.fieldPath}`);
                     }
-                    return { field: target, value: it.compareValue };
+                    return { field: trigger, value: it.compareValue, fieldPath: fieldPaths.get(it.fieldPath) };
                 });
 
                 const conditionKey = { op: result.op, items: resolved };
                 const existed = conditionCache.find(c => (c as any).equal(conditionKey));
                 const holder = existed || new XlsxSchemaConditions(conditionKey as any);
 
-                holder.addField(field, !!result.invert);
+                addToCondition(holder, !!result.invert);
                 if (!existed) {
                     return holder;
                 }
                 return null;
             } else {
-                const target = fields.find((f) => f.title === result.fieldPath);
-                if (!target) {
-                    throw new Error('Invalid target');
+                const trigger = allFields.get(result.fieldPath) || fields.find((f) => f.title === result.fieldPath);
+                if (!trigger) {
+                    throw new Error('Invalid trigger field');
                 }
-                const condition = conditionCache.find(c => c.equal(target, result.compareValue));
+                const triggerPath = fieldPaths.get(result.fieldPath);
+                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue, triggerPath));
                 if (condition) {
-                    condition.addField(field, result.invert);
+                    addToCondition(condition, result.invert);
                     return null;
                 } else {
-                    const newCondition = new XlsxSchemaConditions(target, result.compareValue);
-                    newCondition.addField(field, result.invert);
+                    const newCondition = new XlsxSchemaConditions(trigger, result.compareValue, triggerPath);
+                    addToCondition(newCondition, result.invert);
                     return newCondition;
                 }
             }
@@ -1088,6 +1100,15 @@ export class XlsxToJson {
                         items,
                         invert
                     };
+                }
+            }
+
+            if ((node as any).type === 'AssignmentNode') {
+                const assign = node as any;
+                const obj = assign.object;
+                const val = assign.value;
+                if (obj?.type === 'SymbolNode' && val?.type === 'ConstantNode') {
+                    return { type: 'formulae', fieldPath: obj.name, compareValue: val.value, invert };
                 }
             }
 

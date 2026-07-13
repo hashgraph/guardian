@@ -33,7 +33,7 @@ Demonstrate how an administrator configures validation and routing rules before 
   * `BEEF`
   * `DAIRY`
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Schema Assignment
 

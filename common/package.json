@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@aws-sdk/client-secrets-manager": "3.956.0",
+        "@aws-sdk/client-secrets-manager": "3.1079.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
         "@digitalbazaar/credentials-context": "3.2.0",
@@ -10,7 +10,7 @@
         "@digitalbazaar/security-context": "1.0.1",
         "@digitalbazaar/vc": "7.3.0",
         "@formulajs/formulajs": "4.6.0",
-        "@google-cloud/secret-manager": "6.1.1",
+        "@google-cloud/secret-manager": "6.2.0",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/sdk": "2.85.0",
         "@mattrglobal/jsonld-signatures-bbs": "1.2.0",
@@ -48,7 +48,7 @@
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2",
         "seq-logging": "^2.2.0",
-        "ws": "8.18.3"
+        "ws": "8.21.0"
     },
     "description": "Common package share cross all services",
     "devDependencies": {
