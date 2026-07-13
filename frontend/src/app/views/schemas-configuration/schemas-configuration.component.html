@@ -1,15 +1,134 @@
-<div class="schemas-configuration-page">
-    <div class="page-header">
-        <h1 class="page-title">Schema Configuration</h1>
-        @if (policyId) {
-            <span class="policy-id-label">Policy: {{ policyId }}</span>
-        }
-    </div>
-    <div class="page-body">
-        @if (loading) {
-            <div class="loading-container">
-                <p-progressSpinner [style]="{ width: '65px', height: '65px' }"></p-progressSpinner>
+<div class="sc-page">
+
+    <header class="sc-topnav">
+        <nav class="sc-breadcrumb">
+            <i class="pi pi-folder sc-breadcrumb-icon"></i>
+            <a class="sc-crumb-link" routerLink="/schemas" [queryParams]="{ type: type }">Schemas</a>
+            <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
+            <span class="sc-crumb-current">{{ topic }}</span>
+        </nav>
+
+        <div class="sc-spacer"></div>
+
+        <div class="sc-nav-tabs">
+            <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
+                Builder
+            </button>
+            <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
+                Preview
+            </button>
+        </div>
+
+        <div class="sc-nav-actions">
+            <button class="sc-btn">
+                <i class="pi pi-download"></i>
+                Export
+            </button>
+            <button class="sc-btn sc-btn-primary">
+                <i class="pi pi-send"></i>
+                Publish
+            </button>
+        </div>
+    </header>
+
+    <div class="sc-main">
+
+        <aside class="sc-sidebar">
+
+            <div class="sc-sidebar-tabs">
+                <button
+                    class="sc-sidebar-tab"
+                    [class.active]="activeSideTab === 'fields'"
+                    (click)="activeSideTab = 'fields'">
+                    Fields
+                </button>
+                <button
+                    class="sc-sidebar-tab"
+                    [class.active]="activeSideTab === 'schemas'"
+                    (click)="activeSideTab = 'schemas'">
+                    Schemas
+                    @if (schemas.length) {
+                        <span class="sc-schemas-dot"></span>
+                    }
+                </button>
             </div>
-        }
+
+            @if (activeSideTab === 'fields') {
+                <div class="sc-sidebar-pane">
+                    <p class="sc-sidebar-label">Click or drag to add</p>
+                    @for (ft of fieldTypes; track ft.type) {
+                        <div
+                            class="sc-field-chip"
+                            draggable="true"
+                            [class.sc-field-chip--accent]="ft.accent">
+                            <i class="pi {{ ft.icon }}"></i>
+                            {{ ft.label }}
+                        </div>
+                    }
+                </div>
+            }
+
+            @if (activeSideTab === 'schemas') {
+                <div class="sc-schemas-pane">
+                    <div class="sc-schemas-toolbar">
+                        <div class="sc-search-wrap">
+                            <i class="pi pi-search sc-search-icon"></i>
+                            <input
+                                class="sc-search-input"
+                                type="text"
+                                placeholder="Search schemas…"
+                                [(ngModel)]="schemaSearch" />
+                        </div>
+                        <button class="sc-schemas-add" (click)="onNewSchema()">
+                            <i class="pi pi-plus"></i>
+                            New
+                        </button>
+                    </div>
+
+                    <div class="sc-schemas-list">
+                        @if (schemasLoading) {
+                            <div class="sc-schemas-empty">
+                                <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
+                            </div>
+                        } @else if (!filteredSchemas.length) {
+                            <div class="sc-schemas-empty">
+                                <i class="pi pi-inbox"></i>
+                                <span>{{ schemaSearch ? 'No results' : 'No schemas yet' }}</span>
+                            </div>
+                        } @else {
+                            @for (schema of filteredSchemas; track schema.id) {
+                                <div class="sc-schema-row">
+                                    <div class="sc-schema-icon">
+                                        <i class="pi pi-file"></i>
+                                    </div>
+                                    <div class="sc-schema-info">
+                                        <span class="sc-schema-name">{{ schema.name }}</span>
+                                        <div class="sc-schema-meta-row">
+                                            @if (schema.version) {
+                                                <span class="sc-schema-version">v{{ schema.version }}</span>
+                                            }
+                                            <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(schema)">
+                                                {{ schema.status }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            }
+
+        </aside>
+
+        <div class="sc-canvas">
+            @if (loading) {
+                <div class="sc-loading">
+                    <p-progressSpinner [style]="{ width: '48px', height: '48px' }"></p-progressSpinner>
+                </div>
+            }
+        </div>
+
     </div>
+
 </div>
