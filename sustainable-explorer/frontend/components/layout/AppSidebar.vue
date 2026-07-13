@@ -8,6 +8,7 @@ import {
     Users,
     Target,
     BarChart3,
+    FileText,
     Activity,
     CheckCircle2,
     Briefcase,
@@ -46,9 +47,12 @@ const navItems = computed(() => [
     { label: t('nav.syncStatus'), icon: Activity, to: '/status' },
 ]);
 
-const portfolioItem = computed(() => ({
-    label: t('nav.portfolio'), icon: Briefcase, to: '/portfolio',
-}));
+// Authenticated-only nav, pinned below the main items: Portfolio (per-user
+// dashboard) then Reports (export / compliance tools) — both hidden from guests.
+const authedItems = computed(() => [
+    { label: t('nav.portfolio'), icon: Briefcase, to: '/portfolio' },
+    { label: t('nav.reports'), icon: FileText, to: '/reports' },
+]);
 </script>
 
 <template>
@@ -119,18 +123,21 @@ const portfolioItem = computed(() => ({
                 </Transition>
             </NuxtLink>
 
-            <!-- Divider + Portfolio pinned below all main nav items — the
-                 customizable dashboard is per-user, so guests never see the tab. -->
+            <!-- Divider + authenticated-only items (Portfolio, then Reports)
+                 pinned below all main nav items — per-user tools, so guests
+                 never see these tabs. -->
             <template v-if="isAuthenticated">
                 <div class="mx-1 my-1.5 h-px bg-border/60" />
                 <NuxtLink
-                    :to="portfolioItem.to"
-                    :title="collapsed ? portfolioItem.label : undefined"
+                    v-for="item in authedItems"
+                    :key="item.to"
+                    :to="item.to"
+                    :title="collapsed ? item.label : undefined"
                     class="group relative flex items-center gap-3 rounded-lg px-3 py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:scale-y-0 before:rounded-r-full before:bg-primary before:transition-transform before:duration-200 before:ease-out"
                     active-class="!bg-primary/8 !text-primary !font-semibold before:!scale-y-100"
                 >
                     <component
-                        :is="portfolioItem.icon"
+                        :is="item.icon"
                         class="h-[18px] w-[18px] shrink-0 transition-transform duration-150 group-hover:scale-110"
                     />
                     <Transition
@@ -141,7 +148,7 @@ const portfolioItem = computed(() => ({
                         leave-from-class="opacity-100"
                         leave-to-class="opacity-0"
                     >
-                        <span v-if="!collapsed" class="truncate">{{ portfolioItem.label }}</span>
+                        <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                     </Transition>
                 </NuxtLink>
             </template>
