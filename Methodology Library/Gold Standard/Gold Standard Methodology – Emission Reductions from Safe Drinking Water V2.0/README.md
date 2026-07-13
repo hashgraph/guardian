@@ -44,7 +44,7 @@ The methodology is applicable under below conditions:
 ## Policy Workflow
 
 <p align="center">
-<img src="./Assets/images/Workflow_Diagram.png" alt="Policy Workflow"/>
+<img src="./Assets/Images/Workflow_Diagram.png" alt="Policy Workflow"/>
 </p>
 
 ## Step By Step
@@ -54,25 +54,25 @@ The methodology is applicable under below conditions:
 * To access this policy as an Activity Developer, select **Activity Developer** from the **Role** dropdown and then click **Next**.
 
 <p align="center">
-<img src="./Assets/images/ad_onboarding/img1.png" alt="User Selection" width="700"/>
+<img src="./Assets/Images/ad_onboarding/img1.png" alt="User Selection" width="700"/>
 </p>
 
 * You will then be directed to the Activity Developer Onboarding form. Fill in your details.
 
 <p align="center">
-<img src="./Assets/images/ad_onboarding/img2.png" alt="PD Onboarding Form" width="700"/>
+<img src="./Assets/Images/ad_onboarding/img2.png" alt="PD Onboarding Form" width="700"/>
 </p>
 
 * To submit the Activity Developer Onboarding form, click **Validate & Create**.
 
 <p align="center">
-<img src="./Assets/images/ad_onboarding/img3.png" alt="PD Onboarding Form Submission" width="700"/>
+<img src="./Assets/Images/ad_onboarding/img3.png" alt="PD Onboarding Form Submission" width="700"/>
 </p>
 
 * You will then be directed to a waiting page. You must wait until the Authorization body approves your submission to access the next forms.
 
 <p align="center">
-<img src="./Assets/images/ad_onboarding/img4.png" alt="PD Onboarding Form Submission" width="700"/>
+<img src="./Assets/Images/ad_onboarding/img4.png" alt="PD Onboarding Form Submission" width="700"/>
 </p>
 
 * If the Authorization body rejects your form, you will be redirected to the onboarding form.
@@ -82,7 +82,7 @@ The methodology is applicable under below conditions:
 * To approve or reject an Activity Developer’s onboarding form, go to the **Activity Developer Accounts** section and click **Approve**/**Reject**. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/ad_onboarding/img5.png" alt="PD Onboarding Form Approval" width="700"/>
+<img src="./Assets/Images/ad_onboarding/img5.png" alt="PD Onboarding Form Approval" width="700"/>
 </p>
 
 ### Validation and Verification Body (VVB) User Onboarding
@@ -90,13 +90,13 @@ The methodology is applicable under below conditions:
 * To access this policy as a Validation and Verification Body (VVB), select **Validation and Verification Body** from the **Role** dropdown and then click **Next**.
 
 <p align="center">
-<img src="./Assets/images/vvb_onboarding/img1.png" alt="Role Selection" width="700"/>
+<img src="./Assets/Images/vvb_onboarding/img1.png" alt="Role Selection" width="700"/>
 </p>
 
 * You will then be directed to the Validation and Verification body (VVB) Onboarding form. Fill in your details.
 
 <p align="center">
-<img src="./Assets/images/vvb_onboarding/img2.png" alt="VVB Onboarding Form" width="700"/>
+<img src="./Assets/Images/vvb_onboarding/img2.png" alt="VVB Onboarding Form" width="700"/>
 </p>
 
 * To submit the Validation and Verification body (VVB) Onboarding form, click **Validate & Create**.
@@ -104,7 +104,7 @@ The methodology is applicable under below conditions:
 * You will then be directed to a waiting page. You must wait until the Authorization body approves your submission to access the next forms.
 
 <p align="center">
-<img src="./Assets/images/vvb_onboarding/img3.png" alt="Waiting for Approval" width="700"/>
+<img src="./Assets/Images/vvb_onboarding/img3.png" alt="Waiting for Approval" width="700"/>
 </p>
 
 * If the Authorization body rejects your form, you will be redirected to the onboarding form.
@@ -114,7 +114,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Validation and Verification Body’s onboarding form, go to the **Verifier Accounts** section and click **Approve**/**Reject**. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/vvb_onboarding/img4.png" alt="VVB Onboarding Form Approval" width="700"/>
+<img src="./Assets/Images/vvb_onboarding/img4.png" alt="VVB Onboarding Form Approval" width="700"/>
 </p>
 
 ### Project Form Submission and Approval Process
@@ -124,19 +124,19 @@ The methodology is applicable under below conditions:
 * To create a Project Form, go to the **Project Forms** section and click **Create**.
 
 <p align="center">
-<img src="./Assets/images/project_form/img1.png" alt="Create" width="700"/>
+<img src="./Assets/Images/project_form/img1.png" alt="Create" width="700"/>
 </p>
 
 * You will then be directed to the Project Form. Fill in your details and then click **Validate & Create** to submit the form.
 
 <p align="center">
-<img src="./Assets/images/project_form/img2.png" alt="Submission" width="700"/>
+<img src="./Assets/Images/project_form/img2.png" alt="Submission" width="700"/>
 </p>
 
 * Then, select an approved Validation and Verification Body from the **Assign** column to validate your Project Form.
 
 <p align="center">
-<img src="./Assets/images/project_form/img3.png" alt="Select VVB" width="700"/>
+<img src="./Assets/Images/project_form/img3.png" alt="Select VVB" width="700"/>
 </p>
 
 * Wait for approval from both the Validation and Verification Body and the Authorization body.
@@ -147,7 +147,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Project Form, go to the **Project Forms** section and click **Approve** or **Reject**. If rejecting, you can add a remark explaining why. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/project_form/img4.png" alt="VVB Approval" width="700"/>
+<img src="./Assets/Images/project_form/img4.png" alt="VVB Approval" width="700"/>
 </p>
 
 #### On Registry’s Side
@@ -155,7 +155,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Project Form, go to the **Project Forms** section and click **Approve** or **Reject**. If rejecting, you can add a remark explaining why. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/project_form/img5.png" alt="Registry Approval" width="700"/>
+<img src="./Assets/Images/project_form/img5.png" alt="Registry Approval" width="700"/>
 </p>
 
 ### Project Design Document (PDD) Submission and Approval Process
@@ -165,19 +165,19 @@ The methodology is applicable under below conditions:
 * To create a Project Design Document (PDD), go to the **Project Design Documents** section and click **Create PDD**.
 
 <p align="center">
-<img src="./Assets/images/pdd/img1.png" alt="Create PDD" width="700"/>
+<img src="./Assets/Images/pdd/img1.png" alt="Create PDD" width="700"/>
 </p>
 
 * You will then be directed to the Project Design Document (PDD). Fill in your details and then click **Validate & Create** to submit the form.
 
 <p align="center">
-<img src="./Assets/images/pdd/img2.png" alt="Fill and Submit" width="700"/>
+<img src="./Assets/Images/pdd/img2.png" alt="Fill and Submit" width="700"/>
 </p>
 
 * Then, select an approved Validation and Verification Body from the **Assign** column to validate your Project Design Document (PDD).
 
 <p align="center">
-<img src="./Assets/images/pdd/img3.png" alt="Select VVB" width="700"/>
+<img src="./Assets/Images/pdd/img3.png" alt="Select VVB" width="700"/>
 </p>
 
 * Wait for approval from both the Validation and Verification Body and the Registry.
@@ -188,7 +188,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Project Design Document (PDD), go to the **Project Design Documents** section and click **Approve** or **Reject**. If rejecting, you can add a remark explaining why. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/pdd/img4.png" alt="VVB Approval" width="700"/>
+<img src="./Assets/Images/pdd/img4.png" alt="VVB Approval" width="700"/>
 </p>
 
 #### On Registry’s Side
@@ -196,7 +196,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Project Design Document (PDD), go to the **Project Design Documents** section and click **Approve** or **Reject**. If rejecting, you can add a remark explaining why. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/pdd/img5.png" alt="Registry Approval" width="700"/>
+<img src="./Assets/Images/pdd/img5.png" alt="Registry Approval" width="700"/>
 </p>
 
 ### Validation Report Submission and Approval Process
@@ -206,14 +206,14 @@ The methodology is applicable under below conditions:
 * To create a Validation Report, go to the **Validation Reports** section and click **Create Validation Report**.
 
 <p align="center">
-<img src="./Assets/images/validation_report/img1.png" alt="Create Validation Report" width="700"/>
+<img src="./Assets/Images/validation_report/img1.png" alt="Create Validation Report" width="700"/>
 </p>
 
 * You will then be directed to the Validation Report. Fill in your details and then click **Validate & Create** to submit the form.
 * Select the correct Activity Developer from the **Assign** column to give them read-only access to the Validation Report.
 
 <p align="center">
-<img src="./Assets/images/validation_report/img2.png" alt="Form Submission" width="700"/>
+<img src="./Assets/Images/validation_report/img2.png" alt="Form Submission" width="700"/>
 </p>
 
 * Wait for Authorization Body’s approval.
@@ -230,19 +230,19 @@ The methodology is applicable under below conditions:
 * To create a Monitoring Report, go to the **Monitoring Reports** section and click **Create Monitoring Report**.
 
 <p align="center">
-<img src="./Assets/images/monitoring_report/img1.png" alt="Create" width="700"/>
+<img src="./Assets/Images/monitoring_report/img1.png" alt="Create" width="700"/>
 </p>
 
 * You will then be directed to the Monitoring Report. Fill in your details and then click **Validate & Create** to submit the form.
 
 <p align="center">
-<img src="./Assets/images/monitoring_report/img2.png" alt="Form Submission" width="700"/>
+<img src="./Assets/Images/monitoring_report/img2.png" alt="Form Submission" width="700"/>
 </p>
 
 * Then, select an approved Validation and Verification Body from the **Assign** column to validate your Monitoring Reports.
 
 <p align="center">
-<img src="./Assets/images/monitoring_report/img3.png" alt="Select a VVB" width="700"/>
+<img src="./Assets/Images/monitoring_report/img3.png" alt="Select a VVB" width="700"/>
 </p>
 
 * Wait for approval from the Validation and Verification Body.
@@ -253,7 +253,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Monitoring Report, go to the **Monitoring Reports** section and click **Approve** or **Reject**. If rejecting, you can add a remark explaining why. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/monitoring_report/img4.png" alt="VVB Approval" width="700"/>
+<img src="./Assets/Images/monitoring_report/img4.png" alt="VVB Approval" width="700"/>
 </p>
 
 ### Verification Report Submission and Approval Process
@@ -263,13 +263,13 @@ The methodology is applicable under below conditions:
 * To create a Verification Report, go to the **Verification Reports** section and click **Create Verification Report**.
 
 <p align="center">
-<img src="./Assets/images/verification_report/img1.png" alt="Create" width="700"/>
+<img src="./Assets/Images/verification_report/img1.png" alt="Create" width="700"/>
 </p>
 
 * You will then be directed to the Verification Report. Fill in your details and then click **Validate & Create** to submit the form.
 
 <p align="center">
-<img src="./Assets/images/verification_report/img2.png" alt="Submission" width="700"/>
+<img src="./Assets/Images/verification_report/img2.png" alt="Submission" width="700"/>
 </p>
 
 * Wait for approval from the Authorization body.
@@ -280,7 +280,7 @@ The methodology is applicable under below conditions:
 * To approve or reject a Verification Report, go to the **Verification Reports** section and click **Approve** or **Reject**. If rejecting, you can add a remark explaining why. You can review the submission by clicking **View Document**.
 
 <p align="center">
-<img src="./Assets/images/verification_report/img3.png" alt="Submission" width="700"/>
+<img src="./Assets/Images/verification_report/img3.png" alt="Submission" width="700"/>
 </p>
 
 ### Tokenization, Minting, Trust Chain
@@ -288,7 +288,7 @@ The methodology is applicable under below conditions:
 Once the emission reductions are verified and approved, the Standard Registry calculates the total number of eligible carbon credits based on the verified emission reductions. These carbon credits are then minted as digital tokens in the Standard Registry and recorded on the Trust Chain. After minting is complete, the tokens are transferred to the Activity Developer's account, where they can be managed, transferred, or retired.
 
 <p align="center">
-<img src="./Assets/images/trust_chain/img1.png" alt="Minting Notifications" width="700"/>
+<img src="./Assets/Images/trust_chain/img1.png" alt="Minting Notifications" width="700"/>
 </p>
 
 ## Structural Changes to the Version 1.0
