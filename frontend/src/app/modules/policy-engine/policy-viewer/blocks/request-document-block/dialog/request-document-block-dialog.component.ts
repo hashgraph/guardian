@@ -10,7 +10,6 @@ import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { DocumentValidators } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
@@ -102,8 +101,7 @@ export class RequestDocumentBlockDialog {
 
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
-    @ViewChild('draftFileInput', { static: false }) draftFileInput!: ElementRef<HTMLInputElement>;
-        
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -112,7 +110,6 @@ export class RequestDocumentBlockDialog {
         private schemaRulesService: SchemaRulesService,
         private relayerAccountsService: RelayerAccountsService,
         private fb: UntypedFormBuilder,
-        private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
@@ -404,136 +401,9 @@ export class RequestDocumentBlockDialog {
         }
     }
 
-    public onExportDraft(): void {
-        const formValue = this.dataForm.getRawValue();
-        const envelope = {
-            type: 'request-vc-draft',
-            version: '1.0.0',
-            schema: this.schema?.iri || null,
-            policyId: this.policyId,
-            blockId: this.id,
-            document: formValue,
-        };
-        const blob = new Blob([JSON.stringify(envelope, null, 2)], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `draft_${this.schema?.name || 'document'}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
-    }
-
-    public triggerImportDraft(): void {
-        this.draftFileInput?.nativeElement.click();
-    }
-
-    public onImportDraft(event: Event): void {
-        const input = event.target as HTMLInputElement;
-        const file = input.files?.[0];
-        input.value = '';
-        if (!file) {
-            return;
-        }
-        const reader = new FileReader();
-        reader.onload = () => {
-            let parsed: any;
-            try {
-                parsed = JSON.parse(reader.result as string);
-            } catch {
-                this.toastr.error('Could not parse the selected JSON file.', 'Import failed');
-                return;
-            }
-            const doc = parsed?.document ?? parsed;
-            if (!doc || typeof doc !== 'object') {
-                this.toastr.error('The selected file does not contain draft data.', 'Import failed');
-                return;
-            }
-            const warnings: string[] = [];
-            if (this.formHasData()) {
-                warnings.push('The current form already contains data that will be replaced.');
-            }
-            warnings.push(...this.getDraftMismatches(parsed));
-            if (warnings.length) {
-                this.confirmDraftImport(warnings, () => this.applyImportedDraft(doc));
-            } else {
-                this.applyImportedDraft(doc);
-            }
-        };
-        reader.onerror = () => {
-            this.toastr.error('Could not read the selected file.', 'Import failed');
-        };
-        reader.readAsText(file);
-    }
-
-    private getDraftMismatches(parsed: any): string[] {
-        const mismatches: string[] = [];
-        if (parsed?.type && parsed.type !== 'request-vc-draft') {
-            mismatches.push('This file is not a request document draft.');
-        }
-        if (parsed?.schema && this.schema?.iri && parsed.schema !== this.schema.iri) {
-            mismatches.push('The draft was created for a different schema.');
-        }
-        if (parsed?.policyId && this.policyId && parsed.policyId !== this.policyId) {
-            mismatches.push('The draft was created for a different policy.');
-        }
-        if (parsed?.blockId && this.id && parsed.blockId !== this.id) {
-            mismatches.push('The draft was created for a different form.');
-        }
-        return mismatches;
-    }
-
-    private confirmDraftImport(warnings: string[], onContinue: () => void): void {
-        const text =
-            'Please review before loading this draft:\n\n' +
-            warnings.map((m) => `• ${m}`).join('\n') +
-            '\n\nDo you want to continue?';
-        const dialogOptionRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog without-saving-dialog',
-            data: {
-                header: 'Load draft from file?',
-                text,
-                buttons: [
-                    { name: 'Cancel', class: 'secondary' },
-                    { name: 'Continue', class: 'primary' }
-                ]
-            },
-        });
-        dialogOptionRef.onClose.subscribe((result: string) => {
-            if (result === 'Continue') {
-                onContinue();
-            }
-        });
-    }
-
-    private formHasData(): boolean {
-        return this.hasMeaningfulValue(this.dataForm.getRawValue());
-    }
-
-    private hasMeaningfulValue(value: any): boolean {
-        if (value === null || value === undefined || value === '' || value === false) {
-            return false;
-        }
-        if (Array.isArray(value)) {
-            return value.some((v) => this.hasMeaningfulValue(v));
-        }
-        if (typeof value === 'object') {
-            return Object.values(value).some((v) => this.hasMeaningfulValue(v));
-        }
-        return true;
-    }
-
-    private async applyImportedDraft(doc: any): Promise<void> {
-        try {
-            await this.tablePersist.restoreTablesFromDraft(doc);
-        } catch (e) {
-            console.error(e);
-        }
+    public onDraftImported(doc: any): void {
         this.parent.preset(doc);
-        this.dataForm.markAsDirty();
         this.dataSaved = false;
-        this.toastr.success('Draft loaded from file.', 'Import complete');
     }
 
     public getButtonName(item: any) {

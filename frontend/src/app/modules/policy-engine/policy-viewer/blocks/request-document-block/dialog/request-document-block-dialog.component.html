@@ -252,46 +252,15 @@
                 {{getButtonName(config)}}
             </button>
         </div>
-        <div class="dialog-button">
-            <button
-                (click)="onExportDraft()"
-                class="guardian-button guardian-button-secondary"
-                type="button"
-            >
-                <div class="guardian-button-icon">
-                    <svg-icon
-                        class="icon-btn svg-icon"
-                        src="/assets/images/icons/export-file.svg"
-                        svgClass="icon-color-primary"
-                    ></svg-icon>
-                </div>
-                <div class="guardian-button-label">Save draft to file</div>
-            </button>
-        </div>
-        <div class="dialog-button">
-            <button
-                (click)="triggerImportDraft()"
-                class="guardian-button guardian-button-secondary"
-                type="button"
-            >
-                <div class="guardian-button-icon">
-                    <svg-icon
-                        class="icon-btn svg-icon"
-                        src="/assets/images/icons/import-file.svg"
-                        svgClass="icon-color-primary"
-                    ></svg-icon>
-                </div>
-                <div class="guardian-button-label">Restore from draft file</div>
-            </button>
-        </div>
+        <request-draft-file-actions
+            [schema]="schema"
+            [policyId]="policyId"
+            [blockId]="id"
+            [dataForm]="dataForm"
+            (draftImported)="onDraftImported($event)">
+        </request-draft-file-actions>
         <div *ngIf="lastSavedAt" class="last-autosave">
             {{ minutesAgo$ | async }}
         </div>
     </div>
-    <input
-        #draftFileInput
-        type="file"
-        accept="application/json,.json"
-        hidden
-        (change)="onImportDraft($event)">
 </div>
