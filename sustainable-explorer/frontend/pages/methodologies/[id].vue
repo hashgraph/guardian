@@ -970,10 +970,10 @@ function getResolvedField(fieldKey: string) {
         <p class="text-xs text-muted-foreground mb-4">
           {{ $t('methodologies.detail.notFoundDesc', { id, network }) }}
         </p>
-        <NuxtLink
+        <AppLink
           to="/methodologies"
           class="text-sm text-primary hover:underline"
-          >← {{ $t('methodologies.detail.backLink') }}</NuxtLink
+          >← {{ $t('methodologies.detail.backLink') }}</AppLink
         >
       </div>
     </template>
@@ -1164,19 +1164,19 @@ function getResolvedField(fieldKey: string) {
                         </button>
                       </div>
                       <!-- Project count -->
-                      <NuxtLink
+                      <AppLink
                         :to="{ path: '/projects', query: { country: activeGeoDetail.country } }"
                         class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
                       >
                         <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeGeoDetail.projects.toLocaleString() }}</div>
                         <div class="text-[11px] text-muted-foreground mt-0.5">Active Projects →</div>
-                      </NuxtLink>
+                      </AppLink>
                       <!-- Sector breakdown -->
                       <div v-if="activeGeoDetail.sectors.length > 0">
                         <h4 class="text-xs font-semibold text-foreground mb-3">Sector</h4>
                         <div class="flex items-start gap-3">
                           <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
-                            <DonutChart :segments="activeGeoDetail.sectors" :size="90" />
+                            <DonutChart :segments="activeGeoDetail.sectors" :size="90" :hollow="true" />
                           </div>
                           <div class="space-y-1.5 flex-1 min-w-0">
                             <div v-for="s in activeGeoDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">

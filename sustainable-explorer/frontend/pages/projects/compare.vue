@@ -93,14 +93,14 @@ const hasEnoughIds = computed(() => ids.value.length >= 2);
         <!-- Header -->
         <div class="px-6 pt-6 pb-4">
             <div class="flex items-center gap-3 mb-2">
-                <NuxtLink
+                <AppLink
                     to="/projects"
                     class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                     @click="clearAll"
                 >
                     <ArrowLeft class="h-4 w-4" />
                     {{ $t('projects.title') }}
-                </NuxtLink>
+                </AppLink>
             </div>
             <h1 class="text-2xl font-bold text-foreground flex items-center gap-2">
                 <Columns2 class="h-6 w-6 text-primary" />
@@ -113,10 +113,10 @@ const hasEnoughIds = computed(() => ids.value.length >= 2);
         <div v-if="!hasEnoughIds" class="px-6 pb-6">
             <div class="rounded-xl border bg-card px-6 py-10 text-center">
                 <p class="text-sm text-muted-foreground">{{ $t('projects.compare.needTwo') }}</p>
-                <NuxtLink to="/projects" class="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
+                <AppLink to="/projects" class="mt-3 inline-flex items-center gap-1.5 text-sm text-primary hover:underline">
                     <ArrowLeft class="h-4 w-4" />
                     {{ $t('projects.title') }}
-                </NuxtLink>
+                </AppLink>
             </div>
         </div>
 
@@ -143,12 +143,12 @@ const hasEnoughIds = computed(() => ids.value.length >= 2);
                                 class="text-left py-3 px-4 min-w-[220px] align-top"
                             >
                                 <template v-if="project">
-                                    <NuxtLink
+                                    <AppLink
                                         :to="`/projects/${project.id}`"
                                         class="font-semibold text-foreground hover:text-primary transition-colors normal-case text-sm leading-snug block line-clamp-2"
                                     >
                                         {{ project.name }}
-                                    </NuxtLink>
+                                    </AppLink>
                                     <div class="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
                                         <CountryFlag :code="project.countryCode || 'UNK'" size="sm" />
                                         <span>{{ project.country || '—' }}</span>

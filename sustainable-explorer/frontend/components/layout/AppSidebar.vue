@@ -99,7 +99,7 @@ const authedItems = computed(() => [
              tooltip activates only when collapsed so icon-only items remain
              discoverable. -->
         <nav class="flex-1 space-y-0.5 px-2 pt-1 overflow-y-auto overflow-x-hidden">
-            <NuxtLink
+            <AppLink
                 v-for="item in navItems"
                 :key="item.to"
                 :to="item.to"
@@ -121,7 +121,7 @@ const authedItems = computed(() => [
                 >
                     <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                 </Transition>
-            </NuxtLink>
+            </AppLink>
 
             <!-- Divider + authenticated-only items (Portfolio, then Reports)
                  pinned below all main nav items — per-user tools, so guests
@@ -150,7 +150,7 @@ const authedItems = computed(() => [
                     >
                         <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                     </Transition>
-                </NuxtLink>
+                </AppLink>
             </template>
         </nav>
 

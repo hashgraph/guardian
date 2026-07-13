@@ -2,16 +2,24 @@ import { formatCredits } from '~/lib/format';
 import { isValidCountryName } from '~/lib/utils';
 import { SectorType } from '~/types/enums';
 import type { WatchlistItem } from '~/composables/usePortfolioWatchlist';
-import type { ActivityItem } from '~/types/models';
+import type { ActivityItem, MapCountry, MapPoint } from '~/types/models';
 import type { SdgStatsDto } from '~/composables/api/useSdgsApi';
 import { useGeocodedCountries } from '~/composables/useGeocodedCountries';
-import { usePortfolioWatchlistFilters } from '~/composables/usePortfolioWatchlistFilters';
+import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+
+// Reverse of COUNTRY_ALPHA3 — used to display the human-readable name when a
+// project's country came from reverse-geocoding (we have the ISO3 but not
+// the original raw.country string). Mirrors useDashboard.ts.
+const CODE_TO_COUNTRY: Record<string, string> = Object.fromEntries(
+    Object.entries(COUNTRY_ALPHA3).map(([name, code]) => [code, name]),
+);
 
 /**
  * Returns all portfolio data filtered by watchlist.
- * When watchlist is empty every computed returns the full network dataset —
- * identical behaviour to the main dashboard.  When items are present only
- * matching projects / credits are included.
+ * A project must be explicitly watchlisted to count — an empty watchlist
+ * means an empty portfolio, regardless of any Country/Methodology/Registry
+ * filters applied while browsing the "Manage Watchlist" modal (those only
+ * narrow the modal's candidate list, see usePortfolioWatchlistFilters).
  */
 export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     const { projects, pending: projectsPending } = useProjects();
@@ -21,39 +29,28 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     const networkRef = computed(() => network.value);
     const { data: sdgsData } = useSdgsApi({ network: networkRef });
 
-    const { hasActiveFilters, matchesFilters } = usePortfolioWatchlistFilters();
-
     // O(1) lookup set of explicitly watchlisted project ids (all items are 'project'-typed now).
     const watchedProjectIds = computed(() =>
         new Set(watchlistItems.value.map(i => i.id)),
     );
 
-    // Explicit project picks take priority. When the watchlist is empty but
-    // country/methodology/registry filters are active, those filters drive
-    // the dashboard scope instead — so selecting filters alone (with nothing
-    // individually added) still narrows every KPI/chart on the page.
-    const isFiltered = computed(() => watchlistItems.value.length > 0 || hasActiveFilters.value);
+    // Projects visible in the portfolio — only explicitly watchlisted projects.
+    const filteredProjects = computed(() =>
+        projects.value.filter(p => watchedProjectIds.value.has(p.id)),
+    );
 
-    // Projects visible in the portfolio
-    const filteredProjects = computed(() => {
-        if (watchlistItems.value.length > 0) return projects.value.filter(p => watchedProjectIds.value.has(p.id));
-        if (hasActiveFilters.value) return projects.value.filter(p => matchesFilters(p));
-        return projects.value;
-    });
-
-    // Geocoded country names for filteredProjects — resolves raw coordinate strings
-    // (e.g. "32.5825" → "Israel") via Nominatim, mirroring the project table.
-    const { resolvedName: resolvedCountryName } = useGeocodedCountries(filteredProjects);
+    // Geocoded country names/codes for filteredProjects — resolves raw coordinate
+    // strings (e.g. "32.5825" → "Israel") via Nominatim, mirroring the project table.
+    const { resolvedName: resolvedCountryName, resolvedCode } = useGeocodedCountries(filteredProjects);
 
     // Credits visible in the portfolio — joined via c.projectId = p.projectKey,
     // the same key used everywhere else in this file (sectorBreakdown, countryRaw, etc.)
     const filteredProjectKeys = computed(() =>
         new Set(filteredProjects.value.map(p => p.projectKey).filter((k): k is string => !!k)),
     );
-    const filteredCredits = computed(() => {
-        if (!isFiltered.value) return credits.value;
-        return credits.value.filter(c => c.projectId != null && filteredProjectKeys.value.has(c.projectId));
-    });
+    const filteredCredits = computed(() =>
+        credits.value.filter(c => c.projectId != null && filteredProjectKeys.value.has(c.projectId)),
+    );
 
     // KPIs
     const totalCreditsIssued = computed(() =>
@@ -148,6 +145,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
                 policies: r.policies.size,
                 projects: r.projects,
                 credits: formatCredits(creditsByReg[r.name] ?? 0),
+                creditsRaw: creditsByReg[r.name] ?? 0,
             }))
             .sort((a, b) => b.projects - a.projects);
     });
@@ -200,9 +198,37 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         }));
     });
 
+    // World-map countries — bucketed by reverse-geocoded ISO3 code (falls back
+    // to the project's own countryCode), excluding the 'UNK' bucket so unknown
+    // projects don't paint an arbitrary country shape. Mirrors useDashboard.ts.
+    const mapCountries = computed<MapCountry[]>(() => {
+        const countryMap: Record<string, { code: string; name: string; projects: number; credits: number }> = {};
+        for (const p of filteredProjects.value) {
+            const code = resolvedCode(p) || p.countryCode || 'UNK';
+            if (code === 'UNK') continue;
+            const name = code === p.countryCode ? p.country : (CODE_TO_COUNTRY[code] || p.country || code);
+            if (!countryMap[code]) countryMap[code] = { code, name, projects: 0, credits: 0 };
+            countryMap[code].projects++;
+            countryMap[code].credits += p.credits;
+        }
+        return Object.values(countryMap).map(c => ({
+            country: c.name,
+            countryCode: c.code,
+            projects: c.projects,
+            credits: formatCredits(c.credits),
+        }));
+    });
+
+    // World-map dots — real per-project lat/lng, skipping 0/0 and non-numeric
+    // coordinates so a project without geodata doesn't paint a marker in the
+    // Atlantic Ocean. Mirrors useDashboard.ts.
+    const mapPoints = computed<MapPoint[]>(() => filteredProjects.value
+        .filter(p => typeof p.lat === 'number' && typeof p.lng === 'number' && (p.lat !== 0 || p.lng !== 0))
+        .map(p => ({ name: p.name, lat: p.lat, lng: p.lng, credits: formatCredits(p.credits) })));
+
     const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
-    // Issuance trend series (period-bucketed, in millions of credits).
+    // Issuance trend series (period-bucketed, raw credit amounts).
     // Labels match useMintStats format: "Jun '23" / "Q2 '23" / "2023".
     function buildIssuanceSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
         const buckets = new Map<string, { sortKey: string; label: string; value: number }>();
@@ -224,7 +250,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
                 label = `${MONTH_NAMES[d.getMonth()]} '${yy}`;
             }
             if (!buckets.has(sortKey)) buckets.set(sortKey, { sortKey, label, value: 0 });
-            buckets.get(sortKey)!.value += (c.supply ?? 0) / 1_000_000;
+            buckets.get(sortKey)!.value += (c.supply ?? 0);
         }
         return [...buckets.values()]
             .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
@@ -248,14 +274,12 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
             })),
     );
 
-    // SDG stats filtered by watchlist.
-    // When no watchlist is active, returns the full network API data (includes both
-    // `projects` and `credits` fields from the API).
-    // When filtered, recomputes both project counts and credit supply totals from
-    // the filtered data so the Issuances toggle shows correct credit-weighted SDGs.
+    // SDG stats filtered by watchlist — recomputes both project counts and
+    // credit supply totals from the watchlisted data (rather than the API's
+    // network-wide numbers) so the Issuances toggle shows correct
+    // credit-weighted SDGs, and an empty watchlist yields all-zero counts.
     const filteredSdgStats = computed<SdgStatsDto[]>(() => {
         const apiSdgs = sdgsData.value?.data ?? [];
-        if (!isFiltered.value) return apiSdgs;
 
         // Project counts per SDG
         const projectCounts = new Map<number, number>();
@@ -331,7 +355,6 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     const dataPending = computed(() => projectsPending.value || creditsPending.value);
 
     return {
-        isFiltered,
         filteredProjects,
         filteredCredits,
         totalCreditsIssued,
@@ -343,6 +366,8 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         registries,
         countryRaw,
         topCountries,
+        mapCountries,
+        mapPoints,
         buildIssuanceSeries,
         recentIssuances,
         filteredSdgStats,

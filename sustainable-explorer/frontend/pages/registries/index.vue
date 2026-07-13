@@ -460,14 +460,14 @@ function viewRegistry(r: RegistryDto) {
                                     <span class="text-xs text-foreground break-words">{{ r.law ?? '—' }}</span>
                                 </td>
                                 <td class="py-3 px-4 text-right tabular-nums">
-                                    <NuxtLink
+                                    <AppLink
                                         v-if="r.stats.policyCount > 0 && r.did"
                                         :to="`/methodologies?registryDid=${encodeURIComponent(r.did)}`"
                                         class="font-medium text-foreground hover:text-primary hover:underline transition-colors"
                                         :title="$t('registries.tooltips.viewMethodologies')"
                                     >
                                         {{ r.stats.policyCount }}
-                                    </NuxtLink>
+                                    </AppLink>
                                     <span v-else class="text-muted-foreground">{{ r.stats.policyCount }}</span>
                                 </td>
                                 <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.projectCount }}</td>

@@ -17,7 +17,7 @@ import {
     Zap,
     Flame,
 } from 'lucide-vue-next';
-import { formatCredits } from '~/lib/format';
+import { formatCredits, formatSmartCredits } from '~/lib/format';
 import {
     allocateDonutColors,
     DONUT_OTHER_COLOR,
@@ -85,12 +85,12 @@ const retirementPeriod = ref<TimePeriod>('monthly');
 
 const issuanceSeriesData = computed(() => buildIssuanceSeries(issuancePeriod.value));
 const issuanceSeriesTotal = computed(() =>
-    Math.round(issuanceSeriesData.value.reduce((s, d) => s + d.value, 0) * 10) / 10,
+    formatSmartCredits(issuanceSeriesData.value.reduce((s, d) => s + d.value, 0)),
 );
 
 const retirementSeriesData = computed(() => buildRetirementSeries(retirementPeriod.value));
 const retirementSeriesTotal = computed(() =>
-    Math.round(retirementSeriesData.value.reduce((s, d) => s + d.value, 0) * 10) / 10,
+    formatSmartCredits(retirementSeriesData.value.reduce((s, d) => s + d.value, 0)),
 );
 
 function buildDonutRows(
@@ -369,7 +369,7 @@ const filteredStats = computed(() => {
             <template v-if="pending">
                 <Skeleton v-for="n in 5" :key="n" class="h-24 rounded-xl" />
             </template>
-            <NuxtLink
+            <AppLink
                 v-else
                 v-for="(s, i) in filteredStats"
                 :key="s.label"
@@ -394,7 +394,7 @@ const filteredStats = computed(() => {
                     </span>
                 </div>
                 <p class="text-xs text-muted-foreground mt-1">{{ s.sub }}</p>
-            </NuxtLink>
+            </AppLink>
         </div>
 
         <!-- Project Distribution -->
@@ -405,7 +405,7 @@ const filteredStats = computed(() => {
                         <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.projectDistribution') }} <InfoTooltip :text="$t('dashboard.projectDistributionTooltip')" /></h2>
                         <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.projectDistributionSub') }}</p>
                     </div>
-                    <NuxtLink to="/projects" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.viewAllProjects') }}</NuxtLink>
+                    <AppLink to="/projects" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.viewAllProjects') }}</AppLink>
                 </div>
                 <div class="flex items-center rounded-lg border p-0.5">
                     <button
@@ -489,13 +489,13 @@ const filteredStats = computed(() => {
 
                                     <!-- Key stats — entire block links to the
                                          projects page filtered by this country. -->
-                                    <NuxtLink
+                                    <AppLink
                                         :to="{ path: '/projects', query: { country: activeDetail.name } }"
                                         class="block text-center group rounded-lg hover:bg-muted/30 transition-colors py-1"
                                     >
                                         <div class="text-3xl font-bold text-primary group-hover:underline tabular-nums">{{ activeDetail.projects.toLocaleString() }}</div>
                                         <div class="text-[11px] text-muted-foreground mt-0.5">{{ $t('dashboard.activeProjects') }} →</div>
-                                    </NuxtLink>
+                                    </AppLink>
 
                                     <!-- Sector donut. The chart column has a hard
                                          90px width regardless of the inner SVG
@@ -510,7 +510,7 @@ const filteredStats = computed(() => {
                                         <h4 class="text-xs font-semibold text-foreground mb-3">{{ $t('dashboard.sector') }}</h4>
                                         <div class="flex items-start gap-3 w-[250px]">
                                             <div class="w-[90px] h-[90px] shrink-0 flex items-center justify-center">
-                                                <DonutChart :segments="activeDetail.sectors" :size="90" />
+                                                <DonutChart :segments="activeDetail.sectors" :size="90" :hollow="true" />
                                             </div>
                                             <div class="space-y-1.5 flex-1 min-w-0">
                                                 <div v-for="s in activeDetail.sectors" :key="s.label" class="flex items-center gap-2 min-w-0">
@@ -561,7 +561,7 @@ const filteredStats = computed(() => {
                             </tr>
                         </thead>
                         <tbody class="divide-y">
-                            <NuxtLink
+                            <AppLink
                                 v-for="c in countries"
                                 :key="c.name"
                                 :to="countryRouteFor(c)"
@@ -583,7 +583,7 @@ const filteredStats = computed(() => {
                                     <td class="py-2.5 px-4 text-right tabular-nums">{{ c.credits }}</td>
                                     <td class="py-2.5 px-4 text-right tabular-nums">{{ c.methodologies }}</td>
                                 </tr>
-                            </NuxtLink>
+                            </AppLink>
                             <tr v-if="countries.length === 0">
                                 <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noCountries') }}</td>
                             </tr>
@@ -627,9 +627,9 @@ const filteredStats = computed(() => {
                     <div class="rounded-xl border bg-card p-5">
                         <h3 class="text-sm font-semibold text-foreground mb-4">{{ $t('dashboard.bySector') }}</h3>
                         <div class="flex items-start gap-5">
-                            <DonutChart :segments="sectorChartSegments" :size="140" />
+                            <DonutChart :segments="sectorChartSegments" :size="140" :hollow="true" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
-                                <NuxtLink
+                                <AppLink
                                     v-for="s in sectorDonutRows"
                                     :key="s.label"
                                     :to="sectorRouteFor(s.label)"
@@ -643,7 +643,7 @@ const filteredStats = computed(() => {
                                     <span class="text-xs text-muted-foreground tabular-nums shrink-0">
                                         {{ chartMode === 'projects' ? `${s.projectCount} projects` : `${formatCredits(s.creditCount)}` }}
                                     </span>
-                                </NuxtLink>
+                                </AppLink>
                             </div>
                         </div>
                     </div>
@@ -652,9 +652,9 @@ const filteredStats = computed(() => {
                     <div class="rounded-xl border bg-card p-5">
                         <h3 class="text-sm font-semibold text-foreground mb-4">{{ $t('dashboard.byRegistry') }}</h3>
                         <div class="flex items-start gap-5">
-                            <DonutChart :segments="registryChartSegments" :size="140" />
+                            <DonutChart :segments="registryChartSegments" :size="140" :hollow="true" />
                             <div class="space-y-2 flex-1 min-w-0 pt-1">
-                                <NuxtLink
+                                <AppLink
                                     v-for="s in registryDonutRows"
                                     :key="s.label"
                                     :to="{ path: '/projects', query: { registry: s.label } }"
@@ -668,7 +668,7 @@ const filteredStats = computed(() => {
                                     <span class="text-xs text-muted-foreground tabular-nums shrink-0">
                                         {{ chartMode === 'projects' ? `${s.projectCount} projects` : `${formatCredits(s.creditCount)}` }}
                                     </span>
-                                </NuxtLink>
+                                </AppLink>
                             </div>
                         </div>
                     </div>
@@ -686,7 +686,7 @@ const filteredStats = computed(() => {
                             <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.topRegistries') }} <InfoTooltip :text="$t('dashboard.topRegistriesTooltip')" /></h2>
                             <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.topRegistriesSub') }}</p>
                         </div>
-                        <NuxtLink to="/registries" class="text-xs font-medium text-primary hover:underline">{{ $t('common.viewAll') }}</NuxtLink>
+                        <AppLink to="/registries" class="text-xs font-medium text-primary hover:underline">{{ $t('common.viewAll') }}</AppLink>
                     </div>
                     <div class="px-6 pb-6">
                         <div class="rounded-xl border bg-card overflow-hidden">
@@ -701,7 +701,7 @@ const filteredStats = computed(() => {
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
-                                    <NuxtLink
+                                    <AppLink
                                         v-for="org in registries"
                                         :key="org.name"
                                         :to="{ path: '/registries', query: { displayName: org.name } }"
@@ -716,22 +716,22 @@ const filteredStats = computed(() => {
                                                 <span class="font-medium text-foreground break-all">{{ org.name }}</span>
                                             </td>
                                             <td class="py-2.5 px-4 text-right tabular-nums">
-                                                <NuxtLink
+                                                <AppLink
                                                     :to="{ path: '/methodologies', query: { registryName: org.name } }"
                                                     class="hover:text-primary hover:underline"
                                                     @click.stop
-                                                >{{ org.policies }}</NuxtLink>
+                                                >{{ org.policies }}</AppLink>
                                             </td>
                                             <td class="py-2.5 px-4 text-right tabular-nums">
-                                                <NuxtLink
+                                                <AppLink
                                                     :to="{ path: '/projects', query: { registry: org.name } }"
                                                     class="hover:text-primary hover:underline"
                                                     @click.stop
-                                                >{{ org.projects }}</NuxtLink>
+                                                >{{ org.projects }}</AppLink>
                                             </td>
                                             <td class="py-2.5 px-4 text-right tabular-nums text-muted-foreground">{{ org.credits }}</td>
                                         </tr>
-                                    </NuxtLink>
+                                    </AppLink>
                                     <tr v-if="registries.length === 0">
                                         <td colspan="4" class="py-8 text-center text-sm text-muted-foreground">{{ $t('dashboard.noRegistries') }}</td>
                                     </tr>
@@ -761,7 +761,7 @@ const filteredStats = computed(() => {
                                     {{ p === 'monthly' ? $t('dashboard.monthly') : p === 'quarterly' ? $t('dashboard.quarterly') : $t('dashboard.yearly') }}
                                 </button>
                             </div>
-                            <NuxtLink to="/analytics" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.analytics') }}</NuxtLink>
+                            <AppLink to="/analytics" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.analytics') }}</AppLink>
                         </div>
                     </div>
                     <div class="px-6 pb-6">
@@ -770,11 +770,12 @@ const filteredStats = computed(() => {
                                 :data="issuanceSeriesData"
                                 color="hsl(142, 76%, 36%)"
                                 fill-color="hsl(142, 76%, 36%, 0.08)"
+                                :format-value="formatSmartCredits"
                                 :empty-text="$t('dashboard.noIssuanceData')"
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
                                 <span class="text-xs text-muted-foreground">{{ issuanceSeriesData.length }} {{ issuancePeriod === 'monthly' ? $t('dashboard.months') : issuancePeriod === 'quarterly' ? $t('dashboard.quarters') : $t('dashboard.years') }}</span>
-                                <span class="text-sm font-semibold text-foreground">{{ issuanceSeriesTotal }}{{ $t('dashboard.mTotal') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ issuanceSeriesTotal }} {{ $t('common.total') }}</span>
                             </div>
                         </div>
                     </div>
@@ -810,11 +811,12 @@ const filteredStats = computed(() => {
                                 :data="retirementSeriesData"
                                 color="hsl(24, 95%, 53%)"
                                 fill-color="hsl(24, 95%, 53%, 0.08)"
+                                :format-value="formatSmartCredits"
                                 :empty-text="$t('dashboard.noRetirementData')"
                             />
                             <div class="flex items-center justify-between mt-4 pt-3 border-t">
                                 <span class="text-xs text-muted-foreground">{{ retirementSeriesData.length }} {{ retirementPeriod === 'monthly' ? $t('dashboard.months') : retirementPeriod === 'quarterly' ? $t('dashboard.quarters') : $t('dashboard.years') }}</span>
-                                <span class="text-sm font-semibold text-foreground">{{ retirementSeriesTotal }}{{ $t('dashboard.mTotal') }}</span>
+                                <span class="text-sm font-semibold text-foreground">{{ retirementSeriesTotal }} {{ $t('common.total') }}</span>
                             </div>
                         </div>
                     </div>

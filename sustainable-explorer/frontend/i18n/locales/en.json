@@ -35,14 +35,31 @@
         "sendResetLink": "Send reset link",
         "username": "Username",
         "errorGeneric": "Something went wrong. Please try again.",
-        "errorPasswordMismatch": "Passwords do not match."
+        "errorPasswordMismatch": "Passwords do not match.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address (e.g. name{'@'}example.com).",
+        "passwordRequired": "Password is required.",
+        "passwordWeak": "Password does not meet the requirements below.",
+        "confirmRequired": "Please confirm your password.",
+        "passwordsMatch": "Passwords match.",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "required": "required",
+        "pwRuleLength": "At least {n} characters",
+        "pwRuleUpper": "One uppercase letter",
+        "pwRuleLower": "One lowercase letter",
+        "pwRuleNumber": "One number",
+        "pwRuleSpecial": "One special character"
     },
     "forcePassword": {
         "title": "Set a new password",
         "subtitle": "Your account requires a password change before you continue.",
         "current": "Current password",
         "new": "New password",
-        "submit": "Update password"
+        "submit": "Update password",
+        "currentRequired": "Please enter your current password."
     },
     "verify": {
         "verifying": "Verifying your email…",
@@ -69,7 +86,7 @@
         "roleUserDesc": "Personalised features and API keys",
         "roleAdminDesc": "Full access including User Management",
         "initialPassword": "Initial password",
-        "passwordNote": "Minimum 12 characters. The user will be asked to change it on first login.",
+        "passwordNote": "The user will be asked to change it on first login.",
         "cancel": "Cancel",
         "total": "Total",
         "active": "Active",
@@ -101,6 +118,15 @@
         "activatedToast": "User activated",
         "deactivatedToast": "User deactivated",
         "roleChangedToast": "Role updated",
+        "validation": {
+            "firstNameRequired": "First name is required.",
+            "lastNameRequired": "Last name is required.",
+            "emailRequired": "Email is required.",
+            "emailInvalid": "Enter a valid email address.",
+            "passwordRequired": "Initial password is required.",
+            "passwordTooShort": "Password must be at least 12 characters.",
+            "countryRequired": "Country is required."
+        },
         "tabUsers": "Users",
         "tabRequests": "Rate Limit Requests",
         "quota": {
@@ -382,14 +408,13 @@
         "noRegistries": "No registries match the selected filters",
         "issuanceTrend": "Issuance Trend",
         "issuanceTrendTooltip": "Issuance volume over time derived from project creation dates.",
-        "volumeMillions": "Volume (millions)",
+        "volumeMillions": "Volume (credits)",
         "monthly": "Monthly",
         "quarterly": "Quarterly",
         "yearly": "Yearly",
         "months": "months",
         "quarters": "quarters",
         "years": "years",
-        "mTotal": "M total",
         "noIssuanceData": "No issuance data matches the selected filters",
         "analytics": "Analytics",
         "retirementTrend": "Retirement Trend",
@@ -1203,20 +1228,37 @@
         "addCustomChart": "Add Custom Chart",
         "widgetLibrary": "Widget Library",
         "manageWatchlist": "Manage Watchlist",
+        "clearWatchlist": "Clear watchlist",
         "watchlist": "Watchlist",
         "watchlistTypeLabels": {
             "project": "Projects",
             "projectSingular": "Project"
         },
-        "addItems": "Add items",
-        "watchlistEmpty": "No items yet.",
-        "watchlistClearedByFilter": "Watchlist cleared ({count} items)",
-        "watchlistClearedByFilterSingular": "Watchlist cleared (1 item)",
-        "addItemsCta": "Add projects →",
+        "empty": {
+            "title": "Your portfolio is empty",
+            "description": "Add projects to your watchlist to see personalized stats and charts.",
+            "cta": "Manage Watchlist"
+        },
+        "watchedProjects": {
+            "title": "Watched Projects",
+            "subtitle": "Projects from your watchlist · click any card to view details",
+            "issued": "Issued",
+            "retired": "Retired",
+            "transferred": "Transferred",
+            "methodology": "Methodology",
+            "creditingPeriod": "Crediting Period",
+            "sdgsLabel": "{n} SDGs",
+            "open": "Open",
+            "scrollLeft": "Scroll left",
+            "scrollRight": "Scroll right",
+            "pageOf": "{current} of {total}"
+        },
         "removeWidget": "Remove widget",
+        "editWidget": "Edit",
         "noData": "No data available",
+        "sdgGoalsCount": "{n} goals",
         "lastFive": "Last 5",
-        "chartLimitReached": "Chart limit reached (5/5)",
+        "chartLimitReached": "Chart limit reached ({max}/{max})",
         "syncedLabel": "Synced —",
         "syncedSub": "Hedera Mainnet · {projects} projects indexed",
         "kpi": {
@@ -1251,11 +1293,12 @@
             "projectsByRegistry": "Projects by Registry",
             "byRegistry": "by Registry",
             "sdgCoverage": "SDG Coverage",
-            "topCountries": "Top Host Countries by Credits",
+            "projectMap": "Project Distribution",
+            "topCountries": "Top 10 Host Countries by Credits",
             "topCountriesSub": "Countries ranked by total credits issued",
             "topRegistries": "Top Registries",
             "recentIssuances": "Recent Issuances",
-            "topSdgs": "Top SDGs by Project Count",
+            "topSdgs": "Top 10 SDGs by Project Count",
             "networkActivity": "Network Activity",
             "retirementTrend": "Retirement Trend",
             "syncStatus": "Last Sync Timestamp",
@@ -1275,6 +1318,7 @@
             "projectsSector": "Donut chart of projects or credits by sector",
             "projectsByRegistry": "Donut chart of projects or credits by registry",
             "sdgRadar": "Coverage bars across all 17 SDG goals",
+            "projectMap": "World map of watchlisted project locations",
             "topCountries": "Host countries ranked by total credits",
             "topRegistries": "Most active registries by policy and project count",
             "recentIssuances": "The 5 most recently minted tokens",
@@ -1289,11 +1333,16 @@
                 "filters": {
                     "country": "Country",
                     "methodology": "Methodology",
-                    "registry": "Registry"
+                    "registry": "Registry",
+                    "sdgs": "SDGs"
                 },
                 "add": "Add",
                 "remove": "Remove",
-                "done": "Done",
+                "update": "Update Watchlist",
+                "cancel": "Cancel",
+                "addAll": "Add all projects to watchlist",
+                "addAllSuccess": "{count} projects added",
+                "showSelectedOnly": "Show selected only",
                 "footer": "{count} items total · duplicates are prevented"
             },
             "widgets": {
@@ -1303,7 +1352,9 @@
             },
             "chartBuilder": {
                 "title": "Add Custom Chart",
-                "subtitle": "{used}/5 custom charts used — choose type and data source",
+                "editTitle": "Edit Custom Chart",
+                "subtitle": "{used}/{max} custom charts used — choose type and data source",
+                "editSubtitle": "Update the chart type, data source, or title",
                 "chartTitle": "Chart Title",
                 "titlePlaceholder": "e.g. Credits by Sector",
                 "chartType": "Chart Type",
@@ -1311,8 +1362,11 @@
                 "yAxis": "Y-Axis (Metric)",
                 "types": {
                     "line": "Line",
-                    "bar": "Bar",
-                    "donut": "Donut"
+                    "column": "Vertical Bar",
+                    "bar": "Horizontal Bar",
+                    "pie": "Pie",
+                    "donut": "Donut",
+                    "radar": "Radar"
                 },
                 "axes": {
                     "month": "Time — Month",
@@ -1325,8 +1379,11 @@
                     "projects": "Project Count",
                     "retirements": "Retirement Volume"
                 },
-                "note": "Charts reflect your active watchlist. Up to 5 custom charts total.",
-                "add": "Add Chart"
+                "note": "Charts reflect your active watchlist. Up to {max} custom charts total.",
+                "duplicateName": "A chart with this name already exists.",
+                "duplicateConfig": "You already have a chart with this configuration: \"{name}\" ({config}).",
+                "add": "Add Chart",
+                "update": "Update Chart"
             }
         }
     },
