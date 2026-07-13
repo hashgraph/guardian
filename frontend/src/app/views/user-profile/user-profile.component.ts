@@ -26,7 +26,6 @@ import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dialog.component';
 import moment from 'moment';
-import { ToastrService } from 'ngx-toastr';
 import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
@@ -183,8 +182,7 @@ export class UserProfileComponent implements OnInit {
         private docWidgetService: DocWidgetService,
         private appThemeService: AppThemeService,
         private menuLayoutService: MenuLayoutService,
-        private firstStepsService: FirstStepsService,
-        private toastr: ToastrService
+        private firstStepsService: FirstStepsService
     ) {
         this.balances = new Map<string, string>();
         this.standardRegistryForm = new UntypedFormControl('', [Validators.required]);
@@ -1377,7 +1375,7 @@ export class UserProfileComponent implements OnInit {
     copyToClipboard(value: string | null | undefined): void {
         if (!value) { return; }
         navigator.clipboard.writeText(value).then(() => {
-            this.toastr.success('Copied to clipboard', '', { timeOut: 2000, positionClass: 'toast-bottom-right' });
+            this.toastService.success('Copied to clipboard');
         }).catch((error) => console.error(error));
     }
 }
