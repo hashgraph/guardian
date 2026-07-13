@@ -40,7 +40,9 @@
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 20px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--color-grey-3, #e1e7ef);
 }
 
 .first-steps-body {
@@ -67,21 +69,8 @@
 }
 
 .first-steps-dismiss {
-    width: 100%;
-    min-height: 36px;
-    padding: 8px 16px;
-    border: 1px solid var(--color-primary, #4169e2);
-    border-radius: 18px;
-    background: var(--color-primary, #4169e2);
-    color: var(--color-secondary, #ffffff);
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-
-    &:hover {
-        filter: brightness(0.95);
-    }
+    height: 40px;
+    padding: 8px 24px;
 }
 
 .first-steps-title {
