@@ -48,7 +48,7 @@ textarea[readonly] {
     display: none;
 } */
 
-::ng-deep p-dropdown .p-dropdown,
+::ng-deep p-select .p-select,
 ::ng-deep p-multiselect .p-multiselect {
     width: 100% !important;
 }
@@ -56,7 +56,9 @@ textarea[readonly] {
 ::ng-deep input {
     height: 38px !important;
     font-size: 1rem !important;
-    color: var(--color-grey-6);
+    color: var(--guardian-font-color, var(--color-grey-6));
+    background: var(--guardian-background, #fff);
+    border-color: var(--guardian-border-color, #bdbdbd);
     font-family: 'Roboto', sans-serif;
 }
 

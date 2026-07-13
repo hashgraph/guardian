@@ -3,7 +3,7 @@ import { describe, before, it } from 'node:test';
 
 import { assert } from 'chai';
 import dotenv from 'dotenv';
-import path from 'path';
+import path from 'node:path';
 
 import { IpfsClient } from '../dist/api/ipfs-client.js';
 

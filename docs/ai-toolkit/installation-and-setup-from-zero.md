@@ -32,7 +32,7 @@ Docker should be installed and running. A clean environment with no running cont
 
 {% stepper %}
 {% step %}
-#### Navigate to the Repository
+**Navigate to the Repository**
 
 Open a terminal and navigate to the root of the repository:
 
@@ -44,7 +44,7 @@ All commands below assume you are in the repository root directory.
 {% endstep %}
 
 {% step %}
-#### Start Qdrant (Vector Database)
+**Start Qdrant (Vector Database)**
 
 Qdrant is the vector database used to store embeddings.
 
@@ -67,7 +67,7 @@ You can verify:
 {% endstep %}
 
 {% step %}
-#### Build the MCP Server
+**Build the MCP Server**
 
 The MCP server exposes semantic search and schema tools.
 
@@ -96,7 +96,7 @@ You can verify:
 {% endstep %}
 
 {% step %}
-#### Verify Container Health
+**Verify Container Health**
 
 Check running services:
 
@@ -113,7 +113,7 @@ Both should show as running and healthy.
 {% endstep %}
 
 {% step %}
-#### Connect the MCP Server to Claude Desktop
+**Connect the MCP Server to Claude Desktop**
 
 Open Claude Desktop.
 
@@ -129,7 +129,7 @@ Important: Completely restart Claude Desktop after saving changes.
 {% endstep %}
 
 {% step %}
-#### Verify MCP Tools Are Available
+**Verify MCP Tools Are Available**
 
 After restarting Claude:
 
@@ -149,7 +149,7 @@ If the tools are visible, the connection is successful.
 {% endstep %}
 
 {% step %}
-#### Smoke Test the MCP Connection
+**Smoke Test the MCP Connection**
 
 Open a new chat in Claude and ask it to check for documents.
 
@@ -167,7 +167,7 @@ This confirms:
 {% endstep %}
 
 {% step %}
-#### Build the Document Ingestion Worker
+**Build the Document Ingestion Worker**
 
 The document ingestion worker processes PDF/DOCX files and loads embeddings into Qdrant.
 

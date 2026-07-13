@@ -4,7 +4,7 @@ import { IUser, SchemaHelper, TagType, UserPermissions } from '@guardian/interfa
 import { ProfileService } from 'src/app/services/profile.service';
 import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { NewModuleDialog } from '../dialogs/new-module-dialog/new-module-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -33,7 +33,8 @@ enum OperationMode {
 @Component({
     selector: 'app-modules-list',
     templateUrl: './modules-list.component.html',
-    styleUrls: ['./modules-list.component.css']
+    styleUrls: ['./modules-list.component.css'],
+    standalone: false
 })
 export class ModulesListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
@@ -61,12 +62,25 @@ export class ModulesListComponent implements OnInit, OnDestroy {
     deleteTokenVisible: boolean = false;
     private currentModule: any;
 
+    public get filteredModules(): any[] {
+        if (!this.modules) {
+            return [];
+        }
+        if (!this.searchParam) {
+            return this.modules;
+        }
+        return this.modules.filter((module) =>
+            module.name.includes(this.searchParam) ||
+            module.description.includes(this.searchParam)
+        );
+    }
+
     constructor(
         public tagsService: TagsService,
         private profileService: ProfileService,
         private modulesService: ModulesService,
         private dialog: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
         private router: Router,
         private dialogService: DialogService,
         @Inject(CONFIGURATION_ERRORS)
@@ -171,7 +185,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 title: 'Import module',
                 module,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
@@ -204,7 +218,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Module,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -220,7 +234,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'Module'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.itemId1 && result.itemId2) {
                 const items = btoa(JSON.stringify({
@@ -267,7 +281,7 @@ export class ModulesListComponent implements OnInit, OnDestroy {
             header: 'New Module',
             width: '650px',
             styleClass: 'custom-dialog',
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const module = {
@@ -327,13 +341,14 @@ export class ModulesListComponent implements OnInit, OnDestroy {
                     ) {
                         const error = block.errors[j];
                         if (block.id) {
-                            text.push(`<div>${block.id}: ${error}</div>`);
+                            text.push(`${block.id}: ${error}`);
                         } else {
-                            text.push(`<div>${error}</div>`);
+                            text.push(error);
                         }
                     }
                 }
-                this.informService.errorMessage(text.join(''), 'The module is invalid');
+                const msg = text.join('\n');
+                this.toastService.error(msg, 'The module is invalid', { sticky: true, logMessage: msg });
                 this._configurationErrors.set(element.uuid, errors);
                 this.router.navigate(['module-configuration'], {
                     queryParams: {

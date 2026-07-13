@@ -13,7 +13,8 @@ import {ProfileService} from '../../services/profile.service';
 @Component({
     selector: 'app-policy-searchh',
     templateUrl: './policy-search.component.html',
-    styleUrls: ['./policy-search.component.scss']
+    styleUrls: ['./policy-search.component.scss'],
+    standalone: false
 })
 export class PolicySearchComponent implements OnInit {
     loading: boolean = false;
@@ -64,8 +65,8 @@ export class PolicySearchComponent implements OnInit {
     ngOnDestroy(): void {
     }
 
-    onChange(event: any) {
-        this.selectedIndex = event;
+    onChange(index: string | number | undefined) {
+        this.selectedIndex = typeof index === 'number' ? index : 0;
         this.router.navigate(['/policy-search'], {
             queryParams: {tab: this.tabs[this.selectedIndex]}
         });

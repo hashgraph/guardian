@@ -1,5 +1,5 @@
 import { Schema, SchemaField } from '@guardian/interfaces';
-import { IFieldKey } from '../interfaces/field-key.interface';
+import { IFieldKey } from '../interfaces/field-key.interface.js';
 
 export class XlsxVariable {
     public readonly fieldName: string;

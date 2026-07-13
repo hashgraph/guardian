@@ -53,25 +53,25 @@ It is infrastructure that makes expert work significantly faster.
 
 {% stepper %}
 {% step %}
-#### Place methodology documents
+**Place methodology documents**
 
 Place methodology documents (PDF or DOCX) into the system.
 {% endstep %}
 
 {% step %}
-#### Ingest and index content
+**Ingest and index content**
 
 The ingestion pipeline parses content, extracts tables and formulas, and indexes everything into a vector database.
 {% endstep %}
 
 {% step %}
-#### Expose knowledge via MCP
+**Expose knowledge via MCP**
 
 The MCP server exposes that knowledge to any MCP-compatible AI client.
 {% endstep %}
 
 {% step %}
-#### Use the system
+**Use the system**
 
 You can:
 
@@ -143,23 +143,23 @@ All components run locally via Docker and can be deployed in multiple configurat
 
 {% stepper %}
 {% step %}
-#### [Repository & Architecture Walkthrough](repository-and-architecture-walkthrough.md)
+[**Repository & Architecture Walkthrough**](repository-and-architecture-walkthrough.md)
 {% endstep %}
 
 {% step %}
-#### [Installation & Setup From Zero](installation-and-setup-from-zero.md)
+[**Installation & Setup From Zero**](installation-and-setup-from-zero.md)
 {% endstep %}
 
 {% step %}
-#### [First Ingestion & Semantic Search](first-ingestion-and-semantic-search.md)
+[**First Ingestion & Semantic Search**](first-ingestion-and-semantic-search.md)
 {% endstep %}
 
 {% step %}
-#### [Schema & Formula Generation](schema-and-formula-generation.md)
+[**Schema & Formula Generation**](schema-and-formula-generation.md)
 {% endstep %}
 
 {% step %}
-#### [Schema Ingestion & Mapping](mapping-and-transformation.md)
+[**Schema Ingestion & Mapping**](mapping-and-transformation.md)
 {% endstep %}
 {% endstepper %}
 

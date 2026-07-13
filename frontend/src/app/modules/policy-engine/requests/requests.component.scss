@@ -17,7 +17,7 @@
 }
 
 .guardian-dropdown {
-    &::ng-deep .p-dropdown {
+    &::ng-deep .p-select {
         width: 250px;
     }
 }
@@ -48,7 +48,7 @@
 
     &.NEW-status {
         color: #848FA9;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
     }
 
     &.APPROVED-status {
@@ -105,7 +105,7 @@
 
     &.NEW-status {
         color: #848FA9;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
     }
 
     &.COMPLETED-status {
@@ -146,6 +146,6 @@
     }
 }
 
-.guardian-user-page-filters p-dropdown {
+.guardian-user-page-filters p-select {
     margin-right: 18px;
 }

@@ -73,7 +73,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -83,7 +83,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -104,7 +104,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -213,7 +213,7 @@ form {
         font-family: Inter;
         font-size: 13px;
         line-height: 18px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         word-break: break-word;
 
         svg-icon {
@@ -239,7 +239,7 @@ form {
 }
 
 .guardian-accordion-container::ng-deep .guardian-accordion-container {
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
 }
 
 .tags-container {
@@ -259,15 +259,26 @@ form {
 }
 
 .schema-form-view-nav {
-    width: 25%; 
-    min-width: 0%; 
-    max-width: 75%; 
+    width: 25%;
+    min-width: 0%;
+    max-width: 75%;
     align-self: flex-start;
     position: sticky;
     top: 0;
     max-height: calc(100vh - 230px);
     overflow-y: auto;
     box-sizing: border-box;
+    transition: width 0.2s ease;
+
+    &.nav-collapsed {
+        width: 0 !important;
+        min-width: 0 !important;
+        overflow: hidden;
+    }
+}
+
+.schema-form-view-nav.nav-collapsed + .resize-handler {
+    display: none;
 }
 
 .schema-form-content {

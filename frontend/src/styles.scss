@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
-@import "./variables.scss";
-@import "codemirror/lib/codemirror";
-@import "codemirror/theme/material";
+@use "./variables.scss";
+@import "codemirror/lib/codemirror.css";
+@import "codemirror/theme/material.css";
 @import "codemirror/addon/fold/foldgutter.css";
 @import "codemirror/addon/lint/lint.css";
 @import "codemirror/addon/hint/show-hint.css";
@@ -11,7 +11,7 @@
 html,
 body {
     height: 100%;
-    background-color: #F9FAFC;
+    background-color: var(--color-background, #F9FAFC);
 }
 
 .p-dialog-mask {
@@ -156,6 +156,7 @@ p-table {
 .guardian-tooltip {
     font-size: 16px;
     overflow-wrap: break-word !important;
+    color: var(--guardian-font-color, #23252E);
 
     &.small-guardian-tooltip {
         font-size: 12px;
@@ -164,6 +165,17 @@ p-table {
     &.wide-guardian-tooltip {
         min-width: 400px;
     }
+}
+
+.p-tooltip .p-tooltip-text,
+.guardian-tooltip .p-tooltip-text {
+    background: rgba(30, 42, 58, 0.95);
+    color: #ffffff;
+    font-size: 12px;
+}
+
+.p-tooltip-arrow {
+    display: none;
 }
 
 button.mat-raised-button,
@@ -232,80 +244,6 @@ button.mat-button {
 
 .not-editable-text {
     color: gray;
-}
-
-.error-message-toastr {
-    background-color: #fdebeb !important;
-    border: 1px solid #BD362F !important;
-    color: #9d180d !important;
-    background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCA1MTIgNTEyJyB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMic+PHBhdGggZmlsbD0ncmdiKDI1MCwyNSw1KScgZD0nTTI1NiA4QzExOSA4IDggMTE5IDggMjU2czExMSAyNDggMjQ4IDI0OCAyNDgtMTExIDI0OC0yNDhTMzkzIDggMjU2IDh6bTEyMS42IDMxMy4xYzQuNyA0LjcgNC43IDEyLjMgMCAxN0wzMzggMzc3LjZjLTQuNyA0LjctMTIuMyA0LjctMTcgMEwyNTYgMzEybC02NS4xIDY1LjZjLTQuNyA0LjctMTIuMyA0LjctMTcgMEwxMzQuNCAzMzhjLTQuNy00LjctNC43LTEyLjMgMC0xN2w2NS42LTY1LTY1LjYtNjUuMWMtNC43LTQuNy00LjctMTIuMyAwLTE3bDM5LjYtMzkuNmM0LjctNC43IDEyLjMtNC43IDE3IDBsNjUgNjUuNyA2NS4xLTY1LjZjNC43LTQuNyAxMi4zLTQuNyAxNyAwbDM5LjYgMzkuNmM0LjcgNC43IDQuNyAxMi4zIDAgMTdMMzEyIDI1Nmw2NS42IDY1LjF6Jy8+PC9zdmc+) !important;
-    box-shadow: 0 0 0px 1px #ffffff, 0 0 8px 1px #999999 !important;
-    margin: 1px 1px 6px 1px !important;
-}
-
-.error-message-toastr .toast-title {
-    color: #fa1905 !important;
-    font-size: 16px !important;
-    margin-bottom: 3px !important;
-}
-
-.error-message-toastr a {
-    color: #126db3 !important;
-    font-weight: 500 !important;
-    padding: 0px 2px !important;
-}
-
-.error-message-toastr .toast-close-button {
-    color: #fa1905 !important;
-}
-
-.warn-message-toastr {
-    background-color: #fff6c8 !important;
-    border: 1px solid gold !important;
-    color: goldenrod !important;
-    box-shadow: 0 0 0px 1px #ffffff, 0 0 8px 1px #999999 !important;
-    margin: 1px 1px 6px 1px !important;
-
-    &.toast-warning {
-        background-image: url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgLTk2MCA5NjAgOTYwIiB3aWR0aD0iMjQiPjxwYXRoIGZpbGw9IiNGRkQ3MDAiIGQ9Im00MC0xMjAgNDQwLTc2MCA0NDAgNzYwSDQwWm00NDAtMTIwcTE3IDAgMjguNS0xMS41VDUyMC0yODBxMC0xNy0xMS41LTI4LjVUNDgwLTMyMHEtMTcgMC0yOC41IDExLjVUNDQwLTI4MHEwIDE3IDExLjUgMjguNVQ0ODAtMjQwWm0tNDAtMTIwaDgwdi0yMDBoLTgwdjIwMFoiLz48L3N2Zz4=");
-    }
-}
-
-.warn-message-toastr .toast-title {
-    color: gold !important;
-    font-size: 16px !important;
-    margin-bottom: 3px !important;
-}
-
-.warn-message-toastr a {
-    color: #126db3 !important;
-    font-weight: 500 !important;
-    padding: 0px 2px !important;
-}
-
-.warn-message-toastr .toast-close-button {
-    color: gold !important;
-}
-
-.info-message-toastr {
-    background-color: #ffffff !important;
-    border: 1px solid #3f51b5 !important;
-    color: #3f51b5 !important;
-    background-image: none !important;
-    box-shadow: 0 0 0px 1px #ffffff, 1px 1px 8px 1px #999999 !important;
-    margin: 1px 1px 6px 1px !important;
-    padding: 15px 15px 15px 15px !important;
-}
-
-.info-message-toastr .toast-close-button {
-    color: #3f51b5 !important;
-}
-
-.info-message-toastr a {
-    color: #3f51b5 !important;
-    font-weight: bold !important;
-    padding: 0px 2px !important;
-    text-decoration: underline !important;
 }
 
 *[theme-block] {
@@ -444,7 +382,7 @@ button.mat-button {
     width: 16px;
     left: 2px;
     bottom: 4px;
-    background-color: white;
+    background-color: var(--guardian-on-primary-color, white);
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30' width='16px' height='16px'%3E%3Cpath d='M 26.980469 5.9902344 A 1.0001 1.0001 0 0 0 26.292969 6.2929688 L 11 21.585938 L 4.7070312 15.292969 A 1.0001 1.0001 0 1 0 3.2929688 16.707031 L 10.292969 23.707031 A 1.0001 1.0001 0 0 0 11.707031 23.707031 L 27.707031 7.7070312 A 1.0001 1.0001 0 0 0 26.980469 5.9902344 z' fill='green' /%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-size: 12px 12px;
@@ -570,7 +508,8 @@ input:checked+.slider:before {
     }
 }
 
-::ng-deep .p-tabview .p-tabview-nav li.p-highlight .p-tabview-nav-link {
+::ng-deep .p-tabs .p-tab.p-tab-active,
+::ng-deep .p-tabs .p-tab[data-p-active='true'] {
     background: #ffffff;
     border-color: var(--color-primary);
     color: var(--color-primary);
@@ -581,7 +520,7 @@ input:checked+.slider:before {
     border-radius: 8px;
     background: var(--color-primary);
     border: 0 !important;
-    color: var(--color-grey-white);
+    color: var(--guardian-on-primary-color);
     font-family: Inter, serif;
     font-size: 14px;
     font-style: normal;
@@ -591,6 +530,15 @@ input:checked+.slider:before {
     transition: all 0.25s ease-in-out;
     cursor: pointer;
     white-space: nowrap;
+}
+
+.button svg > path[fill="white"],
+.button svg > path[fill="#fff"],
+.button svg > path[fill="#ffffff"],
+.p-button svg > path[fill="white"],
+.p-button svg > path[fill="#fff"],
+.p-button svg > path[fill="#ffffff"] {
+    fill: currentColor;
 }
 
 .button:hover {
@@ -654,10 +602,6 @@ svg-icon.svg-icon-32 {
     height: 32px;
     line-height: 32px;
     font-size: 32px;
-}
-
-#ngx-colors-overlay .circle.button {
-    padding: unset;
 }
 
 .p-datatable-scrollable .p-frozen-column {
@@ -847,5 +791,34 @@ svg-icon.svg-icon-32 {
     &:hover::before {
         opacity: 1;
         color: white;
+    }
+}
+
+/* CodeMirror is a global library import with a hard-coded light surface; theme it for dark mode. */
+:root.guardian-theme-dark {
+    .CodeMirror {
+        background: var(--guardian-background);
+        color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-gutters {
+        background: var(--guardian-grey-background);
+        border-right-color: var(--guardian-border-color);
+    }
+
+    .CodeMirror-linenumber {
+        color: var(--guardian-grid-color);
+    }
+
+    .CodeMirror-cursor {
+        border-left-color: var(--guardian-font-color);
+    }
+
+    .CodeMirror-selected {
+        background: var(--guardian-hover);
+    }
+
+    .CodeMirror-activeline-background {
+        background: var(--guardian-hover);
     }
 }

@@ -6,6 +6,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'new-formula-dialog',
     templateUrl: './new-formula-dialog.component.html',
     styleUrls: ['./new-formula-dialog.component.scss'],
+    standalone: false
 })
 export class NewFormulaDialog {
     public loading = true;

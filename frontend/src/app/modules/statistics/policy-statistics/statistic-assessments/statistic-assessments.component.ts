@@ -21,6 +21,7 @@ interface IColumn {
     selector: 'app-statistic-assessments',
     templateUrl: './statistic-assessments.component.html',
     styleUrls: ['./statistic-assessments.component.scss'],
+    standalone: false
 })
 export class StatisticAssessmentsComponent implements OnInit {
     public readonly title: string = 'Assessments';

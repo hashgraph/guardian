@@ -10,6 +10,7 @@ import { noWhitespaceValidator } from '../../validators/no-whitespace-validator'
     selector: 'app-token-dialog',
     templateUrl: './token-dialog.component.html',
     styleUrls: ['./token-dialog.component.scss'],
+    standalone: false
 })
 export class TokenDialogComponent implements OnInit {
     preset?: any;

@@ -76,7 +76,7 @@ import {
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
-import { createHash } from 'crypto';
+import { createHash } from 'node:crypto';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -2323,7 +2323,7 @@ export class PolicyEngineService {
                     if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2399,7 +2399,7 @@ export class PolicyEngineService {
                             }
                         });
 
-                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2483,8 +2483,8 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    await DatabaseServer.setVirtualUser(policyId, virtualDID)
-                    const users = await DatabaseServer.getVirtualUsers(policyId);
+                    await DatabaseServer.setVirtualUser(policyId, virtualDID, owner?.id)
+                    const users = await DatabaseServer.getVirtualUsers(policyId, undefined, false, false, owner?.id);
 
                     await (new GuardiansService())
                         .sendPolicyMessage(PolicyEvents.SET_VIRTUAL_USER, policyId, { did: virtualDID });
@@ -2514,7 +2514,7 @@ export class PolicyEngineService {
                     await DatabaseServer.clearAllSavepointData(policyId);
 
                     const users = await DatabaseServer.getVirtualUsers(policyId);
-                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did, owner?.id);
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
                     const policies = (await DatabaseServer.getListOfPolicies(filters));
                     return new MessageResponse({ policies });
@@ -4115,7 +4115,7 @@ export class PolicyEngineService {
                     await DatabaseServer.clearDryRun(policyId, false);
                     PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
-                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did, owner?.id);
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));

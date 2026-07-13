@@ -7,6 +7,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'add-document-dialog',
     templateUrl: './add-document-dialog.component.html',
     styleUrls: ['./add-document-dialog.component.scss'],
+    standalone: false
 })
 export class AddDocumentDialog {
     public loading = true;

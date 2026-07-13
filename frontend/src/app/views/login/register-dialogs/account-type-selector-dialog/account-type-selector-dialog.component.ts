@@ -5,7 +5,8 @@ import { UserRole } from '@guardian/interfaces';
 @Component({
     selector: 'app-account-type-selector-dialog',
     templateUrl: './account-type-selector-dialog.component.html',
-    styleUrls: ['./account-type-selector-dialog.component.scss']
+    styleUrls: ['./account-type-selector-dialog.component.scss'],
+    standalone: false
 })
 export class AccountTypeSelectorDialogComponent implements OnInit {
 
@@ -27,9 +28,5 @@ export class AccountTypeSelectorDialogComponent implements OnInit {
 
     onSubmit() {
         this.dialogRef.close(this.selectedRoleType);
-    }
-
-    selectUserRole(userRole: UserRole) {
-        this.selectedRoleType = userRole;
     }
 }

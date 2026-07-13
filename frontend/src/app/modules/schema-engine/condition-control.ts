@@ -1,4 +1,3 @@
-// condition-control.ts
 import {
     UntypedFormArray,
     UntypedFormControl,
@@ -12,6 +11,21 @@ import { FieldControl } from './field-control';
 
 export type IfOperator = 'SINGLE' | 'AND' | 'OR';
 
+export interface ConditionFieldOption {
+    key: string;
+    label: string;
+    shortLabel?: string;
+    fieldPath: string[];
+    typeKey: string;
+    required: boolean;
+    fieldControl?: FieldControl;
+}
+
+export interface ConditionFieldGroup {
+    label: string;
+    items: ConditionFieldOption[];
+}
+
 export class ConditionControl {
     public readonly name: string;
 
@@ -20,6 +34,11 @@ export class ConditionControl {
     public readonly thenFieldControls: UntypedFormGroup;
     public readonly elseFieldControls: UntypedFormGroup;
 
+    public crossThenTargets: ConditionFieldOption[] = [];
+    public crossElseTargets: ConditionFieldOption[] = [];
+    public readonly crossThenCount: UntypedFormControl;
+    public readonly crossElseCount: UntypedFormControl;
+
     public readonly conditions: UntypedFormArray;
 
     public readonly operator: UntypedFormControl;
@@ -27,13 +46,15 @@ export class ConditionControl {
     public changeEvents: any[] | null = null;
     public fieldChange: Subscription | null = null;
 
-    constructor(field?: FieldControl, fieldValue: string = '', operator: IfOperator = 'SINGLE') {
+    constructor(field?: ConditionFieldOption, fieldValue: string = '', operator: IfOperator = 'SINGLE') {
         this.name = `condition${Date.now()}${Math.floor(Math.random() * 1000000)}`;
 
         this.thenControls = [];
         this.elseControls = [];
         this.thenFieldControls = new UntypedFormGroup({});
         this.elseFieldControls = new UntypedFormGroup({});
+        this.crossThenCount = new UntypedFormControl(0);
+        this.crossElseCount = new UntypedFormControl(0);
 
         this.operator = new UntypedFormControl(operator, Validators.required);
         this.conditions = new UntypedFormArray([], this.dynamicConditionsValidator());
@@ -45,7 +66,35 @@ export class ConditionControl {
         }
     }
 
-    public get fieldControl(): FieldControl | undefined {
+    public addCrossThenTarget(option: ConditionFieldOption): void {
+        const key = option.fieldPath.join('.');
+        if (!this.crossThenTargets.find(t => t.fieldPath.join('.') === key)) {
+            this.crossThenTargets = [...this.crossThenTargets, option];
+            this.crossThenCount.setValue(this.crossThenTargets.length);
+        }
+    }
+
+    public removeCrossThenTarget(option: ConditionFieldOption): void {
+        const key = option.fieldPath.join('.');
+        this.crossThenTargets = this.crossThenTargets.filter(t => t.fieldPath.join('.') !== key);
+        this.crossThenCount.setValue(this.crossThenTargets.length);
+    }
+
+    public addCrossElseTarget(option: ConditionFieldOption): void {
+        const key = option.fieldPath.join('.');
+        if (!this.crossElseTargets.find(t => t.fieldPath.join('.') === key)) {
+            this.crossElseTargets = [...this.crossElseTargets, option];
+            this.crossElseCount.setValue(this.crossElseTargets.length);
+        }
+    }
+
+    public removeCrossElseTarget(option: ConditionFieldOption): void {
+        const key = option.fieldPath.join('.');
+        this.crossElseTargets = this.crossElseTargets.filter(t => t.fieldPath.join('.') !== key);
+        this.crossElseCount.setValue(this.crossElseTargets.length);
+    }
+
+    public get fieldControl(): ConditionFieldOption | undefined {
         const g = this.conditions.at(0) as UntypedFormGroup;
         return g ? (g.get('field') as UntypedFormControl)?.value : undefined;
     }
@@ -65,7 +114,9 @@ export class ConditionControl {
                 conditions: this.conditions
             }),
             thenFieldControls: this.thenFieldControls,
-            elseFieldControls: this.elseFieldControls
+            elseFieldControls: this.elseFieldControls,
+            crossThenCount: this.crossThenCount,
+            crossElseCount: this.crossElseCount,
         }, this.countThenElseFieldsValidator());
     }
 
@@ -92,10 +143,11 @@ export class ConditionControl {
         type === 'then' ? this.removeThenControl(control) : this.removeElseControl(control);
     }
 
-    public addCondition(field?: FieldControl, fieldValue: string = '') {
+    public addCondition(option?: ConditionFieldOption, fieldValue: string = '') {
         const group = new UntypedFormGroup({
-            field: new UntypedFormControl(field, Validators.required),
-            fieldValue: new UntypedFormControl(fieldValue, Validators.required)
+            field: new UntypedFormControl(option, Validators.required),
+            fieldValue: new UntypedFormControl(fieldValue, Validators.required),
+            fieldPath: new UntypedFormControl(option?.fieldPath ?? null),
         });
         this.conditions.push(group);
         this.conditions.updateValueAndValidity();
@@ -122,16 +174,25 @@ export class ConditionControl {
     public normalizeByOperator() {
         const op = this.operator.value as IfOperator;
         if (op === 'SINGLE' && this.conditions.length > 1) {
-            while (this.conditions.length > 1) this.conditions.removeAt(this.conditions.length - 1);
+            while (this.conditions.length > 1) {
+                this.conditions.removeAt(this.conditions.length - 1);
+            }
         }
         this.conditions.updateValueAndValidity();
     }
 
     private countThenElseFieldsValidator(): ValidatorFn {
         return (group: any): ValidationErrors | null => {
-            const thenFieldControls = group.controls['thenFieldControls'] as UntypedFormGroup;
-            const elseFieldControls = group.controls['elseFieldControls'] as UntypedFormGroup;
-            if (Object.keys(thenFieldControls.controls).length > 0 || Object.keys(elseFieldControls.controls).length > 0) {
+            const thenFieldControls = group.controls.thenFieldControls as UntypedFormGroup;
+            const elseFieldControls = group.controls.elseFieldControls as UntypedFormGroup;
+            const crossThen: number = (group.controls.crossThenCount as UntypedFormControl)?.value || 0;
+            const crossElse: number = (group.controls.crossElseCount as UntypedFormControl)?.value || 0;
+            if (
+                Object.keys(thenFieldControls.controls).length > 0 ||
+                Object.keys(elseFieldControls.controls).length > 0 ||
+                crossThen > 0 ||
+                crossElse > 0
+            ) {
                 return null;
             }
             return { noConditionFields: { valid: false } };

@@ -7,7 +7,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'viewer-dialog',
     templateUrl: './viewer-dialog.component.html',
-    styleUrls: ['./viewer-dialog.component.scss']
+    styleUrls: ['./viewer-dialog.component.scss'],
+    standalone: false
 })
 export class ViewerDialog {
     public title: string = '';

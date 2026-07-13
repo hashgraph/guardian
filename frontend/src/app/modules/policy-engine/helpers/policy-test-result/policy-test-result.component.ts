@@ -10,7 +10,8 @@ import { PolicyStatus } from '@guardian/interfaces';
 @Component({
     selector: 'policy-test-result',
     templateUrl: './policy-test-result.component.html',
-    styleUrls: ['./policy-test-result.component.scss']
+    styleUrls: ['./policy-test-result.component.scss'],
+    standalone: false
 })
 export class PolicyTestResult {
     @Input('policy') policy!: any;
@@ -88,7 +89,7 @@ export class PolicyTestResult {
                 policy: this.policy,
                 test: last
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 

@@ -1,68 +1,71 @@
 # syntax=docker/dockerfile:1
 # Stage 0: Use node image for base image for all stages
-ARG NODE_VERSION=20.20.2-alpine
+ARG NODE_VERSION=24.18.0-alpine
+
+# JS compile: run on the builder's native arch (fast, output is arch-agnostic)
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
-# Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
-ARG YARN_CACHE_FOLDER=/root/.yarn
+RUN corepack enable
 
-# Stage 1: Build interfaces module
-FROM base AS interfaces
-COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
-# Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+# Production deps: native to the target arch
+FROM node:${NODE_VERSION} AS base-target
+WORKDIR /usr/local/app
+RUN corepack enable
+
+# Stage 1: Install all dependencies for building.
+FROM base AS deps-dev
+COPY --link package.json yarn.lock .yarnrc.yml ./
+COPY --link .yarn .yarn
+COPY --link --parents */package.json ./
+RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
     yarn install --immutable
-COPY --link interfaces/src src/
-RUN yarn pack
 
-# Stage 2: Build common module
-FROM base AS common
-COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-COPY --link common/package.json common/tsconfig*.json yarn.lock ./
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
-    yarn install
-COPY --link common/src src/
-RUN yarn pack
+# Stage 2: Build interfaces -> common -> policy-service.
+FROM deps-dev AS build
+COPY --link interfaces/tsconfig*.json interfaces/
+COPY --link interfaces/src interfaces/src/
+COPY --link common/tsconfig*.json common/
+COPY --link common/src common/src/
+COPY --link policy-service/tsconfig*.json policy-service/
+COPY --link policy-service/src policy-service/src/
+RUN yarn workspace @guardian/interfaces run build \
+ && yarn workspace @guardian/common run build \
+ && yarn workspace policy-service run build:prod
 
-# Stage 3: Installing production dependecies
-FROM base AS deps
-COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
-COPY --link policy-service/package.json policy-service/tsconfig*.json yarn.lock ./
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@guardian/interfaces']='file:/tmp/interfaces.tgz'; input.dependencies['@guardian/common']='file:/tmp/common.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
-    yarn install --prod
+# Stage 3: FOCUSED production install TARGET platform.
+FROM base-target AS deps-prod
+COPY --link package.json yarn.lock .yarnrc.yml ./
+COPY --link .yarn .yarn
+COPY --link --parents */package.json ./
+RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
+    yarn workspaces focus --production policy-service
 
-# Stage 4: Build service
-FROM base AS build
-COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz /tmp/interfaces.tgz
-COPY --link --from=common /usr/local/app/guardian-common-*.tgz /tmp/common.tgz
-COPY --link --from=deps /usr/local/app/package.json /usr/local/app/tsconfig*.json /usr/local/app/yarn.lock ./
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER},sharing=private \
-    yarn install --immutable
-COPY --link policy-service/src src/
-RUN yarn run build:prod
-
-# Stage 5: Create the final image
+# Stage 4: Create the final image.
 FROM node:${NODE_VERSION} AS image
 WORKDIR /usr/local/app
 ENV NODE_ENV=production
 
-# Copy the production dependencies from the deps stage and the built application from the build stage into the image
-COPY --link --from=deps /usr/local/app/node_modules node_modules/
-COPY --link --from=deps /usr/local/app/package.json ./
-COPY --link --from=build /usr/local/app/dist dist/
+COPY --link --from=deps-prod /usr/local/app/node_modules ./node_modules/
+COPY --link --from=deps-prod /usr/local/app/package.json ./
+
+COPY --link --from=build /usr/local/app/interfaces/package.json interfaces/
+COPY --link --from=build /usr/local/app/interfaces/dist interfaces/dist/
+COPY --link --from=build /usr/local/app/common/package.json common/
+COPY --link --from=build /usr/local/app/common/dist common/dist/
+COPY --link --from=build /usr/local/app/policy-service/package.json policy-service/
+COPY --link --from=build /usr/local/app/policy-service/dist policy-service/dist/
 
 # Docker CLI for PYTHON_SANDBOX_MODE=docker (spawns sandbox containers via docker.sock)
 RUN apk add --no-cache docker-cli su-exec
 
 # Allow node user to write Pyodide package cache (warmup downloads wheels at startup)
-RUN chown -R node:node node_modules/pyodide/ 2>/dev/null || true
+RUN chown -R node:node /usr/local/app/node_modules/pyodide/ 2>/dev/null || true
 
 # Entrypoint: if docker.sock exists, match its GID so node user can access it, then drop to node
 COPY --link policy-service/docker/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+
+WORKDIR /usr/local/app/policy-service
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD [ "node", "dist/index.js" ]

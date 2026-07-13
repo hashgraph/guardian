@@ -7,7 +7,7 @@ import { TreeSource } from '../../common/tree-graph/tree-source';
 import { TreeNode } from '../../common/tree-graph/tree-node';
 import { forkJoin, Observable, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 
 interface SchemaTreeNode extends TreeNode<{ name: string; isTagged?: boolean }> {
     searchHighlighted?: boolean;
@@ -30,6 +30,7 @@ interface TagItem {
     selector: 'app-schema-tree',
     templateUrl: './schema-tree.component.html',
     styleUrls: ['./schema-tree.component.scss'],
+    standalone: false
 })
 export class SchemaTreeComponent implements OnInit {
     public loading = false;
@@ -56,7 +57,7 @@ export class SchemaTreeComponent implements OnInit {
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private schemaService: SchemaService,
-        private informService: InformService,
+        private toastService: ToastService,
         private dialogService: DialogService
     ) {
         this.header = this.config.header || '';
@@ -118,7 +119,7 @@ export class SchemaTreeComponent implements OnInit {
                     this.tree.setData(this.source);
                 }
             } else {
-                this.informService.errorShortMessage('No schema data available to display', 'Schema Tree Error');
+                this.toastService.error('No schema data available to display', 'Schema Tree Error', { sticky: true });
             }
 
             this.loading = false;
@@ -128,7 +129,7 @@ export class SchemaTreeComponent implements OnInit {
     private createSchemaTreeRequest(schemaId: string, schemaName: string): Observable<any> {
         return this.schemaService.getSchemaTree(schemaId).pipe(
             catchError(() => {
-                this.informService.errorShortMessage(`Failed to load schema tree: ${schemaName}`, 'Schema Tree Error');
+                this.toastService.error(`Failed to load schema tree: ${schemaName}`, 'Schema Tree Error', { sticky: true });
                 return of(null);
             })
         );

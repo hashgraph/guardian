@@ -1,4 +1,4 @@
-import { IStatisticConfig } from './statistic';
+import { IStatisticConfig } from './statistic.js';
 
 export enum NavItemType {
     Group = 'group',

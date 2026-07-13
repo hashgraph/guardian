@@ -10,6 +10,7 @@ import { ModelHelper } from '@guardian/interfaces';
     selector: 'publish-tool-dialog.component',
     templateUrl: './publish-tool-dialog.component.html',
     styleUrls: ['./publish-tool-dialog.component.scss'],
+    standalone: false
 })
 export class PublishToolDialog {
     public loading = true;

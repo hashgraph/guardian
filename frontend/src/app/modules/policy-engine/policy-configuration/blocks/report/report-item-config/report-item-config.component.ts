@@ -12,7 +12,8 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'report-item-config',
     templateUrl: './report-item-config.component.html',
     styleUrls: ['./report-item-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ReportItemConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

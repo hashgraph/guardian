@@ -2,7 +2,7 @@ import { ApplicationStates, GenerateUUIDv4, ILog, IPageParameters, LogType, Mess
 import { Singleton } from '../decorators/singleton.js';
 import { NatsService } from '../mq/index.js';
 
-import { Writable } from 'stream';
+import { Writable } from 'node:stream';
 import pino from 'pino';
 
 import { ConsoleTransport } from './console-transport.js';

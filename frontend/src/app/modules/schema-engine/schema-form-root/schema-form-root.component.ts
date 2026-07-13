@@ -12,6 +12,7 @@ import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-
     selector: 'app-schema-form-root',
     templateUrl: './schema-form-root.component.html',
     styleUrls: ['./schema-form-root.component.scss'],
+    standalone: false
 })
 export class SchemaFormRootComponent implements OnInit {
     public group: UntypedFormGroup;

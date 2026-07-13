@@ -113,8 +113,8 @@ import { SearchToolDialog } from './dialogs/search-tool-dialog/search-tool-dialo
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { CalendarModule } from 'primeng/calendar';
-import { StepsModule } from 'primeng/steps';
+import { DatePickerModule } from 'primeng/datepicker';
+import { StepperModule } from 'primeng/stepper';
 import { CheckboxModule } from 'primeng/checkbox';
 //Services
 import { RegisteredService } from './services/registered.service';
@@ -123,22 +123,23 @@ import { WizardService } from './services/wizard.service';
 import { PoliciesComponent } from './policies/policies.component';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { TabMenuModule } from 'primeng/tabmenu';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
+
 import { TooltipModule } from 'primeng/tooltip';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
 import { PolicyDocumentationDialogComponent } from './dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
 import { PolicyApiConfigDialogComponent } from './dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { PopoverModule } from 'primeng/popover';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { PasswordModule } from 'primeng/password';
@@ -349,22 +350,22 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         TableModule,
         InputTextareaModule,
         ButtonModule,
-        DropdownModule,
+        SelectModule,
         MultiSelectModule,
         TableModule,
         DynamicDialogModule,
-        TabMenuModule,
+
         TooltipModule,
-        TabViewModule,
+        TabsModule,
         RadioButtonModule,
         PasswordModule,
-        InputSwitchModule,
+        ToggleSwitchModule,
         AppRoutingModule,
         DialogModule,
-        OverlayPanelModule,
+        PopoverModule,
         SelectButtonModule,
-        CalendarModule,
-        StepsModule,
+        DatePickerModule,
+        StepperModule,
         CheckboxModule,
         PaginatorModule,
         AngularSvgIconModule.forRoot(),
@@ -373,7 +374,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
     providers: [
         RegisteredService,
         WizardService,
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
         PolicyProgressService,
         DynamicMsalAuthService,
         DatePipe,

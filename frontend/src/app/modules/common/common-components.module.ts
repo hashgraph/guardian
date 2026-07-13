@@ -12,7 +12,7 @@ import { IconPreviewDialog } from './icon-preview-dialog/icon-preview-dialog.com
 import { TokenConfigurationComponent } from './token-configuration/token-configuration.component';
 import { NgxFileDropModule } from 'ngx-file-drop';
 import { FileExplorer } from './file-explorer/file-explorer.component';
-import { NgxColorsModule } from 'ngx-colors';
+import { ColorPickerModule } from 'primeng/colorpicker';
 import { ConfirmDialog } from './confirm-dialog/confirm-dialog.component';
 import { SelectorDialogComponent } from './selector-dialog/selector-dialog.component';
 import { StepTreeComponent } from './step-tree/step-tree.component';
@@ -25,7 +25,7 @@ import { CompareViewerComponent } from './compare-viewer/compare-viewer.componen
 import { AlertComponent } from './alert/alert.component';
 import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ButtonModule } from 'primeng/button';
 import { PaginatorComponent } from './paginator/paginator.component';
@@ -34,9 +34,11 @@ import { StatusDropdown } from './status-dropdown/status-dropdown.component';
 import { CustomConfirmDialogComponent } from './custom-confirm-dialog/custom-confirm-dialog.component';
 import { TreeGraphComponent } from './tree-graph/tree-graph.component';
 import { GuardianSwitchButton } from './guardian-switch-button/guardian-switch-button.component';
+import { GuardianTabsSwitch } from './guardian-tabs-switch/guardian-tabs-switch.component';
 import { ImportEntityDialog } from './import-entity-dialog/import-entity-dialog.component';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { TabViewModule } from 'primeng/tabview';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
+import { TabsModule } from 'primeng/tabs';
 import { TooltipModule } from 'primeng/tooltip';
 import { MathLiveComponent } from './mathlive/mathlive.component';
 import { MenuButton } from './menu-button/menu-button.component';
@@ -52,6 +54,8 @@ import { PluralizePipe } from './pipes/pluralize.pipe';
 import { PagesControl } from './pages-control/pages-control.component';
 import { GridDialogComponent } from './grid-dialog/grid-dialog.component';
 import { ContentSearchComponent } from './content-search/content-search.component';
+import { CommonDialogComponent, DialogHeaderDirective, DialogFooterDirective } from './common-dialog/common-dialog.component';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 @NgModule({
     declarations: [
@@ -78,6 +82,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
+        GuardianTabsSwitch,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -92,29 +97,33 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ],
     imports: [
         CommonModule,
         FormsModule,
         MaterialModule,
         NgxFileDropModule,
-        NgxColorsModule,
+        ColorPickerModule,
         NgxMaskDirective,
         DialogModule,
         InputTextModule,
-        DropdownModule,
+        SelectModule,
         ProgressBarModule,
         ButtonModule,
-        TabViewModule,
+        TabsModule,
         DynamicDialogModule,
         AngularSvgIconModule.forRoot(),
         TooltipModule,
         DynamicDialogModule,
         AgGridModule,
+        ProgressSpinnerModule,
     ],
     providers: [
         provideNgxMask(),
-        DialogService
+        { provide: DialogService, useClass: GuardianDialogService }
     ],
     exports: [
         DatetimePicker,
@@ -127,7 +136,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         TokenConfigurationComponent,
         FileExplorer,
         ConfirmDialog,
-        NgxColorsModule,
+        ColorPickerModule,
         SelectorDialogComponent,
         SeparateStepperComponent,
         NgxMaskDirective,
@@ -140,6 +149,7 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         CustomConfirmDialogComponent,
         TreeGraphComponent,
         GuardianSwitchButton,
+        GuardianTabsSwitch,
         ImportEntityDialog,
         MathLiveComponent,
         MenuButton,
@@ -154,6 +164,9 @@ import { ContentSearchComponent } from './content-search/content-search.componen
         PagesControl,
         GridDialogComponent,
         ContentSearchComponent,
+        CommonDialogComponent,
+        DialogHeaderDirective,
+        DialogFooterDirective,
     ]
 })
 export class CommonComponentsModule {

@@ -12,7 +12,7 @@ form {
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 8px;
@@ -215,7 +215,7 @@ form {
     font-size: 20px;
     font-weight: 500;
     padding: 10px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     left: 50%;
     top: 30px;
     transform: translate(-50%, 0px);
@@ -294,7 +294,7 @@ form {
 .conditions-container {
     border-radius: 8px;
     border: 1px solid #e1e7ef;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     margin-top: 10px;
     margin-bottom: 32px;
 }
@@ -319,7 +319,7 @@ form {
 }
 
 .cdk-drag-preview {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     border-radius: 6px;
     box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
         0 8px 10px 1px rgba(0, 0, 0, 0.14), 0 3px 14px 2px rgba(0, 0, 0, 0.12);
@@ -330,7 +330,7 @@ form {
 }
 
 .configurator-block-title {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Inter, sans-serif;
     font-size: 16px;
     font-style: normal;
@@ -340,7 +340,7 @@ form {
 }
 
 .form-label {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -352,7 +352,7 @@ form {
     flex-direction: column;
 
     ::ng-deep {
-        .p-dropdown {
+        .p-select {
             width: 100%;
         }
     }
@@ -366,10 +366,39 @@ form {
     min-width: calc(50% - 25px);
 
     ::ng-deep {
-        .p-dropdown {
+        .p-select {
             width: 100%;
         }
     }
+}
+
+.condition-field-error {
+    color: var(--red-500, #ef4444);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+.if-field-group-label {
+    display: block;
+    font-weight: 600;
+    color: var(--color-grey-6, #3f4756);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.if-field-item-label {
+    display: block;
+    padding-left: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.if-field-selected-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .input-field-container {
@@ -405,7 +434,7 @@ form {
     pointer-events: none !important;
 
     &::ng-deep {
-        .p-dropdown-trigger {
+        .p-select-dropdown {
             display: none !important;
         }
     }
@@ -445,4 +474,59 @@ form {
 
 .if-label-mode {
     color: #848FA9;
+}
+
+.cross-targets-chips {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 4px;
+}
+
+.cross-targets-label {
+    font-size: 12px;
+    color: #848FA9;
+    margin-right: 4px;
+}
+
+.cross-target-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: #e8f0fe;
+    border: 1px solid #a8c4f8;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 12px;
+    color: #1a56db;
+
+    &--stale {
+        background: #fef2f2;
+        border-color: #fca5a5;
+        color: #dc2626;
+    }
+
+    .chip-remove {
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #6b7280;
+        font-size: 14px;
+        line-height: 1;
+        padding: 0 0 0 2px;
+
+        &:hover {
+            color: #dc2626;
+        }
+    }
+}
+
+.cross-target-add-row {
+    margin: 6px 0 12px;
+
+    .cross-target-dropdown {
+        width: 100%;
+        max-width: 420px;
+    }
 }

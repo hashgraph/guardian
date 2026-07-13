@@ -12,7 +12,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-otp-dialog',
     templateUrl: './otp-dialog.component.html',
-    styleUrls: ['./otp-dialog.component.scss']
+    styleUrls: ['./otp-dialog.component.scss'],
+    standalone: false
 })
 export class OtpDialogComponent implements OnInit {
     public form = new UntypedFormGroup({

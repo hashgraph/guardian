@@ -65,7 +65,7 @@ h1 {
     }
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     min-width: 300px !important;
 }
 
@@ -141,7 +141,7 @@ h1 {
         min-width: 0 !important;
     }
 
-    .p-dropdown,
+    .p-select,
     .p-multiselect {
         width: 100%;
         max-width: 228px;
@@ -149,7 +149,7 @@ h1 {
         border-radius: 6px;
         background: var(--grey-white, #FFF);
 
-        .p-dropdown-label {
+        .p-select-label {
             color: var(--primary-primary, #4169E2);
             font-family: Inter, sans-serif;
             font-size: 14px;
@@ -160,7 +160,7 @@ h1 {
         }
     }
 
-    .p-dropdown {
+    .p-select {
         border: 1px solid var(--primary-primary, #4169E2);
         width: 250px;
     }
@@ -218,7 +218,7 @@ h1 {
 }
 
 .table-container {
-    margin-top: 16px;
+    margin-top: 40px;
     max-height: calc(120%);
     overflow-y: auto;
 }
@@ -270,7 +270,7 @@ th {
 .table-paginator {
     height: 64px !important;
     border-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 }
 

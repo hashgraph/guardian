@@ -11,7 +11,8 @@ export interface SavePolicyTestRecordResult {
 @Component({
     selector: 'save-policy-test-record-dialog',
     templateUrl: './save-policy-test-record-dialog.component.html',
-    styleUrls: ['./save-policy-test-record-dialog.component.scss']
+    styleUrls: ['./save-policy-test-record-dialog.component.scss'],
+    standalone: false
 })
 export class SavePolicyTestRecordDialog {
     public dataForm = this.fb.group({

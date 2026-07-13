@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'reassigning-config',
     templateUrl: './reassigning-config.component.html',
     styleUrls: ['./reassigning-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ReassigningConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

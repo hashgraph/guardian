@@ -1,113 +1,131 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">Configure API Documentation</div>
-        <div class="header-actions">
-            <button class="guardian-button guardian-button-secondary header-action-btn" (click)="onExport()" title="Export configuration">
-                <i class="pi pi-download"></i>&nbsp; Export
-            </button>
-            <button class="guardian-button guardian-button-secondary header-action-btn" (click)="fileInput.click()" title="Import configuration">
-                <i class="pi pi-upload"></i>&nbsp; Import
-            </button>
-            <input #fileInput type="file" accept=".json" (change)="onImport($event)" style="display: none" />
-        </div>
+  <div class="header-container">
+    <div class="header-text">Configure API Documentation</div>
+    <div class="header-actions">
+      <button class="guardian-button guardian-button-secondary header-action-btn" (click)="onExport()" title="Export configuration">
+        <i class="pi pi-download"></i>&nbsp; Export
+      </button>
+      <button class="guardian-button guardian-button-secondary header-action-btn" (click)="fileInput.click()" title="Import configuration">
+        <i class="pi pi-upload"></i>&nbsp; Import
+      </button>
+      <input #fileInput type="file" accept=".json" (change)="onImport($event)" style="display: none" />
     </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 
 <div class="dialog-body">
-    <div class="entries-container">
-        <div *ngIf="entries.length === 0" class="empty-state">
-            No API endpoints configured. Click "Add Endpoint" to get started.
-        </div>
+  <div class="entries-container">
+    @if (entries.length === 0) {
+      <div class="empty-state">
+        No API endpoints configured. Click "Add Endpoint" to get started.
+      </div>
+    }
 
-        <div *ngFor="let entry of entries; let i = index" class="entry-row">
-            <div class="entry-content">
-                <div class="entry-fields">
-                    <div class="field-group field-block">
-                        <label>Block</label>
-                        <select-block
-                            [(value)]="entry.target"
-                            [blocks]="eligibleBlocks"
-                            [root]="root"
-                            (change)="onTargetChange(i)"
-                        ></select-block>
-                    </div>
-                    <div class="field-group field-method">
-                        <label>Method</label>
-                        <p-dropdown
-                            [(ngModel)]="entry.method"
-                            [options]="methods"
-                            (onChange)="onMethodChange()"
-                            appendTo="body"
-                            class="guardian-dropdown"
-                        ></p-dropdown>
-                    </div>
-                    <div class="field-group field-name">
-                        <label>Name</label>
-                        <input type="text" pInputText [(ngModel)]="entry.name" placeholder="Endpoint name" />
-                    </div>
-                    <div class="field-group field-alias">
-                        <label>Alias</label>
-                        <input type="text" pInputText [(ngModel)]="entry.alias" (ngModelChange)="onAliasChange(i)" placeholder="url-friendly-alias or path/with/segments" />
-                    </div>
-                </div>
-                <div class="field-group field-description-full">
-                    <label>Description</label>
-                    <textarea pInputTextarea [(ngModel)]="entry.description" placeholder="What this endpoint does" rows="2" autoResize="true"></textarea>
-                </div>
-                <div *ngIf="getPreviewUrl(entry)" class="entry-preview-url">
-                    <span class="preview-label">URL:</span>
-                    <span class="preview-url">{{ getPreviewUrl(entry) }}</span>
-                </div>
-                <div *ngIf="hasParams(entry)" class="entry-query-params">
-                    <div *ngIf="getGetParams(entry).length > 0" class="params-group">
-                        <span class="params-group-label">GET params:</span>
-                        <span *ngFor="let p of getGetParams(entry)" class="query-param-badge" [title]="p.description">
-                            {{p.name}}<span class="param-type">: {{p.type}}</span>
-                        </span>
-                    </div>
-                    <div *ngIf="getPostParams(entry).length > 0" class="params-group">
-                        <span class="params-group-label">POST params:</span>
-                        <span *ngFor="let p of getPostParams(entry)" class="query-param-badge" [title]="p.description">
-                            {{p.name}}<span class="param-type">: {{p.type}}</span>
-                        </span>
-                    </div>
-                </div>
-                <div *ngIf="validationErrors.has(i)" class="entry-error">
-                    {{ validationErrors.get(i) }}
-                </div>
+    @for (entry of entries; track entry; let i = $index) {
+      <div class="entry-row">
+        <div class="entry-content">
+          <div class="entry-fields">
+            <div class="field-group field-block">
+              <label>Block</label>
+              <select-block
+                [(value)]="entry.target"
+                [blocks]="eligibleBlocks"
+                [root]="root"
+                (change)="onTargetChange(i)"
+              ></select-block>
             </div>
-            <div class="entry-actions">
-                <button class="guardian-button guardian-button-secondary remove-btn" (click)="removeEntry(i)" title="Remove">
-                    <i class="pi pi-trash"></i>
-                </button>
+            <div class="field-group field-method">
+              <label>Method</label>
+              <p-select
+                [(ngModel)]="entry.method"
+                [options]="methods"
+                (onChange)="onMethodChange()"
+                appendTo="body"
+                class="guardian-dropdown"
+              ></p-select>
             </div>
+            <div class="field-group field-name">
+              <label>Name</label>
+              <input type="text" pInputText [(ngModel)]="entry.name" placeholder="Endpoint name" />
+            </div>
+            <div class="field-group field-alias">
+              <label>Alias</label>
+              <input type="text" pInputText [(ngModel)]="entry.alias" (ngModelChange)="onAliasChange(i)" placeholder="url-friendly-alias or path/with/segments" />
+            </div>
+          </div>
+          <div class="field-group field-description-full">
+            <label>Description</label>
+            <textarea pInputTextarea [(ngModel)]="entry.description" placeholder="What this endpoint does" rows="2" autoResize="true"></textarea>
+          </div>
+          @if (getPreviewUrl(entry)) {
+            <div class="entry-preview-url">
+              <span class="preview-label">URL:</span>
+              <span class="preview-url">{{ getPreviewUrl(entry) }}</span>
+            </div>
+          }
+          @if (hasParams(entry)) {
+            <div class="entry-query-params">
+              @if (getGetParams(entry).length > 0) {
+                <div class="params-group">
+                  <span class="params-group-label">GET params:</span>
+                  @for (p of getGetParams(entry); track p) {
+                    <span class="query-param-badge" [title]="p.description">
+                      {{p.name}}<span class="param-type">: {{p.type}}</span>
+                    </span>
+                  }
+                </div>
+              }
+              @if (getPostParams(entry).length > 0) {
+                <div class="params-group">
+                  <span class="params-group-label">POST params:</span>
+                  @for (p of getPostParams(entry); track p) {
+                    <span class="query-param-badge" [title]="p.description">
+                      {{p.name}}<span class="param-type">: {{p.type}}</span>
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          }
+          @if (validationErrors.has(i)) {
+            <div class="entry-error">
+              {{ validationErrors.get(i) }}
+            </div>
+          }
         </div>
-    </div>
+        <div class="entry-actions">
+          <button class="guardian-button guardian-button-secondary remove-btn" (click)="removeEntry(i)" title="Remove">
+            <i class="pi pi-trash"></i>
+          </button>
+        </div>
+      </div>
+    }
+  </div>
 
 
 </div>
 
 <div class="dialog-footer">
-    <div class="footer-left">
-        <button class="guardian-button guardian-button-primary" (click)="addEntry()">
-            Add Endpoint
-        </button>
-        <button class="guardian-button guardian-button-secondary" (click)="addAllEntries()">
-            Add All Endpoints
-        </button>
+  <div class="footer-left">
+    <button class="guardian-button guardian-button-primary" (click)="addEntry()">
+      Add Endpoint
+    </button>
+    <button class="guardian-button guardian-button-secondary" (click)="addAllEntries()">
+      Add All Endpoints
+    </button>
+  </div>
+  <div class="action-buttons">
+    <div class="cancel-button dialog-button">
+      <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
     </div>
-    <div class="action-buttons">
-        <div class="cancel-button dialog-button">
-            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
-        </div>
-        <div class="confirm-button dialog-button">
-            <button (click)="onSave()" class="guardian-button guardian-button-primary" [disabled]="validationErrors.size > 0 && entries.length > 0">Save</button>
-        </div>
+    <div class="confirm-button dialog-button">
+      <button (click)="onSave()" class="guardian-button guardian-button-primary" [disabled]="validationErrors.size > 0 && entries.length > 0">Save</button>
     </div>
+  </div>
 </div>

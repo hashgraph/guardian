@@ -43,7 +43,7 @@
     .p-checkbox-label {
         margin-left: 12px;
         margin-right: 12px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;
@@ -99,7 +99,7 @@
     .p-checkbox-label {
         margin-left: 12px;
         margin-right: 12px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;
@@ -168,6 +168,27 @@
     }
 }
 
+// PrimeNG 20 removed the `label` input from p-checkbox, so labels are now
+// rendered as a sibling `<label class="p-checkbox-label" for="...">`. This class
+// is no longer emitted by PrimeNG, so styling it here only affects those labels.
+.p-checkbox-label {
+    margin-left: 12px;
+    margin-right: 12px;
+    color: var(--guardian-font-color, #23252e);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
+    cursor: pointer;
+    user-select: none;
+    vertical-align: middle;
+}
+
+.guardian-checkbox-warning + .p-checkbox-label {
+    color: var(--guardian-warning-color, #DA9B22);
+}
+
 
 .guardian-radio-button {
     .p-disabled, .p-component:disabled {
@@ -189,7 +210,7 @@
     .p-radiobutton {
         .p-radiobutton-box {
             border-color: var(--guardian-primary-color, #4169E2);
-            background: #ffffff;
+            background: var(--guardian-background, #ffffff);
 
             .p-radiobutton-icon {
                 background: var(--guardian-primary-color, #4169E2);
@@ -243,7 +264,7 @@
     .p-radiobutton-label {
         margin-left: 12px;
         margin-right: 12px;
-        color: #23252e;
+        color: var(--guardian-font-color, #23252e);
         font-family: Inter, sans-serif;
         font-size: 14px;
         font-style: normal;

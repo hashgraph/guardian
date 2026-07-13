@@ -9,7 +9,7 @@ import { ProfileService } from '../../services/profile.service';
 import { DemoService } from '../../services/demo.service';
 import { SchemaService } from '../../services/schema.service';
 import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from '../../services/tasks.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
@@ -63,6 +63,7 @@ interface IColumn {
     selector: 'app-user-profile',
     templateUrl: './user-profile.component.html',
     styleUrls: ['./user-profile.component.scss'],
+    standalone: false
 })
 export class UserProfileComponent implements OnInit {
     public loading: boolean = true;
@@ -166,7 +167,7 @@ export class UserProfileComponent implements OnInit {
         private relayerAccountsService: RelayerAccountsService,
         private otherService: DemoService,
         private schemaService: SchemaService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
@@ -536,7 +537,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
@@ -579,7 +580,7 @@ export class UserProfileComponent implements OnInit {
                 type: 'VC',
                 viewDocument: true,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -597,7 +598,7 @@ export class UserProfileComponent implements OnInit {
                 title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -975,7 +976,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 login: profile?.username,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             this.loadDate();
         });
     }
@@ -1015,9 +1016,9 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    public onChangeTab(tab: any) {
-        this.tabIndex = tab.index;
-        this.tab = this.tabs[tab.index] || 'general';
+    public onChangeTab(index: string | number | undefined) {
+        this.tabIndex = typeof index === 'number' ? index : 0;
+        this.tab = this.tabs[this.tabIndex] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
@@ -1070,7 +1071,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 type: 'create',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.createKey(result.messageId);
@@ -1086,7 +1087,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 type: 'import',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.createKey(result.messageId, result.key)
@@ -1104,7 +1105,7 @@ export class UserProfileComponent implements OnInit {
                 type: 'preview',
                 key
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => { });
     }
 
@@ -1124,7 +1125,7 @@ export class UserProfileComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.deleteKey(item.id)
@@ -1209,7 +1210,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 title: 'Add Relayer Account'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
@@ -1232,7 +1233,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -1278,7 +1279,7 @@ export class UserProfileComponent implements OnInit {
                 width: '50vw',
                 closable: false,
                 data: { config: config }
-            }).onClose.subscribe((codes) => {
+            })!.onClose.subscribe((codes) => {
                 this.refreshOtpStatus();
                 if (codes && codes.length) {
                     this.dialogService.open(OtpCodesDialogComponent, {
@@ -1296,7 +1297,7 @@ export class UserProfileComponent implements OnInit {
             width: '50vw',
             closable: false,
 
-        }).onClose.subscribe(result => {
+        })!.onClose.subscribe(result => {
             if (result == true) {
                 this.auth.deactivateOtp().subscribe(() => {
                     this.refreshOtpStatus();

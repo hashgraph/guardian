@@ -13,6 +13,7 @@ import { IColumn } from '../../../common/models/grid';
     selector: 'app-statistic-assessment-configuration',
     templateUrl: './statistic-assessment-configuration.component.html',
     styleUrls: ['./statistic-assessment-configuration.component.scss'],
+    standalone: false
 })
 export class StatisticAssessmentConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';

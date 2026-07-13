@@ -1,40 +1,40 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
-    <div class="dialog">
-        <div class="title">Token {{ action }}</div>
-        <div class="description">
-            Please enter the private key for the account
-            (
-            <hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>
-            )
-            to <span>{{ action }}</span> it with the token <span>{{ tokenName }}</span>
-            (
-            <hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>
-            )
+  <div class="dialog">
+    <div class="title">Token {{ action }}</div>
+    <div class="description">
+      Please enter the private key for the account
+      (
+      <hedera-explorer [params]="accountId" type="accounts">{{ accountId }}</hedera-explorer>
+      )
+      to <span>{{ action }}</span> it with the token <span>{{ tokenName }}</span>
+      (
+      <hedera-explorer [params]="tokenId" type="tokens">{{ tokenId }}</hedera-explorer>
+      )
+    </div>
+    <form class="form" [formGroup]="dataForm">
+      <div class="form-group">
+        <div class="input-group">
+          <input
+            pInputText
+            id="privateKeyInput"
+            #privateKeyInput
+            formControlName="privateKey"
+            placeholder="Private Key"
+            type="password"
+            class="full-width">
+          <button
+            type="button"
+            (click)="togglePasswordVisibility(privateKeyInput)"
+            aria-label="Toggle password visibility"
+            class="p-button-icon-only">
+            <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
+          </button>
         </div>
-        <form class="form" [formGroup]="dataForm">
-            <div class="form-group">
-                <div class="input-group">
-                    <input
-                        pInputText
-                        id="privateKeyInput"
-                        #privateKeyInput
-                        formControlName="privateKey"
-                        placeholder="Private Key"
-                        type="password"
-                        class="full-width">
-                    <button
-                        type="button"
-                        (click)="togglePasswordVisibility(privateKeyInput)"
-                        aria-label="Toggle password visibility"
-                        class="p-button-icon-only">
-                        <i [ngClass]="privateKeyInput.type === 'password' ? 'pi pi-eye' : 'pi pi-eye-slash'"></i>
-                    </button>
-                </div>
-            </div>
+      </div>
 
-            <div style="margin-top: 30px; margin-left: auto;">
-                <p-button
-                    (click)="onSkip()"
+      <div style="margin-top: 30px; margin-left: auto;">
+        <p-button
+          (click)="onSkip()"
                     [label]="
                         'I have ' +
                         (action === 'associate'
@@ -44,26 +44,28 @@
                             : action) +
                         ' manually'
                     "
-                    [ngStyle]="{ 'margin-left': '20px' }"
-                    [outlined]=true
-                    type="submit"
-                ></p-button>
-                <p-button
-                    (click)="onConfirm()"
-                    [disabled]="!dataForm.valid"
-                    label="Enter"
-                    [ngStyle]="{ 'margin-left': '20px' }"
-                    type="submit"
-                ></p-button>
-            </div>
-        </form>
-    </div>
+          [ngStyle]="{ 'margin-left': '20px' }"
+          [outlined]=true
+          type="submit"
+        ></p-button>
+        <p-button
+          (click)="onConfirm()"
+          [disabled]="!dataForm.valid"
+          label="Enter"
+          [ngStyle]="{ 'margin-left': '20px' }"
+          type="submit"
+        ></p-button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

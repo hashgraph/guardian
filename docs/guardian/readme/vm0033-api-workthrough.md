@@ -2,7 +2,7 @@
 icon: webhook
 ---
 
-# VM0033 API Workthrough
+# VM0033 API Walkthrough
 
 Below is complete API flow to execute Verra VM0033 Methodology:
 
@@ -3322,7 +3322,7 @@ Successful response looks like:
 
 #### 6.13 Approve Verification Report
 
-<figure><img src="../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (6) (1) (1) (1) (1) (1) (1) (1) (1) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
 **Wait until the verification report status changes to “Submitted”:**
 

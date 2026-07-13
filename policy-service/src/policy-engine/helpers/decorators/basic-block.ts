@@ -663,7 +663,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async allAvailableUsers(currentUser: PolicyUser, userId: string | null): Promise<Map<string, PolicyUser>> {
                 const result: Map<string, PolicyUser> = new Map<string, PolicyUser>();
                 if (this.dryRun) {
-                    const virtualUser = await PolicyComponentsUtils.GetActiveVirtualUser(this as any);
+                    const virtualUser = await PolicyComponentsUtils.GetActiveVirtualUser(this as any, userId);
                     if (virtualUser) {
                         result.set(virtualUser.did, virtualUser);
                     }

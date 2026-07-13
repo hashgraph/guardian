@@ -3,7 +3,6 @@ import { IMeecoConfig, MeecoApi } from './meeco-api.js';
 import { IPassphraseArtefact } from './models/keys.js';
 import { IMe } from '../meeco/models/me.js';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request.js';
-import base64url from 'base64url';
 import * as jwt from 'jsonwebtoken';
 import { Vc, VerifiableCredential } from '@guardian/common';
 import { StatusList } from '../helpers/credentials-validation/status-list.js';
@@ -144,7 +143,7 @@ export class MeecoService {
     const keyPair = nacl.sign.keyPair.fromSeed(kp.key.bytes);
 
     const signature = nacl.sign.detached(Buffer.from(unsignedRequestJwt), keyPair.secretKey)
-    const signatureBase64 = base64url.encode(signature as any);
+    const signatureBase64 = Buffer.from(signature).toString('base64url');
 
     const signedRequest = `${unsignedRequestJwt}.${signatureBase64}`;
 

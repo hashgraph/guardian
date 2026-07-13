@@ -9,7 +9,8 @@ import { PermissionsGroup } from 'src/app/utils/index';
 @Component({
     selector: 'app-user-management-detail',
     templateUrl: './user-management-detail.component.html',
-    styleUrls: ['./user-management-detail.component.scss']
+    styleUrls: ['./user-management-detail.component.scss'],
+    standalone: false
 })
 export class UsersManagementDetailComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
@@ -309,8 +310,8 @@ export class UsersManagementDetailComponent implements OnInit, OnDestroy {
         }
     }
 
-    public onChange(event: any) {
-        this.selectedIndex = event;
+    public onChange(index: string | number | undefined) {
+        this.selectedIndex = typeof index === 'number' ? index : 0;
         this.loadData();
     }
 

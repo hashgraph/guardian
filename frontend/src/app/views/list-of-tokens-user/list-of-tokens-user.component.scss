@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -37,22 +37,15 @@
     justify-content: center;
 }
 
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: 18px 48px 56px 48px;
-    height: calc(100vh - 76px);
-}
-
-.container>.header {
+.guardian-page>.header {
     display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
-.container>.header>h1 {
+.guardian-page>.header>h1 {
     width: 100%;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, serif;
     font-size: 32px;
     font-style: normal;
@@ -90,18 +83,18 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 400px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
 }
@@ -139,7 +132,7 @@
 }
 
 .table-container {
-    margin-top: 16px;
+    margin-top: 40px;
 }
 
 table {
@@ -168,7 +161,7 @@ th {
 .row-item {
     height: 64px;
     border-radius: 8px;
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08);
 }
 
@@ -254,7 +247,7 @@ td:last-child {
 }
 
 .modal-header {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, sans-serif;
     font-size: 24px;
     font-style: normal;
@@ -433,7 +426,7 @@ td:last-child {
 
     height: 64px !important;
     border-radius: 8px !important;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.08) !important;
 }
 
@@ -446,7 +439,7 @@ td:last-child {
 }
 
 :host ::ng-deep .table-paginator {
-    .p-dropdown {
+    .p-select {
         width: 125px;
         height: 40px;
         border-radius: 8px;
@@ -485,7 +478,7 @@ td:last-child {
         font-size: 14px;
         line-height: 16px;
         vertical-align: middle;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         display: flex;
         align-items: center;
     }

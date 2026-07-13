@@ -2,7 +2,7 @@
 
 ## **1. Introduction**
 
-The Guardian is an innovative open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & carbon markets.
+The Guardian is an open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & carbon markets.
 
 Below are the universal software prerequisites, followed by network-specific items.
 
@@ -10,12 +10,14 @@ Below are the universal software prerequisites, followed by network-specific ite
 
 ### 2.1 Universal software
 
-1. [Git](https://git-scm.com/downloads) – source-control tooling
-2. [Docker](https://www.docker.com/) – one-command build & run
-3. [MongoDB v6](https://www.mongodb.com/), [Node.js v16](https://nodejs.org/en), and [NATS 1.12.2](https://nats.io/) – auto-installed when using Docker-Compose
-4. [Web3.Storage account](https://web3.storage/) – IPFS pinning service
-5. [Filebase account](https://filebase.com/) – S3-compatible IPFS pinning
-6. [Redis 7.3.0](https://redict.io/) – in-memory cache & message broker (auto-provisioned by the Docker stack)
+1. [**Git**](https://git-scm.com/downloads) – source-control tooling
+2. [**Docker**](https://www.docker.com/) – one-command build & run (recommended)
+3. [**MongoDB v6**](https://www.mongodb.com/), [**Node.js v24.15+**](https://nodejs.org/en/download), and [**NATS 2.9.25**](https://nats.io/) – auto-provisioned when using Docker Compose
+4. [**IPFS storage**](https://docs.ipfs.tech/concepts/what-is-ipfs/) (choose one):
+   * [**Storacha account**](https://storacha.network/) – IPFS pinning service (formerly Web3.Storage)
+   * [**Filebase account**](https://filebase.com/) – S3-compatible IPFS pinning
+   * Local IPFS node (e.g., [**Kubo**](https://github.com/ipfs/kubo)) – auto-provisioned when using Docker Compose
+5. [**Valkey**](https://valkey.io) – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 ### 2.2 Hedera network
 
@@ -85,9 +87,9 @@ Below are the universal software prerequisites, followed by network-specific ite
 
 ## **8. Feedback and Support**
 
-* For support, reach out via Hedera Discord Sustainability channel or email us at info@envisionblockchain.com.
-* Submit feedback or feature requests through the [GitHub repository](https://github.com/hashgraph/guardian/issues).
+* Please send feedback, feature, and support requests to [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request\&body=This%20is%20%5Bfeedback%20%7C%20support%20request%20%7C%20feature%20request%5D%0A%0A--%0A%0AAdd%20a%20summary%20here.)
+* You can also open issues and feature requests in the [GitHub repository](https://github.com/hashgraph/guardian/issues).
 
 ## **9. Legal and Licensing**
 
-* Hedera Guardian is open-source and licensed under the Apache 2.0 License. Please review the [LICENSE](../LICENSE/) file for more details.
+* Hedera Guardian is open-source and licensed under the Apache 2.0 License. Please review the [LICENSE](https://github.com/hashgraph/guardian/blob/develop/LICENSE/README.md) file for more details.

@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'group-manager-config',
     templateUrl: './group-manager-config.component.html',
     styleUrls: ['./group-manager-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class GroupManagerConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

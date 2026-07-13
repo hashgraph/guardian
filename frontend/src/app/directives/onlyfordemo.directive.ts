@@ -2,7 +2,8 @@ import { Directive, OnInit, TemplateRef, ViewContainerRef } from '@angular/core'
 import { environment } from '../../environments/environment';
 
 @Directive({
-    selector: '[onlyForDemo]'
+    selector: '[onlyForDemo]',
+    standalone: false
 })
 export class OnlyForDemoDirective implements OnInit {
 

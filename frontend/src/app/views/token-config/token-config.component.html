@@ -11,58 +11,54 @@
             <a [routerLink]="['/profile']">here</a>
         </div>
 
-        <div *ngIf="!loading" class="guardian-user-page-header">
+        <div class="guardian-user-page-header">
             <span>List of Tokens</span>
         </div>
 
-        <div *ngIf="!loading" class="guardian-user-page-toolbar">
-            <div class="guardian-user-page-filters">
-                <div *ngIf="policies" class="dropdown-block">
-                    <p-dropdown 
-                        (onChange)="onFilter()" 
-                        [appendTo]="'body'" 
-                        [(ngModel)]="policyDropdownItem" 
-                        [options]="policies!"
-                    >
-                        <ng-template pTemplate="selectedItem">
-                            <div *ngIf="policyDropdownItem">
-                                <span class="dropdown-label">Policy</span>
-                                <span class="dropdown-item">{{ policyDropdownItem.name }}</span></div>
-                        </ng-template>
-                        <ng-template let-policy pTemplate="item">
-                            <div class="dropdown-item">
-                                {{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
-                            </div>
-                        </ng-template>
-                    </p-dropdown>
-                </div>
+        <div *ngIf="!loading" class="actions-container">
+            <div *ngIf="policies" class="dropdown-block">
+                <p-select
+                    (onChange)="onFilter()"
+                    [appendTo]="'body'"
+                    [(ngModel)]="policyDropdownItem"
+                    [options]="policies!"
+                >
+                    <ng-template pTemplate="selectedItem">
+                        <div *ngIf="policyDropdownItem">
+                            <span class="dropdown-label">Policy</span>
+                            <span class="dropdown-item">{{ policyDropdownItem.name }}</span></div>
+                    </ng-template>
+                    <ng-template let-policy pTemplate="item">
+                        <div class="dropdown-item">
+                            {{ policy.name + (policy.id !== -1 ? ' (' + policy.id + ')' : '') }}
+                        </div>
+                    </ng-template>
+                </p-select>
             </div>
-            <div class="guardian-user-page-buttons">
-                <button
+            <div class="module-actions-buttons-container">
+                <p-button
                     *ngIf="user.TOKENS_TOKEN_CREATE"
                     (click)="newToken()"
-                    class="guardian-button guardian-button-primary">
-                    <div class="guardian-button-icon">
-                        <svg-icon class="icon-btn svg-icon"
-                            src="/assets/images/icons/add.svg"
-                            svgClass="icon-color-secondary">
-                        </svg-icon>
-                    </div>
-                    <div class="guardian-button-label">Create token</div>
-                </button>
+                    class="toolbar-btn-primary">
+                    <svg-icon class="icon-btn svg-icon"
+                        src="/assets/images/icons/add.svg"
+                        svgClass="icon-color-secondary">
+                    </svg-icon>
+                    <span>Create token</span>
+                </p-button>
             </div>
         </div>
 
         <div *ngIf="!loading" class="guardian-user-page-grid">
             <ng-container *ngIf="tokens && tokens.length > 0; else noData">
-                <div class="grid-table-container">
+                <div class="guardian-grid-container">
                     <p-table
-                        class="grid-table"
+                        class="guardian-grid-table"
                         [value]="tokens"
                         [scrollable]="true"
                     >
                         <ng-template pTemplate="header">
-                            <tr class="grid-table-header">
+                            <tr class="guardian-grid-header">
                                 <ng-container *ngFor="let column of columns">
                                     <th
                                         *ngIf="!column.canDisplay || column.canDisplay()"
@@ -207,20 +203,6 @@
 
 <ng-template #usingTokens>
     <div class="guardian-page">
-        <div class="back-button">
-            <button 
-                (click)="goToTokensPage()" 
-                class="guardian-button guardian-button-secondary">
-                <div class="guardian-button-icon">
-                    <svg-icon class="icon-btn svg-icon"
-                        src="/assets/images/icons/left-arrow.svg"
-                        svgClass="icon-color-primary">
-                    </svg-icon>
-                </div>
-                <div class="guardian-button-label">Back to List of Tokens</div>
-            </button>
-        </div>
-
         <div *ngIf="loading" class="guardian-loading">
             <div class="guardian-loading-image"></div>
         </div>
@@ -240,9 +222,9 @@
 
         <div *ngIf="!loading" class="guardian-user-page-grid">
             <ng-container *ngIf="users && users.length > 0; else noData">
-                <div class="grid-table-container">
+                <div class="guardian-grid-container">
                     <p-table
-                        class="grid-table"
+                        class="guardian-grid-table"
                         [value]="users"
                         [scrollable]="true"
                     >

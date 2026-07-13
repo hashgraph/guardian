@@ -19,6 +19,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     selector: 'app-policy-label-configuration',
     templateUrl: './policy-label-configuration.component.html',
     styleUrls: ['./policy-label-configuration.component.scss'],
+    standalone: false
 })
 export class PolicyLabelConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';
@@ -198,7 +199,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             data: {
                 item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -210,7 +211,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
             data: {
                 ids: this.labelConfig.menu.getIds()
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any[]) => {
             if (result) {
                 for (const item of result) {
@@ -295,7 +296,7 @@ export class PolicyLabelConfigurationComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Publish') {
                 this.loading = true;

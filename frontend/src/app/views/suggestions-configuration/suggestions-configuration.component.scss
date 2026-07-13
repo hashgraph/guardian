@@ -53,7 +53,7 @@
     }
 
     span {
-      color: #000;
+      color: var(--guardian-font-color, #000);
       font-family: Inter, sans-serif;
       font-size: 14px;
       font-style: normal;
@@ -74,7 +74,7 @@
     width: 50%;
 
     h3 {
-      color: #000;
+      color: var(--guardian-font-color, #000);
       font-family: Inter, sans-serif;
       font-size: 16px;
       font-style: normal;

@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
@@ -9,6 +9,7 @@ import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
     selector: 'app-policy-api-config-dialog',
     templateUrl: './policy-api-config-dialog.component.html',
     styleUrls: ['./policy-api-config-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];
@@ -49,7 +50,7 @@ export class PolicyApiConfigDialogComponent {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private registeredService: RegisteredService,
-        private informService: InformService
+        private toastService: ToastService
     ) {
         this.policyId = this.config.data?.policyId ?? '';
         this.blocks = this.config.data?.blocks ?? [];
@@ -284,16 +285,18 @@ export class PolicyApiConfigDialogComponent {
             try {
                 imported = JSON.parse(reader.result as string);
             } catch {
-                this.informService.errorShortMessage(
+                this.toastService.error(
                     'Could not parse the selected file. Expected a JSON array exported from this dialog.',
-                    'Import failed'
+                    'Import failed',
+                    { sticky: true }
                 );
                 return;
             }
             if (!Array.isArray(imported)) {
-                this.informService.errorShortMessage(
+                this.toastService.error(
                     'Unexpected file contents. Expected a JSON array of API entries.',
-                    'Import failed'
+                    'Import failed',
+                    { sticky: true }
                 );
                 return;
             }
@@ -310,9 +313,10 @@ export class PolicyApiConfigDialogComponent {
             this.revalidate();
         };
         reader.onerror = () => {
-            this.informService.errorShortMessage(
+            this.toastService.error(
                 'Could not read the selected file.',
-                'Import failed'
+                'Import failed',
+                { sticky: true }
             );
         };
         reader.readAsText(file);

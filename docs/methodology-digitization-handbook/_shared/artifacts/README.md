@@ -8,7 +8,7 @@ This directory contains essential artifacts used throughout the methodology digi
 
 ## VM0033 Reference Materials
 
-### [VM0033-Methodology.md](VM0033-Methodology.md)
+### [VM0033-Methodology.md](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md)
 
 Complete parsed and structured version of the VM0033 methodology document:
 
@@ -18,7 +18,7 @@ Complete parsed and structured version of the VM0033 methodology document:
 * Tools and modules documentation
 * Methodology-specific guidance
 
-### [VM0033-Methodology\_meta.json](VM0033-Methodology_meta.json)
+### [VM0033-Methodology\_meta.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology_meta.json)
 
 Metadata and structural information for the VM0033 methodology:
 
@@ -27,7 +27,7 @@ Metadata and structural information for the VM0033 methodology:
 * Parameter cross-references
 * Validation checkpoints
 
-### [vm0033-policy.json](vm0033-policy.json)
+### [vm0033-policy.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/vm0033-policy.json)
 
 Complete Guardian policy implementation for VM0033:
 
@@ -38,7 +38,7 @@ Complete Guardian policy implementation for VM0033:
 
 ## Test Data & Validation Artifacts
 
-### [VM0033\_Allcot\_Test\_Case\_Artifact.xlsx](VM0033_Allcot_Test_Case_Artifact.xlsx)
+### [VM0033\_Allcot\_Test\_Case\_Artifact.xlsx](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
 
 Official test case artifact developed with Verra using real Allcot ABC Mangrove project data:
 
@@ -49,7 +49,7 @@ Official test case artifact developed with Verra using real Allcot ABC Mangrove 
 * Final emission reduction results for validation
 * Comprehensive test scenarios covering different wetland types and restoration activities
 
-### [ER\_calculations\_ABC Senegal.xlsx](ER_calculations_ABC%20Senegal.xlsx)
+### [ER\_calculations\_ABC Senegal.xlsx](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ER_calculations_ABC%20Senegal.xlsx)
 
 Real-world emission reduction calculations for ABC Senegal project:
 
@@ -57,7 +57,7 @@ Real-world emission reduction calculations for ABC Senegal project:
 * Project-specific parameter values
 * Verification data points
 
-### [final-PDD-vc.json](final-PDD-vc.json)
+### [final-PDD-vc.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json)
 
 Complete Guardian Verifiable Credential containing VM0033 test data:
 
@@ -67,7 +67,7 @@ Complete Guardian Verifiable Credential containing VM0033 test data:
 * **Size**: 3.6MB with comprehensive test data structure
 * **Integration**: Direct input for Guardian dry-run mode and customLogicBlock testing
 
-### [PDD-VC-input.json](PDD-VC-input.json)
+### [PDD-VC-input.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/PDD-VC-input.json)
 
 Guardian VC input document for PDD submission testing:
 
@@ -78,7 +78,7 @@ Guardian VC input document for PDD submission testing:
 
 ## Guardian Tools & Implementation Code
 
-### [AR-Tool-14.json](AR-Tool-14.json)
+### [AR-Tool-14.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json)
 
 Complete Guardian Tool implementation for AR Tool 14 (CDM biomass calculations):
 
@@ -88,7 +88,7 @@ Complete Guardian Tool implementation for AR Tool 14 (CDM biomass calculations):
 * **Integration**: Mini-policy that can be called from parent methodologies like VM0033
 * **Testing**: Includes production JavaScript for all calculation scenarios
 
-### [ar-am-tool-14-v4.1.pdf](ar-am-tool-14-v4.1.pdf)
+### [ar-am-tool-14-v4.1.pdf](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/ar-am-tool-14-v4.1.pdf)
 
 Official CDM AR Tool 14 methodology document (32 pages):
 
@@ -97,7 +97,7 @@ Official CDM AR Tool 14 methodology document (32 pages):
 * **Usage**: Reference document for understanding Guardian Tool implementation
 * **Key Topics**: Sampling methods, allometric equations, uncertainty assessment
 
-### [er-calculations.js](er-calculations.js)
+### [er-calculations.js](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/er-calculations.js)
 
 Production JavaScript implementation of VM0033 emission reduction calculations:
 
@@ -109,7 +109,7 @@ Production JavaScript implementation of VM0033 emission reduction calculations:
 
 ## Guardian Schema Templates
 
-### [PDD-schema.xlsx](PDD-schema.xlsx)
+### [PDD-schema.xlsx](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/PDD-schema.xlsx)
 
 Project Design Document schema template for VM0033:
 
@@ -118,7 +118,7 @@ Project Design Document schema template for VM0033:
 * **Usage**: Import directly into Guardian for schema creation
 * **Features**: Guardian-compatible formatting, field key management
 
-### [Monitoring-schema.xlsx](Monitoring-schema.xlsx)
+### [Monitoring-schema.xlsx](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/Monitoring-schema.xlsx)
 
 Monitoring Report schema template for VM0033:
 
@@ -127,7 +127,7 @@ Monitoring Report schema template for VM0033:
 * **Usage**: Schema development for monitoring report submissions
 * **Features**: VVB verification workflow support, time-series calculations
 
-### [schema-template-excel.xlsx](schema-template-excel.xlsx)
+### [schema-template-excel.xlsx](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/schema-template-excel.xlsx)
 
 Standard Excel template for creating Guardian schemas:
 
@@ -138,7 +138,7 @@ Standard Excel template for creating Guardian schemas:
 
 ## Development Tools
 
-### [excel\_artifact\_extractor.py](excel_artifact_extractor.py)
+### [excel\_artifact\_extractor.py](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py)
 
 Python tool for extracting and validating calculation data from Excel artifacts:
 

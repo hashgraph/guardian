@@ -16,6 +16,7 @@ import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
     selector: 'app-policy-label-document-view',
     templateUrl: './policy-label-document-view.component.html',
     styleUrls: ['./policy-label-document-view.component.scss'],
+    standalone: false
 })
 export class PolicyLabelDocumentViewComponent implements OnInit {
     public readonly title: string = 'Document';
@@ -292,7 +293,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
                 viewDocument: true,
                 // schema: this.schema
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -311,7 +312,7 @@ export class PolicyLabelDocumentViewComponent implements OnInit {
                 viewDocument: true,
                 // schema: this.schema
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 }

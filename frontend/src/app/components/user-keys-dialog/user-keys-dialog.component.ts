@@ -6,6 +6,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'user-keys-dialog',
     templateUrl: './user-keys-dialog.component.html',
     styleUrls: ['./user-keys-dialog.component.scss'],
+    standalone: false
 })
 export class UserKeysDialog {
     public loading = true;

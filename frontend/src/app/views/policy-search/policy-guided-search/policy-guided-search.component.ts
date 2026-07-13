@@ -20,6 +20,7 @@ interface PolicyResult {
     selector: 'app-policy-guided-search',
     templateUrl: './policy-guided-search.component.html',
     styleUrls: ['./policy-guided-search.component.scss'],
+    standalone: false
 })
 export class PolicyGuidedSearchComponent implements OnInit {
     loading: boolean = false;

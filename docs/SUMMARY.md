@@ -1097,6 +1097,11 @@
     * [⚙️ Guardian Integration](methodology-digitization-handbook/_shared/guardian-integration/README.md)
     * [🗂️ Artifacts Collection](methodology-digitization-handbook/_shared/artifacts/README.md)
 
+## First Steps
+
+* [First steps \[Standard Registry\]](first-steps/standard-registry.md)
+* [First steps \[Default User\]](first-steps/default-user.md)
+
 ## AI-ToolKit
 
 * [Hedera Guardian AI Toolkit](ai-toolkit/hedera-guardian-ai-toolkit.md)

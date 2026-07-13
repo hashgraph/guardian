@@ -1,15 +1,5 @@
-.content {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 0;
-    display: block;
-    margin: 56px 48px 0 48px;
-}
-
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -30,6 +20,11 @@
 
 .table {
     width: 100%;
+}
+
+:host ::ng-deep .guardian-grid-container .guardian-grid-row td:has(.guardian-status-select) {
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
 
 .btn-draft::ng-deep>* {
@@ -120,7 +115,7 @@
 }
 
 .table-container {
-    margin-top: 16px;
+    margin-top: 40px;
 }
 
 .table-container .mat-column-edit,
@@ -181,7 +176,7 @@
 }
 
 :host ::ng-deep .table-paginator {
-    .p-dropdown {
+    .p-select {
         width: 125px;
         height: 40px;
         border-radius: 8px;
@@ -385,7 +380,7 @@
 }
 
 .btn-menu:hover {
-    background: #f0f0f0;
+    background: var(--guardian-grey-background, #f0f0f0);
 }
 
 .btn-menu i,
@@ -404,7 +399,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -424,19 +419,10 @@
 }
 
 
-.page-title {
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: normal;
-}
-
 .actions-container {
     display: flex;
     z-index: 2;
-    margin-top: 24px;
-    margin-bottom: 16px;
+    margin-bottom: 40px;
 }
 
 
@@ -522,7 +508,7 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         height: 40px;
         border: 1px solid var(--color-secondary);
         border-radius: 8px;
@@ -537,7 +523,7 @@
         font-style: normal;
         font-weight: 500;
         margin-left: 10px;
-        background-color: #ffffff;
+        background-color: var(--guardian-background, #ffffff);
         border: 1px solid #cdddfd;
     }
 }
@@ -546,10 +532,10 @@
     ::ng-deep .p-button {
         background: var(--color-primary);
         border: 1px solid var(--color-primary);
-        margin-left: 10px;
+        margin-left: 6px;
         height: 40px;
         padding: 8px 16px 8px 8px;
-        color: var(--color-grey-white, #FFF);
+        color: var(--guardian-on-primary-color, #FFF);
         font-family: Inter;
         font-size: 14px;
         font-style: normal;
@@ -566,7 +552,7 @@
     ::ng-deep .p-button {
         border: 1px solid var(--color-primary, #CDDDFD) !important;
         background: var(--color-grey-white, #FFF);
-        margin-left: 10px;
+        margin-left: 6px;
         height: 40px;
         padding: 8px;
         color: var(--color-primary, #0031ff);
@@ -611,7 +597,7 @@
 }
 
 .policy-grid-header-row {
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     box-shadow: none !important;
 }
 
@@ -689,6 +675,7 @@
 }
 
 .tags-dropdown {
+    margin-left: 16px;
     height: 40px;
 }
 
@@ -769,7 +756,7 @@
     font-weight: 500;
     line-height: 16px;
     background: var(--color-primary, #0031ff) !important;
-    color: var(--color-grey-white, #fff) !important;
+    color: var(--guardian-on-primary-color, #fff) !important;
 }
 
 .btn-create-multipolicy {
@@ -792,7 +779,6 @@
     flex-direction: row;
     justify-content: space-between;
     font-size: 16px;
-    gap: 8px;
 
     &__control {
         margin-left: 20px;
@@ -801,12 +787,15 @@
             margin-right: 20px;
         }
     }
+
+    .ml-8 {
+        margin-left: 16px;
+    }
 }
 
 .status-actions-dropdown {
     ::ng-deep {
-        .p-dropdown {
-            height: 30px;
+        .p-select {
             border: 1px solid var(--color-secondary);
             outline: none !important;
             box-shadow: none !important;
@@ -828,8 +817,8 @@
                 background: var(--color-accent-green-2);
             }
 
-            .p-dropdown-label,
-            .p-dropdown-trigger .p-dropdown-trigger-icon {
+            .p-select-label,
+            .p-select-dropdown .p-select-dropdown-icon {
                 color: var(--color-accent-green-1);
             }
         }
@@ -840,8 +829,8 @@
                     background: var(--color-accent-yellow-2);
                 }
 
-                .p-dropdown-label,
-                .p-dropdown-trigger .p-dropdown-trigger-icon {
+                .p-select-label,
+                .p-select-dropdown .p-select-dropdown-icon {
                     color: var(--color-accent-yellow-1);
                 }
             }
@@ -866,7 +855,7 @@
 }
 
 :host ::ng-deep {
-    .p-dropdown {
+    .p-select {
         width: 125px;
         height: 40px;
         border-radius: 6px;
@@ -891,84 +880,32 @@
     max-height: 28px;
 }
 
-.p-tag {
-    width: min-content;
-    border-radius: 6px;
-    font-family: Inter, sans-serif;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 16px;
-}
-
-.p-tag-error {
-    background: var(--color-accent-red-2, #F5D7D7);
-    color: var(--color-accent-red-1, #FF432A);
-}
-
-.p-tag-green {
-    background: var(--color-accent-green-2, #D7F5F5) !important;
-    color: var(--color-accent-green-1, #19BE47) !important;
-}
-
-.p-tag-grey {
-    background: var(--color-grey-2, #EFF3F7) !important;
-    color: var(--color-grey-5, #848FA9) !important;
-}
-
 .margin-0 {
     margin: 0;
 }
 
-
-.DRAFT-status,
-.DRAFT-dropdown ::ng-deep .p-dropdown {
-    background: var(--guardian-secondary-background);
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    // width: auto;
-    width: 130px;
-
-    .p-dropdown-trigger-icon {
-        color: var(--color-primary);
-    }
-}
-
-.DRY-RUN-status,
-.DRY-RUN-dropdown ::ng-deep .p-dropdown {
-    background: var(--guardian-dry-run-background);
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    // width: auto;
-    width: 130px;
-
-    .p-dropdown-trigger-icon {
-        color: var(--color-primary);
-    }
-}
-
 .PUBLISHED-status,
-.PUBLISHED-dropdown ::ng-deep .p-dropdown {
+.PUBLISHED-dropdown ::ng-deep .p-select {
     background: var(--color-accent-green-2);
     color: var(--color-accent-green-1);
     border: 1px solid var(--color-accent-green-1);
     // width: auto;
     width: 130px;
 
-    .p-dropdown-trigger-icon {
+    .p-select-dropdown-icon {
         color: var(--color-accent-green-1);
     }
 }
 
 .PUBLISH_ERROR-status,
-.PUBLISH_ERROR-dropdown ::ng-deep .p-dropdown {
+.PUBLISH_ERROR-dropdown ::ng-deep .p-select {
     background: #fff4f3;
     color: var(--color-accent-red-1);
     border: 1px solid var(--color-accent-red-1);
     // width: auto;
-    width: 130px;
+    width: 160px;
 
-    .p-dropdown-trigger-icon {
+    .p-select-dropdown-icon {
         color: var(--color-accent-red-1);
     }
 }

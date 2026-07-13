@@ -1,5 +1,3 @@
-import 'module-alias/register.js';
-
 import { assert } from 'chai';
 import { ComputeEngine } from '@cortex-js/compute-engine';
 import {

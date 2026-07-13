@@ -1,75 +1,82 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{header}}</div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{header}}</div>
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div *ngIf="loading" class="guardian-loading">
-        <div class="guardian-loading-image"></div>
+  @if (loading) {
+    <div class="guardian-loading">
+      <div class="guardian-loading-image"></div>
+    </div>
+  }
+
+  <div class="enum-import-container">
+    <div class="guardian-input-container">
+      <label for="urlInput" class="form-label">URL</label>
+      <input
+        pInputText
+        id="urlInput"
+        [formControl]="urlControl"
+        placeholder="example.com"
+        class="full-width">
     </div>
 
-    <div class="enum-import-container">
-        <div class="guardian-input-container">
-            <label for="urlInput" class="form-label">URL</label>
-            <input
-                pInputText
-                id="urlInput"
-                [formControl]="urlControl"
-                placeholder="example.com"
-                class="full-width">
-        </div>
+    <button
+      (click)="onImportByUrl()"
+      class="guardian-button guardian-button-primary"
+      [disabled]="!urlControl.value || !urlControl.valid"
+    >Import by URL</button>
+    <button
+      (click)="onImportByFile()"
+      class="guardian-button guardian-button-primary"
+    >Import by file</button>
+  </div>
 
-        <button 
-            (click)="onImportByUrl()" 
-            class="guardian-button guardian-button-primary"
-            [disabled]="!urlControl.value || !urlControl.valid"
-        >Import by URL</button>
-        <button 
-            (click)="onImportByFile()" 
-            class="guardian-button guardian-button-primary"
-        >Import by file</button>
-    </div>
+  <div class="enum-label">Enum</div>
 
-    <div class="enum-label">Enum</div>
-
-    <div id="text-editor" class="text-editor" *ngIf="!loading">
+  @if (!loading) {
+    <div id="text-editor" class="text-editor">
+      @if (initDialog) {
         <ngx-codemirror
-            (ngModelChange)="checkLoadIpfsVisible($event)"
-            *ngIf="initDialog"
-            [(ngModel)]="enumValue"
-            [options]="codeMirrorOptions"
+          (ngModelChange)="checkLoadIpfsVisible($event)"
+          [(ngModel)]="enumValue"
+          [options]="codeMirrorOptions"
         ></ngx-codemirror>
+      }
     </div>
+  }
 
-    <div *ngIf="loadToIpfs" class="enum-load-to-ipfs">
-        <p-checkbox
-            [(ngModel)]="loadToIpfsValue"
-            [binary]="true"
-            inputId="ipfsCheckbox"
-            class="guardian-checkbox-secondary checkbox-24"
-            label="Will data be loaded to IPFS? (There are more than 5 options)">
-        </p-checkbox>
+  @if (loadToIpfs) {
+    <div class="enum-load-to-ipfs">
+      <p-checkbox
+        [(ngModel)]="loadToIpfsValue"
+        [binary]="true"
+        inputId="ipfsCheckbox"
+        class="guardian-checkbox-secondary checkbox-24">
+      </p-checkbox>
+      <label class="p-checkbox-label" for="ipfsCheckbox">Will data be loaded to IPFS? (There are more than 5 options)</label>
     </div>
+  }
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="cancel-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary"
-            >Cancel</button>
-        </div>
-        <div>
-            <button 
-                (click)="onSave()" 
-                class="guardian-button guardian-button-primary"
-            >Save</button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button">
+      <button
+        (click)="onClose()"
+        class="guardian-button guardian-button-secondary"
+      >Cancel</button>
     </div>
+    <div>
+      <button
+        (click)="onSave()"
+        class="guardian-button guardian-button-primary"
+      >Save</button>
+    </div>
+  </div>
 </div>

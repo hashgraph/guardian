@@ -85,7 +85,8 @@ interface IArtifactsContext extends IBlockPropContext {
 @Component({
     selector: 'app-compare-tool',
     templateUrl: './compare-tool.component.html',
-    styleUrls: ['./compare-tool.component.scss']
+    styleUrls: ['./compare-tool.component.scss'],
+    standalone: false
 })
 export class CompareToolComponent implements OnInit {
     @Input('value') value!: any;

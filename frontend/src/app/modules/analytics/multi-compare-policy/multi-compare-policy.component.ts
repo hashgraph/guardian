@@ -5,7 +5,8 @@ import { CompareStorage } from 'src/app/services/compare-storage.service';
 @Component({
     selector: 'app-multi-compare-policy',
     templateUrl: './multi-compare-policy.component.html',
-    styleUrls: ['./multi-compare-policy.component.scss']
+    styleUrls: ['./multi-compare-policy.component.scss'],
+    standalone: false
 })
 export class MultiComparePolicyComponent implements OnInit {
     @Input('value') value!: any;

@@ -4,7 +4,7 @@ import { forkJoin, Subscription } from 'rxjs';
 import { IStatus, StatusType, TaskAction, UserRole, } from '@guardian/interfaces';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TasksService } from 'src/app/services/tasks.service';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { WizardService } from '../../policy-engine/services/wizard.service';
 import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuration.errors.injector';
@@ -13,6 +13,7 @@ import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuratio
     selector: 'async-progress',
     templateUrl: './async-progress.component.html',
     styleUrls: ['./async-progress.component.scss'],
+    standalone: false
 })
 export class AsyncProgressComponent implements OnInit, OnDestroy {
     public action: TaskAction | string;
@@ -47,7 +48,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private taskService: TasksService,
         private router: Router,
-        private informService: InformService,
+        private toastService: ToastService,
         private auth: AuthService,
         private wizardService: WizardService,
         @Inject(CONFIGURATION_ERRORS)
@@ -246,17 +247,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             for (let j = 0; j < block.errors.length; j++) {
                                 const error = block.errors[j];
                                 if (block.id) {
-                                    text.push(
-                                        `<div>${block.id}: ${error}</div>`
-                                    );
+                                    text.push(`${block.id}: ${error}`);
                                 } else {
-                                    text.push(`<div>${error}</div>`);
+                                    text.push(error);
                                 }
                             }
                         }
-                        this.informService.errorMessage(
-                            text.join(''),
-                            'The policy is invalid'
+                        const msg = text.join('\n');
+                        this.toastService.error(
+                            msg,
+                            'The policy is invalid',
+                            { sticky: true, logMessage: msg }
                         );
                         this._configurationErrors.set(policyId, errors);
                     }
@@ -300,17 +301,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                             for (let j = 0; j < block.errors.length; j++) {
                                 const error = block.errors[j];
                                 if (block.id) {
-                                    text.push(
-                                        `<div>${block.id}: ${error}</div>`
-                                    );
+                                    text.push(`${block.id}: ${error}`);
                                 } else {
-                                    text.push(`<div>${error}</div>`);
+                                    text.push(error);
                                 }
                             }
                         }
-                        this.informService.errorMessage(
-                            text.join(''),
-                            'The tool is invalid'
+                        const msg = text.join('\n');
+                        this.toastService.error(
+                            msg,
+                            'The tool is invalid',
+                            { sticky: true, logMessage: msg }
                         );
                         this._configurationErrors.set(tool?.id, errors);
                     }
@@ -328,9 +329,10 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.DELETE_POLICIES:
             case TaskAction.MIGRATE_DATA:
                 if (result?.length > 0) {
-                    this.informService.warnMessage(
+                    this.toastService.warn(
                         'There are some errors while migrating',
-                        'Migration warning'
+                        'Migration warning',
+                        { sticky: true, logUrl: '/admin/logs' }
                     );
                 }
                 setTimeout(() => {

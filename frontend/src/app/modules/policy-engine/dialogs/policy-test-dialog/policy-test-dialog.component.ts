@@ -13,6 +13,7 @@ import { PolicyStatus, PolicyTestStatus } from '@guardian/interfaces';
     selector: 'policy-test-dialog',
     templateUrl: './policy-test-dialog.component.html',
     styleUrls: ['./policy-test-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyTestDialog {
     public loading = true;
@@ -127,7 +128,7 @@ export class PolicyTestDialog {
                 multiple: true,
                 type: 'File'
             }
-        });
+        })!;
 
         dialogRef.onClose.subscribe((files: File[] | null) => {
             if (!files) {
@@ -495,7 +496,7 @@ export class PolicyTestDialog {
                 dryRun: true,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {});
     }
 

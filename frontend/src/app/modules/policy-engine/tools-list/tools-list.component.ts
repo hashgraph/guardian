@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { GenerateUUIDv4, IUser, ModuleStatus, SchemaHelper, TagType, UserPermissions } from '@guardian/interfaces';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ToolsService } from 'src/app/services/tools.service';
@@ -30,7 +30,8 @@ enum OperationMode {
 @Component({
     selector: 'app-tools-list',
     templateUrl: './tools-list.component.html',
-    styleUrls: ['./tools-list.component.scss']
+    styleUrls: ['./tools-list.component.scss'],
+    standalone: false
 })
 export class ToolsListComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
@@ -94,6 +95,12 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     ];
     private publishErrorMenuOption = [
         {
+            id: 'Draft',
+            title: 'To Draft',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
+        {
             id: 'Publish',
             title: 'Publish',
             description: 'Release version into public domain.',
@@ -110,7 +117,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
         private dialog: DialogService,
         private dialogService: DialogService,
         private route: ActivatedRoute,
-        private informService: InformService,
+        private toastService: ToastService,
         private router: Router,
     ) {
         this.tools = null;
@@ -227,7 +234,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 tool: tool,
                 isFile: type === 'file'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 if (type === 'message') {
@@ -244,7 +251,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
-                                        redir: String(true)
+                                        redir: String(this.user.TOOLS_TOOL_UPDATE)
                                     },
                                 });
                             }, (e) => {
@@ -264,7 +271,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                                 this.router.navigate(['task', taskId], {
                                     queryParams: {
                                         last: btoa(location.href),
-                                        redir: String(true)
+                                        redir: String(this.user.TOOLS_TOOL_UPDATE)
                                     },
                                 });
                             }, (e) => {
@@ -284,7 +291,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Tool,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -301,7 +308,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'Tool'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.itemId1 && result.itemId2) {
                 const items = btoa(JSON.stringify({
@@ -352,7 +359,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             data: {
                 type: 'tool'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const tool = {
@@ -391,7 +398,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -414,7 +421,7 @@ export class ToolsListComponent implements OnInit, OnDestroy {
             header: 'Publish Tool',
             width: '600px',
             styleClass: 'guardian-dialog'
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.loading = true;
@@ -450,15 +457,17 @@ export class ToolsListComponent implements OnInit, OnDestroy {
                     for (let j = 0; j < block.errors.length; j++) {
                         const error = block.errors[j];
                         if (block.id) {
-                            text.push(`<div>${block.id}: ${error}</div>`);
+                            text.push(`${block.id}: ${error}`);
                         } else {
-                            text.push(`<div>${error}</div>`);
+                            text.push(error);
                         }
                     }
                 }
-                this.informService.errorMessage(
-                    text.join(''),
-                    'The tool is invalid'
+                const msg = text.join('\n');
+                this.toastService.error(
+                    msg,
+                    'The tool is invalid',
+                    { sticky: true, logMessage: msg }
                 );
                 this.loading = false;
             }
@@ -601,6 +610,8 @@ export class ToolsListComponent implements OnInit, OnDestroy {
     private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setToolVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draftTool(element);
         }
         setTimeout(() => this.publishMenuSelector = null, 0);
     }

@@ -8,7 +8,8 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
     selector: 'calculate-math-config',
     templateUrl: './calculate-math-config.component.html',
     styleUrls: ['./calculate-math-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class CalculateMathConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

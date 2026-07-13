@@ -34,7 +34,7 @@
             font-size: 32px;
             line-height: 40px;
             vertical-align: middle;
-            color: #23252e;
+            color: var(--guardian-font-color, #23252e);
             margin-top: 16px;
             margin-bottom: 16px;
         }
@@ -95,7 +95,7 @@
             height: 100%;
 
             .document-content {
-                background: #f9fafc;
+                background: var(--guardian-grey-background, #f9fafc);
                 padding: 24px 48px;
                 position: absolute;
                 left: 0px;
@@ -161,7 +161,7 @@
                     width: 100%;
                     overflow: auto;
                     padding: 24px;
-                    background: #fff;
+                    background: var(--guardian-background, #fff);
 
                     .json {
                         word-break: keep-all;
@@ -246,7 +246,7 @@
                 border-radius: 50%;
                 width: 16px;
                 height: 16px;
-                color: var(--color-grey-white);
+                color: var(--guardian-on-primary-color);
                 font-family: Inter, sans-serif;
                 font-size: 12px;
                 font-style: normal;
@@ -258,11 +258,11 @@
             background: var(--color-primary);
 
             .tag-icon {
-                fill: var(--color-grey-white, #ffffff) !important;
+                fill: var(--guardian-on-primary-color, #ffffff) !important;
             }
 
             .name {
-                color: var(--color-grey-white, #ffffff) !important;
+                color: var(--guardian-on-primary-color, #ffffff) !important;
             }
         }
 
@@ -275,7 +275,7 @@
 
 :host ::ng-deep {
     .version-dropdown {
-        .p-dropdown {
+        .p-select {
             border: 1px solid var(--guardian-primary-color);
             border-radius: 6px;
             color: var(--guardian-primary-color);
@@ -289,15 +289,15 @@
             }
         }
 
-        .p-dropdown-label {
+        .p-select-label {
             color: var(--guardian-primary-color);
         }
 
-        .p-dropdown-trigger {
+        .p-select-dropdown {
             color: var(--guardian-primary-color);
         }
 
-        .p-dropdown-panel .p-dropdown-items .p-dropdown-item {
+        .p-select-overlay .p-select-list .p-select-option {
             color: var(--guardian-primary-color);
         }
     }

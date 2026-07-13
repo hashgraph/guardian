@@ -1,75 +1,89 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{title}}</div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{title}}</div>
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 
 <div class="dialog-body">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 
-    <div *ngIf="!loading && entries.length === 0" class="empty-state">
-        No documented endpoints for this policy.
+  @if (!loading && entries.length === 0) {
+    <div class="empty-state">
+      No documented endpoints for this policy.
     </div>
+  }
 
-    <p-table *ngIf="!loading && entries.length > 0" [value]="entries" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm">
-        <ng-template pTemplate="header">
-            <tr>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Method</th>
-                <th>URL</th>
-                <th>Alias URL</th>
-                <th>Query Params</th>
-                <th style="width: 60px"></th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-entry>
-            <tr>
-                <td>{{entry.name}}</td>
-                <td>{{entry.description}}</td>
-                <td>
-                    <span class="method-badge" [ngClass]="{'method-get': entry.method === 'GET', 'method-post': entry.method === 'POST', 'method-both': entry.method === 'Both'}">
-                        {{entry.method}}
-                    </span>
-                </td>
-                <td class="url-cell">{{entry.url}}</td>
-                <td class="url-cell">{{entry.dmrvUrl}}</td>
-                <td class="params-cell">
-                    <div *ngIf="getGetParams(entry).length > 0" class="params-group">
-                        <span class="params-group-label">GET:</span>
-                        <span *ngFor="let p of getGetParams(entry)" class="query-param-badge" [title]="p.description">
-                            {{p.name}}<span class="param-type">: {{p.type}}</span>
-                        </span>
-                    </div>
-                    <div *ngIf="getPostParams(entry).length > 0" class="params-group">
-                        <span class="params-group-label">POST:</span>
-                        <span *ngFor="let p of getPostParams(entry)" class="query-param-badge" [title]="p.description">
-                            {{p.name}}<span class="param-type">: {{p.type}}</span>
-                        </span>
-                    </div>
-                </td>
-                <td>
-                    <button class="guardian-button guardian-button-secondary copy-btn" (click)="copyUrl(entry.dmrvUrl || entry.url)" title="Copy URL">
-                        Copy
-                    </button>
-                </td>
-            </tr>
-        </ng-template>
+  @if (!loading && entries.length > 0) {
+    <p-table [value]="entries" [scrollable]="true" scrollHeight="flex" styleClass="p-datatable-sm">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Name</th>
+          <th>Description</th>
+          <th>Method</th>
+          <th>URL</th>
+          <th>Alias URL</th>
+          <th>Query Params</th>
+          <th style="width: 60px"></th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entry>
+        <tr>
+          <td>{{entry.name}}</td>
+          <td>{{entry.description}}</td>
+          <td>
+            <span class="method-badge" [ngClass]="{'method-get': entry.method === 'GET', 'method-post': entry.method === 'POST', 'method-both': entry.method === 'Both'}">
+              {{entry.method}}
+            </span>
+          </td>
+          <td class="url-cell">{{entry.url}}</td>
+          <td class="url-cell">{{entry.dmrvUrl}}</td>
+          <td class="params-cell">
+            @if (getGetParams(entry).length > 0) {
+              <div class="params-group">
+                <span class="params-group-label">GET:</span>
+                @for (p of getGetParams(entry); track p) {
+                  <span class="query-param-badge" [title]="p.description">
+                    {{p.name}}<span class="param-type">: {{p.type}}</span>
+                  </span>
+                }
+              </div>
+            }
+            @if (getPostParams(entry).length > 0) {
+              <div class="params-group">
+                <span class="params-group-label">POST:</span>
+                @for (p of getPostParams(entry); track p) {
+                  <span class="query-param-badge" [title]="p.description">
+                    {{p.name}}<span class="param-type">: {{p.type}}</span>
+                  </span>
+                }
+              </div>
+            }
+          </td>
+          <td>
+            <button class="guardian-button guardian-button-secondary copy-btn" (click)="copyUrl(entry.dmrvUrl || entry.url)" title="Copy URL">
+              Copy
+            </button>
+          </td>
+        </tr>
+      </ng-template>
     </p-table>
+  }
 </div>
 
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="cancel-button dialog-button">
-            <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button dialog-button">
+      <button (click)="onClose()" class="guardian-button guardian-button-secondary">Close</button>
     </div>
+  </div>
 </div>
