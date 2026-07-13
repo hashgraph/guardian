@@ -53,7 +53,7 @@
                                 </div>
                                 <div class="profile-row">
                                     <span class="profile-label">Balance</span>
-                                    <span class="profile-value">{{ balance }}</span>
+                                    <span class="profile-value">{{ formatBalance(balance) }}</span>
                                 </div>
                             </div>
                         </p-card>
@@ -112,8 +112,9 @@
                                         <span>View</span>
                                     </div>
                                 </div>
-                                <div class="profile-download-row">
-                                    <p-button (onClick)="download()" label="Download profile" icon="pi pi-download"></p-button>
+                                <div class="profile-row">
+                                    <span class="profile-label">Profile</span>
+                                    <p-button (onClick)="download()" label="Download" icon="pi pi-download" severity="secondary" size="small"></p-button>
                                 </div>
                             </div>
                         </p-card>

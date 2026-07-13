@@ -30,7 +30,7 @@ import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-th
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
 import { FirstStepsService } from '../../services/first-steps.service';
-import { getUserInitials } from '../../utils';
+import { formatBalance, getUserInitials } from '../../utils';
 
 
 enum OperationMode {
@@ -1318,6 +1318,10 @@ export class UserProfileComponent implements OnInit {
         })
     }
     public readonly getUserInitials = getUserInitials;
+
+    formatBalance(balance: string | null | undefined): string {
+        return formatBalance(balance);
+    }
 
     formatRole(role: string | undefined): string {
         if (!role) { return ''; }
