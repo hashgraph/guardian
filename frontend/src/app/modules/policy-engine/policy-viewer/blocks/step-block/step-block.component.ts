@@ -18,11 +18,24 @@ export class StepBlockComponent implements OnInit {
     private socket: Subscription | null;
 
     get loading(): boolean {
-        return !this.blocks || !this.blocks.length || !this.activeBlock;
+        // Only spin until the first response has been processed. Previously this
+        // getter also returned true whenever there was no active block, which meant
+        // a successful response with no viewable active child (e.g. the step advanced
+        // to a block this user has no permission for -> the container serializes it as
+        // null) left the spinner running forever. See `unavailable` for that case.
+        return !this.loaded;
     }
 
     get activeBlock(): any {
         return this.blocks && this.blocks[this.index] || (this.index === -1);
+    }
+
+    get unavailable(): boolean {
+        // The block data loaded, but there is no active child to render. This happens
+        // when the workflow advanced to a step this user cannot access (role/state
+        // gate), so the policy-service container serializes the active child as null.
+        // Show a friendly message instead of an endless spinner.
+        return this.loaded && !this.activeBlock;
     }
 
     @Input('id') id!: string;
@@ -36,6 +49,7 @@ export class StepBlockComponent implements OnInit {
     activeBlockId: any;
     isActive = false;
     readonly: boolean = false;
+    loaded: boolean = false;
     private index: number = 0;
 
     constructor(
@@ -67,9 +81,7 @@ export class StepBlockComponent implements OnInit {
 
     loadData() {
         if (this.static) {
-            this.setData(this.static);
-            setTimeout(() => {
-            }, 500);
+            this._onSuccess(this.static);
         } else {
             this.policyEngineService
                 .getBlockData(this.id, this.policyId, this.savepointIds)
@@ -83,8 +95,14 @@ export class StepBlockComponent implements OnInit {
 
     private _onError(e: HttpErrorResponse) {
         console.error(e.error);
+        // 503 means the block is no longer available to the user (the workflow
+        // advanced past it, or a role/state gate closed it) - clear to the
+        // unavailable state. Any other error also stops the spinner and falls
+        // through to the unavailable message instead of hanging forever.
         if (e.status === 503) {
             this._onSuccess(null);
+        } else {
+            this.loaded = true;
         }
     }
 
@@ -99,5 +117,8 @@ export class StepBlockComponent implements OnInit {
             this.index = 0;
             this.isActive = false;
         }
+        // A response has been processed - stop the spinner. If there is no active
+        // block to render, `unavailable` takes over and shows a friendly message.
+        this.loaded = true;
     }
 }
