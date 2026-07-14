@@ -10,9 +10,20 @@ export interface IDraftFileContext {
     blockId?: string | null;
 }
 
+export type IRequestDraftDocument = Record<string, unknown>;
+
 export interface IDraftImportResult {
-    document: any;
+    document: IRequestDraftDocument;
     warnings: string[];
+}
+
+export interface IRequestVcDraftEnvelope {
+    type?: string;
+    version?: string;
+    schema?: string | null;
+    policyId?: string | null;
+    blockId?: string | null;
+    document?: IRequestDraftDocument;
 }
 
 /**
@@ -31,7 +42,7 @@ export class RequestDraftFileService {
         private tablePersist: TablePersistenceService,
     ) {}
 
-    public exportDraft(context: IDraftFileContext, formValue: any): void {
+    public exportDraft(context: IDraftFileContext, formValue: IRequestDraftDocument): void {
         const envelope = {
             type: RequestDraftFileService.DRAFT_TYPE,
             version: RequestDraftFileService.DRAFT_VERSION,
@@ -63,14 +74,14 @@ export class RequestDraftFileService {
         context: IDraftFileContext,
         formHasData: boolean
     ): Promise<IDraftImportResult | null> {
-        let parsed: any;
+        let parsed: IRequestVcDraftEnvelope;
         try {
             parsed = await this.readFileAsJson(file);
         } catch {
             this.toastr.error('Could not parse the selected JSON file.', 'Import failed');
             return null;
         }
-        const document = parsed?.document ?? parsed;
+        const document = parsed?.document ?? (parsed as IRequestDraftDocument);
         if (!document || typeof document !== 'object') {
             this.toastr.error('The selected file does not contain draft data.', 'Import failed');
             return null;
@@ -83,7 +94,7 @@ export class RequestDraftFileService {
         return { document, warnings };
     }
 
-    private readFileAsJson(file: File): Promise<any> {
+    private readFileAsJson(file: File): Promise<IRequestVcDraftEnvelope> {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onload = () => {
@@ -98,7 +109,7 @@ export class RequestDraftFileService {
         });
     }
 
-    private getDraftMismatches(parsed: any, context: IDraftFileContext): string[] {
+    private getDraftMismatches(parsed: IRequestVcDraftEnvelope, context: IDraftFileContext): string[] {
         const mismatches: string[] = [];
         if (parsed?.type && parsed.type !== RequestDraftFileService.DRAFT_TYPE) {
             mismatches.push('This file is not a request document draft.');
@@ -144,7 +155,7 @@ export class RequestDraftFileService {
         });
     }
 
-    public hasMeaningfulValue(value: any): boolean {
+    public hasMeaningfulValue(value: unknown): boolean {
         if (value === null || value === undefined || value === '' || value === false) {
             return false;
         }
@@ -162,7 +173,7 @@ export class RequestDraftFileService {
      * document itself is still usable, but the user must be told restoration was
      * incomplete rather than seeing an unqualified success message.
      */
-    public async applyImportedDraft(doc: any): Promise<void> {
+    public async applyImportedDraft(doc: IRequestDraftDocument): Promise<void> {
         try {
             await this.tablePersist.restoreTablesFromDraft(doc);
             this.toastr.success('Draft loaded from file.', 'Import complete');

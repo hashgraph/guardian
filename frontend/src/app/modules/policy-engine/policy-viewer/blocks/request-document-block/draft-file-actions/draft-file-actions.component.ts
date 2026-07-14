@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { UntypedFormGroup } from '@angular/forms';
-import { IDraftFileContext, RequestDraftFileService } from 'src/app/services/request-draft-file.service';
+import { IDraftFileContext, IRequestDraftDocument, RequestDraftFileService } from 'src/app/services/request-draft-file.service';
 
 /**
  * "Save draft to file" / "Restore from draft file" button pair, shared between
@@ -18,7 +18,7 @@ export class DraftFileActionsComponent {
     @Input() policyId: string | null | undefined;
     @Input() blockId: string | null | undefined;
     @Input() dataForm!: UntypedFormGroup;
-    @Output() draftImported = new EventEmitter<any>();
+    @Output() draftImported = new EventEmitter<IRequestDraftDocument>();
 
     @ViewChild('draftFileInput', { static: false }) draftFileInput!: ElementRef<HTMLInputElement>;
 
@@ -52,7 +52,7 @@ export class DraftFileActionsComponent {
         });
     }
 
-    private async applyImportedDraft(doc: any): Promise<void> {
+    private async applyImportedDraft(doc: IRequestDraftDocument): Promise<void> {
         await this.draftFileService.applyImportedDraft(doc);
         this.dataForm.markAsDirty();
         this.draftImported.emit(doc);
