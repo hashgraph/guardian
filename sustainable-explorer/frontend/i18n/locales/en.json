@@ -1240,7 +1240,7 @@
         },
         "watchedProjects": {
             "title": "Watched Projects",
-            "subtitle": "Projects from your watchlist · click any card to view details",
+            "subtitle": "Projects from your watchlist",
             "issued": "Issued",
             "retired": "Retired",
             "transferred": "Transferred",

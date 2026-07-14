@@ -156,6 +156,17 @@ export class QueryBuilder {
     }
 
     /**
+     * Splits a pipe-joined multi-value filter param into individual values,
+     * percent-decoding each part. Falls back to the raw trimmed part if a part
+     * isn't validly percent-encoded, so legacy (never-encoded) values still work.
+     */
+    private decodeMultiValue(raw: string): string[] {
+        return String(raw).split('|').map(part => {
+            try { return decodeURIComponent(part.trim()); } catch { return part.trim(); }
+        }).filter(Boolean);
+    }
+
+    /**
      * Translates an operator + value into a parameterized SQL fragment.
      * Internal — public callers should use addFilters() / addFilter().
      */
@@ -163,7 +174,7 @@ export class QueryBuilder {
         switch (op) {
             case 'eq': {
                 if (typeof value === 'string' && value.includes('|')) {
-                    const parts = value.split('|').map(s => s.trim()).filter(Boolean);
+                    const parts = this.decodeMultiValue(value);
                     if (parts.length > 1) {
                         this.params.push(parts);
                         return `${sql} = ANY($${this.paramIdx++}::text[])`;
@@ -174,7 +185,7 @@ export class QueryBuilder {
             }
 
             case 'ilike': {
-                const parts = String(value).split('|').map(s => s.trim()).filter(Boolean);
+                const parts = this.decodeMultiValue(String(value));
                 if (parts.length > 1) {
                     const clauses = parts.map(p => {
                         this.params.push(`%${p}%`);
@@ -195,10 +206,8 @@ export class QueryBuilder {
                 // JSONB array-of-numbers "match any" (e.g. sdgs). `?|`/`?` only match
                 // string array elements, so this ORs together `@>` containment checks
                 // against numeric JSON scalars instead — each one GIN-index-backed.
-                const parts = String(value)
-                    .split('|')
-                    .map(s => s.trim())
-                    .filter(s => s !== '' && Number.isInteger(Number(s)));
+                const parts = this.decodeMultiValue(String(value))
+                    .filter(s => Number.isInteger(Number(s)));
                 if (parts.length === 0) return null;
                 const clauses = parts.map(p => {
                     this.params.push(String(Number(p)));
