@@ -1618,27 +1618,39 @@
         font-weight: 500;
     }
 
-    // Tables with dynamic custom properties get the wider Button-config
-    // label column so indented labels like "Active by default" fit.
     .right-bottom-toolbar .properties:has(.custom-properties) {
         --col-name-width: 184px;
     }
 
-    // Custom-property Array ladder: group header at the root level, item
-    // rows one step in, item sub-properties one step deeper, so the
-    // hierarchy reads at a glance without the old tree connectors.
     .right-bottom-toolbar .properties .propRow.array-item-row > .propRowCell.cellName {
-        padding-left: 16px !important;
+        padding-left: 32px !important;
         color: var(--guardian-font-color, #23252E);
         font-weight: 500;
     }
 
     .right-bottom-toolbar .properties .propRow[offset="1"] .propRowCell.cellName {
-        padding-left: 36px !important;
+        padding-left: 48px !important;
     }
 
     .right-bottom-toolbar .properties .propRow[offset="2"] .propRowCell.cellName {
-        padding-left: 46px !important;
+        padding-left: 58px !important;
+    }
+
+    // Depth = number of .custom-properties ancestors: the host div is
+    // display:contents, so it stays in the DOM tree while its rows join the table.
+    .right-bottom-toolbar .properties .custom-properties > .propHeader > .propHeaderCell.cellName,
+    .right-bottom-toolbar .properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
+        padding-left: 16px !important;
+    }
+
+    .right-bottom-toolbar .properties .custom-properties .custom-properties > .propHeader > .propHeaderCell.cellName,
+    .right-bottom-toolbar .properties .custom-properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
+        padding-left: 32px !important;
+    }
+
+    .right-bottom-toolbar .properties .custom-properties .custom-properties .custom-properties > .propHeader > .propHeaderCell.cellName,
+    .right-bottom-toolbar .properties .custom-properties .custom-properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
+        padding-left: 48px !important;
     }
 
     .right-bottom-toolbar .properties.button-properties {
