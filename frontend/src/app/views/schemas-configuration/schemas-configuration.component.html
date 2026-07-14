@@ -2,37 +2,45 @@
 
     <header class="sc-topnav">
         <nav class="sc-breadcrumb">
-            <i class="pi pi-folder sc-breadcrumb-icon"></i>
-            <a class="sc-crumb-link" routerLink="/schemas" [queryParams]="{ type: type }">Schemas</a>
+            <button class="sc-back-crumb" (click)="goBack()" title="Back to schemas">
+                <i class="pi pi-arrow-left"></i>
+            </button>
             <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
-            <span class="sc-crumb-current">{{ topic }}</span>
+            <a class="sc-crumb-link" (click)="goBack()">Schemas</a>
+            @if (selectedSchema) {
+                <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
+                <span class="sc-crumb-current">{{ selectedSchema.name }}</span>
+            }
         </nav>
 
         <div class="sc-spacer"></div>
 
-        <div class="sc-nav-tabs">
-            <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
-                Builder
-            </button>
-            <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
-                Preview
-            </button>
-        </div>
+        @if (selectedSchema) {
+            <div class="sc-nav-tabs">
+                <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
+                    Builder
+                </button>
+                <button class="sc-nav-tab" [class.active]="activeTab === 'preview'" (click)="activeTab = 'preview'">
+                    Preview
+                </button>
+            </div>
 
-        <div class="sc-nav-actions">
-            <button class="sc-btn">
-                <i class="pi pi-download"></i>
-                Export
-            </button>
-            <button class="sc-btn sc-btn-primary">
-                <i class="pi pi-send"></i>
-                Publish
-            </button>
-        </div>
+            <div class="sc-nav-actions">
+                <button class="sc-btn">
+                    <i class="pi pi-download"></i>
+                    Export
+                </button>
+                <button class="sc-btn sc-btn-primary">
+                    <i class="pi pi-send"></i>
+                    Publish
+                </button>
+            </div>
+        }
     </header>
 
     <div class="sc-main">
 
+        <!-- ── Sidebar ──────────────────────────────────────────── -->
         <aside class="sc-sidebar">
 
             <div class="sc-sidebar-tabs">
@@ -55,12 +63,20 @@
 
             @if (activeSideTab === 'fields') {
                 <div class="sc-sidebar-pane">
-                    <p class="sc-sidebar-label">Click or drag to add</p>
+                    <p class="sc-sidebar-label">
+                        @if (selectedSchema) {
+                            Click or drag to add
+                        } @else {
+                            Select a schema first
+                        }
+                    </p>
                     @for (ft of fieldTypes; track ft.type) {
                         <div
                             class="sc-field-chip"
+                            [class.sc-field-chip--accent]="ft.accent"
+                            [class.sc-field-chip--disabled]="!selectedSchema"
                             draggable="true"
-                            [class.sc-field-chip--accent]="ft.accent">
+                            (click)="addField(ft)">
                             <i class="pi {{ ft.icon }}"></i>
                             {{ ft.label }}
                         </div>
@@ -79,10 +95,6 @@
                                 placeholder="Search schemas…"
                                 [(ngModel)]="schemaSearch" />
                         </div>
-                        <button class="sc-schemas-add" (click)="onNewSchema()">
-                            <i class="pi pi-plus"></i>
-                            New
-                        </button>
                     </div>
 
                     <div class="sc-schemas-list">
@@ -93,11 +105,14 @@
                         } @else if (!filteredSchemas.length) {
                             <div class="sc-schemas-empty">
                                 <i class="pi pi-inbox"></i>
-                                <span>{{ schemaSearch ? 'No results' : 'No schemas yet' }}</span>
+                                <span>{{ schemaSearch ? 'No results' : 'No schemas' }}</span>
                             </div>
                         } @else {
                             @for (schema of filteredSchemas; track schema.id) {
-                                <div class="sc-schema-row">
+                                <div
+                                    class="sc-schema-row"
+                                    [class.active]="selectedSchema?.id === schema.id || selectedSchema?._id === schema._id"
+                                    (click)="switchSchema(schema)">
                                     <div class="sc-schema-icon">
                                         <i class="pi pi-file"></i>
                                     </div>
@@ -121,14 +136,243 @@
 
         </aside>
 
+        <!-- ═══════════════════════════════════════════════════════ CANVAS -->
         <div class="sc-canvas">
-            @if (loading) {
-                <div class="sc-loading">
-                    <p-progressSpinner [style]="{ width: '48px', height: '48px' }"></p-progressSpinner>
-                </div>
+
+            <div class="sc-canvas-body">
+
+                @if (schemaLoading && !selectedSchema) {
+
+                    <div class="sc-canvas-loading">
+                        <p-progressSpinner [style]="{ width: '48px', height: '48px' }"></p-progressSpinner>
+                    </div>
+
+                } @else if (!selectedSchema) {
+
+                    <!-- No schema loaded (no schemaId param, and not in new mode) -->
+                    <div class="sc-overview-empty">
+                        <i class="pi pi-file-o"></i>
+                        <span>No schema selected</span>
+                        <button class="sc-btn sc-btn-primary" (click)="onNewSchema()">
+                            <i class="pi pi-plus"></i>New schema
+                        </button>
+                    </div>
+
+                } @else if (activeTab === 'builder') {
+
+                    <!-- ── BUILDER ── -->
+                    <div class="sc-editor">
+
+                        <div class="sc-editor-header">
+                            <div class="sc-editor-header-info">
+                                <span class="sc-editor-title">{{ selectedSchema.name }}</span>
+                                <span class="sc-schema-status" [class.sc-schema-status--draft]="isDraft(selectedSchema)">
+                                    {{ selectedSchema.status }}
+                                </span>
+                            </div>
+                            <div class="sc-spacer"></div>
+                            @if (selectedSchema.version) {
+                                <span class="sc-editor-version">v{{ selectedSchema.version }}</span>
+                            }
+                        </div>
+
+                        <div class="sc-editor-body">
+
+                            <div class="sc-section-block">
+                                <div class="sc-section-header">
+                                    <span class="sc-section-name">Fields</span>
+                                    <div class="sc-section-line"></div>
+                                </div>
+
+                                <div class="sc-fields-list">
+                                    @if (schemaLoading) {
+                                        <div class="sc-fields-empty">
+                                            <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
+                                        </div>
+                                    } @else if (selectedSchema.fields.length) {
+                                        @for (field of selectedSchema.fields; track field.name) {
+                                            <div
+                                                class="sc-field-card"
+                                                [class.active]="selectedField === field"
+                                                [class.sc-field-card--ref]="field.isRef"
+                                                (click)="selectField(field)">
+                                                <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+                                                <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="field.isRef">
+                                                    <i class="pi {{ getFieldIcon(field) }}"></i>
+                                                </div>
+                                                <div class="sc-field-info">
+                                                    <span class="sc-field-name">{{ field.title || field.name }}</span>
+                                                    <div class="sc-field-meta-row">
+                                                        @if (field.required) {
+                                                            <span class="sc-badge sc-badge--req">Required</span>
+                                                        } @else {
+                                                            <span class="sc-badge sc-badge--opt">Optional</span>
+                                                        }
+                                                        @if (field.isArray) {
+                                                            <span class="sc-badge sc-badge--arr">Array</span>
+                                                        }
+                                                        @if (field.conditions?.length) {
+                                                            <span class="sc-badge sc-badge--cond">
+                                                                <i class="pi pi-code"></i>
+                                                                Condition
+                                                            </span>
+                                                        }
+                                                        <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="sc-field-card-actions">
+                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field" (click)="deleteField(field, $event)">
+                                                        <i class="pi pi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        }
+                                    } @else {
+                                        <div class="sc-fields-empty">
+                                            <i class="pi pi-inbox"></i>
+                                            <span>No fields defined yet</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="sc-drop-zone" (click)="addField(fieldTypes[0])">
+                                <i class="pi pi-plus"></i>
+                                Click to add a text field, or drag a type from the sidebar
+                            </div>
+
+                        </div>
+                    </div>
+
+                } @else {
+
+                    <!-- ── PREVIEW TAB ── -->
+                    <div class="sc-preview">
+                        <div class="sc-preview-bar">
+                            <span>View as:</span>
+                            <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="previewPill = 'submitter'">Submitter</button>
+                            <button class="sc-view-pill" [class.active]="previewPill === 'reviewer'" (click)="previewPill = 'reviewer'">Reviewer</button>
+                            <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="previewPill = 'readonly'">Read-only</button>
+                        </div>
+                        <div class="sc-preview-viewport">
+                            <div class="sc-preview-placeholder">
+                                <i class="pi pi-eye-slash"></i>
+                                <span>Preview</span>
+                            </div>
+                        </div>
+                    </div>
+
+                }
+
+            </div>
+
+            <!-- ── Right panel (field properties) ──────────────────────── -->
+            @if (selectedField) {
+                <aside class="sc-right-panel">
+                    <div class="sc-rp-header">
+                        <div class="sc-rp-title">
+                            <i class="pi pi-sliders-h"></i>
+                            Field properties
+                        </div>
+                        <span class="sc-rp-badge">{{ getFieldTypeBadge(selectedField) }}</span>
+                    </div>
+                    <div class="sc-rp-body">
+                        <div class="sc-rp-group">
+                            <label class="sc-rp-label">Field label</label>
+                            <input
+                                class="sc-rp-input"
+                                type="text"
+                                placeholder="Field label"
+                                [(ngModel)]="selectedField.title" />
+                        </div>
+                        <div class="sc-rp-group">
+                            <label class="sc-rp-label">Field key</label>
+                            <input
+                                class="sc-rp-input sc-rp-input--mono"
+                                type="text"
+                                placeholder="field_key"
+                                [(ngModel)]="selectedField.name" />
+                        </div>
+                        <div class="sc-rp-group">
+                            <label class="sc-rp-label">Type</label>
+                            <input class="sc-rp-input" type="text" [value]="getFieldTypeBadge(selectedField)" readonly />
+                        </div>
+                        <div class="sc-rp-divider"></div>
+                        <div class="sc-rp-label">Behaviour</div>
+                        <div class="sc-check-list">
+                            <div class="sc-check-item" (click)="toggleBehaviour('required')">
+                                <div class="sc-check-box" [class.active]="selectedField.required">
+                                    <i class="pi pi-check"></i>
+                                </div>
+                                <div class="sc-check-desc">
+                                    <strong>Required</strong>
+                                    <span>Submission blocked until filled</span>
+                                </div>
+                            </div>
+                            <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
+                                <div class="sc-check-box" [class.active]="selectedField.isArray">
+                                    <i class="pi pi-check"></i>
+                                </div>
+                                <div class="sc-check-desc">
+                                    <strong>Allow multiple answers</strong>
+                                    <span>Renders as a list</span>
+                                </div>
+                            </div>
+                            <div class="sc-check-item" (click)="toggleBehaviour('readOnly')">
+                                <div class="sc-check-box" [class.active]="selectedField.readOnly">
+                                    <i class="pi pi-check"></i>
+                                </div>
+                                <div class="sc-check-desc">
+                                    <strong>Read-only</strong>
+                                    <span>Displayed but not editable</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
             }
+
         </div>
 
     </div>
 
 </div>
+
+<!-- ══════════════════════════════════════════ NEW SCHEMA DIALOG -->
+<p-dialog
+    header="New schema"
+    [(visible)]="showNewSchemaDialog"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    [style]="{ width: '400px' }"
+    styleClass="sc-new-schema-dialog">
+
+    <div class="sc-dialog-body">
+        <div class="sc-rp-group">
+            <label class="sc-rp-label">Schema name</label>
+            <input
+                class="sc-rp-input"
+                type="text"
+                placeholder="e.g. Carbon Credit Report"
+                [(ngModel)]="newSchemaName"
+                (keydown.enter)="saveNewSchema()"
+                autofocus />
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <button class="sc-btn" (click)="showNewSchemaDialog = false; goBack()">Cancel</button>
+        <button
+            class="sc-btn sc-btn-primary"
+            [disabled]="!newSchemaName.trim() || newSchemaSaving"
+            (click)="saveNewSchema()">
+            @if (newSchemaSaving) {
+                <p-progressSpinner [style]="{ width: '14px', height: '14px' }"></p-progressSpinner>
+            } @else {
+                <i class="pi pi-plus"></i>
+            }
+            Create
+        </button>
+    </ng-template>
+</p-dialog>
