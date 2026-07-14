@@ -1618,6 +1618,10 @@
         font-weight: 500;
     }
 
+    .right-bottom-toolbar .properties:not(.events-properties) {
+        --col-name-width: 184px;
+    }
+
     .right-bottom-toolbar .properties:has(.custom-properties) {
         --col-name-width: 184px;
     }
