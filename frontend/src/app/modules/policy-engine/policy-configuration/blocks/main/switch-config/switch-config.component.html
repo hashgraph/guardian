@@ -15,6 +15,7 @@
       <td class="propRowCell cellName">Execution Flow</td>
       <td class="propRowCell">
         <p-select [(ngModel)]="properties.executionFlow"
+          panelStyleClass="pc-select-panel"
           [options]="executionFlowOptions"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -74,6 +75,7 @@
         <td class="propRowCell cellName">Condition Type</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="condition.type"
+            panelStyleClass="pc-select-panel"
             [options]="conditionTypeOptions"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -100,6 +102,7 @@
         <td class="propRowCell cellName">Actor</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="condition.actor"
+            panelStyleClass="pc-select-panel"
             [options]="actorOptions"
             [disabled]="readonly"
             (onChange)="onSave()"

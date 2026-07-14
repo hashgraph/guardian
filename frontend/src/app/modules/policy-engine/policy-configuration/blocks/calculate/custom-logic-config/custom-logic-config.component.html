@@ -20,6 +20,7 @@
         <td class="propRowCell cellName">Document Signer</td>
         <td class="propRowCell remove-cell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="properties.documentSigner"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -36,6 +37,7 @@
       <td class="propRowCell cellName">Id Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.idType"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -51,6 +53,7 @@
       <td class="propRowCell cellName">Script Language</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.selectedScriptLanguage"
           [disabled]="readonly"
           (onChange)="onSave()"

@@ -8,6 +8,7 @@
         <td class="propRowCell cellName">Data Type (deprecated)</td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="properties.dataType"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -24,6 +25,7 @@
       <td class="propRowCell cellName">Data Source</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.dataSource"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -40,6 +42,7 @@
         <td class="propRowCell cellName">Hedera Topic</td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="properties.topic"
             [disabled]="readonly"
             (onChange)="selectTopic($event)"
@@ -55,6 +58,7 @@
         <td class="propRowCell cellName">Topic Owner</td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="properties.topicOwner"
             [disabled]="readonly"
             (onChange)="onSave()"

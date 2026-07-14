@@ -7,6 +7,7 @@
       <td class="propRowCell cellName">Data Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.dataType"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -96,6 +97,7 @@
       <td class="propRowCell cellName">Order Direction</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.orderDirection"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -143,6 +145,7 @@
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="field.type"
             [disabled]="readonly"
             (onChange)="onSave()"

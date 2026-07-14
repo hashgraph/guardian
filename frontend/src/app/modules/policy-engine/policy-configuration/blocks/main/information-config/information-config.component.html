@@ -30,6 +30,7 @@
       <td class="propRowCell cellName">Type</td>
       <td class="propRowCell">
         <p-select [(ngModel)]="properties.uiMetaData.type"
+          panelStyleClass="pc-select-panel"
           [options]="uiMetaDataTypeOptions"
           [disabled]="readonly"
           (onChange)="onSave()"

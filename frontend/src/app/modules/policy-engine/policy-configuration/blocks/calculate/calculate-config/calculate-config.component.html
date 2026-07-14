@@ -6,6 +6,7 @@
       <td class="propRowCell cellName">Input Documents</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.inputDocuments"
           [disabled]="readonly"
           (onChange)="onSave()"

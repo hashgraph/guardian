@@ -19,6 +19,7 @@
       <td class="propRowCell cellName">Id Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.idType"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -34,6 +35,7 @@
       <td class="propRowCell cellName">Edit type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.editType"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -86,6 +88,7 @@
       >Force User Account</td>
       <td class="propRowCell multi-line">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.forceRelayerAccount"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -120,6 +123,7 @@
       <td class="propRowCell cellName">Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.uiMetaData.type"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -259,6 +263,7 @@
         </td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="field.value"
             [disabled]="readonly"
             (onChange)="onSave()"

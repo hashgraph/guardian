@@ -37,6 +37,7 @@
       <td class="propRowCell cellName">Period</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.period"
           [disabled]="readonly"
           (onHide)="selectPeriod()"

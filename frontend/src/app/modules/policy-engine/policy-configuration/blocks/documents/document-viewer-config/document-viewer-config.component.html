@@ -67,6 +67,7 @@
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="field.type"
             (onChange)="onSelectFieldType(field)"
             [disabled]="readonly"
@@ -144,6 +145,7 @@
           </td>
           <td class="propRowCell">
             <p-select
+              panelStyleClass="pc-select-panel"
               [(ngModel)]="field.action"
               [disabled]="readonly"
               (onChange)="onSave()"

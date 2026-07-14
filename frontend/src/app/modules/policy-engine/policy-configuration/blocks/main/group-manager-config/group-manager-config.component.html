@@ -7,6 +7,7 @@
       <td class="propRowCell cellName">Can Invite</td>
       <td class="propRowCell">
         <p-select [(ngModel)]="properties.canInvite"
+          panelStyleClass="pc-select-panel"
           [options]="canInviteOptions"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -23,6 +24,7 @@
       <td class="propRowCell cellName">Can Delete</td>
       <td class="propRowCell">
         <p-select [(ngModel)]="properties.canDelete"
+          panelStyleClass="pc-select-panel"
           [options]="canDeleteOptions"
           [disabled]="readonly"
           (onChange)="onSave()"

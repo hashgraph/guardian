@@ -23,6 +23,7 @@
         <td class="propRowCell cellName">Method</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="properties.method"
+            panelStyleClass="pc-select-panel"
             [options]="httpMethodsOptions"
             [disabled]="readonly"
             (onChange)="onSave()"

@@ -7,6 +7,7 @@
       <td class="propRowCell cellName">Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.type"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -93,6 +94,7 @@
           <td class="propRowCell cellName">User</td>
           <td class="propRowCell">
             <p-select
+              panelStyleClass="pc-select-panel"
               [(ngModel)]="option.user"
               [disabled]="readonly"
               (onChange)="onSave()"

@@ -45,6 +45,7 @@
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="button.type"
+            panelStyleClass="pc-select-panel"
             [options]="buttonTypeOptions"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -237,6 +238,7 @@
           <td class="propRowCell cellName">Type</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="filter.type"
+              panelStyleClass="pc-select-panel"
               [options]="filterTypeOptions"
               [disabled]="readonly"
               (onChange)="onSave()"

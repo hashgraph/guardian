@@ -7,6 +7,7 @@
       <td class="propRowCell cellName">Available Roles</td>
       <td class="propRowCell">
         <p-multiSelect [(ngModel)]="properties.roles"
+          panelStyleClass="pc-select-panel"
           [options]="roles"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -23,6 +24,7 @@
       <td class="propRowCell cellName">Available Groups</td>
       <td class="propRowCell">
         <p-multiSelect [(ngModel)]="properties.groups"
+          panelStyleClass="pc-select-panel"
           [options]="groups"
           [disabled]="readonly"
           (onChange)="onSave()"

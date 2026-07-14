@@ -27,6 +27,7 @@
           <td class="propRowCell cellName">Token</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="properties.tokenId"
+              panelStyleClass="pc-select-panel"
               [options]="tokens"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -45,6 +46,7 @@
           <td class="propRowCell cellName">Token Template</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="properties.template"
+              panelStyleClass="pc-select-panel"
               [options]="tokenTemplate"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -62,6 +64,7 @@
         <td class="propRowCell cellName">Account Type</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="properties.accountType"
+            panelStyleClass="pc-select-panel"
             [options]="accountTypeOptions"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -87,6 +90,7 @@
         <td class="propRowCell cellName">Action</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="properties.action"
+            panelStyleClass="pc-select-panel"
             [options]="properties.accountType==='custom' ? actionOptionsCustom : actionOptions"
             [disabled]="readonly"
             (onChange)="onSave()"

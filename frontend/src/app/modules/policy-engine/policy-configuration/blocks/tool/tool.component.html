@@ -74,6 +74,7 @@
         @if (item.type ==='Token') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="tokens"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -87,6 +88,7 @@
         @if (item.type ==='Role') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="roles"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -101,6 +103,7 @@
         @if (item.type ==='Group') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="groups"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -114,6 +117,7 @@
         @if (item.type ==='TokenTemplate') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               [options]="tokenTemplate"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -127,6 +131,7 @@
         @if (item.type ==='Topic') {
           <td class="propRowCell">
             <p-select [(ngModel)]="properties[item.key]"
+              panelStyleClass="pc-select-panel"
               (onChange)="selectTopic($event.value, item)"
               [disabled]="readonly"
               [appendTo]="'body'"

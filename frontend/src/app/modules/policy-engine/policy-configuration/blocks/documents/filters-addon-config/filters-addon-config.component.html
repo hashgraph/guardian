@@ -7,6 +7,7 @@
       <td class="propRowCell cellName">Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [options]="typeOptions"
           [(ngModel)]="properties.type"
           [disabled]="readonly"
@@ -22,6 +23,7 @@
       <td class="propRowCell cellName">Query Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [options]="queryTypeOptions"
           [(ngModel)]="properties.queryType"
           [disabled]="readonly"

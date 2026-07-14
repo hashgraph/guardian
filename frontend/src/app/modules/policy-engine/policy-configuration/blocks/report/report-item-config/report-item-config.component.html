@@ -52,6 +52,7 @@
         <td class="propRowCell cellName">Icon Type</td>
         <td class="propRowCell">
           <p-select [(ngModel)]="properties.iconType"
+            panelStyleClass="pc-select-panel"
             [options]="iconTypeOptions"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -131,6 +132,7 @@
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
               <p-select [(ngModel)]="properties.dynamicFilters[i].type"
+                panelStyleClass="pc-select-panel"
                 [options]="filterTypeOptions"
                 [disabled]="readonly"
                 (onChange)="onSave()"
@@ -288,6 +290,7 @@
           <td class="propRowCell cellName">Type</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="properties.filters[i].type"
+              panelStyleClass="pc-select-panel"
               [options]="filterTypeOptions"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -303,6 +306,7 @@
           <td class="propRowCell cellName">Variable Type</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="properties.filters[i].typeValue"
+              panelStyleClass="pc-select-panel"
               [options]="typeValueOptions"
               [disabled]="readonly"
               (onChange)="onSave()"

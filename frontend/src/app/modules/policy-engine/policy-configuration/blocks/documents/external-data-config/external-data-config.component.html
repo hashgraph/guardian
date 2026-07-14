@@ -48,6 +48,7 @@
       >Force User Account</td>
       <td class="propRowCell multi-line">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.forceRelayerAccount"
           [disabled]="readonly"
           (onChange)="onSave()"
