@@ -58,6 +58,7 @@ import { RequestDocumentBlockAddonComponent } from './policy-viewer/blocks/reque
 import { DialogBlock } from './policy-viewer/dialog-block/dialog-block.component';
 import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
 import { RequestDocumentBlockComponent } from './policy-viewer/blocks/request-document-block/request-document-block.component';
+import { DraftFileActionsComponent } from './policy-viewer/blocks/request-document-block/draft-file-actions/draft-file-actions.component';
 import { DocumentsSourceBlockComponent } from './policy-viewer/blocks/documents-source-block/documents-source-block.component';
 import { ContainerBlockComponent } from './policy-viewer/blocks/container-block/container-block.component';
 import { InformationBlockComponent } from './policy-viewer/blocks/information-block/information-block.component';
@@ -130,7 +131,6 @@ import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
 import { GuardianDialogService } from '../../services/guardian-dialog.service';
 
 import { TooltipModule } from 'primeng/tooltip';
-import { SplitButtonModule } from 'primeng/splitbutton';
 import { TabsModule } from 'primeng/tabs';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
@@ -210,6 +210,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         SourceAddonConfigComponent,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
+        DraftFileActionsComponent,
         UploadDocumentBlockComponent,
         ContainerBlockComponent,
         DocumentsSourceBlockComponent,
@@ -355,7 +356,6 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         DynamicDialogModule,
 
         TooltipModule,
-        SplitButtonModule,
         TabsModule,
         RadioButtonModule,
         PasswordModule,

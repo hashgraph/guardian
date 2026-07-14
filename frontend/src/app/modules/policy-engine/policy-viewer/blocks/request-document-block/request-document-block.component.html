@@ -17,6 +17,15 @@
           <h1 mat-dialog-title>{{ title }}</h1>
         }
         <div class="schema-form" [attr.dryRun]="dryRun" [attr.restoreData]="restoreData">
+          <div class="draft-file-actions">
+            <request-draft-file-actions
+              [schema]="schema"
+              [policyId]="policyId"
+              [blockId]="id"
+              [dataForm]="dataForm"
+              (draftImported)="onDraftImported($event)">
+            </request-draft-file-actions>
+          </div>
           @if (restoreData) {
             <div class="restore-data">
               <svg-icon class="svg-icon"
