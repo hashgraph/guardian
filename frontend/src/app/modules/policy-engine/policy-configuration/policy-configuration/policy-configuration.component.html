@@ -946,7 +946,8 @@
                               <span class="inspector-subsection-label">Artifacts</span>
                             </div>
                             <artifact-properties [block]="currentBlock" [policyId]="policyId"
-                              [readonly]="readonly" class="readonly-status"></artifact-properties>
+                              [readonly]="readonly" (changed)="onArtifactsChanged()"
+                              class="readonly-status"></artifact-properties>
                           </div>
                         </div>
                         <div [hidden]="!options.events" class="prop-container">

@@ -1507,6 +1507,10 @@ export class PolicyConfigurationComponent implements OnInit {
         return false;
     }
 
+    public onArtifactsChanged(): void {
+        this.artifactsCollapsed = !this.currentBlock?.artifacts?.length;
+    }
+
     public onView(type: string): void {
         this.loading = true;
         setTimeout(() => {

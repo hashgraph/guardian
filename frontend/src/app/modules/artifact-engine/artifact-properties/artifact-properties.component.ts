@@ -1,5 +1,5 @@
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { IArtifact } from '@guardian/interfaces';
 import { ArtifactService } from 'src/app/services/artifact.service';
 
@@ -18,6 +18,7 @@ export class ArtifactPropertiesComponent implements OnInit {
     @Input('policyId') policyId!: string;
     @Input('block') currentBlock!: any;
     @Input('readonly') readonly!: boolean;
+    @Output() changed = new EventEmitter<void>();
 
     constructor(
         public artifact: ArtifactService,
@@ -45,9 +46,11 @@ export class ArtifactPropertiesComponent implements OnInit {
 
     addArtifact(artifact: any) {
         this.currentBlock?.addArtifact(artifact);
+        this.changed.emit();
     }
 
     removeArtifact(artifact: any) {
         this.currentBlock?.removeArtifact(artifact);
+        this.changed.emit();
     }
 }
