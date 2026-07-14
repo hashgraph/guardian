@@ -120,7 +120,66 @@
 
 .sc-nav-actions {
     display: flex;
+    align-items: center;
     gap: 8px;
+}
+
+.sc-save-indicator {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 5px 11px;
+    border-radius: 7px;
+    border: 1px solid transparent;
+    transition: all 0.2s;
+    white-space: nowrap;
+
+    i { font-size: 12px; }
+
+    &.saved {
+        background: #eaf3de;
+        border-color: #7ab648;
+        color: #27500a;
+    }
+    &.dirty {
+        background: #faeeda;
+        border-color: #ef9f27;
+        color: #412402;
+    }
+    &.saving {
+        background: var(--surface-ground, #f8f8f7);
+        border-color: rgba(0, 0, 0, 0.12);
+        color: var(--text-color-secondary, #888780);
+    }
+}
+
+.sc-btn-save-all {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    i { font-size: 13px; }
+
+    &.dirty {
+        background: var(--primary-color, #1d9e75);
+        color: #fff;
+        &:hover { filter: brightness(0.92); }
+    }
+    &.clean {
+        background: var(--surface-ground, #f1efe8);
+        color: var(--text-color-secondary, #888780);
+        cursor: default;
+    }
 }
 
 .sc-btn {
@@ -633,7 +692,7 @@
     min-width: 0;
 }
 
-.sc-field-name {
+.sc-field-key {
     font-size: 13px;
     font-weight: 500;
     color: var(--text-color, #2c2c2a);
@@ -641,6 +700,16 @@
     overflow: hidden;
     text-overflow: ellipsis;
     display: block;
+}
+
+.sc-field-desc {
+    display: block;
+    font-size: 11px;
+    color: var(--text-color-secondary, #888780);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-top: 1px;
 }
 
 .sc-field-meta-row {

@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
-import { EMPTY, Subject } from 'rxjs';
+import { EMPTY, Subject, forkJoin } from 'rxjs';
 import { catchError, switchMap, takeUntil } from 'rxjs/operators';
 import { ISchema, Schema, SchemaCategory, SchemaField, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -34,6 +34,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public selectedSchema: Schema | null = null;
     public selectedField: SchemaField | null = null;
     public previewPill: 'submitter' | 'reviewer' | 'readonly' = 'submitter';
+
+    private dirtySchemaIds = new Set<string>();
+    public isSaving: boolean = false;
+
+    public get hasUnsavedChanges(): boolean {
+        return this.dirtySchemaIds.size > 0;
+    }
 
     public showNewSchemaDialog: boolean = false;
     public newSchemaName: string = '';
@@ -82,6 +89,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const schema = new Schema(raw);
             this.selectedSchema = schema;
             this.schemaLoading = false;
+            // Fresh load from server — this schema is no longer dirty.
+            const schemaId = schema.id || (schema as any)._id;
+            if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
             this.upsertInSidebar(schema);
             const topicId = schema.topicId || this.topic;
             if (topicId && !this.schemasFetched && !this.schemasLoading) {
@@ -153,11 +163,49 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.router.navigate(['/schemas'], { queryParams });
     }
 
+    public markDirty(): void {
+        const id = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        if (id) { this.dirtySchemaIds.add(id); }
+    }
+
+    public saveAll(): void {
+        if (!this.hasUnsavedChanges || this.isSaving) { return; }
+        // Collect the Schema objects that are actually dirty and still in memory.
+        const toSave = this.schemas.filter(s => {
+            const id = s.id || (s as any)._id;
+            return id && this.dirtySchemaIds.has(id);
+        });
+        // Also include selectedSchema if it has unsaved changes but isn't in the
+        // sidebar list yet (e.g. brand-new schema that was never added to this.schemas).
+        if (this.selectedSchema) {
+            const selId = this.selectedSchema.id || (this.selectedSchema as any)._id;
+            if (selId && this.dirtySchemaIds.has(selId) && !toSave.find(s => (s.id || (s as any)._id) === selId)) {
+                toSave.push(this.selectedSchema);
+            }
+        }
+        if (!toSave.length) { return; }
+        this.isSaving = true;
+        // Rebuild each schema's JSON document from its current fields before saving.
+        // Without this, schema.document still holds the original server payload and
+        // field changes are silently ignored by the API.
+        toSave.forEach(s => s.update(s.fields, s.conditions));
+        forkJoin(toSave.map(s => this.schemaService.update(s as unknown as ISchema)))
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => {
+                    this.isSaving = false;
+                    this.dirtySchemaIds.clear();
+                },
+                error: () => { this.isSaving = false; }
+            });
+    }
+
     public addField(ft: FieldType): void {
         if (!this.selectedSchema) { return; }
         const newField = this.buildNewField(ft);
         this.selectedSchema.fields.push(newField);
         this.selectedField = newField;
+        this.markDirty();
     }
 
     public deleteField(field: SchemaField, event: Event): void {
@@ -169,6 +217,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (this.selectedField === field) {
                 this.selectedField = null;
             }
+            this.markDirty();
         }
     }
 
@@ -179,6 +228,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public toggleBehaviour(key: 'required' | 'isArray' | 'readOnly'): void {
         if (!this.selectedField) { return; }
         (this.selectedField as any)[key] = !(this.selectedField as any)[key];
+        this.markDirty();
     }
 
     public onNewSchema(): void {

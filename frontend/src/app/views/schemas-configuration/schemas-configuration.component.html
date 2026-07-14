@@ -26,6 +26,31 @@
             </div>
 
             <div class="sc-nav-actions">
+                <span class="sc-save-indicator"
+                      [class.dirty]="hasUnsavedChanges && !isSaving"
+                      [class.saving]="isSaving"
+                      [class.saved]="!hasUnsavedChanges && !isSaving">
+                    <i class="pi"
+                       [class.pi-exclamation-circle]="hasUnsavedChanges && !isSaving"
+                       [class.pi-spin]="isSaving"
+                       [class.pi-spinner]="isSaving"
+                       [class.pi-check-circle]="!hasUnsavedChanges && !isSaving"></i>
+                    @if (isSaving) {
+                        <span>Saving…</span>
+                    } @else if (hasUnsavedChanges) {
+                        <span>Unsaved changes</span>
+                    } @else {
+                        <span>All saved</span>
+                    }
+                </span>
+                <button class="sc-btn-save-all"
+                        [class.dirty]="hasUnsavedChanges"
+                        [class.clean]="!hasUnsavedChanges"
+                        [disabled]="!hasUnsavedChanges || isSaving"
+                        (click)="saveAll()">
+                    <i class="pi pi-save"></i>
+                    Save all
+                </button>
                 <button class="sc-btn">
                     <i class="pi pi-download"></i>
                     Export
@@ -201,7 +226,12 @@
                                                     <i class="pi {{ getFieldIcon(field) }}"></i>
                                                 </div>
                                                 <div class="sc-field-info">
-                                                    <span class="sc-field-name">{{ field.title || field.name }}</span>
+                                                    @if (field.description) {
+                                                        <span class="sc-field-key">{{ field.description }}</span>
+                                                    }
+                                                    @if (field.name) {
+                                                        <span class="sc-field-desc">{{ field.name }}</span>
+                                                    }
                                                     <div class="sc-field-meta-row">
                                                         @if (field.required) {
                                                             <span class="sc-badge sc-badge--req">Required</span>
@@ -278,20 +308,31 @@
                     </div>
                     <div class="sc-rp-body">
                         <div class="sc-rp-group">
-                            <label class="sc-rp-label">Field label</label>
+                            <label class="sc-rp-label">Title</label>
                             <input
                                 class="sc-rp-input"
                                 type="text"
-                                placeholder="Field label"
-                                [(ngModel)]="selectedField.title" />
+                                placeholder="Title"
+                                [(ngModel)]="selectedField.title"
+                                (ngModelChange)="markDirty()" />
                         </div>
                         <div class="sc-rp-group">
-                            <label class="sc-rp-label">Field key</label>
+                            <label class="sc-rp-label">Key</label>
                             <input
                                 class="sc-rp-input sc-rp-input--mono"
                                 type="text"
                                 placeholder="field_key"
-                                [(ngModel)]="selectedField.name" />
+                                [(ngModel)]="selectedField.name"
+                                (ngModelChange)="markDirty()" />
+                        </div>
+                        <div class="sc-rp-group">
+                            <label class="sc-rp-label">Description</label>
+                            <input
+                                class="sc-rp-input"
+                                type="text"
+                                placeholder="Optional description"
+                                [(ngModel)]="selectedField.description"
+                                (ngModelChange)="markDirty()" />
                         </div>
                         <div class="sc-rp-group">
                             <label class="sc-rp-label">Type</label>
