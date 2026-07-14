@@ -85,7 +85,6 @@ Promise.all([
             path: 'dist/migrations',
             transactional: false
         },
-        ensureIndexes: true,
         entities
     }, [
         'v2-4-0',
