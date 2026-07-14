@@ -735,8 +735,7 @@ export class PolicyConfigurationComponent implements OnInit {
                 } else if (this.currentView == 'yaml') {
                     code = this.yamlToJson(this.code);
                 }
-                this.code = code;
-                this.codeMirrorOptions.mode = 'policy-json-lang';
+                this.setEditorCode(code, 'policy-json-lang');
             } else if (type == 'yaml') {
                 let code = '';
                 if (this.currentView == 'blocks') {
@@ -745,13 +744,29 @@ export class PolicyConfigurationComponent implements OnInit {
                 if (this.currentView == 'json') {
                     code = this.jsonToYaml(this.code);
                 }
-                this.code = code;
-                this.codeMirrorOptions.mode = 'policy-yaml-lang';
+                this.setEditorCode(code, 'policy-yaml-lang');
             }
             this.currentView = type;
         } catch (error: any) {
             this.errors = [error.message];
         }
+    }
+
+    /**
+     * Set editor content and mode. ngx-codemirror re-tokenizes on both value
+     * (setValue) and mode (setOption) changes, so on a code-to-code switch we
+     * apply the mode first, while the editor still holds the smaller previous
+     * document, to tokenize the new (large) document only once.
+     */
+    private setEditorCode(code: string, mode: string): void {
+        const editorMounted =
+            this.currentView === 'json' || this.currentView === 'yaml';
+        if (editorMounted && this.codeMirrorOptions.mode !== mode) {
+            this.codeMirrorOptions.mode = mode;
+            this.changeDetector.detectChanges();
+        }
+        this.codeMirrorOptions.mode = mode;
+        this.code = code;
     }
 
     private findSuggestedBlocks(currentBlock: any) {
