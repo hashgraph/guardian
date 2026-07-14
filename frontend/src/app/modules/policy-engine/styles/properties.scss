@@ -79,10 +79,6 @@
             font-weight: 500;
         }
 
-        .cellCollapse {
-            pointer-events: all;
-        }
-
         .fullCell {
             overflow: visible !important;
         }
@@ -581,54 +577,6 @@
         // label. Pull each nested caret in beside its label (aligned with the
         // tree connector) and tint it like the section chevrons. Drop the
         // connector on those toggle rows so the caret isn't doubled up.
-        .propRowCol.cellCollapse {
-            overflow: visible;
-
-            // The caret is nudged out of this 18px cell (below), but the click
-            // handler lives on the cell. Extend a transparent hit area over the
-            // caret + label so the toggle keeps working (and the label becomes
-            // clickable to collapse too).
-            &::after {
-                content: "";
-                position: absolute;
-                top: 0;
-                bottom: 0;
-                left: 0;
-                width: 128px;
-                cursor: pointer;
-                z-index: 3;
-            }
-
-            i {
-                position: absolute;
-                z-index: 4;
-                color: var(--guardian-font-color-secondary, #848FA9);
-                font-size: 11px;
-            }
-        }
-
-        .propHeader > .propRowCol.cellCollapse i {
-            left: 8px;
-        }
-
-        .subRow > .propRowCol.cellCollapse i {
-            left: 24px;
-        }
-
-        .subRow-2 > .propRowCol.cellCollapse i {
-            left: 34px;
-        }
-
-        .subRow-3 > .propRowCol.cellCollapse i {
-            left: 44px;
-        }
-
-        .subRow:has(> .propRowCol.cellCollapse) .cellName::before,
-        .subRow-2:has(> .propRowCol.cellCollapse) .cellName::before,
-        .subRow-3:has(> .propRowCol.cellCollapse) .cellName::before {
-            display: none;
-        }
-
         .navigation .stepRow .propRowCol {
             left: 20px !important;
             top: 2px !important;
@@ -1613,11 +1561,6 @@
         text-align: right;
     }
 
-    .right-bottom-toolbar .properties:not(.events-properties) .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        color: var(--guardian-font-color, #23252E);
-        font-weight: 500;
-    }
-
     .right-bottom-toolbar .properties:not(.events-properties) {
         --col-name-width: 184px;
     }
@@ -1721,65 +1664,6 @@
         transform: rotate(-90deg);
     }
 
-    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 8px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.button-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.button-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 10px !important;
-    }
-
-    .right-bottom-toolbar .properties.button-properties .subRow > .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.button-properties .subRow > .propRowCol.cellCollapse svg {
-        left: 24px;
-    }
-
-    .right-bottom-toolbar .properties.button-properties .subRow-2 > .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.button-properties .subRow-2 > .propRowCol.cellCollapse svg {
-        left: 34px;
-    }
-
-    .right-bottom-toolbar .properties.button-properties .subRow-3 > .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.button-properties .subRow-3 > .propRowCol.cellCollapse svg {
-        left: 44px;
-    }
-
     .right-bottom-toolbar .properties.button-properties .propHeader .propAdd,
     .right-bottom-toolbar .properties.button-properties .propRowCell > .propAdd {
         display: inline-flex;
@@ -1874,59 +1758,6 @@
         transform: rotate(-90deg);
     }
 
-    .right-bottom-toolbar .properties.action-properties .propRow.subRow > .propRowCell.cellName {
-        padding-left: 16px !important;
-    }
-
-    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 8px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.action-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 10px !important;
-    }
-
-    .right-bottom-toolbar .properties.action-properties .subRow > .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.action-properties .subRow > .propRowCol.cellCollapse svg {
-        left: 24px;
-    }
-
     .right-bottom-toolbar .properties.action-properties .propHeader .propAdd,
     .right-bottom-toolbar .properties.action-properties .propRowCell > .propAdd {
         display: inline-flex;
@@ -1999,50 +1830,6 @@
         transform: rotate(-90deg);
     }
 
-    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.viewer-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.viewer-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
-    }
-
     .right-bottom-toolbar .properties.viewer-properties .propHeader .propAdd,
     .right-bottom-toolbar .properties.viewer-properties .propRowCell > .propAdd {
         display: inline-flex;
@@ -2113,50 +1900,6 @@
 
     .right-bottom-toolbar .properties.request-properties .request-section-header[collapse="true"] .chevron-icon {
         transform: rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.request-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.request-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
     }
 
     .right-bottom-toolbar .properties.roles-properties {
@@ -2315,50 +2058,6 @@
         transform: rotate(-90deg);
     }
 
-    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.send-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.send-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
-    }
-
     .right-bottom-toolbar .properties.send-properties .propHeader .propAdd,
     .right-bottom-toolbar .properties.send-properties .propRowCell > .propAdd {
         display: inline-flex;
@@ -2429,50 +2128,6 @@
 
     .right-bottom-toolbar .properties.http-request-properties .http-request-section-header[collapse="true"] .chevron-icon {
         transform: rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.http-request-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.http-request-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
     }
 
     .right-bottom-toolbar .properties.http-request-properties .propHeader .propAdd,
@@ -2612,73 +2267,6 @@
         transform: rotate(-90deg);
     }
 
-    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse,
-    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse,
-    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse,
-    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse,
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse::after,
-    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse::after,
-    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse::after,
-    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse::after,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse::after,
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse i {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.switch-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.document-validator-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.source-addon-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.calculate-math-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.module-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.tool-properties .propRowCol.cellCollapse[collapse="true"] i {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.switch-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
-    .right-bottom-toolbar .properties.document-validator-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
-    .right-bottom-toolbar .properties.source-addon-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
-    .right-bottom-toolbar .properties.calculate-math-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
-    .right-bottom-toolbar .properties.module-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName,
-    .right-bottom-toolbar .properties.tool-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
-    }
-
     .right-bottom-toolbar .properties.switch-properties .propHeader .propAdd,
     .right-bottom-toolbar .properties.document-validator-properties .propHeader .propAdd,
     .right-bottom-toolbar .properties.source-addon-properties .propHeader .propAdd,
@@ -2795,50 +2383,6 @@
         transform: rotate(-90deg);
     }
 
-    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.request-addon-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.request-addon-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
-    }
-
     .right-bottom-toolbar .properties.report-item-properties {
         --col-name-width: 184px;
     }
@@ -2877,50 +2421,6 @@
 
     .right-bottom-toolbar .properties.report-item-properties .report-item-section-header[collapse="true"] .chevron-icon {
         transform: rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.report-item-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.report-item-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
     }
 
     .right-bottom-toolbar .properties.report-item-properties .propHeader .propAdd,
@@ -3129,50 +2629,6 @@
 
     .right-bottom-toolbar .properties.aggregate-properties .aggregate-section-header[collapse="true"] .chevron-icon {
         transform: rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse {
-        position: relative;
-        vertical-align: middle;
-        overflow: visible;
-    }
-
-    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse::after {
-        content: "";
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        width: 128px;
-        cursor: pointer;
-        z-index: 3;
-    }
-
-    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse i,
-    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse svg {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        position: absolute;
-        top: 50%;
-        left: 24px;
-        z-index: 4;
-        width: 14px;
-        height: 24px;
-        color: var(--guardian-font-color-secondary, #848FA9);
-        font-size: 11px;
-        line-height: 1;
-        transform: translateY(-50%);
-        transition: transform 0.12s ease;
-    }
-
-    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse[collapse="true"] i,
-    .right-bottom-toolbar .properties.aggregate-properties .propRowCol.cellCollapse[collapse="true"] svg {
-        transform: translateY(-50%) rotate(-90deg);
-    }
-
-    .right-bottom-toolbar .properties.aggregate-properties .propRow:has(> .propRowCol.cellCollapse) > .propRowCell.cellName {
-        padding-left: 24px !important;
     }
 
     .right-bottom-toolbar .properties.aggregate-properties .propHeader .propAdd,

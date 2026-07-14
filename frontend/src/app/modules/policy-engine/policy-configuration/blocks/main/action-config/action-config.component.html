@@ -40,7 +40,7 @@
           <input class="prop-input" [(ngModel)]="properties.field" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'optionsGroup')">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'optionsGroup')">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName" [attr.collapse]="propHidden.optionsGroup">
           @if (properties.uiMetaData.options.length) {
@@ -56,7 +56,7 @@
         </td>
       </tr>
       @for (option of properties.uiMetaData.options; track option; let i = $index) {
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup"
+        <tr class="propRow" lvl="2" [attr.collapse]="propHidden.main || propHidden.optionsGroup"
           (click)="onHide(propHidden.options, i)">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName" [attr.collapse]="propHidden.options[i]">
@@ -70,7 +70,7 @@
             </span>
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Option Tag</td>
@@ -78,7 +78,7 @@
             <input class="prop-input" [(ngModel)]="option.tag" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Name</td>
@@ -86,7 +86,7 @@
             <input class="prop-input" [(ngModel)]="option.name" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Value</td>
@@ -94,7 +94,7 @@
             <input class="prop-input" [(ngModel)]="option.value" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">User</td>
@@ -111,7 +111,7 @@
             </p-select>
           </td>
         </tr>
-        <tr class="propRow subRow-2"
+        <tr class="propRow" lvl="2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">UI Class</td>
@@ -130,30 +130,30 @@
             (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'dropdownGroup')"
-          [attr.collapse]="propHidden.dropdownGroup">
-          <i class="pi pi-chevron-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'dropdownGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.dropdownGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Dropdown Options</span>
         </td>
-        <td class="propRowCell cellName">Dropdown Options</td>
         <td class="propRowCell">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Option Name</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="properties.name" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Option Value</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="properties.value" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.dropdownGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
@@ -170,16 +170,16 @@
             (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fileGroup')"
-          [attr.collapse]="propHidden.fileGroup">
-          <i class="pi pi-chevron-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'fileGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.fileGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>File Options</span>
         </td>
-        <td class="propRowCell cellName">File Options</td>
         <td class="propRowCell">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Schema</td>
         <td class="propRowCell">
@@ -191,7 +191,7 @@
           ></select-schema>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main|| propHidden.fileGroup">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Target Url</td>
         <td class="propRowCell">

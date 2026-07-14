@@ -102,19 +102,19 @@
             <span>Dynamic Filters</span>
           </td>
           <td class="propHeaderCell">
-            <div class="propAdd" (click)="addDynamicFilter(); $event.stopPropagation()">
+            <div class="propAdd" (click)="$event.stopPropagation(); addDynamicFilter(); $event.stopPropagation()">
               <i class="pi pi-plus"></i>
               <span>Add Dynamic Filter</span>
             </div>
           </td>
         </tr>
         @for (item of properties.dynamicFilters; track item; let i = $index) {
-          <tr class="propRow" [attr.collapse]="propHidden.dynamicFilterGroup">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden.dynamicFilters, i)"
-              [attr.collapse]="propHidden.dynamicFilters[i]">
-              <i class="pi pi-chevron-down"></i>
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.dynamicFilterGroup" (click)="onHide(propHidden.dynamicFilters, i)">
+            <td class="propRowCol"></td>
+            <td class="propRowCell cellName" [attr.collapse]="propHidden.dynamicFilters[i]">
+              <i class="pi pi-chevron-down chevron-icon"></i>
+              <span>Dynamic Filter {{ i }}</span>
             </td>
-            <td class="propRowCell cellName">Dynamic Filter {{ i }}</td>
             <td class="propRowCell">
               @if (properties.dynamicFilters[i].field && properties.dynamicFilters[i].type && properties.dynamicFilters[i].nextItemField) {
                 <span class="not-editable-text">
@@ -122,12 +122,12 @@
                   {{ properties.dynamicFilters[i].field }}
                 </span>
               }
-              <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveDynamicFilter(i)">
+              <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveDynamicFilter(i)">
                 <i class="pi pi-trash"></i>
               </span>
             </td>
           </tr>
-          <tr class="propRow subRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Type</td>
             <td class="propRowCell">
@@ -143,7 +143,7 @@
               </p-select>
             </td>
           </tr>
-          <tr class="propRow subRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Field Path</td>
             <td class="propRowCell">
@@ -151,7 +151,7 @@
               (change)="onSave()"></document-path>
             </td>
           </tr>
-          <tr class="propRow subRow" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.dynamicFilterGroup || propHidden.dynamicFilters[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Next Item Field Path</td>
             <td class="propRowCell">
@@ -217,26 +217,26 @@
           <span>Variables</span>
         </td>
         <td class="propHeaderCell">
-          <div class="propAdd" (click)="addVariable(); $event.stopPropagation()">
+          <div class="propAdd" (click)="$event.stopPropagation(); addVariable(); $event.stopPropagation()">
             <i class="pi pi-plus"></i>
             <span>Add Variable</span>
           </div>
         </td>
       </tr>
       @for (item of properties.variables; track item; let i = $index) {
-        <tr class="propRow" [attr.collapse]="propHidden.variableGroup">
-          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.variables, i)"
-            [attr.collapse]="propHidden.variables[i]">
-            <i class="pi pi-chevron-down"></i>
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.variableGroup" (click)="onHide(propHidden.variables, i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.variables[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Variable {{ i }}</span>
           </td>
-          <td class="propRowCell cellName">Variable {{ i }}</td>
           <td class="propRowCell">
-            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveVariable(i)">
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveVariable(i)">
               <i class="pi pi-trash"></i>
             </span>
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Name</td>
           <td class="propRowCell">
@@ -244,7 +244,7 @@
               (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.variableGroup || propHidden.variables[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Value</td>
           <td class="propRowCell">
@@ -261,31 +261,31 @@
           <span>Filters</span>
         </td>
         <td class="propHeaderCell">
-          <div class="propAdd" (click)="addFilter(); $event.stopPropagation()">
+          <div class="propAdd" (click)="$event.stopPropagation(); addFilter(); $event.stopPropagation()">
             <i class="pi pi-plus"></i>
             <span>Add Filter</span>
           </div>
         </td>
       </tr>
       @for (item of properties.filters; track item; let i = $index) {
-        <tr class="propRow" [attr.collapse]="propHidden.filterGroup">
-          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)"
-            [attr.collapse]="propHidden.filters[i]">
-            <i class="pi pi-chevron-down"></i>
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filterGroup" (click)="onHide(propHidden.filters, i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.filters[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Filter {{ i }}</span>
           </td>
-          <td class="propRowCell cellName">Filter {{ i }}</td>
           <td class="propRowCell">
             @if (properties.filters[i].field && properties.filters[i].type && properties.filters[i].value) {
               <span class="not-editable-text">
                 {{ properties.filters[i].field }} {{ properties.filters[i].type }} {{ properties.filters[i].value }}
               </span>
             }
-            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveFilter(i)">
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveFilter(i)">
               <i class="pi pi-trash"></i>
             </span>
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Type</td>
           <td class="propRowCell">
@@ -301,7 +301,7 @@
             </p-select>
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Variable Type</td>
           <td class="propRowCell">
@@ -317,7 +317,7 @@
             </p-select>
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Field</td>
           <td class="propRowCell">
@@ -325,7 +325,7 @@
             (change)="onSave()"></document-path>
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filterGroup || propHidden.filters[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Value</td>
           <td class="propRowCell">

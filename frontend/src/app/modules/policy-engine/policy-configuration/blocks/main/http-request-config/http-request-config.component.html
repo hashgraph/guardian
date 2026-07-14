@@ -49,26 +49,26 @@
           <span>Headers</span>
         </td>
         <td class="propHeaderCell">
-          <div class="propAdd" (click)="addHeader(); $event.stopPropagation()">
+          <div class="propAdd" (click)="$event.stopPropagation(); addHeader(); $event.stopPropagation()">
             <i class="pi pi-plus"></i>
             <span>Add header</span>
           </div>
         </td>
       </tr>
       @for (header of properties.headers; track header; let i = $index) {
-        <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
-          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
-            [attr.collapse]="propHidden.conditions[i]">
-            <i class="pi pi-chevron-down"></i>
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup" (click)="onHide(propHidden.conditions, i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.conditions[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Header {{ i }}</span>
           </td>
-          <td class="propRowCell cellName">Header {{ i }}</td>
           <td class="propRowCell">
-            <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveHeader(i)">
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveHeader(i)">
               <i class="pi pi-trash"></i>
             </span>
           </td>
         </tr>
-        <tr class="propRow subRow"
+        <tr class="propRow" lvl="1"
           [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Header name</td>
@@ -76,7 +76,7 @@
             <input class="prop-input" [(ngModel)]="header.name" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow"
+        <tr class="propRow" lvl="1"
           [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">Header value</td>
@@ -84,7 +84,7 @@
             <input class="prop-input" [(ngModel)]="header.value" [readonly]="readonly" (blur)="onSave()">
           </td>
         </tr>
-        <tr class="propRow subRow"
+        <tr class="propRow" lvl="1"
           [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName" title="Include value in exported policy">Include value</td>

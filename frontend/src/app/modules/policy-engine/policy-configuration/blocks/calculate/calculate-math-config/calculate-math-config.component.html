@@ -8,37 +8,37 @@
         <span>Equations</span>
       </td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addEquation(); $event.stopPropagation()">
+        <div class="propAdd" (click)="$event.stopPropagation(); addEquation(); $event.stopPropagation()">
           <i class="pi pi-plus"></i>
           <span>Add Equation</span>
         </div>
       </td>
     </tr>
     @for (equation of properties.equations; track equation; let i = $index) {
-      <tr class="propRow" [attr.collapse]="propHidden.equationsGroup">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.equations, i)"
-          [attr.collapse]="propHidden.equations[i]">
-          <i class="pi pi-chevron-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.equationsGroup" (click)="onHide(propHidden.equations, i)">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.equations[i]">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Equation {{ i }}</span>
         </td>
-        <td class="propRowCell cellName">Equation {{ i }}</td>
         <td class="propRowCell">
           {{ equation.variable }}
           @if (equation.formula) {
             <span> = {{ equation.formula }}</span>
           }
-          <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveEquation(i)">
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveEquation(i)">
             <i class="pi pi-trash"></i>
           </span>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Variable</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="equation.variable" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.equationsGroup || propHidden.equations[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Formula</td>
         <td class="propRowCell">

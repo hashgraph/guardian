@@ -115,19 +115,19 @@
         <span>Filters</span>
       </td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addField(); $event.stopPropagation()">
+        <div class="propAdd" (click)="$event.stopPropagation(); addField(); $event.stopPropagation()">
           <i class="pi pi-plus"></i>
           <span>Add Field</span>
         </div>
       </td>
     </tr>
     @for (field of properties.filters; track field; let i = $index) {
-      <tr class="propRow" [attr.collapse]="propHidden.filtersGroup">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.filters, i)"
-          [attr.collapse]="propHidden.filters[i]">
-          <i class="pi pi-chevron-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filtersGroup" (click)="onHide(propHidden.filters, i)">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.filters[i]">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Field {{ i }}</span>
         </td>
-        <td class="propRowCell cellName">Field {{ i }}</td>
         <td class="propRowCell">
           @if (field.field&&field.type&&field.value) {
             <span
@@ -135,12 +135,12 @@
               {{ field.field }} {{ field.type }} {{ field.value }}
             </span>
           }
-          <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeField(i)">
             <i class="pi pi-trash"></i>
           </span>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
@@ -157,14 +157,14 @@
           </p-select>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell field">
           <document-path [(value)]="field.field" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.filtersGroup || propHidden.filters[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Value</td>
         <td class="propRowCell">

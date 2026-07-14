@@ -80,19 +80,19 @@
         <span>Conditions</span>
       </td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addCondition(); $event.stopPropagation()">
+        <div class="propAdd" (click)="$event.stopPropagation(); addCondition(); $event.stopPropagation()">
           <i class="pi pi-plus"></i>
           <span>Add Condition</span>
         </div>
       </td>
     </tr>
     @for (condition of properties.conditions; track condition; let i = $index) {
-      <tr class="propRow" [attr.collapse]="propHidden.conditionsGroup">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
-          [attr.collapse]="propHidden.conditions[i]">
-          <i class="pi pi-chevron-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup" (click)="onHide(propHidden.conditions, i)">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.conditions[i]">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Condition {{ i }}</span>
         </td>
-        <td class="propRowCell cellName">Condition {{ i }}</td>
         <td class="propRowCell">
           @if (condition.field && condition.type && condition.value) {
             <span
@@ -100,12 +100,12 @@
               {{ condition.field }} {{ condition.type }} {{ condition.value }}
             </span>
           }
-          <span class="remove-prop" [attr.readonly]="readonly" (click)="removeCondition(i)">
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeCondition(i)">
             <i class="pi pi-trash"></i>
           </span>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
@@ -120,14 +120,14 @@
           </p-select>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Value</td>
         <td class="propRowCell">
