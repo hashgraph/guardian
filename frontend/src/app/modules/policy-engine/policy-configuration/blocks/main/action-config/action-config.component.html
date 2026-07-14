@@ -40,29 +40,35 @@
           <input class="prop-input" [(ngModel)]="properties.field" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'optionsGroup')"
-          [attr.collapse]="propHidden.optionsGroup">
+      <tr class="propRow" [attr.collapse]="propHidden.main" (click)="onHide(propHidden, 'optionsGroup')">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.optionsGroup">
           @if (properties.uiMetaData.options.length) {
-            <i class="pi pi-chevron-down"></i>
+            <i class="pi pi-chevron-down chevron-icon"></i>
           }
+          <span>Options</span>
         </td>
-        <td class="propRowCell cellName">Options</td>
         <td class="propRowCell">
-          <div class="propAdd" (click)="addOptions()">
+          <div class="propAdd" (click)="$event.stopPropagation(); addOptions()">
             <i class="pi pi-plus"></i>
             <span>Add Options</span>
           </div>
         </td>
       </tr>
       @for (option of properties.uiMetaData.options; track option; let i = $index) {
-        <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup">
-          <td class="propRowCol cellCollapse" (click)="onHide(propHidden.options, i)"
-            [attr.collapse]="propHidden.options[i]">
-            <i class="pi pi-chevron-down"></i>
+        <tr class="propRow subRow" [attr.collapse]="propHidden.main || propHidden.optionsGroup"
+          (click)="onHide(propHidden.options, i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.options[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Options {{ i }}</span>
           </td>
-          <td class="propRowCell cellName">Options {{ i }}</td>
-          <td class="propRowCell">{{ option.name }}</td>
+          <td class="propRowCell not-editable-text">
+            <span>{{ option.name }}</span>
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveOption(i)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
         </tr>
         <tr class="propRow subRow-2"
           [attr.collapse]="propHidden.main || propHidden.optionsGroup || propHidden.options[i]">
