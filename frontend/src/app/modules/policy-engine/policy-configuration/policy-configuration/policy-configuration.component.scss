@@ -1398,6 +1398,36 @@
     opacity: 0.6;
 }
 
+.policy-configuration[readonly="true"]::ng-deep .inspector-subsection {
+    pointer-events: none;
+    filter: grayscale(1);
+    opacity: 0.6;
+}
+
+// A filter makes the element the containing block for its absolutely positioned
+// descendants, which would re-anchor the add button off the header line.
+.policy-configuration[readonly="true"]::ng-deep .inspector-subsection artifact-properties.readonly-status {
+    filter: none;
+}
+
+// Headers are unclickable above, so nothing may stay collapsed and unreadable.
+.policy-configuration::ng-deep .grid-setting[readonly="true"] .properties .propHeader[collapse="true"],
+.policy-configuration::ng-deep .grid-setting[readonly="true"] .properties .propRow[collapse="true"] {
+    display: table-row !important;
+}
+
+.policy-configuration[readonly="true"]::ng-deep .inspector-subsection[collapse="true"] .artifact-list {
+    display: block;
+}
+
+.policy-configuration::ng-deep .grid-setting[readonly="true"] [collapse="true"] .chevron-icon {
+    transform: none !important;
+}
+
+.policy-configuration[readonly="true"]::ng-deep .artifact-list {
+    pointer-events: auto;
+}
+
 .policy-configuration::ng-deep {
     .pc-tabs {
         position: relative;
