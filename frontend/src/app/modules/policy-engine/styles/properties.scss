@@ -1626,6 +1626,33 @@
         --col-name-width: 184px;
     }
 
+    // The one indent ladder for the inspector. A level is a collapse nested
+    // inside another collapse; a plain field sits at the level of the collapse
+    // that holds it. Section headers and their direct fields are level 0.
+    .right-bottom-toolbar .properties .propRow[lvl="1"] > .propRowCell.cellName,
+    .right-bottom-toolbar .properties .propHeader[lvl="1"] > .propHeaderCell.cellName {
+        padding-left: 16px !important;
+    }
+
+    .right-bottom-toolbar .properties .propRow[lvl="2"] > .propRowCell.cellName,
+    .right-bottom-toolbar .properties .propHeader[lvl="2"] > .propHeaderCell.cellName {
+        padding-left: 32px !important;
+    }
+
+    .right-bottom-toolbar .properties .propRow[lvl="3"] > .propRowCell.cellName,
+    .right-bottom-toolbar .properties .propHeader[lvl="3"] > .propHeaderCell.cellName {
+        padding-left: 48px !important;
+    }
+
+    .right-bottom-toolbar .properties .propRow[lvl="4"] > .propRowCell.cellName,
+    .right-bottom-toolbar .properties .propHeader[lvl="4"] > .propHeaderCell.cellName {
+        padding-left: 64px !important;
+    }
+
+    // Custom properties carry their depth in the DOM instead of an lvl attribute:
+    // the .custom-properties host div is display:contents, so it stays in the tree
+    // while its rows join the table. A group header steps in; a group's plain field
+    // stays at the group's level; an array item is a collapse, so it steps in.
     .right-bottom-toolbar .properties .propRow.array-item-row > .propRowCell.cellName {
         padding-left: 32px !important;
         color: var(--guardian-font-color, #23252E);
@@ -1633,27 +1660,24 @@
     }
 
     .right-bottom-toolbar .properties .propRow[offset="1"] .propRowCell.cellName {
-        padding-left: 48px !important;
+        padding-left: 32px !important;
     }
 
     .right-bottom-toolbar .properties .propRow[offset="2"] .propRowCell.cellName {
-        padding-left: 58px !important;
+        padding-left: 48px !important;
     }
 
-    // Depth = number of .custom-properties ancestors: the host div is
-    // display:contents, so it stays in the DOM tree while its rows join the table.
     .right-bottom-toolbar .properties .custom-properties > .propHeader > .propHeaderCell.cellName,
-    .right-bottom-toolbar .properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
+    .right-bottom-toolbar .properties .custom-properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
         padding-left: 16px !important;
     }
 
     .right-bottom-toolbar .properties .custom-properties .custom-properties > .propHeader > .propHeaderCell.cellName,
-    .right-bottom-toolbar .properties .custom-properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
+    .right-bottom-toolbar .properties .custom-properties .custom-properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
         padding-left: 32px !important;
     }
 
-    .right-bottom-toolbar .properties .custom-properties .custom-properties .custom-properties > .propHeader > .propHeaderCell.cellName,
-    .right-bottom-toolbar .properties .custom-properties .custom-properties .custom-properties > .propRow:not([offset]):not(.array-item-row) > .propRowCell.cellName {
+    .right-bottom-toolbar .properties .custom-properties .custom-properties .custom-properties > .propHeader > .propHeaderCell.cellName {
         padding-left: 48px !important;
     }
 
@@ -1826,6 +1850,32 @@
 
     .right-bottom-toolbar .properties.action-properties .action-section-header[collapse="true"] .chevron-icon {
         transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRow > .propRowCell.cellName > .chevron-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
+        width: 14px;
+        height: 24px;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        transition: transform 0.12s ease;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRow > .propRowCell.cellName > span {
+        vertical-align: middle;
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRow > .propRowCell.cellName[collapse="true"] > .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .right-bottom-toolbar .properties.action-properties .propRow.subRow > .propRowCell.cellName {
+        padding-left: 16px !important;
     }
 
     .right-bottom-toolbar .properties.action-properties .propRowCol.cellCollapse {
