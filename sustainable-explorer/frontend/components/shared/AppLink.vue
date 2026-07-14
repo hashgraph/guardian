@@ -51,12 +51,7 @@ const resolvedTo = computed<RouteLocationRaw | undefined>(() => {
 </script>
 
 <template>
-    <NuxtLink :to="resolvedTo" :custom="custom">
-        <template v-if="custom" #default="slotProps">
-            <slot v-bind="slotProps" />
-        </template>
-        <template v-else>
-            <slot />
-        </template>
+    <NuxtLink :to="resolvedTo" :custom="custom" v-slot="slotProps">
+        <slot v-bind="slotProps" />
     </NuxtLink>
 </template>
