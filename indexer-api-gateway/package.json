@@ -41,7 +41,7 @@
         "@types/express": "5.0.6",
         "@types/express-fileupload": "1.5.1",
         "@types/glob": "^8.1.0",
-        "@types/node": "24.13.2",
+        "@types/node": "24.13.3",
         "@types/ws": "8.18.1",
         "chai": "^4.3.4",
         "cross-env": "10.1.0",

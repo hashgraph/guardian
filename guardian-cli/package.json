@@ -15,7 +15,7 @@
     "author": "Hashgraph <guardian@hashgraph.com>",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@types/node": "24.13.2",
+        "@types/node": "24.13.3",
         "typescript": "^5.8.3"
     },
     "engines": {

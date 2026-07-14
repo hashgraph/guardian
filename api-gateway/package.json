@@ -31,7 +31,7 @@
     "devDependencies": {
         "@types/express": "5.0.6",
         "@types/glob": "^8.1.0",
-        "@types/node": "24.13.2",
+        "@types/node": "24.13.3",
         "@types/ws": "8.18.1",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
