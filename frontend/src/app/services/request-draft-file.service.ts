@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from './toast.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { TablePersistenceService } from './table-persistence.service';
@@ -37,7 +37,7 @@ export class RequestDraftFileService {
     private static readonly DRAFT_VERSION = '1.0.0';
 
     constructor(
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private dialogService: DialogService,
         private tablePersist: TablePersistenceService,
     ) {}
@@ -78,12 +78,12 @@ export class RequestDraftFileService {
         try {
             parsed = await this.readFileAsJson(file);
         } catch {
-            this.toastr.error('Could not parse the selected JSON file.', 'Import failed');
+            this.toastService.error('Could not parse the selected JSON file.', 'Import failed');
             return null;
         }
         const document = parsed?.document ?? (parsed as IRequestDraftDocument);
         if (!document || typeof document !== 'object') {
-            this.toastr.error('The selected file does not contain draft data.', 'Import failed');
+            this.toastService.error('The selected file does not contain draft data.', 'Import failed');
             return null;
         }
         const warnings: string[] = [];
@@ -148,7 +148,7 @@ export class RequestDraftFileService {
                 ]
             },
         });
-        dialogOptionRef.onClose.subscribe((result: string) => {
+        dialogOptionRef?.onClose.subscribe((result: string) => {
             if (result === 'Continue') {
                 onContinue();
             }
@@ -176,10 +176,10 @@ export class RequestDraftFileService {
     public async applyImportedDraft(doc: IRequestDraftDocument): Promise<void> {
         try {
             await this.tablePersist.restoreTablesFromDraft(doc);
-            this.toastr.success('Draft loaded from file.', 'Import complete');
+            this.toastService.success('Draft loaded from file.', 'Import complete');
         } catch (e) {
             console.error(e);
-            this.toastr.warning('Draft loaded, but some table data could not be restored.', 'Import incomplete');
+            this.toastService.warn('Draft loaded, but some table data could not be restored.', 'Import incomplete');
         }
     }
 }
