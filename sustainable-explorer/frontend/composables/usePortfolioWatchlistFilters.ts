@@ -1,6 +1,6 @@
 import type { Project } from '~/types/models';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
-import { naturalCompare, isValidCountryName } from '~/lib/utils';
+import { naturalCompare, isValidCountryName, decodeMultiValue } from '~/lib/utils';
 import { SDG_LIST } from '~/lib/sdgs';
 
 // Both endpoints are paginated with no "all" mode; methodology/registry
@@ -113,7 +113,7 @@ export function usePortfolioWatchlistFilters(candidates: Ref<Project[]>, isModal
     // here would be redundant (the candidates it's given already match).
     function matchesFilters(p: Project): boolean {
         const country = watchlistFilters.value.country;
-        if (country && !country.split('|').includes(resolvedCountryName(p))) return false;
+        if (country && !decodeMultiValue(country).includes(resolvedCountryName(p))) return false;
         return true;
     }
 

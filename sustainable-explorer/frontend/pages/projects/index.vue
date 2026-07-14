@@ -13,7 +13,7 @@ import {
 } from "lucide-vue-next";
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
 import { formatCredits } from "~/lib/format";
-import { naturalCompare } from "~/lib/utils";
+import { naturalCompare, decodeMultiValue } from "~/lib/utils";
 import { SDG_LIST } from "~/lib/sdgs";
 import { generateProjectVc } from "~/lib/mock-vc";
 import { getMethodologyLongName } from "~/lib/methodologies";
@@ -337,9 +337,9 @@ async function downloadProjects() {
     ).map(mapApiProject);
 
     if (af.sector) {
-      const sectors = af.sector
-        .split(",")
-        .map((s: string) => s.trim().toLowerCase());
+      const sectors = decodeMultiValue(af.sector).map((s: string) =>
+        s.trim().toLowerCase(),
+      );
       mapped = mapped.filter((p) =>
         sectors.some((s) => (p.sector ?? "").toLowerCase().includes(s)),
       );
@@ -351,7 +351,7 @@ async function downloadProjects() {
       );
     }
     if (af.sdgs) {
-      const selectedSdgs = af.sdgs.split(",").map((s: string) => s.trim());
+      const selectedSdgs = decodeMultiValue(af.sdgs).map((s: string) => s.trim());
       mapped = mapped.filter(
         (p) =>
           Array.isArray(p.sdgs) &&

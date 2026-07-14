@@ -43,3 +43,24 @@ export function isValidCountryName(v: string): boolean {
     if (/^-?\d+(\.\d+)?\s*°?\s*[NSEW]?$/i.test(v.trim())) return false;
     return true;
 }
+
+// Multi-select filter values are joined with `|` into a single query-string
+// value. Percent-encoding each value before the join (and decoding each part
+// after the split) keeps the join/split collision-proof even when a value
+// itself contains a literal `|` (e.g. testnet methodology names like
+// "MECD-v2.0 | LKA | V1.0"). Without this, such a value would be split into
+// spurious extra parts, breaking both "is this selected" checks and count
+// badges.
+export function encodeMultiValue(values: string[]): string {
+    return values.map(v => encodeURIComponent(v)).join('|');
+}
+
+// The try/catch fallback keeps this backward-compatible with old, never-encoded
+// raw values already in bookmarked URLs / previously-saved searches (decoding
+// a plain string with no `%` sequences is a safe no-op).
+export function decodeMultiValue(raw?: string | null): string[] {
+    if (!raw || raw === 'all') return [];
+    return raw.split('|').map(part => {
+        try { return decodeURIComponent(part); } catch { return part; }
+    }).filter(Boolean);
+}

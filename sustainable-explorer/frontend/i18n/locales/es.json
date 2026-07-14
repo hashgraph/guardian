@@ -1232,7 +1232,7 @@
         },
         "watchedProjects": {
             "title": "Proyectos en seguimiento",
-            "subtitle": "Proyectos de tu lista de seguimiento · haz clic en una tarjeta para ver los detalles",
+            "subtitle": "Proyectos de tu lista de seguimiento",
             "issued": "Emitidos",
             "retired": "Retirados",
             "transferred": "Transferidos",

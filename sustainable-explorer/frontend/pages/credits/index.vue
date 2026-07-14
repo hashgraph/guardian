@@ -2,7 +2,7 @@
 import { FileJson, Sparkles, Download, Loader2, Save } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { formatCredits } from '~/lib/format';
-import { naturalCompare } from '~/lib/utils';
+import { naturalCompare, decodeMultiValue } from '~/lib/utils';
 import { downloadCsv, csvDateStamp, buildCreditCsvRows } from '~/lib/csv-export';
 import type { SavedSearchCriteria } from '~/composables/useSavedSearches';
 import SavedSearchesRow from '~/components/saved-search/SavedSearchesRow.vue';
@@ -156,7 +156,8 @@ async function downloadCredits() {
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
         // type: API only handles single value; multi-select applied client-side below
-        if (af.type && !af.type.includes(',')) query.type = af.type;
+        const types = decodeMultiValue(af.type);
+        if (types.length === 1) query.type = types[0];
         if (af.registry) query.registry = af.registry;
         if (projectKeyFilter.value) query.projectKey = projectKeyFilter.value;
         if (methodologyIdFilter.value) query.methodologyId = methodologyIdFilter.value;
@@ -168,8 +169,7 @@ async function downloadCredits() {
         if (hideUnlinked.value) allData = allData.filter(c => c.projectId);
 
         // type multi-select (backend only handles single value; OR match across selected types)
-        if (af.type && af.type.includes(',')) {
-            const types = af.type.split(',').map((s: string) => s.trim());
+        if (types.length > 1) {
             allData = allData.filter(c => types.includes(c.type ?? ''));
         }
         // supply range stored as "min|max"
