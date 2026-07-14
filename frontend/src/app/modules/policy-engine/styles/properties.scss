@@ -327,16 +327,6 @@
                     padding-top: 6px;
                     padding-bottom: 6px;
                     padding-right: 6px;
-
-                    &::ng-deep {
-                        .p-select {
-                            height: 48px;
-
-                            .p-select-label {
-                                padding-top: 11px;
-                            }
-                        }
-                    }
                 }
             }
 
@@ -1322,7 +1312,7 @@
         display: flex;
         align-items: center;
         min-height: 32px;
-        padding: 8px 10px;
+        padding: 8px 4px;
         border-radius: 6px;
         font-size: 13px;
         font-family: 'Inter', sans-serif;
@@ -2709,7 +2699,6 @@
         width: 100%;
     }
 
-    .right-bottom-toolbar .properties .propRowCell document-path .select,
     .right-bottom-toolbar .properties .propRowCell document-path .input-end {
         flex: 1 1 50%;
         min-width: 0;
@@ -2722,6 +2711,11 @@
         font-family: var(--pc-row-font-family);
         font-size: var(--pc-row-font-size);
         padding: 3px 8px;
+    }
+
+    .right-bottom-toolbar .properties .propRowCell document-path .select {
+        flex: 1 1 50%;
+        min-width: 0;
     }
 
     .right-bottom-toolbar .properties .propRowCell document-path .input-end-tooltip {

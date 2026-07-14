@@ -213,7 +213,9 @@
                             [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                             <ng-template pTemplate="selectedItems" let-selectedItems>
-                              <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              @if (selectedItems?.length) {
+                                <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              }
                             </ng-template>
                             <ng-template pTemplate="item" let-item>
                               <div class="select-block-name">
@@ -237,7 +239,9 @@
                             [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                             <ng-template pTemplate="selectedItems" let-selectedItems>
-                              <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              @if (selectedItems?.length) {
+                                <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              }
                             </ng-template>
                             <ng-template pTemplate="item" let-item>
                               <div class="select-block-name">

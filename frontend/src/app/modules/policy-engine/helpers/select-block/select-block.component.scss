@@ -18,15 +18,8 @@
 }
 
 .custom {
-    height: 14px;
-    line-height: 14px;
-    display: inline-block;
+    display: block;
     min-width: 1px;
-    position: absolute;
-    left: 8px;
-    top: 11px;
-    right: 40px;
-    bottom: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -63,14 +56,6 @@
     }
 }
 
-.guardian-dropdown::ng-deep .p-select {
-    border-radius: 0px;
-}
-
-.guardian-multiselect::ng-deep .p-multiselect {
-    border-radius: 0px !important;
-}
-
 ::ng-deep .policy-select-block {
     .p-multiselect-header {
         position: relative;
@@ -90,12 +75,4 @@
 .block-name[root="true"] {
     font-weight: 500;
     font-size: 14px;
-}
-
-::ng-deep p-select .p-select {
-    width: 175px;
-}
-
-::ng-deep .p-select-list {
-    width: 472px;
 }

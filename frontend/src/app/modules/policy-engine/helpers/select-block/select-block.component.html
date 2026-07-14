@@ -9,8 +9,7 @@
     filterPlaceholder="Search..."
     placeholder="Select..."
     appendTo="body"
-    class="guardian-dropdown"
-    panelStyleClass="guardian-dropdown-panel"
+    panelStyleClass="pc-select-panel"
     >
     <ng-template pTemplate="selectedItem" let-item>
       <span class="custom">{{ item ? item.name : 'Select...' }}</span>
@@ -56,8 +55,7 @@
     [displaySelectedLabel]="false"
     placeholder="Select"
     appendTo="body"
-    class="guardian-multiselect"
-    panelStyleClass="guardian-multiselect-panel policy-select-block"
+    panelStyleClass="policy-select-block pc-select-panel"
     >
     <ng-template pTemplate="header">
       <div class="components-search">

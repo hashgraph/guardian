@@ -3,7 +3,7 @@
     [disabled]="disabled"
     [options]="schemas"
     class="schema-select {{bodyStyleClass}}"
-    [panelStyleClass]="panelStyleClass"
+    [panelStyleClass]="panelStyleClass || 'pc-select-panel'"
     placeholder="Select a schema"
     optionLabel="displayName"
     optionValue="value"
