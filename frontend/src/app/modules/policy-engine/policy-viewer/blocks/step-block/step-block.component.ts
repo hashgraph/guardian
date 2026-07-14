@@ -31,11 +31,18 @@ export class StepBlockComponent implements OnInit {
     }
 
     get unavailable(): boolean {
-        // The block data loaded, but there is no active child to render. This happens
-        // when the workflow advanced to a step this user cannot access (role/state
-        // gate), so the policy-service container serializes the active child as null.
-        // Show a friendly message instead of an endless spinner.
-        return this.loaded && !this.activeBlock;
+        // The block data loaded successfully, but there is no active child to render.
+        // This happens when the workflow advanced to a step this user cannot access
+        // (role/state gate), so the policy-service container serializes the active
+        // child as null. Show a friendly "not your turn" message - NOT an error.
+        return this.loaded && !this.hasError && !this.activeBlock;
+    }
+
+    get errored(): boolean {
+        // A genuine failure while loading the block (server/network error). Kept
+        // separate from `unavailable` so we don't hide a real outage behind a
+        // reassuring "another participant is handling this step" message.
+        return this.loaded && this.hasError;
     }
 
     @Input('id') id!: string;
@@ -50,6 +57,7 @@ export class StepBlockComponent implements OnInit {
     isActive = false;
     readonly: boolean = false;
     loaded: boolean = false;
+    hasError: boolean = false;
     private index: number = 0;
 
     constructor(
@@ -89,7 +97,14 @@ export class StepBlockComponent implements OnInit {
         }
     }
 
+    retry() {
+        this.loaded = false;
+        this.hasError = false;
+        this.loadData();
+    }
+
     private _onSuccess(data: any) {
+        this.hasError = false;
         this.setData(data);
     }
 
@@ -97,11 +112,13 @@ export class StepBlockComponent implements OnInit {
         console.error(e.error);
         // 503 means the block is no longer available to the user (the workflow
         // advanced past it, or a role/state gate closed it) - clear to the
-        // unavailable state. Any other error also stops the spinner and falls
-        // through to the unavailable message instead of hanging forever.
+        // "not your turn" unavailable state. Any other status is a genuine
+        // failure: stop the spinner but show a distinct error state so a real
+        // outage isn't disguised as a normal workflow message.
         if (e.status === 503) {
             this._onSuccess(null);
         } else {
+            this.hasError = true;
             this.loaded = true;
         }
     }
