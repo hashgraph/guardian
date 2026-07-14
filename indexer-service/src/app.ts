@@ -101,6 +101,7 @@ Promise.all([
                 path: 'dist/migrations',
                 transactional: false,
             },
+            ensureIndexes: true,
             entities,
         },
         []
