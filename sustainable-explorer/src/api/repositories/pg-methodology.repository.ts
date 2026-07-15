@@ -7,9 +7,25 @@ import {
     MethodologyRow,
     MethodologyStatsRow,
     IssuanceRow,
+    MethodologyExportFilters,
+    MethodologyExportRow,
 } from './methodology.repository';
 import { QueryBuilder } from './query-builder';
 import { METHODOLOGY_FIELD_SCHEMA } from './schemas/methodology.schema';
+
+/** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
+const EXPORT_BATCH_SIZE = 2000;
+
+/** Raw row shape for `findAllForExport` (see `MethodologyExportRow` doc). */
+interface RawExportRow {
+    name: string | null;
+    registry_name: string | null;
+    version: string | null;
+    emission_reduction_approach: unknown;
+    relatedTopicId: string | null;
+    dataSource: string | null;
+    ipfsCids: string[] | null;
+}
 
 interface RawRow {
     id: string;
@@ -38,11 +54,7 @@ interface RawRow {
     total_retired: string | null;
 }
 
-/**
- * LATERAL subquery joined into both findAll and findById to look up the
- * publishing registry's display name. Uses LATERAL so we can ORDER BY +
- * LIMIT 1 to handle the (rare) case of multiple REGISTRY rows for one DID.
- */
+/** LATERAL subquery joined into both findAll and findById to look up the publishing registry's display name, using ORDER BY + LIMIT 1 to handle the rare case of multiple REGISTRY rows for one DID. */
 const REGISTRY_NAME_JOIN = `
     LEFT JOIN LATERAL (
         SELECT "displayName" AS registry_name
@@ -54,14 +66,7 @@ const REGISTRY_NAME_JOIN = `
     ) reg ON true
 `;
 
-/**
- * Brings in the decode status for the methodology's policy topic.
- * businessData->>'topicId' is the policyTopicId stored by the worker.
- *
- * A single policyTopicId can have N policy rows (one per published version),
- * so we collapse via LATERAL — prefer the latest decoded row, fall back to
- * the latest row of any status — to keep methodologies 1:1 with their UI rows.
- */
+/** Brings in the decode status for the methodology's policy topic (businessData->>'topicId'); collapses via LATERAL — prefer the latest decoded row, fall back to the latest row of any status — since a policyTopicId can have N policy rows. */
 const POLICY_DECODE_STATUS_JOIN = `
     LEFT JOIN LATERAL (
         SELECT *
@@ -73,11 +78,7 @@ const POLICY_DECODE_STATUS_JOIN = `
     ) p ON TRUE
 `;
 
-/**
- * Effective decode status for display + filtering.
- * Maps policy.decodeStatus ('decoded' / 'pending' / 'failed') to the public
- * API vocabulary ('success' / 'pending' / 'failed').
- */
+/** Effective decode status for display + filtering; maps policy.decodeStatus ('decoded'/'pending'/'failed') to the public API vocabulary ('success'/'pending'/'failed'). */
 const EFFECTIVE_DECODE_STATUS = `
     CASE
         WHEN p."decodeStatus" = 'decoded' THEN 'success'
@@ -90,6 +91,11 @@ const SEARCH_TSVECTOR = `(
     setweight(to_tsvector('english', coalesce(bv."registryDid", '')), 'B') ||
     setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
 )`;
+
+/** The `message` row backing this METHODOLOGY's own originating VC (`business_view.sourceTimestamp` = `message.consensusTimestamp`), supplying `source_system_id`/`ipfs_document_ref` for `findAllForExport`. */
+const SOURCE_MESSAGE_JOIN = `
+    LEFT JOIN message src_msg ON src_msg."consensusTimestamp" = bv."sourceTimestamp"
+`;
 
 const METHODOLOGY_CANONICAL_DEDUP = `
     (
@@ -105,13 +111,7 @@ const METHODOLOGY_CANONICAL_DEDUP = `
     )
 `;
 
-/**
- * LATERAL subquery that computes totalIssued and totalRetired for each
- * methodology in the list. Mirrors the primary path used in findById:
- * - Joins projects to this methodology via businessData->>'instanceTopicId'
- * - Sums mint amounts from project_mint_link for totalIssued
- * - Counts deleted NFT serials from nft_cache for totalRetired
- */
+/** LATERAL subquery that computes totalIssued/totalRetired for each methodology in the list, mirroring findById's primary path: sums project_mint_link mint amounts for totalIssued and counts deleted nft_cache serials for totalRetired. */
 const LIFECYCLE_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
@@ -134,17 +134,7 @@ const LIFECYCLE_JOIN = `
     ) lc_m ON true
 `;
 
-/**
- * PostgreSQL implementation of the MethodologyRepository.
- *
- * Generic filter and sort logic is delegated to QueryBuilder + the field
- * schema (METHODOLOGY_FIELD_SCHEMA). Adding a new filterable/sortable
- * column only requires updating the schema — no SQL changes needed here.
- *
- * Special operations (full-text + fuzzy search, materialized view joins,
- * search ranking) remain explicit because they don't fit the generic
- * operator model.
- */
+/** PostgreSQL implementation of the MethodologyRepository; generic filter/sort logic is delegated to QueryBuilder + METHODOLOGY_FIELD_SCHEMA, while full-text search, MV joins, and ranking remain explicit since they don't fit the generic operator model. */
 export class PgMethodologyRepository extends MethodologyRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
@@ -156,12 +146,10 @@ export class PgMethodologyRepository extends MethodologyRepository {
 
         const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
         builder.addClause(`bv."viewType" = 'METHODOLOGY'`);
-        // Keep one row per methodology so duplicate-message rows (same
-        // relatedTopicId) don't surface as repeated list entries.
+        // Keep one row per methodology so duplicate-message rows (same relatedTopicId) don't surface as repeated list entries.
         builder.addClause(METHODOLOGY_CANONICAL_DEDUP);
 
-        // Generic filters: every filterable field defined in the schema
-        // is wired automatically. To add a new filter, edit methodology.schema.ts.
+        // Generic filters: every filterable field defined in the schema is wired automatically.
         builder.addFilters({
             name: query.name,
             id: query.id,
@@ -172,10 +160,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
             policyTopicId: query.policyTopicId,
         });
 
-        // decodeStatus filter — uses the EFFECTIVE status (CASE expression) so
-        // 'success' includes policies whose schemas are imported even if a
-        // recent retry flipped pds.status to 'failed'.
-        // Supports pipe-separated multi-values (e.g. "success|failed").
+        // decodeStatus filter uses the EFFECTIVE status so 'success' includes policies whose schemas are imported
+        // even if a recent retry flipped status to 'failed'; supports pipe-separated multi-values (e.g. "success|failed").
         if (query.decodeStatus?.length) {
             const statuses = query.decodeStatus;
             const hasUnknown = statuses.includes('unknown');
@@ -196,11 +182,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
             }
         }
 
-        // Special: full-text search with ranking. The tsvector index covers
-        // displayName (weight A), registryDid (B), and searchText (C).
-        // ILIKE on displayName is kept as a fast prefix fallback for partial
-        // word matches that tsquery doesn't catch.
-        // similarity() provides typo-tolerance via pg_trgm.
+        // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast
+        // prefix fallback for partial matches tsquery doesn't catch, and similarity() adds typo-tolerance via pg_trgm.
         let rankExpr = '0';
         if (search) {
             const term = search.trim();
@@ -263,9 +246,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE and LATERAL join (so filters that
-        // reference `reg.registry_name` resolve correctly), but skips the stats
-        // MV join and the LIMIT/OFFSET params.
+        // Count query reuses the same WHERE and LATERAL join (so filters referencing `reg.registry_name` resolve
+        // correctly), but skips the stats MV join and the LIMIT/OFFSET params.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
@@ -320,12 +302,9 @@ export class PgMethodologyRepository extends MethodologyRepository {
 
         const instanceTopicId = row.relatedTopicId;
 
-        // Fetch MintToken VCs for all projects under this methodology instance via
-        // project_mint_link. We join through business_view PROJECT rows whose
-        // businessData->>'instanceTopicId' matches this methodology's relatedTopicId
-        // (the same condition mv_methodology_stats uses for instance_project_count),
-        // then pull each project's attributed mints. This keeps supply figures
-        // consistent with the project detail view and the credits list page.
+        // Fetch MintToken VCs for all projects under this methodology instance via project_mint_link, joining
+        // through PROJECT rows whose instanceTopicId matches this methodology's relatedTopicId — keeps supply
+        // figures consistent with the project detail view and the credits list page.
         let issuances: IssuanceRow[] = [];
         if (instanceTopicId) {
             const mintRows: Array<{
@@ -390,9 +369,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
             }
         }
 
-        // Aggregate lifecycle stats for NFT tokens: total minted (all serials) and
-        // total retired (serials marked deleted by Mirror Node).
-        // Fungible tokens don't have per-serial tracking so their supply is used as-is.
+        // Aggregate lifecycle stats for NFT tokens: total minted (all serials) and total retired (serials marked
+        // deleted by Mirror Node). Fungible tokens don't have per-serial tracking so their supply is used as-is.
         const nftTokenIds = issuances
             .filter(i => i.type === 'NON_FUNGIBLE_UNIQUE')
             .map(i => i.tokenId)
@@ -432,13 +410,132 @@ export class PgMethodologyRepository extends MethodologyRepository {
         return PgMethodologyRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive });
     }
 
+    /** Full filtered, `relatedTopicId`-deduped methodologies dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
+    async findAllForExport(filters: MethodologyExportFilters): Promise<MethodologyExportRow[]> {
+        const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
+        builder.addClause(`bv."viewType" = 'METHODOLOGY'`);
+        builder.addClause(METHODOLOGY_CANONICAL_DEDUP);
+
+        builder.addFilters({
+            name: filters.name,
+            id: filters.id,
+            description: filters.description,
+            registryDid: filters.registryDid,
+            registryName: filters.registryName,
+            version: filters.version,
+            policyTopicId: filters.policyTopicId,
+        });
+
+        if (filters.decodeStatus?.length) {
+            const statuses = filters.decodeStatus;
+            const hasUnknown = statuses.includes('unknown');
+            const otherStatuses = statuses.filter(s => s !== 'unknown');
+
+            const clauses: string[] = [];
+            if (hasUnknown) clauses.push(`(${EFFECTIVE_DECODE_STATUS}) IS NULL`);
+            if (otherStatuses.length === 1) {
+                const p = builder.nextParam(otherStatuses[0]);
+                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ${p}`);
+            } else if (otherStatuses.length > 1) {
+                const p = builder.nextParam(otherStatuses);
+                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ANY(${p}::text[])`);
+            }
+
+            if (clauses.length > 0) {
+                builder.addClause(clauses.length === 1 ? clauses[0] : `(${clauses.join(' OR ')})`);
+            }
+        }
+
+        if (filters.search) {
+            const term = filters.search.trim();
+            const tsParam = builder.nextParam(term);
+            const likeParam = builder.nextParam(`%${term}%`);
+            const simParam = builder.nextParam(term);
+
+            builder.addClause(`(
+                ${SEARCH_TSVECTOR} @@ plainto_tsquery('english', ${tsParam})
+                OR bv."displayName" ILIKE ${likeParam}
+                OR bv."registryDid" ILIKE ${likeParam}
+                OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
+            )`);
+        }
+
+        const whereSql = builder.getWhereClause();
+        const baseParams = builder.getParams();
+        const limitParam = `$${baseParams.length + 1}`;
+        const offsetParam = `$${baseParams.length + 2}`;
+
+        const rows: MethodologyExportRow[] = [];
+        for (let offset = 0; ; offset += EXPORT_BATCH_SIZE) {
+            const params = [...baseParams, EXPORT_BATCH_SIZE, offset];
+
+            const batchSql = `
+                SELECT
+                    bv."displayName" AS name,
+                    reg.registry_name,
+                    bv."businessData"->'options'->>'version' AS version,
+                    p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
+                    bv."relatedTopicId",
+                    src_msg."dataSource",
+                    src_msg.files AS "ipfsCids"
+                FROM business_view bv
+                ${REGISTRY_NAME_JOIN}
+                ${POLICY_DECODE_STATUS_JOIN}
+                ${SOURCE_MESSAGE_JOIN}
+                WHERE ${whereSql}
+                ORDER BY bv."sourceTimestamp" ASC
+                LIMIT ${limitParam} OFFSET ${offsetParam}
+            `;
+
+            const batch: RawExportRow[] = await this.dataSource.query(batchSql, params);
+            rows.push(...batch.map(PgMethodologyRepository.mapExportRow));
+
+            if (batch.length < EXPORT_BATCH_SIZE) break;
+        }
+
+        return rows;
+    }
+
+    private static mapExportRow(row: RawExportRow): MethodologyExportRow {
+        const cids = Array.isArray(row.ipfsCids)
+            ? row.ipfsCids.filter((c): c is string => typeof c === 'string' && c.length > 0)
+            : [];
+
+        return {
+            name: row.name ?? null,
+            registry: row.registry_name ?? null,
+            version: row.version ?? null,
+            mitigation_type: PgMethodologyRepository.extractEmissionReductionApproach(row.emission_reduction_approach),
+            // The methodology's own name IS the governing standard at this granularity.
+            standard: row.name ?? null,
+            ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
+            // A methodology has no Hedera token, so leave blank rather than fabricate;
+            // `_topicId` still resolves a verification_url via the topic fallback.
+            _consensusTimestamp: null,
+            _tokenId: null,
+            _topicId: row.relatedTopicId ?? null,
+            _dataSource: row.dataSource ?? null,
+        };
+    }
+
+    /** `emissionReductionApproach` arrives as a JSONB array of policyMapping entries; the resolved label lives in `entry.schemaName`. Mirrors the inline extraction in `mapRow` below for `findAll`/`findById`. */
+    private static extractEmissionReductionApproach(raw: unknown): string | null {
+        if (!Array.isArray(raw)) return null;
+        for (const entry of raw) {
+            if (entry && typeof entry === 'object' && 'schemaName' in entry) {
+                const v = (entry as Record<string, unknown>)['schemaName'];
+                if (typeof v === 'string' && v) return v;
+            }
+        }
+        return null;
+    }
+
     private static mapRow(
         row: RawRow,
         issuances?: IssuanceRow[],
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
     ): MethodologyRow {
-        // findById passes lifecycle explicitly; findAll supplies it via the
-        // LIFECYCLE_JOIN lateral columns on the raw row.
+        // findById passes lifecycle explicitly; findAll supplies it via the LIFECYCLE_JOIN lateral columns on the raw row.
         const resolvedLifecycle = lifecycle ?? (row.total_issued != null
             ? (() => {
                 const issued = parseInt(row.total_issued!, 10);
@@ -459,8 +556,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const description = typeof data.description === 'string' ? data.description : null;
         const statusValue = typeof data.status === 'string' ? data.status : null;
 
-        // sectoralScopes arrives as a JSONB array of policyMapping entries.
-        // Each entry has a `schemaName` field holding the actual scope value.
+        // sectoralScopes arrives as a JSONB array of policyMapping entries, each with a `schemaName` field holding the scope value.
         let sectoralScopes: string[] | null = null;
         if (Array.isArray(row.sectoral_scopes)) {
             const scopes: string[] = [];
@@ -472,9 +568,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             }
             if (scopes.length > 0) sectoralScopes = scopes;
         }
-        // emissionReductionApproach arrives as a JSONB array of policyMapping
-        // entries (one per matching source); the resolved label lives in
-        // entry.schemaName. Pick the first non-empty value.
+        // emissionReductionApproach arrives as a JSONB array of policyMapping entries; the resolved label lives in entry.schemaName (first non-empty value).
         let emissionReductionApproach: string | null = null;
         if (Array.isArray(row.emission_reduction_approach)) {
             for (const entry of row.emission_reduction_approach as unknown[]) {
