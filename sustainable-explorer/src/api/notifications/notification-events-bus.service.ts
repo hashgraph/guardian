@@ -86,13 +86,24 @@ export class NotificationEventsBus implements OnModuleInit, OnModuleDestroy {
             this.logger.warn(`Redis subscriber error: ${error.message}`);
         });
 
-        try {
-            await this.subscriber.subscribe(SE_NOTIF_CHANNEL);
-            this.logger.log(`Subscribed to Redis channel "${SE_NOTIF_CHANNEL}"`);
-        } catch (error: unknown) {
-            const msg = error instanceof Error ? error.message : String(error);
-            this.logger.error(`Failed to subscribe to "${SE_NOTIF_CHANNEL}": ${msg}`);
-        }
+        // Re-issue the subscribe on every 'ready' event rather than once at
+        // startup. 'ready' fires both on the initial connection AND after every
+        // reconnect, so this is what makes a transient failure (or a dropped
+        // connection mid-session) self-heal instead of silently and permanently
+        // disabling live push for this instance — the previous one-shot attempt
+        // had no way to recover if that single attempt failed. SUBSCRIBE to an
+        // already-subscribed channel is a harmless no-op, so retrying
+        // unconditionally on every 'ready' is safe.
+        this.subscriber.on('ready', () => {
+            this.subscriber.subscribe(SE_NOTIF_CHANNEL)
+                .then(() => {
+                    this.logger.log(`Subscribed to Redis channel "${SE_NOTIF_CHANNEL}"`);
+                })
+                .catch((error: unknown) => {
+                    const msg = error instanceof Error ? error.message : String(error);
+                    this.logger.error(`Failed to subscribe to "${SE_NOTIF_CHANNEL}": ${msg}`);
+                });
+        });
 
         this.subscriber.on('message', (_channel: string, message: string) => {
             try {
