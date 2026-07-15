@@ -11,6 +11,16 @@
  * builder or in the calling repository.
  */
 
+import { BadRequestException } from '@nestjs/common';
+
+/**
+ * Upper bound on parts accepted by decodeMultiValue. Each part expands into
+ * its own SQL clause/param for 'ilike' and 'contains-any' (OR'd together) —
+ * unbounded input would let a single request bloat the query plan and put
+ * CPU/memory pressure on Postgres.
+ */
+const MAX_MULTI_VALUE_PARTS = 32;
+
 export type FilterOperator =
     | 'eq'
     | 'ilike'
@@ -159,11 +169,23 @@ export class QueryBuilder {
      * Splits a pipe-joined multi-value filter param into individual values,
      * percent-decoding each part. Falls back to the raw trimmed part if a part
      * isn't validly percent-encoded, so legacy (never-encoded) values still work.
+     *
+     * Rejects input with more than MAX_MULTI_VALUE_PARTS parts — each part
+     * becomes its own SQL clause/param downstream, so unbounded input is a
+     * query-plan/resource risk, not just a validation nicety.
      */
     private decodeMultiValue(raw: string): string[] {
-        return String(raw).split('|').map(part => {
+        const parts = String(raw).split('|').map(part => {
             try { return decodeURIComponent(part.trim()); } catch { return part.trim(); }
         }).filter(Boolean);
+
+        if (parts.length > MAX_MULTI_VALUE_PARTS) {
+            throw new BadRequestException(
+                `Too many multi-value filter parts: received ${parts.length}, maximum allowed is ${MAX_MULTI_VALUE_PARTS}.`,
+            );
+        }
+
+        return parts;
     }
 
     /**
