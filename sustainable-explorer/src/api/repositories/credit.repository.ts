@@ -1,10 +1,4 @@
-/**
- * Abstract repository for querying credits.
- *
- * Database-specific logic (raw SQL, jsonb operators, token_cache join, LATERAL)
- * lives in concrete implementations. Services depend only on this interface
- * so swapping to a different storage backend only requires a new implementation.
- */
+/** Abstract repository for querying credits; database-specific logic (raw SQL, jsonb operators, joins) lives in concrete implementations, so services depend only on this interface. */
 
 export interface CreditListQuery {
     page: number;
@@ -45,15 +39,42 @@ export interface CreditListResult {
     total: number;
 }
 
+/** Filter shape for `findAllForExport` — same filterable fields as `CreditListQuery` minus pagination and sort (export rows are always ordered by mint consensus timestamp ascending, for a stable/deterministic file). */
+export interface CreditExportFilters {
+    search?: string;
+    type?: string;
+    registry?: string;
+    registryDid?: string;
+    tokenId?: string;
+    projectKey?: string;
+    methodologyId?: string;
+}
+
+/** One row per MintToken VC (mint event), not aggregated by (tokenId, project_key) like `CreditRow` — the export grain stays per-transaction so `transaction_id` (the mint event's own consensus timestamp) never collapses distinct transactions into one row. */
+export interface CreditExportRow {
+    project_name: string | null;
+    registry: string | null;
+    developer: string | null;
+    country: string | null;
+    emissions_reduced: number | null;
+    reporting_year: number | null;
+    mitigation_type: string | null;
+    standard: string | null;
+    vintage: string | null;
+    ipfs_document_ref: string | null;
+    /** Raw identifiers for `ExportsService`'s shared Traceability synthesis — not catalog keys themselves. */
+    _consensusTimestamp: string | null;
+    _tokenId: string | null;
+    _topicId: string | null;
+    _dataSource: string | null;
+}
+
 export interface CreditProjectLink {
     projectId: string | null;
     project: string | null;
 }
 
-/**
- * Raw underlying data for one credit/token — the actual HCS messages.
- * Returned by the /credits/:tokenId/raw endpoint for the "raw data" viewer.
- */
+/** Raw underlying data for one credit/token (the actual HCS messages), returned by the /credits/:tokenId/raw endpoint for the "raw data" viewer. */
 export interface CreditRawDetail {
     credit: CreditRow | null;
     /** All distinct projects linked to this tokenId via project_mint_link. */
@@ -78,10 +99,10 @@ export interface CreditRawDetail {
     }>;
 }
 
-/**
- * Storage-agnostic repository contract.
- */
+/** Storage-agnostic repository contract. */
 export abstract class CreditRepository {
     abstract findAll(query: CreditListQuery): Promise<CreditListResult>;
     abstract findRaw(tokenId: string): Promise<CreditRawDetail | null>;
+    /** Full filtered dataset for the export engine — never capped at 1000 rows, never HTTP page-looped by the caller; implementations batch internally. */
+    abstract findAllForExport(filters: CreditExportFilters): Promise<CreditExportRow[]>;
 }

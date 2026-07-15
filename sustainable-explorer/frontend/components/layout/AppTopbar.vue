@@ -2,7 +2,7 @@
 import {
     PanelLeft, Globe, ChevronDown, ChevronRight, Search, Check,
     LayoutDashboard, FolderKanban, Coins, BookOpen, Building2, Users,
-    Target, BarChart3, Activity,
+    Target, BarChart3, FileText, Activity,
 } from 'lucide-vue-next';
 import { onClickOutside, useDebounceFn } from '@vueuse/core';
 import { networkOptions } from '~/composables/useNetwork';
@@ -25,6 +25,7 @@ const routeMeta = computed<Record<string, { label: string; icon: any }>>(() => (
     '/developers': { label: t('nav.developers'), icon: Users },
     '/sdgs': { label: t('nav.sdgs'), icon: Target },
     '/analytics': { label: t('nav.analytics'), icon: BarChart3 },
+    '/reports': { label: t('nav.reports'), icon: FileText },
     '/status': { label: t('nav.syncStatus'), icon: Activity },
 }));
 
