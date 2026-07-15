@@ -337,6 +337,7 @@
         "developers": "Developers",
         "sdgs": "SDGs",
         "analytics": "Analytics",
+        "reports": "Reports",
         "syncStatus": "Sync Status",
         "dataSyncedUpTo": "Data synced up to",
         "sustainable": "Sustainability",
@@ -1385,5 +1386,254 @@
                 "update": "Update Chart"
             }
         }
+    },
+    "reports": {
+        "breadcrumb": "Reports",
+        "title": "Reports & Export",
+        "subtitle": "Export ESG datasets, generate impact summaries, and access disclosure guidance",
+        "exportImpactSummary": "Export Impact Summary",
+        "stats": {
+            "exportsThisMonth": {
+                "label": "Exports This Month",
+                "sub": "Your exports this calendar month"
+            },
+            "esgFieldsAvailable": {
+                "label": "ESG Fields Available",
+                "sub": "{required} required, {optional} optional"
+            },
+            "lastExport": {
+                "label": "Last Export",
+                "sub": "",
+                "none": "No exports yet"
+            }
+        },
+        "tabs": {
+            "exportData": "Export Data",
+            "impactSummary": "Impact Summary",
+            "disclosureGuidance": "Disclosure Guidance"
+        },
+        "placeholders": {
+            "exportData": "Export configuration and field selection are coming soon.",
+            "impactSummary": "The Impact Summary generator is coming soon.",
+            "disclosureGuidance": "Disclosure guidance and framework references are coming soon."
+        },
+        "recentExports": {
+            "title": "Recent Exports",
+            "colFilename": "Filename",
+            "colFormat": "Format",
+            "colRecords": "Records",
+            "colExportedBy": "Exported By",
+            "colDate": "Date",
+            "empty": "You haven't exported anything yet."
+        },
+        "formats": {
+            "csv": "CSV",
+            "xlsx": "Excel",
+            "pdf": "PDF"
+        },
+        "impactSummary": {
+            "config": {
+                "title": "Configure Summary",
+                "subtitle": "Choose an output format and generate a compiled impact summary.",
+                "outputFormat": "Output Format",
+                "generate": "Generate Impact Summary",
+                "generating": "Generating…"
+            },
+            "metrics": {
+                "creditsIssued": "Total Credits Issued",
+                "retired": "Total Retired",
+                "inferred": "inferred",
+                "activeProjects": "Active Projects",
+                "activeCountries": "Countries"
+            },
+            "preview": {
+                "badge": "Impact Summary",
+                "title": "Portfolio Impact Overview",
+                "network": "Network: {network}",
+                "empty": "No impact data is available for this network yet.",
+                "sdgTitle": "SDG Contributions",
+                "geoTitle": "Geographic Distribution",
+                "verified": "Data verified on Hedera {network}",
+                "generatedAt": "Generated {date}"
+            }
+        },
+        "disclosure": {
+            "frameworksTitle": "Framework Alignment",
+            "frameworksSubtitle": "Exports and summaries align with widely used disclosure and accounting frameworks.",
+            "frameworks": {
+                "ghgProtocol": { "name": "GHG Protocol", "desc": "Corporate accounting and reporting standard for greenhouse gas emissions." },
+                "cdp": { "name": "CDP", "desc": "Global environmental disclosure system for climate, water and forests." },
+                "tcfd": { "name": "TCFD", "desc": "Climate-related financial disclosure recommendations." },
+                "gri": { "name": "GRI", "desc": "Global Reporting Initiative sustainability reporting standards." },
+                "iso14064": { "name": "ISO 14064", "desc": "Standard for quantification and reporting of GHG emissions and removals." }
+            },
+            "entriesTitle": "Definitions & Calculation Guidance",
+            "searchPlaceholder": "Search guidance…",
+            "noResults": "No guidance matches your search.",
+            "tags": { "term": "Term", "verification": "Verification", "policy": "Policy" },
+            "entries": {
+                "emissionsReduced": {
+                    "title": "Emissions Reduced",
+                    "body": "The quantity of greenhouse gas emissions avoided or removed, expressed in tonnes of CO₂ equivalent (tCO₂e), as reported by the issuing project.",
+                    "formula": "emissions_reduced (tCO₂e) = Σ verified emission reductions per issuance"
+                },
+                "vintageYear": {
+                    "title": "Vintage Year",
+                    "body": "The calendar year in which the underlying emission reduction or removal activity occurred. For credits, the reporting year is the calendar year of the on-chain minting activity."
+                },
+                "mitigationType": {
+                    "title": "Mitigation Type",
+                    "body": "The class of climate action (e.g. avoidance or removal) derived from the methodology's emission-reduction approach."
+                },
+                "howToVerify": {
+                    "title": "How to Verify",
+                    "body": "Every exported record includes traceability references. Use the verification URL to open the corresponding transaction, token or topic on the Hedera network explorer (HashScan) for independent confirmation."
+                },
+                "preApprovedSources": {
+                    "title": "Pre-approved Import Sources",
+                    "body": "External data may only be imported from pre-approved sources that support automated verification. Records from sources without a verification mechanism are not admitted."
+                }
+            },
+            "verificationStatus": {
+                "title": "Verification Status",
+                "body": "All records are anchored on the Hedera network and independently verifiable on-chain.",
+                "hashscanLink": "View on HashScan"
+            },
+            "assurance": {
+                "title": "Assurance & Independent Verification",
+                "body": "Figures are compiled from on-chain data and issuer disclosures. Retirement figures are inferred from token-deletion activity, not a dedicated retirement ledger, and should be treated accordingly.",
+                "blockItemProof": "Block Item Proofs for independent cryptographic validation of distributed-ledger records are planned for Q3 2026."
+            }
+        },
+        "datasets": {
+            "credits": "Credits / Issuances",
+            "projects": "Projects",
+            "methodologies": "Methodologies",
+            "registries": "Registries"
+        },
+        "scope": {
+            "datasetLabel": "Dataset",
+            "registry": "Registry",
+            "registryPlaceholder": "Registry name…",
+            "project": "Project",
+            "projectPlaceholder": "Project name…",
+            "vintage": "Vintage",
+            "vintagePlaceholder": "e.g. 2022",
+            "dateRange": "Date Range",
+            "recordsMatching": "{count} records matching scope",
+            "selected": "Applied",
+            "remove": "Remove filter"
+        },
+        "fieldPicker": {
+            "title": "ESG Reporting Fields",
+            "selectAll": "Select all",
+            "deselectAll": "Deselect all",
+            "esgPill": "ESG",
+            "traceabilityPill": "Traceability"
+        },
+        "fieldGroups": {
+            "projectIdentifiers": "Project Identifiers",
+            "esgClimateData": "ESG Climate Data",
+            "traceabilityReferences": "Traceability References"
+        },
+        "fields": {
+            "projectName": {
+                "label": "Project Name"
+            },
+            "registry": {
+                "label": "Registry"
+            },
+            "developer": {
+                "label": "Developer"
+            },
+            "country": {
+                "label": "Country"
+            },
+            "emissionsReduced": {
+                "label": "Emissions Reduced",
+                "description": "tCO₂e sequestered or avoided"
+            },
+            "reportingYear": {
+                "label": "Reporting Year",
+                "description": "Calendar year of activity"
+            },
+            "mitigationType": {
+                "label": "Mitigation Type",
+                "description": "Avoidance, removal, or reduction"
+            },
+            "standard": {
+                "label": "Standard / Methodology",
+                "description": "Governing standard applied"
+            },
+            "vintage": {
+                "label": "Vintage",
+                "description": "Year the credit was generated"
+            },
+            "transactionId": {
+                "label": "Transaction ID",
+                "description": "Hedera on-chain transaction reference",
+                "tooltip": "Used to verify the credit on HashScan blockchain explorer"
+            },
+            "registryRecordId": {
+                "label": "Registry Record ID",
+                "description": "Source registry identifier",
+                "tooltip": "Links directly to the record on the issuing registry"
+            },
+            "verificationUrl": {
+                "label": "Verification URL",
+                "description": "Direct link to independent verification",
+                "tooltip": "Redirects to HashScan or registry for independent validation"
+            },
+            "sourceSystemId": {
+                "label": "Source System ID",
+                "description": "External system of record identifier",
+                "tooltip": "Identifier in the originating system outside Guardian"
+            },
+            "version": {
+                "label": "Version"
+            },
+            "geography": {
+                "label": "Geography"
+            },
+            "law": {
+                "label": "Jurisdiction / Law"
+            },
+            "name": {
+                "label": "Name"
+            },
+            "did": {
+                "label": "DID"
+            },
+            "projectCount": {
+                "label": "Project Count"
+            },
+            "ipfsDocumentRef": {
+                "label": "IPFS Document Reference",
+                "description": "Content identifier (CID) of a linked IPFS document",
+                "tooltip": "Resolves via any public IPFS gateway (e.g. ipfs.io/ipfs/{cid})"
+            }
+        },
+        "formatPicker": {
+            "title": "Export Format"
+        },
+        "preview": {
+            "title": "Export Preview",
+            "moreChips": "+{count} more",
+            "exportButton": "Export Selected Data",
+            "exporting": "Exporting…",
+            "noFieldsSelected": "Select at least one field to export.",
+            "successToast": "Export downloaded successfully."
+        }
+    },
+    "glossary": {
+        "emissionsReduced": "tCO₂e sequestered or avoided by the project.",
+        "reportingYear": "Calendar year the underlying activity or credit generation occurred.",
+        "mitigationType": "Whether the credit represents emissions avoidance, removal, or reduction.",
+        "standard": "The governing standard or methodology applied to the credit.",
+        "vintage": "The year the credit was generated.",
+        "transactionId": "Hedera on-chain transaction reference — used to verify the credit on HashScan blockchain explorer.",
+        "registryRecordId": "Source registry identifier — links directly to the record on the issuing registry.",
+        "verificationUrl": "Direct link to independent verification — redirects to HashScan or the registry for independent validation.",
+        "sourceSystemId": "Identifier in the originating system outside Guardian."
     }
 }

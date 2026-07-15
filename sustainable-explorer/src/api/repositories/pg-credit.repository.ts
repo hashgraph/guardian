@@ -1,7 +1,19 @@
 import { DataSource } from 'typeorm';
-import { CreditRepository, CreditListQuery, CreditListResult, CreditRow, CreditRawDetail, CreditProjectLink } from './credit.repository';
+import {
+    CreditRepository,
+    CreditListQuery,
+    CreditListResult,
+    CreditRow,
+    CreditRawDetail,
+    CreditProjectLink,
+    CreditExportFilters,
+    CreditExportRow,
+} from './credit.repository';
 import { QueryBuilder } from './query-builder';
 import { CREDIT_FIELD_SCHEMA } from './schemas/credit.schema';
+
+/** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
+const EXPORT_BATCH_SIZE = 2000;
 
 interface RawRow {
     tokenId: string | null;
@@ -19,6 +31,24 @@ interface RawRow {
     project_name: string | null;
     methodology_id: string | null;
     methodology_name: string | null;
+}
+
+/** Raw row shape for `findAllForExport` — one MintToken VC per row (see `CreditExportRow` doc). */
+interface RawExportRow {
+    _consensusTimestamp: string | null;
+    _tokenId: string | null;
+    _topicId: string | null;
+    _dataSource: string | null;
+    _ipfsCids: string[] | null;
+    project_name: string | null;
+    registry_name: string | null;
+    proj_developer: string | null;
+    proj_country: string | null;
+    proj_vintage: string | null;
+    emissions_reduced: string | null;
+    mint_date: Date | string | null;
+    standard: string | null;
+    mitigation_type_raw: unknown;
 }
 
 // credentialSubject[0] tokenId path — used in SELECT, WHERE, GROUP BY, and ORDER BY
@@ -49,7 +79,10 @@ const PROJECT_JOIN = `
             bv_proj."displayName"                  AS project_name,
             bv_proj."relatedTopicId"               AS proj_topic_id,
             bv_proj."businessData"->>'methodology' AS proj_methodology_name,
-            bv_proj."registryDid"                  AS registry_did
+            bv_proj."registryDid"                  AS registry_did,
+            bv_proj."businessData"->>'developer'   AS proj_developer,
+            bv_proj."businessData"->>'country'     AS proj_country,
+            bv_proj."businessData"->>'vintage'     AS proj_vintage
         FROM business_view bv_proj
         WHERE bv_proj."viewType"   = 'PROJECT'
           AND bv_proj."projectKey" = pml.project_key
@@ -67,7 +100,15 @@ const METHODOLOGY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
             bv_meth."relatedTopicId" AS methodology_id,
-            bv_meth."displayName"    AS methodology_name
+            bv_meth."displayName"    AS methodology_name,
+            (
+                SELECT p."policyMapping"->'emissionReductionApproach'
+                FROM policy p
+                WHERE p."policyTopicId" = bv_meth."businessData"->>'topicId'
+                  AND p."decodeStatus" = 'decoded'
+                ORDER BY p."updatedAt" DESC NULLS LAST
+                LIMIT 1
+            ) AS emission_reduction_approach
         FROM business_view bv_meth
         WHERE bv_meth."viewType" = 'METHODOLOGY'
           AND (
@@ -113,20 +154,7 @@ const GROUP_BY = `
         reg.registry_name
 `;
 
-/**
- * PostgreSQL implementation of the CreditRepository.
- *
- * findAll() is sourced from MintToken VC documents (message table) joined with
- * project_mint_link for per-project attribution. Supply figures are
- * SUM(credentialSubject[0].amount) — the actual minted amounts — consistent
- * with what the project and methodology detail pages show.
- *
- * Unattributed mints (not yet resolved by the worker) are included as rows
- * with null project / methodology / registry fields.
- *
- * findRaw() is unchanged — it reads business_view CREDIT rows for the header
- * and the message table for the raw mint events.
- */
+/** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology/registry fields. */
 export class PgCreditRepository extends CreditRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
@@ -205,9 +233,7 @@ export class PgCreditRepository extends CreditRepository {
         const limitParam  = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
-        // Supply = SUM of credentialSubject[0].amount from MintToken VCs.
-        // For attributed mints pml.amount is the pre-parsed BIGINT; for
-        // unattributed mints it falls back to the raw JSONB string cast.
+        // Supply = SUM of credentialSubject[0].amount from MintToken VCs (pre-parsed BIGINT for attributed mints, raw JSONB cast otherwise).
         const rowsSql = `
             SELECT
                 ${TOKEN_ID_EXPR}                                                                AS "tokenId",
@@ -238,10 +264,7 @@ export class PgCreditRepository extends CreditRepository {
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count: number of distinct (tokenId, project_key) groups after filtering.
-        // Uses a simplified GROUP BY — metadata columns are omitted because they
-        // are functionally determined by (tokenId, project_key) and don't affect
-        // the group count.
+        // Count: number of distinct (tokenId, project_key) groups after filtering; metadata columns are omitted from GROUP BY since they don't affect the count.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
@@ -284,13 +307,7 @@ export class PgCreditRepository extends CreditRepository {
         };
     }
 
-    /**
-     * Maps raw token type strings to the normalised display values.
-     *
-     * Priority:
-     *  1. token_cache.type (set by the token sync worker from Mirror Node)
-     *  2. businessData->options->tokenType (set by the Guardian policy message)
-     */
+    /** Maps raw token type strings to the normalised display values; prefers token_cache.type (set by the worker from Mirror Node), falling back to businessData->options->tokenType (set by the Guardian policy message). */
     private static normaliseType(
         rawType: string | null,
         optionsTokenType: string | null,
@@ -307,11 +324,134 @@ export class PgCreditRepository extends CreditRepository {
         return null;
     }
 
-    /**
-     * Returns the underlying HCS messages backing a credit: the original Token
-     * message and any MintToken VC documents that minted credits against this
-     * token. Used by the raw-data viewer on the credits page.
-     */
+    /** Full filtered credits dataset for the export engine — one row per mint event (not aggregated by tokenId+project like `findAll`) so `transaction_id` never collapses distinct transactions into one row; batches internally via a LIMIT/OFFSET loop ordered by consensus timestamp. */
+    async findAllForExport(filters: CreditExportFilters): Promise<CreditExportRow[]> {
+        const builder = new QueryBuilder(CREDIT_FIELD_SCHEMA);
+
+        builder.addClause(`m.type = 'VC-Document'`);
+        builder.addClause(`m.documents IS NOT NULL`);
+        builder.addClause(`(m.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'`);
+        builder.addClause(`${TOKEN_ID_EXPR} IS NOT NULL`);
+
+        builder.addFilters({
+            registryDid: filters.registryDid,
+            registry: filters.registry,
+            tokenId: filters.tokenId,
+        });
+
+        if (filters.projectKey) {
+            const param = builder.nextParam(filters.projectKey);
+            builder.addClause(`pml.project_key = ${param}`);
+        }
+
+        if (filters.methodologyId) {
+            const param = builder.nextParam(filters.methodologyId);
+            builder.addClause(`meth.methodology_id = ${param}`);
+        }
+
+        if (filters.type) {
+            const normalised = filters.type.toLowerCase();
+            if (normalised === 'fungible') {
+                builder.addClause(`tc.type = 'FUNGIBLE_COMMON'`);
+            } else if (normalised === 'non-fungible') {
+                builder.addClause(`tc.type = 'NON_FUNGIBLE_UNIQUE'`);
+            }
+        }
+
+        if (filters.search) {
+            const term = filters.search.trim();
+            const likeParam = builder.nextParam(`%${term}%`);
+            const simParam = builder.nextParam(term);
+
+            builder.addClause(`(
+                tc.name ILIKE ${likeParam}
+                OR tc.symbol ILIKE ${likeParam}
+                OR ${TOKEN_ID_EXPR} ILIKE ${likeParam}
+                OR reg.registry_name ILIKE ${likeParam}
+                OR similarity(COALESCE(tc.name, ''), ${simParam}) > 0.3
+            )`);
+        }
+
+        const whereSql = builder.getWhereClause();
+        const baseParams = builder.getParams();
+        const limitParam = `$${baseParams.length + 1}`;
+        const offsetParam = `$${baseParams.length + 2}`;
+
+        const rows: CreditExportRow[] = [];
+        for (let offset = 0; ; offset += EXPORT_BATCH_SIZE) {
+            const params = [...baseParams, EXPORT_BATCH_SIZE, offset];
+
+            const batchSql = `
+                SELECT
+                    m."consensusTimestamp"                                                          AS "_consensusTimestamp",
+                    ${TOKEN_ID_EXPR}                                                                AS "_tokenId",
+                    m."topicId"                                                                      AS "_topicId",
+                    m."dataSource"                                                                   AS "_dataSource",
+                    m.files                                                                          AS "_ipfsCids",
+                    proj.project_name,
+                    reg.registry_name,
+                    proj.proj_developer,
+                    proj.proj_country,
+                    proj.proj_vintage,
+                    COALESCE(pml.amount::numeric, (m.documents->'credentialSubject'->0->>'amount')::numeric) AS emissions_reduced,
+                    COALESCE(pml.mint_date, to_timestamp(m."consensusTimestamp"::numeric))            AS mint_date,
+                    COALESCE(meth.methodology_name, proj.proj_methodology_name)                       AS standard,
+                    meth.emission_reduction_approach                                                   AS mitigation_type_raw
+                FROM ${MINT_FROM}
+                ${PROJECT_JOIN}
+                ${METHODOLOGY_JOIN}
+                ${REGISTRY_JOIN}
+                WHERE ${whereSql}
+                ORDER BY m."consensusTimestamp" ASC
+                LIMIT ${limitParam} OFFSET ${offsetParam}
+            `;
+
+            const batch: RawExportRow[] = await this.dataSource.query(batchSql, params);
+            rows.push(...batch.map(PgCreditRepository.mapExportRow));
+
+            if (batch.length < EXPORT_BATCH_SIZE) break;
+        }
+
+        return rows;
+    }
+
+    private static mapExportRow(row: RawExportRow): CreditExportRow {
+        const mintDate = row.mint_date ? new Date(row.mint_date) : null;
+        const cids = Array.isArray(row._ipfsCids)
+            ? row._ipfsCids.filter((c): c is string => typeof c === 'string' && c.length > 0)
+            : [];
+
+        return {
+            project_name: row.project_name ?? null,
+            registry: row.registry_name ?? null,
+            developer: row.proj_developer ?? null,
+            country: row.proj_country ?? null,
+            emissions_reduced: row.emissions_reduced != null ? parseFloat(row.emissions_reduced) : null,
+            reporting_year: mintDate ? mintDate.getUTCFullYear() : null,
+            mitigation_type: PgCreditRepository.extractEmissionReductionApproach(row.mitigation_type_raw),
+            standard: row.standard ?? null,
+            vintage: row.proj_vintage ?? null,
+            ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
+            _consensusTimestamp: row._consensusTimestamp ?? null,
+            _tokenId: row._tokenId ?? null,
+            _topicId: row._topicId ?? null,
+            _dataSource: row._dataSource ?? null,
+        };
+    }
+
+    /** `emissionReductionApproach` arrives as a JSONB array of policyMapping entries; the resolved label lives in `entry.schemaName` (first non-empty value). Mirrors `PgMethodologyRepository`'s identical extraction logic, duplicated per this codebase's self-contained-repository convention. */
+    private static extractEmissionReductionApproach(raw: unknown): string | null {
+        if (!Array.isArray(raw)) return null;
+        for (const entry of raw) {
+            if (entry && typeof entry === 'object' && 'schemaName' in entry) {
+                const v = (entry as Record<string, unknown>)['schemaName'];
+                if (typeof v === 'string' && v) return v;
+            }
+        }
+        return null;
+    }
+
+    /** Returns the underlying HCS messages backing a credit: the original Token message and any MintToken VC documents that minted credits against this token, used by the raw-data viewer. */
     async findRaw(tokenId: string): Promise<CreditRawDetail | null> {
         // 1. The full credit row (reusing the same JOINs as findAll).
         const creditRows: RawRow[] = await this.dataSource.query(
@@ -402,18 +542,9 @@ export class PgCreditRepository extends CreditRepository {
         );
         const tokenMessage = tokenMessageRows[0] ?? null;
 
-        // 2b. Resolve the policy governing this token via its linked
-        //     project's originating VC message. The Token-creation message
-        //     and MintToken VCs never carry a policyId at the Guardian
-        //     source — only "project-shaped" VCs (registration, monitoring,
-        //     etc.) do, per ipfs-fetch.processor.ts's stamping logic.
-        //     business_view.sourceTimestamp is the consensusTimestamp of
-        //     that originating VC, so joining back to `message` on it
-        //     recovers the policyId. Both queries are conditional (skipped
-        //     entirely when there's no attributed project / no policyId),
-        //     and both join columns are indexed (business_view.projectKey
-        //     has a unique partial index, message.consensusTimestamp is
-        //     unique, policy.policyId has a unique index).
+        // 2b. Resolve the policy governing this token via its linked project's originating VC message: neither
+        //     the Token-creation message nor MintToken VCs carry a policyId, so join back through
+        //     business_view.sourceTimestamp -> message.consensusTimestamp to recover it.
         let policyId: string | null = null;
         let policyName: string | null = null;
         let policyTopicId: string | null = null;
