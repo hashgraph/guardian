@@ -43,6 +43,21 @@ function onClearAll() {
         else toast.error(t('notifications.clearError'));
     });
 }
+
+// markRead fires on every row expand (frequent, low-stakes — a silent revert
+// is enough) but markAllRead and loadMore are deliberate, explicit user
+// actions like clearAll, so their failures get the same toast treatment.
+function onMarkAllRead() {
+    void markAllRead().then((success) => {
+        if (!success) toast.error(t('notifications.markAllReadError'));
+    });
+}
+
+function onLoadMore() {
+    void fetchList({ reset: false }).then((success) => {
+        if (!success) toast.error(t('notifications.loadMoreError'));
+    });
+}
 </script>
 
 <template>
@@ -74,9 +89,9 @@ function onClearAll() {
         :filter="filter"
         @close="open = false"
         @mark-read="markRead"
-        @mark-all-read="markAllRead"
+        @mark-all-read="onMarkAllRead"
         @clear-all="onClearAll"
-        @load-more="fetchList({ reset: false })"
+        @load-more="onLoadMore"
         @set-filter="setFilter"
     />
 </template>

@@ -164,7 +164,19 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
     // ---------------------------------------------------------------------------
 
     private async startForNetwork(network: string): Promise<void> {
-        this.isLeader.set(network, await this.tryAcquireLeader(network));
+        try {
+            this.isLeader.set(network, await this.tryAcquireLeader(network));
+        } catch (error: unknown) {
+            // A transient Redis failure here (e.g. a rolling deploy racing Redis
+            // availability) must not abort startup for this network — the
+            // periodic renewal timer below already retries acquisition every
+            // LEADER_RENEW_MS, so defaulting to "not leader" just costs one
+            // renewal cycle instead of silently never scanning this network
+            // again until the process restarts.
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.warn(`Initial leader acquisition failed for "${network}": ${message}`);
+            this.isLeader.set(network, false);
+        }
 
         const tickTimer = setInterval(() => {
             this.tick(network).catch(() => {

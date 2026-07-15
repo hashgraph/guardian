@@ -67,18 +67,20 @@ export function useNotifications() {
                 query: { network: network.value },
             });
             unreadCount.value = result.count;
-        } catch {
+        } catch (err) {
+            console.error('[notifications] fetchUnreadCount failed:', err);
             // Leave the count untouched on error — a stale count is preferable
             // to flashing it to 0.
         }
     }
 
-    async function fetchList({ reset = false }: { reset?: boolean } = {}): Promise<void> {
-        if (!isAuthenticated.value || !import.meta.client) return;
+    /** Returns false on failure so callers (e.g. "load more") can surface it. */
+    async function fetchList({ reset = false }: { reset?: boolean } = {}): Promise<boolean> {
+        if (!isAuthenticated.value || !import.meta.client) return true;
         // A "load more" call (reset=false) with no further pages is a no-op —
         // avoids a redundant request if a stale click slips through after the
         // button/observer should already be hidden.
-        if (!reset && !nextCursor.value) return;
+        if (!reset && !nextCursor.value) return true;
 
         if (reset) loading.value = true;
         else loadingMore.value = true;
@@ -95,8 +97,11 @@ export function useNotifications() {
             });
             items.value = reset ? result.items : [...items.value, ...result.items];
             nextCursor.value = result.nextCursor;
-        } catch {
+            return true;
+        } catch (err) {
+            console.error('[notifications] fetchList failed:', err);
             if (reset) items.value = [];
+            return false;
         } finally {
             if (reset) loading.value = false;
             else loadingMore.value = false;
@@ -126,7 +131,8 @@ export function useNotifications() {
                 headers: { 'x-csrf-token': readCsrfCookie() },
                 query: { network: network.value },
             });
-        } catch {
+        } catch (err) {
+            console.error('[notifications] markRead failed:', err);
             target.isRead = false; // rollback
             unreadCount.value = priorCount;
         }
@@ -149,7 +155,8 @@ export function useNotifications() {
                 query: { network: network.value },
             });
             return true;
-        } catch {
+        } catch (err) {
+            console.error('[notifications] markAllRead failed:', err);
             items.value = priorItems;
             unreadCount.value = priorCount;
             await Promise.all([fetchList({ reset: true }), fetchUnreadCount()]);
@@ -176,7 +183,8 @@ export function useNotifications() {
                 query: { network: network.value },
             });
             return true;
-        } catch {
+        } catch (err) {
+            console.error('[notifications] clearAll failed:', err);
             items.value = priorItems;
             unreadCount.value = priorCount;
             nextCursor.value = priorCursor;

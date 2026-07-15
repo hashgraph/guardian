@@ -1233,6 +1233,8 @@
         "clearAllConfirm": "Click again to confirm",
         "clearedToast": "Notifications cleared",
         "clearError": "Could not clear notifications — please try again",
+        "markAllReadError": "Could not mark all as read — please try again",
+        "loadMoreError": "Could not load more notifications — please try again",
         "toast": {
             "newArrival": "You have a new notification"
         },

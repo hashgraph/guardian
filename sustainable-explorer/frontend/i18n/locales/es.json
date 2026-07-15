@@ -1225,6 +1225,8 @@
         "clearAllConfirm": "Haz clic de nuevo para confirmar",
         "clearedToast": "Notificaciones eliminadas",
         "clearError": "No se pudieron eliminar las notificaciones. Inténtalo de nuevo",
+        "markAllReadError": "No se pudo marcar todo como leído. Inténtalo de nuevo",
+        "loadMoreError": "No se pudieron cargar más notificaciones. Inténtalo de nuevo",
         "toast": {
             "newArrival": "Tienes una nueva notificación"
         },
