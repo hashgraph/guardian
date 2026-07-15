@@ -337,6 +337,7 @@
         "developers": "Desarrolladores",
         "sdgs": "ODS",
         "analytics": "Analíticas",
+        "reports": "Informes",
         "syncStatus": "Estado de sincronización",
         "dataSyncedUpTo": "Datos sincronizados hasta",
         "sustainable": "Sustainability",
@@ -1415,5 +1416,254 @@
                 "update": "Actualizar gráfico"
             }
         }
+    },
+    "reports": {
+        "breadcrumb": "Informes",
+        "title": "Informes y Exportación",
+        "subtitle": "Exporta conjuntos de datos ESG, genera resúmenes de impacto y accede a orientación sobre divulgación",
+        "exportImpactSummary": "Exportar Resumen de Impacto",
+        "stats": {
+            "exportsThisMonth": {
+                "label": "Exportaciones este mes",
+                "sub": "Tus exportaciones en este mes calendario"
+            },
+            "esgFieldsAvailable": {
+                "label": "Campos ESG Disponibles",
+                "sub": "{required} obligatorios, {optional} opcionales"
+            },
+            "lastExport": {
+                "label": "Última Exportación",
+                "sub": "",
+                "none": "Aún no hay exportaciones"
+            }
+        },
+        "tabs": {
+            "exportData": "Exportar Datos",
+            "impactSummary": "Resumen de Impacto",
+            "disclosureGuidance": "Orientación de Divulgación"
+        },
+        "placeholders": {
+            "exportData": "La configuración de exportación y la selección de campos estarán disponibles próximamente.",
+            "impactSummary": "El generador de Resumen de Impacto estará disponible próximamente.",
+            "disclosureGuidance": "La orientación de divulgación y las referencias de marcos estarán disponibles próximamente."
+        },
+        "recentExports": {
+            "title": "Exportaciones Recientes",
+            "colFilename": "Nombre de Archivo",
+            "colFormat": "Formato",
+            "colRecords": "Registros",
+            "colExportedBy": "Exportado Por",
+            "colDate": "Fecha",
+            "empty": "Aún no has realizado ninguna exportación."
+        },
+        "formats": {
+            "csv": "CSV",
+            "xlsx": "Excel",
+            "pdf": "PDF"
+        },
+        "impactSummary": {
+            "config": {
+                "title": "Configurar Resumen",
+                "subtitle": "Elija un formato de salida y genere un resumen de impacto compilado.",
+                "outputFormat": "Formato de Salida",
+                "generate": "Generar Resumen de Impacto",
+                "generating": "Generando…"
+            },
+            "metrics": {
+                "creditsIssued": "Créditos Totales Emitidos",
+                "retired": "Total Retirado",
+                "inferred": "inferido",
+                "activeProjects": "Proyectos Activos",
+                "activeCountries": "Países"
+            },
+            "preview": {
+                "badge": "Resumen de Impacto",
+                "title": "Panorama de Impacto de la Cartera",
+                "network": "Red: {network}",
+                "empty": "Aún no hay datos de impacto disponibles para esta red.",
+                "sdgTitle": "Contribuciones a los ODS",
+                "geoTitle": "Distribución Geográfica",
+                "verified": "Datos verificados en Hedera {network}",
+                "generatedAt": "Generado {date}"
+            }
+        },
+        "disclosure": {
+            "frameworksTitle": "Alineación con Marcos",
+            "frameworksSubtitle": "Las exportaciones y los resúmenes se alinean con marcos de divulgación y contabilidad ampliamente utilizados.",
+            "frameworks": {
+                "ghgProtocol": { "name": "Protocolo GEI", "desc": "Norma corporativa de contabilidad e informes de emisiones de gases de efecto invernadero." },
+                "cdp": { "name": "CDP", "desc": "Sistema global de divulgación ambiental para clima, agua y bosques." },
+                "tcfd": { "name": "TCFD", "desc": "Recomendaciones de divulgación financiera relacionadas con el clima." },
+                "gri": { "name": "GRI", "desc": "Normas de informes de sostenibilidad de la Global Reporting Initiative." },
+                "iso14064": { "name": "ISO 14064", "desc": "Norma para la cuantificación e informe de emisiones y remociones de GEI." }
+            },
+            "entriesTitle": "Definiciones y Guía de Cálculo",
+            "searchPlaceholder": "Buscar guía…",
+            "noResults": "Ninguna guía coincide con su búsqueda.",
+            "tags": { "term": "Término", "verification": "Verificación", "policy": "Política" },
+            "entries": {
+                "emissionsReduced": {
+                    "title": "Emisiones Reducidas",
+                    "body": "La cantidad de emisiones de gases de efecto invernadero evitadas o removidas, expresada en toneladas de CO₂ equivalente (tCO₂e), según lo informado por el proyecto emisor.",
+                    "formula": "emisiones_reducidas (tCO₂e) = Σ reducciones de emisiones verificadas por emisión"
+                },
+                "vintageYear": {
+                    "title": "Año de Cosecha (Vintage)",
+                    "body": "El año calendario en que ocurrió la actividad de reducción o remoción de emisiones subyacente. Para los créditos, el año de informe es el año calendario de la actividad de acuñación en cadena."
+                },
+                "mitigationType": {
+                    "title": "Tipo de Mitigación",
+                    "body": "La clase de acción climática (p. ej., evitación o remoción) derivada del enfoque de reducción de emisiones de la metodología."
+                },
+                "howToVerify": {
+                    "title": "Cómo Verificar",
+                    "body": "Cada registro exportado incluye referencias de trazabilidad. Utilice la URL de verificación para abrir la transacción, el token o el tema correspondiente en el explorador de la red Hedera (HashScan) para una confirmación independiente."
+                },
+                "preApprovedSources": {
+                    "title": "Fuentes de Importación Preaprobadas",
+                    "body": "Los datos externos solo pueden importarse desde fuentes preaprobadas que admitan verificación automatizada. Los registros de fuentes sin mecanismo de verificación no se admiten."
+                }
+            },
+            "verificationStatus": {
+                "title": "Estado de Verificación",
+                "body": "Todos los registros están anclados en la red Hedera y son verificables de forma independiente en cadena.",
+                "hashscanLink": "Ver en HashScan"
+            },
+            "assurance": {
+                "title": "Garantía y Verificación Independiente",
+                "body": "Las cifras se compilan a partir de datos en cadena y divulgaciones de los emisores. Las cifras de retiro se infieren de la actividad de eliminación de tokens, no de un libro de retiros dedicado, y deben tratarse en consecuencia.",
+                "blockItemProof": "Las Pruebas de Elementos de Bloque para la validación criptográfica independiente de los registros del libro mayor distribuido están planificadas para el T3 2026."
+            }
+        },
+        "datasets": {
+            "credits": "Créditos / Emisiones",
+            "projects": "Proyectos",
+            "methodologies": "Metodologías",
+            "registries": "Registros"
+        },
+        "scope": {
+            "datasetLabel": "Conjunto de datos",
+            "registry": "Registro",
+            "registryPlaceholder": "Nombre del registro…",
+            "project": "Proyecto",
+            "projectPlaceholder": "Nombre del proyecto…",
+            "vintage": "Año de cosecha",
+            "vintagePlaceholder": "p. ej. 2022",
+            "dateRange": "Rango de fechas",
+            "recordsMatching": "{count} registros coinciden con el alcance",
+            "selected": "Aplicado",
+            "remove": "Quitar filtro"
+        },
+        "fieldPicker": {
+            "title": "Campos de reporte ESG",
+            "selectAll": "Seleccionar todo",
+            "deselectAll": "Deseleccionar todo",
+            "esgPill": "ESG",
+            "traceabilityPill": "Trazabilidad"
+        },
+        "fieldGroups": {
+            "projectIdentifiers": "Identificadores del proyecto",
+            "esgClimateData": "Datos climáticos ESG",
+            "traceabilityReferences": "Referencias de trazabilidad"
+        },
+        "fields": {
+            "projectName": {
+                "label": "Nombre del proyecto"
+            },
+            "registry": {
+                "label": "Registro"
+            },
+            "developer": {
+                "label": "Desarrollador"
+            },
+            "country": {
+                "label": "País"
+            },
+            "emissionsReduced": {
+                "label": "Emisiones reducidas",
+                "description": "tCO₂e secuestradas o evitadas"
+            },
+            "reportingYear": {
+                "label": "Año de reporte",
+                "description": "Año calendario de la actividad"
+            },
+            "mitigationType": {
+                "label": "Tipo de mitigación",
+                "description": "Evitación, remoción o reducción"
+            },
+            "standard": {
+                "label": "Estándar / Metodología",
+                "description": "Estándar rector aplicado"
+            },
+            "vintage": {
+                "label": "Año de cosecha",
+                "description": "Año en que se generó el crédito"
+            },
+            "transactionId": {
+                "label": "ID de transacción",
+                "description": "Referencia de transacción on-chain de Hedera",
+                "tooltip": "Se usa para verificar el crédito en el explorador HashScan"
+            },
+            "registryRecordId": {
+                "label": "ID de registro",
+                "description": "Identificador del registro de origen",
+                "tooltip": "Enlaza directamente con el registro en el sistema emisor"
+            },
+            "verificationUrl": {
+                "label": "URL de verificación",
+                "description": "Enlace directo para verificación independiente",
+                "tooltip": "Redirige a HashScan o al registro para validación independiente"
+            },
+            "sourceSystemId": {
+                "label": "ID del sistema de origen",
+                "description": "Identificador en el sistema externo de origen",
+                "tooltip": "Identificador en el sistema originario fuera de Guardian"
+            },
+            "version": {
+                "label": "Versión"
+            },
+            "geography": {
+                "label": "Geografía"
+            },
+            "law": {
+                "label": "Jurisdicción / Ley"
+            },
+            "name": {
+                "label": "Nombre"
+            },
+            "did": {
+                "label": "DID"
+            },
+            "projectCount": {
+                "label": "Cantidad de proyectos"
+            },
+            "ipfsDocumentRef": {
+                "label": "Referencia de documento IPFS",
+                "description": "Identificador de contenido (CID) de un documento IPFS enlazado",
+                "tooltip": "Se resuelve mediante cualquier puerta de enlace pública de IPFS (p. ej. ipfs.io/ipfs/{cid})"
+            }
+        },
+        "formatPicker": {
+            "title": "Formato de exportación"
+        },
+        "preview": {
+            "title": "Vista previa de exportación",
+            "moreChips": "+{count} más",
+            "exportButton": "Exportar datos seleccionados",
+            "exporting": "Exportando…",
+            "noFieldsSelected": "Selecciona al menos un campo para exportar.",
+            "successToast": "Exportación descargada correctamente."
+        }
+    },
+    "glossary": {
+        "emissionsReduced": "tCO₂e secuestradas o evitadas por el proyecto.",
+        "reportingYear": "Año calendario en que ocurrió la actividad o generación del crédito.",
+        "mitigationType": "Indica si el crédito representa evitación, remoción o reducción de emisiones.",
+        "standard": "El estándar o metodología rectora aplicada al crédito.",
+        "vintage": "El año en que se generó el crédito.",
+        "transactionId": "Referencia de transacción en cadena de Hedera — se usa para verificar el crédito en el explorador de blockchain HashScan.",
+        "registryRecordId": "Identificador del registro de origen — enlaza directamente con el registro en el sistema emisor.",
+        "verificationUrl": "Enlace directo a verificación independiente — redirige a HashScan o al registro para validación independiente.",
+        "sourceSystemId": "Identificador en el sistema de origen externo a Guardian."
     }
 }

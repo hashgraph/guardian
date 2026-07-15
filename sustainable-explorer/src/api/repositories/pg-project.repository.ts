@@ -9,9 +9,30 @@ import {
     IssuanceEventRow,
     ActivityEventRow,
     PolicySchemaRow,
+    ProjectExportFilters,
+    ProjectExportRow,
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
+
+/** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
+const EXPORT_BATCH_SIZE = 2000;
+
+/** Raw row shape for `findAllForExport` (see `ProjectExportRow` doc). */
+interface RawExportRow {
+    project_name: string | null;
+    registry_name: string | null;
+    developer: string | null;
+    country: string | null;
+    total_issued: string | null;
+    vintage: string | null;
+    creditingPeriodStart: string | null;
+    standard: string | null;
+    mitigation_type_raw: unknown;
+    relatedTopicId: string | null;
+    dataSource: string | null;
+    ipfsCids: string[] | null;
+}
 
 interface RawRow {
     id: string;
@@ -38,11 +59,7 @@ const SEARCH_TSVECTOR = `(
     setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
 )`;
 
-/**
- * LATERAL subquery joined into both findAll and findById to look up the
- * publishing registry's display name. Uses LATERAL so we can ORDER BY +
- * LIMIT 1 to handle the (rare) case of multiple REGISTRY rows for one DID.
- */
+/** LATERAL subquery joined into both findAll and findById to look up the publishing registry's display name, using ORDER BY + LIMIT 1 to handle the rare case of multiple REGISTRY rows for one DID. */
 const REGISTRY_NAME_JOIN = `
     LEFT JOIN LATERAL (
         SELECT "displayName" AS registry_name
@@ -54,34 +71,49 @@ const REGISTRY_NAME_JOIN = `
     ) reg ON true
 `;
 
-/**
- * Per-project lifecycle aggregates (issuance count, total issued, total
- * retired) are read from the mv_project_stats materialized view instead of
- * being computed live per row. The MV is keyed by projectKey and refreshed by
- * MvRefreshProcessor; see project-stats.mv.ts for the aggregation that mirrors
- * the old ISSUANCE_COUNT/LIFECYCLE_ISSUED/LIFECYCLE_RETIRED lateral joins.
- */
+/** Per-project lifecycle aggregates (issuance count, total issued, total retired) are read from the mv_project_stats materialized view instead of being computed live per row; the MV is keyed by projectKey and refreshed by MvRefreshProcessor. */
 const PROJECT_STATS_JOIN = `
     LEFT JOIN ${MV_PROJECT_STATS_NAME} ps
         ON ps."projectKey" = bv."projectKey"
 `;
 
-/**
- * PostgreSQL implementation of the ProjectRepository.
- *
- * Generic filter and sort logic is delegated to QueryBuilder + the field
- * schema (PROJECT_FIELD_SCHEMA). Adding a new filterable/sortable column
- * only requires updating the schema — no SQL changes needed here.
- *
- * Special operations (full-text + fuzzy search, search ranking) remain
- * explicit because they don't fit the generic operator model.
- */
+/** LATERAL: resolve the project's methodology (by instance topic match, with a displayName fallback) plus its `emissionReductionApproach`, mirroring `PgMethodologyRepository`/`PgCreditRepository`'s identical lookups. Used only by `findAllForExport` for the `mitigation_type`/`standard` catalog columns. */
+const METHODOLOGY_JOIN = `
+    LEFT JOIN LATERAL (
+        SELECT
+            bv_meth."displayName" AS methodology_name,
+            (
+                SELECT p."policyMapping"->'emissionReductionApproach'
+                FROM policy p
+                WHERE p."policyTopicId" = bv_meth."businessData"->>'topicId'
+                  AND p."decodeStatus" = 'decoded'
+                ORDER BY p."updatedAt" DESC NULLS LAST
+                LIMIT 1
+            ) AS emission_reduction_approach
+        FROM business_view bv_meth
+        WHERE bv_meth."viewType" = 'METHODOLOGY'
+          AND (
+              bv_meth."relatedTopicId" = bv."businessData"->>'instanceTopicId'
+              OR bv_meth."displayName" = bv."businessData"->>'methodology'
+          )
+        ORDER BY
+            (bv_meth."relatedTopicId" = bv."businessData"->>'instanceTopicId') DESC,
+            bv_meth."sourceTimestamp"::numeric DESC NULLS LAST,
+            bv_meth."createdAt" DESC NULLS LAST
+        LIMIT 1
+    ) meth ON true
+`;
+
+/** The `message` row backing this PROJECT's own originating VC (`business_view.sourceTimestamp` = `message.consensusTimestamp`), supplying `source_system_id`/`ipfs_document_ref` for `findAllForExport`. */
+const SOURCE_MESSAGE_JOIN = `
+    LEFT JOIN message src_msg ON src_msg."consensusTimestamp" = bv."sourceTimestamp"
+`;
+
+/** PostgreSQL implementation of the ProjectRepository; generic filter/sort logic is delegated to QueryBuilder + PROJECT_FIELD_SCHEMA, while full-text search and ranking remain explicit since they don't fit the generic operator model. */
 export class PgProjectRepository extends ProjectRepository {
-    // Per-network (keyed by DataSource) cache of policy schema metadata used to
-    // classify linkedVcs on list rows. The repository itself is instantiated
-    // per-call (see project.service.ts), so this must live on the class, not
-    // on `this`. Invalidated whenever `sig` (a cheap aggregate over the policy
-    // table) changes — see findAll() below.
+    // Per-network (keyed by DataSource) cache of policy schema metadata used to classify linkedVcs on list rows.
+    // The repository is instantiated per-call, so this must live on the class, not `this`; invalidated whenever
+    // `sig` (a cheap aggregate over the policy table) changes — see findAll() below.
     private static readonly schemaCache = new WeakMap<DataSource, {
         sig: string;
         byTopic: Map<string, PolicySchemaRow[]>;
@@ -98,8 +130,7 @@ export class PgProjectRepository extends ProjectRepository {
         const builder = new QueryBuilder(PROJECT_FIELD_SCHEMA);
         builder.addClause(`bv."viewType" = 'PROJECT'`);
 
-        // Generic filters: every filterable field defined in the schema
-        // is wired automatically. To add a new filter, edit project.schema.ts.
+        // Generic filters: every filterable field defined in the schema is wired automatically.
         builder.addFilters({
             name: query.name,
             country: query.country,
@@ -112,11 +143,8 @@ export class PgProjectRepository extends ProjectRepository {
             instanceTopicId: query.instanceTopicId,
         });
 
-        // Special: full-text search with ranking. The tsvector index covers
-        // displayName (weight A), registryDid (B), and searchText (C).
-        // ILIKE on displayName is kept as a fast prefix fallback for partial
-        // word matches that tsquery doesn't catch.
-        // similarity() provides typo-tolerance via pg_trgm.
+        // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast
+        // prefix fallback for partial matches tsquery doesn't catch, and similarity() adds typo-tolerance via pg_trgm.
         let rankExpr = '0';
         if (search) {
             const term = search.trim();
@@ -169,12 +197,8 @@ export class PgProjectRepository extends ProjectRepository {
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE but skips the LIMIT/OFFSET params.
-        // The registry-name LATERAL is a LEFT JOIN that can never change
-        // COUNT(*), so we only include it when the `registry` filter actually
-        // references `reg.registry_name` in the WHERE clause. Omitting it in the
-        // common (unfiltered) case avoids running that subquery once per project
-        // row — the dominant cost on large PROJECT sets.
+        // Count query reuses the same WHERE but skips LIMIT/OFFSET; the registry-name LATERAL is only included
+        // when the `registry` filter references it, avoiding that subquery's cost on large unfiltered PROJECT sets.
         const countParams = params.slice(0, params.length - 2);
         const countJoin = query.registry ? REGISTRY_NAME_JOIN : '';
         const countSql = `
@@ -189,22 +213,15 @@ export class PgProjectRepository extends ProjectRepository {
             this.dataSource.query(countSql, countParams),
         ]);
 
-        // List rows carry no schema metadata, so linkedSchemas[].docType would
-        // default to 'unknown' and lifecycleStage degrade to Issued/Registered.
-        // Batch-load each distinct policy's schema names + policyMapping in one
-        // indexed query (names extracted SQL-side — the heavyweight
-        // rawSchemaJson bodies never leave Postgres), mirroring findById.
+        // Batch-loads each distinct policy's schema names + policyMapping in one indexed query (names extracted
+        // SQL-side, so heavyweight rawSchemaJson bodies never leave Postgres), mirroring findById.
         const policyTopicIds = [...new Set(
             rawRows
                 .map((r) => (r.businessData as Record<string, any> | null)?.['policyTopicId'])
                 .filter((t): t is string => typeof t === 'string' && t.length > 0),
         )];
-        // Schema metadata is essentially static (it only changes when a policy
-        // is (re)decoded), so we cache it per-network keyed by DataSource and
-        // only refetch the referenced-but-uncached topics. Freshness is kept
-        // by a cheap signature query: any decode/redecode bumps policy.updatedAt
-        // (see policy-decode.processor.ts), so count+max(updatedAt) changing
-        // is a reliable invalidation trigger.
+        // Schema metadata is essentially static, so it's cached per-network keyed by DataSource and only
+        // refetched for referenced-but-uncached topics; freshness is kept by a cheap count+max(updatedAt) signature.
         let schemasByTopic = new Map<string, PolicySchemaRow[]>();
         if (policyTopicIds.length > 0) {
             const [sigRow]: Array<{ c: number; m: string }> = await this.dataSource.query(
@@ -264,9 +281,7 @@ export class PgProjectRepository extends ProjectRepository {
     }
 
     async findById(id: string): Promise<ProjectRow | null> {
-        // Accept either the row's sourceTimestamp (legacy ID used by the
-        // /projects list page) or the projectKey (credentialSubject.id, used
-        // by the credits page links).
+        // Accept either the row's sourceTimestamp (legacy ID used by the /projects list page) or the projectKey (credentialSubject.id, used by the credits page links).
         const rawRows: RawRow[] = await this.dataSource.query(
             `
             SELECT
@@ -287,10 +302,9 @@ export class PgProjectRepository extends ProjectRepository {
         const policyTopicId = (row.businessData as Record<string, any> | null)?.['policyTopicId'] as string | null;
         const instanceTopicId = row.relatedTopicId;
 
-        // Step 1 — per-project mint attribution via project_mint_link.
-        // The linker pre-resolves each MintToken to its specific project by
-        // walking options.relationships, so this query is correct even for
-        // grouped projects that share one instance topic.
+        // Step 1 — per-project mint attribution via project_mint_link: the linker pre-resolves each MintToken to
+        // its specific project by walking options.relationships, so this is correct even for grouped projects
+        // that share one instance topic.
         let issuances: IssuanceRow[] = [];
         let issuanceEvents: IssuanceEventRow[] = [];
         let totalIssued = 0;
@@ -359,8 +373,7 @@ export class PgProjectRepository extends ProjectRepository {
                 };
             });
 
-            // Per-mint-event issuance history — one entry per MintToken VC row,
-            // ordered oldest-first (same ORDER BY as the mintTokenRows query).
+            // Per-mint-event issuance history — one entry per MintToken VC row, ordered oldest-first.
             issuanceEvents = mintTokenRows.map(r => {
                 const meta = r.token_id ? metaMap.get(r.token_id) : undefined;
                 return {
@@ -400,16 +413,10 @@ export class PgProjectRepository extends ProjectRepository {
                 }
             }
         } else if (instanceTopicId) {
-            // Step 2 — fallback: look up CREDIT rows linked to this project's own
-            // instance topic only. We intentionally exclude policyTopicId here because
-            // multiple projects share the same policy topic; including it would return
-            // credits belonging to sibling projects under the same Guardian policy.
-            //
-            // Guard: only use this fallback when this is the sole PROJECT in the topic.
-            // For grouped topics (multiple projects sharing one instance topic) the
-            // linker skips unresolvable mints to avoid misattribution — the fallback
-            // must apply the same rule, otherwise it cross-attributes every sibling's
-            // credits to this project. Mirrors mint-project-linker.ts fallback guard.
+            // Step 2 fallback: look up CREDIT rows linked to this project's own instance topic only (excluding
+            // policyTopicId, since sibling projects share it), and only when this is the sole PROJECT on that
+            // topic — otherwise credits would be cross-attributed to every sibling project. Mirrors
+            // mint-project-linker.ts's fallback guard.
             const siblingCountRows: Array<{ count: string }> = await this.dataSource.query(
                 `SELECT COUNT(*)::text AS count
                  FROM business_view
@@ -484,8 +491,7 @@ export class PgProjectRepository extends ProjectRepository {
 
         const totalActive = totalIssued - totalRetired;
 
-        // Load schema metadata for this project's policyTopicId from policy.rawSchemaJson
-        // so the DTO can render a grouped linked-VCs view without a second round trip.
+        // Load schema metadata for this project's policyTopicId so the DTO can render a grouped linked-VCs view without a second round trip.
         let policySchemas: PolicySchemaRow[] = [];
         if (policyTopicId) {
             const policySchemaRows: Array<{
@@ -566,10 +572,8 @@ export class PgProjectRepository extends ProjectRepository {
             }
         }
 
-        // Scope the timeline. When multiple PROJECT rows share this instance topic,
-        // a full-topic scan over-lists sibling projects' VCs — so source the
-        // timeline from THIS project's own linkedVcs. A per-project dynamic topic
-        // (exactly one PROJECT row) keeps the existing full-topic scan.
+        // Scope the timeline: when multiple PROJECT rows share this instance topic, a full-topic scan
+        // over-lists sibling projects' VCs, so source it from this project's own linkedVcs instead.
         const projectCountRows: Array<{ cnt: number }> = await this.dataSource.query(
             `SELECT COUNT(*)::int AS cnt
              FROM business_view
@@ -628,8 +632,126 @@ export class PgProjectRepository extends ProjectRepository {
         }));
     }
 
-    // Builds the PolicySchemaRow list the DTO uses to classify linked VCs,
-    // from a policy's {schemaIri -> name} map and its policyMapping.
+    /** Full filtered projects dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
+    async findAllForExport(filters: ProjectExportFilters): Promise<ProjectExportRow[]> {
+        const builder = new QueryBuilder(PROJECT_FIELD_SCHEMA);
+        builder.addClause(`bv."viewType" = 'PROJECT'`);
+
+        builder.addFilters({
+            name: filters.name,
+            country: filters.country,
+            methodology: filters.methodology,
+            registry: filters.registry,
+            developer: filters.developer,
+            vintage: filters.vintage,
+            status: filters.status,
+            policyTopicId: filters.policyTopicId,
+            instanceTopicId: filters.instanceTopicId,
+        });
+
+        if (filters.search) {
+            const term = filters.search.trim();
+            const tsParam = builder.nextParam(term);
+            const likeParam = builder.nextParam(`%${term}%`);
+            const simParam = builder.nextParam(term);
+
+            builder.addClause(`(
+                ${SEARCH_TSVECTOR} @@ plainto_tsquery('english', ${tsParam})
+                OR bv."displayName" ILIKE ${likeParam}
+                OR bv."registryDid" ILIKE ${likeParam}
+                OR similarity(COALESCE(bv."displayName", ''), ${simParam}) > 0.3
+            )`);
+        }
+
+        const whereSql = builder.getWhereClause();
+        const baseParams = builder.getParams();
+        const limitParam = `$${baseParams.length + 1}`;
+        const offsetParam = `$${baseParams.length + 2}`;
+
+        const rows: ProjectExportRow[] = [];
+        for (let offset = 0; ; offset += EXPORT_BATCH_SIZE) {
+            const params = [...baseParams, EXPORT_BATCH_SIZE, offset];
+
+            const batchSql = `
+                SELECT
+                    bv."businessData"->>'name'      AS project_name,
+                    reg.registry_name,
+                    bv."businessData"->>'developer' AS developer,
+                    bv."businessData"->>'country'   AS country,
+                    COALESCE(ps.total_issued, 0)     AS total_issued,
+                    bv."businessData"->>'vintage'    AS vintage,
+                    bv."businessData"->>'creditingPeriodStart' AS "creditingPeriodStart",
+                    COALESCE(meth.methodology_name, bv."businessData"->>'methodology') AS standard,
+                    meth.emission_reduction_approach AS mitigation_type_raw,
+                    bv."relatedTopicId",
+                    src_msg."dataSource",
+                    src_msg.files                    AS "ipfsCids"
+                FROM business_view bv
+                ${REGISTRY_NAME_JOIN}
+                ${PROJECT_STATS_JOIN}
+                ${METHODOLOGY_JOIN}
+                ${SOURCE_MESSAGE_JOIN}
+                WHERE ${whereSql}
+                ORDER BY bv."sourceTimestamp" ASC
+                LIMIT ${limitParam} OFFSET ${offsetParam}
+            `;
+
+            const batch: RawExportRow[] = await this.dataSource.query(batchSql, params);
+            rows.push(...batch.map(PgProjectRepository.mapExportRow));
+
+            if (batch.length < EXPORT_BATCH_SIZE) break;
+        }
+
+        return rows;
+    }
+
+    private static mapExportRow(row: RawExportRow): ProjectExportRow {
+        const cids = Array.isArray(row.ipfsCids)
+            ? row.ipfsCids.filter((c): c is string => typeof c === 'string' && c.length > 0)
+            : [];
+
+        return {
+            project_name: row.project_name ?? null,
+            registry: row.registry_name ?? null,
+            developer: row.developer ?? null,
+            country: row.country ?? null,
+            emissions_reduced: row.total_issued != null ? parseFloat(row.total_issued) : null,
+            reporting_year: PgProjectRepository.deriveReportingYear(row.vintage, row.creditingPeriodStart),
+            mitigation_type: PgProjectRepository.extractEmissionReductionApproach(row.mitigation_type_raw),
+            standard: row.standard ?? null,
+            vintage: row.vintage ?? null,
+            ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
+            // A project has no single mint transaction or Hedera token, so leave blank rather than fabricate;
+            // `_topicId` still resolves a verification_url via the topic fallback.
+            _consensusTimestamp: null,
+            _tokenId: null,
+            _topicId: row.relatedTopicId ?? null,
+            _dataSource: row.dataSource ?? null,
+        };
+    }
+
+    /** reporting_year = vintage (as a 4-digit year), else year(creditingPeriodStart). Mirrors project.dto.ts's identical vintage/creditingPeriodStart year extraction. */
+    private static deriveReportingYear(vintage: string | null, creditingPeriodStart: string | null): number | null {
+        const vintageYear = vintage?.match(/\d{4}/)?.[0];
+        if (vintageYear) return parseInt(vintageYear, 10);
+        const cpsYear = creditingPeriodStart?.match(/\d{4}/)?.[0];
+        if (cpsYear) return parseInt(cpsYear, 10);
+        return null;
+    }
+
+    /** `emissionReductionApproach` arrives as a JSONB array of policyMapping entries; the resolved label lives in `entry.schemaName`. Mirrors `PgMethodologyRepository`/`PgCreditRepository`'s identical extraction logic, duplicated per this codebase's self-contained-repository convention. */
+    private static extractEmissionReductionApproach(raw: unknown): string | null {
+        if (!Array.isArray(raw)) return null;
+        for (const entry of raw) {
+            if (entry && typeof entry === 'object' && 'schemaName' in entry) {
+                const v = (entry as Record<string, unknown>)['schemaName'];
+                if (typeof v === 'string' && v) return v;
+            }
+        }
+        return null;
+    }
+
+    // Builds the PolicySchemaRow list the DTO uses to classify linked VCs, from a policy's {schemaIri -> name} map and its policyMapping.
     private static buildPolicySchemas(
         schemaNamesByIri: Map<string, string | null>,
         policyMapping: Record<string, unknown[]>,
@@ -669,9 +791,8 @@ export class PgProjectRepository extends ProjectRepository {
         policySchemas?: PolicySchemaRow[],
         issuanceEvents?: IssuanceEventRow[],
     ): ProjectRow {
-        // When called from findAll(), lifecycle totals come from the lateral
-        // subquery columns on the raw row. When called from findById(), they
-        // are passed explicitly as the lifecycle argument (which takes priority).
+        // When called from findAll(), lifecycle totals come from the lateral subquery columns on the raw row;
+        // when called from findById(), they are passed explicitly as the lifecycle argument (which takes priority).
         const resolvedLifecycle = lifecycle ?? (row.total_issued != null
             ? (() => {
                 const issued = parseInt(row.total_issued!, 10);

@@ -1,10 +1,4 @@
-/**
- * Abstract repository for querying methodologies.
- *
- * Database-specific logic (raw SQL, jsonb operators, tsvector, MV joins)
- * lives in concrete implementations. Services depend only on this interface
- * so swapping to a different storage backend only requires a new implementation.
- */
+/** Abstract repository for querying methodologies; database-specific logic (raw SQL, jsonb operators, tsvector, MV joins) lives in concrete implementations, so services depend only on this interface. */
 
 import { IssuanceRow } from './project.repository';
 export { IssuanceRow };
@@ -69,10 +63,37 @@ export interface MethodologyListResult {
     total: number;
 }
 
-/**
- * Storage-agnostic repository contract.
- */
+/** Filter shape for `findAllForExport` — same filterable fields as `MethodologyListQuery` minus pagination/sort. */
+export interface MethodologyExportFilters {
+    search?: string;
+    name?: string;
+    id?: string;
+    description?: string;
+    decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
+    registryDid?: string;
+    registryName?: string;
+    version?: string;
+    policyTopicId?: string;
+}
+
+/** One row per (deduped, `relatedTopicId`-canonical) methodology, keyed to match `export-field-catalog.ts`'s methodologies catalog rows; `_tokenId` stays null (a methodology has no Hedera token) while `_topicId` is the methodology's own `relatedTopicId` so `verification_url` still resolves via the topic fallback. */
+export interface MethodologyExportRow {
+    name: string | null;
+    registry: string | null;
+    version: string | null;
+    mitigation_type: string | null;
+    standard: string | null;
+    ipfs_document_ref: string | null;
+    _consensusTimestamp: string | null;
+    _tokenId: string | null;
+    _topicId: string | null;
+    _dataSource: string | null;
+}
+
+/** Storage-agnostic repository contract. */
 export abstract class MethodologyRepository {
     abstract findAll(query: MethodologyListQuery): Promise<MethodologyListResult>;
     abstract findById(id: string): Promise<MethodologyRow | null>;
+    /** Full filtered, `relatedTopicId`-deduped dataset for the export engine — never capped at 1000 rows, never HTTP page-looped by the caller; implementations batch internally. */
+    abstract findAllForExport(filters: MethodologyExportFilters): Promise<MethodologyExportRow[]>;
 }
