@@ -1247,6 +1247,16 @@
             "retirementNoAmount": "Credits retired",
             "transfer": "{amount} credits transferred",
             "transferNoAmount": "Credits transferred"
+        },
+        "tabs": {
+            "all": "All",
+            "unread": "Unread"
+        },
+        "detail": {
+            "project": "Project",
+            "registry": "Registry",
+            "methodology": "Methodology",
+            "volume": "Volume"
         }
     },
     "portfolio": {

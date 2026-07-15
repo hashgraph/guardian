@@ -1,5 +1,6 @@
 import { describe, expect, it, jest } from '@jest/globals';
 import { NotificationScanService } from '@api/notifications/notification-scan.service';
+import { issuanceSource } from '@api/notifications/notification-sources/issuance.source';
 
 // ---------------------------------------------------------------------------
 // Hand-rolled fakes (no NestJS Test harness) — matches the style of
@@ -92,11 +93,12 @@ describe('NotificationScanService', () => {
         const { service } = buildService(netDs, sysDs);
         (service as any).isLeader.set('mainnet', true);
 
-        await service.scanIssuance('mainnet');
+        await service.scanSource('mainnet', issuanceSource);
 
         const upsertCall = netDs.calls.find((c) => c.sql.includes('notification_watermarks') && c.sql.includes('INSERT'));
         expect(upsertCall).toBeDefined();
-        expect(upsertCall!.params[0]).toBe('200');
+        expect(upsertCall!.params[0]).toBe('issuance');
+        expect(upsertCall!.params[1]).toBe('200');
     });
 
     it('is idempotent on re-run: empty RETURNING publishes and invalidates nothing', async () => {
@@ -115,7 +117,7 @@ describe('NotificationScanService', () => {
 
         const { service, redisClient, redisService } = buildService(netDs, sysDs);
 
-        await service.scanIssuance('mainnet');
+        await service.scanSource('mainnet', issuanceSource);
 
         expect(redisClient.publishCalls).toHaveLength(0);
         expect(redisService.delCalls).toHaveLength(0);
@@ -137,10 +139,39 @@ describe('NotificationScanService', () => {
 
         const { service, redisClient, redisService } = buildService(netDs, sysDs);
 
-        await service.scanIssuance('mainnet');
+        await service.scanSource('mainnet', issuanceSource);
 
         expect(redisClient.publishCalls).toHaveLength(1);
         expect(redisService.delCalls).toEqual(['notif-count:user-1:mainnet']);
+    });
+
+    it('enriches the payload with registryName and methodology from the business_view lookup', async () => {
+        const netDs = new FakeQueryable([
+            [{ lastValue: '0' }],
+            [
+                { mint_consensus_timestamp: '10', project_key: 'p1', token_id: 't1', amount: '1', mint_date: null },
+            ],
+            [{
+                id: 'bv-1', projectKey: 'p1', displayName: 'Project One', relatedTopicId: '0.0.1',
+                registryName: 'Gold Standard', methodology: 'GS TPDDTEC v3.1.0',
+            }],
+            [],
+        ]);
+        const sysDs = new FakeQueryable([
+            [{ userId: 'user-1', projectKey: 'bv-1' }],
+            [{ userId: 'user-1' }],
+        ]);
+
+        const { service } = buildService(netDs, sysDs);
+
+        await service.scanSource('mainnet', issuanceSource);
+
+        const insertCall = sysDs.calls.find((c) => c.sql.includes('INSERT INTO notifications'));
+        expect(insertCall).toBeDefined();
+        const payloadsParam = insertCall!.params[4] as string[];
+        const payload = JSON.parse(payloadsParam[0]);
+        expect(payload.registryName).toBe('Gold Standard');
+        expect(payload.methodology).toBe('GS TPDDTEC v3.1.0');
     });
 
     it('loops again within the same tick when the batch hits exactly the 500 limit', async () => {
@@ -164,7 +195,7 @@ describe('NotificationScanService', () => {
 
         const { service } = buildService(netDs, sysDs);
 
-        await service.scanIssuance('mainnet');
+        await service.scanSource('mainnet', issuanceSource);
 
         const mintQueries = netDs.calls.filter((c) => c.sql.includes('FROM project_mint_link'));
         expect(mintQueries).toHaveLength(2);
@@ -181,7 +212,7 @@ describe('NotificationScanService', () => {
 
         const { service } = buildService(netDs, sysDs);
 
-        await service.scanIssuance('mainnet');
+        await service.scanSource('mainnet', issuanceSource);
 
         expect(netDs.calls).toHaveLength(2);
         expect(sysDs.calls).toHaveLength(0);

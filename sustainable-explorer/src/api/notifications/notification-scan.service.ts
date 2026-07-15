@@ -6,6 +6,8 @@ import { SystemDataSource, returningRows } from '@api/database/system-database.m
 import { RedisService } from '@shared/redis/redis.service';
 import { getRedictConfig } from '@shared/config/redict.config';
 import { getConfiguredNetworks } from '@shared/config/database.config';
+import type { NotificationSource, ProjectEnrichment } from './notification-sources/notification-source.interface';
+import { issuanceSource } from './notification-sources/issuance.source';
 
 // ---------------------------------------------------------------------------
 // Row shapes
@@ -15,19 +17,13 @@ interface WatermarkRow {
     lastValue: string | null;
 }
 
-interface MintRow {
-    mint_consensus_timestamp: string;
-    project_key: string;
-    token_id: string | null;
-    amount: string | number | null;
-    mint_date: string | null;
-}
-
 interface BusinessViewRow {
     id: string;
     projectKey: string;
     displayName: string | null;
     relatedTopicId: string | null;
+    registryName: string | null;
+    methodology: string | null;
 }
 
 interface WatcherRow {
@@ -48,29 +44,44 @@ const LEADER_TTL_S = 30;
 const LEADER_RENEW_MS = 15_000;
 
 /**
- * API-side (no worker involvement) issuance-notification detector.
+ * Registered notification sources — issuance today. Retirement/transfer are
+ * intentionally NOT implemented yet (no scanning happens for them); adding
+ * either later is "write one `{category}.source.ts` implementing
+ * NotificationSource, add it here" — see notification-source.interface.ts
+ * for the full contract and rationale.
+ */
+const ENABLED_SOURCES: readonly NotificationSource<any>[] = [issuanceSource];
+
+/**
+ * API-side (no worker involvement) notification-source scan engine.
  *
  * A plain `@Injectable() OnModuleInit`, NOT a BullMQ processor — the API
  * process doesn't run BullMQ job consumers today, so a `setInterval` per
  * configured network (leader-elected via Redict, same pattern as the worker's
  * SyncSchedulerService) is the smaller, already-proven primitive to reuse.
  *
- * Per tick (only on the elected leader for that network):
- *   1. Read the 'issuance' watermark from notification_watermarks (network DB).
- *   2. Batch-read project_mint_link rows past that watermark (network DB).
- *   3. Resolve each batch's distinct project_key to its business_view.id via
- *      the PROJECT rows in business_view (network DB) — display-only lookup,
- *      best-effort, never blocks the scan.
+ * Per tick (only on the elected leader for that network), every entry in
+ * ENABLED_SOURCES is scanned in turn (one Redis leader-lock per network, not
+ * per network×source — at this app's scale a handful of batched queries per
+ * tick is not a bottleneck, and sequential sources keep the leader-lock
+ * bookkeeping exactly as simple as it was with a single source). Each
+ * source's failure is isolated so one broken source never blocks another.
+ *
+ * scanSource() does, per source, per drain iteration:
+ *   1. Read the source's watermark from notification_watermarks (network DB).
+ *   2. Batch-read events past that watermark via source.fetchBatch (network DB).
+ *   3. Resolve the batch's distinct project_keys to business_view rows,
+ *      enriched with the registry's display name (LATERAL join on
+ *      business_view WHERE viewType='REGISTRY') and businessData.methodology
+ *      — one batched query, shared by every source, never per-notification.
  *   4. Resolve watchers for those business_view.id values via
  *      watchlist_subscriptions (system DB) — watchlist_subscriptions.projectKey
- *      stores business_view.id (= WatchlistItem.id), NOT project_mint_link's
- *      raw project_key, so the join key here is the business_view.id, not the
- *      mint row's project_key.
+ *      stores business_view.id (= WatchlistItem.id), NOT the source row's own
+ *      project_key, so the join key here is business_view.id.
  *   5. Insert one multi-row batch into `notifications` (system DB) with
  *      ON CONFLICT ("userId","dedupeKey") DO NOTHING.
- *   6. Advance the watermark to the batch's max mint_consensus_timestamp
- *      (network DB) — always, even when no watchers matched, so mints are
- *      never re-scanned.
+ *   6. Advance the watermark to the batch's max cursor value (network DB) —
+ *      always, even when no watchers matched, so events are never re-scanned.
  *   7. For every distinct userId that received a newly-inserted row, publish a
  *      best-effort "go re-fetch" nudge over Redis pub/sub and invalidate the
  *      unread-count cache. Never load-bearing for correctness — the
@@ -212,50 +223,57 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
 
         this.running.set(network, true);
         try {
-            await this.scanIssuance(network);
-        } catch (error: unknown) {
-            const message = error instanceof Error ? error.message : String(error);
-            this.logger.error(`scanIssuance failed for "${network}": ${message}`);
+            for (const source of ENABLED_SOURCES) {
+                try {
+                    await this.scanSource(network, source);
+                } catch (error: unknown) {
+                    const message = error instanceof Error ? error.message : String(error);
+                    this.logger.error(`scanSource(${source.type}) failed for "${network}": ${message}`);
+                }
+            }
         } finally {
             this.running.set(network, false);
         }
     }
 
     // ---------------------------------------------------------------------------
-    // Issuance scan
+    // Generic source scan
     // ---------------------------------------------------------------------------
 
-    async scanIssuance(network: string): Promise<void> {
+    async scanSource<TRow>(network: string, source: NotificationSource<TRow>): Promise<void> {
         const netDs = this.dataSources.getDataSource(network);
         const sysDs = this.systemDataSource.getDataSource();
 
         // Drain loop: keep scanning while the batch is exactly at the limit.
         for (;;) {
             const wmRows: WatermarkRow[] = await netDs.query(
-                `SELECT "lastValue" FROM notification_watermarks WHERE source = 'issuance'`,
+                `SELECT "lastValue" FROM notification_watermarks WHERE source = $1`,
+                [source.watermarkSource],
             );
             const since = wmRows[0]?.lastValue ?? '0';
 
-            const mints: MintRow[] = await netDs.query(
-                `SELECT mint_consensus_timestamp, project_key, token_id, amount, mint_date
-                   FROM project_mint_link
-                  WHERE mint_consensus_timestamp > $1
-                  ORDER BY mint_consensus_timestamp ASC
-                  LIMIT $2`,
-                [since, SCAN_BATCH_LIMIT],
-            );
+            const batch = await source.fetchBatch(netDs, since, SCAN_BATCH_LIMIT);
 
-            if (mints.length === 0) {
+            if (batch.length === 0) {
                 return;
             }
 
-            const projectKeys = [...new Set(mints.map((m) => m.project_key))];
+            const projectKeys = [...new Set(batch.map((row) => source.projectKeyOf(row)))];
 
             const bvRows: BusinessViewRow[] = projectKeys.length > 0
                 ? await netDs.query(
-                    `SELECT id, "projectKey", "displayName", "relatedTopicId"
-                       FROM business_view
-                      WHERE "viewType" = 'PROJECT' AND "projectKey" = ANY($1::text[])`,
+                    `SELECT bv.id, bv."projectKey", bv."displayName", bv."relatedTopicId",
+                            bv."businessData"->>'methodology' AS "methodology",
+                            reg.registry_name AS "registryName"
+                       FROM business_view bv
+                       LEFT JOIN LATERAL (
+                           SELECT "displayName" AS registry_name
+                             FROM business_view
+                            WHERE "viewType" = 'REGISTRY' AND "registryDid" = bv."registryDid"
+                            ORDER BY "createdAt" DESC NULLS LAST
+                            LIMIT 1
+                       ) reg ON true
+                      WHERE bv."viewType" = 'PROJECT' AND bv."projectKey" = ANY($1::text[])`,
                     [projectKeys],
                 )
                 : [];
@@ -282,21 +300,21 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
             }
 
             const tuples: NotificationTuple[] = [];
-            for (const mint of mints) {
-                const bv = bvByProjectKey.get(mint.project_key);
+            for (const row of batch) {
+                const bv = bvByProjectKey.get(source.projectKeyOf(row));
                 if (!bv) continue;
                 const watchers = watchersByBvId.get(bv.id);
                 if (!watchers || watchers.length === 0) continue;
 
-                const dedupeKey = `issuance:${mint.mint_consensus_timestamp}`;
-                const payload: Record<string, unknown> = {
+                const enrich: ProjectEnrichment = {
+                    bvId: bv.id,
                     displayName: bv.displayName,
                     relatedTopicId: bv.relatedTopicId,
-                    tokenId: mint.token_id,
-                    amount: mint.amount,
-                    mintDate: mint.mint_date,
-                    mintConsensusTimestamp: mint.mint_consensus_timestamp,
+                    registryName: bv.registryName,
+                    methodology: bv.methodology,
                 };
+                const dedupeKey = source.dedupeKey(row);
+                const payload = source.buildPayload(row, enrich);
 
                 for (const userId of watchers) {
                     tuples.push({ userId, bvId: bv.id, dedupeKey, payload });
@@ -307,7 +325,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
             if (tuples.length > 0) {
                 const userIds = tuples.map((t) => t.userId);
                 const networksArr = tuples.map(() => network);
-                const typesArr = tuples.map(() => 'issuance');
+                const typesArr = tuples.map(() => source.type);
                 const projectKeysArr = tuples.map((t) => t.bvId);
                 const payloadsArr = tuples.map((t) => JSON.stringify(t.payload));
                 const dedupeKeysArr = tuples.map((t) => t.dedupeKey);
@@ -324,15 +342,14 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                 insertedUserIds = returningRows<{ userId: string }>(insertResult).map((r) => r.userId);
             }
 
-            // Advance the watermark to the batch's max (rows are ORDER BY ASC,
-            // so the last row's timestamp is the max) — always, even when no
-            // watchers matched, so these mints are never re-scanned.
-            const newWatermark = mints[mints.length - 1].mint_consensus_timestamp;
+            // Advance the watermark to the batch's max cursor value — always,
+            // even when no watchers matched, so these events are never re-scanned.
+            const newWatermark = source.nextWatermark(batch);
             await netDs.query(
                 `INSERT INTO notification_watermarks (source, "lastValue")
-                 VALUES ('issuance', $1)
+                 VALUES ($1, $2)
                  ON CONFLICT (source) DO UPDATE SET "lastValue" = EXCLUDED."lastValue", "updatedAt" = now()`,
-                [newWatermark],
+                [source.watermarkSource, newWatermark],
             );
 
             const distinctUserIds = [...new Set(insertedUserIds)];
@@ -340,7 +357,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                 try {
                     await this.redisClient.publish(
                         SE_NOTIF_CHANNEL,
-                        JSON.stringify({ userId, network, type: 'issuance' }),
+                        JSON.stringify({ userId, network, type: source.type }),
                     );
                 } catch (error: unknown) {
                     const message = error instanceof Error ? error.message : String(error);
@@ -349,7 +366,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                 await this.redisService.del(`notif-count:${userId}:${network}`);
             }
 
-            if (mints.length < SCAN_BATCH_LIMIT) {
+            if (batch.length < SCAN_BATCH_LIMIT) {
                 return;
             }
             // Exactly at the cap — loop again from the new watermark to drain
