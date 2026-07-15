@@ -175,6 +175,12 @@
         white-space: nowrap;
     }
 
+    .grid-setting[readonly="true"] .properties .propHeader > .propHeaderCell.cellName {
+        pointer-events: auto;
+        cursor: pointer;
+        color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
+    }
+
     .properties .propHeader > .propHeaderCell.cellName span {
         display: inline-block;
         vertical-align: middle;
@@ -334,6 +340,22 @@
         line-height: 18px;
         padding: 3px 8px;
         resize: vertical;
+    }
+
+    .properties .propRowCell > .prop-description-readonly {
+        display: block;
+        width: 100%;
+        min-height: var(--pc-control-height);
+        box-sizing: border-box;
+        border: 1px solid var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        line-height: 18px;
+        padding: 4px 8px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
     }
 
     .properties .propRowCell > select-block {

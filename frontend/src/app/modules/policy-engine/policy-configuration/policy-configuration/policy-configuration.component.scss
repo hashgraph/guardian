@@ -1488,18 +1488,12 @@
     filter: none;
 }
 
-// Headers are unclickable above, so nothing may stay collapsed and unreadable.
-.policy-configuration::ng-deep .grid-setting[readonly="true"] .properties .propHeader[collapse="true"],
-.policy-configuration::ng-deep .grid-setting[readonly="true"] .properties .propRow[collapse="true"] {
-    display: table-row !important;
-}
-
-.policy-configuration[readonly="true"]::ng-deep .inspector-subsection[collapse="true"] .artifact-list {
-    display: block;
-}
-
-.policy-configuration::ng-deep .grid-setting[readonly="true"] [collapse="true"] .chevron-icon {
-    transform: none !important;
+// In read-only the section headers stay collapsible so a long panel can be folded.
+// The collapse toggle lives on the title cell; add/remove cells stay inert.
+.policy-configuration[readonly="true"]::ng-deep .prop-container .properties .propHeader > .propHeaderCell.cellName,
+.policy-configuration[readonly="true"]::ng-deep .inspector-subsection-header {
+    pointer-events: auto;
+    cursor: pointer;
 }
 
 .policy-configuration[readonly="true"]::ng-deep .artifact-list {
@@ -1615,6 +1609,11 @@
                     .icon-style-handyman svg {
                         fill: var(--pc-event-color);
                     }
+                }
+
+                .tab-header-label {
+                    font-size: 13px;
+                    letter-spacing: normal;
                 }
             }
 
