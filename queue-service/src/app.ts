@@ -43,6 +43,7 @@ Promise.all([
     JwtServicesValidator.setServiceName(jwtServiceName);
 
     DatabaseServer.connectBD(db);
+    DatabaseServer.connectGridFS();
 
     app.listen();
     // new MessageBrokerChannel(cn, 'worker');
