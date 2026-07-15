@@ -379,7 +379,8 @@
                 color: var(--pc-required-color) !important;
             }
 
-            .propRowCell > input.prop-input {
+            .propRowCell > input.prop-input,
+            .propRowCell document-path input.input-end {
                 height: var(--pc-control-height);
                 box-sizing: border-box;
                 border: 1px solid var(--pc-control-border-color);
@@ -1373,7 +1374,8 @@
         box-shadow: none;
     }
 
-    .right-bottom-toolbar .properties .propRowCell > input.prop-input {
+    .right-bottom-toolbar .properties .propRowCell > input.prop-input,
+    .right-bottom-toolbar .properties .propRowCell document-path input.input-end {
         height: var(--pc-control-height) !important;
         padding-top: 0 !important;
         padding-bottom: 0 !important;
@@ -1508,6 +1510,18 @@
     .right-bottom-toolbar .properties:not(.events-properties) .propRowCell > p-toggleswitch,
     .right-bottom-toolbar .properties:not(.events-properties) .propRowCell > p-checkbox {
         float: right;
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRowCell > p-toggleswitch {
+        margin-top: calc((var(--pc-control-height) - var(--p-toggleswitch-height, 24px)) / 2);
+    }
+
+    .right-bottom-toolbar .properties:not(.events-properties) .propRowCell > .prop-text {
+        margin-right: 8px;
+        font-size: 11px;
+        line-height: var(--pc-control-height);
+        color: var(--guardian-font-color-secondary, #848FA9);
+        vertical-align: middle;
     }
 
     .right-bottom-toolbar .properties .propHeader > .propHeaderCell:last-child {
@@ -2702,15 +2716,6 @@
     .right-bottom-toolbar .properties .propRowCell document-path .input-end {
         flex: 1 1 50%;
         min-width: 0;
-        height: var(--pc-control-height);
-        box-sizing: border-box;
-        border: 1px solid var(--pc-control-border-color);
-        border-radius: var(--pc-control-border-radius);
-        background: var(--guardian-background, #fff);
-        color: var(--guardian-font-color, #23252E);
-        font-family: var(--pc-row-font-family);
-        font-size: var(--pc-row-font-size);
-        padding: 3px 8px;
     }
 
     .right-bottom-toolbar .properties .propRowCell document-path .select {

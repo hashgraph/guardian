@@ -10,9 +10,9 @@
       <td class="propHeaderCell"></td>
     </tr>
     @for (item of variables; track item; let i = $index) {
-      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main" (click)="onHide(variablesHidden, i)">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.main">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName" [attr.collapse]="variablesHidden[i]">
+        <td class="propRowCell cellName" [attr.collapse]="variablesHidden[i]" (click)="onHide(variablesHidden, i)">
           <i class="pi pi-chevron-down chevron-icon"></i>
           <span>{{ item.name }}</span>
         </td>
