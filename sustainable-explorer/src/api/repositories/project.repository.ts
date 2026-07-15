@@ -1,10 +1,4 @@
-/**
- * Abstract repository for querying projects.
- *
- * Database-specific logic (raw SQL, jsonb operators, tsvector, LATERAL joins)
- * lives in concrete implementations. Services depend only on this interface
- * so swapping to a different storage backend only requires a new implementation.
- */
+/** Abstract repository for querying projects; database-specific logic (raw SQL, jsonb operators, tsvector, LATERAL joins) lives in concrete implementations, so services depend only on this interface. */
 
 export interface IssuanceRow {
     tokenId: string;
@@ -83,17 +77,49 @@ export interface ProjectListResult {
     total: number;
 }
 
+/** Filter shape for `findAllForExport` — same filterable fields as `ProjectListQuery` minus pagination/sort. */
+export interface ProjectExportFilters {
+    search?: string;
+    name?: string;
+    country?: string;
+    methodology?: string;
+    registry?: string;
+    developer?: string;
+    vintage?: string;
+    status?: string;
+    policyTopicId?: string;
+    instanceTopicId?: string;
+}
+
+/** One row per PROJECT `business_view` row, keyed to match `export-field-catalog.ts`'s projects catalog rows directly. A project has no single canonical mint transaction or Hedera token, so `_consensusTimestamp`/`_tokenId` stay null (rendering blank) while `_topicId` (the project's own instance topic) still resolves a `verification_url` via the topic fallback. */
+export interface ProjectExportRow {
+    project_name: string | null;
+    registry: string | null;
+    developer: string | null;
+    country: string | null;
+    emissions_reduced: number | null;
+    reporting_year: number | null;
+    mitigation_type: string | null;
+    standard: string | null;
+    vintage: string | null;
+    ipfs_document_ref: string | null;
+    _consensusTimestamp: string | null;
+    _tokenId: string | null;
+    _topicId: string | null;
+    _dataSource: string | null;
+}
+
 export interface ActivityEventRow {
     consensusTimestamp: string;
     messageType: string;
     schemaName: string | null;
 }
 
-/**
- * Storage-agnostic repository contract.
- */
+/** Storage-agnostic repository contract. */
 export abstract class ProjectRepository {
     abstract findAll(query: ProjectListQuery): Promise<ProjectListResult>;
     abstract findById(id: string): Promise<ProjectRow | null>;
     abstract findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]>;
+    /** Full filtered dataset for the export engine — never capped at 1000 rows, never HTTP page-looped by the caller; implementations batch internally. */
+    abstract findAllForExport(filters: ProjectExportFilters): Promise<ProjectExportRow[]>;
 }

@@ -23,6 +23,8 @@ import { SdgsController } from './controllers/sdgs.controller';
 import { DevelopersController } from './controllers/developers.controller';
 import { DashboardController } from './controllers/dashboard.controller';
 import { PortfolioController } from './controllers/portfolio.controller';
+import { ExportsController } from './controllers/exports.controller';
+import { ImpactSummaryController } from './controllers/impact-summary.controller';
 
 // Services
 import { RegistriesService } from './services/registries.service';
@@ -37,6 +39,8 @@ import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
 import { DashboardService } from './services/dashboard.service';
 import { PortfolioStatsService } from './services/portfolio-stats.service';
+import { ExportsService } from './services/exports.service';
+import { ImpactSummaryService } from './services/impact-summary.service';
 
 // Queue management
 import { QueueRegistry } from './queues/queue.registry';
@@ -71,6 +75,8 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         DevelopersController,
         DashboardController,
         PortfolioController,
+        ExportsController,
+        ImpactSummaryController,
     ],
     providers: [
         NetworkDataSourceRegistry,
@@ -86,6 +92,8 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         DevelopersService,
         DashboardService,
         PortfolioStatsService,
+        ExportsService,
+        ImpactSummaryService,
         QueueRegistry,
         QueueEventsBus,
         GuardianSyncService,

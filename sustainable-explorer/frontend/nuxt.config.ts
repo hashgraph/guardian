@@ -20,10 +20,7 @@ export default defineNuxtConfig({
 
     css: ['~/assets/css/main.css'],
 
-    // @vue-flow/core ships untranspiled ESM that touches Vue component internals;
-    // it must be transpiled so it is SSR-safe when pulled into the server bundle
-    // graph (the project page imports the .client.vue canvas). Without this, SSR
-    // crashes at module-eval with "Cannot read properties of null (reading 'ce')".
+    // @vue-flow/core ships untranspiled ESM and must be transpiled for SSR, or SSR crashes at module-eval ("Cannot read properties of null (reading 'ce')").
     build: {
         transpile: ['@vue-flow/core'],
     },
@@ -45,15 +42,14 @@ export default defineNuxtConfig({
         { path: '~/components/admin', pathPrefix: false },
         { path: '~/components/account', pathPrefix: false },
         { path: '~/components/saved-search', pathPrefix: false },
+        { path: '~/components/reports', pathPrefix: false },
     ],
 
     imports: {
         dirs: ['composables/**'],
     },
 
-    // Dev-only proxy so `yarn dev` can use relative /api/v1 paths.
-    // In production, the frontend calls the API directly via
-    // `runtimeConfig.public.apiBaseUrl` (set by NUXT_PUBLIC_API_BASE_URL).
+    // Dev-only proxy so yarn dev can use relative /api/v1 paths; production calls the API directly via runtimeConfig.public.apiBaseUrl.
     routeRules: {
         '/api/v1/**': {
             proxy: 'http://localhost:3030/api/v1/**',
@@ -61,27 +57,19 @@ export default defineNuxtConfig({
     },
 
     runtimeConfig: {
-        // Server-side API base URL — used during SSR `useFetch` calls.
-        // In Docker: set to `http://api:3030` via NUXT_API_BASE_URL.
+        // Server-side API base URL used during SSR useFetch calls; in Docker, set via NUXT_API_BASE_URL.
         apiBaseUrl: process.env.NUXT_API_BASE_URL || 'http://localhost:3030',
         public: {
-            // Client-side API base URL — the URL the browser will hit.
-            // In dev: leave empty, Vite proxies /api/v1 via routeRules.
-            // In prod: set to the externally-reachable API URL
-            //   (e.g., `http://<host>:3030`) via NUXT_PUBLIC_API_BASE_URL.
-            //   Nuxt automatically overrides public.* from NUXT_PUBLIC_* env vars.
+            // Client-side API base URL; leave empty in dev (Vite proxies via routeRules), set via NUXT_PUBLIC_API_BASE_URL in prod.
             apiBaseUrl: '',
-            // SSE (EventSource) must bypass the Nitro proxy — connect directly to the API.
-            // Override via NUXT_PUBLIC_SSE_API_BASE_URL in production.
+            // SSE (EventSource) must bypass the Nitro proxy and connect directly to the API; override via NUXT_PUBLIC_SSE_API_BASE_URL in production.
             sseApiBaseUrl: process.env.NUXT_PUBLIC_SSE_API_BASE_URL || 'http://localhost:3030',
             // Nominatim geocoding endpoints. Override via NUXT_PUBLIC_GEOCODER_URL / NUXT_PUBLIC_GEOCODER_SEARCH_URL.
             geocoderUrl: 'https://nominatim.openstreetmap.org/reverse',
             geocoderSearchUrl: 'https://nominatim.openstreetmap.org/search',
-            // Google Apps Script Web App URL that receives feedback submissions.
-            // Leave empty to hide the feedback widget. Set via NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL.
+            // Google Apps Script Web App URL that receives feedback submissions; leave empty to hide the feedback widget (set via NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL).
             feedbackWebhookUrl: process.env.NUXT_PUBLIC_FEEDBACK_WEBHOOK_URL || '',
-            // Optional shared secret sent with feedback; must match SHARED_SECRET
-            // in the Apps Script. Set via NUXT_PUBLIC_FEEDBACK_TOKEN.
+            // Optional shared secret sent with feedback; must match SHARED_SECRET in the Apps Script (set via NUXT_PUBLIC_FEEDBACK_TOKEN).
             feedbackToken: process.env.NUXT_PUBLIC_FEEDBACK_TOKEN || '',
         },
     },
