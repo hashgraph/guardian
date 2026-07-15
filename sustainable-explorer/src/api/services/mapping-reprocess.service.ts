@@ -360,9 +360,9 @@ export class MappingReprocessService {
         // ── Fetch existing policy row ────────────────────────────────────────────
         const policyRows: PolicyRow[] = await ds.query(
             `SELECT "policyTopicId", "sourceCid", "decodeStatus", "policyMapping"
-             FROM policy
-             WHERE "policyTopicId" = $1
-             LIMIT 1`,
+         FROM policy
+         WHERE "policyTopicId" = $1
+         LIMIT 1`,
             [policyTopicId],
         );
 
@@ -409,11 +409,11 @@ export class MappingReprocessService {
         // indexOf('.') — we match against the known IRI set longest-first.
         const rawRows: Array<{ rawSchemaJson: Record<string, unknown> | null }> = await ds.query(
             `SELECT "rawSchemaJson"
-             FROM policy
-             WHERE "policyTopicId" = $1
-             ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
-                      "updatedAt" DESC NULLS LAST
-             LIMIT 1`,
+         FROM policy
+         WHERE "policyTopicId" = $1
+         ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
+                  "updatedAt" DESC NULLS LAST
+         LIMIT 1`,
             [policyTopicId],
         );
         const rawSchemaJson = (rawRows[0]?.rawSchemaJson ?? {}) as Record<string, unknown>;
@@ -490,17 +490,13 @@ export class MappingReprocessService {
                 isProjectSchema: existingProjectSchemaIris.has(parsed.schemaIri),
                 score: 999,
             };
-            const idx = existing.findIndex(e => {
+            const filtered = existing.filter(e => {
                 if (!e || typeof e !== 'object') return false;
                 const schemaType = (e as Record<string, unknown>)['schemaType'];
-                return schemaType !== 'mintToken' && schemaType !== 'standardRegistry';
+                return schemaType === 'mintToken' || schemaType === 'standardRegistry';
             });
-            if (idx >= 0) {
-                existing[idx] = manualEntry;
-            } else {
-                existing.unshift(manualEntry);
-            }
-            mergedMapping[fieldKey] = existing;
+
+            mergedMapping[fieldKey] = [manualEntry, ...filtered];
         }
 
         for (const fieldKey of keysToUnset) {
@@ -517,9 +513,9 @@ export class MappingReprocessService {
         // ── Persist updated policyMapping ────────────────────────────────────────
         await ds.query(
             `UPDATE policy
-             SET "policyMapping" = $2::jsonb,
-                 "updatedAt"     = now()
-             WHERE "policyTopicId" = $1`,
+         SET "policyMapping" = $2::jsonb,
+             "updatedAt"     = now()
+         WHERE "policyTopicId" = $1`,
             [policyTopicId, JSON.stringify(mergedMapping)],
         );
 
@@ -527,6 +523,10 @@ export class MappingReprocessService {
             `Updated policyMapping for policyTopicId=${policyTopicId} ` +
             `(${Object.keys(body.fieldMap).length} key(s) merged).`,
         );
+
+        if (typeof (this as any).reprocessService?.triggerReparse === 'function') {
+            await (this as any).reprocessService.triggerReparse(network, policyTopicId);
+        }
 
         // ── Return the refreshed decoded response ────────────────────────────────
         const repo = new PgPolicySchemaRepository(ds);
