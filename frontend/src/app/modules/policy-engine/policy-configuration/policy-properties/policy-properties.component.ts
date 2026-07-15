@@ -37,9 +37,10 @@ export class PolicyPropertiesComponent implements OnInit {
     topics: PolicyTopic[] = [];
     tokens: PolicyToken[] = [];
     roles: any[] = [];
+    creatorRoleOptions: PolicyRole[] = [];
     navigationRoles: any[] = [];
     navigation: PolicyNavigationModel[] = [];
-    projectSchema: string;
+    projectSchema?: string;
 
     policySchemas: SchemaVariables[] | undefined = [];
 
@@ -132,12 +133,20 @@ export class PolicyPropertiesComponent implements OnInit {
         this.policyGroups = this.policy.policyGroups;
         this.topics = this.policy.policyTopics;
         this.tokens = this.policy.policyTokens;
-        this.projectSchema = this.policy.projectSchema;
 
         this.migrationActivityTypeSelected = [];
         this.subTypeSelected = [];
 
-        this.policySchemas = this.policy.blockVariables?.schemas;
+        this.policySchemas = this.policy.blockVariables?.schemas.map(schema =>
+            schema.name.length || schema.value.length
+                ? schema
+                : new SchemaVariables('None', '')
+        );
+        this.projectSchema = this.policy.projectSchema &&
+            this.policySchemas?.some(schema => schema.value === this.policy.projectSchema)
+            ? this.policy.projectSchema
+            : undefined;
+        this.updateCreatorRoleOptions();
 
         this.policyCategories?.forEach((cat) => {
             if (cat.type === PolicyCategoryType.SECTORAL_SCOPE) {
@@ -210,10 +219,12 @@ export class PolicyPropertiesComponent implements OnInit {
 
     onEditRole(role: PolicyRole) {
         role.emitUpdate();
+        this.updateCreatorRoleOptions();
     }
 
     onRemoveRole(role: PolicyRole) {
         this.policy.removeRole(role);
+        this.updateCreatorRoleOptions();
         if (!this.policy.policyRoles.length) {
             this.propHidden.rolesGroup = true;
         }
@@ -298,5 +309,15 @@ export class PolicyPropertiesComponent implements OnInit {
                 value: contract.contractId
             }))
         ];
+    }
+
+    getCreatorRoleSelection(group: PolicyGroup): string | undefined {
+        return this.creatorRoleOptions.some(role => role.name === group.creator)
+            ? group.creator
+            : undefined;
+    }
+
+    private updateCreatorRoleOptions(): void {
+        this.creatorRoleOptions = this.policy.policyRoles.filter(role => role.name.trim().length > 0);
     }
 }

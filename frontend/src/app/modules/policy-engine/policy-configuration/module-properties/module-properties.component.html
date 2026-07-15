@@ -42,7 +42,11 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Description</td>
             <td class="propRowCell">
-              <textarea [(ngModel)]="module.description" [readonly]="readonly"></textarea>
+              @if (readonly) {
+                <div class="prop-description-readonly">{{ module.description }}</div>
+              } @else {
+                <textarea [(ngModel)]="module.description"></textarea>
+              }
             </td>
           </tr>
           <tr class="propRow" [attr.collapse]="propHidden.metaData">

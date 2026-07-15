@@ -82,7 +82,7 @@
                 [options]="policySchemas"
                 optionLabel="name"
                 optionValue="value"
-                [disabled]="!policySchemas"
+                [disabled]="!policySchemas?.length"
                 placeholder="Select a schema"
                 (onChange)="setProjectSchema($event.value)"
                 [appendTo]="'body'"
@@ -377,12 +377,13 @@
               <td class="propRowCell cellName">Creator role</td>
               <td class="propRowCell">
                 <p-select
-                  [(ngModel)]="item.creator"
-                  [options]="policy && policy.policyRoles"
+                  [ngModel]="getCreatorRoleSelection(item)"
+                  (ngModelChange)="item.creator = $event; onEditGroup(item)"
+                  [options]="creatorRoleOptions"
                   optionLabel="name"
                   optionValue="name"
                   [disabled]="readonly"
-                  (onChange)="onEditGroup(item)"
+                  placeholder="Select a creator role"
                   [appendTo]="'body'"
                   >
                 </p-select>
