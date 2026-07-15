@@ -105,10 +105,20 @@ export class NotificationEventsBus implements OnModuleInit, OnModuleDestroy {
         });
     }
 
+    /**
+     * `type` here becomes the wire-level SSE `event:` name, NOT the
+     * notification's own category — the frontend only listens for the
+     * default (unnamed) "message" event plus a dedicated "heartbeat" event
+     * (useNotificationsSse.ts). Forwarding `evt.type` (e.g. 'issuance')
+     * verbatim would emit a named `event: issuance` frame that no listener
+     * catches, silently dropping every real push. Only heartbeats get a
+     * distinct SSE event name; every real notification nudge — regardless of
+     * category — stays the default "message" event.
+     */
     private toMessageEvent(evt: Record<string, unknown>): MessageEvent {
         return {
             data: JSON.stringify(evt),
-            type: String(evt['type'] ?? 'event'),
+            type: evt['type'] === 'heartbeat' ? 'heartbeat' : 'message',
             id: String(Date.now()),
         };
     }

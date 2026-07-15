@@ -1,9 +1,16 @@
 <script setup lang="ts">
 import { Info } from 'lucide-vue-next';
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
     text: string;
-}>();
+    // Some triggers sit right under the topbar (e.g. the dashboard filter
+    // icon), where the default above-the-trigger placement gets clipped by
+    // the header. 'bottom' flips the tooltip (and its arrow) below the
+    // trigger instead.
+    position?: 'top' | 'bottom';
+}>(), {
+    position: 'top',
+});
 
 // Default usage (no slot content) renders the standalone Info icon as its own
 // trigger, as before. Passing content via the default slot instead lets this
@@ -22,9 +29,9 @@ function updatePosition() {
     const rect = triggerRef.value.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
 
-    // Position above the icon, centered
+    // Position above (default) or below the trigger, centered
     let left = rect.left + rect.width / 2;
-    const top = rect.top - 8;
+    const top = props.position === 'bottom' ? rect.bottom + 8 : rect.top - 8;
 
     // Clamp to viewport edges with padding
     const tooltipMaxWidth = 240;
@@ -36,7 +43,7 @@ function updatePosition() {
         position: 'fixed',
         left: `${left}px`,
         top: `${top}px`,
-        transform: 'translateX(-50%) translateY(-100%)',
+        transform: props.position === 'bottom' ? 'translateX(-50%)' : 'translateX(-50%) translateY(-100%)',
         zIndex: '9999',
     };
 }
@@ -86,10 +93,11 @@ function onClick(e: MouseEvent) {
                     :style="tooltipStyle"
                     class="pointer-events-none"
                 >
+                    <div v-if="position === 'bottom'" class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-b-[5px] border-b-foreground" />
                     <div class="max-w-[280px] whitespace-pre-line rounded-md bg-foreground px-3 py-2 text-[11px] leading-relaxed text-background shadow-lg text-left">
                         {{ text }}
                     </div>
-                    <div class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
+                    <div v-if="position !== 'bottom'" class="mx-auto h-0 w-0 border-x-[5px] border-x-transparent border-t-[5px] border-t-foreground" />
                 </div>
             </Transition>
         </Teleport>

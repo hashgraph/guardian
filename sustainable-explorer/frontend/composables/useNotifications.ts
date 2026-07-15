@@ -25,54 +25,8 @@ export interface NotificationListResult {
     nextCursor: string | null;
 }
 
-// ---------------------------------------------------------------------------
-// TEMPORARY — UI-testing scaffolding only. `import.meta.dev` is a build-time
-// constant (false, dead-code-eliminated) in production, so none of this ships.
-// Remove this block once the bell has been visually verified against a real
-// backend and isn't needed for local UI iteration anymore.
-// ---------------------------------------------------------------------------
-const MOCK_NOTIFICATIONS: NotificationItem[] = [
-    {
-        id: 'mock-1', network: 'mainnet', type: 'issuance', projectKey: 'mock-amazon',
-        payload: { projectName: 'Amazon Basin REDD+ Conservation Initiative', amount: 12500 },
-        isRead: false, createdAt: new Date(Date.now() - 14 * 60_000).toISOString(),
-    },
-    {
-        id: 'mock-2', network: 'mainnet', type: 'issuance', projectKey: 'mock-kariba',
-        payload: { projectName: 'Kariba REDD+ Forest Protection Project — Zimbabwe Community Trust', amount: 4200 },
-        isRead: false, createdAt: new Date(Date.now() - 2 * 3_600_000).toISOString(),
-    },
-    {
-        id: 'mock-3', network: 'mainnet', type: 'retirement', projectKey: 'mock-rimba',
-        payload: { projectName: 'Rimba Raya Biodiversity Reserve', amount: 840 },
-        isRead: false, createdAt: new Date(Date.now() - 5 * 3_600_000).toISOString(),
-    },
-    {
-        id: 'mock-4', network: 'mainnet', type: 'transfer', projectKey: 'mock-cordillera',
-        payload: { projectName: 'Cordillera Azul National Park REDD+', amount: 1000 },
-        isRead: true, createdAt: new Date(Date.now() - 26 * 3_600_000).toISOString(),
-    },
-    {
-        id: 'mock-5', network: 'mainnet', type: 'issuance', projectKey: 'mock-jari',
-        payload: { projectName: 'Jari Pará REDD+ Project', amount: 900 },
-        isRead: true, createdAt: new Date(Date.now() - 2 * 86_400_000).toISOString(),
-    },
-    {
-        id: 'mock-6', network: 'mainnet', type: 'issuance', projectKey: 'mock-mai-ndombe',
-        payload: { projectName: 'Mai Ndombe REDD+ Project', amount: 3150 },
-        isRead: true, createdAt: new Date(Date.now() - 3 * 86_400_000).toISOString(),
-    },
-];
-
 export function useNotifications() {
-    const { isAuthenticated: reallyAuthenticated } = useAuth();
-    // TEMPORARY (UI-testing only, see MOCK_NOTIFICATIONS above): the guards
-    // below must also treat dev mode as "authenticated," or they return
-    // before ever reaching the network call whose `catch` block seeds the
-    // mock fallback — otherwise the bell renders (via NotificationBell.vue's
-    // own bypass) but stays empty forever. Revert to plain `reallyAuthenticated`
-    // together with the rest of the mock scaffolding.
-    const isAuthenticated = computed(() => reallyAuthenticated.value || import.meta.dev);
+    const { isAuthenticated } = useAuth();
     const { apiFetch } = useApiFetch();
     const { network } = useNetwork();
     const config = useRuntimeConfig();
@@ -98,6 +52,9 @@ export function useNotifications() {
     // at the bottom of the list instead of hiding/blanking the existing rows.
     const loadingMore = useState<boolean>('notifications-loading-more', () => false);
     const nextCursor = useState<string | null>('notifications-next-cursor', () => null);
+    // 'unread' reuses the backend's existing unreadOnly param (list-notifications-query.dto.ts)
+    // rather than filtering client-side, so pagination stays correct for either tab.
+    const filter = useState<'all' | 'unread'>('notifications-filter', () => 'all');
 
     const hasUnread = computed(() => unreadCount.value > 0);
 
@@ -111,13 +68,6 @@ export function useNotifications() {
             });
             unreadCount.value = result.count;
         } catch {
-            // TEMPORARY (UI-testing only, dev-only, dead-code-eliminated in prod):
-            // fall back to mock data so the bell is visually testable without a
-            // running backend. Remove alongside the MOCK_NOTIFICATIONS block above.
-            if (import.meta.dev) {
-                unreadCount.value = MOCK_NOTIFICATIONS.filter((n) => !n.isRead).length;
-                return;
-            }
             // Leave the count untouched on error — a stale count is preferable
             // to flashing it to 0.
         }
@@ -139,23 +89,24 @@ export function useNotifications() {
                 credentials: 'include',
                 query: {
                     network: network.value,
+                    ...(filter.value === 'unread' ? { unreadOnly: true } : {}),
                     ...(reset ? {} : (nextCursor.value ? { cursor: nextCursor.value } : {})),
                 },
             });
             items.value = reset ? result.items : [...items.value, ...result.items];
             nextCursor.value = result.nextCursor;
         } catch {
-            // TEMPORARY (UI-testing only, see MOCK_NOTIFICATIONS above).
-            if (import.meta.dev && reset) {
-                items.value = MOCK_NOTIFICATIONS;
-                nextCursor.value = null;
-            } else if (reset) {
-                items.value = [];
-            }
+            if (reset) items.value = [];
         } finally {
             if (reset) loading.value = false;
             else loadingMore.value = false;
         }
+    }
+
+    function setFilter(next: 'all' | 'unread'): void {
+        if (filter.value === next) return;
+        filter.value = next;
+        void fetchList({ reset: true });
     }
 
     /** Optimistic: flips the item read locally first, reverts both on failure. */
@@ -240,9 +191,11 @@ export function useNotifications() {
         loading,
         loadingMore,
         nextCursor,
+        filter,
         hasUnread,
         fetchUnreadCount,
         fetchList,
+        setFilter,
         markRead,
         markAllRead,
         clearAll,
