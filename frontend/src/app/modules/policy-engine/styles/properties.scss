@@ -1327,6 +1327,10 @@
     }
 }
 
+::ng-deep .p-overlay:has(.pc-drawer-panel) {
+    width: 0;
+}
+
 ::ng-deep {
     .right-bottom-toolbar .properties .propHeader {
         height: 36px;

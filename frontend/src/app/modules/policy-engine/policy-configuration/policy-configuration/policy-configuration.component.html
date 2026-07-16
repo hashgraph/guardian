@@ -1077,12 +1077,14 @@
         }
       </div>
     </div>
-    <div class="identity-row identity-row--plain">
-      <div class="identity-row-label">Version</div>
-      <div class="identity-row-value">
-        <span class="identity-row-plain-value">{{ policyTemplate.version || '1.0' }}</span>
+    @if (policyTemplate.version) {
+      <div class="identity-row identity-row--plain">
+        <div class="identity-row-label">Version</div>
+        <div class="identity-row-value">
+          <span class="identity-row-plain-value">{{ policyTemplate.version }}</span>
+        </div>
       </div>
-    </div>
+    }
     <div class="identity-divider"></div>
     <div class="identity-action" (click)="openPolicySettingsDrawer(); identityMenu.hide()">
       <i class="pi pi-pencil"></i>
@@ -1114,12 +1116,14 @@
         }
       </div>
     </div>
-    <div class="identity-row identity-row--plain">
-      <div class="identity-row-label">Version</div>
-      <div class="identity-row-value">
-        <span class="identity-row-plain-value">{{ toolTemplate.version || '1.0' }}</span>
+    @if (toolTemplate.version) {
+      <div class="identity-row identity-row--plain">
+        <div class="identity-row-label">Version</div>
+        <div class="identity-row-value">
+          <span class="identity-row-plain-value">{{ toolTemplate.version }}</span>
+        </div>
       </div>
-    </div>
+    }
     <div class="identity-divider"></div>
     <div class="identity-action" (click)="openPolicySettingsDrawer(); toolIdentityMenu.hide()">
       <i class="pi pi-pencil"></i>

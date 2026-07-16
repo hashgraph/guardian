@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {IPolicyCategory, PolicyGroup, PolicyNavigationModel, PolicyNavigationStepModel, PolicyRole, PolicyTemplate, PolicyToken, PolicyTopic, SchemaVariables} from '../../structures';
-import {IContract, PolicyCategoryType} from '@guardian/interfaces';
+import {IContract, PolicyCategoryType, PolicyStatus} from '@guardian/interfaces';
 
 /**
  * Settings for policy.
@@ -41,6 +41,8 @@ export class PolicyPropertiesComponent implements OnInit {
     navigationRoles: any[] = [];
     navigation: PolicyNavigationModel[] = [];
     projectSchema?: string;
+
+    public copiedField: string = '';
 
     policySchemas: SchemaVariables[] | undefined = [];
 
@@ -319,5 +321,54 @@ export class PolicyPropertiesComponent implements OnInit {
 
     private updateCreatorRoleOptions(): void {
         this.creatorRoleOptions = this.policy.policyRoles.filter(role => role.name.trim().length > 0);
+    }
+
+    public copyValue(field: string, value: string | undefined, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) {
+            return;
+        }
+        navigator.clipboard.writeText(value);
+        this.copiedField = field;
+        setTimeout(() => {
+            if (this.copiedField === field) {
+                this.copiedField = '';
+            }
+        }, 1500);
+    }
+
+    public statusVariant(status: string | undefined): string {
+        switch (status) {
+            case PolicyStatus.DRY_RUN:
+                return 'dryrun';
+            case PolicyStatus.PUBLISH:
+                return 'published';
+            case PolicyStatus.DRAFT:
+            case PolicyStatus.PUBLISH_ERROR:
+                return 'draft';
+            default:
+                return 'demo';
+        }
+    }
+
+    public statusLabel(status: string | undefined): string {
+        switch (status) {
+            case PolicyStatus.DRAFT:
+                return 'Draft';
+            case PolicyStatus.DRY_RUN:
+                return 'Dry Run';
+            case PolicyStatus.PUBLISH:
+                return 'Published';
+            case PolicyStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case PolicyStatus.DEMO:
+                return 'Demo';
+            case PolicyStatus.DISCONTINUED:
+                return 'Discontinued';
+            case PolicyStatus.VIEW:
+                return 'View';
+            default:
+                return status || '';
+        }
     }
 }

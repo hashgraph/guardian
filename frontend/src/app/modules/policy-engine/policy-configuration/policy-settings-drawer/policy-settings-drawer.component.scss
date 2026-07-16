@@ -276,6 +276,11 @@
         text-overflow: ellipsis;
     }
 
+    .properties .propRowCell > .readonly-prop--copy {
+        border: none;
+        background: transparent;
+    }
+
     .properties .propRowCell > input.prop-input[readonly] {
         border-color: var(--pc-control-border-color) !important;
         background: var(--guardian-grey-background, #F9FAFC) !important;
@@ -329,8 +334,8 @@
 
     .properties .propRowCell > textarea {
         display: block;
-        height: var(--pc-control-height);
-        min-height: var(--pc-control-height);
+        height: calc(var(--pc-control-height) * 5);
+        min-height: calc(var(--pc-control-height) * 5);
         border-color: var(--pc-control-border-color);
         border-radius: var(--pc-control-border-radius);
         background: var(--guardian-background, #fff);
