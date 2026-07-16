@@ -140,7 +140,7 @@ describe('@unit PolicyUtils — additional pure helpers', () => {
     describe('getSchemaContext', () => {
         it('returns a synthetic schema context in dry-run', () => {
             const ctx = PolicyUtils.getSchemaContext({ dryRun: true }, { iri: '#abc' });
-            assert.equal(ctx, 'schema#abc');
+            assert.equal(ctx, 'schema:abc');
         });
 
         it('returns the contextURL when not in dry-run', () => {
