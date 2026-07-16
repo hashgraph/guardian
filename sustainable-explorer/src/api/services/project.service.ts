@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { ProjectQueryDto, ProjectResponseDto, ActivityEventDto } from '../dto/project.dto';
+import { ProjectQueryDto, ProjectResponseDto, ActivityEventDto, ProjectIdsDto } from '../dto/project.dto';
 import { PaginatedResponse } from '../dto/pagination.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgProjectRepository } from '../repositories/pg-project.repository';
@@ -38,10 +38,68 @@ export class ProjectsService {
             status: query.status,
             policyTopicId: query.policyTopicId,
             instanceTopicId: query.instanceTopicId,
+            sdgs: query.sdgs,
         });
 
         const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network, false));
         return new PaginatedResponse(data, result.total, page, limit);
+    }
+
+    /**
+     * Same filters as findAll, but returns only (sourceTimestamp, name) pairs —
+     * for the "add all matching" bulk-select action once browsing is
+     * paginated, so the client doesn't have to download every matching
+     * project's full row just to collect ids.
+     *
+     * Reuses findAll/fromRow rather than a parallel lean query: the display
+     * `name` isn't a plain column — ProjectResponseDto.fromRow falls back
+     * through the linked project-schema name (and then methodology) whenever
+     * the stored displayName looks like a bare DID/topic id, which needs the
+     * same policy-schema batch-load findAll already does. Reimplementing that
+     * for a lean query would either duplicate it or show the wrong name for
+     * exactly the projects that need the fallback. limit=5000 is a generous
+     * cap for a user-triggered bulk action, not a route millions of rows
+     * would ever hit — the point is avoiding a second name-resolution
+     * algorithm, not shaving a few joins off an infrequent request.
+     */
+    async findIds(network: string, query: ProjectQueryDto): Promise<ProjectIdsDto> {
+        const repo = this.getRepository(network);
+        const result = await repo.findAll({
+            page: 1,
+            limit: 5000,
+            search: query.search,
+            name: query.name,
+            country: query.country,
+            methodology: query.methodology,
+            registry: query.registry,
+            developer: query.developer,
+            vintage: query.vintage,
+            status: query.status,
+            policyTopicId: query.policyTopicId,
+            instanceTopicId: query.instanceTopicId,
+            sdgs: query.sdgs,
+        });
+        const items = result.rows.map(row => {
+            const dto = ProjectResponseDto.fromRow(row, network, false);
+            return { id: dto.sourceTimestamp, name: dto.name ?? dto.sourceTimestamp };
+        });
+        return { items };
+    }
+
+    /**
+     * Batch-fetches projects by sourceTimestamp ID (the watchlist's stored ID),
+     * reusing findAll's row-shaping and N+1-avoidance schema-loading rather than
+     * a parallel implementation. limit=200 comfortably covers the watchlist size
+     * cap (Phase 5), so one page always returns the whole batch.
+     */
+    async findByIds(network: string, sourceTimestamps: string[]): Promise<ProjectResponseDto[]> {
+        const repo = this.getRepository(network);
+        const result = await repo.findAll({
+            page: 1,
+            limit: 200,
+            sourceTimestamps,
+        });
+        return result.rows.map(row => ProjectResponseDto.fromRow(row, network, false));
     }
 
     async findById(network: string, id: string): Promise<ProjectResponseDto | null> {

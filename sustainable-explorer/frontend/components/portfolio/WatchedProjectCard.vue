@@ -63,10 +63,7 @@ const creditingPeriod = computed(() => {
 </script>
 
 <template>
-    <AppLink
-        :to="`/projects/${project.id}`"
-        class="flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow hover:shadow-md hover:border-primary/40"
-    >
+    <div class="flex flex-col rounded-lg border bg-card overflow-hidden transition-shadow hover:shadow-md hover:border-primary/40">
         <div class="h-[3px]" :style="{ backgroundColor: accentColor }" />
 
         <div class="p-3.5 pb-2">
@@ -132,10 +129,13 @@ const creditingPeriod = computed(() => {
                     {{ t('portfolio.watchedProjects.sdgsLabel', { n: project.sdgs.length }) }}
                 </span>
             </div>
-            <span class="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary shrink-0">
+            <AppLink
+                :to="`/projects/${project.id}`"
+                class="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-primary/10 px-2.5 py-1 text-[11px] font-semibold text-primary shrink-0 hover:bg-primary/20"
+            >
                 {{ t('portfolio.watchedProjects.open') }}
                 <ArrowRight class="h-2.5 w-2.5" />
-            </span>
+            </AppLink>
         </div>
-    </AppLink>
+    </div>
 </template>

@@ -182,11 +182,11 @@ export class PgCreditRepository extends CreditRepository {
             tokenId:     query.tokenId,
         });
 
-        // projectKey: restrict to mints attributed to this specific project
-        if (query.projectKey) {
-            const param = builder.nextParam(query.projectKey);
-            builder.addClause(`pml.project_key = ${param}`);
-        }
+        // projectKey: restrict to mints attributed to this specific project.
+        // Supports a `|`-delimited list (handled by addFilter's 'eq' operator,
+        // which emits `= ANY($n::text[])` for multi-value input) so Portfolio
+        // can scope one query to its whole watchlist instead of paging network-wide.
+        builder.addFilter('pml.project_key', 'eq', query.projectKey);
 
         // methodologyId: restrict to mints whose resolved methodology matches
         if (query.methodologyId) {

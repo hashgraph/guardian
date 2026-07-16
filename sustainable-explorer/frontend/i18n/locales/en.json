@@ -679,7 +679,7 @@
             "advanced": {
                 "title": "Advanced",
                 "tokenPolicy": "Token Policy Id",
-                "mintTokenId": "Mint Token",
+                "mintTokenId": "Token ID",
                 "tokenCreatedDate": "Token Created Date",
                 "issueDid": "Issue DID"
             },
@@ -1241,7 +1241,7 @@
         },
         "watchedProjects": {
             "title": "Watched Projects",
-            "subtitle": "Projects from your watchlist · click any card to view details",
+            "subtitle": "Projects from your watchlist",
             "issued": "Issued",
             "retired": "Retired",
             "transferred": "Transferred",
@@ -1260,11 +1260,11 @@
         "lastFive": "Last 5",
         "chartLimitReached": "Chart limit reached ({max}/{max})",
         "syncedLabel": "Synced —",
-        "syncedSub": "Hedera Mainnet · {projects} projects indexed",
+        "syncedSub": "{network} · {projects} projects indexed",
         "kpi": {
             "totalIssued": {
                 "label": "Total Credits Issued",
-                "sub": "Issued on-chain (mainnet)",
+                "sub": "Issued on-chain ({network})",
                 "footer": "On-chain verified"
             },
             "activeSupply": {
@@ -1279,7 +1279,7 @@
             },
             "activeProjects": {
                 "label": "Active Projects",
-                "sub": "Verified on mainnet",
+                "sub": "Verified on {network}",
                 "footer": "{n} in watchlist"
             }
         },

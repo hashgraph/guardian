@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { RouteLocationRaw } from 'vue-router';
+import type { RouteLocation, RouteLocationRaw } from 'vue-router';
 
 // Drop-in replacement for <NuxtLink> for every *internal* link in the app.
 //
@@ -13,7 +13,24 @@ import type { RouteLocationRaw } from 'vue-router';
 // records. Resolving `to` here and injecting the current `network` query
 // param means the rendered <a href> is always correct on its own, regardless
 // of how it's opened.
-const props = defineProps<{ to?: RouteLocationRaw }>();
+const props = defineProps<{
+    to?: RouteLocationRaw;
+    // Forwarded to NuxtLink: renders no wrapping <a>, exposing { navigate,
+    // href, ... } via the default slot instead — needed when the link
+    // behavior has to sit on a non-<a> element (e.g. a whole <tr>, which
+    // can't legally nest inside an <a>).
+    custom?: boolean;
+}>();
+
+defineSlots<{
+    default(props: {
+        href: string;
+        navigate: (e?: MouseEvent) => Promise<void>;
+        route: (RouteLocation & { href: string }) | undefined;
+        isActive: boolean;
+        isExactActive: boolean;
+    }): any;
+}>();
 
 const route = useRoute();
 const router = useRouter();
@@ -34,7 +51,7 @@ const resolvedTo = computed<RouteLocationRaw | undefined>(() => {
 </script>
 
 <template>
-    <NuxtLink :to="resolvedTo">
-        <slot />
+    <NuxtLink :to="resolvedTo" :custom="custom" v-slot="slotProps">
+        <slot v-bind="slotProps" />
     </NuxtLink>
 </template>

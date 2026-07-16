@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsOptional, IsString, IsArray, ArrayNotEmpty, ArrayMaxSize } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { ProjectRow, ActivityEventRow, PolicySchemaRow, IssuanceEventRow } from '../repositories/project.repository';
@@ -209,6 +209,36 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     instanceTopicId?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by SDG numbers — match-any. Supports a `|`-delimited list, e.g. "3|7|13".' })
+    @IsOptional()
+    @IsString()
+    sdgs?: string;
+}
+
+export class ProjectIdNameDto {
+    @ApiProperty({ description: 'sourceTimestamp ID' })
+    id: string;
+
+    @ApiProperty({ description: 'Display name' })
+    name: string;
+}
+
+export class ProjectIdsDto {
+    @ApiProperty({ type: [ProjectIdNameDto], description: '(id, name) pairs for every project matching the given filters' })
+    items: ProjectIdNameDto[];
+}
+
+export class BatchProjectsDto {
+    @ApiProperty({
+        type: [String],
+        description: 'sourceTimestamp IDs of the watchlisted projects to fetch (max 200, matching the watchlist size cap)',
+    })
+    @IsArray()
+    @ArrayNotEmpty()
+    @ArrayMaxSize(200)
+    @IsString({ each: true })
+    sourceTimestamps: string[];
 }
 
 export class ProjectResponseDto {

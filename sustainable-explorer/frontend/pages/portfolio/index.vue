@@ -31,6 +31,8 @@ import {
     Clock,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import { useDebounceFn, useIntersectionObserver } from '@vueuse/core';
+import { useWatchlistBrowse } from '~/composables/useWatchlistBrowse';
 import { formatCredits, formatSmartCredits } from '~/lib/format';
 import {
     allocateDonutColors,
@@ -53,25 +55,19 @@ definePageMeta({ middleware: 'auth' });
 
 const { t } = useI18n();
 
-const {
-    buildRetirementSeries,
-    totalRetired,
-    pending,
-} = useDashboard();
-const { projects: allProjects } = useProjects();   // full list for watchlist modal candidates
-
+// No retirement data source exists anywhere in the app yet (the main
+// Dashboard page's useDashboard() has the same stub) — these are local
+// no-op placeholders so the KPI/chart keep rendering their current 0/empty
+// state without pulling in useDashboard()'s full project catalog + mint-stats
+// + registry/methodology counts just to compute values that are always empty.
+const totalRetired = ref(0);
+function buildRetirementSeries(_period: TimePeriod): { label: string; value: number }[] {
+    return [];
+}
 const { watchlistItems, removeItem, count: watchlistCount } = usePortfolioWatchlist();
 const { widgets, widgetVisible, toggleWidget, setWidget, widgetGroups } = usePortfolioWidgets();
 const { isAuthenticated } = useAuth();
 const { hydrateFromApi, pushType } = usePortfolioSync();
-const {
-    watchlistFilters,
-    setFilter: setWatchlistFilter,
-    clearFilters: clearWatchlistFilters,
-    hasActiveFilters: hasActiveWatchlistFilters,
-    filterOptions: watchlistFilterOptions,
-    matchesFilters: matchesWatchlistFilters,
-} = usePortfolioWatchlistFilters();
 
 // All chart data filtered by the active watchlist (empty watchlist ⇒ empty portfolio)
 const {
@@ -84,15 +80,25 @@ const {
     vintageMax,
     registries,
     countryRaw,
-    topCountries,
     mapCountries,
     mapPoints,
+    getCountryDetail,
     buildIssuanceSeries,
     recentIssuances,
     filteredSdgStats,
     recentActivity,
     dataPending,
 } = usePortfolioDashboard(watchlistItems);
+
+// Project Distribution map — click-through side panel, mirrors pages/index.vue.
+const selectedCountry = ref<string | null>(null);
+const activeMapDetail = computed(() => {
+    if (!selectedCountry.value) return null;
+    return getCountryDetail(selectedCountry.value);
+});
+function onMapCountryClick(code: string) {
+    selectedCountry.value = selectedCountry.value === code ? null : code;
+}
 
 // Period toggles
 type TimePeriod = 'monthly' | 'quarterly' | 'yearly';
@@ -195,6 +201,10 @@ const topSdgs = computed(() => {
 // toward a goal.
 const sdgAxis = computed(() => niceAxis(Math.max(...topSdgs.value.map(s => s.count), 0)));
 
+// Shared numeric x-axis for the Top Countries bar chart — mirrors sdgAxis,
+// same rationale (plot against a clean rounded scale, not each other).
+const countryAxis = computed(() => niceAxis(Math.max(...countryRaw.value.map(c => c.credits), 0)));
+
 // SDG coverage radar (all SDGs) — filtered by watchlist, mode-aware. Axis
 // labels use just the SDG number ("1".."17") since 17 axes is too tight for
 // full names around the perimeter; the full name shows in the hover tooltip.
@@ -236,7 +246,7 @@ const kpiTotalRetired = computed(() => formatCredits(totalRetired.value));
 const kpiActiveProjects = computed(() => activeProjectsCount.value.toLocaleString());
 
 // Sync status
-const { network } = useNetwork();
+const { network, currentNetwork } = useNetwork();
 const { data: syncStatus } = useSyncSummaryApi({ network });
 const lastSyncFormatted = computed(() => {
     const raw = syncStatus.value?.lastSyncedAt;
@@ -249,9 +259,50 @@ const showWatchlistModal = ref(false);
 const showWidgetLibraryModal = ref(false);
 const showChartBuilderModal = ref(false);
 
-// Watchlist modal — projects only. Uncapped; narrowed by search + the
-// persisted country/methodology/registry filters (usePortfolioWatchlistFilters).
+// Watchlist modal — server-paginated + filtered (useWatchlistBrowse), narrowed
+// further by the client-side country filter (usePortfolioWatchlistFilters —
+// country can't move server-side until the geocoding backfill lands, see
+// docs/portfolio-scaling-plan.md). Search is debounced into the server request.
 const watchlistSearch = ref('');
+const debouncedWatchlistSearch = ref('');
+const updateDebouncedWatchlistSearch = useDebounceFn((v: string) => { debouncedWatchlistSearch.value = v; }, 300);
+watch(watchlistSearch, v => updateDebouncedWatchlistSearch(v));
+
+// Same useState key usePortfolioWatchlistFilters uses internally — read
+// directly here so the browse composable's server filters don't have to wait
+// on that composable's full return value, which itself needs browseItems as
+// an input (methodology/registry/sdgs now apply server-side; only country
+// stays client-side there).
+const watchlistFiltersState = useState<Record<string, string>>('portfolio-watchlist-filters', () => ({}));
+const browseFilters = computed(() => ({
+    search: debouncedWatchlistSearch.value,
+    methodology: watchlistFiltersState.value.methodology,
+    registry: watchlistFiltersState.value.registry,
+    sdgs: watchlistFiltersState.value.sdgs,
+}));
+const {
+    items: browseItems,
+    total: browseTotal,
+    hasMore: browseHasMore,
+    loadMore: browseLoadMore,
+    reset: resetBrowse,
+    fetchAllMatchingIds,
+} = useWatchlistBrowse(browseFilters);
+
+// Infinite scroll: fetch the next page once the sentinel row scrolls into view.
+const watchlistScrollSentinelRef = ref<HTMLElement | null>(null);
+useIntersectionObserver(watchlistScrollSentinelRef, ([entry]) => {
+    if (entry?.isIntersecting && browseHasMore.value) void browseLoadMore();
+});
+
+const {
+    watchlistFilters,
+    setFilter: setWatchlistFilter,
+    clearFilters: clearWatchlistFilters,
+    hasActiveFilters: hasActiveWatchlistFilters,
+    filterOptions: watchlistFilterOptions,
+    matchesFilters: matchesWatchlistFilters,
+} = usePortfolioWatchlistFilters(browseItems, showWatchlistModal);
 
 // Draft selection edited while the modal is open. Add/Remove/Add All only
 // mutate this — the committed `watchlistItems` (and therefore the whole
@@ -273,29 +324,39 @@ function pendingRemoveItem(id: string, type: WatchlistItemType): void {
 
 // When checked, shows only the items currently in the pending draft —
 // bypasses Country/Methodology/Registry so the user can review their full
-// selection regardless of the filters currently applied. Search still narrows.
+// selection regardless of the filters currently applied.
 const showSelectedOnly = ref(false);
 
+// methodology/registry/sdgs are already applied server-side (browseFilters);
+// matchesWatchlistFilters only re-checks country (client-side, see above).
 const watchlistCandidates = computed(() => {
-    const q = watchlistSearch.value.toLowerCase();
     const base = showSelectedOnly.value
-        ? allProjects.value.filter(p => pendingHasItem(p.id, 'project'))
-        : allProjects.value.filter(p => matchesWatchlistFilters(p));
-    return base
-        .filter(p => !q || p.name?.toLowerCase().includes(q) || p.registry?.toLowerCase().includes(q))
-        .map(p => ({
-            id: p.id,
-            type: 'project' as const,
-            name: p.name,
-            meta: p.registry ?? '',
-        }));
+        ? browseItems.value.filter(p => pendingHasItem(p.id, 'project'))
+        : browseItems.value.filter(p => matchesWatchlistFilters(p));
+    return base.map(p => ({
+        id: p.id,
+        type: 'project' as const,
+        name: p.name,
+        meta: p.registry ?? '',
+    }));
 });
 
-// Merges every currently-filtered/searched candidate into the pending draft
-// in one shot — no network calls (the full project list is already loaded)
-// and no per-item mutation, so this stays O(n) even for large result sets.
-function addAllMatching() {
-    const additions = watchlistCandidates.value.filter(c => !pendingHasItem(c.id, c.type));
+// Adds every project matching the current filters to the pending draft.
+// Country is client-side-only (can't be sent to the server), so an active
+// country filter falls back to just the currently-loaded/visible candidates
+// (today's effective reach); otherwise fetches the full server-side matching
+// id set (GET /projects/ids — lean id+name pairs, not full rows) so "add all"
+// covers projects beyond whatever page has loaded so far.
+async function addAllMatching() {
+    let additions: WatchlistItem[];
+    if (watchlistFilters.value.country) {
+        additions = watchlistCandidates.value.filter(c => !pendingHasItem(c.id, c.type));
+    } else {
+        const matches = await fetchAllMatchingIds();
+        additions = matches
+            .filter(m => !pendingHasItem(m.id, 'project'))
+            .map(m => ({ id: m.id, type: 'project' as const, name: m.name, meta: '' }));
+    }
     pendingWatchlist.value = [...pendingWatchlist.value, ...additions];
     toast(t('portfolio.modal.watchlist.addAllSuccess', { count: additions.length }));
 }
@@ -303,8 +364,10 @@ function addAllMatching() {
 function openWatchlist() {
     pendingWatchlist.value = [...watchlistItems.value];
     watchlistSearch.value = '';
+    debouncedWatchlistSearch.value = '';
     showSelectedOnly.value = false;
     showWatchlistModal.value = true;
+    void resetBrowse();
 }
 
 // Discards the draft — used by Cancel, the header close button, backdrop
@@ -915,7 +978,7 @@ onUnmounted(() => {
                         v-if="widgetVisible('totalIssued')"
                         :label="$t('portfolio.kpi.totalIssued.label')"
                         :value="kpiTotalIssued"
-                        :sub="$t('portfolio.kpi.totalIssued.sub')"
+                        :sub="$t('portfolio.kpi.totalIssued.sub', { network: network })"
                         :footer="$t('portfolio.kpi.totalIssued.footer')"
                         footer-accent="text-primary"
                         :icon="Coins"
@@ -947,7 +1010,7 @@ onUnmounted(() => {
                         v-if="widgetVisible('activeProjects')"
                         :label="$t('portfolio.kpi.activeProjects.label')"
                         :value="kpiActiveProjects"
-                        :sub="$t('portfolio.kpi.activeProjects.sub')"
+                        :sub="$t('portfolio.kpi.activeProjects.sub', { network: network })"
                         :footer="$t('portfolio.kpi.activeProjects.footer', { n: watchlistCount })"
                         footer-accent="text-primary"
                         :icon="FolderKanban"
@@ -1051,8 +1114,19 @@ onUnmounted(() => {
             <div class="px-6 pb-6">
                 <Skeleton v-if="!displayReady" class="h-[28rem] rounded-xl" />
                 <div v-else class="rounded-xl border bg-card overflow-hidden">
-                    <div class="h-[28rem]">
-                        <ProjectMap :countries="mapCountries" :points="mapPoints" auto-fit />
+                    <!-- Fixed height regardless of side-panel visibility so the
+                         map doesn't jump (resize Leaflet) on every click. -->
+                    <div class="flex h-[28rem]">
+                        <!-- Map -->
+                        <div class="flex-1 relative">
+                            <ProjectMap :countries="mapCountries" :points="mapPoints" auto-fit @country-click="onMapCountryClick" />
+                        </div>
+
+                        <CountryDetailPanel
+                            :detail="activeMapDetail"
+                            :country-code="selectedCountry"
+                            @close="selectedCountry = null"
+                        />
                     </div>
                 </div>
             </div>
@@ -1160,18 +1234,6 @@ onUnmounted(() => {
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- ADD CUSTOM CHART CTA -->
-        <div class="px-6 pb-8">
-            <button
-                class="w-full rounded-xl border-2 border-dashed border-border/60 bg-transparent py-4 text-xs text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
-                :disabled="customCharts.length >= MAX_CUSTOM_CHARTS"
-                @click="customCharts.length < MAX_CUSTOM_CHARTS && openChartBuilder()"
-            >
-                <Plus class="h-4 w-4" />
-                {{ customCharts.length < MAX_CUSTOM_CHARTS ? $t('portfolio.addCustomChart') : $t('portfolio.chartLimitReached', { max: MAX_CUSTOM_CHARTS }) }}
-            </button>
         </div>
 
         <!-- ROW 1: Issuance Trend + Vintage Distribution -->
@@ -1376,20 +1438,52 @@ onUnmounted(() => {
                     </div>
                     <div class="px-6 pb-6">
                         <Skeleton v-if="!displayReady" class="h-48 rounded-xl" />
-                        <div v-else class="rounded-xl border bg-card p-5 space-y-3">
-                            <div v-for="c in topCountries" :key="c.name" class="flex items-center gap-3">
-                                <span class="text-xs text-foreground min-w-[90px] truncate">{{ c.name }}</span>
-                                <div class="flex-1 h-2 bg-muted/40 rounded-full overflow-hidden">
-                                    <div
-                                        class="h-full rounded-full bg-primary/70 transition-all duration-500"
-                                        :style="{ width: `${c.width}%` }"
-                                    />
+                        <div v-else-if="countryRaw.length > 0" class="rounded-xl border bg-card p-5">
+                            <!-- Horizontal bar chart plotted against a real numeric x-axis
+                                 (see countryAxis), mirrors the Top SDGs bar chart. -->
+                            <div class="flex gap-3">
+                                <div class="flex flex-col gap-3 shrink-0">
+                                    <div v-for="c in countryRaw" :key="c.name" class="h-6 flex items-center max-w-[130px]">
+                                        <span class="min-w-0 truncate text-xs text-foreground" :title="c.name">{{ c.name }}</span>
+                                    </div>
                                 </div>
-                                <span class="text-xs text-muted-foreground tabular-nums min-w-[40px] text-right shrink-0">{{ c.val }}</span>
+                                <div class="relative flex-1 min-w-0">
+                                    <!-- Y-axis + gridlines, spanning the full bar stack -->
+                                    <div
+                                        v-for="(tick, i) in countryAxis.ticks"
+                                        :key="i"
+                                        class="absolute top-0 bottom-5 w-px"
+                                        :class="i === 0 ? 'bg-border' : 'bg-border/50'"
+                                        :style="{ left: `${(tick / countryAxis.max) * 100}%` }"
+                                    />
+                                    <!-- Bars -->
+                                    <div class="flex flex-col gap-3">
+                                        <div v-for="c in countryRaw" :key="c.name" class="relative h-6">
+                                            <InfoTooltip
+                                                :text="`${c.name}: ${formatCredits(c.credits)}`"
+                                                class="absolute inset-y-0 left-0 items-center transition-all duration-500"
+                                                :style="{ width: `${Math.max((c.credits / countryAxis.max) * 100, 2)}%` }"
+                                            >
+                                                <div class="h-full w-full rounded-r-md bg-primary/70" />
+                                                <span class="ml-2 text-xs font-medium text-foreground tabular-nums whitespace-nowrap">{{ formatCredits(c.credits) }}</span>
+                                            </InfoTooltip>
+                                        </div>
+                                    </div>
+                                    <!-- X-axis -->
+                                    <div class="relative h-5 mt-2 border-t border-border">
+                                        <span
+                                            v-for="(tick, i) in countryAxis.ticks"
+                                            :key="i"
+                                            class="absolute top-1.5 text-[10px] text-muted-foreground tabular-nums"
+                                            :class="i === 0 ? 'left-0' : i === countryAxis.ticks.length - 1 ? 'right-0' : '-translate-x-1/2'"
+                                            :style="i !== 0 && i !== countryAxis.ticks.length - 1 ? { left: `${(tick / countryAxis.max) * 100}%` } : {}"
+                                        >{{ formatCredits(tick) }}</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div v-if="topCountries.length === 0" class="py-4 text-center text-xs text-muted-foreground">
-                                {{ $t('portfolio.noData') }}
-                            </div>
+                        </div>
+                        <div v-else class="rounded-xl border bg-card p-5 py-4 text-center text-xs text-muted-foreground">
+                            {{ $t('portfolio.noData') }}
                         </div>
                     </div>
                 </div>
@@ -1648,7 +1742,7 @@ onUnmounted(() => {
                     </div>
                     <div>
                         <p class="text-sm font-semibold text-foreground">{{ $t('portfolio.syncedLabel') }} {{ lastSyncFormatted }}</p>
-                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('portfolio.syncedSub', { projects: activeProjectsCount }) }}</p>
+                        <p class="text-xs text-muted-foreground mt-0.5">{{ $t('portfolio.syncedSub', { network: currentNetwork.label, projects: activeProjectsCount }) }}</p>
                     </div>
                 </div>
             </div>
@@ -1691,7 +1785,7 @@ onUnmounted(() => {
                                 :filters="watchlistFilterOptions"
                                 :active-filters="watchlistFilters"
                                 :result-count="watchlistCandidates.length"
-                                :total-count="allProjects.length"
+                                :total-count="browseTotal"
                                 hide-search
                                 @filter="setWatchlistFilter"
                                 @clear="clearWatchlistFilters"
@@ -1751,6 +1845,9 @@ onUnmounted(() => {
                             </div>
                             <div v-if="watchlistCandidates.length === 0" class="py-8 text-center text-sm text-muted-foreground">
                                 {{ $t('common.noResults') }}
+                            </div>
+                            <div v-else-if="browseHasMore" ref="watchlistScrollSentinelRef" class="py-3 text-center text-xs text-muted-foreground">
+                                {{ $t('common.loading') }}
                             </div>
                         </div>
                         <!-- Footer -->
