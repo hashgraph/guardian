@@ -60,16 +60,22 @@ const SEARCH_TSVECTOR = `(
     setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
 )`;
 
-/** LATERAL subquery joined into both findAll and findById to look up the publishing registry's display name, using ORDER BY + LIMIT 1 to handle the rare case of multiple REGISTRY rows for one DID. */
+/**
+ * Derived table joined into both findAll and findById to look up the
+ * publishing registry's display name. A non-correlated `DISTINCT ON`
+ * (computed once, over the small REGISTRY row set) picks the latest row per
+ * registryDid to handle the (rare) case of multiple REGISTRY rows for one
+ * DID — cheaper than a per-row correlated LATERAL subquery.
+ */
 const REGISTRY_NAME_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT "displayName" AS registry_name
+    LEFT JOIN (
+        SELECT DISTINCT ON ("registryDid")
+               "registryDid",
+               "displayName" AS registry_name
         FROM business_view
         WHERE "viewType" = 'REGISTRY'
-          AND "registryDid" = bv."registryDid"
-        ORDER BY "createdAt" DESC NULLS LAST
-        LIMIT 1
-    ) reg ON true
+        ORDER BY "registryDid", "createdAt" DESC NULLS LAST
+    ) reg ON reg."registryDid" = bv."registryDid"
 `;
 
 /** Per-project lifecycle aggregates (issuance count, total issued, total retired) are read from the mv_project_stats materialized view instead of being computed live per row; the MV is keyed by projectKey and refreshed by MvRefreshProcessor. */
@@ -142,6 +148,8 @@ export class PgProjectRepository extends ProjectRepository {
             status: query.status,
             policyTopicId: query.policyTopicId,
             instanceTopicId: query.instanceTopicId,
+            sourceTimestamp: query.sourceTimestamps,
+            sdgs: query.sdgs,
         });
 
         // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast

@@ -710,17 +710,19 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                             <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">
                                 {{ $t('credits.detail.advanced.mintTokenId') }}
                             </div>
-                            <a
-                                v-if="mintTokenHashscanUrl"
-                                :href="mintTokenHashscanUrl"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline transition-colors"
-                            >
-                                <ExternalLink class="h-3.5 w-3.5" />
-                                {{ $t('common.viewOnHashScan') }}
-                            </a>
-                            <span v-else class="text-sm font-medium text-foreground">—</span>
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <code class="text-sm font-mono text-foreground break-all">{{ mintTokenId ?? '—' }}</code>
+                                <a
+                                    v-if="mintTokenHashscanUrl"
+                                    :href="mintTokenHashscanUrl"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                                >
+                                    <ExternalLink class="h-3 w-3" />
+                                    {{ $t('common.viewOnHashScan') }}
+                                </a>
+                            </div>
                         </div>
                         <div class="bg-card px-5 py-4">
                             <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">

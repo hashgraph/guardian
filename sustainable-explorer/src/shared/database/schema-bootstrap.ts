@@ -56,6 +56,17 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
     `);
 
+    // Batch project-by-IDs lookup (watchlist fetch) filters PROJECT rows by
+    // sourceTimestamp = ANY(...). Without this index that's a sequential scan
+    // of business_view. Not unique (unlike projectKey above) — findById()
+    // already matches sourceTimestamp OR projectKey with LIMIT 1, implying
+    // uniqueness isn't guaranteed here.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_source_timestamp
+        ON business_view ("sourceTimestamp")
+        WHERE "viewType" = 'PROJECT'
+    `);
+
     // Partial expression index on MintToken VC tokenId — without this, the
     // credits list endpoint's LATERAL "project link" join scans all 10k+
     // VC-Documents per credit row (Postgres can't index into JSONB without
@@ -142,6 +153,14 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
     await dataSource.query(`
         CREATE INDEX IF NOT EXISTS idx_business_view_linked_vcs
         ON business_view USING GIN (("businessData" -> 'linkedVcs'))
+        WHERE "viewType" = 'PROJECT'
+    `);
+
+    // GIN index backing the sdgs @> containment lookups (contains-any filter
+    // on GET /projects), mirroring the linkedVcs index above.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_sdgs
+        ON business_view USING GIN (("businessData" -> 'sdgs'))
         WHERE "viewType" = 'PROJECT'
     `);
 
