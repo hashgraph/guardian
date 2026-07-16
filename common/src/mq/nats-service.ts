@@ -212,9 +212,9 @@ export abstract class NatsService {
             const head = headers();
             head.append('messageId', messageId);
             if (isResponseCallback) {
-                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number, data?: any) => {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number, errorData?: any) => {
                     if (error) {
-                        reject(new MessageError(error, code, data));
+                        reject(new MessageError(error, code, errorData));
                     } else {
                         resolve(body);
                     }
