@@ -228,17 +228,32 @@ export class DecodedMethodologyResponseDto {
 
         const config = row.projectSchemaConfig;
         const fieldMap = (config.fieldMap ?? {}) as Record<string, { title: string; description: string; isGeoJson?: boolean }>;
-        const resolvedFields = (config.resolvedFields ?? {}) as Record<string, string | null>;
+        const resolvedFields = (config.resolvedFields ?? {}) as Record<string, { fieldPath: string; schemaIri: string } | null>;
 
         const globalFieldIndex = new Map<string, { title: string; description: string }>();
+        // Per-schema field index (schemaId -> fieldKey -> def) — needed because
+        // two different schemas commonly share a fieldPath (e.g. both have a
+        // top-level "name"). Without disambiguating by schemaIri, resolving a
+        // field mapped onto a non-project schema could collide with the
+        // project schema's own field of the same name and show the wrong title.
+        const schemaFieldIndex = new Map<string, Map<string, { title: string; description: string }>>();
         for (const s of dto.availableSchemas) {
+            const perSchema = new Map<string, { title: string; description: string }>();
             for (const f of s.fields) {
                 if (!globalFieldIndex.has(f.fieldKey)) {
                     globalFieldIndex.set(f.fieldKey, { title: f.title, description: f.description });
                 }
+                if (!perSchema.has(f.fieldKey)) {
+                    perSchema.set(f.fieldKey, { title: f.title, description: f.description });
+                }
             }
+            schemaFieldIndex.set(s.schemaId, perSchema);
         }
-        const lookupFieldDef = (fieldKey: string): { title: string; description: string } | null => {
+        const lookupFieldDef = (fieldKey: string, schemaIri?: string): { title: string; description: string } | null => {
+            if (schemaIri) {
+                const bySchema = schemaFieldIndex.get(schemaIri)?.get(fieldKey);
+                if (bySchema) return bySchema;
+            }
             const local = fieldMap[fieldKey];
             if (local) return { title: local.title ?? fieldKey, description: local.description ?? '' };
             const global = globalFieldIndex.get(fieldKey);
@@ -246,22 +261,25 @@ export class DecodedMethodologyResponseDto {
             return null;
         };
 
-        // Build reverse map: fieldKey → resolvedAs name
+        // Build reverse map: `${schemaIri}::${fieldPath}` → resolvedAs name.
+        // Keyed by schema+path (not just path) so the project schema's own
+        // fieldMap listing doesn't falsely tag an unrelated same-named field
+        // as "resolved as X" when the actual resolution points elsewhere.
         const fieldKeyToResolvedAs = new Map<string, string>();
-        for (const [propName, fieldKey] of Object.entries(resolvedFields)) {
-            if (typeof fieldKey === 'string' && fieldKey) {
-                fieldKeyToResolvedAs.set(fieldKey, propName);
+        for (const [propName, resolved] of Object.entries(resolvedFields)) {
+            if (resolved && typeof resolved === 'object' && resolved.fieldPath && resolved.schemaIri) {
+                fieldKeyToResolvedAs.set(`${resolved.schemaIri}::${resolved.fieldPath}`, propName);
             }
         }
 
         const geoKey = typeof config.geoKey === 'string' ? config.geoKey : '';
-        const geoFieldDef = lookupFieldDef(geoKey);
+        const geoFieldDef = lookupFieldDef(geoKey, row.schemaId ?? undefined);
 
-        const buildResolvedField = (fieldKey: string | null | undefined): ResolvedFieldDto | null => {
-            if (!fieldKey) return null;
-            const def = lookupFieldDef(fieldKey);
+        const buildResolvedField = (resolved: { fieldPath: string; schemaIri: string } | null | undefined): ResolvedFieldDto | null => {
+            if (!resolved?.fieldPath) return null;
+            const def = lookupFieldDef(resolved.fieldPath, resolved.schemaIri);
             if (!def) return null;
-            return { fieldKey, title: def.title, description: def.description };
+            return { fieldKey: resolved.fieldPath, title: def.title, description: def.description };
         };
 
         dto.projectSchema = {
@@ -291,7 +309,7 @@ export class DecodedMethodologyResponseDto {
                     fieldKey,
                     title: def.title ?? fieldKey,
                     description: def.description ?? '',
-                    resolvedAs: fieldKeyToResolvedAs.get(fieldKey) ?? null,
+                    resolvedAs: fieldKeyToResolvedAs.get(`${row.schemaId}::${fieldKey}`) ?? null,
                 })),
         };
 
