@@ -768,7 +768,14 @@
                         <div [ngClass]="{
                                 'tree-container': isTree
                             }" class="pc-tabs-content">
-                @if (!isTree) {
+                @if (currentView === 'json') {
+                  <div class="textarea-code">
+                    <ngx-codemirror (ngModelChange)="saveState()" [(ngModel)]="code"
+                      [options]="codeMirrorOptions">
+                    </ngx-codemirror>
+                  </div>
+                }
+                @if (currentView === 'yaml') {
                   <div class="textarea-code">
                     <ngx-codemirror (ngModelChange)="saveState()" [(ngModel)]="code"
                       [options]="codeMirrorOptions">

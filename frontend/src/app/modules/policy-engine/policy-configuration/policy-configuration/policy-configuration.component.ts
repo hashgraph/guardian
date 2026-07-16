@@ -1,5 +1,6 @@
 import { CdkDragDrop, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ChangeDetectorRef, Component, HostListener, Inject, OnInit, ViewChild } from '@angular/core';
+import { CodemirrorComponent } from '@ctrl/ngx-codemirror';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ContractType, IContract, LocationType, PolicyAvailability, PolicyCategoryType, PolicyStatus, Schema, SchemaHelper, TagType, Token, UserPermissions } from '@guardian/interfaces';
 import * as yaml from 'js-yaml';
@@ -11,6 +12,7 @@ import { ContractService } from 'src/app/services/contract.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { PolicyViewConvertService } from 'src/app/services/policy-view-convert.service';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TokenService } from 'src/app/services/token.service';
@@ -63,6 +65,8 @@ export class PolicyConfigurationComponent implements OnInit {
     private _lastUpdate: any;
     private treeOverview!: PolicyTreeComponent;
     @ViewChild(PolicyPropertiesComponent) propertiesComponent: PolicyPropertiesComponent;
+    @ViewChild(CodemirrorComponent) private codeEditor?: CodemirrorComponent;
+    private codeViewPosition: { [view: string]: { left: number; top: number } } = {};
     public loading: boolean = true;
     public options: Options;
     public readonly!: boolean;
@@ -140,7 +144,7 @@ export class PolicyConfigurationComponent implements OnInit {
         matchBrackets: true,
         lint: true,
         readOnly: false,
-        viewportMargin: Infinity
+        viewportMargin: 50
     };
     public readonly componentsList: any = {
         favorites: [],
@@ -241,6 +245,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private profileService: ProfileService,
         private contractService: ContractService,
         private tagsService: TagsService,
+        private policyViewConvert: PolicyViewConvertService,
         @Inject(CONFIGURATION_ERRORS)
         private _configurationErrors: Map<string, any>,
         storage: IndexedDbRegistryService
@@ -752,19 +757,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
     }
 
-    /**
-     * Set editor content and mode. ngx-codemirror re-tokenizes on both value
-     * (setValue) and mode (setOption) changes, so on a code-to-code switch we
-     * apply the mode first, while the editor still holds the smaller previous
-     * document, to tokenize the new (large) document only once.
-     */
     private setEditorCode(code: string, mode: string): void {
-        const editorMounted =
-            this.currentView === 'json' || this.currentView === 'yaml';
-        if (editorMounted && this.codeMirrorOptions.mode !== mode) {
-            this.codeMirrorOptions.mode = mode;
-            this.changeDetector.detectChanges();
-        }
         this.codeMirrorOptions.mode = mode;
         this.code = code;
     }
@@ -1512,11 +1505,91 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onView(type: string): void {
+        if (this.loading || type === this.currentView) {
+            return;
+        }
         this.loading = true;
-        setTimeout(() => {
-            this.changeView(type);
-            this.loading = false;
-        }, 0);
+        this.afterNextPaint(() => this.changeViewAsync(type));
+    }
+
+    private afterNextPaint(fn: () => void): void {
+        requestAnimationFrame(() => requestAnimationFrame(() => fn()));
+    }
+
+    private async changeViewAsync(type: string): Promise<void> {
+        const from = this.currentView;
+        this.errors = [];
+        this.errorsCount = -1;
+        this.errorsMap = {};
+        this.saveCodeViewPosition(from);
+        try {
+            if (type === 'blocks') {
+                this.codeViewPosition = {};
+                let root: any = null;
+                if (from === 'json') {
+                    root = this.jsonToObject(this.code);
+                } else if (from === 'yaml') {
+                    const json = await this.policyViewConvert.convert('yamlToJson', this.code);
+                    root = this.jsonToObject(json);
+                }
+                this.openFolder.rebuild(root);
+            } else if (type === 'json' || type === 'yaml') {
+                const mode = type === 'json' ? 'policy-json-lang' : 'policy-yaml-lang';
+                let code = '';
+                if (from === 'blocks') {
+                    const json = this.objectToJson(this.openFolder.getJSON());
+                    code = type === 'yaml'
+                        ? await this.policyViewConvert.convert('jsonToYaml', json)
+                        : json;
+                } else if (from === 'json') {
+                    code = await this.policyViewConvert.convert('jsonToYaml', this.code);
+                } else if (from === 'yaml') {
+                    code = await this.policyViewConvert.convert('yamlToJson', this.code);
+                }
+                this.setEditorCode(code, mode);
+            }
+            this.currentView = type;
+            this.changeDetector.detectChanges();
+        } catch (error: any) {
+            this.errors = [error?.message || String(error)];
+        } finally {
+            this.hideLoadingWhenReady(type);
+        }
+    }
+
+    private hideLoadingWhenReady(type: string, tries: number = 0): void {
+        const needsEditor = type === 'json' || type === 'yaml';
+        const ready = !needsEditor || !!this.codeEditor?.codeMirror;
+        if (ready || tries > 60) {
+            this.afterNextPaint(() => {
+                this.restoreCodeViewPosition(type);
+                this.loading = false;
+                this.changeDetector.detectChanges();
+            });
+            return;
+        }
+        requestAnimationFrame(() => this.hideLoadingWhenReady(type, tries + 1));
+    }
+
+    private getCodeScrollEl(): HTMLElement | null {
+        const wrapper = this.codeEditor?.codeMirror?.getWrapperElement() as HTMLElement | undefined;
+        return (wrapper?.closest('.pc-tabs-content') as HTMLElement) || null;
+    }
+
+    private saveCodeViewPosition(view: string): void {
+        const el = this.getCodeScrollEl();
+        if ((view === 'json' || view === 'yaml') && el) {
+            this.codeViewPosition[view] = { left: el.scrollLeft, top: el.scrollTop };
+        }
+    }
+
+    private restoreCodeViewPosition(view: string): void {
+        const el = this.getCodeScrollEl();
+        const pos = this.codeViewPosition[view];
+        if ((view === 'json' || view === 'yaml') && el && pos) {
+            el.scrollTop = pos.top;
+            el.scrollLeft = pos.left;
+        }
     }
 
     public saveState() {
