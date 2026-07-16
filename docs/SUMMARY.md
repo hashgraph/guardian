@@ -1,8 +1,10 @@
 # Table of contents
 
+* [Welcome](README.md)
+
 ## Guardian
 
-* [Getting Started](README.md)
+* [Getting Started](<README (1).md>)
   * [Discovering Environmental assets on Hedera](guardian/readme/discovering-esg-assets-on-hedera.md)
   * [Guardian Glossary](guardian/readme/guardian-glossary.md)
   * [Installation Guide](guardian/readme/getting-started/README.md)
@@ -46,8 +48,8 @@
   * [Meeco authentication](guardian/readme/security-1/README.md)
     * [How it works](guardian/readme/security-1/how-it-works.md)
 * [Architecture](guardian/architecture/README.md)
-  * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
+  * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
   * [Policies,Projects and Topics Mapping Architecture](guardian/architecture/schema-architecture.md)
   * [MRV Splitting Logic](guardian/architecture/mrv-splitting-logic.md)
   * [Internal (with Vault)Signing Sequence Diagram](guardian/architecture/internal-with-vault-signing-sequence-diagram.md)
