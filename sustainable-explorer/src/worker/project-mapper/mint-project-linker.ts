@@ -7,15 +7,10 @@ import { DataSource } from 'typeorm';
  *
  * Called from BusinessViewBuilderProcessor after registry/methodology/credit
  * views are built. The function is incremental: it processes mints that have
- * NO link at all, mints whose existing link's project_key no longer matches
+ * NO link at all, AND mints whose existing link's project_key no longer matches
  * any PROJECT row in business_view (stale links that arise after a project is
- * re-keyed during M1 re-processing), AND mints whose existing link was made
- * via one of the ambiguous topic-wide methods (cs_ref/topic_scope) while the
- * topic still looked single-project — if a sibling project has since appeared
- * in business_view for that topic, those links are provisional and must be
- * re-resolved (see "grouped topic self-heal" below). The ON CONFLICT DO
- * UPDATE upsert repairs the row in place when the mint is successfully
- * re-resolved.
+ * re-keyed during M1 re-processing). The ON CONFLICT DO UPDATE upsert repairs
+ * the stale row when the mint is successfully re-resolved.
  *
  * Resolution strategy:
  *   1. Mint-specific ancestor walk: walk options.relationships via recursive
@@ -25,33 +20,22 @@ import { DataSource } from 'typeorm';
  *      (b) the ancestor VC's own credentialSubject[0].id/.ref IS a project's
  *      projectKey (covers lifecycle VCs reached before linkedVcs is complete).
  *      Both conditions are evaluated in ONE pass so the shallowest matching
- *      ancestor wins regardless of which condition matched it. This is the
- *      only mint-specific (i.e. provably-correct-for-THIS-mint) signal, so it
- *      always runs first and wins over any topic-wide heuristic below.
+ *      ancestor wins regardless of which condition matched it. This merges
+ *      what used to be two separate steps (a relationship-only walk, and a
+ *      later "ref-root" walk tried only after the topic-wide cs_ref heuristic
+ *      below had already failed) into one pass that always runs FIRST — a
+ *      grouped/shared topic mint whose ancestor chain resolves cleanly no
+ *      longer risks losing to a topic-wide guess that fires before it gets a
+ *      chance to run.
  *   1.5 Same-topic cs.ref lookup: if the ancestor walk fails, look for any VC
  *      in the same topic whose credentialSubject[0].ref points to a known
  *      project's projectKey. Monitoring Reports explicitly carry this ref
- *      ("I am a report FOR this project"). This is a TOPIC-WIDE heuristic —
- *      it says nothing about which project THIS mint belongs to — so it is
- *      only attempted when the topic currently resolves to exactly one
- *      PROJECT row in business_view (grouped/shared PoA topics with two or
- *      more sibling projects must not use it; see self-heal note above for
- *      why this guard alone isn't sufficient once a topic starts single- and
- *      later becomes multi-project).
- *   2. Topic-scope fallback: same single-project-topic guard as 1.5, reusing
- *      the same query. Grouped topics without a resolved ancestor chain are
- *      skipped entirely to avoid misattribution.
- *
- * Grouped-topic self-heal: 1.5 and 2 are both topic-wide, so their safety
- * depends entirely on how many PROJECT rows exist for the topic AT THE TIME
- * they run. Project rows are built asynchronously and don't necessarily
- * appear in business_view in HCS consensus-timestamp order (a later-dated
- * mint can be processed before an earlier-dated sibling project's own VC has
- * been mapped), so a mint can legitimately get linked via 1.5/2 while the
- * topic still looks single-project, then have a second project appear moments
- * later. Without special handling that link would never be revisited, because
- * the ordinary staleness check only fires when the linked project disappears,
- * not when a better one appears. The "unlinked" query below closes that gap.
+ *      ("I am a report FOR this project"). Only used when exactly one project
+ *      is referenced across the topic's VCs, to limit (not eliminate)
+ *      misattribution risk in shared PoA topics with multiple sub-projects.
+ *   2. Topic-scope fallback: only when the instance topic contains exactly
+ *      one project. Grouped topics without a resolved chain are skipped to
+ *      avoid misattribution.
  */
 export async function buildMintProjectLinks(
     dataSource: DataSource,
@@ -79,21 +63,6 @@ export async function buildMintProjectLinks(
               JOIN business_view bv
                 ON bv."projectKey" = pml.project_key AND bv."viewType" = 'PROJECT'
               WHERE pml.mint_consensus_timestamp = m."consensusTimestamp"
-                AND (
-                    -- Mint-specific methods are never re-opened: they're tied
-                    -- to this mint's own ancestor chain, not to how many
-                    -- projects happen to exist in the topic right now.
-                    pml.link_method IN ('relationship', 'ref_root')
-                    -- Topic-wide methods (cs_ref/topic_scope) are only
-                    -- "settled" while the topic still resolves to exactly one
-                    -- project. If a sibling project has since appeared in
-                    -- business_view for this topic, the link was provisional
-                    -- and must be re-resolved with the now-larger project set.
-                    OR (
-                        SELECT COUNT(*) FROM business_view bv2
-                        WHERE bv2."viewType" = 'PROJECT' AND bv2."relatedTopicId" = m."topicId"
-                    ) <= 1
-                )
           )
         ORDER BY m."consensusTimestamp"
     `);
@@ -184,30 +153,14 @@ export async function buildMintProjectLinks(
             linkMethod = chainRows[0].method;
             if (linkMethod === 'ref_root') refRoot++; else linked++;
         } else {
-            // Both topic-wide heuristics below are unsafe once a topic hosts
-            // more than one project — neither ties its result back to THIS
-            // mint. Resolve the topic's current PROJECT rows once and reuse
-            // for both steps, matching Step 2's pre-existing single-project
-            // guard (previously Step 1.5 had no equivalent guard at all).
-            const topicProjects: Array<{ project_key: string; related_topic_id: string }> =
+            // Step 1.5 — same-topic cs.ref lookup: find any VC in the same topic
+            // whose credentialSubject[0].ref explicitly points to a project's
+            // projectKey. Monitoring Reports carry this ref; it is a direct
+            // semantic assertion that the VC belongs to that specific project.
+            // Safe only when exactly one project is referenced to prevent
+            // misattribution in shared PoA topics with multiple sub-projects.
+            const csRefRows: Array<{ project_key: string; project_topic_id: string }> =
                 await dataSource.query(`
-                    SELECT "projectKey" AS project_key, "relatedTopicId" AS related_topic_id
-                    FROM business_view
-                    WHERE "viewType" = 'PROJECT'
-                      AND "relatedTopicId" = $1
-                `, [mint.topicId]);
-
-            let csRefRows: Array<{ project_key: string; project_topic_id: string }> = [];
-
-            if (topicProjects.length === 1) {
-                // Step 1.5 — same-topic cs.ref lookup: find any VC in the same
-                // topic whose credentialSubject[0].ref explicitly points to a
-                // project's projectKey. Monitoring Reports carry this ref; it
-                // is a direct semantic assertion that the VC belongs to that
-                // specific project. Only attempted for single-project topics
-                // (see guard above) — the DISTINCT here is a defensive
-                // second check, not the primary safety mechanism.
-                csRefRows = await dataSource.query(`
                     SELECT DISTINCT
                         bv."projectKey"     AS project_key,
                         bv."relatedTopicId" AS project_topic_id
@@ -223,7 +176,6 @@ export async function buildMintProjectLinks(
                       AND m.documents IS NOT NULL
                       AND m.documents->'credentialSubject'->0->>'ref' IS NOT NULL
                 `, [mint.topicId]);
-            }
 
             if (csRefRows.length === 1) {
                 projectKey = csRefRows[0].project_key;
@@ -231,12 +183,17 @@ export async function buildMintProjectLinks(
                 linkMethod = 'cs_ref';
                 csRef++;
             } else {
-                // Step 2 — topic-scope fallback: safe only for unambiguous
-                // single-project topics. Grouped topics (or topics whose
-                // ancestor chain didn't resolve) are skipped to avoid
-                // misattribution.
-                if (topicProjects.length !== 1) {
-                    if (topicProjects.length > 1) {
+                // Step 2 — topic-scope fallback: safe only for unambiguous single-project topics.
+                const fallbackRows: Array<{ project_key: string; relatedTopicId: string }> =
+                    await dataSource.query(`
+                        SELECT "projectKey" AS project_key, "relatedTopicId"
+                        FROM business_view
+                        WHERE "viewType" = 'PROJECT'
+                          AND "relatedTopicId" = $1
+                    `, [mint.topicId]);
+
+                if (fallbackRows.length !== 1) {
+                    if (fallbackRows.length > 1) {
                         logger.warn(
                             `MintToken ${mint.consensusTimestamp}: grouped topic ${mint.topicId} — ` +
                             `chain unresolved, skipping to avoid misattribution`,
@@ -246,8 +203,8 @@ export async function buildMintProjectLinks(
                     continue;
                 }
 
-                projectKey = topicProjects[0].project_key;
-                projectTopicId = topicProjects[0].related_topic_id;
+                projectKey = fallbackRows[0].project_key;
+                projectTopicId = fallbackRows[0].relatedTopicId;
                 linkMethod = 'topic_scope';
                 fallback++;
             }
