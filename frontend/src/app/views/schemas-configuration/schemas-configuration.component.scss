@@ -378,6 +378,12 @@
 
     &:hover { border-color: #c8c6f0; }
 
+    &.sc-schema-row--no-drop {
+        cursor: default;
+        opacity: 0.55;
+        &:hover { border-color: rgba(0, 0, 0, 0.1); }
+    }
+
     &.active {
         border-color: #c8c6f0;
         background: #eeedfe;
@@ -600,6 +606,14 @@
 .sc-editor-body {
     padding: 16px;
     flex: 1;
+    transition: background 0.15s, outline 0.15s;
+
+    &.sc-drop-active {
+        background: rgba(29, 158, 117, 0.04);
+        outline: 2px dashed var(--primary-color, #1d9e75);
+        outline-offset: -6px;
+        border-radius: 8px;
+    }
 }
 
 /* ── Section block ── */

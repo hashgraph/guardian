@@ -54,6 +54,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
 
+    // ── Drag-and-drop state ──
+    public isDragOverCanvas: boolean = false;
+    private _dragEnterCount: number = 0;
+    private _dragFieldType: FieldType | null = null;
+    private _dragSchema: Schema | null = null;
+
     public get hasUnsavedChanges(): boolean {
         return this.dirtySchemaIds.size > 0;
     }
@@ -472,6 +478,108 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.markDirty();
         }
     }
+
+    // ── Drag-and-drop ──────────────────────────────────────────────────────────
+
+    public onFieldTypeDragStart(event: DragEvent, ft: FieldType): void {
+        this._dragFieldType = ft;
+        this._dragSchema = null;
+        event.dataTransfer!.effectAllowed = 'copy';
+        event.dataTransfer!.setData('text/plain', 'ft:' + ft.key);
+        this.setDragGhost(event);
+    }
+
+    public canDragSchema(schema: Schema): boolean {
+        const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        const schId = schema.id || (schema as any)._id;
+        return !(selId && selId === schId);
+    }
+
+    public onSchemaDragStart(event: DragEvent, schema: Schema): void {
+        if (!this.canDragSchema(schema)) { event.preventDefault(); return; }
+        this._dragSchema = schema;
+        this._dragFieldType = null;
+        event.dataTransfer!.effectAllowed = 'copy';
+        event.dataTransfer!.setData('text/plain', 'schema:' + (schema.id || (schema as any)._id));
+        this.setDragGhost(event);
+    }
+
+    private setDragGhost(event: DragEvent): void {
+        const src = event.currentTarget as HTMLElement;
+        const ghost = src.cloneNode(true) as HTMLElement;
+        ghost.style.cssText = `position:fixed;top:-1000px;left:-1000px;margin:0;pointer-events:none;`;
+        document.body.appendChild(ghost);
+        event.dataTransfer!.setDragImage(ghost, src.offsetWidth / 2, src.offsetHeight / 2);
+        // Remove after the browser has captured the ghost frame
+        setTimeout(() => { if (ghost.parentNode) { ghost.parentNode.removeChild(ghost); } }, 0);
+    }
+
+    public onDragEnd(): void {
+        this._dragFieldType = null;
+        this._dragSchema = null;
+    }
+
+    public onCanvasDragEnter(event: DragEvent): void {
+        if (!this._dragFieldType && !this._dragSchema) { return; }
+        this._dragEnterCount++;
+        this.isDragOverCanvas = true;
+    }
+
+    public onCanvasDragOver(event: DragEvent): void {
+        if (!this._dragFieldType && !this._dragSchema) { return; }
+        event.preventDefault();
+        event.dataTransfer!.dropEffect = 'copy';
+    }
+
+    public onCanvasDragLeave(event: DragEvent): void {
+        this._dragEnterCount--;
+        if (this._dragEnterCount <= 0) {
+            this._dragEnterCount = 0;
+            this.isDragOverCanvas = false;
+        }
+    }
+
+    public onCanvasDrop(event: DragEvent): void {
+        event.preventDefault();
+        this._dragEnterCount = 0;
+        this.isDragOverCanvas = false;
+        if (!this.selectedSchema) { return; }
+        if (this._dragFieldType) {
+            this.addField(this._dragFieldType);
+        } else if (this._dragSchema) {
+            this.addSchemaField(this._dragSchema);
+        }
+        this._dragFieldType = null;
+        this._dragSchema = null;
+    }
+
+    private addSchemaField(schema: Schema): void {
+        if (!this.selectedSchema) { return; }
+        const idx = (this.selectedSchema.fields?.length ?? 0) + 1;
+        const field = {
+            name: `field_${idx}`,
+            title: schema.name || 'Sub-schema',
+            description: schema.name || '',
+            required: false,
+            isArray: false,
+            isRef: true,
+            readOnly: false,
+            type: schema.iri || '',
+            format: '',
+            pattern: '',
+            unit: '',
+            unitSystem: '',
+            property: '',
+            customType: '',
+            isUpdatable: false,
+            fields: schema.fields ? [...schema.fields] : [],
+        } as unknown as SchemaField;
+        this.selectedSchema.fields.push(field);
+        this.selectedField = field;
+        this.markDirty();
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
 
     public onNewSchema(): void {
         this.newSchemaName = '';

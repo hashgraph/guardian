@@ -103,6 +103,8 @@
                                 [class.sc-field-chip--accent]="ft.accent"
                                 [class.sc-field-chip--disabled]="!selectedSchema"
                                 draggable="true"
+                                (dragstart)="onFieldTypeDragStart($event, ft)"
+                                (dragend)="onDragEnd()"
                                 (click)="addField(ft)">
                                 <i class="pi {{ ft.icon }}"></i>
                                 {{ ft.label }}
@@ -143,6 +145,10 @@
                                 <div
                                     class="sc-schema-row"
                                     [class.active]="selectedSchema?.id === schema.id || selectedSchema?._id === schema._id"
+                                    [class.sc-schema-row--no-drop]="!canDragSchema(schema)"
+                                    [draggable]="canDragSchema(schema)"
+                                    (dragstart)="onSchemaDragStart($event, schema)"
+                                    (dragend)="onDragEnd()"
                                     (click)="switchSchema(schema)">
                                     <div class="sc-schema-icon">
                                         <i class="pi pi-file"></i>
@@ -207,7 +213,12 @@
                             }
                         </div>
 
-                        <div class="sc-editor-body">
+                        <div class="sc-editor-body"
+                             [class.sc-drop-active]="isDragOverCanvas"
+                             (dragenter)="onCanvasDragEnter($event)"
+                             (dragleave)="onCanvasDragLeave($event)"
+                             (dragover)="onCanvasDragOver($event)"
+                             (drop)="onCanvasDrop($event)">
 
                             @if (systemFields.length) {
                                 <div class="sc-section-block sc-system-fields-block">
