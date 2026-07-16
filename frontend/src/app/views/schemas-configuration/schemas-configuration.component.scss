@@ -124,6 +124,21 @@
     gap: 8px;
 }
 
+.sc-validation-errors {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #dc2626;
+    background: #fee2e2;
+    border: 1px solid #fca5a5;
+    border-radius: 6px;
+    padding: 4px 10px;
+
+    i { font-size: 13px; }
+}
+
 .sc-save-indicator {
     display: flex;
     align-items: center;
@@ -174,6 +189,12 @@
         background: var(--primary-color, #1d9e75);
         color: #fff;
         &:hover { filter: brightness(0.92); }
+    }
+    &.invalid {
+        background: #fee2e2;
+        color: #dc2626;
+        border: 1px solid #fca5a5;
+        cursor: not-allowed;
     }
     &.clean {
         background: var(--surface-ground, #f1efe8);
@@ -616,6 +637,161 @@
     }
 }
 
+/* ── Schema properties panel (root = green, sub = purple) ── */
+.sc-schema-props {
+    background: #E1F5EE;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    padding: 10px 16px 10px;
+    flex-shrink: 0;
+
+    &--sub {
+        background: #EEEDFE;
+        border-bottom-color: #c8c6f0;
+
+        .sc-schema-props-title { color: #3C3489; }
+        .sc-schema-props-toggle { color: #534AB7; }
+        .sc-schema-props-label { color: #534AB7; }
+        .sc-schema-props-name,
+        .sc-schema-props-select,
+        .sc-schema-props-input,
+        .sc-schema-props-desc {
+            border-color: rgba(83, 74, 183, 0.25);
+            &:focus { border-color: #534AB7; box-shadow: 0 0 0 2px rgba(83, 74, 183, 0.12); }
+        }
+    }
+}
+
+.sc-schema-props-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.sc-schema-props-title {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #0F6E56;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+
+    i { font-size: 12px; }
+}
+
+.sc-schema-props-toggle {
+    font-size: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    color: #0F6E56;
+    opacity: 0.65;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 0;
+
+    &:hover { opacity: 1; }
+    i { font-size: 10px; }
+}
+
+.sc-schema-props-name {
+    width: 100%;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 5px 8px;
+    border-radius: 5px;
+    border: 1px solid rgba(29, 158, 117, 0.3);
+    background: white;
+    color: var(--text-color, #2c2c2a);
+    font-family: inherit;
+    outline: none;
+    margin-bottom: 6px;
+
+    &:focus {
+        border-color: var(--primary-color, #1d9e75);
+        box-shadow: 0 0 0 2px rgba(29, 158, 117, 0.12);
+    }
+}
+
+.sc-schema-props-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.sc-schema-props-field {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+
+    &--full { grid-column: 1 / -1; }
+}
+
+.sc-schema-props-label {
+    font-size: 9px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #0F6E56;
+    opacity: 0.75;
+}
+
+.sc-schema-props-optional {
+    font-size: 9px;
+    font-style: italic;
+    opacity: 0.55;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+}
+
+.sc-schema-props-select,
+.sc-schema-props-input {
+    font-size: 11px;
+    padding: 4px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(29, 158, 117, 0.3);
+    background: white;
+    color: var(--text-color, #2c2c2a);
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+
+    &:focus {
+        border-color: var(--primary-color, #1d9e75);
+    }
+
+    &--readonly {
+        background: var(--surface-ground, #f8f8f7);
+        color: var(--text-color-secondary, #888780);
+        cursor: default;
+    }
+}
+
+.sc-schema-props-select { cursor: pointer; }
+
+.sc-schema-props-desc {
+    font-size: 11px;
+    padding: 4px 7px;
+    border-radius: 5px;
+    border: 1px solid rgba(29, 158, 117, 0.3);
+    background: white;
+    color: var(--text-color, #2c2c2a);
+    font-family: inherit;
+    outline: none;
+    width: 100%;
+    resize: none;
+
+    &:focus {
+        border-color: var(--primary-color, #1d9e75);
+    }
+}
+
 /* ── Section block ── */
 .sc-section-block {
     margin-bottom: 8px;
@@ -692,6 +868,18 @@
         &.active {
             border-color: #534ab7;
             box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12);
+        }
+    }
+
+    &.sc-field-card--invalid {
+        border-color: #fca5a5;
+        background: #fff8f8;
+
+        &:hover { border-color: #f87171; }
+
+        &.active {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
         }
     }
 }
@@ -778,6 +966,212 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+}
+
+/* ── Drill field cards ── */
+.sc-drill-card {
+    background: var(--surface-ground, #f8f8f7);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 8px;
+    padding: 7px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+
+    &:hover {
+        background: #fff;
+        border-color: rgba(0, 0, 0, 0.15);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.07);
+
+        .sc-drill-card-actions { opacity: 1; }
+    }
+
+    &.active {
+        background: #fff;
+        border: 1.5px solid var(--primary-color, #1d9e75);
+        box-shadow: 0 0 0 3px rgba(29, 158, 117, 0.1);
+
+        .sc-drill-card-icon {
+            background: #e1f5ee;
+            i { color: var(--primary-color, #1d9e75); }
+        }
+
+        .sc-drill-card-actions { opacity: 1; }
+    }
+
+    /* Sub-schema ref field: left accent stripe instead of full border */
+    &--ref {
+        border-left: 3px solid #534ab7;
+        background: #f9f8fe;
+
+        &:hover { background: #fff; border-left-color: #3c3489; }
+
+        &.active {
+            border-color: #534ab7;
+            border-left-width: 3px;
+            box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.1);
+
+            .sc-drill-card-icon {
+                background: #eeedfe;
+                i { color: #534ab7; }
+            }
+        }
+    }
+
+    &--invalid {
+        border-color: #fca5a5;
+        background: #fff8f8;
+
+        &:hover { border-color: #f87171; }
+
+        &.active {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+        }
+    }
+}
+
+.sc-drill-card-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--surface-200, #e8e8e6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i { font-size: 12px; color: var(--text-color-secondary, #888780); }
+
+    &--ref {
+        background: #eeedfe;
+        i { color: #534ab7; }
+    }
+}
+
+.sc-drill-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sc-drill-card-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-color, #2c2c2a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
+.sc-drill-card-key {
+    font-size: 10px;
+    color: var(--text-color-secondary, #888780);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+    margin-top: 1px;
+    font-family: 'Courier New', Courier, monospace;
+}
+
+.sc-drill-card-meta {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+    margin-top: 3px;
+    flex-wrap: wrap;
+}
+
+.sc-drill-card-actions {
+    display: flex;
+    gap: 2px;
+    opacity: 0;
+    transition: opacity 0.15s;
+    flex-shrink: 0;
+}
+
+/* Compact enter button (icon-only) for drill cards */
+.sc-drill-enter-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    background: #534ab7;
+    color: #fff;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+
+    &:hover { opacity: 0.82; }
+    i { font-size: 10px; }
+}
+
+/* Drill compact badges — purple-tinted palette to match drill panel theme */
+.sc-drill-badge {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    line-height: 1.7;
+    border: 1px solid transparent;
+
+    /* Required keeps coral — universal semantic meaning */
+    &--req {
+        background: #FAECE7;
+        border-color: rgba(152, 60, 29, 0.2);
+        color: #993C1D;
+    }
+
+    /* Optional: light purple tint */
+    &--opt {
+        background: rgba(83, 74, 183, 0.07);
+        border-color: rgba(83, 74, 183, 0.18);
+        color: #534ab7;
+    }
+
+    /* Array: purple tint */
+    &--arr {
+        background: rgba(83, 74, 183, 0.07);
+        border-color: rgba(83, 74, 183, 0.18);
+        color: #534ab7;
+    }
+
+    /* Condition: slightly stronger purple */
+    &--cond {
+        background: rgba(83, 74, 183, 0.12);
+        border-color: rgba(83, 74, 183, 0.25);
+        color: #534ab7;
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        i { font-size: 9px; }
+    }
+
+    /* Data type: muted purple-tinted */
+    &--type {
+        background: rgba(83, 74, 183, 0.06);
+        border-color: rgba(83, 74, 183, 0.14);
+        color: #534ab7;
+    }
+
+    /* Referenced schema name — solid purple */
+    &--ref-name {
+        background: #534ab7;
+        border-color: #3c3489;
+        color: #fff;
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 .sc-drill-back-bar {
@@ -875,6 +1269,14 @@
         align-items: center;
         gap: 3px;
         i { font-size: 9px; }
+    }
+    /* Referenced schema name — solid purple, same style as v5 subschema-ref-badge */
+    &--ref-name {
+        background: #534ab7;
+        color: #fff;
+        max-width: 160px;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }
 
@@ -1056,6 +1458,27 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+}
+
+.sc-rp-errors {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding: 8px 10px;
+    background: #fff8f8;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+}
+
+.sc-rp-error {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: 11px;
+    color: #dc2626;
+    line-height: 1.4;
+
+    i { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
 }
 
 .sc-rp-group {

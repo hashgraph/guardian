@@ -26,6 +26,12 @@
             </div>
 
             <div class="sc-nav-actions">
+                @if (currentSchemaErrorCount > 0) {
+                    <span class="sc-validation-errors">
+                        <i class="pi pi-exclamation-triangle"></i>
+                        {{ currentSchemaErrorCount }} validation error{{ currentSchemaErrorCount === 1 ? '' : 's' }}
+                    </span>
+                }
                 <span class="sc-save-indicator"
                       [class.dirty]="hasUnsavedChanges && !isSaving"
                       [class.saving]="isSaving"
@@ -44,9 +50,10 @@
                     }
                 </span>
                 <button class="sc-btn-save-all"
-                        [class.dirty]="hasUnsavedChanges"
+                        [class.dirty]="hasUnsavedChanges && currentSchemaErrorCount === 0"
+                        [class.invalid]="hasUnsavedChanges && currentSchemaErrorCount > 0"
                         [class.clean]="!hasUnsavedChanges"
-                        [disabled]="!hasUnsavedChanges || isSaving"
+                        [disabled]="!hasUnsavedChanges || isSaving || currentSchemaErrorCount > 0"
                         (click)="saveAll()">
                     <i class="pi pi-save"></i>
                     Save all
@@ -147,6 +154,8 @@
                                     [class.active]="selectedSchema?.id === schema.id || selectedSchema?._id === schema._id"
                                     [class.sc-schema-row--no-drop]="!canDragSchema(schema)"
                                     [draggable]="canDragSchema(schema)"
+                                    [pTooltip]="getSchemaRowTooltip(schema)"
+                                    tooltipPosition="right"
                                     (dragstart)="onSchemaDragStart($event, schema)"
                                     (dragend)="onDragEnd()"
                                     (click)="switchSchema(schema)">
@@ -213,6 +222,50 @@
                             }
                         </div>
 
+                        <!-- ── Root schema properties panel ── -->
+                        <div class="sc-schema-props">
+                            <div class="sc-schema-props-header">
+                                <div class="sc-schema-props-title">
+                                    <i class="pi pi-file-edit"></i>Schema properties
+                                </div>
+                                <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
+                                    <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
+                                    {{ schemaPropsCollapsed ? 'Show' : 'Hide' }}
+                                </button>
+                            </div>
+                            @if (!schemaPropsCollapsed) {
+                                <input class="sc-schema-props-name"
+                                       [(ngModel)]="selectedSchema.name"
+                                       (ngModelChange)="markDirty()"
+                                       placeholder="Schema name" />
+                                <div class="sc-schema-props-row">
+                                    <div class="sc-schema-props-field">
+                                        <label class="sc-schema-props-label">Entity type</label>
+                                        <select class="sc-schema-props-select"
+                                                [(ngModel)]="selectedSchema.entity"
+                                                (ngModelChange)="markDirty()">
+                                            @for (opt of entityOptions; track opt.value) {
+                                                <option [value]="opt.value">{{ opt.label }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="sc-schema-props-field">
+                                        <label class="sc-schema-props-label">Status</label>
+                                        <input class="sc-schema-props-input sc-schema-props-input--readonly"
+                                               [value]="selectedSchema.status" readonly />
+                                    </div>
+                                </div>
+                                <div class="sc-schema-props-field sc-schema-props-field--full">
+                                    <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
+                                    <textarea class="sc-schema-props-desc"
+                                              [(ngModel)]="selectedSchema.description"
+                                              (ngModelChange)="markDirty()"
+                                              rows="2"
+                                              placeholder="What this schema represents…"></textarea>
+                                </div>
+                            }
+                        </div>
+
                         <div class="sc-editor-body"
                              [class.sc-drop-active]="isDragOverCanvas"
                              (dragenter)="onCanvasDragEnter($event)"
@@ -275,6 +328,7 @@
                                                 class="sc-field-card"
                                                 [class.active]="selectedField === field"
                                                 [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
+                                                [class.sc-field-card--invalid]="fieldHasErrors(field)"
                                                 (click)="selectField(field)">
                                                 <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
                                                 <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
@@ -284,6 +338,11 @@
                                                     <span class="sc-field-key">{{ field.description || field.title || field.name }}</span>
                                                     <span class="sc-field-desc">{{ field.name }}</span>
                                                     <div class="sc-field-meta-row">
+                                                        @if (getFieldCurrentType(field) === 'sub-schema') {
+                                                            <span class="sc-badge sc-badge--ref-name">{{ getRefSchemaName(field) || 'Sub-schema' }}</span>
+                                                        } @else {
+                                                            <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
+                                                        }
                                                         @if (field.required) {
                                                             <span class="sc-badge sc-badge--req">Required</span>
                                                         } @else {
@@ -298,7 +357,6 @@
                                                                 Condition
                                                             </span>
                                                         }
-                                                        <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
                                                     </div>
                                                 </div>
                                                 <div class="sc-field-card-actions">
@@ -370,39 +428,100 @@
                             }
                         </div>
 
-                        <div class="sc-drill-content">
+                        <!-- ── Drill sub-schema properties panel ── -->
+                        @if (drilledSchema; as ds) {
+                            <div class="sc-schema-props sc-schema-props--sub">
+                                <div class="sc-schema-props-header">
+                                    <div class="sc-schema-props-title">
+                                        <i class="pi pi-sitemap"></i>Sub-schema properties
+                                    </div>
+                                    <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
+                                        <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
+                                        {{ schemaPropsCollapsed ? 'Show' : 'Hide' }}
+                                    </button>
+                                </div>
+                                @if (!schemaPropsCollapsed) {
+                                    <input class="sc-schema-props-name"
+                                           [(ngModel)]="ds.name"
+                                           (ngModelChange)="markDirty()"
+                                           placeholder="Sub-schema name" />
+                                    <div class="sc-schema-props-row">
+                                        <div class="sc-schema-props-field">
+                                            <label class="sc-schema-props-label">Entity type</label>
+                                            <select class="sc-schema-props-select"
+                                                    [(ngModel)]="ds.entity"
+                                                    (ngModelChange)="markDirty()">
+                                                @for (opt of entityOptions; track opt.value) {
+                                                    <option [value]="opt.value">{{ opt.label }}</option>
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="sc-schema-props-field">
+                                            <label class="sc-schema-props-label">Status</label>
+                                            <input class="sc-schema-props-input sc-schema-props-input--readonly"
+                                                   [value]="ds.status" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="sc-schema-props-field sc-schema-props-field--full">
+                                        <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
+                                        <textarea class="sc-schema-props-desc"
+                                                  [(ngModel)]="ds.description"
+                                                  (ngModelChange)="markDirty()"
+                                                  rows="2"
+                                                  placeholder="What this schema represents…"></textarea>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <div class="sc-drill-content"
+                             [class.sc-drop-active]="isDragOverCanvas"
+                             (dragenter)="onCanvasDragEnter($event)"
+                             (dragleave)="onCanvasDragLeave($event)"
+                             (dragover)="onCanvasDragOver($event)"
+                             (drop)="onCanvasDrop($event)">
                             @if (drillCurrentFields.length) {
                                 @for (field of drillCurrentFields; track field.name) {
                                     <div
-                                        class="sc-field-card"
+                                        class="sc-drill-card"
                                         [class.active]="selectedField === field"
-                                        [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
+                                        [class.sc-drill-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
+                                        [class.sc-drill-card--invalid]="fieldHasErrors(field)"
                                         (click)="selectField(field)">
-                                        <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
-                                        <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
+                                        <span class="sc-drag-handle sc-drag-handle--sm"><i class="pi pi-bars"></i></span>
+                                        <div class="sc-drill-card-icon" [class.sc-drill-card-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                             <i class="pi {{ getFieldIcon(field) }}"></i>
                                         </div>
-                                        <div class="sc-field-info">
-                                            <span class="sc-field-key">{{ field.title || field.name }}</span>
-                                            @if (field.title) {
-                                                <span class="sc-field-desc">{{ field.name }}</span>
+                                        <div class="sc-drill-card-info">
+                                            <span class="sc-drill-card-name">{{ field.description || field.title || field.name }}</span>
+                                            @if (field.description || field.title) {
+                                                <span class="sc-drill-card-key">{{ field.name }}</span>
                                             }
-                                            <div class="sc-field-meta-row">
-                                                @if (field.required) {
-                                                    <span class="sc-badge sc-badge--req">Required</span>
+                                            <div class="sc-drill-card-meta">
+                                                @if (getFieldCurrentType(field) === 'sub-schema') {
+                                                    <span class="sc-drill-badge sc-drill-badge--ref-name">{{ getRefSchemaName(field) || 'Sub-schema' }}</span>
                                                 } @else {
-                                                    <span class="sc-badge sc-badge--opt">Optional</span>
+                                                    <span class="sc-drill-badge sc-drill-badge--type">{{ getFieldTypeBadge(field) }}</span>
+                                                }
+                                                @if (field.required) {
+                                                    <span class="sc-drill-badge sc-drill-badge--req">Required</span>
+                                                } @else {
+                                                    <span class="sc-drill-badge sc-drill-badge--opt">Optional</span>
                                                 }
                                                 @if (field.isArray) {
-                                                    <span class="sc-badge sc-badge--arr">Array</span>
+                                                    <span class="sc-drill-badge sc-drill-badge--arr">Array</span>
                                                 }
-                                                <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
+                                                @if (field.conditions?.length) {
+                                                    <span class="sc-drill-badge sc-drill-badge--cond">
+                                                        <i class="pi pi-code"></i>Condition
+                                                    </span>
+                                                }
                                             </div>
                                         </div>
-                                        <div class="sc-field-card-actions">
+                                        <div class="sc-drill-card-actions">
                                             @if (getFieldCurrentType(field) === 'sub-schema') {
-                                                <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
-                                                    <i class="pi pi-arrow-right"></i>Enter
+                                                <button class="sc-drill-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
+                                                    <i class="pi pi-arrow-right"></i>
                                                 </button>
                                             }
                                             <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field" (click)="deleteDrillField(field, $event)">
@@ -449,6 +568,16 @@
                         <span class="sc-rp-badge">{{ getFieldTypeBadge(selectedField) }}</span>
                     </div>
                     <div class="sc-rp-body">
+                        @if (selectedFieldErrors.length) {
+                            <div class="sc-rp-errors">
+                                @for (err of selectedFieldErrors; track err) {
+                                    <div class="sc-rp-error">
+                                        <i class="pi pi-exclamation-circle"></i>
+                                        {{ err }}
+                                    </div>
+                                }
+                            </div>
+                        }
                         <div class="sc-rp-group">
                             <label class="sc-rp-label">Title</label>
                             <input

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, forkJoin } from 'rxjs';
 import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 
 export interface FieldType {
@@ -23,6 +23,7 @@ export interface FieldType {
 export interface DrillEntry {
     fieldLabel: string;
     fields: SchemaField[];
+    schemaIri: string;
 }
 
 @Component({
@@ -50,6 +51,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
     public get drillCurrentFields(): SchemaField[] { return this.drillStack[this.drillStack.length - 1]?.fields ?? []; }
+    public get currentDrilledSchemaIri(): string { return this.drillStack[this.drillStack.length - 1]?.schemaIri || ''; }
 
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
@@ -68,6 +70,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public newSchemaName: string = '';
     public newSchemaSaving: boolean = false;
     public systemFieldsCollapsed: boolean = true;
+    public schemaPropsCollapsed: boolean = false;
+
+    public get drilledSchema(): Schema | null {
+        const iri = this.currentDrilledSchemaIri;
+        return iri ? (this.schemas.find(s => s.iri === iri) ?? null) : null;
+    }
+
+    public readonly entityOptions: { label: string; value: SchemaEntity }[] = [
+        { label: 'Default',                        value: SchemaEntity.NONE },
+        { label: 'Verifiable Credential',          value: SchemaEntity.VC   },
+        { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
+    ];
 
     public get systemFields(): any[] {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
@@ -180,11 +194,24 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
             if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
-            // Populate sidebar from sub-schemas so this.schemas and this.selectedSchema
-            // share references from the same API call — no separate loadSchemas race.
-            if (!this.schemasFetched) {
-                this.schemas = subSchemas;
-                this.schemasFetched = true;
+            // Derive topic from the loaded schema if the URL param was absent.
+            // Without this, getSchemaWithSubSchemas is called without topicId,
+            // GET_SUB_SCHEMAS returns 0 schemas, and the sidebar shows only current schema.
+            if (!this.topic && schema.topicId) {
+                this.topic = schema.topicId;
+            }
+            // GET_SUB_SCHEMAS returns all topic schemas with full documents, making it the
+            // best source for the sidebar (V2 endpoint strips document, breaking circular dep check).
+            if (!this.schemasFetched && !this.schemasLoading) {
+                if (subSchemas.length > 0) {
+                    // subSchemas populated — topicId was present in the request.
+                    this.schemas = subSchemas;
+                    this.schemasFetched = true;
+                } else if (this.topic) {
+                    // subSchemas empty because topicId was absent from the original request
+                    // but we've now derived it from the schema. Fall back to the V2 endpoint.
+                    this.loadSchemas(this.topic);
+                }
             }
             this.upsertInSidebar(schema);
         });
@@ -197,10 +224,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const schemaId = params.get('schemaId') || '';
             const mode = params.get('mode') || '';
             if (schemaId) {
-                // getSchemaWithSubSchemas handles both selectedSchema and schemas list.
+                // getSchemaWithSubSchemas provides all topic schemas with full documents.
+                // The subscribe handler uses subSchemas to populate this.schemas so that
+                // $defs-based circular dependency detection works. No separate loadSchemas needed.
                 this.schemaLoad$.next(schemaId);
             } else {
-                // No schemaId — load the sidebar list separately.
+                // No schema to edit — load sidebar list directly since there's no
+                // getSchemaWithSubSchemas call to supply subSchemas.
                 if (this.topic && !this.schemasFetched && !this.schemasLoading) {
                     this.loadSchemas(this.topic);
                 }
@@ -223,6 +253,92 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public isDraft(schema: Schema): boolean {
         return schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR;
     }
+
+    // ── Validation ─────────────────────────────────────────────────────────────
+
+    // Reserved names: always-blocked JSON-LD keys + system fields from DefaultFieldDictionary
+    private static readonly SYSTEM_KEYS = new Set([
+        '@context', 'type', 'policyId', 'ref', 'guardianVersion',
+    ]);
+
+    private getFieldErrors(field: SchemaField, allFields: SchemaField[]): string[] {
+        const errors: string[] = [];
+
+        if (!field.description?.trim()) {
+            errors.push('Description is required');
+        }
+
+        if (!field.title?.trim()) {
+            errors.push('Title is required');
+        }
+
+        const key = field.name?.trim();
+        if (!key) {
+            errors.push('Key is required');
+        } else if (/\s/.test(field.name)) {
+            errors.push('Key must not contain spaces');
+        } else if (SchemasConfigurationComponent.SYSTEM_KEYS.has(field.name)) {
+            errors.push('Key is a reserved system name');
+        } else if (allFields.filter(f => f !== field && f.name === field.name).length > 0) {
+            errors.push('Key must be unique within the schema');
+        }
+
+        if ((field as any).customType === 'enum' && (!Array.isArray(field.enum) || field.enum.length === 0)) {
+            errors.push('Enum must have at least one value');
+        }
+
+        return errors;
+    }
+
+    public fieldHasErrors(field: SchemaField): boolean {
+        // Use drillCurrentFields for uniqueness checks when this field is in drill context.
+        const allFields = this.isDrilling && this.drillCurrentFields.includes(field)
+            ? this.drillCurrentFields
+            : (this.selectedSchema?.fields ?? []);
+        return this.getFieldErrors(field, allFields).length > 0;
+    }
+
+    public get selectedFieldErrors(): string[] {
+        if (!this.selectedField) { return []; }
+        // Validate against the correct sibling list so uniqueness errors are accurate.
+        const allFields = this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
+        return this.getFieldErrors(this.selectedField, allFields);
+    }
+
+    public get currentSchemaErrorCount(): number {
+        // Sum errors across ALL dirty schemas so the counter reflects every pending
+        // validation issue, even those in sub-schemas the user already drilled out of.
+        const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        let count = 0;
+        for (const dirtyId of this.dirtySchemaIds) {
+            const schema = (selId && dirtyId === selId && this.selectedSchema)
+                ? this.selectedSchema
+                : this.schemas.find(s => (s.id || (s as any)._id) === dirtyId) ?? null;
+            if (schema) {
+                const fields = schema.fields ?? [];
+                count += fields.filter(f => this.getFieldErrors(f, fields).length > 0).length;
+            }
+        }
+        return count;
+    }
+
+    private schemaIsValid(schema: Schema): boolean {
+        const fields = schema.fields ?? [];
+        return fields.every(f => this.getFieldErrors(f, fields).length === 0);
+    }
+
+    private get allDirtySchemasValid(): boolean {
+        const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        for (const dirtyId of this.dirtySchemaIds) {
+            const schema = (selId && dirtyId === selId && this.selectedSchema)
+                ? this.selectedSchema
+                : this.schemas.find(s => (s.id || (s as any)._id) === dirtyId) ?? null;
+            if (schema && !this.schemaIsValid(schema)) { return false; }
+        }
+        return true;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
 
     public switchSchema(schema: Schema): void {
         const id = schema.id || (schema as any)._id;
@@ -252,12 +368,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public markDirty(): void {
-        const id = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
-        if (id) { this.dirtySchemaIds.add(id); }
+        // When drilling, the edit belongs to the drilled sub-schema, not the root.
+        // Mark both: the sub-schema (because its fields changed) and the root schema
+        // (because its $defs will need to be rebuilt to embed the updated sub-document).
+        if (this.isDrilling) {
+            const contextIri = this.currentDrilledSchemaIri;
+            const subSchema = contextIri ? this.schemas.find(s => s.iri === contextIri) : null;
+            const subId = subSchema?.id || (subSchema as any)?._id;
+            if (subId) { this.dirtySchemaIds.add(subId); }
+        }
+        const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        if (rootId) { this.dirtySchemaIds.add(rootId); }
     }
 
     public saveAll(): void {
-        if (!this.hasUnsavedChanges || this.isSaving) { return; }
+        if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { return; }
         // Build the save list by iterating dirty IDs so we always prefer
         // this.selectedSchema over any sidebar copy. loadSchemas() and
         // getSchemaById() race: if loadSchemas wins, this.schemas gets new
@@ -276,20 +401,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         if (!toSave.length) { return; }
         this.isSaving = true;
-        // Rebuild each schema's JSON document from its current fields before saving.
-        // Without this, schema.document still holds the original server payload and
-        // field changes are silently ignored by the API.
-        // updateRefs must follow update() to re-populate $defs with sub-schema
-        // definitions — buildDocument creates a bare document with no $defs, and
-        // omitting this step strips all sub-schema references from the saved payload.
+        // Phase 1 — rebuild every schema's JSON document from current fields.
+        // Sub-schemas must be rebuilt first so their documents are current when
+        // the parent schema's updateRefs() reads them from this.schemas in phase 2.
+        // We achieve correct ordering by running update() for ALL schemas before
+        // calling updateRefs() for any of them.
+        // Mirror the old editor: append system fields (policyId, ref, guardianVersion)
+        // so buildDocument writes them to document.properties. Save and restore
+        // s.fields so the UI field list is unaffected.
         toSave.forEach(s => {
-            // Mirror the old editor: append system fields (policyId, ref,
-            // guardianVersion) so buildDocument writes them to document.properties.
-            // Save and restore s.fields so the UI field list is unaffected.
             const userFields = s.fields;
             const defaultFields = DefaultFieldDictionary.getDefaultFields(s.entity as SchemaEntity);
             s.update([...userFields, ...defaultFields], s.conditions);
             s.fields = userFields;
+        });
+        // Phase 2 — now that all documents are current, rebuild every schema's $defs.
+        // This ensures parent schemas embed the already-updated sub-schema documents.
+        toSave.forEach(s => {
             s.updateRefs(this.schemas);
         });
         forkJoin(toSave.map(s => this.schemaService.update(s as unknown as ISchema)))
@@ -441,9 +569,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
         this.selectedField = null;
+        // Use the actual Schema.fields from this.schemas so that edits are tracked
+        // on the sub-schema entity itself and get saved separately.
+        // Fallback to field.fields (the cloned copy from parseFields) when the schema
+        // isn't in the sidebar list (e.g. GeoJSON / Sentinel built-in refs).
+        const subSchema = this.schemas.find(s => s.iri === field.type);
+        const fields = subSchema?.fields ?? field.fields ?? [];
         this.drillStack = [
             ...this.drillStack,
-            { fieldLabel: field.title || field.name, fields: field.fields ?? [] }
+            { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
         ];
     }
 
@@ -489,10 +623,37 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.setDragGhost(event);
     }
 
+    public isCircularDependency(schema: Schema): boolean {
+        // Use findRefs (field-based) instead of document.$defs, because loadSchemas
+        // injects ALL topic schemas into every schema's $defs for parseFields to resolve
+        // $refs — that bloated $defs would make every schema look like it references root.
+        const refs = SchemaHelper.findRefs(schema, this.schemas);
+        const topId = (this.selectedSchema as any)?.document?.$id;
+        if (topId && refs[topId]) { return true; }
+        const contextIri = this.currentDrilledSchemaIri;
+        if (contextIri && refs[contextIri]) { return true; }
+        return false;
+    }
+
     public canDragSchema(schema: Schema): boolean {
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
-        return !(selId && selId === schId);
+        if (selId && selId === schId) { return false; }
+        // Disable the schema we've drilled into — can't add it to its own fields
+        const contextIri = this.currentDrilledSchemaIri;
+        if (contextIri && schema.iri === contextIri) { return false; }
+        if (this.isCircularDependency(schema)) { return false; }
+        return true;
+    }
+
+    public getSchemaRowTooltip(schema: Schema): string {
+        const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        const schId = schema.id || (schema as any)._id;
+        if (selId && selId === schId) { return 'Cannot use the current schema as a sub-schema'; }
+        const contextIri = this.currentDrilledSchemaIri;
+        if (contextIri && schema.iri === contextIri) { return 'Cannot add the currently viewed sub-schema to itself'; }
+        if (this.isCircularDependency(schema)) { return 'Would create a circular dependency'; }
+        return '';
     }
 
     public onSchemaDragStart(event: DragEvent, schema: Schema): void {
@@ -545,12 +706,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.isDragOverCanvas = false;
         if (!this.selectedSchema) { return; }
         if (this._dragFieldType) {
-            this.addField(this._dragFieldType);
+            if (this.isDrilling) { this.addDrillField(this._dragFieldType); }
+            else { this.addField(this._dragFieldType); }
         } else if (this._dragSchema) {
-            this.addSchemaField(this._dragSchema);
+            if (this.isDrilling) { this.addDrillSchemaField(this._dragSchema); }
+            else { this.addSchemaField(this._dragSchema); }
         }
         this._dragFieldType = null;
         this._dragSchema = null;
+    }
+
+    private addDrillSchemaField(schema: Schema): void {
+        const idx = (this.drillCurrentFields?.length ?? 0) + 1;
+        const field = {
+            name: `field_${idx}`,
+            title: schema.name || 'Sub-schema',
+            description: schema.name || '',
+            required: false,
+            isArray: false,
+            isRef: true,
+            readOnly: false,
+            type: schema.iri || '',
+            format: '',
+            pattern: '',
+            unit: '',
+            unitSystem: '',
+            property: '',
+            customType: '',
+            isUpdatable: false,
+            fields: schema.fields ? [...schema.fields] : [],
+        } as unknown as SchemaField;
+        this.drillCurrentFields.push(field);
+        this.selectedField = field;
+        this.markDirty();
     }
 
     private addSchemaField(schema: Schema): void {
@@ -639,6 +827,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.fieldTypes.find(ft => ft.key === key)?.label || 'String';
     }
 
+    public getRefSchemaName(field: SchemaField): string {
+        if (!field.isRef) { return ''; }
+        return this.schemas.find(s => s.iri === field.type)?.name || '';
+    }
+
     private upsertInSidebar(schema: Schema): void {
         const schemaId = schema.id || (schema as any)._id;
         if (!schemaId) { return; }
@@ -666,13 +859,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response: HttpResponse<ISchema[]>) => {
-                    try {
-                        this.schemas = (response.body || []).map(s => new Schema(s));
-                    } catch {
-                        this.schemas = [];
-                    }
+                    // V2 endpoint returns only metadata fields (no document), so Schema
+                    // instances have empty fields but correct name/status/iri for display.
+                    this.schemas = (response.body || [])
+                        .map(s => { try { return new Schema(s); } catch { return null; } })
+                        .filter((s): s is Schema => s !== null);
                     this.schemasLoading = false;
                     this.schemasFetched = true;
+                    // If a schema was already selected, preserve its reference in the list
+                    // so saveAll() picks the edited copy rather than the freshly loaded one.
+                    if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                 },
                 error: () => {
                     this.schemas = [];
