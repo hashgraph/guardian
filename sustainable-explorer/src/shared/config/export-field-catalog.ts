@@ -45,117 +45,67 @@ export const EXPORT_FIELD_GROUPS: readonly ExportFieldGroupDefinition[] = [
 ] as const;
 
 /**
- * Dataset-agnostic fields: the same key, label, group, required/optional flag, and defaultSelected flag apply no
- * matter which dataset is being exported — only the underlying value-resolution (per-dataset repository code)
- * differs. These are all Traceability References, whose source/precedence is fixed across datasets, unlike
- * Project Identifiers / ESG Climate Data, whose field content varies per dataset:
- * - `transaction_id`     — the mint event consensus timestamp, never the token ID.
- * - `registry_record_id` — the Hedera `tokenId`.
- * - `verification_url`   — built via `buildVerificationUrl()` (see hashscan-url.ts).
- * - `source_system_id`   — `message.dataSource` mapped via `sourceSystemLabel()`; ships unchecked by default.
+ * Dataset-agnostic Traceability fields present on every dataset:
+ * - `verification_url` — built via `buildVerificationUrl()` (see hashscan-url.ts).
+ * - `source_system_id` — `message.dataSource` mapped via `sourceSystemLabel()`; ships unchecked by default.
+ * (`transaction_id`/`registry_record_id` are Issuances-only — see CREDIT_FIELDS.)
  */
 export const DATASET_AGNOSTIC_FIELDS: readonly ExportFieldDefinition[] = [
-    {
-        key: 'transaction_id',
-        labelKey: 'reports.fields.transactionId',
-        group: 'TRACEABILITY_REFERENCES',
-        required: false,
-        defaultSelected: true,
-    },
-    {
-        key: 'registry_record_id',
-        labelKey: 'reports.fields.registryRecordId',
-        group: 'TRACEABILITY_REFERENCES',
-        required: false,
-        defaultSelected: true,
-    },
-    {
-        key: 'verification_url',
-        labelKey: 'reports.fields.verificationUrl',
-        group: 'TRACEABILITY_REFERENCES',
-        required: false,
-        defaultSelected: true,
-    },
-    {
-        key: 'source_system_id',
-        labelKey: 'reports.fields.sourceSystemId',
-        group: 'TRACEABILITY_REFERENCES',
-        required: false,
-        defaultSelected: false,
-    },
+    { key: 'verification_url', labelKey: 'reports.fields.verificationUrl', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: true },
+    { key: 'source_system_id', labelKey: 'reports.fields.sourceSystemId', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: false },
 ] as const;
 
-/**
- * Extension point for per-dataset catalog rows. Each dataset starts seeded with the dataset-agnostic
- * Traceability fields above, plus its own field array (never mutating `DATASET_AGNOSTIC_FIELDS` itself, since
- * that array is shared by reference across all 4 datasets' seed spread).
- *
- * Per-dataset semantics:
- *   - `standard` = the resolved methodology's display name — joined for credits/projects, the methodology's own
- *     name for the methodologies dataset itself.
- *   - `mitigation_type` = `Methodology.emissionReductionApproach` (Avoidance | Removal | Avoidance & Removal),
- *     joined for credits/projects, direct for methodologies.
- *   - `vintage`/`emissions_reduced`/`reporting_year` only appear where they have a genuine per-row source
- *     (credits, projects); registries have no ESG Climate Data group at all (an organization, not a
- *     climate-data-bearing record).
- *   - `ipfs_document_ref`: joined via `business_view.sourceTimestamp` -> `message.consensusTimestamp` ->
- *     `message.files` -> `ipfs_files.cid`, the same join used elsewhere in this codebase. Added to all 4
- *     datasets, `defaultSelected: false`.
- */
-
+// Issuances: token metadata + mint amount; transaction_id/registry_record_id are meaningful only here.
 const CREDIT_FIELDS: readonly ExportFieldDefinition[] = [
-    // ── Project Identifiers ─────────────────────────────────────────────
     { key: 'project_name', labelKey: 'reports.fields.projectName', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'registry', labelKey: 'reports.fields.registry', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'developer', labelKey: 'reports.fields.developer', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'country', labelKey: 'reports.fields.country', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
-    // ── ESG Climate Data ────────────────────────────────────────────────
+    { key: 'token_name', labelKey: 'reports.fields.tokenName', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
+    { key: 'token_symbol', labelKey: 'reports.fields.tokenSymbol', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
+    { key: 'token_type', labelKey: 'reports.fields.tokenType', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'emissions_reduced', labelKey: 'reports.fields.emissionsReduced', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'reporting_year', labelKey: 'reports.fields.reportingYear', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
-    { key: 'mitigation_type', labelKey: 'reports.fields.mitigationType', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'standard', labelKey: 'reports.fields.standard', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
-    { key: 'vintage', labelKey: 'reports.fields.vintage', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
-    // ── Traceability References (dataset-specific addition) ───────
+    { key: 'mint_amount', labelKey: 'reports.fields.mintAmount', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
+    { key: 'transaction_id', labelKey: 'reports.fields.transactionId', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: true },
+    { key: 'registry_record_id', labelKey: 'reports.fields.registryRecordId', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: true },
     { key: 'ipfs_document_ref', labelKey: 'reports.fields.ipfsDocumentRef', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: false },
 ];
 
+// Projects: keeps vintage, adds SDG contributions.
 const PROJECT_FIELDS: readonly ExportFieldDefinition[] = [
-    // ── Project Identifiers ─────────────────────────────────────────────
     { key: 'project_name', labelKey: 'reports.fields.projectName', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'registry', labelKey: 'reports.fields.registry', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'developer', labelKey: 'reports.fields.developer', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'country', labelKey: 'reports.fields.country', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
-    // ── ESG Climate Data ────────────────────────────────────────────────
     { key: 'emissions_reduced', labelKey: 'reports.fields.emissionsReduced', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'reporting_year', labelKey: 'reports.fields.reportingYear', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
-    { key: 'mitigation_type', labelKey: 'reports.fields.mitigationType', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'standard', labelKey: 'reports.fields.standard', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'vintage', labelKey: 'reports.fields.vintage', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
-    // ── Traceability References (dataset-specific addition) ───────
+    { key: 'sdg', labelKey: 'reports.fields.sdg', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'ipfs_document_ref', labelKey: 'reports.fields.ipfsDocumentRef', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: false },
 ];
 
+// Methodologies: adds project count.
 const METHODOLOGY_FIELDS: readonly ExportFieldDefinition[] = [
-    // ── Project Identifiers (methodology-appropriate identifiers) ──────
     { key: 'name', labelKey: 'reports.fields.name', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'registry', labelKey: 'reports.fields.registry', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'version', labelKey: 'reports.fields.version', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
-    // ── ESG Climate Data (only what applies at standard-level granularity) ──
-    { key: 'mitigation_type', labelKey: 'reports.fields.mitigationType', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
+    { key: 'project_count', labelKey: 'reports.fields.projectCount', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'standard', labelKey: 'reports.fields.standard', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
-    // ── Traceability References (dataset-specific addition) ───────
     { key: 'ipfs_document_ref', labelKey: 'reports.fields.ipfsDocumentRef', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: false },
 ];
 
+// Registries: adds methodology count + number of issuances.
 const REGISTRY_FIELDS: readonly ExportFieldDefinition[] = [
-    // ── Project Identifiers (registry-appropriate identifiers) ─────────
     { key: 'name', labelKey: 'reports.fields.name', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'did', labelKey: 'reports.fields.did', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'geography', labelKey: 'reports.fields.geography', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'law', labelKey: 'reports.fields.law', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'project_count', labelKey: 'reports.fields.projectCount', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
-    // No ESG Climate Data group — a registry is an organization, not a climate-data-bearing record.
-    // ── Traceability References (dataset-specific addition) ───────
+    { key: 'methodology_count', labelKey: 'reports.fields.methodologyCount', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
+    { key: 'number_of_issuances', labelKey: 'reports.fields.numberOfIssuances', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'ipfs_document_ref', labelKey: 'reports.fields.ipfsDocumentRef', group: 'TRACEABILITY_REFERENCES', required: false, defaultSelected: false },
 ];
 

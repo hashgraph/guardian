@@ -1506,7 +1506,7 @@
             }
         },
         "datasets": {
-            "credits": "Credits / Issuances",
+            "credits": "Issuances",
             "projects": "Projects",
             "methodologies": "Methodologies",
             "registries": "Registries"
@@ -1533,6 +1533,7 @@
         },
         "fieldGroups": {
             "projectIdentifiers": "Project Identifiers",
+            "registryIdentifiers": "Identifiers",
             "esgClimateData": "ESG Climate Data",
             "traceabilityReferences": "Traceability References"
         },
@@ -1606,6 +1607,27 @@
             },
             "projectCount": {
                 "label": "Project Count"
+            },
+            "tokenName": {
+                "label": "Token Name"
+            },
+            "tokenSymbol": {
+                "label": "Token Symbol"
+            },
+            "tokenType": {
+                "label": "Token Type"
+            },
+            "mintAmount": {
+                "label": "Mint Amount"
+            },
+            "sdg": {
+                "label": "SDG"
+            },
+            "methodologyCount": {
+                "label": "Methodology Count"
+            },
+            "numberOfIssuances": {
+                "label": "Number of Issuances"
             },
             "ipfsDocumentRef": {
                 "label": "IPFS Document Reference",

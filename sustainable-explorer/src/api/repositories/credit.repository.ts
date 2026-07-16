@@ -56,10 +56,14 @@ export interface CreditExportRow {
     registry: string | null;
     developer: string | null;
     country: string | null;
+    token_name: string | null;
+    token_symbol: string | null;
+    token_type: 'Fungible' | 'Non-Fungible' | null;
     emissions_reduced: number | null;
     reporting_year: number | null;
     mitigation_type: string | null;
     standard: string | null;
+    mint_amount: number | null;
     vintage: string | null;
     ipfs_document_ref: string | null;
     /** Raw identifiers for `ExportsService`'s shared Traceability synthesis — not catalog keys themselves. */

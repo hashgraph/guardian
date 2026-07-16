@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
 import { SdgRepository, SdgStatsRow } from './sdg.repository';
 
 interface RawSdgRow {
@@ -31,9 +32,10 @@ export class PgSdgRepository extends SdgRepository {
                     bv."businessData"->>'developer'                 AS developer,
                     bv."businessData"->>'country'                   AS country,
                     bv."businessData"->>'methodology'               AS methodology,
-                    COALESCE((bv."businessData"->>'credits')::numeric, 0) AS credits,
+                    COALESCE(ps.issuance_count, 0)::numeric         AS credits,
                     (sdg.value)::int                                AS sdg_id
                 FROM business_view bv
+                LEFT JOIN ${MV_PROJECT_STATS_NAME} ps ON ps."projectKey" = bv."projectKey"
                 CROSS JOIN LATERAL jsonb_array_elements_text(
                     COALESCE(bv."businessData"->'sdgs', '[]'::jsonb)
                 ) AS sdg(value)

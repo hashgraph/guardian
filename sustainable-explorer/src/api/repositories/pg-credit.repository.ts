@@ -45,6 +45,9 @@ interface RawExportRow {
     proj_developer: string | null;
     proj_country: string | null;
     proj_vintage: string | null;
+    token_name: string | null;
+    token_symbol: string | null;
+    token_type_raw: string | null;
     emissions_reduced: string | null;
     mint_date: Date | string | null;
     standard: string | null;
@@ -393,6 +396,9 @@ export class PgCreditRepository extends CreditRepository {
                     proj.proj_developer,
                     proj.proj_country,
                     proj.proj_vintage,
+                    tc.name                                                                         AS token_name,
+                    tc.symbol                                                                        AS token_symbol,
+                    tc.type                                                                          AS token_type_raw,
                     COALESCE(pml.amount::numeric, (m.documents->'credentialSubject'->0->>'amount')::numeric) AS emissions_reduced,
                     COALESCE(pml.mint_date, to_timestamp(m."consensusTimestamp"::numeric))            AS mint_date,
                     COALESCE(meth.methodology_name, proj.proj_methodology_name)                       AS standard,
@@ -426,10 +432,14 @@ export class PgCreditRepository extends CreditRepository {
             registry: row.registry_name ?? null,
             developer: row.proj_developer ?? null,
             country: row.proj_country ?? null,
+            token_name: row.token_name ?? null,
+            token_symbol: row.token_symbol ?? null,
+            token_type: PgCreditRepository.normaliseType(row.token_type_raw, null),
             emissions_reduced: row.emissions_reduced != null ? parseFloat(row.emissions_reduced) : null,
             reporting_year: mintDate ? mintDate.getUTCFullYear() : null,
             mitigation_type: PgCreditRepository.extractEmissionReductionApproach(row.mitigation_type_raw),
             standard: row.standard ?? null,
+            mint_amount: row.emissions_reduced != null ? parseFloat(row.emissions_reduced) : null,
             vintage: row.proj_vintage ?? null,
             ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
             _consensusTimestamp: row._consensusTimestamp ?? null,

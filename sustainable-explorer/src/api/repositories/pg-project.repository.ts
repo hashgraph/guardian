@@ -29,6 +29,7 @@ interface RawExportRow {
     creditingPeriodStart: string | null;
     standard: string | null;
     mitigation_type_raw: unknown;
+    sdgs: number[] | null;
     relatedTopicId: string | null;
     dataSource: string | null;
     ipfsCids: string[] | null;
@@ -683,6 +684,7 @@ export class PgProjectRepository extends ProjectRepository {
                     bv."businessData"->>'creditingPeriodStart' AS "creditingPeriodStart",
                     COALESCE(meth.methodology_name, bv."businessData"->>'methodology') AS standard,
                     meth.emission_reduction_approach AS mitigation_type_raw,
+                    bv."businessData"->'sdgs' AS sdgs,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files                    AS "ipfsCids"
@@ -720,6 +722,7 @@ export class PgProjectRepository extends ProjectRepository {
             mitigation_type: PgProjectRepository.extractEmissionReductionApproach(row.mitigation_type_raw),
             standard: row.standard ?? null,
             vintage: row.vintage ?? null,
+            sdg: Array.isArray(row.sdgs) ? row.sdgs.join(', ') : '',
             ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
             // A project has no single mint transaction or Hedera token, so leave blank rather than fabricate;
             // `_topicId` still resolves a verification_url via the topic fallback.

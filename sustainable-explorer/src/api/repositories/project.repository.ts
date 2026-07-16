@@ -98,6 +98,7 @@ export interface ProjectExportRow {
     mitigation_type: string | null;
     standard: string | null;
     vintage: string | null;
+    sdg: string | null;
     ipfs_document_ref: string | null;
     _consensusTimestamp: string | null;
     _tokenId: string | null;

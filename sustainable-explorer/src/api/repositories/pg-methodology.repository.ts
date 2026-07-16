@@ -22,6 +22,7 @@ interface RawExportRow {
     registry_name: string | null;
     version: string | null;
     emission_reduction_approach: unknown;
+    project_count: string | null;
     relatedTopicId: string | null;
     dataSource: string | null;
     ipfsCids: string[] | null;
@@ -475,10 +476,13 @@ export class PgMethodologyRepository extends MethodologyRepository {
                     reg.registry_name,
                     bv."businessData"->'options'->>'version' AS version,
                     p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
+                    COALESCE(s.project_count, 0) AS project_count,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files AS "ipfsCids"
                 FROM business_view bv
+                LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
+                    ON s."relatedTopicId" = bv."relatedTopicId"
                 ${REGISTRY_NAME_JOIN}
                 ${POLICY_DECODE_STATUS_JOIN}
                 ${SOURCE_MESSAGE_JOIN}
@@ -508,6 +512,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             mitigation_type: PgMethodologyRepository.extractEmissionReductionApproach(row.emission_reduction_approach),
             // The methodology's own name IS the governing standard at this granularity.
             standard: row.name ?? null,
+            project_count: row.project_count != null ? parseInt(row.project_count, 10) : 0,
             ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
             // A methodology has no Hedera token, so leave blank rather than fabricate;
             // `_topicId` still resolves a verification_url via the topic fallback.
