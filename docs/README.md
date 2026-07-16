@@ -41,15 +41,15 @@ Guardian is open source under the Apache 2.0 License and developed collaborative
 Community calls, hands-on training sessions, and design workshops are regularly hosted. If you are building on the Guardian, digitizing a methodology, or improving the platform itself — contributions and feedback is welcome.
 
 * Contributing
-* Community Standards
+* [Community Standards](guardian/readme/contributing/)
 * [GitHub Issues](https://github.com/hashgraph/guardian/issues)
 * [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com)
 
 **Related**
 
 * Concepts: Key Concepts
-* Concepts: Architecture
-* Guide: Methodology Digitization Handbook
+* Concepts: [Architecture](guardian/architecture/)
+* Guide: [Methodology Digitization Handbook](https://app.gitbook.com/s/bKnJV8vV7zUxRwKIsJKg/methodology-digitization)
 
 ***
 
