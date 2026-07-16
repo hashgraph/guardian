@@ -7,9 +7,16 @@ import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, 
 import { SchemaService } from 'src/app/services/schema.service';
 
 export interface FieldType {
-    type: string;
+    key: string;
     label: string;
     icon: string;
+    group: string;
+    schemaType?: string;
+    format?: string;
+    pattern?: string;
+    isRef?: boolean;
+    customType?: string;
+    unitSystem?: string;
     accent?: boolean;
 }
 
@@ -61,19 +68,48 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public readonly fieldTypes: FieldType[] = [
-        { type: 'text',        label: 'Text (single line)',  icon: 'pi-pencil' },
-        { type: 'longtext',    label: 'Text (long form)',    icon: 'pi-align-left' },
-        { type: 'number',      label: 'Numeric',             icon: 'pi-hashtag' },
-        { type: 'date',        label: 'Date',                icon: 'pi-calendar' },
-        { type: 'enum',        label: 'Dropdown',            icon: 'pi-chevron-circle-down' },
-        { type: 'yesno',       label: 'Yes / No',            icon: 'pi-check-circle' },
-        { type: 'multiselect', label: 'Multi-select',        icon: 'pi-list-check' },
-        { type: 'table',       label: 'Array / table',       icon: 'pi-table' },
-        { type: 'schema',      label: 'Sub-schema',          icon: 'pi-sitemap',   accent: true },
-        { type: 'group',       label: 'Group / parameter',   icon: 'pi-th-large' },
-        { type: 'file',        label: 'File upload',         icon: 'pi-upload' },
-        { type: 'coords',      label: 'Coordinates',         icon: 'pi-map-marker' },
+        // Simple Types (matches FieldTypesDictionary.FieldTypes)
+        { key: 'number',        label: 'Number',      icon: 'pi-hashtag',             group: 'Simple Types',    schemaType: 'number' },
+        { key: 'integer',       label: 'Integer',     icon: 'pi-sort-numeric-up-alt', group: 'Simple Types',    schemaType: 'integer' },
+        { key: 'string',        label: 'String',      icon: 'pi-pencil',              group: 'Simple Types',    schemaType: 'string' },
+        { key: 'boolean',       label: 'Boolean',     icon: 'pi-check-square',        group: 'Simple Types',    schemaType: 'boolean' },
+        { key: 'date',          label: 'Date',        icon: 'pi-calendar',            group: 'Simple Types',    schemaType: 'string', format: 'date' },
+        { key: 'time',          label: 'Time',        icon: 'pi-clock',               group: 'Simple Types',    schemaType: 'string', format: 'time' },
+        { key: 'dateTime',      label: 'DateTime',    icon: 'pi-calendar',            group: 'Simple Types',    schemaType: 'string', format: 'date-time' },
+        { key: 'duration',      label: 'Duration',    icon: 'pi-hourglass',           group: 'Simple Types',    schemaType: 'string', format: 'duration' },
+        { key: 'url',           label: 'URL',         icon: 'pi-link',                group: 'Simple Types',    schemaType: 'string', format: 'url' },
+        { key: 'uri',           label: 'URI',         icon: 'pi-external-link',       group: 'Simple Types',    schemaType: 'string', format: 'uri' },
+        { key: 'email',         label: 'Email',       icon: 'pi-envelope',            group: 'Simple Types',    schemaType: 'string', format: 'email' },
+        // tslint:disable-next-line:no-invalid-template-strings
+        { key: 'image',         label: 'Image',       icon: 'pi-image',               group: 'Simple Types',    schemaType: 'string', pattern: '^ipfs:\/\/.+' },
+        // tslint:disable-next-line:no-invalid-template-strings
+        { key: 'file',          label: 'File',        icon: 'pi-upload',              group: 'Simple Types',    schemaType: 'string', pattern: '^ipfs:\/\/.+', customType: 'file' },
+        { key: 'enum',          label: 'Enum',        icon: 'pi-list',                group: 'Simple Types',    schemaType: 'string', customType: 'enum' },
+        { key: 'helptext',      label: 'Help Text',   icon: 'pi-info-circle',         group: 'Simple Types',    schemaType: 'null' },
+        { key: 'geo',           label: 'GeoJSON',     icon: 'pi-map-marker',          group: 'Simple Types',    schemaType: '#GeoJSON',     isRef: true, customType: 'geo' },
+        { key: 'sentinel',      label: 'SentinelHUB', icon: 'pi-globe',               group: 'Simple Types',    schemaType: '#SentinelHUB', isRef: true, customType: 'sentinel' },
+        { key: 'table',         label: 'Table',       icon: 'pi-table',               group: 'Simple Types',    schemaType: 'string', customType: 'table' },
+        // Units of Measure (matches FieldTypesDictionary.CustomFieldTypes)
+        { key: 'prefix',        label: 'Prefix',      icon: 'pi-hashtag',             group: 'Units of Measure', schemaType: 'number', unitSystem: 'prefix' },
+        { key: 'postfix',       label: 'Postfix',     icon: 'pi-hashtag',             group: 'Units of Measure', schemaType: 'number', unitSystem: 'postfix' },
+        { key: 'hederaAccount', label: 'Account',     icon: 'pi-id-card',             group: 'Hedera',           schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
+        // Schema-defined sub-schema reference
+        { key: 'sub-schema',    label: 'Sub-schema',  icon: 'pi-sitemap',             group: 'Schema',           isRef: true, accent: true },
     ];
+
+    public get fieldTypeGroups(): { group: string; types: FieldType[] }[] {
+        const groups: { group: string; types: FieldType[] }[] = [];
+        for (const ft of this.fieldTypes) {
+            let g = groups.find(grp => grp.group === ft.group);
+            if (!g) { g = { group: ft.group, types: [] }; groups.push(g); }
+            g.types.push(ft);
+        }
+        return groups;
+    }
+
+    public get defaultFieldType(): FieldType {
+        return this.fieldTypes.find(ft => ft.key === 'string')!;
+    }
 
     private destroy$ = new Subject<void>();
     private schemaLoad$ = new Subject<string>();
@@ -286,95 +322,115 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = this.selectedField === field ? null : field;
     }
 
-    public toggleBehaviour(key: 'required' | 'isArray' | 'readOnly'): void {
+    public toggleBehaviour(key: 'required' | 'isArray' | 'isUpdatable' | 'readOnly'): void {
         if (!this.selectedField) { return; }
         (this.selectedField as any)[key] = !(this.selectedField as any)[key];
         this.markDirty();
     }
 
     public get selectedFieldIsEnum(): boolean {
-        return Array.isArray(this.selectedField?.enum);
+        return (this.selectedField as any)?.customType === 'enum' || Array.isArray(this.selectedField?.enum);
     }
 
-    public get selectedFieldIsNumber(): boolean {
-        return this.selectedField?.type === 'number' || this.selectedField?.type === 'integer';
+    public get selectedFieldIsUnit(): boolean {
+        const key = this.selectedField ? this.getFieldCurrentType(this.selectedField) : '';
+        return key === 'prefix' || key === 'postfix';
+    }
+
+    public get selectedFieldIsString(): boolean {
+        return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'string' : false;
+    }
+
+    public get selectedFieldIsHelpText(): boolean {
+        return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'helptext' : false;
+    }
+
+    public get selectedFieldIsGeoJson(): boolean {
+        return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'geo' : false;
+    }
+
+    // Types that cannot be updatable (same rule as old editor: only simple types can be)
+    private static readonly NON_UPDATABLE_TYPES = new Set(['prefix', 'postfix', 'hederaAccount', 'geo', 'sentinel', 'sub-schema']);
+
+    public get selectedFieldCanBeUpdatable(): boolean {
+        if (!this.selectedField) { return false; }
+        return !SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(this.getFieldCurrentType(this.selectedField));
+    }
+
+    public readonly geoJsonOptions = ['Point', 'Polygon', 'LineString', 'MultiPoint', 'MultiPolygon', 'MultiLineString'];
+
+    public isGeoJsonTypeSelected(type: string): boolean {
+        const opts = (this.selectedField as any)?.availableOptions;
+        return Array.isArray(opts) ? opts.includes(type) : false;
+    }
+
+    public toggleGeoJsonType(type: string): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        if (!Array.isArray(f.availableOptions)) { f.availableOptions = []; }
+        const idx = f.availableOptions.indexOf(type);
+        if (idx === -1) { f.availableOptions.push(type); } else { f.availableOptions.splice(idx, 1); }
+        this.markDirty();
+    }
+
+    public getEnumText(): string {
+        return ((this.selectedField as any)?.enum as string[] | undefined)?.join('\n') ?? '';
+    }
+
+    public onEnumChange(text: string): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any).enum = text.split('\n').map((v: string) => v.trim()).filter((v: string) => v.length > 0);
+        this.markDirty();
+    }
+
+    public resetHelpText(): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        f.textColor = '#000000';
+        f.textSize = '18';
+        f.textBold = false;
+        this.markDirty();
     }
 
     public getFieldCurrentType(field: SchemaField): string {
-        if (field.isRef) { return 'schema'; }
-        if (Array.isArray((field as any).enum)) {
-            return field.isArray ? 'multiselect' : 'enum';
+        if (!field) { return 'string'; }
+        const us = (field as any).unitSystem;
+        if (us === 'prefix') { return 'prefix'; }
+        if (us === 'postfix') { return 'postfix'; }
+        if (field.isRef) {
+            if (field.type === '#GeoJSON') { return 'geo'; }
+            if (field.type === '#SentinelHUB') { return 'sentinel'; }
+            return 'sub-schema';
         }
-        switch (field.type) {
-            case 'number':
-            case 'integer': return 'number';
-            case 'boolean': return 'yesno';
-            case 'object':  return field.isArray ? 'table' : 'group';
-            default:
-                if (field.format === 'date' || field.format === 'date-time') { return 'date'; }
-                if (field.format === 'uri') { return 'file'; }
-                return 'text';
-        }
+        const ft = this.fieldTypes.find(f =>
+            !f.isRef &&
+            // tslint:disable-next-line:triple-equals
+            field.type == f.schemaType &&
+            // tslint:disable-next-line:triple-equals
+            (field.format || undefined) == f.format &&
+            // tslint:disable-next-line:triple-equals
+            (field.pattern || undefined) == f.pattern &&
+            // tslint:disable-next-line:triple-equals
+            (field.customType || undefined) == f.customType
+        );
+        return ft?.key || 'string';
     }
 
     public changeFieldType(ft: FieldType): void {
         if (!this.selectedField) { return; }
         const f = this.selectedField as any;
-        // Reset type-specific properties
-        f.type = 'string';
-        f.format = '';
-        f.isRef = false;
-        f.isArray = false;
+        f.isRef = ft.isRef || false;
+        f.type = ft.schemaType || 'string';
+        f.format = ft.format || '';
+        f.pattern = ft.pattern || '';
+        f.customType = ft.customType || '';
+        f.unitSystem = ft.unitSystem || '';
         delete f.enum;
-
-        switch (ft.type) {
-            case 'number':
-                f.type = 'number'; break;
-            case 'date':
-                f.format = 'date'; break;
-            case 'enum':
-                f.enum = []; break;
-            case 'yesno':
-                f.type = 'boolean'; break;
-            case 'multiselect':
-                f.enum = [];
-                f.isArray = true; break;
-            case 'table':
-                f.type = 'object';
-                f.isArray = true;
-                if (!f.fields) { f.fields = []; }
-                break;
-            case 'schema':
-                f.isRef = true; break;
-            case 'group':
-                f.type = 'object';
-                if (!f.fields) { f.fields = []; }
-                break;
-            case 'file':
-                f.format = 'uri'; break;
-            // 'text', 'longtext', 'coords' → string, no format change needed
-        }
+        if (ft.key === 'enum') { f.enum = []; }
+        if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
         this.markDirty();
     }
 
-    public addEnumOption(): void {
-        if (!this.selectedField) { return; }
-        if (!Array.isArray(this.selectedField.enum)) { (this.selectedField as any).enum = []; }
-        (this.selectedField.enum as string[]).push('');
-        this.markDirty();
-    }
-
-    public removeEnumOption(index: number): void {
-        if (!Array.isArray(this.selectedField?.enum)) { return; }
-        (this.selectedField!.enum as string[]).splice(index, 1);
-        this.markDirty();
-    }
-
-    public updateEnumOption(index: number, value: string): void {
-        if (!Array.isArray(this.selectedField?.enum)) { return; }
-        (this.selectedField!.enum as string[])[index] = value;
-        this.markDirty();
-    }
 
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
@@ -466,34 +522,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public getFieldIcon(field: SchemaField): string {
-        if (field.isRef) { return 'pi-sitemap'; }
-        if (field.enum?.length) { return 'pi-chevron-circle-down'; }
-        switch (field.type) {
-            case 'number':
-            case 'integer': return 'pi-hashtag';
-            case 'boolean': return 'pi-check-circle';
-            case 'object':  return 'pi-th-large';
-            default:
-                if (field.format === 'date' || field.format === 'date-time') { return 'pi-calendar'; }
-                if (field.format === 'uri') { return 'pi-upload'; }
-                return 'pi-pencil';
-        }
+        const key = this.getFieldCurrentType(field);
+        return this.fieldTypes.find(ft => ft.key === key)?.icon || 'pi-pencil';
     }
 
     public getFieldTypeBadge(field: SchemaField): string {
-        if (field.isRef) { return 'sub-schema'; }
-        if (field.enum?.length) { return 'dropdown'; }
-        switch (field.type) {
-            case 'number':  return 'number';
-            case 'integer': return 'integer';
-            case 'boolean': return 'yes/no';
-            case 'object':  return 'group';
-            default:
-                if (field.format === 'date') { return 'date'; }
-                if (field.format === 'date-time') { return 'datetime'; }
-                if (field.format === 'uri') { return 'file'; }
-                return 'text';
-        }
+        const key = this.getFieldCurrentType(field);
+        return this.fieldTypes.find(ft => ft.key === key)?.label || 'String';
     }
 
     private upsertInSidebar(schema: Schema): void {
@@ -541,50 +576,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private buildNewField(ft: FieldType): SchemaField {
         const idx = (this.selectedSchema?.fields?.length ?? 0) + 1;
-        const base: Partial<SchemaField> = {
+        const field: any = {
             name: `field_${idx}`,
             title: ft.label,
             description: '',
             required: false,
             isArray: false,
-            isRef: false,
+            isRef: ft.isRef || false,
             readOnly: false,
-            type: 'string',
-            format: '',
-            pattern: '',
+            type: ft.schemaType || 'string',
+            format: ft.format || '',
+            pattern: ft.pattern || '',
             unit: '',
-            unitSystem: '',
+            unitSystem: ft.unitSystem || '',
             property: '',
-            customType: '',
+            customType: ft.customType || '',
             isUpdatable: false,
         };
-
-        switch (ft.type) {
-            case 'number':
-                return { ...base, type: 'number' } as SchemaField;
-            case 'longtext':
-                return { ...base, type: 'string' } as SchemaField;
-            case 'date':
-                return { ...base, type: 'string', format: 'date' } as SchemaField;
-            case 'enum':
-                return { ...base, type: 'string', enum: [] } as SchemaField;
-            case 'yesno':
-                return { ...base, type: 'boolean' } as SchemaField;
-            case 'multiselect':
-                return { ...base, type: 'string', enum: [], isArray: true } as SchemaField;
-            case 'table':
-                return { ...base, type: 'object', isArray: true, fields: [] } as SchemaField;
-            case 'schema':
-                return { ...base, isRef: true } as SchemaField;
-            case 'group':
-                return { ...base, type: 'object', fields: [] } as SchemaField;
-            case 'file':
-                return { ...base, type: 'string', format: 'uri' } as SchemaField;
-            case 'coords':
-                return { ...base, type: 'string' } as SchemaField;
-            default:
-                return { ...base } as SchemaField;
+        if (ft.key === 'enum') {
+            field.enum = [];
         }
+        return field as SchemaField;
     }
 
     private getCategory(): SchemaCategory {
