@@ -154,6 +154,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
+    private clearFieldPresetControls(): void {
+        this.field.controlDefault.setValue(null, { emitEvent: false });
+        this.field.controlSuggest.setValue(null, { emitEvent: false });
+        this.field.controlExample.setValue(null, { emitEvent: false });
+    }
+
     ngOnInit(): void {
         if (this.fieldsForm && this.buildField) {
             const onFieldChange = (value: any) => {
@@ -206,6 +212,10 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     JSON.stringify(oldField?.controlEnum) !==
                     JSON.stringify(newField?.controlEnum)
                 ) {
+                    if (oldField?.fieldType !== newField?.fieldType) {
+                        this.clearFieldPresetControls();
+                    }
+
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
                             JSON.stringify(oldField?.controlEnum)
