@@ -68,20 +68,25 @@ const dataPolygon = computed(() => dataPoints.value.map(p => `${p.x},${p.y}`).jo
 // Labels are drawn at a fixed distance from a fixed-size SVG, so anything
 // past this length runs off the edge instead of wrapping — truncate with
 // an ellipsis and rely on the tooltip (fullLabel) for the complete text.
-const maxLabelLength = 20;
-function truncateLabel(label: string): string {
-    return label.length > maxLabelLength ? `${label.slice(0, maxLabelLength - 1)}…` : label;
+const maxLabelLength = 10;
+function truncateLabel(label: string): { text: string; truncated: boolean } {
+    if (label.length <= maxLabelLength) return { text: label, truncated: false };
+    return { text: `${label.slice(0, maxLabelLength - 1)}…`, truncated: true };
 }
 
 // Perimeter labels — anchor left/right/middle based on which side of the
 // circle the point falls on, so labels don't collide with the shape.
+// Rendered as an HTML overlay (not SVG <text>) so the truncated label can be
+// wrapped in the shared InfoTooltip component below — InfoTooltip renders an
+// HTML <span> + Teleport, which is invalid inside <svg>.
 const axisLabels = computed(() => {
     if (n.value < 3) return [];
     return props.points.map((p, i) => {
         const pt = pointAt(i, outerRadius + labelOffset);
         const cos = Math.cos(angleFor(i));
         const anchor = cos > 0.3 ? 'start' : cos < -0.3 ? 'end' : 'middle';
-        return { ...p, label: truncateLabel(p.label), x: pt.x, y: pt.y, anchor };
+        const { text, truncated } = truncateLabel(p.label);
+        return { ...p, label: text, truncated, x: pt.x, y: pt.y, anchor };
     });
 });
 
@@ -142,18 +147,26 @@ const hoveredPoint = computed(() => hoveredIndex.value !== null ? dataPoints.val
                 <!-- Wider invisible hit area, easier to hover than the visible dot -->
                 <circle :cx="pt.x" :cy="pt.y" r="10" fill="transparent" @mouseenter="hoveredIndex = i" />
             </g>
-
-            <!-- Axis labels -->
-            <text
-                v-for="(label, i) in axisLabels"
-                :key="`label-${i}`"
-                :x="label.x" :y="label.y"
-                :text-anchor="label.anchor"
-                dominant-baseline="middle"
-                class="fill-muted-foreground"
-                font-size="10"
-            >{{ label.label }}</text>
         </svg>
+
+        <!-- Axis labels — HTML overlay (not SVG <text>) so a truncated label can
+             be wrapped in the shared InfoTooltip component, which shows the
+             full text on hover. Positioned via percentage coords, same
+             technique as the point-hover tooltip below. -->
+        <div
+            v-for="(label, i) in axisLabels"
+            :key="`label-${i}`"
+            class="absolute text-[10px] text-muted-foreground whitespace-nowrap"
+            :style="{
+                left: `${(label.x / size) * 100}%`,
+                top: `${(label.y / size) * 100}%`,
+                transform: `translate(${label.anchor === 'start' ? '0%' : label.anchor === 'end' ? '-100%' : '-50%'}, -50%)`,
+            }"
+        >
+            <InfoTooltip :text="label.truncated ? label.fullLabel : ''">
+                <span class="cursor-default">{{ label.label }}</span>
+            </InfoTooltip>
+        </div>
 
         <!-- HTML tooltip — same style/technique as TrendLineChart's hover
              tooltip, positioned via percentage coords so it never scales with
