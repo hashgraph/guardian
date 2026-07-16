@@ -267,7 +267,7 @@
         top: 0;
         min-width: 210px;
         background: var(--guardian-background);
-        border: 1px solid var(--sidebar-border);
+        border: 1px solid var(--guardian-border-color, #E1E7EF);
         border-radius: 12px;
         box-shadow: 0 8px 24px var(--guardian-shadow, rgba(0, 0, 0, 0.12));
         padding: 8px;
@@ -286,19 +286,23 @@
             min-height: 32px;
             padding: 0 10px;
             border-radius: 7px;
-            color: var(--sidebar-item-color);
+            color: var(--guardian-font-color, #23252E);
 
             span {
                 font-size: 13.5px;
                 font-weight: 400;
             }
 
+            &:hover {
+                background: var(--guardian-hover, #F0F3FC);
+            }
+
             &.current {
-                background: var(--sidebar-item-hover);
-                color: var(--sidebar-accent);
+                background: var(--guardian-primary-background, #E1E7FA);
+                color: var(--color-primary, #4169E2);
 
                 span {
-                    color: var(--sidebar-accent);
+                    color: var(--color-primary, #4169E2);
                     font-weight: 500;
                 }
             }

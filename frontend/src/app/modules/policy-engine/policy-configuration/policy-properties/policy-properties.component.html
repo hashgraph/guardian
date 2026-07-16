@@ -16,11 +16,12 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">ID</td>
             <td class="propRowCell">
-              <span class="readonly-prop readonly-prop--copy" title="Copy policy ID"
-                (click)="copyValue('id', policy.id, $event)">
+              <span class="readonly-prop readonly-prop--copy">
                 {{ policy.id }}
                 @if (policy.id) {
-                  <i class="pi" [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"></i>
+                  <i class="pi" title="Copy policy ID"
+                    [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"
+                    (click)="copyValue('id', policy.id, $event)"></i>
                 }
               </span>
             </td>

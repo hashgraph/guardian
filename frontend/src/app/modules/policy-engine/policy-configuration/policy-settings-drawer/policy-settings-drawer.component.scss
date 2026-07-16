@@ -181,6 +181,10 @@
         color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
     }
 
+    .grid-setting[readonly="true"] {
+        filter: none;
+    }
+
     .properties .propHeader > .propHeaderCell.cellName span {
         display: inline-block;
         vertical-align: middle;
@@ -279,6 +283,17 @@
     .properties .propRowCell > .readonly-prop--copy {
         border: none;
         background: transparent;
+        cursor: default;
+    }
+
+    .grid-setting[readonly="true"] .properties .propRowCell > .readonly-prop--copy {
+        color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
+    }
+
+    .properties .propRowCell > .readonly-prop--copy .pi {
+        pointer-events: auto;
+        cursor: pointer;
+        color: var(--pc-active-icon-color, var(--color-primary, #4169E2));
     }
 
     .properties .propRowCell > input.prop-input[readonly] {
