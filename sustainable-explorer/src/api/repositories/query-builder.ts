@@ -11,6 +11,16 @@
  * builder or in the calling repository.
  */
 
+import { BadRequestException } from '@nestjs/common';
+
+/**
+ * Upper bound on parts accepted by decodeMultiValue. Each part expands into
+ * its own SQL clause/param for 'ilike' and 'contains-any' (OR'd together) —
+ * unbounded input would let a single request bloat the query plan and put
+ * CPU/memory pressure on Postgres.
+ */
+const MAX_MULTI_VALUE_PARTS = 32;
+
 export type FilterOperator =
     | 'eq'
     | 'ilike'
@@ -18,7 +28,8 @@ export type FilterOperator =
     | 'gt'
     | 'gte'
     | 'lt'
-    | 'lte';
+    | 'lte'
+    | 'contains-any';
 
 export interface FieldDefinition {
     /**
@@ -155,6 +166,29 @@ export class QueryBuilder {
     }
 
     /**
+     * Splits a pipe-joined multi-value filter param into individual values,
+     * percent-decoding each part. Falls back to the raw trimmed part if a part
+     * isn't validly percent-encoded, so legacy (never-encoded) values still work.
+     *
+     * Rejects input with more than MAX_MULTI_VALUE_PARTS parts — each part
+     * becomes its own SQL clause/param downstream, so unbounded input is a
+     * query-plan/resource risk, not just a validation nicety.
+     */
+    private decodeMultiValue(raw: string): string[] {
+        const parts = String(raw).split('|').map(part => {
+            try { return decodeURIComponent(part.trim()); } catch { return part.trim(); }
+        }).filter(Boolean);
+
+        if (parts.length > MAX_MULTI_VALUE_PARTS) {
+            throw new BadRequestException(
+                `Too many multi-value filter parts: received ${parts.length}, maximum allowed is ${MAX_MULTI_VALUE_PARTS}.`,
+            );
+        }
+
+        return parts;
+    }
+
+    /**
      * Translates an operator + value into a parameterized SQL fragment.
      * Internal — public callers should use addFilters() / addFilter().
      */
@@ -162,7 +196,7 @@ export class QueryBuilder {
         switch (op) {
             case 'eq': {
                 if (typeof value === 'string' && value.includes('|')) {
-                    const parts = value.split('|').map(s => s.trim()).filter(Boolean);
+                    const parts = this.decodeMultiValue(value);
                     if (parts.length > 1) {
                         this.params.push(parts);
                         return `${sql} = ANY($${this.paramIdx++}::text[])`;
@@ -173,7 +207,7 @@ export class QueryBuilder {
             }
 
             case 'ilike': {
-                const parts = String(value).split('|').map(s => s.trim()).filter(Boolean);
+                const parts = this.decodeMultiValue(String(value));
                 if (parts.length > 1) {
                     const clauses = parts.map(p => {
                         this.params.push(`%${p}%`);
@@ -189,6 +223,20 @@ export class QueryBuilder {
                 if (!Array.isArray(value) || value.length === 0) return null;
                 this.params.push(value);
                 return `${sql} = ANY($${this.paramIdx++}::text[])`;
+
+            case 'contains-any': {
+                // JSONB array-of-numbers "match any" (e.g. sdgs). `?|`/`?` only match
+                // string array elements, so this ORs together `@>` containment checks
+                // against numeric JSON scalars instead — each one GIN-index-backed.
+                const parts = this.decodeMultiValue(String(value))
+                    .filter(s => Number.isInteger(Number(s)));
+                if (parts.length === 0) return null;
+                const clauses = parts.map(p => {
+                    this.params.push(String(Number(p)));
+                    return `${sql} @> $${this.paramIdx++}::jsonb`;
+                });
+                return `(${clauses.join(' OR ')})`;
+            }
 
             case 'gt':
                 this.params.push(value);

@@ -79,6 +79,14 @@ export interface UseMethodologiesApiOptions {
     sortBy: Ref<MethodologySortKey | null>;
     sortDir: Ref<MethodologySortDir | null>;
     filters?: Ref<Record<string, any>>;
+    /**
+     * Defers the initial fetch until this becomes true (e.g. a modal opening) —
+     * useful for callers that only need this data once some UI is actually
+     * shown. Fetches once on the first `true`, then behaves like a normal
+     * cached useAsyncData (re-fetches on query changes, not on every re-open).
+     * Omit for the default always-eager behavior every other caller relies on.
+     */
+    enabled?: Ref<boolean>;
 }
 
 // Filter keys recognised by the backend methodologies endpoint.
@@ -146,6 +154,7 @@ export const useMethodologiesApi = (opts: UseMethodologiesApiOptions) => {
         },
         {
             default: () => emptyResponse(opts.limit.value),
+            immediate: opts.enabled?.value ?? true,
             watch: [
                 opts.page,
                 opts.limit,
@@ -157,6 +166,18 @@ export const useMethodologiesApi = (opts: UseMethodologiesApiOptions) => {
             ],
         },
     );
+
+    // Fetch once the first time `enabled` flips true (e.g. a modal opening),
+    // then leave it to the `watch` list above — reopening doesn't refetch.
+    if (opts.enabled) {
+        let hasFetched = opts.enabled.value;
+        watch(opts.enabled, v => {
+            if (v && !hasFetched) {
+                hasFetched = true;
+                refresh();
+            }
+        });
+    }
 
     return { data, pending, error, refresh };
 };

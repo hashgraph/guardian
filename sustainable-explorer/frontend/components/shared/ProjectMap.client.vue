@@ -30,6 +30,33 @@ let map: L.Map | null = null;
 let geoLayer: L.GeoJSON | null = null;
 let pointsLayer: L.LayerGroup | null = null;
 
+// Module-level cache — the world country-boundary GeoJSON is static, so
+// fetch and parse it at most once per session instead of on every mount
+// (the map component remounts on view-mode toggles). Served from a local
+// static asset (frontend/public/geo/countries.geojson) instead of a remote
+// GitHub URL to avoid an external, uncached network round trip on top of that.
+let geojsonPromise: Promise<any> | null = null;
+function loadCountriesGeoJson(): Promise<any | null> {
+    // Belt-and-suspenders SSR guard, matching the pattern used elsewhere for
+    // .client.vue components (see ProjectPolicyCanvas.client.vue) — fetch()
+    // with a relative URL has no meaningful base origin during SSR.
+    if (!import.meta.client) return Promise.resolve(null);
+
+    geojsonPromise ??= fetch('/geo/countries.geojson')
+        .then(r => {
+            if (!r.ok) throw new Error(`countries.geojson request failed: ${r.status} ${r.statusText}`);
+            return r.json();
+        })
+        .catch(err => {
+            // Don't cache a permanently-rejected promise — `??=` above would
+            // otherwise never retry for the rest of the session after a single
+            // transient failure. Reset so the next mount gets a fresh attempt.
+            geojsonPromise = null;
+            throw err;
+        });
+    return geojsonPromise;
+}
+
 const maxProjects = computed(() => Math.max(...props.countries.map(c => c.projects), 1));
 
 function getColor(projects: number): string {
@@ -73,45 +100,52 @@ async function initMap() {
     }).addTo(map);
 
     try {
-        const response = await fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson');
-        const geojson = await response.json();
+        const geojson = await loadCountriesGeoJson();
 
-        geoLayer = L.geoJSON(geojson, {
-            style: (feature) => {
-                const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
-                const data = getCountryData(code);
-                const projects = data?.projects ?? 0;
+        // null on the server (guarded above) or if the fetch/parse ultimately
+        // failed — the map still works with tiles/points, just without the
+        // choropleth country layer.
+        if (geojson) {
+            geoLayer = L.geoJSON(geojson, {
+                style: (feature) => {
+                    const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
+                    const data = getCountryData(code);
+                    const projects = data?.projects ?? 0;
 
-                return {
-                    fillColor: projects > 0 ? getColor(projects) : 'transparent',
-                    fillOpacity: getFillOpacity(projects),
-                    color: projects > 0 ? '#2d6a4f' : '#ddd',
-                    weight: projects > 0 ? 1.5 : 0.5,
-                };
-            },
-            onEachFeature: (feature, layer) => {
-                const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
-                if (!code) return;
-                // Attach handlers unconditionally. `onEachFeature` runs only at
-                // layer creation — props.countries is typically still empty at
-                // that moment, so a check-at-attach gate would skip every
-                // country forever. Instead, gate at click/hover *time* so the
-                // handler picks up data once it arrives.
-                layer.on('click', () => {
-                    if (getCountryData(code)) emit('country-click', code);
-                });
-                layer.on('mouseover', function () {
-                    if (getCountryData(code)) {
-                        (layer as any).setStyle({ fillOpacity: 0.85, weight: 2.5 });
-                    }
-                });
-                layer.on('mouseout', function () {
-                    if (getCountryData(code)) geoLayer?.resetStyle(layer);
-                });
-            },
-        }).addTo(map);
-    } catch {
-        // GeoJSON failed — silent
+                    return {
+                        fillColor: projects > 0 ? getColor(projects) : 'transparent',
+                        fillOpacity: getFillOpacity(projects),
+                        color: projects > 0 ? '#2d6a4f' : '#ddd',
+                        weight: projects > 0 ? 1.5 : 0.5,
+                    };
+                },
+                onEachFeature: (feature, layer) => {
+                    const code = feature?.properties?.['ISO3166-1-Alpha-3'] || '';
+                    if (!code) return;
+                    // Attach handlers unconditionally. `onEachFeature` runs only at
+                    // layer creation — props.countries is typically still empty at
+                    // that moment, so a check-at-attach gate would skip every
+                    // country forever. Instead, gate at click/hover *time* so the
+                    // handler picks up data once it arrives.
+                    layer.on('click', () => {
+                        if (getCountryData(code)) emit('country-click', code);
+                    });
+                    layer.on('mouseover', function () {
+                        if (getCountryData(code)) {
+                            (layer as any).setStyle({ fillOpacity: 0.85, weight: 2.5 });
+                        }
+                    });
+                    layer.on('mouseout', function () {
+                        if (getCountryData(code)) geoLayer?.resetStyle(layer);
+                    });
+                },
+            }).addTo(map);
+        }
+    } catch (err) {
+        // Country boundary layer is a visual enhancement, not core map
+        // functionality — don't let a bad/missing asset break the map. Log
+        // for production visibility instead of failing silently.
+        console.error('[project-map] failed to load country boundaries:', err);
     }
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png', {

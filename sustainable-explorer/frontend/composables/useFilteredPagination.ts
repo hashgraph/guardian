@@ -1,4 +1,4 @@
-import { naturalCompare } from '~/lib/utils';
+import { naturalCompare, decodeMultiValue } from '~/lib/utils';
 
 export type SortDirection = 'asc' | 'desc' | null;
 
@@ -116,8 +116,8 @@ export function useFilteredPagination<T>(
         for (const [key, value] of Object.entries(activeFilters.value)) {
             if (value && value !== 'all') {
                 if (arrayFieldSet.has(key)) {
-                    // Array field (e.g. sdgs): pipe-separated list of values to match
-                    const selectedValues = value.split('|').filter(Boolean);
+                    // Array field (e.g. sdgs): pipe-separated (percent-encoded) list of values to match
+                    const selectedValues = decodeMultiValue(value);
                     result = result.filter((item) => {
                         const arr = item[key as keyof T];
                         if (!Array.isArray(arr)) return false;
@@ -152,8 +152,8 @@ export function useFilteredPagination<T>(
                             return true;
                         });
                     } else {
-                        // Multi-select: pipe-separated list of exact string values
-                        const selectedValues = parts.filter(Boolean);
+                        // Multi-select: pipe-separated (percent-encoded) list of exact string values
+                        const selectedValues = decodeMultiValue(value);
                         result = result.filter((item) => selectedValues.includes(String(item[key as keyof T])));
                     }
                 } else {

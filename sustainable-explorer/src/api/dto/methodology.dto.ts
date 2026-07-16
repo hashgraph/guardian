@@ -27,7 +27,9 @@ export class MethodologyQueryDto extends PaginationQueryDto {
         example: 'success|failed',
     })
     @IsOptional()
-    @Transform(({ value }) => String(value).split('|').filter(Boolean))
+    @Transform(({ value }) => String(value).split('|').map(part => {
+        try { return decodeURIComponent(part.trim()); } catch { return part.trim(); }
+    }).filter(Boolean))
     @IsIn(['success', 'failed', 'pending', 'unknown'], { each: true })
     decodeStatus?: ('success' | 'failed' | 'pending' | 'unknown')[];
 

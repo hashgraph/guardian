@@ -1,6 +1,6 @@
 import type { Project } from '~/types/models';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
-import { naturalCompare, isValidCountryName } from '~/lib/utils';
+import { naturalCompare, isValidCountryName, decodeMultiValue } from '~/lib/utils';
 import { SDG_LIST } from '~/lib/sdgs';
 
 // Both endpoints are paginated with no "all" mode; methodology/registry
@@ -8,26 +8,39 @@ import { SDG_LIST } from '~/lib/sdgs';
 const FILTER_OPTIONS_LIMIT = 1000;
 
 /**
- * Multi-select Country/Methodology/Registry filters for the "Manage
+ * Multi-select Country/Methodology/Registry/SDG filters for the "Manage
  * Watchlist" modal. Portfolio is a logged-in-only feature — state is a
  * useState singleton, hydrated from and synced to the server via
  * usePortfolioSync. These filters only narrow the modal's candidate list;
  * they never affect the committed watchlist or the portfolio dashboard
  * itself — see usePortfolioDashboard.
+ *
+ * Methodology/registry/sdgs are applied server-side (useWatchlistBrowse) once
+ * candidates are paginated — matchesFilters() only re-checks country here.
+ * Country stays client-side, narrowing whatever candidates are currently
+ * loaded rather than the full catalog: the stored country field isn't
+ * reliably clean server-side yet (see docs/portfolio-scaling-plan.md's
+ * geocoding-backfill note), so resolving it requires the same client-side
+ * Nominatim reverse-geocoding the project table already uses — which can
+ * only run against projects actually loaded in the browser.
  */
-export function usePortfolioWatchlistFilters() {
+/**
+ * @param isModalOpen - defers the Methodology/Registry facet-option fetches
+ * until the "Manage Watchlist" modal is actually opened, instead of firing on
+ * every Portfolio page load regardless of whether the modal is ever used.
+ */
+export function usePortfolioWatchlistFilters(candidates: Ref<Project[]>, isModalOpen: Ref<boolean>) {
     const { t } = useI18n();
     const { network } = useNetwork();
-    const { projects: allProjects } = useProjects();
-    const { resolvedName: resolvedCountryName } = useGeocodedCountries(allProjects);
+    const { resolvedName: resolvedCountryName } = useGeocodedCountries(candidates);
 
     const { data: methodologiesApiData } = useMethodologiesApi({
         page: ref(1), limit: ref(FILTER_OPTIONS_LIMIT), search: ref(''),
-        network, sortBy: ref(null), sortDir: ref(null),
+        network, sortBy: ref(null), sortDir: ref(null), enabled: isModalOpen,
     });
     const { data: registriesApiData } = useRegistriesApi({
         page: ref(1), limit: ref(FILTER_OPTIONS_LIMIT), search: ref(''),
-        network, sortBy: ref(null), sortDir: ref(null),
+        network, sortBy: ref(null), sortDir: ref(null), enabled: isModalOpen,
     });
 
     const watchlistFilters = useState<Record<string, string>>('portfolio-watchlist-filters', () => ({}));
@@ -64,8 +77,10 @@ export function usePortfolioWatchlistFilters() {
         return [...seen.values()];
     }
 
+    // Derived only from currently-loaded candidates (not the full catalog) —
+    // options grow as the modal's browse list pages in.
     const countryOptions = computed(() =>
-        [...new Set(allProjects.value.map(p => resolvedCountryName(p)).filter(isValidCountryName))]
+        [...new Set(candidates.value.map(p => resolvedCountryName(p)).filter(isValidCountryName))]
             .sort(naturalCompare)
             .map(c => ({ value: c, label: c })));
 
@@ -93,21 +108,12 @@ export function usePortfolioWatchlistFilters() {
         { key: 'sdgs', label: t('portfolio.modal.watchlist.filters.sdgs'), multiSelect: true, options: sdgOptions.value },
     ]);
 
-    // Matches by normalized display name — same join the Projects table's own
-    // registry/country filters use against project.registry/project.country.
+    // Country is the only client-side check left — methodology/registry/sdgs
+    // are now applied server-side by useWatchlistBrowse, so re-checking them
+    // here would be redundant (the candidates it's given already match).
     function matchesFilters(p: Project): boolean {
         const country = watchlistFilters.value.country;
-        if (country && !country.split('|').includes(resolvedCountryName(p))) return false;
-
-        const methodology = watchlistFilters.value.methodology;
-        if (methodology && !methodology.split('|').some(name => norm(name) === norm(p.methodology))) return false;
-
-        const registry = watchlistFilters.value.registry;
-        if (registry && !registry.split('|').some(name => norm(name) === norm(p.registry))) return false;
-
-        const sdgs = watchlistFilters.value.sdgs;
-        if (sdgs && !sdgs.split('|').some(id => p.sdgs.includes(Number(id)))) return false;
-
+        if (country && !decodeMultiValue(country).includes(resolvedCountryName(p))) return false;
         return true;
     }
 

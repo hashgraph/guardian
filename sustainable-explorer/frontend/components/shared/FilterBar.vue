@@ -2,6 +2,7 @@
 import { Search, X, CalendarRange } from 'lucide-vue-next';
 import { onClickOutside } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
+import { encodeMultiValue, decodeMultiValue } from '~/lib/utils';
 
 const { t, locale } = useI18n();
 
@@ -61,20 +62,20 @@ function selectFilter(key: string, value: string) {
 
 function toggleMultiSelect(key: string, value: string) {
     const current = props.activeFilters[key] || '';
-    const values = (current && current !== 'all') ? current.split('|') : [];
+    const values = decodeMultiValue(current);
     const idx = values.indexOf(value);
     if (idx >= 0) {
         values.splice(idx, 1);
     } else {
         values.push(value);
     }
-    emit('filter', key, values.length > 0 ? values.join('|') : 'all');
+    emit('filter', key, values.length > 0 ? encodeMultiValue(values) : 'all');
 }
 
 function isMultiSelected(key: string, value: string): boolean {
     const current = props.activeFilters[key] || '';
     if (!current || current === 'all') return false;
-    return current.split('|').includes(value);
+    return decodeMultiValue(current).includes(value);
 }
 
 // ── Numeric range helpers ─────────────────────────────────────────────────
@@ -213,7 +214,7 @@ function getActiveLabel(filter: FilterOption): string {
     const active = props.activeFilters[filter.key];
     if (!active || active === 'all') return filter.emptyLabel ?? filter.label;
     if (filter.multiSelect) {
-        const count = active.split('|').length;
+        const count = decodeMultiValue(active).length;
         return `${filter.label} (${count})`;
     }
     return filter.options.find(o => o.value === active)?.label ?? filter.label;

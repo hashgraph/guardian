@@ -65,6 +65,14 @@ const dataPoints = computed(() =>
 
 const dataPolygon = computed(() => dataPoints.value.map(p => `${p.x},${p.y}`).join(' '));
 
+// Labels are drawn at a fixed distance from a fixed-size SVG, so anything
+// past this length runs off the edge instead of wrapping — truncate with
+// an ellipsis and rely on the tooltip (fullLabel) for the complete text.
+const maxLabelLength = 20;
+function truncateLabel(label: string): string {
+    return label.length > maxLabelLength ? `${label.slice(0, maxLabelLength - 1)}…` : label;
+}
+
 // Perimeter labels — anchor left/right/middle based on which side of the
 // circle the point falls on, so labels don't collide with the shape.
 const axisLabels = computed(() => {
@@ -73,7 +81,7 @@ const axisLabels = computed(() => {
         const pt = pointAt(i, outerRadius + labelOffset);
         const cos = Math.cos(angleFor(i));
         const anchor = cos > 0.3 ? 'start' : cos < -0.3 ? 'end' : 'middle';
-        return { ...p, x: pt.x, y: pt.y, anchor };
+        return { ...p, label: truncateLabel(p.label), x: pt.x, y: pt.y, anchor };
     });
 });
 

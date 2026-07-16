@@ -22,6 +22,7 @@ import { GuardianSyncController } from './controllers/guardian-sync.controller';
 import { SdgsController } from './controllers/sdgs.controller';
 import { DevelopersController } from './controllers/developers.controller';
 import { DashboardController } from './controllers/dashboard.controller';
+import { PortfolioController } from './controllers/portfolio.controller';
 import { ExportsController } from './controllers/exports.controller';
 import { ImpactSummaryController } from './controllers/impact-summary.controller';
 
@@ -37,6 +38,7 @@ import { CreditsService } from './services/credits.service';
 import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
 import { DashboardService } from './services/dashboard.service';
+import { PortfolioStatsService } from './services/portfolio-stats.service';
 import { ExportsService } from './services/exports.service';
 import { ImpactSummaryService } from './services/impact-summary.service';
 
@@ -72,6 +74,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         SdgsController,
         DevelopersController,
         DashboardController,
+        PortfolioController,
         ExportsController,
         ImpactSummaryController,
     ],
@@ -88,6 +91,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         SdgsService,
         DevelopersService,
         DashboardService,
+        PortfolioStatsService,
         ExportsService,
         ImpactSummaryService,
         QueueRegistry,
