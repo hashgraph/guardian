@@ -1087,8 +1087,8 @@
     }
     <div class="identity-divider"></div>
     <div class="identity-action" (click)="openPolicySettingsDrawer(); identityMenu.hide()">
-      <i class="pi pi-pencil"></i>
-      <span>Edit policy details</span>
+      <i class="pi" [ngClass]="readonly ? 'pi-eye' : 'pi-pencil'"></i>
+      <span>{{ readonly ? 'View policy details' : 'Edit policy details' }}</span>
     </div>
   </div>
 </p-popover>

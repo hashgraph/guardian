@@ -1365,6 +1365,11 @@
         white-space: nowrap;
     }
 
+    .right-bottom-toolbar .properties .cellName > .chevron-icon + span {
+        font-weight: 600;
+        color: var(--pc-header-color, var(--guardian-font-color, #23252E));
+    }
+
     .right-bottom-toolbar .properties:not(.events-properties) .propHeader .cellName .chevron-icon {
         display: inline-flex !important;
         align-items: center !important;

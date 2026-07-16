@@ -344,13 +344,17 @@
     pointer-events: none !important;
     transform: translate(-50%, -100%) translate(0, -5px);
     background: var(--guardian-background, #fff);
-    padding: 5px 15px;
-    border: 1px solid var(--guardian-border-color, #7c7c7c);
+    padding: 8px 12px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
     border-radius: 8px;
     z-index: 9999;
     box-shadow: 0 4px 12px var(--guardian-shadow, rgb(0 0 0 / 30%));
     min-width: 250px;
     transition: opacity 0.5s;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .tooltip::ng-deep span {

@@ -471,7 +471,7 @@
     .properties .navigation .stepRow > .propHeaderCell.cellName {
         flex-wrap: nowrap;
         min-width: 0;
-        padding-left: 6px !important;
+        padding-left: 16px !important;
         overflow: hidden;
     }
 
@@ -521,7 +521,7 @@
     }
 
     .properties .navigation .propRow.subRow .propRowCell.cellName {
-        padding-left: 26px !important;
+        padding-left: 16px !important;
         padding-top: 0;
         vertical-align: middle;
     }
