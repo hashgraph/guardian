@@ -513,6 +513,7 @@
     flex: 1;
     overflow-y: auto;
     background: var(--surface-ground, #f8f8f7);
+    position: relative;
 }
 
 .sc-canvas-loading {
@@ -651,12 +652,121 @@
             background: #e1f5ee;
             i { color: var(--primary-color, #1d9e75); }
         }
+
+        .sc-field-card-actions { opacity: 1; }
     }
 
     &.sc-field-card--ref {
         border-color: #c8c6f0;
         border-width: 1.5px;
+        background: #f5f4fd;
+
+        &:hover { border-color: #9d99e0; }
+
+        &.active {
+            border-color: #534ab7;
+            box-shadow: 0 0 0 3px rgba(83, 74, 183, 0.12);
+        }
     }
+}
+
+.sc-subschema-enter-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background: #534ab7;
+    color: #fff;
+    border: none;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+
+    i { font-size: 11px; }
+    &:hover { opacity: 0.85; }
+}
+
+/* ── Sub-schema drill-down panel ── */
+.sc-drill-panel {
+    position: absolute;
+    inset: 0;
+    background: #fff;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    animation: sc-drill-in 0.18s ease;
+}
+
+@keyframes sc-drill-in {
+    from { opacity: 0; transform: translateX(16px); }
+    to   { opacity: 1; transform: translateX(0); }
+}
+
+.sc-drill-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 14px;
+    background: #eeedf8;
+    border-bottom: 1px solid #c8c6f0;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+}
+
+.sc-drill-crumb {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #534ab7;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 3px 6px;
+    border-radius: 5px;
+    font-family: inherit;
+    transition: background 0.12s;
+
+    i { font-size: 12px; }
+    &:hover { background: rgba(83, 74, 183, 0.1); }
+
+    &--root { color: var(--text-color-secondary, #888780); }
+    &--current { color: #534ab7; font-weight: 600; cursor: default; &:hover { background: none; } }
+}
+
+.sc-drill-sep {
+    font-size: 10px;
+    color: #b0aee8;
+}
+
+.sc-drill-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.sc-drill-back-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    flex-shrink: 0;
+    background: #fff;
+}
+
+.sc-drill-info {
+    font-size: 12px;
+    color: var(--text-color-secondary, #888780);
 }
 
 .sc-drag-handle {
@@ -910,8 +1020,8 @@
     font-weight: 500;
     padding: 2px 8px;
     border-radius: 20px;
-    background: var(--surface-ground, #f1efe8);
-    color: var(--text-color-secondary, #888780);
+    background: #e1f5ee;
+    color: #0f6e56;
     text-transform: capitalize;
 }
 
@@ -1029,5 +1139,200 @@
         font-size: 11px;
         color: var(--text-color-secondary, #888780);
     }
+}
+
+/* ── Enum options editor ── */
+.sc-enum-list {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+
+.sc-enum-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.sc-enum-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.sc-enum-empty {
+    font-size: 11px;
+    color: var(--text-color-secondary, #888780);
+    font-style: italic;
+    text-align: center;
+    padding: 4px 0;
+}
+
+.sc-add-opt-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    width: 100%;
+    font-size: 11px;
+    font-family: inherit;
+    font-weight: 500;
+    padding: 5px 10px;
+    border-radius: 8px;
+    border: 1.5px dashed rgba(0, 0, 0, 0.15);
+    background: transparent;
+    color: var(--text-color-secondary, #888780);
+    cursor: pointer;
+    transition: all 0.15s;
+
+    i { font-size: 11px; }
+
+    &:hover {
+        border-color: var(--primary-color, #1d9e75);
+        color: var(--primary-color, #1d9e75);
+        background: #e1f5ee;
+    }
+}
+
+/* ── Schemas pane "New schema" button ── */
+.sc-btn-new-schema {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    background: #fff;
+    cursor: pointer;
+    color: var(--text-color-secondary, #888780);
+    flex-shrink: 0;
+    transition: all 0.15s;
+
+    i { font-size: 12px; }
+
+    &:hover {
+        background: var(--primary-color, #1d9e75);
+        color: #fff;
+        border-color: var(--primary-color, #1d9e75);
+    }
+}
+
+/* ── Smaller drag handle variant (enum rows) ── */
+.sc-drag-handle--sm {
+    font-size: 10px;
+}
+
+/* ── Right-panel type picker ── */
+.sc-type-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    margin-top: 2px;
+}
+
+.sc-type-tile {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 8px 4px 6px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    background: var(--surface-ground, #f8f8f7);
+
+    i {
+        font-size: 15px;
+        color: var(--text-color-secondary, #888780);
+        display: block;
+        margin-bottom: 3px;
+    }
+
+    span {
+        font-size: 9px;
+        color: var(--text-color-secondary, #888780);
+        display: block;
+        line-height: 1.25;
+        word-break: break-word;
+    }
+
+    &:hover {
+        border-color: var(--primary-color, #1d9e75);
+        background: #e1f5ee;
+
+        i, span { color: #0f6e56; }
+    }
+
+    &.active {
+        border: 1.5px solid var(--primary-color, #1d9e75);
+        background: #e1f5ee;
+
+        i, span { color: #0f6e56; }
+    }
+
+    &--accent {
+        border-color: #534ab7;
+        background: #eeedfe;
+
+        i, span { color: #534ab7; }
+
+        &:hover {
+            background: #dddcfa;
+        }
+    }
+}
+
+// ── System Fields section ────────────────────────────────────────────────────
+
+.sc-system-fields-block {
+    .sc-section-header { cursor: pointer; user-select: none; }
+}
+
+.sc-system-section-header {
+    gap: 8px;
+
+    .sc-system-chevron {
+        font-size: 12px;
+        color: #6b7280;
+        flex-shrink: 0;
+    }
+
+    .sc-system-count {
+        font-size: 11px;
+        font-weight: 600;
+        color: #6b7280;
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1px 7px;
+        flex-shrink: 0;
+    }
+}
+
+.sc-field-card--system {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+    cursor: default;
+    opacity: 0.85;
+
+    &:hover {
+        border-color: #cbd5e1;
+        background: #f1f5f9;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .sc-field-type-icon {
+        background: #e2e8f0;
+        color: #64748b;
+    }
+
+    .sc-field-key { color: #475569; }
+    .sc-field-desc { color: #94a3b8; }
+}
+
+.sc-badge--sys {
+    background: #e2e8f0;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
 }
 
