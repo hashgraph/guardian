@@ -357,6 +357,13 @@
     border-top: 1px solid var(--sidebar-border);
 }
 
+/* Profile flyout lives in the footer, so anchor it to the bottom of the box and
+   let it grow upward instead of dropping off the bottom of the viewport. */
+.user-box.has-flyout .flyout {
+    top: auto;
+    bottom: 0;
+}
+
 /* The profile row is a footer control, not a nav target — give it a soft active
    state instead of the solid brand pill used for menu items. */
 .user-item.current {

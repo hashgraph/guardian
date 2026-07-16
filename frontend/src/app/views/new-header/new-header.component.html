@@ -49,7 +49,9 @@
           (click)="onRouter(barItem)"
           [class.current]="isCurrent(barItem, activeLink)"
           [class.parent-active]="hasActiveChild(barItem)"
+          [pTooltip]="(menuCollapsed && !barItem.childItems) ? barItem.title : ''"
           class="item clickable"
+          tooltipPosition="right"
           >
           @if (barItem.icon) {
             <i class="{{ barItem.icon }} item-icon"></i>
@@ -104,8 +106,10 @@
 <ng-template #footerActions>
   <div
     [class.current]="activeLink.startsWith('/notifications')"
+    [pTooltip]="(menuCollapsed && layout === 'vertical') ? 'Notifications' : ''"
     [routerLink]="'/notifications'"
     class="item cursor-pointer notification-item"
+    tooltipPosition="right"
     >
     <i class="pi pi-bell item-icon"></i>
     @if (menuCollapsed && layout === 'vertical') {
@@ -157,7 +161,11 @@
     </div>
   }
 
-  <div class="user-box">
+  <div
+    [class.has-flyout]="menuCollapsed && layout === 'vertical'"
+    [class.item-block]="menuCollapsed && layout === 'vertical'"
+    class="user-box"
+    >
     <div
       (click)="goToHomePage()"
       [class.clickable]="!user.AUDITOR"
@@ -186,5 +194,19 @@
         ></i>
       }
     </div>
+
+    @if (menuCollapsed && layout === 'vertical') {
+      <div class="flyout">
+        <div class="flyout-title">{{ username }}</div>
+        @if (!user.AUDITOR) {
+          <div (click)="goToHomePage()" class="flyout-item clickable">
+            <span>Open Profile</span>
+          </div>
+        }
+        <div (click)="logOut(); $event.stopPropagation()" class="flyout-item clickable">
+          <span>Logout</span>
+        </div>
+      </div>
+    }
   </div>
 </ng-template>
