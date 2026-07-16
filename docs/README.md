@@ -1,12 +1,8 @@
----
-if: visitor.claims.unsigned.isBetaUser === true
----
-
 # Welcome
 
 ## The official [Hedera Guardian](https://guardian.hedera.com/) documentation
 
-The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets such as carbon credits, renewable energy certificates, emission disclosures, and other environmental assets on the Hedera network.
+The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets such as carbon credits, renewable energy certificates, emission disclosures, and other environmental assets on the Hedera network. It leverages a customizable workflow engine and web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & environmental markets.
 
 **The problem it solves**
 
@@ -24,7 +20,7 @@ Guardian is built around a number of core aspects and understanding how they rel
 
 **Platform adopters and ecosystem**
 
-Adoption of the Guardian has grown from an early concept in 2020 to a platform being used by dozens of companies in climate finance, including the world’s leading carbon standards, auditors, project developers, and enterprises. Ecosystem members have shared back 100+ open source contributors via GitHub, successfully issued numerous types of environmental assets, and formed commercial partnerships. As you explore the platform you'll notice mature capabilities developed in collaboration with our ecosystem of stakeholders and community members.
+Adoption of the Guardian has grown from an early concept in 2020 to a platform being used by dozens of companies in climate finance, including the world’s leading carbon standards, auditors, project developers, and enterprises. Ecosystem members have shared back 100+ open source contributors via GitHub, successfully issued numerous types of environmental assets, formed commercial partnerships, and developed the worlds largest open source methodology library. As you explore the platform, you'll notice mature capabilities developed in collaboration with a global ecosystem of stakeholders and community members — who we're grateful and proud of.
 
 **Where to start**
 
