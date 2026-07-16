@@ -173,6 +173,20 @@ export class CommonPropertiesComponent implements OnInit {
         }
     }
 
+    getAboutItems(value: unknown): string[] {
+        if (Array.isArray(value)) {
+            return value.filter(Boolean).map(String);
+        }
+        return value ? [String(value)] : [];
+    }
+
+    getChildrenLabel(value: unknown): string {
+        if (!value || value === 'None') {
+            return 'No children';
+        }
+        return `${value} children`;
+    }
+
     getInputEvents(event: PolicyEvent): string[] {
         const about = this.getAbout(event.target);
         if (about && about.input) {

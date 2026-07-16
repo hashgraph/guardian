@@ -10,7 +10,7 @@
         @if (block) {
           <table class="properties">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
-            <tr class="propHeader" (click)="onHide(propHidden, 'about')">
+            <tr class="propHeader about-header" (click)="onHide(propHidden, 'about')">
               <td class="propRowCol"></td>
               <td class="propHeaderCell cellName" [attr.collapse]="propHidden.about">
                 <i class="pi pi-chevron-down chevron-icon"></i>
@@ -18,64 +18,53 @@
               </td>
               <td class="propHeaderCell"></td>
             </tr>
-            <tr class="propRow" [attr.collapse]="propHidden.about">
+            <tr class="propRow about-row" [attr.collapse]="propHidden.about">
               <td class="propRowCol"></td>
-              <td class="propRowCell cellName">Type</td>
-              <td class="propRowCell">
-                <span class="readonly-prop">{{ block.blockType }}</span>
+              <td class="propRowCell about-cell" colspan="2">
+                <div class="about-summary">
+                  <div class="about-overview">
+                    <div class="about-summary-line about-summary-main">
+                      <span class="about-type-chip">{{ block.blockType }}</span>
+                      @if (about) {
+                        <span class="about-deprecated">Deprecated: <strong>{{ about.deprecated ? 'Yes' : 'No' }}</strong></span>
+                      }
+                    </div>
+                    @if (about) {
+                      <div class="about-summary-line about-capabilities">
+                        <span class="about-capability-chip" [attr.enabled]="about.get"><i></i>GET</span>
+                        <span class="about-capability-chip" [attr.enabled]="about.post"><i></i>POST</span>
+                        <span class="about-info-chip">{{ about.control }}</span>
+                        <span class="about-info-chip">{{ getChildrenLabel(about.children) }}</span>
+                      </div>
+                    }
+                  </div>
+                  @if (about) {
+                    <div class="about-events-grid">
+                      @if (getAboutItems(about.input).length) {
+                        <div class="about-events">
+                          <span class="about-events-label">Server Input</span>
+                          <div class="about-event-list">
+                            @for (item of getAboutItems(about.input); track item) {
+                              <span class="about-event-chip">{{ item }}</span>
+                            }
+                          </div>
+                        </div>
+                      }
+                      @if (getAboutItems(about.output).length) {
+                        <div class="about-events">
+                          <span class="about-events-label">Server Output</span>
+                          <div class="about-event-list">
+                            @for (item of getAboutItems(about.output); track item) {
+                              <span class="about-event-chip">{{ item }}</span>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
               </td>
             </tr>
-            @if (about) {
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">GET</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.get ? 'Yes' : 'No' }}</span>
-                </td>
-              </tr>
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">POST</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.post ? 'Yes' : 'No' }}</span>
-                </td>
-              </tr>
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Server Input</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.input }}</span>
-                </td>
-              </tr>
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Server Output</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.output }}</span>
-                </td>
-              </tr>
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Control Type</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.control }}</span>
-                </td>
-              </tr>
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Children</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.children }}</span>
-                </td>
-              </tr>
-              <tr class="propRow" [attr.collapse]="propHidden.about">
-                <td class="propRowCol"></td>
-                <td class="propRowCell cellName">Deprecated</td>
-                <td class="propRowCell">
-                  <span class="readonly-prop">{{ about.deprecated ? 'Yes' : 'No' }}</span>
-                </td>
-              </tr>
-            }
             <tr class="propHeader" (click)="onHide(propHidden, 'metaData')">
               <td class="propRowCol"></td>
               <td class="propHeaderCell cellName" [attr.collapse]="propHidden.metaData">
