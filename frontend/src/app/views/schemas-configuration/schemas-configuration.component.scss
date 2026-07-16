@@ -434,6 +434,18 @@
 }
 
 
+.sc-field-group-label {
+    padding: 8px 10px 2px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #94a3b8;
+    user-select: none;
+
+    &:first-child { padding-top: 0; }
+}
+
 .sc-field-chip {
     display: flex;
     align-items: center;
@@ -1068,6 +1080,23 @@
     }
 
     &--mono { font-family: monospace; font-size: 11px; }
+}
+
+.sc-rp-textarea {
+    @extend .sc-rp-input;
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.5;
+    white-space: pre;
+}
+
+.sc-rp-hint {
+    font-size: 10px;
+    font-weight: 400;
+    color: #94a3b8;
+    margin-left: 6px;
+    text-transform: none;
+    letter-spacing: 0;
 }
 
 /* ── New schema dialog body ── */

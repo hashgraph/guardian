@@ -95,16 +95,19 @@
                             Select a schema first
                         }
                     </p>
-                    @for (ft of fieldTypes; track ft.type) {
-                        <div
-                            class="sc-field-chip"
-                            [class.sc-field-chip--accent]="ft.accent"
-                            [class.sc-field-chip--disabled]="!selectedSchema"
-                            draggable="true"
-                            (click)="addField(ft)">
-                            <i class="pi {{ ft.icon }}"></i>
-                            {{ ft.label }}
-                        </div>
+                    @for (group of fieldTypeGroups; track group.group) {
+                        <div class="sc-field-group-label">{{ group.group }}</div>
+                        @for (ft of group.types; track ft.key) {
+                            <div
+                                class="sc-field-chip"
+                                [class.sc-field-chip--accent]="ft.accent"
+                                [class.sc-field-chip--disabled]="!selectedSchema"
+                                draggable="true"
+                                (click)="addField(ft)">
+                                <i class="pi {{ ft.icon }}"></i>
+                                {{ ft.label }}
+                            </div>
+                        }
                     }
                 </div>
             }
@@ -260,10 +263,10 @@
                                             <div
                                                 class="sc-field-card"
                                                 [class.active]="selectedField === field"
-                                                [class.sc-field-card--ref]="field.isRef"
+                                                [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
                                                 (click)="selectField(field)">
                                                 <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
-                                                <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="field.isRef">
+                                                <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                                     <i class="pi {{ getFieldIcon(field) }}"></i>
                                                 </div>
                                                 <div class="sc-field-info">
@@ -308,9 +311,9 @@
                                 </div>
                             </div>
 
-                            <div class="sc-drop-zone" (click)="addField(fieldTypes[0])">
+                            <div class="sc-drop-zone" (click)="addField(defaultFieldType)">
                                 <i class="pi pi-plus"></i>
-                                Click to add a text field, or drag a type from the sidebar
+                                Click to add a string field, or drag a type from the sidebar
                             </div>
 
                         </div>
@@ -362,10 +365,10 @@
                                     <div
                                         class="sc-field-card"
                                         [class.active]="selectedField === field"
-                                        [class.sc-field-card--ref]="field.isRef"
+                                        [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
                                         (click)="selectField(field)">
                                         <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
-                                        <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="field.isRef">
+                                        <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
                                             <i class="pi {{ getFieldIcon(field) }}"></i>
                                         </div>
                                         <div class="sc-field-info">
@@ -386,7 +389,7 @@
                                             </div>
                                         </div>
                                         <div class="sc-field-card-actions">
-                                            @if (field.isRef) {
+                                            @if (getFieldCurrentType(field) === 'sub-schema') {
                                                 <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
                                                     <i class="pi pi-arrow-right"></i>Enter
                                                 </button>
@@ -403,9 +406,9 @@
                                     <span>No fields in this sub-schema</span>
                                 </div>
                             }
-                            <div class="sc-drop-zone" (click)="addDrillField(fieldTypes[0])">
+                            <div class="sc-drop-zone" (click)="addDrillField(defaultFieldType)">
                                 <i class="pi pi-plus"></i>
-                                Click to add a text field
+                                Click to add a string field
                             </div>
                         </div>
 
@@ -440,7 +443,7 @@
                             <input
                                 class="sc-rp-input"
                                 type="text"
-                                placeholder="Title"
+                                placeholder="Field title"
                                 [(ngModel)]="selectedField.title"
                                 (ngModelChange)="markDirty()" />
                         </div>
@@ -449,27 +452,40 @@
                             <input
                                 class="sc-rp-input sc-rp-input--mono"
                                 type="text"
-                                placeholder="field_key"
+                                placeholder="Field name"
                                 [(ngModel)]="selectedField.name"
                                 (ngModelChange)="markDirty()" />
                         </div>
                         <div class="sc-rp-group">
-                            <label class="sc-rp-label">Description</label>
+                            <label class="sc-rp-label">
+                                @if (selectedFieldIsHelpText) { Help Text } @else { * Description }
+                            </label>
                             <input
                                 class="sc-rp-input"
                                 type="text"
-                                placeholder="Optional description"
+                                placeholder="Field description"
                                 [(ngModel)]="selectedField.description"
                                 (ngModelChange)="markDirty()" />
                         </div>
+                        @if (selectedFieldIsString) {
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Pattern</label>
+                                <input
+                                    class="sc-rp-input sc-rp-input--mono"
+                                    type="text"
+                                    placeholder="e.g. [0-9]+"
+                                    [(ngModel)]="selectedField.pattern"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                        }
                         <div class="sc-rp-group">
                             <div class="sc-rp-label">Type</div>
                             <div class="sc-type-grid">
-                                @for (ft of fieldTypes; track ft.type) {
+                                @for (ft of fieldTypes; track ft.key) {
                                     <div
                                         class="sc-type-tile"
-                                        [class.active]="getFieldCurrentType(selectedField) === ft.type"
-                                        [class.sc-type-tile--accent]="ft.accent && getFieldCurrentType(selectedField) === ft.type"
+                                        [class.active]="getFieldCurrentType(selectedField) === ft.key"
+                                        [class.sc-type-tile--accent]="ft.accent && getFieldCurrentType(selectedField) === ft.key"
                                         (click)="changeFieldType(ft)"
                                         [title]="ft.label">
                                         <i class="pi {{ ft.icon }}"></i>
@@ -481,32 +497,74 @@
 
                         @if (selectedFieldIsEnum) {
                             <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">Options</div>
-                            <div class="sc-enum-list">
-                                @for (opt of $any(selectedField.enum); track $index; let i = $index) {
-                                    <div class="sc-enum-row">
-                                        <span class="sc-drag-handle sc-drag-handle--sm"><i class="pi pi-bars"></i></span>
-                                        <input
-                                            class="sc-rp-input sc-enum-input"
-                                            type="text"
-                                            [value]="opt"
-                                            placeholder="Option value"
-                                            (change)="updateEnumOption(i, $any($event.target).value)" />
-                                        <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeEnumOption(i)">
-                                            <i class="pi pi-times"></i>
-                                        </button>
+                            <div class="sc-rp-label">
+                                Enum values
+                                <span class="sc-rp-hint">one per line</span>
+                            </div>
+                            <textarea
+                                class="sc-rp-textarea"
+                                rows="6"
+                                placeholder="Value 1&#10;Value 2&#10;Value 3"
+                                [value]="getEnumText()"
+                                (blur)="onEnumChange($any($event.target).value)">
+                            </textarea>
+                        }
+
+                        @if (selectedFieldIsGeoJson) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">GeoJSON types</div>
+                            <div class="sc-check-list">
+                                @for (opt of geoJsonOptions; track opt) {
+                                    <div class="sc-check-item" (click)="toggleGeoJsonType(opt)">
+                                        <div class="sc-check-box" [class.active]="isGeoJsonTypeSelected(opt)">
+                                            <i class="pi pi-check"></i>
+                                        </div>
+                                        <div class="sc-check-desc">
+                                            <strong>{{ opt }}</strong>
+                                        </div>
                                     </div>
                                 }
-                                @if (!$any(selectedField.enum)?.length) {
-                                    <p class="sc-enum-empty">No options yet</p>
-                                }
                             </div>
-                            <button class="sc-add-opt-btn" (click)="addEnumOption()">
-                                <i class="pi pi-plus"></i> Add option
+                        }
+
+                        @if (selectedFieldIsHelpText) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Text style</div>
+                            <div class="sc-check-list">
+                                <div class="sc-check-item" (click)="$any(selectedField).textBold = !$any(selectedField).textBold; markDirty()">
+                                    <div class="sc-check-box" [class.active]="$any(selectedField).textBold">
+                                        <i class="pi pi-check"></i>
+                                    </div>
+                                    <div class="sc-check-desc">
+                                        <strong>Bold</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Color</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="#000000"
+                                    [(ngModel)]="$any(selectedField).textColor"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Font size (px)</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="18"
+                                    [(ngModel)]="$any(selectedField).textSize"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                            <button class="sc-btn" (click)="resetHelpText()">
+                                <i class="pi pi-refresh"></i>
+                                Reset style
                             </button>
                         }
 
-                        @if (selectedFieldIsNumber) {
+                        @if (selectedFieldIsUnit) {
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">Unit</label>
@@ -540,6 +598,17 @@
                                     <span>Renders as a list</span>
                                 </div>
                             </div>
+                            @if (selectedFieldCanBeUpdatable) {
+                                <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
+                                    <div class="sc-check-box" [class.active]="selectedField.isUpdatable">
+                                        <i class="pi pi-check"></i>
+                                    </div>
+                                    <div class="sc-check-desc">
+                                        <strong>Updatable field</strong>
+                                        <span>Value can be updated after submission</span>
+                                    </div>
+                                </div>
+                            }
                             <div class="sc-check-item" (click)="toggleBehaviour('readOnly')">
                                 <div class="sc-check-box" [class.active]="selectedField.readOnly">
                                     <i class="pi pi-check"></i>
