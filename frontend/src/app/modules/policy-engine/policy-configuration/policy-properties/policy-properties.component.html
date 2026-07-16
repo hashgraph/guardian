@@ -294,16 +294,16 @@
                     @if (nav.steps && nav.steps.length) {
                       @for (step of nav.steps; track step; let s = $index) {
                         @if (!propHidden.navigationRoles[role]) {
-                          <tr class="propHeader subRow stepRow">
+                          <tr class="propHeader subRow stepRow"
+                            (click)="onHide(propHidden.navigationSteps, role + s)">
                             <td class="propRowCol"></td>
-                            <td (click)="onHide(propHidden.navigationSteps, role + s)"
-                              [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                            <td [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
                               class="propHeaderCell cellName">
                               <i class="pi pi-chevron-down chevron-icon"></i>
-                              <span>{{ step.name || ('Step #' + (s + 1)) }}</span>
+                              <span [appOverflowTitle]="step.name || ('Step #' + (s + 1))">{{ step.name || ('Step #' + (s + 1)) }}</span>
                             </td>
                             <td class="propHeaderCell step-actions">
-                              <span (click)="onRemoveStep(role, step)" [attr.readonly]="readonly"
+                              <span (click)="$event.stopPropagation(); onRemoveStep(role, step)" [attr.readonly]="readonly"
                                 class="remove-step">
                                 <i class="pi pi-trash"></i>
                               </span>

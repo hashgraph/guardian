@@ -136,7 +136,7 @@
     }
 
     .properties {
-        --col-name-width: 184px;
+        --col-name-width: 264px;
         --pc-row-height: 32px;
         --pc-control-height: 28px;
         --pc-row-font-size: 13px;
@@ -472,6 +472,17 @@
         flex-wrap: nowrap;
         min-width: 0;
         padding-left: 6px !important;
+        overflow: hidden;
+    }
+
+    .properties .navigation .stepRow > .propHeaderCell.cellName span {
+        display: inline-block;
+        vertical-align: middle;
+        max-width: calc(100% - 24px);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .properties .navigation .stepRow > .step-actions {

@@ -10,6 +10,7 @@ import { CommonComponentsModule } from '../common/common-components.module';
 import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
 import { CompareModule } from '../analytics/analytics.module';
+import { OverflowTitleDirective } from '../analytics/directives/overflow-title.directive';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { PaginatorModule } from 'primeng/paginator';
 //Configuration
@@ -370,6 +371,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         StepperModule,
         CheckboxModule,
         PaginatorModule,
+        OverflowTitleDirective,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],
