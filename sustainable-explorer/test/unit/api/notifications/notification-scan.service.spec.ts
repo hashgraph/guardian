@@ -243,4 +243,34 @@ describe('NotificationScanService', () => {
 
         expect(registry.getDataSourceCalls).toHaveLength(0);
     });
+
+    it('prunes only read notifications older than the retention window when the tick counter hits the threshold', async () => {
+        const netDs = new FakeQueryable([]);
+        const sysDs = new FakeQueryable([]);
+        const { service } = buildService(netDs, sysDs);
+
+        (service as any).isLeader.set('mainnet', true);
+        (service as any).tickCount = 29; // one short of the threshold (30)
+
+        await (service as any).tick('mainnet');
+
+        const pruneCall = sysDs.calls.find((c) => c.sql.includes('DELETE FROM notifications'));
+        expect(pruneCall).toBeDefined();
+        expect(pruneCall!.sql).toContain('"isRead" = true');
+        expect(pruneCall!.params[0]).toBe('30'); // FakeConfigService.get() -> undefined -> 30-day default
+    });
+
+    it('does not prune on a tick that does not hit the prune threshold', async () => {
+        const netDs = new FakeQueryable([]);
+        const sysDs = new FakeQueryable([]);
+        const { service } = buildService(netDs, sysDs);
+
+        (service as any).isLeader.set('mainnet', true);
+        (service as any).tickCount = 0; // -> becomes 1 after the tick, 1 % 30 !== 0
+
+        await (service as any).tick('mainnet');
+
+        const pruneCall = sysDs.calls.find((c) => c.sql.includes('DELETE FROM notifications'));
+        expect(pruneCall).toBeUndefined();
+    });
 });
