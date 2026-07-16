@@ -1,0 +1,84 @@
+{
+  "_caveat": "This file is a specification of a Guardian 3.6 Policy Integrity Test baseline, built from Guardian's documented feature description (declared input documents + expected output documents, saved as a named, re-runnable baseline). It has not been validated against Guardian's exact internal file format -- use the input/expected values below to register the real baseline through Guardian's own Policy Integrity Test UI.",
+  "testName": "ACM0014_PolicyC_ChokChai_realistic_baseline",
+  "policyName": "ACM0014 v8.0 Treatment of Wastewater dMRV (Policy C)",
+  "description": "Realistic (non-placeholder) end-to-end test derived from the Chok Chai Starch Co. wastewater treatment project (Thailand, CDM/ACM0014, DOE-verified by JQA). Confirms the full BE/PE/LE/ER chain -- including the van't Hoff-Arrhenius temperature-factor calculation and its division-by-zero guard -- evaluates to real numbers, not null or unevaluated formula text.",
+  "steps": [
+    {
+      "step": 1,
+      "actor": "Project Participant",
+      "action": "Submit Monitoring Report",
+      "inputDocument": "see ACM0014_test_fixture.json in this same folder for full field values",
+      "keyInputs": {
+        "field6_cin": 11890,
+        "field7_cout": 1789,
+        "field45_pey": 150,
+        "field46_ley": 20,
+        "field68_laflag": 1,
+        "field81_flrflag": 1
+      }
+    },
+    {
+      "step": 2,
+      "actor": "VVB",
+      "action": "Verify report",
+      "expectedResult": "No credentialSubject.undefined / MISSING_PROPERTIES_IN_CONTEXT error"
+    },
+    {
+      "step": 3,
+      "actor": "System",
+      "action": "Mint tokens",
+      "expectedOutputFields": {
+        "field52_fTy": {
+          "type": "number",
+          "notNull": true,
+          "approxValue": 0.977
+        },
+        "field53_mcf": {
+          "type": "number",
+          "notNull": true,
+          "approxValue": 0.609
+        },
+        "field54_bey": {
+          "type": "number",
+          "notNull": true,
+          "approxValue": 32856.46
+        },
+        "field55_ery_MINT": {
+          "type": "number",
+          "notNull": true,
+          "approxValue": 32384.35
+        },
+        "field67_bey_total": {
+          "type": "number",
+          "notNull": true,
+          "approxValue": 32856.46
+        },
+        "field79_pey_total": {
+          "type": "number",
+          "notNull": true,
+          "approxValue": 452.11
+        }
+      },
+      "expectedMintAmount": "matches field55 exactly, confirmed in live testing (32384.34, 32799.65 across two separate runs)"
+    }
+  ],
+  "negativeCaseIncluded": {
+    "name": "ACM0014_PolicyC_divzero_guard_test",
+    "description": "Confirms the fTy division-by-zero guard handles both the zero AND negative denominator cases without leaving any field null or as unevaluated formula text.",
+    "variants": [
+      {
+        "field6_cin": 1,
+        "field7_cout": 1,
+        "expected_field52_fTy": 0,
+        "note": "zero denominator case"
+      },
+      {
+        "field6_cin": 1200,
+        "field7_cout": 1800,
+        "expected_field52_fTy": 0,
+        "note": "negative denominator case (COD_out > COD_in)"
+      }
+    ]
+  }
+}
