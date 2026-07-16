@@ -1,4 +1,3 @@
-<!-- UI Prop -->
 @if (properties) {
   <table class="properties document-validator-properties" [attr.readonly]="readonly">
   <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
@@ -17,6 +16,8 @@
         </p-select>
       </td>
     </tr>
+
+    <!-- Schema -->
     <tr class="propRow">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Check Schema</td>
@@ -25,13 +26,15 @@
           [schemas]="schemas"
           [(value)]="properties.schema"
           [disabled]="readonly"
-          (change)="onSave()"
-        ></select-schema>
+          (change)="onSave()">
+        </select-schema>
       </td>
     </tr>
+
+    <!-- Ownership -->
     <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName" pTooltip="Check Owned by User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by User</td>
+      <td class="propRowCell cellName">Check Owned by User</td>
       <td class="propRowCell">
         <p-toggleswitch
           [(ngModel)]="properties.checkOwnerDocument"
@@ -42,7 +45,7 @@
     </tr>
     <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName" pTooltip="Check Owned by Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Owned by Group</td>
+      <td class="propRowCell cellName">Check Owned by Group</td>
       <td class="propRowCell">
         <p-toggleswitch
           [(ngModel)]="properties.checkOwnerByGroupDocument"
@@ -53,7 +56,7 @@
     </tr>
     <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName" pTooltip="Check Assigned to User" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to User</td>
+      <td class="propRowCell cellName">Check Assigned to User</td>
       <td class="propRowCell">
         <p-toggleswitch
           [(ngModel)]="properties.checkAssignDocument"
@@ -64,7 +67,7 @@
     </tr>
     <tr class="propRow">
       <td class="propRowCol"></td>
-      <td class="propRowCell cellName" pTooltip="Check Assigned to Group" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Check Assigned to Group</td>
+      <td class="propRowCell cellName">Check Assigned to Group</td>
       <td class="propRowCell">
         <p-toggleswitch
           [(ngModel)]="properties.checkAssignByGroupDocument"
@@ -95,8 +98,7 @@
         </td>
         <td class="propRowCell">
           @if (condition.field && condition.type && condition.value) {
-            <span
-              [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
+            <span [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
               {{ condition.field }} {{ condition.type }} {{ condition.value }}
             </span>
           }
@@ -116,15 +118,15 @@
             (onChange)="onSave()"
             [appendTo]="'body'"
             placeholder="Select a condition type"
-            [options]="conditionTypeOptions">
+            [options]="operatorOptions">
           </p-select>
         </td>
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field</td>
-        <td class="propRowCell">
-          <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly" (blur)="onSave()">
+        <td class="propRowCell field">
+          <document-path [(value)]="condition.field" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
@@ -135,5 +137,258 @@
         </td>
       </tr>
     }
+
+    <!-- Source Validations -->
+    <tr class="propHeader">
+      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'sourceValidationsGroup')"
+        [attr.collapse]="propHidden.sourceValidationsGroup">
+        <i class="pi pi-caret-down"></i>
+      </td>
+      <td class="propHeaderCell cellName">Source Validations</td>
+      <td class="propHeaderCell">
+        <div class="propAdd" (click)="addSourceValidation()">
+          <i class="pi pi-plus"></i>
+          <span>Add</span>
+        </div>
+      </td>
+    </tr>
+
+    @for (validation of properties.sourceValidations; track validation; let vi = $index) {
+
+      <tr class="propRow" [attr.collapse]="propHidden.sourceValidationsGroup">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.sourceValidations, vi)"
+          [attr.collapse]="propHidden.sourceValidations[vi]">
+          <i class="pi pi-caret-down"></i>
+        </td>
+        <td class="propRowCell cellName">Source Validation {{ vi }}</td>
+        <td class="propRowCell">
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="removeSourceValidation(vi)">
+            <i class="pi pi-trash"></i>
+          </span>
+        </td>
+      </tr>
+
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Source Collection</td>
+        <td class="propRowCell">
+          <p-select [(ngModel)]="validation.dbCollection" [disabled]="readonly" (onChange)="onSave()"
+            [appendTo]="'body'" [options]="collectionOptions">
+          </p-select>
+        </td>
+      </tr>
+
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Schema</td>
+        <td class="propRowCell">
+          <select-schema [schemas]="schemas" [(value)]="validation.schema"
+            [disabled]="readonly" (change)="onSave()">
+          </select-schema>
+        </td>
+      </tr>
+
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Owned by User</td>
+        <td class="propRowCell">
+          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyOwnDocuments"
+            [readonly]="readonly" (change)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Owned by Group</td>
+        <td class="propRowCell">
+          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyOwnByGroupDocuments"
+            [readonly]="readonly" (change)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Assigned to User</td>
+        <td class="propRowCell">
+          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyAssignDocuments"
+            [readonly]="readonly" (change)="onSave()">
+        </td>
+      </tr>
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Assigned to Group</td>
+        <td class="propRowCell">
+          <input class="prop-input" type="checkbox" [(ngModel)]="validation.onlyAssignByGroupDocuments"
+            [readonly]="readonly" (change)="onSave()">
+        </td>
+      </tr>
+
+      <!-- Source Filters -->
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.sourceFilters, vi)"
+          [attr.collapse]="propHidden.sourceFilters[vi]">
+          <i class="pi pi-caret-down"></i>
+        </td>
+        <td class="propRowCell cellName"><b>Source Filters</b></td>
+        <td class="propRowCell">
+          <div class="propAdd" (click)="addFilter(validation)">
+            <i class="pi pi-plus"></i>
+            <span>Add Filter</span>
+          </div>
+        </td>
+      </tr>
+
+      @for (filter of validation.filters; track filter; let fi = $index) {
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceFilters[vi]">
+          <td class="propRowCol cellCollapse"
+            (click)="onHideNested(propHidden.sourceFilterItems, vi, fi)"
+            [attr.collapse]="isNestedHidden(propHidden.sourceFilterItems, vi, fi)">
+            <i class="pi pi-caret-down"></i>
+          </td>
+          <td class="propRowCell cellName">Filter {{ fi }}</td>
+          <td class="propRowCell">
+            @if (filter.field) {
+              <span class="not-editable-text" [title]="filter.field + ' ' + filter.type + ' ' + filter.value">
+                {{ filter.field }} {{ filter.type }} {{ filter.value }}
+              </span>
+            }
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="removeFilter(validation, fi)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceFilters[vi] || isNestedHidden(propHidden.sourceFilterItems, vi, fi)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Field</td>
+          <td class="propRowCell field">
+            <document-path [(value)]="filter.field" [readonly]="readonly" (change)="onSave()"></document-path>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceFilters[vi] || isNestedHidden(propHidden.sourceFilterItems, vi, fi)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Operator</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="filter.type" [disabled]="readonly" (onChange)="onSave()"
+              [appendTo]="'body'" [options]="operatorOptions">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceFilters[vi] || isNestedHidden(propHidden.sourceFilterItems, vi, fi)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Value Type</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="filter.typeValue" [disabled]="readonly" (onChange)="onSave()"
+              [appendTo]="'body'" [options]="filterValueTypeOptions">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceFilters[vi] || isNestedHidden(propHidden.sourceFilterItems, vi, fi)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Value</td>
+          <td class="propRowCell field">
+            @if (filter.typeValue === 'variable') {
+              <document-path [(value)]="filter.value" [readonly]="readonly" (change)="onSave()"></document-path>
+            } @else {
+              <input class="prop-input" [(ngModel)]="filter.value" [readonly]="readonly" (blur)="onSave()">
+            }
+          </td>
+        </tr>
+      }
+
+      <!-- Cross-doc Conditions -->
+      <tr class="propRow subRow" [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi]">
+        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.sourceConds, vi)"
+          [attr.collapse]="propHidden.sourceConds[vi]">
+          <i class="pi pi-caret-down"></i>
+        </td>
+        <td class="propRowCell cellName"><b>Conditions</b></td>
+        <td class="propRowCell">
+          <div class="propAdd" (click)="addCrossCondition(validation)">
+            <i class="pi pi-plus"></i>
+            <span>Add Condition</span>
+          </div>
+        </td>
+      </tr>
+
+      @for (condition of validation.conditions; track condition; let ci = $index) {
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceConds[vi]">
+          <td class="propRowCol cellCollapse"
+            (click)="onHideNested(propHidden.sourceCondItems, vi, ci)"
+            [attr.collapse]="isNestedHidden(propHidden.sourceCondItems, vi, ci)">
+            <i class="pi pi-caret-down"></i>
+          </td>
+          <td class="propRowCell cellName">Condition {{ ci }}</td>
+          <td class="propRowCell">
+            @if (condition.field) {
+              <span [title]="condition.fieldSource + ':' + condition.field + ' ' + condition.type + ' ' + condition.valueSource + ':' + condition.value">
+                {{ condition.field }} {{ condition.type }} {{ condition.value }}
+              </span>
+            }
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="removeCrossCondition(validation, ci)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceConds[vi] || isNestedHidden(propHidden.sourceCondItems, vi, ci)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Left Source</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="condition.fieldSource" [disabled]="readonly" (onChange)="onSave()"
+              [appendTo]="'body'" [options]="conditionSourceOptions">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceConds[vi] || isNestedHidden(propHidden.sourceCondItems, vi, ci)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Left Field</td>
+          <td class="propRowCell field">
+            @if (condition.fieldSource === 'value') {
+              <input class="prop-input" [(ngModel)]="condition.field" [readonly]="readonly" (blur)="onSave()">
+            } @else {
+              <document-path [(value)]="condition.field" [readonly]="readonly" (change)="onSave()"></document-path>
+            }
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceConds[vi] || isNestedHidden(propHidden.sourceCondItems, vi, ci)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Operator</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="condition.type" [disabled]="readonly" (onChange)="onSave()"
+              [appendTo]="'body'" [options]="operatorOptions">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceConds[vi] || isNestedHidden(propHidden.sourceCondItems, vi, ci)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Right Source</td>
+          <td class="propRowCell">
+            <p-select [(ngModel)]="condition.valueSource" [disabled]="readonly" (onChange)="onSave()"
+              [appendTo]="'body'" [options]="conditionSourceOptions">
+            </p-select>
+          </td>
+        </tr>
+        <tr class="propRow subRow"
+          [attr.collapse]="propHidden.sourceValidationsGroup || propHidden.sourceValidations[vi] || propHidden.sourceConds[vi] || isNestedHidden(propHidden.sourceCondItems, vi, ci)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Right Field</td>
+          <td class="propRowCell field">
+            @if (condition.valueSource === 'value') {
+              <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
+            } @else {
+              <document-path [(value)]="condition.value" [readonly]="readonly" (change)="onSave()"></document-path>
+            }
+          </td>
+        </tr>
+      }
+    }
+
   </table>
 }

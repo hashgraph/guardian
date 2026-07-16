@@ -102,7 +102,7 @@ export class RequestDocumentBlockDialog {
 
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
-        
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -400,6 +400,11 @@ export class RequestDocumentBlockDialog {
         if (!this.loading) {
             data.onStep(true);
         }
+    }
+
+    public onDraftImported(doc: any): void {
+        this.parent.preset(doc);
+        this.dataSaved = false;
     }
 
     public getButtonName(item: any) {

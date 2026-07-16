@@ -15,7 +15,7 @@
     "author": "Hashgraph <guardian@hashgraph.com>",
     "license": "Apache-2.0",
     "devDependencies": {
-        "@types/node": "24.13.2",
+        "@types/node": "24.13.3",
         "typescript": "^5.8.3"
     },
     "engines": {
@@ -25,7 +25,7 @@
         "@hiero-ledger/sdk": "2.85.0",
         "axios": "^1.16.1",
         "commander": "^11.1.0",
-        "solc": "0.8.35",
+        "solc": "0.8.36",
         "ws": "^8.16.0"
     },
     "type": "module"

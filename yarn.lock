@@ -1594,7 +1594,7 @@ __metadata:
     "@noble/curves": "npm:^1.3.0"
     "@types/express": "npm:5.0.6"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     ajv: "npm:^8.17.1"
     ajv-formats: "npm:^3.0.1"
     axios: "npm:^1.16.1"
@@ -1606,7 +1606,7 @@ __metadata:
     exceljs: "npm:^4.4.0"
     express: "npm:5.2.1"
     geotiff: "npm:^2.1.4-beta.1"
-    js-base64: "npm:3.8.0"
+    js-base64: "npm:3.8.1"
     jsonld-signatures: "npm:11.5.0"
     jsonld-signatures-v7: "npm:jsonld-signatures@7.0.0"
     jszip: "npm:^3.10.1"
@@ -1636,7 +1636,7 @@ __metadata:
   resolution: "@guardian/interfaces@workspace:interfaces"
   dependencies:
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     reflect-metadata: "npm:0.2.2"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
@@ -1726,7 +1726,7 @@ __metadata:
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/express": "npm:5.0.6"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     cross-blob: "npm:^2.0.1"
     dotenv: "npm:16.6.1"
     jszip: "npm:3.10.1"
@@ -1744,7 +1744,7 @@ __metadata:
   resolution: "@indexer/interfaces@workspace:indexer-interfaces"
   dependencies:
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
   languageName: unknown
@@ -1918,21 +1918,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/classic@npm:1.0.38":
-  version: 1.0.38
-  resolution: "@langchain/classic@npm:1.0.38"
+"@langchain/classic@npm:1.0.40":
+  version: 1.0.40
+  resolution: "@langchain/classic@npm:1.0.40"
   dependencies:
-    "@langchain/openai": "npm:1.5.3"
+    "@langchain/openai": "npm:1.5.5"
     "@langchain/textsplitters": "npm:1.0.1"
     handlebars: "npm:^4.7.9"
-    js-yaml: "npm:^4.2.0"
+    js-yaml: "npm:^5.1.0"
     jsonpointer: "npm:^5.0.1"
     langsmith: "npm:>=0.4.0 <1.0.0"
     openapi-types: "npm:^12.1.3"
     yaml: "npm:^2.9.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.1
+    "@langchain/core": ^1.2.2
     cheerio: "*"
     peggy: ^5.1.0
     typeorm: "*"
@@ -1946,7 +1946,7 @@ __metadata:
       optional: true
     typeorm:
       optional: true
-  checksum: 10c0/74a9a68ff790d589c65bcca1cb6b9676d13c6048c6e45716f7c50d9bffb202c5e447d66ad162cc282c78a03a8c5a8e9253729833f6ef08a91f97f4965359e715
+  checksum: 10c0/d43bd9ea93852e08d1d86f465accff80997f6582720837243263c14278bda0abe0ff53ca7b1a346c416bda39fa9e92b792b5af123264a6521724eec4cbeda0e9
   languageName: node
   linkType: hard
 
@@ -2352,9 +2352,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/core@npm:1.2.1":
-  version: 1.2.1
-  resolution: "@langchain/core@npm:1.2.1"
+"@langchain/core@npm:1.2.2":
+  version: 1.2.2
+  resolution: "@langchain/core@npm:1.2.2"
   dependencies:
     "@cfworker/json-schema": "npm:^4.0.2"
     "@standard-schema/spec": "npm:^1.1.0"
@@ -2363,24 +2363,24 @@ __metadata:
     mustache: "npm:^4.2.0"
     p-queue: "npm:^6.6.2"
     zod: "npm:^3.25.76 || ^4"
-  checksum: 10c0/29922144ac8e0afcc1bdaf7d2ca96937bd42b9f93fad1b69b8138ce91681dc6b3145bafffd793efecb36a003983302219b9ed16835d12963e6f051c81ae3f5c6
+  checksum: 10c0/278a3f48456ef7c02ab953f714819b2a15a2c8898817c04e50043b841a90ff8bc36e3aede1936323d31c334252f76e39e34e20325fd19db1ff9471b470608e75
   languageName: node
   linkType: hard
 
-"@langchain/langgraph-checkpoint@npm:^1.1.2":
-  version: 1.1.2
-  resolution: "@langchain/langgraph-checkpoint@npm:1.1.2"
+"@langchain/langgraph-checkpoint@npm:^1.1.3":
+  version: 1.1.3
+  resolution: "@langchain/langgraph-checkpoint@npm:1.1.3"
   peerDependencies:
     "@langchain/core": ^1.1.48
-  checksum: 10c0/1cab2cfa69c039423600d3c94bbffe914523341e96143f405700f837c7427e6c6ae5319bfdd93c7033dba33749ebb0a224ccddc8e90bb656aba07fc54a016728
+  checksum: 10c0/7f096cab126cecb2bd854081f795c91b2c3a9b9bf9f442efc28f335894c7490e0ccb61479759566893b686d5e17852002aa05a4e3686b30a9ebff659d61a100c
   languageName: node
   linkType: hard
 
-"@langchain/langgraph-sdk@npm:~1.9.23":
-  version: 1.9.23
-  resolution: "@langchain/langgraph-sdk@npm:1.9.23"
+"@langchain/langgraph-sdk@npm:~1.9.25":
+  version: 1.9.25
+  resolution: "@langchain/langgraph-sdk@npm:1.9.25"
   dependencies:
-    "@langchain/protocol": "npm:^0.0.16"
+    "@langchain/protocol": "npm:^0.0.18"
     "@types/json-schema": "npm:^7.0.15"
     p-queue: "npm:^9.0.1"
     p-retry: "npm:^7.1.1"
@@ -2399,26 +2399,22 @@ __metadata:
       optional: true
     vue:
       optional: true
-  checksum: 10c0/2f850849799b20a3a1330fe8ac9b2f697aec63a7afa6defb988aef3f0c1118b3fbdd52943a3d1218fab71ab638a6686a9876b76d8f98400df4fff822c404b0f8
+  checksum: 10c0/bd3520d6512ec811663491e7c606896fbbdb35c750e648c07ba7271208fd59e077421df975727adff2392cda5ad8097ed93261d1d0091839d5a7b4cdc7d0805d
   languageName: node
   linkType: hard
 
-"@langchain/langgraph@npm:^1.4.4":
-  version: 1.4.4
-  resolution: "@langchain/langgraph@npm:1.4.4"
+"@langchain/langgraph@npm:^1.4.7":
+  version: 1.4.7
+  resolution: "@langchain/langgraph@npm:1.4.7"
   dependencies:
-    "@langchain/langgraph-checkpoint": "npm:^1.1.2"
-    "@langchain/langgraph-sdk": "npm:~1.9.23"
-    "@langchain/protocol": "npm:^0.0.16"
+    "@langchain/langgraph-checkpoint": "npm:^1.1.3"
+    "@langchain/langgraph-sdk": "npm:~1.9.25"
+    "@langchain/protocol": "npm:^0.0.18"
     "@standard-schema/spec": "npm:1.1.0"
   peerDependencies:
     "@langchain/core": ^1.1.48
     zod: ^3.25.32 || ^4.2.0
-    zod-to-json-schema: ^3.x
-  peerDependenciesMeta:
-    zod-to-json-schema:
-      optional: true
-  checksum: 10c0/bda9f0ec84d67719a460d010288b8483bdf8f6631803865b48417d99387779dc1defbb101a36bf6d4221b794b101334b09f96dadb2df18772cffc1facce51a64
+  checksum: 10c0/b7765bd0f688462ce3a74ffb7882f42c3e38ce10ac11a0e7fe041a5338a10fba077a084d46c68b608c0a4f8db472304b5e81f8feeb39582f9e4679c70cce7930
   languageName: node
   linkType: hard
 
@@ -2435,23 +2431,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@langchain/openai@npm:1.5.3":
-  version: 1.5.3
-  resolution: "@langchain/openai@npm:1.5.3"
+"@langchain/openai@npm:1.5.5":
+  version: 1.5.5
+  resolution: "@langchain/openai@npm:1.5.5"
   dependencies:
     js-tiktoken: "npm:^1.0.12"
     openai: "npm:^6.41.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
-    "@langchain/core": ^1.2.1
-  checksum: 10c0/56948c30a9fcddcb30f1fd779fe451db253f2bbb058973aad8fdbf7b934e3db3d18af3fa44aea2f40dbf9e4980aa58ab7d609fe422a35e4951d65c7b83ea4009
+    "@langchain/core": ^1.2.2
+  checksum: 10c0/3dcc163adf4a3835091d29a33d4f6abc5d55c4b72dbfa49da1a7a6fb517c0a25f84353aa1205f90facb0d42f0d7b1446c81aba74548bd9820e331531a865ca43
   languageName: node
   linkType: hard
 
-"@langchain/protocol@npm:^0.0.16":
-  version: 0.0.16
-  resolution: "@langchain/protocol@npm:0.0.16"
-  checksum: 10c0/abf18baa9973f766b86e8153314a562702a30687b7dac4ae19deecd16965102c9ca76aa4c40d1bb5810f9b75fe76d221b8c6eb7234322910196dc59a7df7a822
+"@langchain/protocol@npm:^0.0.18":
+  version: 0.0.18
+  resolution: "@langchain/protocol@npm:0.0.18"
+  checksum: 10c0/66e4d153368b9ec2aa1ddbbeb0319d756e3b6b8c040dfb57616be30af23a615d2b401f4b0548181d67217b7a245cb473fae1d703f54375ecf13f62c6a0792b44
   languageName: node
   linkType: hard
 
@@ -2770,8 +2766,8 @@ __metadata:
   linkType: hard
 
 "@nestjs/common@npm:^11.1.24":
-  version: 11.1.27
-  resolution: "@nestjs/common@npm:11.1.27"
+  version: 11.1.28
+  resolution: "@nestjs/common@npm:11.1.28"
   dependencies:
     file-type: "npm:21.3.4"
     iterare: "npm:1.2.1"
@@ -2788,13 +2784,13 @@ __metadata:
       optional: true
     class-validator:
       optional: true
-  checksum: 10c0/c8c9c4ae913f302d76007ad9488c2dbf895df48373f3d9a475e7444232bd2b0d2d499557548fec48b3c38c399422456a475f8e23f79b14f3e7e46f8866d97ec0
+  checksum: 10c0/aaf9a773fd8523972c5f971e77b9809ebd6fab682a4b791599927b546501e17909947e68a2f97cf6d7a28ebef409765c8453f9ce45a61410e0fbdba58d3733bb
   languageName: node
   linkType: hard
 
 "@nestjs/core@npm:^11.1.24":
-  version: 11.1.27
-  resolution: "@nestjs/core@npm:11.1.27"
+  version: 11.1.28
+  resolution: "@nestjs/core@npm:11.1.28"
   dependencies:
     fast-safe-stringify: "npm:2.1.1"
     iterare: "npm:1.2.1"
@@ -2815,7 +2811,7 @@ __metadata:
       optional: true
     "@nestjs/websockets":
       optional: true
-  checksum: 10c0/ac70ec5777bd93db85ba640dd952e8fd903162a71aa35f3aac99e33b1f5d87f17a317861dd7c060ee739c6252f38745a6991c713e15ca3cd354e27b036ad1e2d
+  checksum: 10c0/691e4328fc7b428beb1cfe47fe5342f2abbf6cfb2bfb3fd76b0430cf7732b59f520c7599bbab2186c734f8be7b4abcdd805c0c846a337a65f822f547d5714fda
   languageName: node
   linkType: hard
 
@@ -2849,8 +2845,8 @@ __metadata:
   linkType: hard
 
 "@nestjs/microservices@npm:^11.1.24":
-  version: 11.1.27
-  resolution: "@nestjs/microservices@npm:11.1.27"
+  version: 11.1.28
+  resolution: "@nestjs/microservices@npm:11.1.28"
   dependencies:
     iterare: "npm:1.2.1"
     tslib: "npm:2.8.1"
@@ -2887,34 +2883,34 @@ __metadata:
       optional: true
     nats:
       optional: true
-  checksum: 10c0/87406f524d08808ccd32837890043ca98061b2a13db0477a975ee338ab6994ae326e52719a8a14d5a5ac41fefa5ebf6e83b610d7a9faf02ebbe465c7aaaebf5b
+  checksum: 10c0/78b570b4ee12e5a365817ea12fdeaf3ecac802ad66921fdd76199afa956d9d532414fd4030de2b99f8b7fd9bdb8285d5671c6884abf001ff48423e9f53a4275a
   languageName: node
   linkType: hard
 
 "@nestjs/platform-express@npm:^11.1.24":
-  version: 11.1.27
-  resolution: "@nestjs/platform-express@npm:11.1.27"
+  version: 11.1.28
+  resolution: "@nestjs/platform-express@npm:11.1.28"
   dependencies:
     cors: "npm:2.8.6"
     express: "npm:5.2.1"
-    multer: "npm:2.1.1"
+    multer: "npm:2.2.0"
     path-to-regexp: "npm:8.4.2"
     tslib: "npm:2.8.1"
   peerDependencies:
     "@nestjs/common": ^11.0.0
     "@nestjs/core": ^11.0.0
-  checksum: 10c0/81c14e49fd00fbbd8fc20250851b574a1c22a5d2af025c23655b295f013b2a6ebc166f4845bc89b765b7968f0727731bcd99fa9e7ff7b50265e282ddf8953fc0
+  checksum: 10c0/7063a2f33695a35776a4c5a4a3663b65c450779cdefe3302899d97ca79dbd20c6f2f3b4a8f6de9f633c73855d152e2eb6487bac975593a65e0513ca23a0a73a1
   languageName: node
   linkType: hard
 
 "@nestjs/platform-fastify@npm:^11.1.24":
-  version: 11.1.27
-  resolution: "@nestjs/platform-fastify@npm:11.1.27"
+  version: 11.1.28
+  resolution: "@nestjs/platform-fastify@npm:11.1.28"
   dependencies:
     "@fastify/cors": "npm:11.2.0"
     "@fastify/formbody": "npm:8.0.2"
     fast-querystring: "npm:1.1.2"
-    fastify: "npm:5.8.5"
+    fastify: "npm:5.10.0"
     fastify-plugin: "npm:6.0.0"
     find-my-way: "npm:9.6.0"
     light-my-request: "npm:6.6.0"
@@ -2931,7 +2927,7 @@ __metadata:
       optional: true
     "@fastify/view":
       optional: true
-  checksum: 10c0/aa668879f0d70c32a1291cc9bd3b3d798eaf62183660c0ea612371615684637baa54716460c2480bc542d3dc13c6a0e33269d45f496910ba304777bb0da82790
+  checksum: 10c0/1b7fb35ee717f727da4f9ee4b76a810389381f07b9646a779a929dc72775adf51d69dbbae52fd1e5e341430df63eae4577ad059cf9d56b786c2339cf11276243
   languageName: node
   linkType: hard
 
@@ -4586,12 +4582,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:24.13.2":
-  version: 24.13.2
-  resolution: "@types/node@npm:24.13.2"
+"@types/node@npm:24.13.3":
+  version: 24.13.3
+  resolution: "@types/node@npm:24.13.3"
   dependencies:
     undici-types: "npm:~7.18.0"
-  checksum: 10c0/d7d48a88a4feb0a6aac3cbfaf9ef3b12752b4b09447f88dd0b4c77c03b281e3d4330fe6982a99aedcd63fc16c7540a0c248b91eb2abb0b3edd884d7fe684e9ea
+  checksum: 10c0/a5bc08f49b9581dcdca90e02cd77197a3c799840807664942e5cd5161a553d4d2ae8064f7e3294410d748d7d098b5c1848be7fa50c06f29c4193ab16be4e59eb
   languageName: node
   linkType: hard
 
@@ -5021,10 +5017,10 @@ __metadata:
   dependencies:
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
-    "@langchain/classic": "npm:1.0.38"
+    "@langchain/classic": "npm:1.0.40"
     "@langchain/community": "npm:1.1.29"
-    "@langchain/core": "npm:1.2.1"
-    "@langchain/openai": "npm:1.5.3"
+    "@langchain/core": "npm:1.2.2"
+    "@langchain/openai": "npm:1.5.5"
     "@langchain/textsplitters": "npm:1.0.1"
     "@mikro-orm/core": "npm:6.6.15"
     "@mikro-orm/mongodb": "npm:6.6.15"
@@ -5032,11 +5028,11 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@types/express": "npm:5.0.6"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     dotenv: "npm:^16.6.1"
     express: "npm:5.2.1"
     faiss-node: "npm:0.5.1"
-    langchain: "npm:1.5.2"
+    langchain: "npm:1.5.3"
     nodemon: "npm:3.1.14"
     prebuild: "npm:13.0.1"
     rxjs: "npm:7.8.2"
@@ -5134,7 +5130,7 @@ __metadata:
     "@types/express": "npm:5.0.6"
     "@types/express-fileupload": "npm:1.5.1"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     class-transformer: "npm:^0.5.1"
     class-validator: "npm:0.15.1"
     cron: "npm:^4.3.0"
@@ -5266,7 +5262,7 @@ __metadata:
     "@nestjs/swagger": "npm:^11.4.4"
     "@types/express": "npm:5.0.6"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     "@types/ws": "npm:8.18.1"
     async-mutex: "npm:^0.5.0"
     axios: "npm:^1.16.1"
@@ -5309,7 +5305,7 @@ __metadata:
     "@types/js-yaml": "npm:^4.0.5"
     "@types/mocha": "npm:10.0.10"
     "@types/morgan": "npm:1.9.10"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     "@types/swagger-ui-express": "npm:4.1.8"
     axios: "npm:^1.16.1"
     chai: "npm:^4.3.7"
@@ -5605,7 +5601,7 @@ __metadata:
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
     "@types/jsonwebtoken": "npm:^8.5.4"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     "@types/node-vault": "npm:0.9.13"
     axios: "npm:^1.16.1"
     base-x: "npm:^4.0.0"
@@ -8177,6 +8173,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"fast-json-stringify@npm:^7.0.0":
+  version: 7.0.1
+  resolution: "fast-json-stringify@npm:7.0.1"
+  dependencies:
+    "@fastify/merge-json-schemas": "npm:^0.2.0"
+    ajv: "npm:^8.12.0"
+    ajv-formats: "npm:^3.0.1"
+    fast-uri: "npm:^4.0.0"
+    json-schema-ref-resolver: "npm:^3.0.0"
+    rfdc: "npm:^1.2.0"
+  checksum: 10c0/02da1a456a13bd36aecf50255f04514719d77c295a9fbfac53f7d17f6d8e0bc574b2457a899384fc243637e73b047f8f375d9b2fb3c2c265c6e53dad464b40e0
+  languageName: node
+  linkType: hard
+
 "fast-querystring@npm:1.1.2, fast-querystring@npm:^1.0.0, fast-querystring@npm:^1.1.2":
   version: 1.1.2
   resolution: "fast-querystring@npm:1.1.2"
@@ -8197,6 +8207,13 @@ __metadata:
   version: 3.1.2
   resolution: "fast-uri@npm:3.1.2"
   checksum: 10c0/5b35641895959f3f7ab7a7b1b5542bded159346f25ec9f256817b206d50b64eda5828e90d605a2e2fc645c90519a7259c2bab2c942ee728c88b88e5be21b090d
+  languageName: node
+  linkType: hard
+
+"fast-uri@npm:^4.0.0":
+  version: 4.1.0
+  resolution: "fast-uri@npm:4.1.0"
+  checksum: 10c0/e6079bc3f7a4892a153d76a06cb13b507ec02b1bcd4756dc2188bfaddab0380fcbca059afead6cfd2f1fe246d0d7d788bcf65e172e11c04e671483ae1a150816
   languageName: node
   linkType: hard
 
@@ -8225,9 +8242,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fastify@npm:5.8.5":
-  version: 5.8.5
-  resolution: "fastify@npm:5.8.5"
+"fastify@npm:5.10.0":
+  version: 5.10.0
+  resolution: "fastify@npm:5.10.0"
   dependencies:
     "@fastify/ajv-compiler": "npm:^4.0.5"
     "@fastify/error": "npm:^4.0.0"
@@ -8235,8 +8252,8 @@ __metadata:
     "@fastify/proxy-addr": "npm:^5.0.0"
     abstract-logging: "npm:^2.0.1"
     avvio: "npm:^9.0.0"
-    fast-json-stringify: "npm:^6.0.0"
-    find-my-way: "npm:^9.0.0"
+    fast-json-stringify: "npm:^7.0.0"
+    find-my-way: "npm:^9.6.0"
     light-my-request: "npm:^6.0.0"
     pino: "npm:^9.14.0 || ^10.1.0"
     process-warning: "npm:^5.0.0"
@@ -8244,7 +8261,7 @@ __metadata:
     secure-json-parse: "npm:^4.0.0"
     semver: "npm:^7.6.0"
     toad-cache: "npm:^3.7.0"
-  checksum: 10c0/c12fb6cec8e9083d148edc49c99f75e518e28c1664b121085fc1392dc67cd2e132d21dd79e1ef37e1c77c5991b4854ac8850b8d5997691060ea4c13fb7421a0e
+  checksum: 10c0/02b34326413cb4fd69e9cb8f6e0f043a867abd975e6db07384073a5f04ff05e9b51b4c6e1345c61bcd53f62f60b0d6018a00bab49088ab76a51cbf63fc961f85
   languageName: node
   linkType: hard
 
@@ -8338,7 +8355,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"find-my-way@npm:9.6.0, find-my-way@npm:^9.0.0":
+"find-my-way@npm:9.6.0, find-my-way@npm:^9.6.0":
   version: 9.6.0
   resolution: "find-my-way@npm:9.6.0"
   dependencies:
@@ -9053,10 +9070,10 @@ __metadata:
   resolution: "guardian-cli@workspace:guardian-cli"
   dependencies:
     "@hiero-ledger/sdk": "npm:2.85.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     axios: "npm:^1.16.1"
     commander: "npm:^11.1.0"
-    solc: "npm:0.8.35"
+    solc: "npm:0.8.36"
     typescript: "npm:^5.8.3"
     ws: "npm:^8.16.0"
   bin:
@@ -9080,7 +9097,7 @@ __metadata:
     "@types/express": "npm:5.0.6"
     "@types/fs-extra": "npm:11.0.4"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     bson: "npm:6.10.4"
     chai: "npm:4.5.0"
     cron: "npm:^4.3.0"
@@ -9467,7 +9484,7 @@ __metadata:
     "@types/express": "npm:5.0.6"
     "@types/express-fileupload": "npm:1.5.1"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     "@types/ws": "npm:8.18.1"
     async-mutex: "npm:0.5.0"
     axios: "npm:^1.16.1"
@@ -9511,7 +9528,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     axios: "npm:^1.16.1"
     axios-retry: "npm:4.5.0"
     bs58: "npm:^6.0.0"
@@ -9547,7 +9564,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     axios: "npm:^1.16.1"
     axios-retry: "npm:4.5.0"
     chai: "npm:4.5.0"
@@ -10529,10 +10546,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-base64@npm:3.8.0":
-  version: 3.8.0
-  resolution: "js-base64@npm:3.8.0"
-  checksum: 10c0/f04b51fef12e49e2b14cf904b3947583fb6ec77815b0597b5b282151c62e22acc61c9a016f53eb76b413a682b68cc232b7afaba7d67e6fd6e450415103038194
+"js-base64@npm:3.8.1":
+  version: 3.8.1
+  resolution: "js-base64@npm:3.8.1"
+  checksum: 10c0/2efffa3ae70e9da8554061a5cb307ea1259d82854dfa1af7465ea38e4e9e236d8b4e21aa46059b9ee316a63ce3e2f5870a7f7874377bfdc67f598cf52e28114c
   languageName: node
   linkType: hard
 
@@ -10559,7 +10576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:4.3.0, js-yaml@npm:^4.1.0, js-yaml@npm:^4.1.1, js-yaml@npm:^4.2.0":
+"js-yaml@npm:4.3.0, js-yaml@npm:^4.1.0, js-yaml@npm:^4.1.1":
   version: 4.3.0
   resolution: "js-yaml@npm:4.3.0"
   dependencies:
@@ -10579,6 +10596,17 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10c0/ca966bd354ac5b1b7a4694ebdba46526796aa3a6a99529fa540af2abf85918bd155a50ccc0166b413130a00622999973754458ec01e7095bc902177bfdbd5b64
+  languageName: node
+  linkType: hard
+
+"js-yaml@npm:^5.1.0":
+  version: 5.2.1
+  resolution: "js-yaml@npm:5.2.1"
+  dependencies:
+    argparse: "npm:^2.0.1"
+  bin:
+    js-yaml: bin/js-yaml.mjs
+  checksum: 10c0/8eadf08efc738a656c2838f6617b0cc508944f66f568eb4d435e858261b889a6806d98f44fb6ffdba21a0c68e4bdff1ac35516724882e1dab8fc2cc59150c881
   languageName: node
   linkType: hard
 
@@ -10984,17 +11012,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"langchain@npm:1.5.2":
-  version: 1.5.2
-  resolution: "langchain@npm:1.5.2"
+"langchain@npm:1.5.3":
+  version: 1.5.3
+  resolution: "langchain@npm:1.5.3"
   dependencies:
-    "@langchain/langgraph": "npm:^1.4.4"
-    "@langchain/langgraph-checkpoint": "npm:^1.1.2"
+    "@langchain/langgraph": "npm:^1.4.7"
+    "@langchain/langgraph-checkpoint": "npm:^1.1.3"
     langsmith: "npm:>=0.5.0 <1.0.0"
     zod: "npm:^3.25.76 || ^4"
   peerDependencies:
     "@langchain/core": ^1.2.1
-  checksum: 10c0/af8020a1c2f7b7a4fda544de284f22f507b7c09079b62714ea906146395de582331d4e19eb85ca47fcd6c27b0a85c6f1caf57c4428247e3ece61ea6d2b83f240
+  checksum: 10c0/7bec7c0a3dade924cf9c957c07a3ed6b849fadeaa580cffab1046c378965c93ef51a461a68ecbbc2a70b8fb23a386158c132965cf9a5d9b1b9640d4319c85677
   languageName: node
   linkType: hard
 
@@ -11323,7 +11351,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     dotenv: "npm:^16.6.1"
     nodemon: "npm:3.1.14"
     reflect-metadata: "npm:0.2.2"
@@ -12051,15 +12079,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"multer@npm:2.1.1":
-  version: 2.1.1
-  resolution: "multer@npm:2.1.1"
+"multer@npm:2.2.0":
+  version: 2.2.0
+  resolution: "multer@npm:2.2.0"
   dependencies:
     append-field: "npm:^1.0.0"
     busboy: "npm:^1.6.0"
     concat-stream: "npm:^2.0.0"
     type-is: "npm:^1.6.18"
-  checksum: 10c0/2ec4e02833b20f403cfb879d4b64d2a9070d902b9deae7aef18a6faadb707d7665385456cf540aa8a6dadfe3d4c5fc8e0e7b0675b94e1077048b1125426deee6
+  checksum: 10c0/7aa366d89042427347b6ab8e4a203405d7fe942e4a3095648a14526fcf3691d98ffc2da62abf85d8aca0a341f828168eb197b33cfdcfcce29d6ef593a5625591
   languageName: node
   linkType: hard
 
@@ -12549,7 +12577,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     dotenv: "npm:^16.6.1"
     nodemon: "npm:3.1.14"
     reflect-metadata: "npm:0.2.2"
@@ -13318,7 +13346,7 @@ __metadata:
     "@types/deep-equal": "npm:1.0.4"
     "@types/express": "npm:5.0.6"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     chai: "npm:4.5.0"
     cron: "npm:^4.3.0"
     deep-equal: "npm:2.2.3"
@@ -13743,7 +13771,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     dotenv: "npm:^16.6.1"
     mocha: "npm:10.8.2"
     mocha-junit-reporter: "npm:2.2.1"
@@ -14778,9 +14806,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"solc@npm:0.8.35":
-  version: 0.8.35
-  resolution: "solc@npm:0.8.35"
+"solc@npm:0.8.36":
+  version: 0.8.36
+  resolution: "solc@npm:0.8.36"
   dependencies:
     command-exists: "npm:^1.2.8"
     commander: "npm:^8.1.0"
@@ -14791,7 +14819,7 @@ __metadata:
     tmp: "npm:0.0.33"
   bin:
     solcjs: solc.js
-  checksum: 10c0/102f18249d23a3da00b2158620a6d837cae289d8fc75a1c2b7af8cf4137dd7328c395dba29bdc5fa8d738263ee20b910cac6fec7474da94f54dc712bc731800e
+  checksum: 10c0/8eb09890c1437367ee6d8f00b982478ad3023294c4d2e53165637d5528239f3e6980c074f26b761d4537215d01630dce7a247a5c2787c3500783d1c7a89fd224
   languageName: node
   linkType: hard
 
@@ -15565,7 +15593,7 @@ __metadata:
     "@nestjs/core": "npm:^11.1.24"
     "@nestjs/microservices": "npm:^11.1.24"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     axios: "npm:^1.16.1"
     axios-retry: "npm:4.5.0"
     chai: "npm:4.5.0"
@@ -16610,7 +16638,7 @@ __metadata:
     "@nestjs/microservices": "npm:^11.1.24"
     "@storacha/client": "npm:2.1.4"
     "@types/glob": "npm:^8.1.0"
-    "@types/node": "npm:24.13.2"
+    "@types/node": "npm:24.13.3"
     axios: "npm:^1.16.1"
     chai: "npm:4.5.0"
     cids: "npm:1.1.9"

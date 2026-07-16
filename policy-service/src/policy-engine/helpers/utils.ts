@@ -313,7 +313,7 @@ export class PolicyUtils {
      */
     public static getSchemaContext(ref: AnyBlockType, schema: SchemaCollection): string {
         if (ref.dryRun) {
-            return `schema${schema.iri}`;
+            return `schema:${schema.iri.slice(1)}`;
         } else {
             return schema.contextURL;
         }
@@ -421,6 +421,25 @@ export class PolicyUtils {
     }
 
     /**
+     * Coerce a string config/document value to the best comparable type:
+     * 'null'/'true'/'false' -> primitives, numeric string -> number,
+     * ISO date string (YYYY-MM-DD…) -> timestamp number, anything else -> string.
+     */
+    public static coerceComparable(v: any): any {
+        if (typeof v !== 'string') { return v; }
+        if (v === 'null') { return null; }
+        if (v === 'true') { return true; }
+        if (v === 'false') { return false; }
+        const n = Number(v);
+        if (!isNaN(n) && v.trim() !== '') { return n; }
+        if (/^\d{4}-\d{2}-\d{2}/.test(v)) {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) { return d.getTime(); }
+        }
+        return v;
+    }
+
+    /**
      * Check Document Field
      * @param document
      * @param filter
@@ -433,16 +452,28 @@ export class PolicyUtils {
                     return filter.value === value;
                 case 'not_equal':
                     return filter.value !== value;
-                case 'in':
+                case 'in': {
                     if (Array.isArray(value)) {
                         return value.indexOf(filter.value) > -1;
                     }
-                    return false;
-                case 'not_in':
+                    const list = String(filter.value).split(',').map((v: string) => v.trim());
+                    return list.includes(String(value));
+                }
+                case 'not_in': {
                     if (Array.isArray(value)) {
                         return value.indexOf(filter.value) === -1;
                     }
-                    return false;
+                    const list = String(filter.value).split(',').map((v: string) => v.trim());
+                    return !list.includes(String(value));
+                }
+                case 'gt':
+                    return PolicyUtils.coerceComparable(value) > PolicyUtils.coerceComparable(filter.value);
+                case 'gte':
+                    return PolicyUtils.coerceComparable(value) >= PolicyUtils.coerceComparable(filter.value);
+                case 'lt':
+                    return PolicyUtils.coerceComparable(value) < PolicyUtils.coerceComparable(filter.value);
+                case 'lte':
+                    return PolicyUtils.coerceComparable(value) <= PolicyUtils.coerceComparable(filter.value);
                 default:
                     return false;
             }

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -475,6 +475,10 @@ export class RequestDocumentBlockComponent
         if (!this.loading) {
             this.onStep(true);
         }
+    }
+
+    public onDraftImported(doc: any): void {
+        this.preset(doc);
     }
 
     public onEvidenceDrop($event: DragEvent) {
