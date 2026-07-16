@@ -120,6 +120,9 @@
                                 placeholder="Search schemas…"
                                 [(ngModel)]="schemaSearch" />
                         </div>
+                        <button class="sc-btn-new-schema" (click)="onNewSchema()" title="New schema">
+                            <i class="pi pi-plus"></i>
+                        </button>
                     </div>
 
                     <div class="sc-schemas-list">
@@ -203,6 +206,44 @@
 
                         <div class="sc-editor-body">
 
+                            @if (systemFields.length) {
+                                <div class="sc-section-block sc-system-fields-block">
+                                    <div class="sc-section-header sc-system-section-header"
+                                         (click)="systemFieldsCollapsed = !systemFieldsCollapsed">
+                                        <i class="pi sc-system-chevron"
+                                           [class.pi-chevron-right]="systemFieldsCollapsed"
+                                           [class.pi-chevron-down]="!systemFieldsCollapsed"></i>
+                                        <span class="sc-section-name">System Fields</span>
+                                        <span class="sc-system-count">{{ systemFields.length }}</span>
+                                        <div class="sc-section-line"></div>
+                                    </div>
+                                    @if (!systemFieldsCollapsed) {
+                                        <div class="sc-fields-list">
+                                            @for (field of systemFields; track field.name) {
+                                                <div class="sc-field-card sc-field-card--system">
+                                                    <div class="sc-field-type-icon">
+                                                        <i class="pi pi-lock"></i>
+                                                    </div>
+                                                    <div class="sc-field-info">
+                                                        <span class="sc-field-key">{{ field.title }}</span>
+                                                        <span class="sc-field-desc">{{ field.name }}</span>
+                                                        <div class="sc-field-meta-row">
+                                                            @if (field.required) {
+                                                                <span class="sc-badge sc-badge--req">Required</span>
+                                                            } @else {
+                                                                <span class="sc-badge sc-badge--opt">Optional</span>
+                                                            }
+                                                            <span class="sc-badge sc-badge--type">{{ field.type }}</span>
+                                                            <span class="sc-badge sc-badge--sys">Read-only</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            }
+
                             <div class="sc-section-block">
                                 <div class="sc-section-header">
                                     <span class="sc-section-name">Fields</span>
@@ -214,7 +255,7 @@
                                         <div class="sc-fields-empty">
                                             <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
                                         </div>
-                                    } @else if (selectedSchema.fields.length) {
+                                    } @else if (selectedSchema.fields && selectedSchema.fields.length) {
                                         @for (field of selectedSchema.fields; track field.name) {
                                             <div
                                                 class="sc-field-card"
@@ -226,12 +267,8 @@
                                                     <i class="pi {{ getFieldIcon(field) }}"></i>
                                                 </div>
                                                 <div class="sc-field-info">
-                                                    @if (field.description) {
-                                                        <span class="sc-field-key">{{ field.description }}</span>
-                                                    }
-                                                    @if (field.name) {
-                                                        <span class="sc-field-desc">{{ field.name }}</span>
-                                                    }
+                                                    <span class="sc-field-key">{{ field.description || field.title || field.name }}</span>
+                                                    <span class="sc-field-desc">{{ field.name }}</span>
                                                     <div class="sc-field-meta-row">
                                                         @if (field.required) {
                                                             <span class="sc-badge sc-badge--req">Required</span>
@@ -251,6 +288,11 @@
                                                     </div>
                                                 </div>
                                                 <div class="sc-field-card-actions">
+                                                    @if (field.isRef) {
+                                                        <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
+                                                            <i class="pi pi-arrow-right"></i>Enter
+                                                        </button>
+                                                    }
                                                     <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field" (click)="deleteField(field, $event)">
                                                         <i class="pi pi-trash"></i>
                                                     </button>
@@ -294,6 +336,92 @@
 
                 }
 
+                <!-- ── Sub-schema drill-down panel ── -->
+                @if (isDrilling) {
+                    <div class="sc-drill-panel">
+
+                        <div class="sc-drill-breadcrumb">
+                            <button class="sc-drill-crumb sc-drill-crumb--root" (click)="drillClose()">
+                                <i class="pi pi-file"></i>
+                                {{ selectedSchema?.name }}
+                            </button>
+                            @for (entry of drillStack; track $index; let i = $index) {
+                                <i class="pi pi-chevron-right sc-drill-sep"></i>
+                                <button
+                                    class="sc-drill-crumb"
+                                    [class.sc-drill-crumb--current]="$last"
+                                    (click)="!$last ? drillTo(i) : null">
+                                    {{ entry.fieldLabel }}
+                                </button>
+                            }
+                        </div>
+
+                        <div class="sc-drill-content">
+                            @if (drillCurrentFields.length) {
+                                @for (field of drillCurrentFields; track field.name) {
+                                    <div
+                                        class="sc-field-card"
+                                        [class.active]="selectedField === field"
+                                        [class.sc-field-card--ref]="field.isRef"
+                                        (click)="selectField(field)">
+                                        <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+                                        <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="field.isRef">
+                                            <i class="pi {{ getFieldIcon(field) }}"></i>
+                                        </div>
+                                        <div class="sc-field-info">
+                                            <span class="sc-field-key">{{ field.title || field.name }}</span>
+                                            @if (field.title) {
+                                                <span class="sc-field-desc">{{ field.name }}</span>
+                                            }
+                                            <div class="sc-field-meta-row">
+                                                @if (field.required) {
+                                                    <span class="sc-badge sc-badge--req">Required</span>
+                                                } @else {
+                                                    <span class="sc-badge sc-badge--opt">Optional</span>
+                                                }
+                                                @if (field.isArray) {
+                                                    <span class="sc-badge sc-badge--arr">Array</span>
+                                                }
+                                                <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
+                                            </div>
+                                        </div>
+                                        <div class="sc-field-card-actions">
+                                            @if (field.isRef) {
+                                                <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
+                                                    <i class="pi pi-arrow-right"></i>Enter
+                                                </button>
+                                            }
+                                            <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field" (click)="deleteDrillField(field, $event)">
+                                                <i class="pi pi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            } @else {
+                                <div class="sc-fields-empty">
+                                    <i class="pi pi-inbox"></i>
+                                    <span>No fields in this sub-schema</span>
+                                </div>
+                            }
+                            <div class="sc-drop-zone" (click)="addDrillField(fieldTypes[0])">
+                                <i class="pi pi-plus"></i>
+                                Click to add a text field
+                            </div>
+                        </div>
+
+                        <div class="sc-drill-back-bar">
+                            <button class="sc-btn" (click)="drillBack()">
+                                <i class="pi pi-arrow-left"></i>
+                                {{ drillStack.length <= 1 ? 'Close' : 'Back' }}
+                            </button>
+                            <span class="sc-drill-info">
+                                {{ drillCurrentFields.length }} field{{ drillCurrentFields.length === 1 ? '' : 's' }}
+                            </span>
+                        </div>
+
+                    </div>
+                }
+
             </div>
 
             <!-- ── Right panel (field properties) ──────────────────────── -->
@@ -335,9 +463,62 @@
                                 (ngModelChange)="markDirty()" />
                         </div>
                         <div class="sc-rp-group">
-                            <label class="sc-rp-label">Type</label>
-                            <input class="sc-rp-input" type="text" [value]="getFieldTypeBadge(selectedField)" readonly />
+                            <div class="sc-rp-label">Type</div>
+                            <div class="sc-type-grid">
+                                @for (ft of fieldTypes; track ft.type) {
+                                    <div
+                                        class="sc-type-tile"
+                                        [class.active]="getFieldCurrentType(selectedField) === ft.type"
+                                        [class.sc-type-tile--accent]="ft.accent && getFieldCurrentType(selectedField) === ft.type"
+                                        (click)="changeFieldType(ft)"
+                                        [title]="ft.label">
+                                        <i class="pi {{ ft.icon }}"></i>
+                                        <span>{{ ft.label }}</span>
+                                    </div>
+                                }
+                            </div>
                         </div>
+
+                        @if (selectedFieldIsEnum) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Options</div>
+                            <div class="sc-enum-list">
+                                @for (opt of $any(selectedField.enum); track $index; let i = $index) {
+                                    <div class="sc-enum-row">
+                                        <span class="sc-drag-handle sc-drag-handle--sm"><i class="pi pi-bars"></i></span>
+                                        <input
+                                            class="sc-rp-input sc-enum-input"
+                                            type="text"
+                                            [value]="opt"
+                                            placeholder="Option value"
+                                            (change)="updateEnumOption(i, $any($event.target).value)" />
+                                        <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeEnumOption(i)">
+                                            <i class="pi pi-times"></i>
+                                        </button>
+                                    </div>
+                                }
+                                @if (!$any(selectedField.enum)?.length) {
+                                    <p class="sc-enum-empty">No options yet</p>
+                                }
+                            </div>
+                            <button class="sc-add-opt-btn" (click)="addEnumOption()">
+                                <i class="pi pi-plus"></i> Add option
+                            </button>
+                        }
+
+                        @if (selectedFieldIsNumber) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Unit</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. tCO₂e, ha, m³"
+                                    [(ngModel)]="selectedField.unit"
+                                    (ngModelChange)="markDirty()" />
+                            </div>
+                        }
+
                         <div class="sc-rp-divider"></div>
                         <div class="sc-rp-label">Behaviour</div>
                         <div class="sc-check-list">

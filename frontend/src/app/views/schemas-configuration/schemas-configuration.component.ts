@@ -2,8 +2,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, forkJoin } from 'rxjs';
-import { catchError, switchMap, takeUntil } from 'rxjs/operators';
-import { ISchema, Schema, SchemaCategory, SchemaField, SchemaStatus } from '@guardian/interfaces';
+import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 
 export interface FieldType {
@@ -11,6 +11,11 @@ export interface FieldType {
     label: string;
     icon: string;
     accent?: boolean;
+}
+
+export interface DrillEntry {
+    fieldLabel: string;
+    fields: SchemaField[];
 }
 
 @Component({
@@ -35,6 +40,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public selectedField: SchemaField | null = null;
     public previewPill: 'submitter' | 'reviewer' | 'readonly' = 'submitter';
 
+    public drillStack: DrillEntry[] = [];
+    public get isDrilling(): boolean { return this.drillStack.length > 0; }
+    public get drillCurrentFields(): SchemaField[] { return this.drillStack[this.drillStack.length - 1]?.fields ?? []; }
+
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
 
@@ -45,6 +54,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public showNewSchemaDialog: boolean = false;
     public newSchemaName: string = '';
     public newSchemaSaving: boolean = false;
+    public systemFieldsCollapsed: boolean = true;
+
+    public get systemFields(): any[] {
+        return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
+    }
 
     public readonly fieldTypes: FieldType[] = [
         { type: 'text',        label: 'Text (single line)',  icon: 'pi-pencil' },
@@ -72,12 +86,45 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     ) {}
 
     public ngOnInit(): void {
-        // switchMap cancels any in-flight request when a new schema ID arrives,
-        // preventing the race where a slower response overwrites a faster one.
+        // Use the same endpoint as the old editor: schema-with-sub-schemas returns
+        // both the target schema and all related topic schemas in a single call.
+        // This eliminates the race condition between getSchemaById and loadSchemas
+        // where loadSchemas completing last would overwrite this.schemas with new
+        // objects, breaking the reference link to this.selectedSchema and causing
+        // saveAll() to pick a stale sidebar copy instead of the edited schema.
         this.schemaLoad$.pipe(
             switchMap(id => {
                 this.schemaLoading = true;
-                return this.schemaService.getSchemaById(id).pipe(
+                const category = this.getCategory();
+                const topicId = this.topic;
+                return this.schemaService.getSchemaWithSubSchemas(category, id, topicId).pipe(
+                    map((data: any) => {
+                        // Build $defs from all sub-schemas so parseFields can resolve
+                        // $ref pointers. Use throw-away spread copies — never mutate
+                        // the original document objects so this.schemas[i].document
+                        // stays clean for updateRefs() during save.
+                        const defs: Record<string, any> = {};
+                        for (const sub of (data.subSchemas || [])) {
+                            if (sub.iri && sub.document) {
+                                defs[sub.iri] = typeof sub.document === 'string'
+                                    ? JSON.parse(sub.document)
+                                    : sub.document;
+                            }
+                        }
+                        const hasDefs = Object.keys(defs).length > 0;
+                        const withDefs = (raw: any): any => {
+                            if (!hasDefs || !raw?.document) { return raw; }
+                            const doc = typeof raw.document === 'string'
+                                ? JSON.parse(raw.document)
+                                : raw.document;
+                            return { ...raw, document: { ...doc, $defs: defs } };
+                        };
+                        const schema = data.schema ? new Schema(withDefs(data.schema)) : null;
+                        return {
+                            schema,
+                            subSchemas: (data.subSchemas || []).map((s: any) => new Schema(withDefs(s))),
+                        };
+                    }),
                     catchError(() => {
                         this.schemaLoading = false;
                         return EMPTY;
@@ -85,23 +132,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 );
             }),
             takeUntil(this.destroy$)
-        ).subscribe((raw: ISchema) => {
-            const schema = new Schema(raw);
+        ).subscribe(({ schema, subSchemas }) => {
+            if (!schema) { this.schemaLoading = false; return; }
             this.selectedSchema = schema;
             this.schemaLoading = false;
-            // Fresh load from server — this schema is no longer dirty.
             const schemaId = schema.id || (schema as any)._id;
             if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
-            this.upsertInSidebar(schema);
-            const topicId = schema.topicId || this.topic;
-            if (topicId && !this.schemasFetched && !this.schemasLoading) {
-                this.loadSchemas(topicId);
+            // Populate sidebar from sub-schemas so this.schemas and this.selectedSchema
+            // share references from the same API call — no separate loadSchemas race.
+            if (!this.schemasFetched) {
+                this.schemas = subSchemas;
+                this.schemasFetched = true;
             }
+            this.upsertInSidebar(schema);
         });
 
-        // queryParamMap is a BehaviorSubject — emits immediately on subscribe and again
-        // on every navigation that keeps the component alive (Back/Forward, switchSchema).
-        // This fixes the snapshot bug where ngOnInit only ran once and ignored URL changes.
         this.route.queryParamMap.pipe(
             takeUntil(this.destroy$)
         ).subscribe(params => {
@@ -109,19 +154,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.topic = params.get('topic') || '';
             const schemaId = params.get('schemaId') || '';
             const mode = params.get('mode') || '';
-
-            // Load sidebar schemas once per topic (schemasFetched guards against re-runs).
-            if (this.topic && !this.schemasFetched && !this.schemasLoading) {
-                this.loadSchemas(this.topic);
-            }
-
             if (schemaId) {
+                // getSchemaWithSubSchemas handles both selectedSchema and schemas list.
                 this.schemaLoad$.next(schemaId);
-            } else if (mode === 'new') {
-                this.showNewSchemaDialog = true;
             } else {
-                this.selectedSchema = null;
-                this.schemaLoading = false;
+                // No schemaId — load the sidebar list separately.
+                if (this.topic && !this.schemasFetched && !this.schemasLoading) {
+                    this.loadSchemas(this.topic);
+                }
+                if (mode === 'new') {
+                    this.showNewSchemaDialog = true;
+                } else {
+                    this.selectedSchema = null;
+                    this.schemaLoading = false;
+                }
             }
         });
     }
@@ -170,17 +216,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public saveAll(): void {
         if (!this.hasUnsavedChanges || this.isSaving) { return; }
-        // Collect the Schema objects that are actually dirty and still in memory.
-        const toSave = this.schemas.filter(s => {
-            const id = s.id || (s as any)._id;
-            return id && this.dirtySchemaIds.has(id);
-        });
-        // Also include selectedSchema if it has unsaved changes but isn't in the
-        // sidebar list yet (e.g. brand-new schema that was never added to this.schemas).
-        if (this.selectedSchema) {
-            const selId = this.selectedSchema.id || (this.selectedSchema as any)._id;
-            if (selId && this.dirtySchemaIds.has(selId) && !toSave.find(s => (s.id || (s as any)._id) === selId)) {
+        // Build the save list by iterating dirty IDs so we always prefer
+        // this.selectedSchema over any sidebar copy. loadSchemas() and
+        // getSchemaById() race: if loadSchemas wins, this.schemas gets new
+        // objects that don't share a reference with this.selectedSchema, so
+        // a plain this.schemas.filter() would pick the stale sidebar copy
+        // (same ID, no user edits) and save the old document.
+        const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        const toSave: Schema[] = [];
+        for (const dirtyId of this.dirtySchemaIds) {
+            if (selId && dirtyId === selId && this.selectedSchema) {
                 toSave.push(this.selectedSchema);
+            } else {
+                const s = this.schemas.find(s => (s.id || (s as any)._id) === dirtyId);
+                if (s) { toSave.push(s); }
             }
         }
         if (!toSave.length) { return; }
@@ -188,7 +237,19 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Rebuild each schema's JSON document from its current fields before saving.
         // Without this, schema.document still holds the original server payload and
         // field changes are silently ignored by the API.
-        toSave.forEach(s => s.update(s.fields, s.conditions));
+        // updateRefs must follow update() to re-populate $defs with sub-schema
+        // definitions — buildDocument creates a bare document with no $defs, and
+        // omitting this step strips all sub-schema references from the saved payload.
+        toSave.forEach(s => {
+            // Mirror the old editor: append system fields (policyId, ref,
+            // guardianVersion) so buildDocument writes them to document.properties.
+            // Save and restore s.fields so the UI field list is unaffected.
+            const userFields = s.fields;
+            const defaultFields = DefaultFieldDictionary.getDefaultFields(s.entity as SchemaEntity);
+            s.update([...userFields, ...defaultFields], s.conditions);
+            s.fields = userFields;
+            s.updateRefs(this.schemas);
+        });
         forkJoin(toSave.map(s => this.schemaService.update(s as unknown as ISchema)))
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -229,6 +290,131 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.selectedField) { return; }
         (this.selectedField as any)[key] = !(this.selectedField as any)[key];
         this.markDirty();
+    }
+
+    public get selectedFieldIsEnum(): boolean {
+        return Array.isArray(this.selectedField?.enum);
+    }
+
+    public get selectedFieldIsNumber(): boolean {
+        return this.selectedField?.type === 'number' || this.selectedField?.type === 'integer';
+    }
+
+    public getFieldCurrentType(field: SchemaField): string {
+        if (field.isRef) { return 'schema'; }
+        if (Array.isArray((field as any).enum)) {
+            return field.isArray ? 'multiselect' : 'enum';
+        }
+        switch (field.type) {
+            case 'number':
+            case 'integer': return 'number';
+            case 'boolean': return 'yesno';
+            case 'object':  return field.isArray ? 'table' : 'group';
+            default:
+                if (field.format === 'date' || field.format === 'date-time') { return 'date'; }
+                if (field.format === 'uri') { return 'file'; }
+                return 'text';
+        }
+    }
+
+    public changeFieldType(ft: FieldType): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        // Reset type-specific properties
+        f.type = 'string';
+        f.format = '';
+        f.isRef = false;
+        f.isArray = false;
+        delete f.enum;
+
+        switch (ft.type) {
+            case 'number':
+                f.type = 'number'; break;
+            case 'date':
+                f.format = 'date'; break;
+            case 'enum':
+                f.enum = []; break;
+            case 'yesno':
+                f.type = 'boolean'; break;
+            case 'multiselect':
+                f.enum = [];
+                f.isArray = true; break;
+            case 'table':
+                f.type = 'object';
+                f.isArray = true;
+                if (!f.fields) { f.fields = []; }
+                break;
+            case 'schema':
+                f.isRef = true; break;
+            case 'group':
+                f.type = 'object';
+                if (!f.fields) { f.fields = []; }
+                break;
+            case 'file':
+                f.format = 'uri'; break;
+            // 'text', 'longtext', 'coords' → string, no format change needed
+        }
+        this.markDirty();
+    }
+
+    public addEnumOption(): void {
+        if (!this.selectedField) { return; }
+        if (!Array.isArray(this.selectedField.enum)) { (this.selectedField as any).enum = []; }
+        (this.selectedField.enum as string[]).push('');
+        this.markDirty();
+    }
+
+    public removeEnumOption(index: number): void {
+        if (!Array.isArray(this.selectedField?.enum)) { return; }
+        (this.selectedField!.enum as string[]).splice(index, 1);
+        this.markDirty();
+    }
+
+    public updateEnumOption(index: number, value: string): void {
+        if (!Array.isArray(this.selectedField?.enum)) { return; }
+        (this.selectedField!.enum as string[])[index] = value;
+        this.markDirty();
+    }
+
+    public enterSubSchema(field: SchemaField, event: Event): void {
+        event.stopPropagation();
+        this.selectedField = null;
+        this.drillStack = [
+            ...this.drillStack,
+            { fieldLabel: field.title || field.name, fields: field.fields ?? [] }
+        ];
+    }
+
+    public drillTo(index: number): void {
+        this.drillStack = this.drillStack.slice(0, index + 1);
+        this.selectedField = null;
+    }
+
+    public drillBack(): void {
+        this.drillStack = this.drillStack.slice(0, -1);
+        this.selectedField = null;
+    }
+
+    public drillClose(): void {
+        this.drillStack = [];
+        this.selectedField = null;
+    }
+
+    public addDrillField(ft: FieldType): void {
+        const newField = this.buildNewField(ft);
+        this.drillCurrentFields.push(newField);
+        this.selectedField = newField;
+        this.markDirty();
+    }
+
+    public deleteDrillField(field: SchemaField, event: Event): void {
+        event.stopPropagation();
+        const idx = this.drillCurrentFields.indexOf(field);
+        if (idx !== -1) {
+            this.drillCurrentFields.splice(idx, 1);
+            if (this.selectedField === field) { this.selectedField = null; }
+            this.markDirty();
+        }
     }
 
     public onNewSchema(): void {
@@ -337,7 +523,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response: HttpResponse<ISchema[]>) => {
-                    this.schemas = (response.body || []).map(s => new Schema(s));
+                    try {
+                        this.schemas = (response.body || []).map(s => new Schema(s));
+                    } catch {
+                        this.schemas = [];
+                    }
                     this.schemasLoading = false;
                     this.schemasFetched = true;
                 },
