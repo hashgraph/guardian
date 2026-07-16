@@ -43,6 +43,11 @@ const SCAN_BATCH_LIMIT = 500;
 const LEADER_TTL_S = 30;
 const LEADER_RENEW_MS = 15_000;
 
+// Prune read notifications roughly every Nth completed leader tick (~10 min at
+// the default 20s interval). Counter is shared across all networks, not per
+// network — see tickCount below.
+const PRUNE_EVERY_N_TICKS = 30;
+
 /**
  * Registered notification sources — issuance today. Retirement/transfer are
  * intentionally NOT implemented yet (no scanning happens for them); adding
@@ -95,6 +100,16 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
     private readonly instanceId = `api-${process.pid}-${Date.now()}`;
     private readonly networks = getConfiguredNetworks();
     private readonly intervalMs: number;
+    private readonly readRetentionDays: number;
+
+    /**
+     * SHARED (not per-network) counter of completed leader ticks. One instance
+     * scan-leads potentially several networks; retention against the single
+     * system-DB `notifications` table only needs to run occasionally in
+     * aggregate, so a per-network counter would prune N× too often. Incremented
+     * once per completed leader tick in tick(); gates pruneReadNotifications().
+     */
+    private tickCount = 0;
 
     /** Dedicated ioredis client (keyPrefix stripped) for the leader lock + publish. */
     private redisClient!: Redis;
@@ -111,6 +126,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
         private readonly redisService: RedisService,
     ) {
         this.intervalMs = (this.configService.get<number>('app.notifScanInterval') ?? 20) * 1000;
+        this.readRetentionDays = this.configService.get<number>('app.notifReadRetentionDays') ?? 30;
     }
 
     private leaderKey(network: string): string {
@@ -243,8 +259,40 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                     this.logger.error(`scanSource(${source.type}) failed for "${network}": ${message}`);
                 }
             }
+
+            // Shared tick counter (not per-network): one increment per completed
+            // leader tick, after the scan loop but still inside try so a failed
+            // source scan doesn't skip retention.
+            if (++this.tickCount % PRUNE_EVERY_N_TICKS === 0) {
+                await this.pruneReadNotifications();
+            }
         } finally {
             this.running.set(network, false);
+        }
+    }
+
+    /**
+     * Best-effort retention sweep: delete READ notifications older than the
+     * configured window. Unread rows are never touched at any age (deleting an
+     * alert the user never saw is a trust problem, not a UX nit — clearAll is
+     * the explicit user-triggered wipe). Runs against the system DB; the DELETE
+     * is naturally idempotent, so redundant triggering from multiple
+     * network-leader replicas is harmless. Failures are swallowed — retention is
+     * non-critical. Cutoff is computed in Postgres (now() - interval) to avoid
+     * app/DB clock drift, mirroring GuardianEventLogService.prune().
+     */
+    private async pruneReadNotifications(): Promise<void> {
+        try {
+            const sysDs = this.systemDataSource.getDataSource();
+            await sysDs.query(
+                `DELETE FROM notifications
+                  WHERE "isRead" = true
+                    AND "createdAt" < now() - ($1 || ' days')::interval`,
+                [String(this.readRetentionDays)],
+            );
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+            this.logger.warn(`Failed to prune read notifications: ${message}`);
         }
     }
 

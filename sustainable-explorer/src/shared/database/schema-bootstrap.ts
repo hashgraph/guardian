@@ -509,6 +509,13 @@ export async function bootstrapSystemSchema(dataSource: DataSource): Promise<voi
     await dataSource.query(
         `CREATE INDEX IF NOT EXISTS "idx_notifications_user_unread" ON "notifications" ("userId", "network") WHERE "isRead" = false`,
     );
+    // Supports NotificationScanService.pruneReadNotifications()'s
+    // WHERE "isRead" = true AND "createdAt" < ... retention sweep. Without this,
+    // that DELETE has no usable index and degrades into a full table scan as the
+    // table grows — exactly the case retention exists to protect against.
+    await dataSource.query(
+        `CREATE INDEX IF NOT EXISTS "idx_notifications_read_created" ON "notifications" ("createdAt") WHERE "isRead" = true`,
+    );
 }
 
 /**
