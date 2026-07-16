@@ -65,6 +65,8 @@ export interface RegistryExportRow {
     geography: string | null;
     law: string | null;
     project_count: number;
+    methodology_count: number;
+    number_of_issuances: number;
     ipfs_document_ref: string | null;
     _consensusTimestamp: string | null;
     _tokenId: string | null;

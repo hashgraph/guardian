@@ -22,6 +22,8 @@ interface RawExportRow {
     geography: string | null;
     law: string | null;
     project_count: string | null;
+    methodology_count: string | null;
+    number_of_issuances: string | null;
     relatedTopicId: string | null;
     dataSource: string | null;
     ipfsCids: string[] | null;
@@ -331,6 +333,8 @@ export class PgRegistryRepository extends RegistryRepository {
                     COALESCE(bv."businessData"->>'geography', bv."businessData"->'options'->>'geography') AS geography,
                     COALESCE(bv."businessData"->>'law', bv."businessData"->'options'->>'law') AS law,
                     COALESCE(s.project_count, 0) AS project_count,
+                    COALESCE(s.policy_count, 0) AS methodology_count,
+                    COALESCE(s.issuance_count, 0) AS number_of_issuances,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files AS "ipfsCids"
@@ -363,6 +367,8 @@ export class PgRegistryRepository extends RegistryRepository {
             geography: row.geography ?? null,
             law: row.law ?? null,
             project_count: row.project_count != null ? parseInt(row.project_count, 10) : 0,
+            methodology_count: row.methodology_count != null ? parseInt(row.methodology_count, 10) : 0,
+            number_of_issuances: row.number_of_issuances != null ? parseInt(row.number_of_issuances, 10) : 0,
             ipfs_document_ref: cids.length > 0 ? cids.join('; ') : null,
             // A registry has no Hedera token, so leave blank rather than fabricate;
             // `_topicId` still resolves a verification_url via the topic fallback.

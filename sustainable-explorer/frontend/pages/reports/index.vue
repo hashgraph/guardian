@@ -1,6 +1,5 @@
 <script setup lang="ts">
 /** Reports & Export page shell: header, stat cards, and the 3-tab nav (Export Data / Impact Summary / Disclosure Guidance). */
-import { FileText } from 'lucide-vue-next';
 import type { TabItem } from '~/components/ui/Tabs.vue';
 import type { ExportDataset, ExportFormat } from '~/types/reports';
 import { getDefaultSelectedFieldKeys } from '~/lib/export-field-catalog';
@@ -22,10 +21,6 @@ const tabs = computed<TabItem[]>(() => [
 
 function onUpdateTab(value: string) {
     activeTab.value = value as ReportsTab;
-}
-
-function handleExportImpactSummary() {
-    activeTab.value = 'impact-summary';
 }
 
 // Export Data tab state — single source of truth shared by ScopeRow / FieldPicker / FormatPicker / ExportPreview.
@@ -54,10 +49,6 @@ function onExported() {
                 <h1 class="text-2xl font-bold text-foreground">{{ $t('reports.title') }}</h1>
                 <p class="text-sm text-muted-foreground mt-1">{{ $t('reports.subtitle') }}</p>
             </div>
-            <Button class="shrink-0" @click="handleExportImpactSummary">
-                <FileText class="h-4 w-4" />
-                {{ $t('reports.exportImpactSummary') }}
-            </Button>
         </div>
 
         <!-- Stat cards -->
@@ -72,18 +63,17 @@ function onExported() {
                     <div class="space-y-4">
                         <ScopeRow v-model:dataset="exportDataset" v-model="scopeFilters" />
 
-                        <div class="grid gap-4 lg:grid-cols-[1fr_320px] items-start">
-                            <FieldPicker :dataset="exportDataset" v-model="selectedFields" />
-                            <div class="space-y-4">
-                                <FormatPicker v-model="exportFormat" />
-                                <ExportPreview
-                                    :dataset="exportDataset"
-                                    :field-keys="selectedFields"
-                                    :format="exportFormat"
-                                    :scope-filters="scopeFilters"
-                                    @exported="onExported"
-                                />
-                            </div>
+                        <FieldPicker :dataset="exportDataset" v-model="selectedFields" />
+
+                        <div class="grid gap-4 md:grid-cols-[minmax(0,280px)_1fr] items-start">
+                            <FormatPicker v-model="exportFormat" />
+                            <ExportPreview
+                                :dataset="exportDataset"
+                                :field-keys="selectedFields"
+                                :format="exportFormat"
+                                :scope-filters="scopeFilters"
+                                @exported="onExported"
+                            />
                         </div>
                     </div>
 

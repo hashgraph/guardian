@@ -60,10 +60,10 @@ function sdgIcon(id: number): string {
                         <tr class="border-b bg-muted/30">
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('sdgs.columns.sdg') }}</th>
                             <SortableHeader :label="$t('sdgs.columns.goal')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="credits" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.developers')" sort-key="developers" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.countries')" sort-key="countries" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="credits" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.developers')" sort-key="developers" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.countries')" sort-key="countries" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('sdgs.columns.topMethodology')" sort-key="topMethodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
                                 <span class="inline-flex items-center gap-1">
@@ -94,7 +94,7 @@ function sdgIcon(id: number): string {
                                     <p class="text-[11px] text-muted-foreground/60">SDG {{ s.sdgId }}</p>
                                 </div>
                             </td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">
+                            <td class="py-3 px-4 text-center tabular-nums font-medium">
                                 <button
                                     type="button"
                                     class="text-primary hover:underline cursor-pointer"
@@ -102,9 +102,9 @@ function sdgIcon(id: number): string {
                                     @click="goToProjectsForSdg(s.sdgId)"
                                 >{{ s.projects.toLocaleString() }}</button>
                             </td>
-                            <td class="py-3 px-4 text-right tabular-nums font-medium">{{ s.credits }}</td>
-                            <td class="py-3 px-4 text-right tabular-nums">{{ s.developers }}</td>
-                            <td class="py-3 px-4 text-right tabular-nums">{{ s.countries }}</td>
+                            <td class="py-3 px-4 text-center tabular-nums font-medium">{{ s.credits }}</td>
+                            <td class="py-3 px-4 text-center tabular-nums">{{ s.developers }}</td>
+                            <td class="py-3 px-4 text-center tabular-nums">{{ s.countries }}</td>
                             <td class="py-3 px-4">
                                 <span class="text-xs bg-muted rounded px-1.5 py-0.5">{{ s.topMethodology }}</span>
                             </td>

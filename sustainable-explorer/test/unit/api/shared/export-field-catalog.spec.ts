@@ -56,10 +56,36 @@ describe('export field catalog', () => {
         expect(creditKeys.filter((k) => k === 'transaction_id')).toHaveLength(1);
     });
 
-    it('exposes the standardized ESG reporting fields on the credits dataset', () => {
+    it('exposes the expected fields on the credits (Issuances) dataset', () => {
         const creditKeys = new Set(getExportFieldKeys('credits'));
-        for (const esg of ['emissions_reduced', 'reporting_year', 'mitigation_type', 'standard', 'vintage']) {
-            expect(creditKeys.has(esg)).toBe(true);
+        for (const key of ['emissions_reduced', 'reporting_year', 'standard', 'mint_amount', 'token_name', 'token_symbol', 'token_type']) {
+            expect(creditKeys.has(key)).toBe(true);
+        }
+        expect(creditKeys.has('mitigation_type')).toBe(false);
+        expect(creditKeys.has('vintage')).toBe(false);
+    });
+
+    it('adds the dataset-specific fields per', () => {
+        expect(getExportFieldKeys('projects')).toContain('sdg');
+        expect(getExportFieldKeys('projects')).toContain('vintage'); // projects keep vintage
+        expect(getExportFieldKeys('methodologies')).toContain('project_count');
+        expect(getExportFieldKeys('registries')).toContain('methodology_count');
+        expect(getExportFieldKeys('registries')).toContain('number_of_issuances');
+    });
+
+    it('removes mitigation_type from every dataset', () => {
+        for (const dataset of DATASETS) {
+            expect(getExportFieldKeys(dataset)).not.toContain('mitigation_type');
+        }
+    });
+
+    it('exposes transaction_id and registry_record_id only for the Issuances dataset', () => {
+        expect(getExportFieldKeys('credits')).toEqual(
+            expect.arrayContaining(['transaction_id', 'registry_record_id']),
+        );
+        for (const dataset of ['projects', 'methodologies', 'registries'] as ExportDataset[]) {
+            expect(getExportFieldKeys(dataset)).not.toContain('transaction_id');
+            expect(getExportFieldKeys(dataset)).not.toContain('registry_record_id');
         }
     });
 });

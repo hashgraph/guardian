@@ -10,6 +10,8 @@ const props = defineProps<{
     tooltip?: string;
     /** Show a compact "Mock data" badge next to the label. */
     mock?: boolean;
+    /** Text alignment; use 'right' or 'center' so the header lines up with equivalently aligned cell values. */
+    align?: 'left' | 'right' | 'center';
 }>();
 
 const emit = defineEmits<{
@@ -17,11 +19,20 @@ const emit = defineEmits<{
 }>();
 
 const isActive = computed(() => props.activeSortKey === props.sortKey);
+
+const alignClass = computed(() => {
+    if (props.align === 'right') return 'text-right';
+    if (props.align === 'center') return 'text-center';
+    return 'text-left';
+});
 </script>
 
 <template>
     <th
-        class="py-2.5 px-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground transition-colors group whitespace-nowrap"
+        :class="[
+            'py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer select-none hover:text-foreground transition-colors group whitespace-nowrap',
+            alignClass,
+        ]"
         @click="emit('sort', sortKey)"
     >
         <span class="inline-flex flex-col gap-1">

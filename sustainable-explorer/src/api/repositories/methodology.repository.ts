@@ -83,6 +83,7 @@ export interface MethodologyExportRow {
     version: string | null;
     mitigation_type: string | null;
     standard: string | null;
+    project_count: number;
     ipfs_document_ref: string | null;
     _consensusTimestamp: string | null;
     _tokenId: string | null;
