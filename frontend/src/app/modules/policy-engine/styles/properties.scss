@@ -1321,6 +1321,32 @@
         color: var(--guardian-font-color, #23252E);
     }
 
+    &.pc-drawer-panel .p-select-option,
+    &.pc-drawer-panel .p-multiselect-option {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &.pc-drawer-panel .p-select-option:not(:has(> *)) {
+        display: block;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    &.pc-drawer-panel .p-select-option > span:last-child,
+    &.pc-drawer-panel .p-multiselect-option > span:last-child,
+    &.pc-drawer-panel .drawer-option-label {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
     .p-checkbox {
         width: 16px;
         height: 16px;

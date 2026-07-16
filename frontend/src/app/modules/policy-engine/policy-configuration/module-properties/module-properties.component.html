@@ -110,6 +110,7 @@
               </td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   [(ngModel)]="item.type"
                   [options]="typeOptions"
                   optionLabel="label"
@@ -135,6 +136,7 @@
                       [schemas]="baseSchemas"
                       [(value)]="item.baseSchema"
                       [disabled]="readonly"
+                      panelStyleClass="pc-select-panel pc-drawer-panel"
                       (change)="onEditVariable(item)"
                     ></select-schema>
                   </td>

@@ -9,7 +9,7 @@
     filterPlaceholder="Search..."
     placeholder="Select..."
     appendTo="body"
-    panelStyleClass="pc-select-panel"
+    [panelStyleClass]="panelStyleClass"
     >
     <ng-template pTemplate="selectedItem" let-item>
       <span class="custom">{{ item ? item.name : 'Select...' }}</span>
@@ -38,7 +38,7 @@
             <i [ngClass]="'pi pi-' + item.icon"></i>
           </div>
         }
-        {{ item.name || '' }}
+        <span class="drawer-option-label">{{ item.name || '' }}</span>
       </div>
     </ng-template>
   </p-select>
@@ -55,7 +55,7 @@
     [displaySelectedLabel]="false"
     placeholder="Select"
     appendTo="body"
-    panelStyleClass="policy-select-block pc-select-panel"
+    [panelStyleClass]="'policy-select-block ' + panelStyleClass"
     >
     <ng-template pTemplate="header">
       <div class="components-search">
@@ -80,7 +80,7 @@
             <i [ngClass]="'pi pi-' + item.icon"></i>
           </div>
         }
-        {{ item.name }}
+        <span class="drawer-option-label">{{ item.name }}</span>
       </div>
     </ng-template>
     <ng-template pTemplate="selectedItems">

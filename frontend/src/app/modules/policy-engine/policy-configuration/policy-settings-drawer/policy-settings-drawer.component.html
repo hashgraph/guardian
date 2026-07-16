@@ -1,7 +1,7 @@
 @if (visible) {
   <div class="psd-backdrop" (click)="close()"></div>
 }
-<div class="psd-panel" [class.open]="visible" [attr.aria-hidden]="!visible">
+<div class="psd-panel" appOverflowPanelOptions [class.open]="visible" [attr.aria-hidden]="!visible">
   <div class="psd">
     <div class="psd-title">
       <i class="pi pi-cog"></i>

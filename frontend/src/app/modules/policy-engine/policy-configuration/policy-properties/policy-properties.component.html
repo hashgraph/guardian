@@ -97,6 +97,9 @@
                 (onChange)="setProjectSchema($event.value)"
                 [appendTo]="'body'"
                 >
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -132,6 +135,9 @@
                     <span>Select a sectoral scope</span>
                   }
                 </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -159,6 +165,9 @@
                     <span>Select a project scale</span>
                   }
                 </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -185,6 +194,9 @@
                     <span>Select a technology type</span>
                   }
                 </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -202,6 +214,9 @@
                 [appendTo]="'body'"
                 (onChange)="onCategoriesChanged()"
                 >
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-multiSelect>
             </td>
           </tr>
@@ -219,6 +234,9 @@
                 [appendTo]="'body'"
                 (onChange)="onCategoriesChanged()"
                 >
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-multiSelect>
             </td>
           </tr>
@@ -331,6 +349,7 @@
                               [blocks]="policy.allBlocks"
                               [readonly]="readonly"
                               [root]="policy"
+                              panelStyleClass="pc-select-panel pc-drawer-panel"
                               type="object"
                             ></select-block>
                           </td>
@@ -419,6 +438,9 @@
                   (onChange)="onEditGroup(item)"
                   [appendTo]="'body'"
                   >
+                  <ng-template pTemplate="item" let-option>
+                    <span class="drawer-option-label">{{ option.name }}</span>
+                  </ng-template>
                 </p-multiSelect>
               </td>
             </tr>

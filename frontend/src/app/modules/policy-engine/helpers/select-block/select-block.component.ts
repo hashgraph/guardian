@@ -33,6 +33,7 @@ export class SelectBlock implements AfterViewInit {
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();
     @Input() multiple: boolean = false;
+    @Input() panelStyleClass: string = 'pc-select-panel';
     public text: string | null | undefined;
     public search: string = '';
     public searchData?: any[];

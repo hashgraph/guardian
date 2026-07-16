@@ -11,6 +11,7 @@ import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
 import { CompareModule } from '../analytics/analytics.module';
 import { OverflowTitleDirective } from '../analytics/directives/overflow-title.directive';
+import { OverflowPanelOptionsDirective } from './policy-configuration/policy-settings-drawer/overflow-panel-options.directive';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { PaginatorModule } from 'primeng/paginator';
 //Configuration
@@ -372,6 +373,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         CheckboxModule,
         PaginatorModule,
         OverflowTitleDirective,
+        OverflowPanelOptionsDirective,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],
