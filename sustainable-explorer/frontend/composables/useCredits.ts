@@ -9,12 +9,14 @@ export function useCredits(
     projectKey?: Ref<string | undefined>,
     methodologyId?: Ref<string | undefined>,
     registryDid?: Ref<string | undefined>,
+    projectKeys?: Ref<string[] | undefined>,
 ) {
     const { network } = useNetwork();
 
     const filters = computed(() => {
-        const f: Record<string, string> = {};
-        if (projectKey?.value) f.projectKey = projectKey.value;
+        const f: Record<string, string | string[]> = {};
+        if (projectKeys?.value?.length) f.projectKey = projectKeys.value;
+        else if (projectKey?.value) f.projectKey = projectKey.value;
         if (methodologyId?.value) f.methodologyId = methodologyId.value;
         if (registryDid?.value) f.registryDid = registryDid.value;
         return f;

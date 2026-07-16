@@ -63,10 +63,15 @@ export const PROJECT_FIELD_SCHEMA: FieldSchema = {
         filter: 'eq',
         sortable: true,
     },
+    sdgs: {
+        sql: `bv."businessData"->'sdgs'`,
+        filter: 'contains-any',
+    },
 
     // ── Plain columns ───────────────────────────────────────────────────
     sourceTimestamp: {
         sql: 'bv."sourceTimestamp"',
+        filter: 'in',
         sortable: true,
     },
     createdAt: {

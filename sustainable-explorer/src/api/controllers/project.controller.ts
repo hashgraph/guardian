@@ -1,5 +1,5 @@
-import { Controller, Get, Post, Param, Query, NotFoundException, BadRequestException } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Controller, Get, Post, Body, Param, Query, UseGuards, HttpCode, HttpStatus, NotFoundException, BadRequestException } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiCookieAuth } from '@nestjs/swagger';
 import { ProjectsService } from '../services/project.service';
 import { ProjectExportService, type ExportFormat } from '../services/project-export.service';
 import { PolicyWorkflowGraph } from '../services/policy-graph.builder';
@@ -8,9 +8,12 @@ import {
     ProjectResponseDto,
     PaginatedProjectsDto,
     ActivityEventDto,
+    BatchProjectsDto,
+    ProjectIdsDto,
 } from '../dto/project.dto';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 import { AdminWrite } from '../auth/decorators/admin-write.decorator';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 const VALID_EXPORT_FORMATS = new Set<string>(['iwa', 'cadtrust', 'cdop']);
 
@@ -42,6 +45,45 @@ export class ProjectsController {
         @Query() query: ProjectQueryDto,
     ) {
         return this.projectsService.findAll(network, query);
+    }
+
+    @Get('ids')
+    @ApiOperation({
+        summary: 'List matching project IDs only',
+        description:
+            'Same filters as the list endpoint (search, name, country, methodology, registry, ' +
+            'developer, vintage, status, sdgs), but returns only sourceTimestamp IDs — no ' +
+            'pagination, no full rows. Used by "add all matching" bulk-select actions so the ' +
+            'client can collect every matching id without downloading full project records.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: ProjectIdsDto })
+    async findIds(
+        @Param('network') network: string,
+        @Query() query: ProjectQueryDto,
+    ): Promise<ProjectIdsDto> {
+        return this.projectsService.findIds(network, query);
+    }
+
+    @Post('batch')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    @ApiCookieAuth()
+    @ApiOperation({
+        summary: 'Batch-fetch projects by sourceTimestamp ID (watchlist)',
+        description:
+            'Returns full project records for a given list of sourceTimestamp IDs — the ID form ' +
+            'the watchlist stores — in the same shape as the list endpoint. Used so Portfolio can fetch ' +
+            'exactly its watchlisted projects instead of the entire catalog. Requires authentication.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: [ProjectResponseDto] })
+    @ApiResponse({ status: 401, description: 'Not authenticated' })
+    async findByIds(
+        @Param('network') network: string,
+        @Body() dto: BatchProjectsDto,
+    ): Promise<ProjectResponseDto[]> {
+        return this.projectsService.findByIds(network, dto.sourceTimestamps);
     }
 
     @Get(':id/activity')

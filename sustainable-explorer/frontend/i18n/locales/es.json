@@ -674,7 +674,7 @@
             "advanced": {
                 "title": "Avanzado",
                 "tokenPolicy": "ID de política del token",
-                "mintTokenId": "Token acuñado",
+                "mintTokenId": "ID de token",
                 "tokenCreatedDate": "Fecha de creación del token",
                 "issueDid": "DID de emisión"
             },
@@ -1233,7 +1233,7 @@
         },
         "watchedProjects": {
             "title": "Proyectos en seguimiento",
-            "subtitle": "Proyectos de tu lista de seguimiento · haz clic en una tarjeta para ver los detalles",
+            "subtitle": "Proyectos de tu lista de seguimiento",
             "issued": "Emitidos",
             "retired": "Retirados",
             "transferred": "Transferidos",
@@ -1252,11 +1252,11 @@
         "lastFive": "Últimos 5",
         "chartLimitReached": "Límite de gráficos alcanzado ({max}/{max})",
         "syncedLabel": "Sincronizado —",
-        "syncedSub": "Hedera Mainnet · {projects} proyectos indexados",
+        "syncedSub": "{network} · {projects} proyectos indexados",
         "kpi": {
             "totalIssued": {
                 "label": "Total de créditos emitidos",
-                "sub": "Emitidos en cadena (mainnet)",
+                "sub": "Emitidos en cadena ({network})",
                 "footer": "Verificado en cadena"
             },
             "activeSupply": {
@@ -1271,7 +1271,7 @@
             },
             "activeProjects": {
                 "label": "Proyectos activos",
-                "sub": "Verificados en mainnet",
+                "sub": "Verificados en {network}",
                 "footer": "{n} en lista de seguimiento"
             }
         },

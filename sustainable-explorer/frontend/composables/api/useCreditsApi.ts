@@ -1,4 +1,5 @@
 import type { NetworkId } from '~/composables/useNetwork';
+import { encodeMultiValue } from '~/lib/utils';
 
 export type CreditSortKey =
     | 'name'
@@ -82,6 +83,12 @@ export const useCreditsApi = (opts: UseCreditsApiOptions) => {
                 if (trimmed) q[key] = trimmed;
             } else if (typeof raw === 'number') {
                 q[key] = raw;
+            } else if (Array.isArray(raw)) {
+                // Server's 'eq' operator splits a `|`-delimited value into = ANY(...).
+                // Each value is percent-encoded before joining so a literal `|` inside
+                // a value (e.g. a methodology name) can't be mistaken for the delimiter.
+                const joined = encodeMultiValue(raw.filter(Boolean));
+                if (joined) q[key] = joined;
             }
         }
         return q;
