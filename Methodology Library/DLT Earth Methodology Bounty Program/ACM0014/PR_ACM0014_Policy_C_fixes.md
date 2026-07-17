@@ -58,11 +58,5 @@ I also looked into Project 9045 (Sapthip, Thailand), the specific reference proj
 - I haven't located a standalone Verra VCS-native ACM0014 project for full numerical cross-validation.
 - Verra's VCS v5.0 transition gives v4-era methodologies (which describes ACM0014's structure) a grace period through December 2026 before they need updating to v5.0's standardized-methods format.
 
-## Files changed
 
-- `policy.json` -- formula ordering, guard logic, dead-block quarantine, `bindBlock` fix
-- `schemas/*.json` (Monitoring Report) -- plain-language field titles/descriptions
 
-## Recommended follow-up (non-blocking)
-
-I'd like to register this policy as a Guardian 3.6 Policy Integrity Test baseline using my included test fixture, so the fix is verifiable via Guardian's own regression harness rather than manual review alone.
