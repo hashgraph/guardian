@@ -61,6 +61,12 @@
               <i class="pi pi-globe"></i><span>View</span>
             </div>
           }
+          @if (policyTemplate.isRun) {
+            <div [routerLink]="['/policy-viewer', policyId]" class="top-toolbar-btn all-status">
+              <i class="pi pi-angle-double-right"></i>
+              <span>Go</span>
+            </div>
+          }
         }
         @if (rootType === 'Module') {
           <div (click)="backToModules()" class="top-toolbar-btn icon-only all-status" title="Back">
@@ -184,12 +190,6 @@
                 >
                 <i class="pi pi-sort-down-fill"></i>
               </div>
-            </div>
-          }
-          @if (policyTemplate.isRun) {
-            <div [routerLink]="['/policy-viewer', policyId]" class="top-toolbar-btn all-status">
-              <i class="pi pi-angle-double-right"></i>
-              <span>Go</span>
             </div>
           }
           <div (click)="savePolicy()" class="top-toolbar-btn readonly-status" title="Save Policy">

@@ -337,8 +337,8 @@
 
 .right-toolbar {
     height: 100%;
-    width: 340px;
-    flex: 0 0 340px;
+    width: 408px;
+    flex: 0 0 408px;
     min-width: 280px;
     max-width: 500px;
     position: relative;
@@ -1474,6 +1474,32 @@
     pointer-events: none;
     filter: grayscale(1);
     opacity: 0.6;
+}
+
+.policy-configuration[readonly="true"]::ng-deep .right-bottom-toolbar common-properties[type="Common"].readonly-status {
+    filter: none;
+    opacity: 1;
+
+    > .grid-setting > .loading,
+    > .grid-setting > .table > .table-body > *:not(.properties),
+    > .grid-setting > .table > .table-body > .properties > tbody > tr:not(.about-row) {
+        filter: grayscale(1);
+        opacity: 0.6;
+    }
+
+    .about-deprecated,
+    .about-deprecated strong,
+    .about-events-label,
+    .about-event-chip {
+        color: var(--guardian-disabled-color, #848FA9);
+    }
+
+    .about-type-chip,
+    .about-capability-chip,
+    .about-info-chip {
+        color: var(--guardian-disabled-color, #848FA9);
+        background: var(--guardian-disabled-background, #EFF3F7);
+    }
 }
 
 .policy-configuration[readonly="true"]::ng-deep .inspector-subsection {

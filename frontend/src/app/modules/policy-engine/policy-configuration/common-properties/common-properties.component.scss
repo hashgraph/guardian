@@ -49,6 +49,10 @@
     gap: 8px;
 }
 
+.about-capabilities {
+    flex-wrap: nowrap;
+}
+
 .about-type-chip,
 .about-info-chip,
 .about-capability-chip,
@@ -127,16 +131,7 @@
 }
 
 @container (min-width: 420px) {
-    .about-overview {
-        flex-direction: row;
-        align-items: center;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        column-gap: 8px;
-    }
-
     .about-capabilities {
-        flex-wrap: nowrap;
         gap: 12px;
     }
 

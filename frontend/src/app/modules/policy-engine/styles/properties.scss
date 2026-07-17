@@ -999,6 +999,10 @@
     }
 }
 
+.right-bottom-toolbar common-properties[type="Common"] .grid-setting[readonly="true"] {
+    filter: none;
+}
+
 .policy-configuration::ng-deep {
     .right-bottom-toolbar .properties.events-properties {
         --col-name-width: 174px;

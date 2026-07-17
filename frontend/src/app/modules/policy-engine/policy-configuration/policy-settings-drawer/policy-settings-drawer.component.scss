@@ -136,7 +136,7 @@
     }
 
     .properties {
-        --col-name-width: 264px;
+        --col-name-width: 192px;
         --pc-row-height: 32px;
         --pc-control-height: 28px;
         --pc-row-font-size: 13px;
@@ -801,7 +801,7 @@
     }
 
     .properties:has(.topic-add-row) {
-        --col-name-width: 210px;
+        --col-name-width: 192px;
     }
 
     .properties .topic-row {
@@ -906,7 +906,7 @@
     }
 
     .properties:has(.token-add-row) {
-        --col-name-width: 210px;
+        --col-name-width: 192px;
     }
 
     .properties .token-row {
