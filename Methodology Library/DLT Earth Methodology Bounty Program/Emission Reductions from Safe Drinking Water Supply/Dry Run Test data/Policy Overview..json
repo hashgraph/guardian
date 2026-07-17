@@ -1,0 +1,71 @@
+{
+  "tenantId": "6a58e6adfd350caf22397730",
+  "createDate": "2026-07-17T22:41:07.789Z",
+  "updateDate": "2026-07-17T22:41:07.897Z",
+  "dryRunId": "6a5aa1dec7892208461e01c9",
+  "savepointId": null,
+  "dryRunClass": "VcDocumentCollection",
+  "systemMode": true,
+  "owner": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+  "hash": "DWhC6WTb2guU8GG8cZ7ePWpWmDRNMCJvKbcbcatkXaZj",
+  "document": {
+    "id": "urn:uuid:7725345d-0023-4e0c-bb13-48d1a81d9bfc",
+    "type": [
+      "VerifiableCredential"
+    ],
+    "issuer": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+    "issuanceDate": "2026-07-17T22:41:07.752Z",
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+    ],
+    "credentialSubject": [
+      {
+        "name": "VMR0015 v1.0 Safe Drinking Water dMRV",
+        "description": "Verra VMR0015 methodology for low greenhouse-gas-emitting safe drinking water production systems. dMRV implementation on Hedera Guardian for the DLT Earth bounty.",
+        "topicDescription": "VMR0015 v1.0",
+        "version": "Dry Run",
+        "policyTag": "Tag_1784324561450.0866deac",
+        "owner": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+        "cid": "08234fae-df61-4cf1-bcc5-5e9a1c455f76",
+        "url": "ipfs://08234fae-df61-4cf1-bcc5-5e9a1c455f76",
+        "uuid": "0f2090b8-d10a-4618-b113-91af5bbe6430",
+        "operation": "PUBLISH",
+        "@context": [
+          "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+        ],
+        "id": "urn:uuid:17843280672.605901056",
+        "type": "Policy&1.0.0"
+      }
+    ],
+    "proof": {
+      "type": "Ed25519Signature2018",
+      "created": "2026-07-17T22:41:07Z",
+      "verificationMethod": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267#did-root-key",
+      "proofPurpose": "assertionMethod",
+      "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..iS5vEA9LjxDbXXIGpaDl9HmVFW5wulqkxOSm1HZQFfXIahc3dk-KyVg12O_nWI9wfYNpF0oCCAFfm1PE0PtUCw"
+    }
+  },
+  "documentFileId": "6a5aaf83c7892208461e0a7c",
+  "status": "NEW",
+  "signature": 0,
+  "type": "POLICY",
+  "policyId": "6a5aa1dec7892208461e01c9",
+  "option": {
+    "status": "NEW"
+  },
+  "hederaStatus": "NEW",
+  "uuid": "565c6924-2464-48a3-8635-44ef0e5713a8",
+  "entity": "NONE",
+  "iri": "565c6924-2464-48a3-8635-44ef0e5713a8",
+  "readonly": false,
+  "system": false,
+  "active": false,
+  "codeVersion": "1.0.0",
+  "isMintNeeded": true,
+  "isTransferNeeded": false,
+  "wasTransferNeeded": false,
+  "tableFileIds": [],
+  "_id": "6a5aaf83c7892208461e0a6f",
+  "id": "6a5aaf83c7892208461e0a6f"
+}
