@@ -27,3 +27,11 @@ Two independent, complete lifecycle runs — submit → VVB verify → mint — 
 |---|---|---|---|---|
 | 1 | 32,856.46 | 452.11 | 32,384.347205130754 | 32384.34 ✅ |
 | 2 | 33,228.40 | 408.74 | 32,799.65905950902 | 32799.65 ✅ |
+
+
+Known, disclosed limitations
+TOOL07 and TOOL09 remain simplified to manual inputs rather than full sub-calculations.
+Flaring, land-application, and solid-material-leakage branches are validated against hand-calculation and my test fixture, not yet against a real project that uses them.
+I have not located a standalone Verra VCS-native ACM0014 project for full numerical cross-validation. ACM0014 itself is confirmed current and Verra-endorsed (cited directly in Verra's own 2025 VM0052 methodology under VCS v5.0).
+VCS v5.0 transition rules give v4-era methodologies (which describes ACM0014's structure) a grace period through December 2026.
+My Policy Integrity Test baseline is specified in this package but not yet registered inside a live Guardian instanc
