@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, forkJoin } from 'rxjs';
@@ -62,6 +62,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private _dragFieldType: FieldType | null = null;
     private _dragSchema: Schema | null = null;
 
+    // ── Field card reorder state (mouse-based) ──
+    public reorderField: SchemaField | null = null;
+    public reorderOverIndex: number = -1;
+    public reorderAtEnd: boolean = false;
+    public isDragActive: boolean = false;
+    public dragFloatX: number = 0;
+    public dragFloatY: number = 0;
+    public dragFloatWidth: number = 0;
+
+    // ── Sidebar DnD insert-position state ──
+    public sidebarDropIndex: number = -1;
+    public sidebarDropPos: 'top' | 'bot' = 'bot';
+
+    private _dragFields: SchemaField[] | null = null;
+    private _dragOffsetX: number = 0;
+    private _dragOffsetY: number = 0;
+    private _dragStartX: number = 0;
+    private _dragStartY: number = 0;
+    private _mouseMoveListener: ((e: MouseEvent) => void) | null = null;
+    private _mouseUpListener: ((e: MouseEvent) => void) | null = null;
+
     public get hasUnsavedChanges(): boolean {
         return this.dirtySchemaIds.size > 0;
     }
@@ -71,6 +92,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public newSchemaSaving: boolean = false;
     public systemFieldsCollapsed: boolean = true;
     public schemaPropsCollapsed: boolean = false;
+    public drillPropsCollapsed: boolean = false;
 
     public get drilledSchema(): Schema | null {
         const iri = this.currentDrilledSchemaIri;
@@ -139,6 +161,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private schemaService: SchemaService,
+        private _elRef: ElementRef,
+        private _zone: NgZone,
+        private _cdr: ChangeDetectorRef,
     ) {}
 
     public ngOnInit(): void {
@@ -434,7 +459,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public addField(ft: FieldType): void {
         if (!this.selectedSchema) { return; }
         const newField = this.buildNewField(ft);
-        this.selectedSchema.fields.push(newField);
+        if (this.sidebarDropIndex !== -1) {
+            const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
+            this.selectedSchema.fields.splice(at, 0, newField);
+        } else {
+            this.selectedSchema.fields.push(newField);
+        }
         this.selectedField = newField;
         this.markDirty();
     }
@@ -597,8 +627,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addDrillField(ft: FieldType): void {
-        const newField = this.buildNewField(ft);
-        this.drillCurrentFields.push(newField);
+        const newField = this.buildNewField(ft, this.drillCurrentFields);
+        if (this.sidebarDropIndex !== -1) {
+            const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
+            this.drillCurrentFields.splice(at, 0, newField);
+        } else {
+            this.drillCurrentFields.push(newField);
+        }
         this.selectedField = newField;
         this.markDirty();
     }
@@ -678,7 +713,134 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public onDragEnd(): void {
         this._dragFieldType = null;
         this._dragSchema = null;
+        this._dragEnterCount = 0;
+        this.sidebarDropIndex = -1;
     }
+
+    // ── Field card reorder (mouse-based — no HTML5 DnD ghost) ─────────────────
+
+    public onCardMouseDown(event: MouseEvent, field: SchemaField, fields: SchemaField[]): void {
+        if ((event.target as HTMLElement).closest('button')) { return; }
+        event.preventDefault();
+        if (this._mouseMoveListener) { this.clearReorder(); }
+        const card = event.currentTarget as HTMLElement;
+        const rect = card.getBoundingClientRect();
+        this.reorderField = field;
+        this._dragFields = fields;
+        this._dragStartX = event.clientX;
+        this._dragStartY = event.clientY;
+        this._dragOffsetX = event.clientX - rect.left;
+        this._dragOffsetY = event.clientY - rect.top;
+        this.dragFloatWidth = rect.width;
+        this.isDragActive = false;
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'grabbing';
+        this._mouseMoveListener = (e: MouseEvent) => this.onDocMouseMove(e);
+        this._mouseUpListener = (e: MouseEvent) => this._zone.run(() => this.onDocMouseUp(e));
+        document.addEventListener('mousemove', this._mouseMoveListener);
+        document.addEventListener('mouseup', this._mouseUpListener);
+    }
+
+    private onDocMouseMove(event: MouseEvent): void {
+        if (!this.reorderField || !this._dragFields) { return; }
+        const dx = event.clientX - this._dragStartX;
+        const dy = event.clientY - this._dragStartY;
+        if (!this.isDragActive && Math.hypot(dx, dy) > 4) {
+            this.isDragActive = true;
+        }
+        if (!this.isDragActive) { return; }
+        this.dragFloatX = event.clientX - this._dragOffsetX;
+        this.dragFloatY = event.clientY - this._dragOffsetY;
+        this.updateDropIndicator(event.clientX, event.clientY);
+        this._cdr.detectChanges();
+    }
+
+    private onDocMouseUp(event: MouseEvent): void {
+        if (this.isDragActive && this.reorderField && this._dragFields) {
+            const fields = this._dragFields;
+            const srcIdx = fields.indexOf(this.reorderField);
+            if (srcIdx !== -1) {
+                if (this.reorderAtEnd) {
+                    // Drop on empty canvas = move to last position
+                    if (srcIdx !== fields.length - 1) {
+                        const [f] = fields.splice(srcIdx, 1);
+                        fields.push(f);
+                        this.markDirty();
+                    }
+                } else if (this.reorderOverIndex !== -1 && this.reorderOverIndex !== srcIdx) {
+                    // Hover over another card: remove source then insert at that index.
+                    // No adjustment needed — splice target index stays valid in both
+                    // directions (srcIdx<target: target shifts down and we land after it;
+                    // srcIdx>target: target unchanged and we land before it).
+                    const [f] = fields.splice(srcIdx, 1);
+                    fields.splice(this.reorderOverIndex, 0, f);
+                    this.markDirty();
+                }
+            }
+        }
+        this.clearReorder();
+    }
+
+    private updateDropIndicator(clientX: number, clientY: number): void {
+        if (!this._dragFields || !this.reorderField) { return; }
+        const isDrill = this._dragFields === this.drillCurrentFields;
+        const cardSelector = isDrill
+            ? '.sc-drill-card'
+            : '.sc-field-card:not(.sc-field-card--system)';
+        const root = this._elRef.nativeElement as HTMLElement;
+        const cards = Array.from(root.querySelectorAll<HTMLElement>(cardSelector));
+        const srcIdx = this._dragFields.indexOf(this.reorderField);
+
+        this.reorderOverIndex = -1;
+        this.reorderAtEnd = false;
+
+        for (let i = 0; i < cards.length && i < this._dragFields.length; i++) {
+            if (i === srcIdx) { continue; }
+            const rect = cards[i].getBoundingClientRect();
+            if (clientY >= rect.top && clientY <= rect.bottom) {
+                this.reorderOverIndex = i;
+                return;
+            }
+        }
+
+        // No card hit — set reorderAtEnd only if below the last visible card.
+        // Checking the full canvas rect would incorrectly fire over the system-fields section.
+        if (cards.length > 0) {
+            const lastRect = cards[cards.length - 1].getBoundingClientRect();
+            if (clientY > lastRect.bottom) {
+                this.reorderAtEnd = true;
+            }
+        } else {
+            const canvasSelector = isDrill ? '.sc-drill-content' : '.sc-editor-body';
+            const canvas = root.querySelector<HTMLElement>(canvasSelector);
+            if (canvas) {
+                const cr = canvas.getBoundingClientRect();
+                if (clientY >= cr.top && clientY <= cr.bottom && clientX >= cr.left && clientX <= cr.right) {
+                    this.reorderAtEnd = true;
+                }
+            }
+        }
+    }
+
+    private clearReorder(): void {
+        if (this._mouseMoveListener) {
+            document.removeEventListener('mousemove', this._mouseMoveListener);
+            this._mouseMoveListener = null;
+        }
+        if (this._mouseUpListener) {
+            document.removeEventListener('mouseup', this._mouseUpListener);
+            this._mouseUpListener = null;
+        }
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        this.reorderField = null;
+        this._dragFields = null;
+        this.reorderOverIndex = -1;
+        this.reorderAtEnd = false;
+        this.isDragActive = false;
+    }
+
+    // ────────────────────────────────────────────────────────────────────────────
 
     public onCanvasDragEnter(event: DragEvent): void {
         if (!this._dragFieldType && !this._dragSchema) { return; }
@@ -690,6 +852,31 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this._dragFieldType && !this._dragSchema) { return; }
         event.preventDefault();
         event.dataTransfer!.dropEffect = 'copy';
+        this.updateSidebarDropIndicator(event.clientY);
+    }
+
+    private updateSidebarDropIndicator(clientY: number): void {
+        // Use card midpoints as boundaries so any Y — including the gap between
+        // cards — maps unambiguously to an insertion slot, no dead zones.
+        const cardSelector = this.isDrilling
+            ? '.sc-drill-card'
+            : '.sc-field-card:not(.sc-field-card--system)';
+        const cards = Array.from(
+            (this._elRef.nativeElement as HTMLElement).querySelectorAll<HTMLElement>(cardSelector)
+        );
+        if (cards.length === 0) { this.sidebarDropIndex = -1; return; }
+
+        for (let i = 0; i < cards.length; i++) {
+            const rect = cards[i].getBoundingClientRect();
+            if (clientY <= rect.top + rect.height / 2) {
+                this.sidebarDropIndex = i;
+                this.sidebarDropPos = 'top';
+                return;
+            }
+        }
+        // Below all midpoints → append after last card
+        this.sidebarDropIndex = cards.length - 1;
+        this.sidebarDropPos = 'bot';
     }
 
     public onCanvasDragLeave(event: DragEvent): void {
@@ -697,6 +884,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this._dragEnterCount <= 0) {
             this._dragEnterCount = 0;
             this.isDragOverCanvas = false;
+            this.sidebarDropIndex = -1;
         }
     }
 
@@ -714,6 +902,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this._dragFieldType = null;
         this._dragSchema = null;
+        this.sidebarDropIndex = -1;
     }
 
     private addDrillSchemaField(schema: Schema): void {
@@ -736,7 +925,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             isUpdatable: false,
             fields: schema.fields ? [...schema.fields] : [],
         } as unknown as SchemaField;
-        this.drillCurrentFields.push(field);
+        if (this.sidebarDropIndex !== -1) {
+            const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
+            this.drillCurrentFields.splice(at, 0, field);
+        } else {
+            this.drillCurrentFields.push(field);
+        }
         this.selectedField = field;
         this.markDirty();
     }
@@ -762,7 +956,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             isUpdatable: false,
             fields: schema.fields ? [...schema.fields] : [],
         } as unknown as SchemaField;
-        this.selectedSchema.fields.push(field);
+        if (this.sidebarDropIndex !== -1) {
+            const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
+            this.selectedSchema.fields.splice(at, 0, field);
+        } else {
+            this.selectedSchema.fields.push(field);
+        }
         this.selectedField = field;
         this.markDirty();
     }
@@ -878,8 +1077,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
-    private buildNewField(ft: FieldType): SchemaField {
-        const idx = (this.selectedSchema?.fields?.length ?? 0) + 1;
+    private buildNewField(ft: FieldType, contextFields?: SchemaField[]): SchemaField {
+        const existingNames = new Set((contextFields ?? this.selectedSchema?.fields ?? []).map(f => f.name));
+        let idx = 1;
+        while (existingNames.has(`field_${idx}`)) { idx++; }
         const field: any = {
             name: `field_${idx}`,
             title: ft.label,
@@ -915,6 +1116,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
+        this.clearReorder();
         this.destroy$.next();
         this.destroy$.complete();
     }
