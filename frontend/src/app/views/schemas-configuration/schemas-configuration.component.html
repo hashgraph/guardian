@@ -227,6 +227,9 @@
                             <div class="sc-schema-props-header">
                                 <div class="sc-schema-props-title">
                                     <i class="pi pi-file-edit"></i>Schema properties
+                                    @if (selectedSchema.iri) {
+                                        <span class="sc-schema-props-iri">({{ selectedSchema.iri }})</span>
+                                    }
                                 </div>
                                 <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
                                     <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
@@ -323,12 +326,17 @@
                                             <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
                                         </div>
                                     } @else if (selectedSchema.fields && selectedSchema.fields.length) {
-                                        @for (field of selectedSchema.fields; track field.name) {
+                                        @for (field of selectedSchema.fields; track field.name; let i = $index) {
                                             <div
                                                 class="sc-field-card"
                                                 [class.active]="selectedField === field"
                                                 [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
                                                 [class.sc-field-card--invalid]="fieldHasErrors(field)"
+                                                [class.sc-field-card--dragging]="isDragActive && reorderField === field"
+                                                [class.sc-field-card--drag-target]="reorderOverIndex === i"
+                                                [class.sc-field-card--drag-top]="sidebarDropIndex === i && sidebarDropPos === 'top'"
+                                                [class.sc-field-card--drag-bot]="sidebarDropIndex === i && sidebarDropPos === 'bot'"
+                                                (mousedown)="onCardMouseDown($event, field, selectedSchema!.fields)"
                                                 (click)="selectField(field)">
                                                 <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
                                                 <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
@@ -380,7 +388,9 @@
                                 </div>
                             </div>
 
-                            <div class="sc-drop-zone" (click)="addField(defaultFieldType)">
+                            <div class="sc-drop-zone"
+                                 [class.sc-drop-zone--reorder]="reorderAtEnd"
+                                 (click)="addField(defaultFieldType)">
                                 <i class="pi pi-plus"></i>
                                 Click to add a string field, or drag a type from the sidebar
                             </div>
@@ -434,13 +444,16 @@
                                 <div class="sc-schema-props-header">
                                     <div class="sc-schema-props-title">
                                         <i class="pi pi-sitemap"></i>Sub-schema properties
+                                        @if (ds.iri) {
+                                            <span class="sc-schema-props-iri">({{ ds.iri }})</span>
+                                        }
                                     </div>
-                                    <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
-                                        <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
-                                        {{ schemaPropsCollapsed ? 'Show' : 'Hide' }}
+                                    <button class="sc-schema-props-toggle" (click)="drillPropsCollapsed = !drillPropsCollapsed">
+                                        <i class="pi" [class.pi-chevron-down]="!drillPropsCollapsed" [class.pi-chevron-up]="drillPropsCollapsed"></i>
+                                        {{ drillPropsCollapsed ? 'Show' : 'Hide' }}
                                     </button>
                                 </div>
-                                @if (!schemaPropsCollapsed) {
+                                @if (!drillPropsCollapsed) {
                                     <input class="sc-schema-props-name"
                                            [(ngModel)]="ds.name"
                                            (ngModelChange)="markDirty()"
@@ -481,12 +494,17 @@
                              (dragover)="onCanvasDragOver($event)"
                              (drop)="onCanvasDrop($event)">
                             @if (drillCurrentFields.length) {
-                                @for (field of drillCurrentFields; track field.name) {
+                                @for (field of drillCurrentFields; track field.name; let i = $index) {
                                     <div
                                         class="sc-drill-card"
                                         [class.active]="selectedField === field"
                                         [class.sc-drill-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
                                         [class.sc-drill-card--invalid]="fieldHasErrors(field)"
+                                        [class.sc-drill-card--dragging]="isDragActive && reorderField === field"
+                                        [class.sc-drill-card--drag-target]="reorderOverIndex === i"
+                                        [class.sc-drill-card--drag-top]="sidebarDropIndex === i && sidebarDropPos === 'top'"
+                                        [class.sc-drill-card--drag-bot]="sidebarDropIndex === i && sidebarDropPos === 'bot'"
+                                        (mousedown)="onCardMouseDown($event, field, drillCurrentFields)"
                                         (click)="selectField(field)">
                                         <span class="sc-drag-handle sc-drag-handle--sm"><i class="pi pi-bars"></i></span>
                                         <div class="sc-drill-card-icon" [class.sc-drill-card-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
@@ -536,7 +554,9 @@
                                     <span>No fields in this sub-schema</span>
                                 </div>
                             }
-                            <div class="sc-drop-zone" (click)="addDrillField(defaultFieldType)">
+                            <div class="sc-drop-zone"
+                                 [class.sc-drop-zone--reorder]="reorderAtEnd"
+                                 (click)="addDrillField(defaultFieldType)">
                                 <i class="pi pi-plus"></i>
                                 Click to add a string field
                             </div>
@@ -766,6 +786,20 @@
         </div>
 
     </div>
+
+    <!-- ── Floating drag card (follows cursor during field reorder) ── -->
+    @if (isDragActive && reorderField) {
+        <div class="sc-float-card"
+             [style.left.px]="dragFloatX"
+             [style.top.px]="dragFloatY"
+             [style.width.px]="dragFloatWidth">
+            <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+            <div class="sc-field-info">
+                <span class="sc-field-key">{{ reorderField.description || reorderField.title || reorderField.name }}</span>
+                <span class="sc-field-desc">{{ reorderField.name }}</span>
+            </div>
+        </div>
+    }
 
 </div>
 

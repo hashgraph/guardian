@@ -681,6 +681,20 @@
     i { font-size: 12px; }
 }
 
+.sc-schema-props-iri {
+    font-size: 10px;
+    font-weight: 400;
+    color: inherit;
+    opacity: 0.65;
+    text-transform: none;
+    letter-spacing: 0;
+    font-family: var(--font-mono, monospace);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
 .sc-schema-props-toggle {
     font-size: 10px;
     background: none;
@@ -882,6 +896,26 @@
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
         }
     }
+
+    &.sc-field-card--dragging {
+        opacity: 0.4;
+    }
+
+    // Reorder: whole-card highlight (hover = this is where source lands)
+    &.sc-field-card--drag-target {
+        outline: 2px dashed var(--primary-color, #1d9e75);
+        outline-offset: -1px;
+        background: #f0faf6;
+    }
+
+    // Sidebar insert: line between cards
+    &.sc-field-card--drag-top {
+        border-top: 2px solid var(--primary-color, #1d9e75);
+    }
+
+    &.sc-field-card--drag-bot {
+        border-bottom: 2px solid var(--primary-color, #1d9e75);
+    }
 }
 
 .sc-subschema-enter-btn {
@@ -1031,6 +1065,24 @@
             border-color: #ef4444;
             box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
+    }
+
+    &--dragging {
+        opacity: 0.4;
+    }
+
+    &--drag-target {
+        outline: 2px dashed #534ab7;
+        outline-offset: -1px;
+        background: #f5f4fd;
+    }
+
+    &--drag-top {
+        border-top: 2px solid #534ab7;
+    }
+
+    &--drag-bot {
+        border-bottom: 2px solid #534ab7;
     }
 }
 
@@ -1344,6 +1396,12 @@
     i { font-size: 14px; }
 
     &:hover {
+        border-color: var(--primary-color, #1d9e75);
+        color: var(--primary-color, #1d9e75);
+        background: #e1f5ee;
+    }
+
+    &--reorder {
         border-color: var(--primary-color, #1d9e75);
         color: var(--primary-color, #1d9e75);
         background: #e1f5ee;
@@ -1800,5 +1858,37 @@
     background: #e2e8f0;
     color: #64748b;
     border: 1px solid #cbd5e1;
+}
+
+// ── Floating card shown while reordering a field card via drag ──────────────
+.sc-float-card {
+    position: fixed;
+    z-index: 9999;
+    background: #fff;
+    border: 1.5px solid var(--primary-color, #1d9e75);
+    border-radius: 12px;
+    padding: 10px 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), 0 2px 6px rgba(0, 0, 0, 0.08);
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--text-color, #2c2c2a);
+    user-select: none;
+
+    .sc-field-key {
+        font-weight: 500;
+        display: block;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sc-field-desc {
+        font-size: 11px;
+        color: #888;
+        display: block;
+    }
 }
 
