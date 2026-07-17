@@ -6,11 +6,12 @@
         @if (type == 'Main') {
           <tr class="propHeader" (click)="onHide(propHidden, 'metaData')">
             <td class="propRowCol"></td>
-            <td class="propHeaderCell cellName main-section-cell" [attr.collapse]="propHidden.metaData">
-              <i class="pi pi-chevron-down chevron-icon"></i>
-              <span>Policy</span>
+            <td class="propHeaderCell cellName main-section-cell" colspan="2" [attr.collapse]="propHidden.metaData">
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Policy</span>
+              </div>
             </td>
-            <td class="propHeaderCell"></td>
           </tr>
           <tr class="propRow" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol"></td>
@@ -106,11 +107,12 @@
           </tr>
           <tr class="propHeader" (click)="onHide(propHidden, 'categorization')">
             <td class="propRowCol"></td>
-            <td class="propHeaderCell cellName main-section-cell" [attr.collapse]="propHidden.categorization">
-              <i class="pi pi-chevron-down chevron-icon"></i>
-              <span>Categorization</span>
+            <td class="propHeaderCell cellName main-section-cell" colspan="2" [attr.collapse]="propHidden.categorization">
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Categorization</span>
+              </div>
             </td>
-            <td class="propHeaderCell"></td>
           </tr>
           <tr [attr.collapse]="propHidden.categorization" class="propRow">
             <td class="propRowCol"></td>
@@ -247,18 +249,20 @@
           <!-- Roles  -->
           <tr class="propHeader roles-header">
             <td class="propRowCol"></td>
-            <td class="propHeaderCell cellName" (click)="onHide(propHidden, 'rolesGroup')"
+            <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden, 'rolesGroup')"
               [attr.collapse]="propHidden.rolesGroup">
-              <i class="pi pi-chevron-down chevron-icon"></i>
-              <span>Roles</span>
-            </td>
-            <td class="propHeaderCell">
-              @if (!roles || !roles.length) {
-                <div class="propAdd" (click)="addRoles()">
-                  <i class="pi pi-plus toolbar-icons"></i>
-                  <span>Add Role</span>
-                </div>
-              }
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Roles</span>
+                @if (!roles || !roles.length) {
+                  <div class="propHeaderActions">
+                    <div class="propAdd" (click)="addRoles(); $event.stopPropagation()">
+                      <i class="pi pi-plus toolbar-icons"></i>
+                      <span>Add Role</span>
+                    </div>
+                  </div>
+                }
+              </div>
             </td>
           </tr>
           @for (item of roles; track item; let i = $index) {
@@ -297,17 +301,19 @@
                       <td class="propRowCol"></td>
                       <td (click)="onHide(propHidden.navigationRoles, role)"
                         [attr.collapse]="propHidden.navigationRoles[role]"
-                        class="propHeaderCell cellName">
-                        <i class="pi pi-chevron-down chevron-icon"></i>
-                        <span>{{ role }}</span>
-                      </td>
-                      <td class="propHeaderCell">
-                        @if (!nav.steps || !nav.steps.length) {
-                          <div (click)="addStep(role)" class="propAdd">
-                            <i class="pi pi-plus toolbar-icons"></i>
-                            <span>Add Step</span>
-                          </div>
-                        }
+                        class="propHeaderCell cellName" colspan="2">
+                        <div class="propHeaderContent">
+                          <i class="pi pi-chevron-down chevron-icon"></i>
+                          <span class="propHeaderTitle">{{ role }}</span>
+                          @if (!nav.steps || !nav.steps.length) {
+                            <div class="propHeaderActions">
+                              <div (click)="addStep(role); $event.stopPropagation()" class="propAdd">
+                                <i class="pi pi-plus toolbar-icons"></i>
+                                <span>Add Step</span>
+                              </div>
+                            </div>
+                          }
+                        </div>
                       </td>
                     </tr>
                     @if (nav.steps && nav.steps.length) {
@@ -317,15 +323,17 @@
                             (click)="onHide(propHidden.navigationSteps, role + s)">
                             <td class="propRowCol"></td>
                             <td [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                              class="propHeaderCell cellName">
-                              <i class="pi pi-chevron-down chevron-icon"></i>
-                              <span [appOverflowTitle]="step.name || ('Step #' + (s + 1))">{{ step.name || ('Step #' + (s + 1)) }}</span>
-                            </td>
-                            <td class="propHeaderCell step-actions">
-                              <span (click)="$event.stopPropagation(); onRemoveStep(role, step)" [attr.readonly]="readonly"
-                                class="remove-step">
-                                <i class="pi pi-trash"></i>
-                              </span>
+                              class="propHeaderCell cellName" colspan="2">
+                              <div class="propHeaderContent">
+                                <i class="pi pi-chevron-down chevron-icon"></i>
+                                <span class="propHeaderTitle" [appOverflowTitle]="step.name || ('Step #' + (s + 1))">{{ step.name || ('Step #' + (s + 1)) }}</span>
+                                <div class="propHeaderActions">
+                                  <span (click)="$event.stopPropagation(); onRemoveStep(role, step)" [attr.readonly]="readonly"
+                                    class="remove-step">
+                                    <i class="pi pi-trash"></i>
+                                  </span>
+                                </div>
+                              </div>
                             </td>
                           </tr>
                         }
@@ -387,16 +395,19 @@
           @for (item of policyGroups; track item; let i = $index) {
             <tr class="propHeader groups-header">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName" (click)="onHide(propHidden.groupsGroup, i)"
+              <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden.groupsGroup, i)"
                 [attr.collapse]="propHidden.groupsGroup[i]">
-                <i class="pi pi-chevron-down chevron-icon"></i>
-                <span>Group</span>
-              </td>
-              <td class="propHeaderCell group-actions">
-                <span class="group-name">{{ item.name }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveGroup(item)">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Group</span>
+                  <div class="propHeaderActions">
+                    <span class="group-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveGroup(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
             <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
@@ -497,16 +508,19 @@
           @for (item of topics; track item; let i = $index) {
             <tr class="propHeader topics-header">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName" (click)="onHide(propHidden.topicsGroup, i)"
+              <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden.topicsGroup, i)"
                 [attr.collapse]="propHidden.topicsGroup[i]">
-                <i class="pi pi-chevron-down chevron-icon"></i>
-                <span>Topic</span>
-              </td>
-              <td class="propHeaderCell topic-actions">
-                <span class="topic-name">{{ item.name }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveTopic(item)">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Topic</span>
+                  <div class="propHeaderActions">
+                    <span class="topic-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveTopic(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
             <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
@@ -590,16 +604,19 @@
           @for (item of tokens; track item; let i = $index) {
             <tr class="propHeader tokens-header">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName" (click)="onHide(propHidden.tokensGroup, i)"
+              <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden.tokensGroup, i)"
                 [attr.collapse]="propHidden.tokensGroup[i]">
-                <i class="pi pi-chevron-down chevron-icon"></i>
-                <span>Token</span>
-              </td>
-              <td class="propHeaderCell token-actions">
-                <span class="token-name">{{ item.templateTokenTag }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveToken(item)">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Token</span>
+                  <div class="propHeaderActions">
+                    <span class="token-name">{{ item.templateTokenTag }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveToken(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
             <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">

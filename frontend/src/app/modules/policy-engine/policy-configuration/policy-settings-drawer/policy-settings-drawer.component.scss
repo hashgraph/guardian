@@ -185,14 +185,66 @@
         filter: none;
     }
 
-    .properties .propHeader > .propHeaderCell.cellName span {
-        display: inline-block;
-        vertical-align: middle;
-        max-width: 100%;
+    // One header model for every drawer collapse row: the name cell spans the
+    // label and value columns (colspan="2"), so the title is no longer capped
+    // at the label-column width. Inside, a flex row lays out chevron, title,
+    // and trailing content (secondary name, delete, or an Add action).
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderContent {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderTitle {
+        flex: 1 1 auto;
+        min-width: 0;
         line-height: 24px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+    }
+
+    // text-transform/letter-spacing would otherwise be inherited from the
+    // shared uppercase header-cell rule now that the trailing content sits
+    // inside the name cell.
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions {
+        display: flex;
+        align-items: center;
+        flex: 0 1 auto;
+        min-width: 0;
+        gap: 6px;
+        margin-left: 8px;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    // The shared ".propHeader .cellName span" rule would re-enable wrapping on
+    // the secondary name spans now that they live inside the name cell; keep
+    // them single-line with an ellipsis and let flex shrink them first.
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions > span {
+        min-width: 0;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions .remove-prop,
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions .remove-step {
+        position: static;
+        transform: none;
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions .propAdd {
+        flex: none;
     }
 
     .properties .propHeader > .propHeaderCell.cellName .chevron-icon {
@@ -426,10 +478,6 @@
         display: none !important;
     }
 
-    .properties .navigation > .propHeader:not(.stepRow) > .propHeaderCell:last-child {
-        text-align: right;
-    }
-
     .properties .navigation > .propHeader:not(.stepRow) > .propRowCol,
     .properties .navigation > .propHeader:not(.stepRow) > .propHeaderCell {
         border-top: 1px solid var(--pc-border-color);
@@ -488,25 +536,6 @@
         min-width: 0;
         padding-left: 16px !important;
         overflow: hidden;
-    }
-
-    .properties .navigation .stepRow > .propHeaderCell.cellName span {
-        display: inline-block;
-        vertical-align: middle;
-        max-width: calc(100% - 24px);
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
-    .properties .navigation .stepRow > .step-actions {
-        display: table-cell !important;
-        vertical-align: middle;
-        text-align: right;
-        height: 30px;
-        line-height: 30px;
-        padding: 0 4px !important;
     }
 
     .properties .navigation .remove-step {
@@ -573,10 +602,6 @@
         font-weight: 500;
         line-height: 16px;
         white-space: nowrap;
-    }
-
-    .properties .roles-header > .propHeaderCell:last-child {
-        text-align: right;
     }
 
     .properties .roles-header .propAdd {
@@ -678,14 +703,6 @@
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
     }
 
-    .properties .groups-header > .group-actions {
-        height: 30px;
-        padding: 0 34px 0 4px !important;
-        line-height: 30px;
-        text-align: right;
-        vertical-align: middle;
-    }
-
     .properties .groups-header .group-name {
         display: block;
         overflow: hidden;
@@ -695,13 +712,6 @@
         font-size: 12px;
         font-weight: 500;
         line-height: 30px;
-    }
-
-    .properties .groups-header .remove-prop {
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        padding: 0;
     }
 
     .properties .group-row {
@@ -774,14 +784,6 @@
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
     }
 
-    .properties .topics-header > .topic-actions {
-        height: 30px;
-        padding: 0 34px 0 4px !important;
-        line-height: 30px;
-        text-align: right;
-        vertical-align: middle;
-    }
-
     .properties .topics-header .topic-name {
         display: block;
         overflow: hidden;
@@ -791,13 +793,6 @@
         font-size: 12px;
         font-weight: 500;
         line-height: 30px;
-    }
-
-    .properties .topics-header .remove-prop {
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        padding: 0;
     }
 
     .properties:has(.topic-add-row) {
@@ -879,14 +874,6 @@
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
     }
 
-    .properties .tokens-header > .token-actions {
-        height: 30px;
-        padding: 0 34px 0 4px !important;
-        line-height: 30px;
-        text-align: right;
-        vertical-align: middle;
-    }
-
     .properties .tokens-header .token-name {
         display: block;
         overflow: hidden;
@@ -896,13 +883,6 @@
         font-size: 12px;
         font-weight: 500;
         line-height: 30px;
-    }
-
-    .properties .tokens-header .remove-prop {
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        padding: 0;
     }
 
     .properties:has(.token-add-row) {
@@ -980,14 +960,6 @@
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
     }
 
-    .properties .modules-header > .module-actions {
-        height: 30px;
-        padding: 0 34px 0 4px !important;
-        line-height: 30px;
-        text-align: right;
-        vertical-align: middle;
-    }
-
     .properties .modules-header .module-name {
         display: block;
         overflow: hidden;
@@ -997,13 +969,6 @@
         font-size: 12px;
         font-weight: 500;
         line-height: 30px;
-    }
-
-    .properties .modules-header .remove-prop {
-        right: 4px;
-        width: 24px;
-        height: 24px;
-        padding: 0;
     }
 
     .properties .module-row {

@@ -16,12 +16,13 @@
         @if (type == 'Main') {
           <tr class="propHeader modules-header" (click)="onHide(propHidden, 'main')">
             <td class="propRowCol"></td>
-            <td class="propHeaderCell cellName module-section-header"
+            <td class="propHeaderCell cellName module-section-header" colspan="2"
               [attr.collapse]="propHidden.main">
-              <i class="pi pi-chevron-down chevron-icon"></i>
-              <span>Module</span>
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Module</span>
+              </div>
             </td>
-            <td class="propHeaderCell"></td>
           </tr>
           <!-- Meta Data  -->
           <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -70,17 +71,19 @@
           @for (item of variables; track item; let i = $index) {
             <tr class="propHeader modules-header" (click)="onHide(propHidden.variables, i)">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName module-section-header"
+              <td class="propHeaderCell cellName module-section-header" colspan="2"
                 [attr.collapse]="propHidden.variables[i]">
-                <i class="pi pi-chevron-down chevron-icon"></i>
-                <span>Variable</span>
-              </td>
-              <td class="propHeaderCell module-actions">
-                <span class="module-name">{{ item.name }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly"
-                  (click)="onRemoveVariable(item); $event.stopPropagation()">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Variable</span>
+                  <div class="propHeaderActions">
+                    <span class="module-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveVariable(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
             <tr class="propRow subRow module-row" [attr.collapse]="propHidden.variables[i]">
@@ -165,19 +168,19 @@
           @for (item of inputs; track item; let i = $index) {
             <tr class="propHeader modules-header" (click)="onHide(propHidden.inputs, i)">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName module-section-header"
+              <td class="propHeaderCell cellName module-section-header" colspan="2"
                 [attr.collapse]="propHidden.inputs[i]">
-                <i class="pi pi-chevron-down chevron-icon"></i>
-                <span>
-                  Input Events
-                </span>
-              </td>
-              <td class="propHeaderCell module-actions">
-                <span class="module-name">{{ item.name }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly"
-                  (click)="onRemoveInput(item); $event.stopPropagation()">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Input Events</span>
+                  <div class="propHeaderActions">
+                    <span class="module-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveInput(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
             <tr class="propRow subRow module-row" [attr.collapse]="propHidden.inputs[i]">
@@ -216,19 +219,19 @@
           @for (item of outputs; track item; let i = $index) {
             <tr class="propHeader modules-header" (click)="onHide(propHidden.outputs, i)">
               <td class="propRowCol"></td>
-              <td class="propHeaderCell cellName module-section-header"
+              <td class="propHeaderCell cellName module-section-header" colspan="2"
                 [attr.collapse]="propHidden.outputs[i]">
-                <i class="pi pi-chevron-down chevron-icon"></i>
-                <span>
-                  Output Events
-                </span>
-              </td>
-              <td class="propHeaderCell module-actions">
-                <span class="module-name">{{ item.name }}</span>
-                <span class="remove-prop" [attr.readonly]="readonly"
-                  (click)="onRemoveOutput(item); $event.stopPropagation()">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Output Events</span>
+                  <div class="propHeaderActions">
+                    <span class="module-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveOutput(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
             <tr class="propRow subRow module-row" [attr.collapse]="propHidden.outputs[i]">
