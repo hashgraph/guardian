@@ -1,15 +1,4 @@
-# ACM0014 v8.0 Treatment of Wastewater dMRV (Policy ) — Bounty Submission Package
-
-## What's in this package
-
-| File | Purpose |
-|---|---|
-| `ACM0014_v8_0_Policy_C_BOUNTY_SUBMISSION.policy` | The final policy file. Import this into Guardian. |
-| `ACM0014_test_fixture.json` | A real, working test dataset (field-by-field) to populate the Add Report form, with expected outputs and a specific negative-case test noted. |
-| `PR_ACM0014_Policy_C_fixes.md` | Full PR description — every bug found, root cause, and fix, ready to paste when opening a PR. |
-| `ACM0014_Bounty_Readiness_Summary.md` | Reviewer-facing summary: real-project data provenance, methodology-currency check against Verra's own current standards, and named/disclosed open items. |
-| `ACM0014_Monitoring_Report_Realistic_Test_Data.md` | The full derivation of the test fixture's numbers against the real Chok Chai Starch Co. project, with source citations for every value. |
-
+# ACM0014 v8.0 Treatment of Wastewater dMRV (Policy ) — Bounty Submission 
 
 
 ## What's honestly still open
