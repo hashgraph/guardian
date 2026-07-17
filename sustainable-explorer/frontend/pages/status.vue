@@ -24,6 +24,7 @@ const config = useRuntimeConfig();
 // Sync page is PUBLIC (read-only). Guardian-sync data + all actions are admin-only.
 const { isAdmin } = useAuth();
 const { header: csrfHeader } = useCsrf();
+const { apiFetch } = useApiFetch();
 
 // ─── API composables ──────────────────────────────────────────────────────────
 
@@ -337,7 +338,7 @@ async function confirmRetryAll() {
     retryAllState.value.pending = true;
     const { baseName, force } = retryAllState.value;
     try {
-        const result = await $fetch<{ retried: number; skipped: number; errors: any[] }>(
+        const result = await apiFetch<{ retried: number; skipped: number; errors: any[] }>(
             `/api/v1/${network.value}/queues/${baseName}/retry-all-failed`,
             {
                 method: 'POST',
@@ -505,7 +506,7 @@ async function confirmRetryJob(job: FailedJobDto) {
     if (!drawerBaseName.value) return;
 
     try {
-        await $fetch(
+        await apiFetch(
             `/api/v1/${network.value}/queues/${drawerBaseName.value}/jobs/${job.id}/retry`,
             {
                 method: 'POST',
@@ -619,7 +620,7 @@ const ipfsRetryPending = ref<Record<string, boolean>>({});
 async function retryIpfsFailure(cid: string) {
     ipfsRetryPending.value[cid] = true;
     try {
-        await $fetch(`/api/v1/${network.value}/ipfs-status/${encodeURIComponent(cid)}/retry`, {
+        await apiFetch(`/api/v1/${network.value}/ipfs-status/${encodeURIComponent(cid)}/retry`, {
             method: 'POST',
             baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
             credentials: 'include',
@@ -640,7 +641,7 @@ async function retryAllIpfsForTopic() {
     if (!ipfsTopicFilter.value) return;
     ipfsRetryAllTopicPending.value = true;
     try {
-        await $fetch(`/api/v1/${network.value}/ipfs-status/retry-by-topic`, {
+        await apiFetch(`/api/v1/${network.value}/ipfs-status/retry-by-topic`, {
             method: 'POST',
             body: {
                 topicId: ipfsTopicFilter.value,
@@ -677,9 +678,14 @@ const reparseAllPending = ref(false);
 async function triggerRedecodeAll() {
     redecodeAllPending.value = true;
     try {
-        const result = await $fetch<{ total: number; enqueued: number; skipped: number }>(
+        const result = await apiFetch<{ total: number; enqueued: number; skipped: number }>(
             `/api/v1/${network.value}/methodologies/redecode-all`,
-            { method: 'POST', baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '' },
+            {
+                method: 'POST',
+                baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+                credentials: 'include',
+                headers: csrfHeader(),
+            },
         );
         showToast(`Re-decode enqueued: ${result.enqueued}/${result.total} policies (${result.skipped} skipped)`);
     } catch (err: any) {
@@ -692,9 +698,14 @@ async function triggerRedecodeAll() {
 async function triggerReparseAll() {
     reparseAllPending.value = true;
     try {
-        const result = await $fetch<{ methodologies: number; succeeded: number; skipped: number; enqueued: number }>(
+        const result = await apiFetch<{ methodologies: number; succeeded: number; skipped: number; enqueued: number }>(
             `/api/v1/${network.value}/methodologies/reparse-projects`,
-            { method: 'POST', baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '' },
+            {
+                method: 'POST',
+                baseURL: import.meta.client ? (config.public.apiBaseUrl as string) || '' : '',
+                credentials: 'include',
+                headers: csrfHeader(),
+            },
         );
         showToast(`Reparse enqueued: ${result.enqueued} VC jobs across ${result.succeeded} methodologies`);
     } catch (err: any) {

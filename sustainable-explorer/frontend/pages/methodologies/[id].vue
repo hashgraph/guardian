@@ -167,7 +167,7 @@ async function downloadPolicyPackage() {
   policyDownloadPending.value = true;
   const { toast } = await import('vue-sonner');
   try {
-    const res = await fetch(policyPackageUrl.value, { credentials: 'include' });
+    const res = await authFetch(policyPackageUrl.value);
     if (!res.ok) {
       // Prefer the backend's message (it explains not-decoded vs not-cached);
       // fall back to a localized message per status.
@@ -346,6 +346,7 @@ const decodeStatusClass = (status: string | null | undefined) => {
 // isAuthenticated gates the policy-package download (auth-only endpoint).
 const { isAdmin, isAuthenticated } = useAuth();
 const { header: csrfHeader } = useCsrf();
+const { authFetch } = useApiFetch();
 const redecodePending = ref(false);
 
 async function triggerRedecode() {
