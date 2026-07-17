@@ -1017,11 +1017,6 @@
 
 ## Operations
 
-* [Guardian in Production](operations/guardian-in-production/README.md)
-  * [Monitoring tools](operations/guardian-in-production/monitoring-tools.md)
-  * [Performance Improvement](operations/guardian-in-production/performance-improvement.md)
-  * [Cloud Infrastructure](operations/guardian-in-production/cloud-infrastructure.md)
-  * [Independent Packaged Deployment](operations/guardian-in-production/independent-packaged-deployment.md)
 * [Environments](operations/environments/README.md)
   * [Multi session consistency according to Environment](operations/environments/multi-session-consistency-according-to-environment.md)
   * [Dynamic Vault/KMS path configuration according to the environment](operations/environments/dynamic-vault-kms-path-configuration-according-to-the-environment.md)

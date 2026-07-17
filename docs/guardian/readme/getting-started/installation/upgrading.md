@@ -588,7 +588,7 @@ If the prior version of the Hedera Guardian application has been customized by y
 
 #### Identify performance behavior
 
-Collect metrics from the current Guardian running instance to analyze performance, logs, and metrics to identify current instance behavior as of [monitoring tools](../../../../operations/guardian-in-production/monitoring-tools.md) available for Guardian since release 2.12.1.
+Collect metrics from the current Guardian running instance to analyze performance, logs, and metrics to identify current instance behavior as of [monitoring tools](/broken/pages/PmdGqWnSRBypn7K9qa2D) available for Guardian since release 2.12.1.
 
 ### Tasks Checklist during the upgrade
 
@@ -700,7 +700,7 @@ Once testing is successfully completed:
 
 #### Monitor and Rollback if Needed
 
-Continuously monitor the green environment's performance, logs, and metrics to identify any issues or anomalies. Compare the result of previous metrics to the new revealed metrics as per the [monitoring tools](../../../../operations/guardian-in-production/monitoring-tools.md) available for Guardian since release 2.12.1.
+Continuously monitor the green environment's performance, logs, and metrics to identify any issues or anomalies. Compare the result of previous metrics to the new revealed metrics as per the [monitoring tools](/broken/pages/PmdGqWnSRBypn7K9qa2D) available for Guardian since release 2.12.1.
 
 If any critical issues arise, you can quickly rollback by switching the load balancer to route all traffic back to the blue environment.
 
