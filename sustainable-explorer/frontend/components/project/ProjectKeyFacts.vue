@@ -3,7 +3,7 @@ import { Hash } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 import { formatDate } from '~/lib/format';
-import { getMethodologyName } from '~/lib/methodologies';
+import { useMethodologyApi } from '~/composables/api/useMethodologiesApi';
 import { IWA_TO_CADTRUST, IWA_TO_CDOP } from '~/lib/standard-field-mappings.generated';
 
 const props = defineProps<{
@@ -12,9 +12,18 @@ const props = defineProps<{
     displayCountryCode: string;
 }>();
 
-const fullMethodologyName = computed(() => {
-    return getMethodologyName(props.project.methodologyId) || props.project.methodology;
+const { network } = useNetwork();
+
+const { data: methodologyDetail } = useMethodologyApi({
+    id: computed(() => props.project.instanceTopicId ?? ''),
+    network: computed(() => network.value),
 });
+
+const fullMethodologyName = computed(() => {
+    return methodologyDetail.value?.name || props.project.methodology || props.project.methodologyId || '—';
+});
+
+const methodologyVersion = computed(() => methodologyDetail.value?.version || '—');
 
 const creditingPeriodStart = computed(() => {
     if (props.project.creditingPeriodStart) return formatDate(props.project.creditingPeriodStart);
@@ -68,8 +77,17 @@ function tip(iwaPaths: string): string {
                 <div v-else class="text-sm font-medium text-foreground">{{ fullMethodologyName || '—' }}</div>
             </div>
 
-            <!-- Registry -->
+            <!-- Methodology Version -->
             <div class="bg-card px-5 py-4 border-b">
+                <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
+                    Methodology Version
+                    <InfoTooltip :text="tip('QualityStandard.version')" />
+                </div>
+                <div class="text-sm font-medium text-foreground">{{ methodologyVersion }}</div>
+            </div>
+
+            <!-- Registry -->
+            <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Registry
                     <InfoTooltip :text="tip('OriginationProcessAgreement.name')" />
@@ -85,7 +103,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Developer -->
-            <div class="bg-card px-5 py-4 border-b sm:border-r">
+            <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Developer
                     <InfoTooltip :text="tip('ActivityImpactModule.developers')" />
@@ -94,7 +112,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Country -->
-            <div class="bg-card px-5 py-4 border-b">
+            <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Country
                     <InfoTooltip :text="tip('ActivityImpactModule.country')" />
@@ -109,7 +127,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Status -->
-            <div class="bg-card px-5 py-4 border-b sm:border-r">
+            <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Status
                     <InfoTooltip :text="tip('ActivityImpactModule.validations')" />
@@ -118,7 +136,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Sector -->
-            <div class="bg-card px-5 py-4 border-b">
+            <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Sector
                     <InfoTooltip :text="tip('ActivityImpactModule.projectScope')" />
@@ -127,7 +145,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Sectoral Scope -->
-            <div class="bg-card px-5 py-4 border-b sm:border-r">
+            <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Sectoral Scope
                     <InfoTooltip :text="tip('ActivityImpactModule.projectType')" />
@@ -136,7 +154,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Category -->
-            <div class="bg-card px-5 py-4 border-b">
+            <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Category
                     <InfoTooltip :text="tip('ActivityImpactModule.classificationCategory')" />
@@ -145,7 +163,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Crediting Period -->
-            <div class="bg-card px-5 py-4 border-b sm:border-r">
+            <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Crediting Period
                     <InfoTooltip :text="tip('ImpactClaim.startDate,ImpactClaim.endDate')" />
@@ -158,7 +176,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Vintage -->
-            <div class="bg-card px-5 py-4 border-b">
+            <div class="bg-card px-5 py-4 sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Vintage
                     <InfoTooltip :text="tip('ActivityImpactModule.firstYearIssuance')" />
@@ -167,7 +185,7 @@ function tip(iwaPaths: string): string {
             </div>
 
             <!-- Total Credits — last row, no border-b -->
-            <div class="bg-card px-5 py-4 sm:col-span-2">
+            <div class="bg-card px-5 py-4">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                     Estimated Total Credits
                     <InfoTooltip :text="tip('ImpactClaim.quantity')" />

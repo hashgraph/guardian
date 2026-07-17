@@ -128,7 +128,7 @@ export class LinkedVcDto {
 }
 
 export class MilestoneDto {
-    @ApiProperty({ description: 'Milestone key: registration | mrvSubmission | verification | issuance' })
+    @ApiProperty({ description: 'Milestone key: registration | validation | mrvSubmission | verification | issuance' })
     key: string;
 
     @ApiProperty({ description: 'Human-readable milestone label' })
@@ -373,7 +373,7 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Projected/actual credit volume: totalIssued when Issued, otherwise null ("Not estimated")' })
     projectedVolume: number | null;
 
-    @ApiProperty({ type: [MilestoneDto], description: 'Registration → MRV Submission → Verification → Issuance milestone tracker' })
+    @ApiProperty({ type: [MilestoneDto], description: 'Registration → Validation → MRV Submission → Verification → Issuance milestone tracker' })
     milestones: MilestoneDto[];
 
     static fromRow(row: ProjectRow, network: string, full: boolean = false): ProjectResponseDto {
@@ -537,6 +537,7 @@ export class ProjectResponseDto {
         let milestones: MilestoneDto[] = [];
         if (full) {
             const registrationVc = earliestVcOfType(['registration', 'pdd']);
+            const validationVc = earliestVcOfType(['validationReport']);
             const mrvVc = earliestVcOfType(['monitoringReport']);
             const verificationVc = earliestVcOfType(['verificationReport']);
 
@@ -551,9 +552,19 @@ export class ProjectResponseDto {
                     dateType: registrationVc ? 'actual' : (typeof data['createdAt'] === 'string' ? 'expected' : null),
                 },
                 {
+                    key: 'validation',
+                    label: 'Validation',
+                    // A project that already has a later-stage VC clearly moved past
+                    // validation even without an explicit validationReport VC on file —
+                    // don't leave it stuck showing as the active step.
+                    state: validationVc ? 'complete' : ((mrvVc || verificationVc || isIssued) ? 'complete' : 'expected'),
+                    date: validationVc ? tsToDate(validationVc.consensusTimestamp) : null,
+                    dateType: validationVc ? 'actual' : null,
+                },
+                {
                     key: 'mrvSubmission',
                     label: 'MRV Submission',
-                    state: mrvVc ? 'complete' : (isIssued ? 'complete' : 'expected'),
+                    state: mrvVc ? 'complete' : (isIssued ? 'complete' : ((validationVc || verificationVc) ? 'expected' : 'pending')),
                     date: mrvVc ? tsToDate(mrvVc.consensusTimestamp) : (typeof data['creditingPeriodStart'] === 'string' ? data['creditingPeriodStart'] : null),
                     dateType: mrvVc ? 'actual' : (typeof data['creditingPeriodStart'] === 'string' ? 'expected' : null),
                 },

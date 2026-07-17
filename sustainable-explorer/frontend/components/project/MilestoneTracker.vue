@@ -11,6 +11,7 @@ const { t } = useI18n();
 
 const milestoneLabels = computed<Record<string, string>>(() => ({
     registration: t('projects.milestones.registration'),
+    validation: t('projects.milestones.validation'),
     mrvSubmission: t('projects.milestones.mrvSubmission'),
     verification: t('projects.milestones.verification'),
     issuance: t('projects.milestones.issuance'),

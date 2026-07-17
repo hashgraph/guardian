@@ -482,7 +482,7 @@
         "sectoralScope": "Alcance sectorial: {scope}",
         "sdgsTooltip": "Objetivos de Desarrollo Sostenible de la ONU a los que contribuye este proyecto. Pasa el cursor sobre cada icono para ver el nombre completo del objetivo.",
         "sectorTooltip": "Incluye el Alcance Sectorial como detalle adicional",
-        "stageTooltip": "Punto del ciclo de vida del crédito en el que se encuentra el proyecto: Registrado → En validación → MRV enviado → Verificado → Emitido.",
+        "stageTooltip": "Punto del ciclo de vida del crédito en el que se encuentra el proyecto: Registrado → Validado → MRV enviado → Verificado → Emitido.",
         "expectedIssuanceYearTooltip": "Año en que se prevé que se emitan los créditos por primera vez — aplica a los proyectos en preemisión. Muestra «Por definir» cuando aún no hay una previsión disponible, y «—» para los proyectos ya emitidos.",
         "columns": {
             "project": "Proyecto",
@@ -527,15 +527,16 @@
         },
         "lifecycleStages": {
             "Registered": "Registrado",
-            "Validation": "En validación",
+            "Validation": "Validado",
             "Monitoring": "MRV enviado",
             "Verified": "Verificado",
             "Issued": "Emitido"
         },
         "milestones": {
             "title": "Seguimiento de hitos",
-            "subtitle": "Registro → Envío de MRV → Verificación → Emisión",
+            "subtitle": "Registro → Validación → Envío de MRV → Verificación → Emisión",
             "registration": "Registro",
+            "validation": "Validación",
             "mrvSubmission": "Envío de MRV",
             "verification": "Verificación",
             "issuance": "Emisión",
