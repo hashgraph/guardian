@@ -342,7 +342,7 @@ const filteredStats = computed(() => {
                      Credits / Developers so the chip-style visual idiom is
                      consistent across the app. -->
                 <div class="flex items-center gap-2 shrink-0">
-                    <InfoTooltip :text="$t('dashboard.filterTooltip')" />
+                    <InfoTooltip :text="$t('dashboard.filterTooltip')" position="bottom" />
                     <FilterBar
                         v-model="dashboardSearchRef"
                         :filters="dashboardFilterDefs"
