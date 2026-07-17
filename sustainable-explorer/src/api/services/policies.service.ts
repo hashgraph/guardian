@@ -61,6 +61,7 @@ export class PoliciesService {
                  attempts       = 0,
                  "policyMapping" = NULL,
                  "schemaFields"  = NULL,
+                 "mappingSource" = 'auto',
                  error           = NULL,
                  "updatedAt"     = now()
              WHERE "policyTopicId" = $1`,

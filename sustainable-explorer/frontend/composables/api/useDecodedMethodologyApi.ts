@@ -1,6 +1,19 @@
 import type { NetworkId } from '~/composables/useNetwork';
 
 export type DecodeStatus = 'success' | 'failed' | 'pending' | 'unknown';
+export type MappingSource = 'auto' | 'manual';
+
+export interface MappingAuditEntry {
+    id: string;
+    actorEmail: string;
+    changedLabels: string[];
+    createdAt: string;
+}
+
+export interface PaginatedMappingAudit {
+    data: MappingAuditEntry[];
+    meta: { page: number; limit: number; total: number; totalPages: number };
+}
 
 export interface ResolvedField {
     fieldKey: string;
@@ -61,6 +74,7 @@ export interface DecodedMethodologyResponse {
     decodeError: string | null;
     attempts: number;
     lastAttemptAt: string | null;
+    mappingSource: MappingSource;
     projectSchema: ProjectSchema | null;
     availableSchemas: SchemaSummary[];
 }
@@ -97,5 +111,24 @@ export const useDecodedMethodologyApi = (opts: UseDecodedMethodologyApiOptions) 
         }
     };
 
-    return { data, pending, error, loaded, fetch };
+    const auditData = ref<MappingAuditEntry[]>([]);
+    const auditPending = ref(false);
+
+    const fetchAudit = async () => {
+        if (!import.meta.client) return;
+        auditPending.value = true;
+        try {
+            auditData.value = await $fetch<MappingAuditEntry[]>(
+                `/api/v1/${opts.network.value}/methodologies/${opts.id.value}/mapping-audit`,
+                { baseURL, credentials: 'include' },
+            );
+        } catch {
+            // Best-effort — the audit table is a secondary panel, not core mapping data.
+            auditData.value = [];
+        } finally {
+            auditPending.value = false;
+        }
+    };
+
+    return { data, pending, error, loaded, fetch, auditData, auditPending, fetchAudit };
 };

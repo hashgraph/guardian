@@ -7,11 +7,15 @@ import { ProjectReparseJobData } from '@worker/processors/project-reparse.proces
 import { PROJECT_EXTRACT_FIELDS } from '@worker/project-mapper/project-fields';
 import { UpdateMappingDto } from '../dto/update-mapping.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
+import { MappingAuditEntryDto, MappingAuditQueryDto, PaginatedMappingAuditDto } from '../dto/mapping-audit.dto';
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
 import { buildPolicyWorkflowGraph, PolicyWorkflowGraph } from './policy-graph.builder';
 import { bareUuid, buildVcTitleMaps, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
 import type { VcDocData, VcTitleMaps } from '@shared/vc-detail/vc-detail.types';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
+import { SystemDataSource } from '../database/system-database.module';
+import { AuditLog } from '@shared/entities/auth/audit-log.entity';
+import type { AuthenticatedUser } from '../auth/auth.types';
 
 // ---------------------------------------------------------------------------
 // Internal row shapes
@@ -49,7 +53,34 @@ export class MappingReprocessService {
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
         private readonly queueRegistry: QueueRegistry,
+        private readonly systemDataSource: SystemDataSource,
     ) {}
+
+    private async audit(
+        action: string,
+        actor: AuthenticatedUser,
+        network: string,
+        targetId: string,
+        detail?: Record<string, unknown>,
+    ): Promise<void> {
+        try {
+            const repo = this.systemDataSource.getRepository(AuditLog);
+            await repo.save(repo.create({
+                action,
+                outcome: 'success',
+                actorUserId: actor.id,
+                targetType: 'policy',
+                targetId,
+                network,
+                ip: null,
+                userAgent: null,
+                detail: detail ?? null,
+            }));
+        } catch (err: unknown) {
+            const msg = err instanceof Error ? err.message : String(err);
+            this.logger.error(`audit_log write failed [action=${action}]: ${msg}`);
+        }
+    }
 
     /**
      * Re-enqueues a POLICY_DECODE job for the given methodology.
@@ -85,6 +116,19 @@ export class MappingReprocessService {
         }
 
         const { sourceCid } = policyRows[0];
+
+        await ds.query(
+            `UPDATE policy
+             SET "decodeStatus" = 'pending',
+                 attempts        = 0,
+                 "policyMapping" = NULL,
+                 "schemaFields"  = NULL,
+                 "mappingSource" = 'auto',
+                 error           = NULL,
+                 "updatedAt"     = now()
+             WHERE "policyTopicId" = $1`,
+            [policyTopicId],
+        );
 
         // Recover the original message timestamp for the publish-policy message so
         // the processor can locate the correct source in the message table.
@@ -220,9 +264,16 @@ export class MappingReprocessService {
             instanceTopicId: string | null;
             sourceCid: string;
         }> = await ds.query(
-            `SELECT "policyTopicId", "instanceTopicId", "sourceCid"
-             FROM policy
-             WHERE "decodeStatus" = 'decoded'`,
+            `UPDATE policy
+             SET "decodeStatus" = 'pending',
+                 attempts        = 0,
+                 "policyMapping" = NULL,
+                 "schemaFields"  = NULL,
+                 "mappingSource" = 'auto',
+                 error           = NULL,
+                 "updatedAt"     = now()
+             WHERE "decodeStatus" = 'decoded'
+             RETURNING "policyTopicId", "instanceTopicId", "sourceCid"`,
         );
 
         const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.POLICY_DECODE);
@@ -353,6 +404,7 @@ export class MappingReprocessService {
         network: string,
         methodologyId: string,
         body: UpdateMappingDto,
+        actor: AuthenticatedUser,
     ): Promise<DecodedMethodologyResponseDto> {
         const ds = this.dataSources.getDataSource(network);
         const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
@@ -514,6 +566,7 @@ export class MappingReprocessService {
         await ds.query(
             `UPDATE policy
          SET "policyMapping" = $2::jsonb,
+             "mappingSource" = 'manual',
              "updatedAt"     = now()
          WHERE "policyTopicId" = $1`,
             [policyTopicId, JSON.stringify(mergedMapping)],
@@ -524,9 +577,11 @@ export class MappingReprocessService {
             `(${Object.keys(body.fieldMap).length} key(s) merged).`,
         );
 
-        if (typeof (this as any).reprocessService?.triggerReparse === 'function') {
-            await (this as any).reprocessService.triggerReparse(network, policyTopicId);
-        }
+        await this.audit('methodology.mapping.update', actor, network, policyTopicId, {
+            labels: Object.keys(body.fieldMap),
+            fieldMap: body.fieldMap,
+            actorEmail: actor.email,
+        });
 
         // ── Return the refreshed decoded response ────────────────────────────────
         const repo = new PgPolicySchemaRepository(ds);
@@ -537,6 +592,49 @@ export class MappingReprocessService {
             );
         }
         return DecodedMethodologyResponseDto.fromRow(row);
+    }
+
+    /**
+     * Lists recent manual field-mapping edits for a methodology, newest first,
+     * paginated. Reads the shared `audit_log` table (system DB) — the same
+     * table used by auth/admin-user actions — filtered to this policy's
+     * 'methodology.mapping.update' entries.
+     */
+    async getMappingAudit(
+        network: string,
+        methodologyId: string,
+        query: MappingAuditQueryDto,
+    ): Promise<PaginatedMappingAuditDto> {
+        const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 10;
+
+        const repo = this.systemDataSource.getRepository(AuditLog);
+        const [rows, total] = await repo.findAndCount({
+            where: {
+                action: 'methodology.mapping.update',
+                targetType: 'policy',
+                targetId: policyTopicId,
+            },
+            order: { createdAt: 'DESC' },
+            skip: (page - 1) * limit,
+            take: limit,
+        });
+
+        const data = rows.map(row => {
+            const detail = (row.detail ?? {}) as { labels?: unknown; actorEmail?: unknown };
+            return {
+                id: row.id,
+                actorEmail: typeof detail.actorEmail === 'string' ? detail.actorEmail : 'unknown',
+                changedLabels: Array.isArray(detail.labels) ? detail.labels.filter((l): l is string => typeof l === 'string') : [],
+                createdAt: row.createdAt.toISOString(),
+            } satisfies MappingAuditEntryDto;
+        });
+
+        return {
+            data,
+            meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
+        };
     }
 
     /**

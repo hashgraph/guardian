@@ -6,7 +6,7 @@ export { NftCache } from './nft-cache.entity.js';
 export { IpfsFile } from './ipfs-file.entity.js';
 export { IpfsFetchFailure } from './ipfs-fetch-failure.entity.js';
 export { BusinessView } from './business-view.entity.js';
-export { Policy, PolicyDecodeStatus } from './policy.entity.js';
+export { Policy, PolicyDecodeStatus, PolicyMappingSource } from './policy.entity.js';
 export { SynchronizationTask } from './synchronization-task.entity.js';
 export { Log } from './log.entity.js';
 export { GuardianEventLog } from './guardian-event-log.entity.js';

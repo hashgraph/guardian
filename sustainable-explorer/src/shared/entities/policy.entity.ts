@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 
 export type PolicyDecodeStatus = 'pending' | 'decoded' | 'failed';
+export type PolicyMappingSource = 'auto' | 'manual';
 
 @Entity('policy')
 @Unique('uq_policy_policy_id', ['policyId'])
@@ -63,6 +64,11 @@ export class Policy {
     @Index('idx_policy_decode_status')
     @Column({ type: 'varchar', length: 16, default: 'pending' })
     decodeStatus: PolicyDecodeStatus;
+
+    // 'manual' after an admin PATCHes policyMapping via updateMapping;
+    // reset to 'auto' whenever a fresh decode overwrites policyMapping.
+    @Column({ type: 'varchar', length: 16, default: 'auto' })
+    mappingSource: PolicyMappingSource;
 
     @Column({ type: 'text', nullable: true })
     error: string | null;

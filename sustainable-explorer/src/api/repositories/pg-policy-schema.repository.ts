@@ -151,6 +151,7 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             policy_mapping: Record<string, unknown> | null;
             raw_schema_json: Record<string, unknown> | null;
             schema_fields: unknown;
+            mapping_source: string | null;
         }> = await this.dataSource.query(
             `SELECT
                 p."decodeStatus"    AS decode_status,
@@ -159,7 +160,8 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
                 p."lastAttemptAt"   AS last_attempt_at,
                 p."policyMapping"   AS policy_mapping,
                 p."rawSchemaJson"   AS raw_schema_json,
-                p."schemaFields"    AS schema_fields
+                p."schemaFields"    AS schema_fields,
+                p."mappingSource"   AS mapping_source
              FROM (SELECT $1::varchar AS topic_id) q
              LEFT JOIN LATERAL (
                 -- Multiple policy rows can share a policyTopicId (one per
@@ -417,6 +419,7 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             decodeError: decodeStatus === 'success' ? null : (raw?.decode_error ?? null),
             attempts: raw?.attempts ?? 0,
             lastAttemptAt: raw?.last_attempt_at ?? null,
+            mappingSource: raw?.mapping_source === 'manual' ? 'manual' : 'auto',
             schemaId: projectSchemaId,
             schemaName: projectSchemaName,
             schemaDescription: projectSchemaDescription,

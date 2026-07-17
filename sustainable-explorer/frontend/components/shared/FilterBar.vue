@@ -82,6 +82,7 @@ function isMultiSelected(key: string, value: string): boolean {
 
 function getNumRangeValue(key: string): { from: string; to: string } {
     const val = props.activeFilters[key] || '';
+    if (!val || val === 'all') return { from: '', to: '' };
     const parts = val.split('|');
     return { from: parts[0] || '', to: parts[1] || '' };
 }
@@ -146,6 +147,7 @@ function isYearRangeActive(key: string): boolean {
 
 function getDateRangeValue(key: string): { from: string; to: string } {
     const val = props.activeFilters[key] || '';
+    if (!val || val === 'all') return { from: '', to: '' };
     const parts = val.split('|');
     return { from: parts[0] || '', to: parts[1] || '' };
 }
@@ -435,9 +437,8 @@ if (import.meta.client) {
                             <input
                                 type="number"
                                 :value="getYearRangeValue(filter.key).from"
-                                :max="getYearRangeValue(filter.key).to || undefined"
+                                :max="getYearRangeValue(filter.key).to || '2100'"
                                 min="1900"
-                                max="2100"
                                 placeholder="e.g. 2020"
                                 class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
                                 @change="setYearRangeFrom(filter.key, ($event.target as HTMLInputElement).value)"
@@ -450,8 +451,7 @@ if (import.meta.client) {
                             <input
                                 type="number"
                                 :value="getYearRangeValue(filter.key).to"
-                                :min="getYearRangeValue(filter.key).from || undefined"
-                                min="1900"
+                                :min="getYearRangeValue(filter.key).from || '1900'"
                                 max="2100"
                                 placeholder="e.g. 2025"
                                 class="h-8 w-full rounded-md border border-input bg-background px-2 text-xs text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
