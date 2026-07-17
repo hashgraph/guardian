@@ -36,7 +36,6 @@
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",
         "nodemon": "3.1.14",
-        "tslint": "^6.1.3",
         "typescript": "^5.8.3"
     },
     "engines": {
@@ -62,7 +61,6 @@
         "debug": "nodemon dist/index.js",
         "dev": "cp environments/environment.demo.ts src/environment.ts && tsc --watch",
         "dev:docker": "npm run build && nodemon .",
-        "lint": "tslint --config ../tslint.json --project .",
         "start": "node dist/index.js",
         "test": "mocha tests/**/*.test.js --reporter mocha-junit-reporter --reporter-options mochaFile=../test_results/ui-service.xml"
     },

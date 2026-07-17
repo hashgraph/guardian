@@ -93,40 +93,7 @@ jobs:
           NODE_OPTIONS: --openssl-legacy-provider
 
       - name: Lint
-        run: |
-          pushd interfaces
-          npm run lint
-          popd
-          pushd common
-          npm run lint
-          popd
-          pushd logger-service
-          npm run lint
-          popd
-          pushd notification-service
-          npm run lint
-          popd
-          pushd auth-service
-          npm run lint
-          popd
-          pushd policy-service
-          npm run lint
-          popd
-          pushd guardian-service
-          npm run lint
-          popd
-          pushd worker-service
-          npm run lint
-          popd
-          pushd queue-service
-          npm run lint
-          popd
-          pushd topic-listener-service
-          npm run lint
-          popd
-          pushd api-gateway
-          npm run lint
-          popd
+        run: yarn lint
         env:
           CI: true
           NODE_OPTIONS: --openssl-legacy-provider
