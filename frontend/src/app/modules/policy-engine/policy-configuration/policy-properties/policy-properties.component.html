@@ -320,8 +320,22 @@
                       @for (step of nav.steps; track step; let s = $index) {
                         @if (!propHidden.navigationRoles[role]) {
                           <tr class="propHeader subRow stepRow"
-                            (click)="onHide(propHidden.navigationSteps, role + s)">
-                            <td class="propRowCol"></td>
+                            (click)="onHide(propHidden.navigationSteps, role + s)"
+                            [class.step-drop-before]="stepDragRole === role && stepDropIndex === s && !stepDropAfter"
+                            [class.step-drop-after]="stepDragRole === role && stepDropIndex === s && stepDropAfter"
+                            [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                            (dragover)="onStepDragOver($event, role, s)"
+                            (dragleave)="onStepDragLeave($event, role, s)"
+                            (drop)="onStepDrop($event, role, s)">
+                            <td class="propRowCol step-handle-cell"
+                              [attr.rowspan]="(propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]) ? 1 : 4">
+                              @if (!readonly) {
+                                <div class="step-drag-handle" draggable="true" title="Drag to reorder"
+                                  (dragstart)="onStepDragStart($event, role, s)"
+                                  (dragend)="onStepDragEnd()"
+                                  (click)="$event.stopPropagation()"></div>
+                              }
+                            </td>
                             <td [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
                               class="propHeaderCell cellName" colspan="2">
                               <div class="propHeaderContent">
@@ -338,8 +352,11 @@
                           </tr>
                         }
                         <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                          class="propRow subRow">
-                          <td class="propRowCol"></td>
+                          class="propRow subRow"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
                           <td class="propRowCell cellName">Name</td>
                           <td class="propRowCell">
                             <input (input)="onEditStep(step)" [(ngModel)]="step.name"
@@ -348,8 +365,11 @@
                           </td>
                         </tr>
                         <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                          class="propRow subRow">
-                          <td class="propRowCol"></td>
+                          class="propRow subRow"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
                           <td class="propRowCell cellName">Block</td>
                           <td class="propRowCell">
                             <select-block
@@ -364,8 +384,11 @@
                           </td>
                         </tr>
                         <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                          class="propRow subRow">
-                          <td class="propRowCol"></td>
+                          class="propRow subRow"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
                           <td class="propRowCell cellName">Level</td>
                           <td class="propRowCell">
                             <input (input)="onEditStep(step)" [(ngModel)]="step.level"
@@ -374,7 +397,12 @@
                           </td>
                         </tr>
                         <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                          class="propRow subRow navigation-add-row">
+                          class="propRow subRow navigation-add-row"
+                          [class.step-drop-after]="stepDragRole === role && stepDropIndex === s && stepDropAfter"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
                           <td class="propRowCol"></td>
                           <td class="propRowCell navigation-add-cell" colspan="2">
                             <div (click)="addStep(role, s + 1)" class="propAdd navigation-add">

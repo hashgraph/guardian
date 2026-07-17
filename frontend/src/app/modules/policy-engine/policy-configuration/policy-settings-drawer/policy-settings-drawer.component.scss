@@ -185,10 +185,6 @@
         filter: none;
     }
 
-    // One header model for every drawer collapse row: the name cell spans the
-    // label and value columns (colspan="2"), so the title is no longer capped
-    // at the label-column width. Inside, a flex row lays out chevron, title,
-    // and trailing content (secondary name, delete, or an Add action).
     .properties .propHeader > .propHeaderCell.cellName .propHeaderContent {
         display: flex;
         align-items: center;
@@ -205,9 +201,6 @@
         white-space: nowrap;
     }
 
-    // text-transform/letter-spacing would otherwise be inherited from the
-    // shared uppercase header-cell rule now that the trailing content sits
-    // inside the name cell.
     .properties .propHeader > .propHeaderCell.cellName .propHeaderActions {
         display: flex;
         align-items: center;
@@ -219,9 +212,6 @@
         letter-spacing: normal;
     }
 
-    // The shared ".propHeader .cellName span" rule would re-enable wrapping on
-    // the secondary name spans now that they live inside the name cell; keep
-    // them single-line with an ellipsis and let flex shrink them first.
     .properties .propHeader > .propHeaderCell.cellName .propHeaderActions > span {
         min-width: 0;
         display: block;
@@ -536,6 +526,63 @@
         min-width: 0;
         padding-left: 16px !important;
         overflow: hidden;
+    }
+
+    .properties .navigation .stepRow > .step-handle-cell {
+        position: relative;
+        vertical-align: middle;
+    }
+
+    .properties .navigation .step-drag-handle {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 32px;
+        border-radius: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        cursor: grab;
+        user-select: none;
+    }
+
+    .properties .navigation .step-drag-handle::before {
+        content: "";
+        width: 9px;
+        height: 20px;
+        background-image: radial-gradient(circle at 2px 2px, currentColor 1.4px, transparent 1.5px);
+        background-size: 5px 8px;
+    }
+
+    .properties .navigation .step-drag-handle:hover {
+        color: var(--guardian-primary-color);
+        background: color-mix(in srgb, var(--guardian-primary-color) 8%, transparent);
+    }
+
+    .properties .navigation .step-drag-handle:active {
+        cursor: grabbing;
+    }
+
+    .properties .navigation .stepRow.step-drop-before > .step-handle-cell,
+    .properties .navigation .stepRow.step-drop-before > .propHeaderCell {
+        box-shadow: inset 0 2px 0 var(--guardian-primary-color);
+    }
+
+    .properties .navigation .stepRow.step-drop-after > .propHeaderCell.cellName[collapse="true"] {
+        box-shadow: inset 0 -2px 0 var(--guardian-primary-color);
+    }
+
+    .properties .navigation .navigation-add-row.step-drop-after > .propRowCol,
+    .properties .navigation .navigation-add-row.step-drop-after > .navigation-add-cell {
+        box-shadow: inset 0 -2px 0 var(--guardian-primary-color);
+    }
+
+    .properties .navigation .stepRow.step-drop-target > td,
+    .properties .navigation .propRow.step-drop-target > td {
+        background: color-mix(in srgb, var(--guardian-primary-color) 6%, transparent) !important;
     }
 
     .properties .navigation .remove-step {

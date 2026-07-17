@@ -249,6 +249,87 @@ export class PolicyPropertiesComponent implements OnInit {
         step.emitUpdate();
     }
 
+    stepDragRole: string | null = null;
+    stepDragIndex: number | null = null;
+    stepDropIndex: number | null = null;
+    stepDropAfter: boolean = false;
+
+    onStepDragStart(event: DragEvent, role: string, index: number) {
+        if (this.readonly) {
+            event.preventDefault();
+            return;
+        }
+        this.stepDragRole = role;
+        this.stepDragIndex = index;
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', String(index));
+            const row = (event.target as HTMLElement).closest('tr');
+            if (row) {
+                event.dataTransfer.setDragImage(row, 0, row.clientHeight / 2);
+            }
+        }
+    }
+
+    onStepDragOver(event: DragEvent, role: string, index: number) {
+        if (this.stepDragRole !== role || this.stepDragIndex === null) {
+            return;
+        }
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+        if (index === this.stepDragIndex) {
+            this.stepDropIndex = null;
+            return;
+        }
+        this.stepDropIndex = index;
+        this.stepDropAfter = this.stepDragIndex < index;
+    }
+
+    onStepDragLeave(event: DragEvent, role: string, index: number) {
+        const next = event.relatedTarget as HTMLElement | null;
+        if (next && next.closest && next.closest('tr.stepRow, tr.propRow')) {
+            return;
+        }
+        if (this.stepDragRole === role && this.stepDropIndex === index) {
+            this.stepDropIndex = null;
+        }
+    }
+
+    onStepDrop(event: DragEvent, role: string, index: number) {
+        if (this.stepDragRole !== role || this.stepDragIndex === null) {
+            return;
+        }
+        event.preventDefault();
+        const from = this.stepDragIndex;
+        if (index !== from) {
+            this.moveStep(role, from, index);
+        }
+        this.onStepDragEnd();
+    }
+
+    onStepDragEnd() {
+        this.stepDragRole = null;
+        this.stepDragIndex = null;
+        this.stepDropIndex = null;
+        this.stepDropAfter = false;
+    }
+
+    private moveStep(role: string, from: number, to: number) {
+        const nav = this.navigation.find((item: PolicyNavigationModel) => item.role === role);
+        if (!nav || !nav.steps[from]) {
+            return;
+        }
+        const flags = nav.steps.map((item, i) => this.propHidden.navigationSteps[role + i]);
+        const [movedFlag] = flags.splice(from, 1);
+        flags.splice(to, 0, movedFlag);
+        this.policy.moveStep(role, from, to);
+        nav.steps.forEach((item, i) => {
+            this.propHidden.navigationSteps[role + i] = flags[i];
+        });
+    }
+
     onRemoveStep(role: string, step: PolicyNavigationStepModel) {
         this.policy.removeStep(role, step);
         const navigation = this.policy.policyNavigation.find((nav: PolicyNavigationModel) => nav.role === role);
