@@ -1,0 +1,56 @@
+{
+    "id": "urn:uuid:16885c53-3ec5-41fb-8119-cf893a55318f",
+    "type": [
+        "VerifiableCredential"
+    ],
+    "issuer": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267",
+    "issuanceDate": "2026-07-17T22:48:53.572Z",
+    "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "schema:560f4d09-b53a-4c5e-8fa2-29988cb1cd9e"
+    ],
+    "credentialSubject": [
+        {
+            "field0": "jch",
+            "field21": 365,
+            "field22": 0.5,
+            "field23": 2,
+            "field25": 0.0015,
+            "field26": 0.0008,
+            "field27": 0.03,
+            "field1": "kbkkb",
+            "field2": "mmvb",
+            "field7": "m,/./ ",
+            "field8": "m,.m.mn",
+            "field10": 95,
+            "field11": 100,
+            "field12": 47300,
+            "field13": 0.95,
+            "field14": 1,
+            "field15": 0.11,
+            "field16": 100,
+            "field17": 1,
+            "field18": 1,
+            "field19": true,
+            "policyId": "6a5aa1dec7892208461e01c9",
+            "guardianVersion": "3.6.0",
+            "ref": "urn:uuid:8869f9a1-1aac-47de-8b62-b9f7d69a239c",
+            "field3": 14.603058,
+            "field6": 13.89063226,
+            "field4": 0.274334,
+            "field5": 0.43809174,
+            "@context": [
+                "schema:560f4d09-b53a-4c5e-8fa2-29988cb1cd9e"
+            ],
+            "id": "urn:uuid:da70256e-a4d4-49fd-b991-bc935eed924e",
+            "type": "560f4d09-b53a-4c5e-8fa2-29988cb1cd9e"
+        }
+    ],
+    "proof": {
+        "type": "Ed25519Signature2018",
+        "created": "2026-07-17T22:48:53Z",
+        "verificationMethod": "did:hedera:testnet:GwWmdPNs8B3Tex8Gvw69ztGftp3SKvQCDczGSfHQ1r1p_0.0.9599267#did-root-key",
+        "proofPurpose": "assertionMethod",
+        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..GtLuT_CDjjOBSHd0nJtyjMKVgzjmEILl5NpDBRCyzvDKvxDfMRbwaATSEG_2s_-EWovtlMDZ_5TveC0XClrxDw"
+    }
+}
