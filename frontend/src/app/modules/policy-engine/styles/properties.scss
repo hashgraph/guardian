@@ -36,7 +36,7 @@
     --pc-section-header-chevron-gap: 6px;
     // Where a section header's chevron starts: the 18px toggle column, plus the
     // 4px left inset the rendered header label cell keeps. Non-table headers
-    // must add both to land on the same column as About / Meta Data / Properties.
+    // must add both to land on the same column as About / METADATA / Properties.
     --pc-section-header-inset: 18px;
     --pc-section-header-cell-inset: 4px;
     // The header label cell's own padding, which the table counts inside the row
@@ -1245,7 +1245,7 @@
 
 .policy-configuration::ng-deep {
     // The Tool table deliberately carries NO header or row geometry of its own.
-    // It sits in the same panel as About and Meta Data, so it must render from the
+    // It sits in the same panel as About and METADATA, so it must render from the
     // shared .propHeader / .propRow rules. Re-stating heights, paddings or control
     // alignment here outranks those rules (.properties.tool-properties is more
     // specific) and drifts away from them - which is exactly what gave this panel

@@ -668,26 +668,35 @@
         white-space: nowrap;
     }
 
-    .grid-setting[readonly]:has(.navigation) {
+    .grid-setting[readonly="true"] .properties:has(.navigation) {
         --col-name-width: 192px;
     }
 
-    .grid-setting[readonly]:has(.navigation) colgroup .col-toggle {
-        width: 18px;
-    }
-
-    .grid-setting[readonly] .properties .navigation .step-handle-cell {
+    .grid-setting[readonly="true"] .properties:has(.navigation) colgroup .col-toggle,
+    .grid-setting[readonly="true"] .properties .navigation .stepRow > .step-handle-cell {
         width: 18px;
         min-width: 18px;
     }
 
-    .grid-setting[readonly] .properties .navigation .remove-step {
-        display: none;
+    .grid-setting[readonly="true"] .properties .navigation > .navigation-role-header > .propHeaderCell.cellName {
+        padding-left: 0 !important;
     }
 
-    .grid-setting[readonly] .properties .navigation .propAdd {
-        color: var(--guardian-disabled-color, #848FA9);
+    .grid-setting[readonly="true"] .properties .navigation .stepRow > .step-handle-cell {
+        left: auto !important;
+        top: auto !important;
+    }
+
+    .grid-setting[readonly="true"] .properties .navigation .remove-step {
+        display: none;
+        pointer-events: none;
+    }
+
+    .grid-setting[readonly="true"] .properties .navigation .propAdd {
+        pointer-events: none;
+        color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
         filter: grayscale(1);
+        cursor: default;
     }
 
     .properties .roles-header .propAdd {
