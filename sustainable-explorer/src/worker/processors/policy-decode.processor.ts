@@ -87,6 +87,7 @@ export class PolicyDecodeProcessor extends WorkerHost {
                  "policyMapping" = $9::jsonb,
                  "schemaFields"  = $10::jsonb,
                  "decodeStatus"  = 'decoded',
+                 "mappingSource" = 'auto',
                  error           = NULL,
                  "updatedAt"     = now()
              WHERE "sourceCid" = $1`,

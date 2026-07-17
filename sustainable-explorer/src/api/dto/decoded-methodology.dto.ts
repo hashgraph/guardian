@@ -161,6 +161,14 @@ export class DecodedMethodologyResponseDto {
     @ApiPropertyOptional({ nullable: true, description: 'ISO 8601 timestamp of the last decode attempt' })
     lastAttemptAt: string | null;
 
+    @ApiProperty({
+        enum: ['auto', 'manual'],
+        description:
+            '"manual" when an admin has hand-edited the field mapping via PATCH /:id/decoded ' +
+            'since the last decode; "auto" when the mapping is fresh, unedited classifier output.',
+    })
+    mappingSource: 'auto' | 'manual';
+
     @ApiPropertyOptional({
         type: ProjectSchemaDto,
         nullable: true,
@@ -189,6 +197,7 @@ export class DecodedMethodologyResponseDto {
         dto.decodeError = row.decodeError;
         dto.attempts = row.attempts;
         dto.lastAttemptAt = row.lastAttemptAt ? new Date(row.lastAttemptAt).toISOString() : null;
+        dto.mappingSource = row.mappingSource;
         // Build a UUID → schema map so summarizeSchema can follow array-item
         // $refs (e.g. `locations: { items: { $ref: "#<UUID>" } }`) and surface
         // those nested fields as user-pickable paths in the editor.
@@ -249,14 +258,16 @@ export class DecodedMethodologyResponseDto {
             }
             schemaFieldIndex.set(s.schemaId, perSchema);
         }
+        const stripArrayIndex = (fieldPath: string): string => fieldPath.replace(/\.\d+$/, '');
         const lookupFieldDef = (fieldKey: string, schemaIri?: string): { title: string; description: string } | null => {
+            const baseKey = stripArrayIndex(fieldKey);
             if (schemaIri) {
-                const bySchema = schemaFieldIndex.get(schemaIri)?.get(fieldKey);
+                const bySchema = schemaFieldIndex.get(schemaIri)?.get(fieldKey) ?? schemaFieldIndex.get(schemaIri)?.get(baseKey);
                 if (bySchema) return bySchema;
             }
-            const local = fieldMap[fieldKey];
+            const local = fieldMap[fieldKey] ?? fieldMap[baseKey];
             if (local) return { title: local.title ?? fieldKey, description: local.description ?? '' };
-            const global = globalFieldIndex.get(fieldKey);
+            const global = globalFieldIndex.get(fieldKey) ?? globalFieldIndex.get(baseKey);
             if (global) return { title: global.title || fieldKey, description: global.description || '' };
             return null;
         };
@@ -461,6 +472,7 @@ export interface DecodedMethodologyRow {
     decodeError: string | null;
     attempts: number;
     lastAttemptAt: string | null;
+    mappingSource: 'auto' | 'manual';
     /** UUID of the schema that was confirmed as the project schema, or null */
     schemaId: string | null;
     schemaName: string | null;
