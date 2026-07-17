@@ -1,0 +1,56 @@
+{
+  "id": "urn:uuid:6ca3c732-f05d-4218-9f8e-49a589681f10",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:DShnKaU6NzVKRibTPB1dcFkgCh1dv71QhaWCWsP4188o_0.0.9241937",
+  "issuanceDate": "2026-07-08T11:01:39.325Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "schema:c478f451-9bb5-4bde-aaa7-b51d4f4da292"
+  ],
+  "credentialSubject": [
+    {
+      "field0": "Test",
+      "field21": 365,
+      "field22": 0.5,
+      "field23": 2,
+      "field25": 0.0015,
+      "field26": 0.0008,
+      "field27": 0.03,
+      "field1": "Test",
+      "field2": "Test",
+      "field7": "Test",
+      "field8": "Test",
+      "field10": 95,
+      "field11": 100,
+      "field12": 47300,
+      "field13": 0.95,
+      "field14": 1,
+      "field15": 0.11,
+      "field16": 100,
+      "field17": 1,
+      "field18": 1,
+      "field19": true,
+      "policyId": "6a4e0763c3ea7ae4b8a5d5de",
+      "guardianVersion": "3.6.0",
+      "ref": "urn:uuid:a61b0c3e-51b9-4125-847f-e70cbe5c88b8",
+      "field3": 14.603058,
+      "field6": 13.89063226,
+      "field4": 0.274334,
+      "field5": 0.43809174,
+      "@context": [
+        "schema:c478f451-9bb5-4bde-aaa7-b51d4f4da292"
+      ],
+      "id": "urn:uuid:00961e93-f286-4207-a345-dd5cb2f65ff6",
+      "type": "c478f451-9bb5-4bde-aaa7-b51d4f4da292"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-07-08T11:01:39Z",
+    "verificationMethod": "did:hedera:testnet:DShnKaU6NzVKRibTPB1dcFkgCh1dv71QhaWCWsP4188o_0.0.9241937#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..k6mWU0KF04bSo2Efznxcf0MYikAlpkm0KljXiKJ1C-2agKFg2lvZkkVwUbx5YVX0l8pJi84KVf93EiQVcNS3AA"
+  }
+}

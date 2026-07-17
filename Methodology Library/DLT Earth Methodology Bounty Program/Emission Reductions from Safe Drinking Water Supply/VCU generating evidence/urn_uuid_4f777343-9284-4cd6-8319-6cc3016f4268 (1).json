@@ -1,0 +1,50 @@
+{
+  "id": "urn:uuid:4f777343-9284-4cd6-8319-6cc3016f4268",
+  "type": [
+    "VerifiableCredential"
+  ],
+  "issuer": "did:hedera:testnet:Kfcqsan4RBkiCepeDEUfdLDcjvqMMTnychswby3bydn_0.0.9222530",
+  "issuanceDate": "2026-06-14T16:54:57.753Z",
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1",
+    "schema:e0013904-d742-446e-a060-5fd210eb54ae"
+  ],
+  "credentialSubject": [
+    {
+      "field0": "MR-VCS3599-2025H1-CANONICAL",
+      "field1": "VCS-3599-VN-SDW-SCHOOLS ",
+      "field2": "2025-01-01 to 2025-06-30",
+      "field4": 0,
+      "field5": 8116,
+      "field7": "2026-06-14",
+      "field8": "Bikram Riya",
+      "field9": "Canonical dry-run — field6 intentionally blank. Calc block must inject 154125.14.",
+      "field10": 95,
+      "field11": 100,
+      "field12": 713972729,
+      "field13": 0.95,
+      "field14": 1,
+      "field15": 0.1,
+      "field16": 81.6,
+      "field17": 0.82,
+      "field18": 1,
+      "policyId": "6a2eb894426a35901046de88",
+      "guardianVersion": "3.6.0",
+      "ref": "urn:uuid:7357c923-27e6-4de1-a73d-b23860c99fac",
+      "field3": 162241.14,
+      "field6": 154125.14,
+      "@context": [
+        "schema:e0013904-d742-446e-a060-5fd210eb54ae"
+      ],
+      "id": "urn:uuid:a6d24bc7-e658-49a9-ad73-5d80ff02c37d",
+      "type": "e0013904-d742-446e-a060-5fd210eb54ae"
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-06-14T16:54:57Z",
+    "verificationMethod": "did:hedera:testnet:Kfcqsan4RBkiCepeDEUfdLDcjvqMMTnychswby3bydn_0.0.9222530#did-root-key",
+    "proofPurpose": "assertionMethod",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..xd4XaWKpGQaj_S623As0tkQheBu3KScGe_Kdt-V4t_Yrouf52ZtAsuhywv1ziLxiV7CV8Mry9hLgkp9pZckaCg"
+  }
+}

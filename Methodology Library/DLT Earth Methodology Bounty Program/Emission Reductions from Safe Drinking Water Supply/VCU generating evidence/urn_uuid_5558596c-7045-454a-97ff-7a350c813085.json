@@ -1,0 +1,101 @@
+{
+  "id": "urn:uuid:5558596c-7045-454a-97ff-7a350c813085",
+  "type": [
+    "VerifiablePresentation"
+  ],
+  "@context": [
+    "https://www.w3.org/2018/credentials/v1"
+  ],
+  "verifiableCredential": [
+    {
+      "id": "urn:uuid:47a3dc20-fc8c-4aa9-83e1-804e3a585111",
+      "type": [
+        "VerifiableCredential"
+      ],
+      "issuer": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937",
+      "issuanceDate": "2026-06-15T08:46:05.036Z",
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "schema:b11a157f-296e-45dd-bc91-99c2f7a98566"
+      ],
+      "credentialSubject": [
+        {
+          "field0": "example",
+          "field1": "example",
+          "field2": "example",
+          "field4": 0,
+          "field5": 8116,
+          "field7": "example",
+          "field8": "example",
+          "field9": "example",
+          "field10": 95,
+          "field11": 100,
+          "field12": 713972729,
+          "field13": 0.95,
+          "field14": 1,
+          "field15": 0.1,
+          "field16": 81.6,
+          "field17": 0.82,
+          "field18": 1,
+          "field19": true,
+          "field20": "Point-of-use water purification; no REDD+ or jurisdictional REDD+ overlap",
+          "policyId": "6a2fba4a426a359010481b55",
+          "guardianVersion": "3.6.0",
+          "ref": "urn:uuid:4a6df59b-d957-4642-bff0-c0f8f7f5861e",
+          "field3": 162241.14,
+          "field6": 154125.14,
+          "@context": [
+            "schema:b11a157f-296e-45dd-bc91-99c2f7a98566"
+          ],
+          "id": "urn:uuid:12ffce71-bdac-4b57-b360-c7b3d1679c1f",
+          "type": "b11a157f-296e-45dd-bc91-99c2f7a98566"
+        }
+      ],
+      "proof": {
+        "type": "Ed25519Signature2018",
+        "created": "2026-06-15T08:46:05Z",
+        "verificationMethod": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937#did-root-key",
+        "proofPurpose": "assertionMethod",
+        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..E-SKdB4lESp9h7UYsRC6SOsH8JLzFdBj3gLSDwpM0iSIRJRceVEhxYyYzPNM08vVcCDlWjaD4SIXx3uUJD2GBA"
+      }
+    },
+    {
+      "id": "urn:uuid:258e3726-bf3b-4ea0-8cd0-3ceb3547967c",
+      "type": [
+        "VerifiableCredential"
+      ],
+      "issuer": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937",
+      "issuanceDate": "2026-06-15T08:46:05.363Z",
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+      ],
+      "credentialSubject": [
+        {
+          "date": "2026-06-15T08:46:05.347Z",
+          "tokenId": "604a0992-901b-4f3f-8758-fc04aadfa2de",
+          "amount": "154125.14",
+          "@context": [
+            "ipfs://QmRVK4hNarbwohZBFehUpvYBt3WsmmV6P1nGrnVszPMvPM"
+          ],
+          "type": "MintToken&1.0.0"
+        }
+      ],
+      "proof": {
+        "type": "Ed25519Signature2018",
+        "created": "2026-06-15T08:46:05Z",
+        "verificationMethod": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937#did-root-key",
+        "proofPurpose": "assertionMethod",
+        "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19.._AYGSismup1RV-vdhuj5Vw1ktugxBxBuTUHzpi9suhy-3P4HPigVi2IZzDd6JvLsMTodly5Mmp_BmHkWJVvWDw"
+      }
+    }
+  ],
+  "proof": {
+    "type": "Ed25519Signature2018",
+    "created": "2026-06-15T08:46:05Z",
+    "verificationMethod": "did:hedera:testnet:4dTuLj1j27tDaNw374ETfzTkvraLUiWYhVXLgXZmndpb_0.0.9241937#did-root-key",
+    "proofPurpose": "authentication",
+    "challenge": "123",
+    "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..CD44W5GzOUAcOhfmmEvvpWYP8ty4ODCCNkp1obOrUuGcXmoRXvimIwrOnRyTjCHsLCbqEQQUrNaDuYu0j_M5AA"
+  }
+}
