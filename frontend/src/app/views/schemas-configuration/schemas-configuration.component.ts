@@ -440,11 +440,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             s.update([...userFields, ...defaultFields], s.conditions);
             s.fields = userFields;
         });
-        // Phase 2 — now that all documents are current, rebuild every schema's $defs.
-        // This ensures parent schemas embed the already-updated sub-schema documents.
-        toSave.forEach(s => {
-            s.updateRefs(this.schemas);
-        });
+        // Phase 2 — rebuild $defs by walking actual field refs (BFS), not stale document.$defs.
+        // withDefs() bloats document.$defs with all topic schemas including the schema itself.
+        // Using SchemaHelper.findRefs (which recurses into document.$defs) would include that
+        // self-reference in $defs → backend reports circular dependency. BFS over schema.fields
+        // derives only real transitive dependencies.
+        toSave.forEach(s => { if (s.document) { s.document.$defs = this._buildRefs(s); } });
         forkJoin(toSave.map(s => this.schemaService.update(s as unknown as ISchema)))
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -1113,6 +1114,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             case 'policy':
             default:        return SchemaCategory.POLICY;
         }
+    }
+
+    private _buildRefs(schema: Schema): Record<string, any> {
+        const result: Record<string, any> = {};
+        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
+        const queue = [...(schema.fields || [])];
+        const visited = new Set<string>();
+        while (queue.length) {
+            const field = queue.shift()!;
+            if (field.isRef && field.type && !visited.has(field.type)) {
+                visited.add(field.type);
+                const ref = schemaByIri.get(field.type);
+                if (ref) {
+                    const doc = { ...ref.document };
+                    delete doc.$defs;
+                    result[field.type] = doc;
+                    queue.push(...(ref.fields || []));
+                }
+            }
+        }
+        return result;
     }
 
     public ngOnDestroy(): void {
