@@ -82,7 +82,7 @@ Below are the universal software prerequisites, followed by network-specific ite
 
 * [Hedera Guardian Documentation](https://guardian.hedera.com)
 * [Hedera Developer Portal](https://portal.hedera.com/login)
-* [Roadmap](guardian/readme/roadmap.md)
+* [Roadmap](community-and-contributing/roadmap.md)
 * [Youtube Channel](https://www.youtube.com/@envisionblockchain/featured)
 
 ## **8. Feedback and Support**
