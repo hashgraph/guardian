@@ -13,22 +13,26 @@ import { DataSource } from 'typeorm';
  * the stale row when the mint is successfully re-resolved.
  *
  * Resolution strategy:
- *   1. Walk options.relationships via recursive CTE (up to 15 hops) until an
- *      ancestor consensusTimestamp matches a business_view PROJECT row.
- *      Stores projectKey (the canonical cs.id) which is stable across
- *      business_view rebuilds, unlike sourceTimestamp.
- *   1.5 Same-topic cs.ref lookup: if the relationship walk fails, look for
- *      any VC in the same topic whose credentialSubject[0].ref points to a
- *      known project's projectKey. Monitoring Reports explicitly carry this
- *      ref ("I am a report FOR this project"), making it a more semantically
- *      precise link than topic-scope. Only used when exactly one project is
- *      referenced to avoid misattribution in shared PoA topics.
- *   1.75 Ref-root match: walk the relationship ancestors for the mint and
- *      look for a PROJECT row whose projectKey equals an ancestor VC's own
- *      cs.id OR its cs.ref. This decouples mint linking from linkedVcs
- *      completeness — the relationship walk often reaches lifecycle VCs
- *      whose cs.ref IS the project key even when those VCs are not yet in
- *      linkedVcs.
+ *   1. Mint-specific ancestor walk: walk options.relationships via recursive
+ *      CTE (up to 15 hops) and match each ancestor against a business_view
+ *      PROJECT row two ways — (a) the ancestor's own consensusTimestamp
+ *      equals the project's sourceTimestamp or appears in its linkedVcs, or
+ *      (b) the ancestor VC's own credentialSubject[0].id/.ref IS a project's
+ *      projectKey (covers lifecycle VCs reached before linkedVcs is complete).
+ *      Both conditions are evaluated in ONE pass so the shallowest matching
+ *      ancestor wins regardless of which condition matched it. This merges
+ *      what used to be two separate steps (a relationship-only walk, and a
+ *      later "ref-root" walk tried only after the topic-wide cs_ref heuristic
+ *      below had already failed) into one pass that always runs FIRST — a
+ *      grouped/shared topic mint whose ancestor chain resolves cleanly no
+ *      longer risks losing to a topic-wide guess that fires before it gets a
+ *      chance to run.
+ *   1.5 Same-topic cs.ref lookup: if the ancestor walk fails, look for any VC
+ *      in the same topic whose credentialSubject[0].ref points to a known
+ *      project's projectKey. Monitoring Reports explicitly carry this ref
+ *      ("I am a report FOR this project"). Only used when exactly one project
+ *      is referenced across the topic's VCs, to limit (not eliminate)
+ *      misattribution risk in shared PoA topics with multiple sub-projects.
  *   2. Topic-scope fallback: only when the instance topic contains exactly
  *      one project. Grouped topics without a resolved chain are skipped to
  *      avoid misattribution.
@@ -74,12 +78,21 @@ export async function buildMintProjectLinks(
     let skipped = 0;
 
     for (const mint of unlinked) {
-        // Step 1 — walk options.relationships backwards to find the ancestor
-        // PROJECT row. ORDER BY depth ASC + LIMIT 1 picks the shallowest match,
-        // which is the Project Registration VC closest to the mint in the chain.
+        // Step 1 — mint-specific ancestor walk (relationship + ref-root merged).
+        // Walk options.relationships backwards up to 15 hops; at each ancestor,
+        // match a business_view PROJECT row via EITHER signal:
+        //   (a) the ancestor's own consensusTimestamp equals the project's
+        //       sourceTimestamp, or appears in its linkedVcs, or
+        //   (b) the ancestor VC's own credentialSubject[0].id/.ref IS a
+        //       project's projectKey (covers lifecycle VCs reached before
+        //       linkedVcs is complete).
+        // Both signals are evaluated together so the overall shallowest match
+        // wins — this is the only signal tied to THIS mint's own provenance,
+        // so it always takes priority over the topic-wide heuristics below.
         const chainRows: Array<{
             project_key: string;
             project_topic_id: string;
+            method: string;
         }> = await dataSource.query(`
             WITH RECURSIVE rel_chain(ts, depth) AS (
                 SELECT
@@ -105,13 +118,27 @@ export async function buildMintProjectLinks(
             )
             SELECT
                 bv."projectKey"     AS project_key,
-                bv."relatedTopicId" AS project_topic_id
+                bv."relatedTopicId" AS project_topic_id,
+                CASE
+                    WHEN bv."sourceTimestamp" = rc.ts
+                      OR bv."businessData"->'linkedVcs' @>
+                         jsonb_build_array(jsonb_build_object('consensusTimestamp', rc.ts))
+                    THEN 'relationship'
+                    ELSE 'ref_root'
+                END AS method
             FROM rel_chain rc
+            LEFT JOIN message a ON a."consensusTimestamp" = rc.ts AND a.type = 'VC-Document'
             JOIN business_view bv
-                ON (bv."sourceTimestamp" = rc.ts
+                ON bv."viewType" = 'PROJECT'
+               AND (
+                    bv."sourceTimestamp" = rc.ts
                     OR bv."businessData"->'linkedVcs' @>
-                       jsonb_build_array(jsonb_build_object('consensusTimestamp', rc.ts)))
-               AND bv."viewType" = 'PROJECT'
+                       jsonb_build_array(jsonb_build_object('consensusTimestamp', rc.ts))
+                    OR (a."consensusTimestamp" IS NOT NULL
+                        AND bv."projectKey" = a.documents->'credentialSubject'->0->>'id')
+                    OR (a."consensusTimestamp" IS NOT NULL
+                        AND bv."projectKey" = a.documents->'credentialSubject'->0->>'ref')
+               )
             ORDER BY rc.depth ASC
             LIMIT 1
         `, [mint.consensusTimestamp]);
@@ -123,8 +150,8 @@ export async function buildMintProjectLinks(
         if (chainRows.length > 0) {
             projectKey = chainRows[0].project_key;
             projectTopicId = chainRows[0].project_topic_id;
-            linkMethod = 'relationship';
-            linked++;
+            linkMethod = chainRows[0].method;
+            if (linkMethod === 'ref_root') refRoot++; else linked++;
         } else {
             // Step 1.5 — same-topic cs.ref lookup: find any VC in the same topic
             // whose credentialSubject[0].ref explicitly points to a project's
@@ -156,52 +183,6 @@ export async function buildMintProjectLinks(
                 linkMethod = 'cs_ref';
                 csRef++;
             } else {
-                // Step 1.75 — ref-root match: walk relationship ancestors for this mint
-                // and match a PROJECT row whose projectKey equals an ancestor VC's own
-                // cs.id OR its cs.ref. This decouples mint linking from linkedVcs
-                // completeness — the relationship walk often lands on lifecycle VCs
-                // whose cs.ref IS the project key even when those VCs are not (yet)
-                // in linkedVcs.
-                const refRootRows: Array<{ project_key: string; project_topic_id: string }> =
-                    await dataSource.query(`
-                        WITH RECURSIVE rel_chain(ts, depth) AS (
-                            SELECT
-                                jsonb_array_elements_text(m.options->'relationships')::varchar AS ts,
-                                1 AS depth
-                            FROM message m
-                            WHERE m."consensusTimestamp" = $1
-                              AND m.options->'relationships' IS NOT NULL
-                              AND jsonb_typeof(m.options->'relationships') = 'array'
-                              AND jsonb_array_length(m.options->'relationships') > 0
-
-                            UNION ALL
-
-                            SELECT
-                                jsonb_array_elements_text(p.options->'relationships')::varchar,
-                                rc.depth + 1
-                            FROM rel_chain rc
-                            JOIN message p ON p."consensusTimestamp" = rc.ts
-                            WHERE rc.depth < 15
-                              AND p.options->'relationships' IS NOT NULL
-                              AND p.options->'relationships' != 'null'::jsonb
-                              AND jsonb_typeof(p.options->'relationships') = 'array'
-                        )
-                        SELECT bv."projectKey" AS project_key, bv."relatedTopicId" AS project_topic_id
-                        FROM rel_chain rc
-                        JOIN message a ON a."consensusTimestamp" = rc.ts AND a.type = 'VC-Document'
-                        JOIN business_view bv ON bv."viewType" = 'PROJECT'
-                            AND (bv."projectKey" = a.documents->'credentialSubject'->0->>'id'
-                                 OR bv."projectKey" = a.documents->'credentialSubject'->0->>'ref')
-                        ORDER BY rc.depth ASC
-                        LIMIT 1
-                    `, [mint.consensusTimestamp]);
-
-                if (refRootRows.length > 0) {
-                    projectKey = refRootRows[0].project_key;
-                    projectTopicId = refRootRows[0].project_topic_id;
-                    linkMethod = 'ref_root';
-                    refRoot++;
-                } else {
                 // Step 2 — topic-scope fallback: safe only for unambiguous single-project topics.
                 const fallbackRows: Array<{ project_key: string; relatedTopicId: string }> =
                     await dataSource.query(`
@@ -226,8 +207,7 @@ export async function buildMintProjectLinks(
                 projectTopicId = fallbackRows[0].relatedTopicId;
                 linkMethod = 'topic_scope';
                 fallback++;
-                } // end else (Step 2)
-            } // end else (Step 1.75 miss)
+            }
         }
 
         // amount arrives as a JSONB string; parseFloat handles decimal values
