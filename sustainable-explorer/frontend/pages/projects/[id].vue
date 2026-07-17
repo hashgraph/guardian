@@ -11,7 +11,6 @@ import type { Credit } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 import { exportProject, type ExportFormat } from '~/lib/project-export';
 import { getSDG } from '~/lib/sdgs';
-import { getMethodologyName } from '~/lib/methodologies';
 import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
 import { nominatimReverse, nominatimCountryCenter } from '~/composables/useNominatim';
@@ -305,7 +304,7 @@ const hashscanTopicUrl = computed(() => {
 
 const fullMethodologyName = computed(() => {
     if (!project.value) return '';
-    return getMethodologyName(project.value.methodologyId) || project.value.methodology;
+    return project.value.methodology || project.value.methodologyId || '';
 });
 
 // ─── Methodology field mapping (Advanced tab, lazy-loaded) ────────────────────
@@ -446,7 +445,7 @@ const emissions = computed(() => {
                     :display-country-code="displayCountryCode"
                 />
 
-                <!-- Milestone Tracker (Registration → MRV Submission → Verification → Issuance) -->
+                <!-- Milestone Tracker (Registration → Validation → MRV Submission → Verification → Issuance) -->
                 <div v-if="project.milestones?.length" class="rounded-xl border bg-card overflow-hidden">
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">

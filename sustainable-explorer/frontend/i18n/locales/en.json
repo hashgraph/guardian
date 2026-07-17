@@ -482,7 +482,7 @@
         "sectoralScope": "Sectoral Scope: {scope}",
         "sdgsTooltip": "UN Sustainable Development Goals this project contributes to. Hover over each icon for the full goal name.",
         "sectorTooltip": "Includes Sectoral Scope as additional detail",
-        "stageTooltip": "Where the project sits in the credit lifecycle: Registered → Under Validation → MRV Submitted → Verified → Issued.",
+        "stageTooltip": "Where the project sits in the credit lifecycle: Registered → Validated → MRV Submitted → Verified → Issued.",
         "expectedIssuanceYearTooltip": "The year credits are first expected to be issued — applies to pre-issuance projects. Shows \"TBD\" when no forecast is available yet, and \"—\" for projects that have already issued.",
         "columns": {
             "project": "Project",
@@ -527,15 +527,16 @@
         },
         "lifecycleStages": {
             "Registered": "Registered",
-            "Validation": "Under Validation",
+            "Validation": "Validated",
             "Monitoring": "MRV Submitted",
             "Verified": "Verified",
             "Issued": "Issued"
         },
         "milestones": {
             "title": "Milestone Tracker",
-            "subtitle": "Registration → MRV Submission → Verification → Issuance",
+            "subtitle": "Registration → Validation → MRV Submission → Verification → Issuance",
             "registration": "Registration",
+            "validation": "Validation",
             "mrvSubmission": "MRV Submission",
             "verification": "Verification",
             "issuance": "Issuance",
