@@ -110,6 +110,14 @@
       <div class="schema-actions-buttons-container">
         @if (canCreate) {
           <p-button
+            (click)="onNewInEditor()"
+            label="New"
+            icon="pi pi-sparkles"
+            class="toolbar-btn-primary"
+            [pTooltip]="'Create a schema in the new editor'"
+            tooltipPosition="bottom">
+          </p-button>
+          <p-button
             (click)="onCreateSchemas()"
             class="toolbar-btn-primary"
             [pTooltip]="'Create a Schema'"
@@ -493,8 +501,19 @@
                         </div>
                       </td>
                     }
-                    <td class="row-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
+                    <td class="row-cell-text" style="min-width: 145px; width: 145px; max-width: 145px;">
                       <div class="operations-row-container">
+                        <div style="margin-right: 8px;">
+                          <div
+                            (click)="onOpenInEditor(rowData)"
+                            class="btn-settings"
+                            pTooltip="Open in Editor"
+                            tooltipStyleClass="guardian-tooltip"
+                            tooltipPosition="top"
+                            >
+                            <i class="pi pi-sparkles" style="font-size:15px;color:var(--primary-color,#1d9e75)"></i>
+                          </div>
+                        </div>
                         <div style="margin-right: 12px;">
                           @if (ifCanEdit(rowData)) {
                             <div
@@ -780,6 +799,16 @@
           tooltipPosition="bottom">
         </p-button>
       }
+
+      <p-button
+        (click)="onOpenInEditor(element)"
+        label="Open in Editor"
+        icon="pi pi-sparkles"
+        class="schema-menu-btn"
+        [outlined]="true"
+        [pTooltip]="'Open in the new schema editor'"
+        tooltipPosition="bottom">
+      </p-button>
 
       @if (ifCanEdit(element)) {
         <p-button
