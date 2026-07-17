@@ -52,4 +52,38 @@ export class DashboardPreferencesRepository {
         );
         return returningRows<DashboardRow>(result)[0];
     }
+
+    /**
+     * Syncs watchlist_subscriptions (the reverse index NotificationScanService
+     * watches) to match the caller's current watchlist exactly, for this
+     * (userId, network). "projectRefs" holds WatchlistItem.id values (=
+     * business_view.id), NOT project_mint_link.project_key — see the
+     * "watchlist_subscriptions" table comment in schema-bootstrap.ts.
+     *
+     * Two statements: delete rows no longer present, then insert any new ones
+     * (ON CONFLICT DO NOTHING — existing rows are left untouched, so their
+     * createdAt is preserved). An empty projectRefs array is valid and clears
+     * all subscriptions for this (userId, network) via the vacuously-true
+     * `<> ALL(ARRAY[]::text[])`.
+     */
+    async syncWatchlistSubscriptions(
+        userId: string,
+        network: string,
+        projectRefs: string[],
+    ): Promise<void> {
+        const ds = this.systemDataSource.getDataSource();
+
+        await ds.query(
+            `DELETE FROM watchlist_subscriptions
+              WHERE "userId" = $1 AND network = $2 AND "projectKey" <> ALL($3::text[])`,
+            [userId, network, projectRefs],
+        );
+
+        await ds.query(
+            `INSERT INTO watchlist_subscriptions ("userId", network, "projectKey")
+             SELECT $1, $2, unnest($3::text[])
+             ON CONFLICT ("userId", network, "projectKey") DO NOTHING`,
+            [userId, network, projectRefs],
+        );
+    }
 }

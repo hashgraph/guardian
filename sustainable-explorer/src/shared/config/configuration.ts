@@ -246,6 +246,18 @@ export default registerAs('app', () => {
         // Materialized views
         mvRefreshInterval: parseInt(process.env.MV_REFRESH_INTERVAL || '60', 10),
 
+        // Notification scan (API-side, per-network leader-elected setInterval —
+        // see NotificationScanService). Seconds between issuance-scan ticks.
+        notifScanInterval: parseInt(process.env.NOTIF_SCAN_INTERVAL || '20', 10),
+
+        // Read-notification retention (days). NotificationScanService prunes READ
+        // notifications older than this on a shared tick counter (see
+        // pruneReadNotifications()); unread rows are never auto-deleted.
+        // parseFloat (not parseInt) so fractional-day values work for local
+        // testing (e.g. 2 minutes = 0.0013888889) — Postgres's interval parser
+        // accepts fractional units (`'0.0013888889 days'::interval`).
+        notifReadRetentionDays: parseFloat(process.env.NOTIF_READ_RETENTION_DAYS || '30'),
+
         // Mirror node polling
         mirrorNodePollDelay: parseInt(process.env.MIRROR_NODE_POLL_DELAY || '30000', 10),
 

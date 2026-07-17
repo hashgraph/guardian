@@ -1,13 +1,14 @@
-import { Module } from '@nestjs/common';
+﻿import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import configuration from '@shared/config/configuration';
 import { AuthModule } from './auth/auth.module';
 import { AdminModule } from './admin/admin.module';
 import { AccountModule } from './account/account.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 // Database
-import { NetworkDataSourceRegistry } from './database/network-datasource.registry';
 import { SystemDatabaseModule } from '@api/database/system-database.module';
+import { NetworkDatabaseModule } from '@api/database/network-database.module';
 import { RedisModule } from '@shared/redis/redis.module';
 
 // Controllers
@@ -57,10 +58,12 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
             load: [configuration],
         }),
         SystemDatabaseModule,
+        NetworkDatabaseModule,
         RedisModule,
         AuthModule,
         AdminModule,
         AccountModule,
+        NotificationsModule,
     ],
     controllers: [
         RegistriesController,
@@ -79,7 +82,6 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         ImpactSummaryController,
     ],
     providers: [
-        NetworkDataSourceRegistry,
         RegistriesService,
         MethodologiesService,
         MappingReprocessService,
@@ -102,3 +104,4 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
     ],
 })
 export class ApiModule {}
+
