@@ -233,6 +233,9 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     addStep(role: string, index?: number) {
+        if (this.readonly) {
+            return;
+        }
         if (index == null) {
             index = this.navigation.find((nav: PolicyNavigationModel) => nav.role === role)?.steps.length || 0
         }
@@ -331,6 +334,9 @@ export class PolicyPropertiesComponent implements OnInit {
     }
 
     onRemoveStep(role: string, step: PolicyNavigationStepModel) {
+        if (this.readonly) {
+            return;
+        }
         this.policy.removeStep(role, step);
         const navigation = this.policy.policyNavigation.find((nav: PolicyNavigationModel) => nav.role === role);
         if (!navigation?.steps.length) {
