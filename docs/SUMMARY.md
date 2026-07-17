@@ -1018,7 +1018,6 @@
 ## Operations
 
 * [Guardian in Production](operations/guardian-in-production/README.md)
-  * [API Architecture Customization](operations/guardian-in-production/api-architecture-customization.md)
   * [Monitoring tools](operations/guardian-in-production/monitoring-tools.md)
   * [Performance Improvement](operations/guardian-in-production/performance-improvement.md)
   * [Cloud Infrastructure](operations/guardian-in-production/cloud-infrastructure.md)
