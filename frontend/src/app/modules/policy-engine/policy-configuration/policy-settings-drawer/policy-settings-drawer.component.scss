@@ -463,6 +463,10 @@
         display: contents;
     }
 
+    .properties:has(.navigation) {
+        --col-name-width: 146px;
+    }
+
     .properties:has(.navigation) colgroup .col-toggle {
         width: 54px;
     }
@@ -934,7 +938,8 @@
         background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
     }
 
-    .properties .tokens-header .token-name {
+    .properties .tokens-header .token-name,
+    .properties .navigation .step-level {
         display: block;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1016,10 +1021,6 @@
     // name as a secondary right-aligned label next to the delete action, nested
     // rows drop the legacy tree connector and take the section indent, and the
     // add action sits right aligned in its own row.
-    .properties .modules-header:hover > .propHeaderCell {
-        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
-    }
-
     .properties .modules-header .module-name {
         display: block;
         overflow: hidden;

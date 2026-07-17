@@ -880,8 +880,13 @@
                     <i *cdkDragPreview class="pi pi-align-left"></i>
                     <div cdkDragHandle class="inspector-head inspector-head--panel">
                       <div class="inspector-head-row">
-                        <span class="inspector-head-name" [title]="currentBlock.localTag">{{ currentBlock.localTag }}</span>
-                        <span class="inspector-head-type">{{ currentBlock.blockType }}</span>
+                        @if (currentBlock.isRoot && rootType === 'Policy') {
+                          <span class="inspector-head-name" title="Policy">Policy</span>
+                          <span class="inspector-head-type">Root</span>
+                        } @else {
+                          <span class="inspector-head-name" [title]="currentBlock.localTag">{{ currentBlock.localTag }}</span>
+                          <span class="inspector-head-type">{{ currentBlock.blockType }}</span>
+                        }
                       </div>
                       @if (currentBlock.parent && !currentBlock.parent.isRoot) {
                         <div class="inspector-head-parent"

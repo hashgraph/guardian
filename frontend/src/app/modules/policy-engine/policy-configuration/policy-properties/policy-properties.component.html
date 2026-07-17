@@ -342,6 +342,9 @@
                                 <i class="pi pi-chevron-down chevron-icon"></i>
                                 <span class="propHeaderTitle" [appOverflowTitle]="step.name || ('Step #' + (s + 1))">{{ step.name || ('Step #' + (s + 1)) }}</span>
                                 <div class="propHeaderActions">
+                                  @if (propHidden.navigationSteps[role + s]) {
+                                    <span class="step-level">Level: {{ step.level }}</span>
+                                  }
                                   <span (click)="$event.stopPropagation(); onRemoveStep(role, step)" [attr.readonly]="readonly"
                                     class="remove-step">
                                     <i class="pi pi-trash"></i>
