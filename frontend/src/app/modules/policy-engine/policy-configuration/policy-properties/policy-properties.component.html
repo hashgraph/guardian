@@ -297,11 +297,10 @@
               <div class="navigation">
                 @for (nav of navigation; track nav) {
                   @if (nav.role === role) {
-                    <tr class="propHeader">
-                      <td class="propRowCol"></td>
+                    <tr class="propHeader navigation-role-header">
                       <td (click)="onHide(propHidden.navigationRoles, role)"
                         [attr.collapse]="propHidden.navigationRoles[role]"
-                        class="propHeaderCell cellName" colspan="2">
+                        class="propHeaderCell cellName" colspan="3">
                         <div class="propHeaderContent">
                           <i class="pi pi-chevron-down chevron-icon"></i>
                           <span class="propHeaderTitle">{{ role }}</span>
@@ -328,9 +327,10 @@
                             (dragleave)="onStepDragLeave($event, role, s)"
                             (drop)="onStepDrop($event, role, s)">
                             <td class="propRowCol step-handle-cell"
-                              [attr.rowspan]="(propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]) ? 1 : 4">
+                              [attr.rowspan]="(propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]) ? 1 : 5">
                               @if (!readonly) {
                                 <div class="step-drag-handle" draggable="true" title="Drag to reorder"
+                                  [class.step-drag-active]="stepDragRole === role && stepDragIndex === s"
                                   (dragstart)="onStepDragStart($event, role, s)"
                                   (dragend)="onStepDragEnd()"
                                   (click)="$event.stopPropagation()"></div>
@@ -403,7 +403,6 @@
                           (dragover)="onStepDragOver($event, role, s)"
                           (dragleave)="onStepDragLeave($event, role, s)"
                           (drop)="onStepDrop($event, role, s)">
-                          <td class="propRowCol"></td>
                           <td class="propRowCell navigation-add-cell" colspan="2">
                             <div (click)="addStep(role, s + 1)" class="propAdd navigation-add">
                               <i class="pi pi-plus"></i>
