@@ -74,5 +74,28 @@ export const useApiFetch = () => {
         }
     }
 
-    return { apiFetch };
+    /**
+     * Like apiFetch, but for raw/blob responses (e.g. file downloads) that can't
+     * go through $fetch's JSON parsing. Returns the Response itself; callers
+     * inspect res.ok/res.status and read the body (.blob(), .json(), ...).
+     */
+    async function authFetch(input: string, init: RequestInit = {}): Promise<Response> {
+        const method = (init.method ?? 'GET').toUpperCase();
+        const withCsrf = (headers?: HeadersInit): HeadersInit => {
+            if (method === 'GET' || method === 'HEAD') return headers ?? {};
+            return { ...(headers as Record<string, string> | undefined), 'x-csrf-token': freshCsrf() };
+        };
+
+        let res = await fetch(input, { ...init, credentials: 'include', headers: withCsrf(init.headers) });
+
+        if (res.status === 401 && import.meta.client) {
+            const ok = await tryRefresh();
+            if (ok) {
+                res = await fetch(input, { ...init, credentials: 'include', headers: withCsrf(init.headers) });
+            }
+        }
+        return res;
+    }
+
+    return { apiFetch, authFetch };
 };
