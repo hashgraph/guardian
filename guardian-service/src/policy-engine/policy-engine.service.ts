@@ -34,6 +34,7 @@ import {
     PolicyDiscussion,
     PolicyImportExport,
     PolicyMessage,
+    PolicyParameters,
     RecordImportExport,
     RunFunctionAsync,
     Schema as SchemaCollection,
@@ -50,6 +51,7 @@ import {
     EntityOwner,
     ExternalMessageEvents,
     GenerateUUIDv4,
+    IBlockCompleteEvent,
     IOwner,
     PolicyEngineEvents,
     PolicyEvents,
@@ -64,13 +66,17 @@ import {
     PolicyActionStatus,
     IgnoreRule,
     SchemaStatus,
-    MigrationConfig, MigrationRunStatus,
+    PolicyEditableFieldDTO,
+    MigrationConfig,
+    MigrationRunStatus,
     MintTransactionStatus,
     TokenType,
-    IPolicyDocumentationEntry
+    IPolicyDocumentationEntry,
+    POLICY_ALIAS_REGEX
 } from '@guardian/interfaces';
 import { AccountId, PrivateKey } from '@hiero-ledger/sdk';
 import { NatsConnection } from 'nats';
+import { createHash } from 'node:crypto';
 import { CompareUtils, HashComparator } from '../analytics/index.js';
 import { compareResults, getDetails } from '../api/record.service.js';
 import { Inject } from '../helpers/decorators/inject.js';
@@ -99,10 +105,12 @@ function buildDocumentationUrls(
     return entries.map((entry) => {
         const tag = entry.target;
         const alias = entry.alias;
-        const method = entry.method;
-        const technicalUrl = method === 'POST'
-            ? `/api/v1/policies/${policyId}/tag/${tag}/blocks`
-            : `/api/v1/policies/${policyId}/tag/${tag}`;
+        if (!alias || !POLICY_ALIAS_REGEX.test(alias)) {
+            throw new Error(
+                `Invalid alias "${alias}" — only lowercase letters, digits, hyphens; segments separated by '/'.`
+            );
+        }
+        const technicalUrl = `/api/v1/policies/${policyId}/tag/${tag}/blocks`;
         const dmrvUrl = `/api/v1/dmrv/${policyId}/${alias}`;
         return {
             ...entry,
@@ -386,6 +394,15 @@ export class PolicyEngineService {
                 }
             })
 
+        this.channel.getMessages(PolicyEvents.BLOCK_COMPLETE_BROADCAST,
+            (msg: IBlockCompleteEvent) => {
+                try {
+                    this.channel.sendMessage(ExternalMessageEvents.BLOCK_COMPLETE, msg, false);
+                } catch (error) {
+                    console.error('Error relaying BLOCK_COMPLETE_BROADCAST:', error);
+                }
+            })
+
         this.channel.getMessages(PolicyEvents.TEST_UPDATE_BROADCAST,
             async (msg: {
                 id: string,
@@ -587,7 +604,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
-                    return new MessageError(error, error.code);
+                    return new MessageError(error, error.code, error.data);
                 }
             });
 
@@ -622,7 +639,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
-                    return new MessageError(error, error.code);
+                    return new MessageError(error, error.code, error.data);
                 }
             });
 
@@ -2306,7 +2323,7 @@ export class PolicyEngineService {
                     if (!PolicyHelper.isDryRunMode(model)) {
                         throw new Error(`Policy is not in Dry Run`);
                     }
-                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2382,7 +2399,7 @@ export class PolicyEngineService {
                             }
                         });
 
-                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds);
+                    const users = await DatabaseServer.getVirtualUsers(policyId, savepointIds, false, false, owner?.id);
                     return new MessageResponse(users);
                 } catch (error) {
                     return new MessageError(error);
@@ -2466,8 +2483,8 @@ export class PolicyEngineService {
                         throw new Error(`Policy is not in Dry Run`);
                     }
 
-                    await DatabaseServer.setVirtualUser(policyId, virtualDID)
-                    const users = await DatabaseServer.getVirtualUsers(policyId);
+                    await DatabaseServer.setVirtualUser(policyId, virtualDID, owner?.id)
+                    const users = await DatabaseServer.getVirtualUsers(policyId, undefined, false, false, owner?.id);
 
                     await (new GuardiansService())
                         .sendPolicyMessage(PolicyEvents.SET_VIRTUAL_USER, policyId, { did: virtualDID });
@@ -2497,7 +2514,7 @@ export class PolicyEngineService {
                     await DatabaseServer.clearAllSavepointData(policyId);
 
                     const users = await DatabaseServer.getVirtualUsers(policyId);
-                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did, owner?.id);
                     const filters = await this.policyEngine.addAccessFilters({}, owner);
                     const policies = (await DatabaseServer.getListOfPolicies(filters));
                     return new MessageResponse({ policies });
@@ -4023,11 +4040,22 @@ export class PolicyEngineService {
                         throw new Error(`Policy is published`);
                     }
                     const buffer = Buffer.from(file.buffer);
+                    const newHash = createHash('sha256').update(buffer).digest('hex');
+                    const existingTests = await DatabaseServer.getPolicyTests(policyId);
+                    for (const existing of existingTests) {
+                        const existingBuffer = existing.file
+                            ? await DatabaseServer.loadFile(existing.file)
+                            : null;
+                        if (existingBuffer && createHash('sha256').update(existingBuffer).digest('hex') === newHash) {
+                            return new MessageError('Duplicate test file.', 409);
+                        }
+                    }
                     const recordToImport = await RecordImportExport.parseZipFile(buffer);
                     const test = await DatabaseServer.createPolicyTest(
                         {
                             uuid: GenerateUUIDv4(),
                             name: file.filename.split('.')[0],
+                            description: recordToImport.policyTest?.description,
                             policyId,
                             owner: owner.creator,
                             status: PolicyTestStatus.New,
@@ -4087,16 +4115,22 @@ export class PolicyEngineService {
                     await DatabaseServer.clearDryRun(policyId, false);
                     PolicyDataMigrator.clearRunCacheByPolicyId(policyId);
                     const users = await DatabaseServer.getVirtualUsers(policyId);
-                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did);
+                    await DatabaseServer.setVirtualUser(policyId, users[0]?.did, owner?.id);
 
                     const options = { mode: 'test' };
                     const recordToImport = await RecordImportExport.parseZipFile(Buffer.from(zip));
+                    const selectedOutputs = RecordImportExport.hasSelectedOutputs(recordToImport);
+                    const expectedResults = RecordImportExport.getComparisonResults(recordToImport);
                     const guardiansService = new GuardiansService();
                     const recordId: string = await guardiansService
                         .sendPolicyMessage(PolicyEvents.RUN_RECORD, policyId, {
                             records: recordToImport.records,
-                            results: recordToImport.results,
-                            options
+                            results: expectedResults,
+                            options: {
+                                ...options,
+                                selectedOutputs,
+                                policyTest: recordToImport.policyTest
+                            }
                         });
                     if (recordId) {
                         test.resultId = recordId;
@@ -5459,6 +5493,111 @@ export class PolicyEngineService {
                     return new MessageError(error);
                 }
             })
+
+        this.channel.getMessages(PolicyEngineEvents.SAVE_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, policyId: string, config: PolicyEditableFieldDTO[] }) => {
+                try {
+                    const { owner, policyId, config } = msg;
+                    const userDID = owner?.creator;
+                    if (!userDID) {
+                        return new MessageError('Missing authenticated user identity');
+                    }
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        return new MessageError('Policy not found');
+                    }
+
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, { did: userDID } as IAuthUser);
+
+                    const editableKey = (f: PolicyEditableFieldDTO) => `${f.blockTag}::${f.propertyPath}`;
+                    const editableSet = new Set((policy.editableParametersSettings || []).map(editableKey));
+                    for (const item of config || []) {
+                        if (!editableSet.has(editableKey(item))) {
+                            return new MessageError(`Field ${editableKey(item)} is not editable on this policy`);
+                        }
+                    }
+
+                    let result;
+                    const found = await DatabaseServer.getPolicyParameters(userDID, policyId);
+                    if (found) {
+                        found.config = config;
+                        result = await DatabaseServer.updatePolicyParameters(found);
+                    } else {
+                        const parameters = new PolicyParameters();
+                        parameters.userDID = userDID;
+                        parameters.policyId = policyId;
+                        parameters.config = config;
+                        parameters.properties = {};
+                        parameters.updated = false;
+
+                        result = await DatabaseServer.createPolicyParameters(parameters);
+                    }
+
+                    const allPolicyParameters = await DatabaseServer.getPolicyParametersByPolicyId(policyId);
+                    allPolicyParameters.forEach(parameter => parameter.updated = true);
+                    await DatabaseServer.setPolicyParametersUpdated(allPolicyParameters);
+
+                    const echoedConfig = (result.config || []).filter((item: PolicyEditableFieldDTO) =>
+                        this.hasFieldPermission(item, userRole)
+                    );
+                    return new MessageResponse({ ...result, config: echoedConfig });
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            })
+
+        this.channel.getMessages(PolicyEngineEvents.GET_POLICY_PARAMETERS_VALUES,
+            async (msg: { owner: IOwner, user: IAuthUser, policyId: string }) => {
+                try {
+                    const { user, policyId } = msg;
+                    let result: PolicyEditableFieldDTO[] = [];
+                    const parameters = await DatabaseServer.getPolicyParameters(user.did, policyId);
+                    if (parameters && parameters.config?.length) {
+                        result = parameters.config;
+                    } else {
+                        const foundPolicy = await DatabaseServer.getPolicyById(policyId);
+                        result = foundPolicy?.editableParametersSettings || [];
+                    }
+
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    const userRole = await PolicyComponentsUtils.GetUserRole(policy, user);
+
+                    result = result.filter((item: PolicyEditableFieldDTO) => this.hasFieldPermission(item, userRole));
+
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                    return new MessageError(error);
+                }
+            })
         //#endregion
+    }
+
+    /**
+     * Role-token contract used by `visible`:
+     *   - 'ANY_ROLE' — visible to anyone.
+     *   - 'NO_ROLE'  — visible only when GetUserRole returns 'No role'.
+     *   - 'OWNER'    — visible to the policy owner (Administrator).
+     *   - <role>     — verbatim match against a policy role name.
+     */
+    public hasFieldPermission(field: PolicyEditableFieldDTO, userRole: string): boolean {
+        if (!field || !Array.isArray(field.visible)) {
+            return false;
+        }
+        if (field.visible.includes('ANY_ROLE')) {
+            return true;
+        }
+        if (field.visible.includes(userRole)) {
+            return true;
+        }
+        if (field.visible.includes('NO_ROLE') && userRole === 'No role') {
+            return true;
+        }
+        if (field.visible.includes('OWNER') && userRole === 'Administrator') {
+            return true;
+        }
+        return false;
     }
 }

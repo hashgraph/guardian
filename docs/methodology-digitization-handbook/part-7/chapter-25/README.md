@@ -42,7 +42,7 @@ The VM0033 policy demonstrates production-grade data transformation in the proje
 }
 ```
 
-![Data transformation block in VM0033](<../../../.gitbook/assets/image (190) (1).png>)
+![Data transformation block in VM0033](<../../../.gitbook/assets/image (45).png>)
 
 ### Transformation Code Structure
 
@@ -169,7 +169,7 @@ if (credentialSubject.projectLocations) {
 
 Guardian's `externalDataBlock` enables reception of monitoring data from external devices, IoT sensors, and third-party MRV systems. This pattern can be used for automated monitoring reports and real-time project tracking. It is the approaches used in Gold standard's metered energy cooking policy implemented on Guardian.
 
-![External MRV data integration flow in metered policy](<../../../.gitbook/assets/image-1 (11) (1).png>)
+![External MRV data integration flow in metered policy](<../../../.gitbook/assets/image-1 (9).png>)
 
 **External Data Flow:**
 
@@ -378,9 +378,9 @@ These integration patterns enable Guardian to function as a comprehensive platfo
 
 ### Related Documentation
 
-* [External Data Workflow Block](../../_shared/docs/available-policy-workflow-blocks/external-data-workflow-block.md)
-* [Custom Logic Block](../../_shared/docs/available-policy-workflow-blocks/customlogicblock.md)
-* [VM0033 Policy JSON](../../_shared/artifacts/vm0033-policy.json)
+* [External Data Workflow Block](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/docs/available-policy-workflow-blocks/external-data-workflow-block.md)
+* [Custom Logic Block](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/docs/available-policy-workflow-blocks/customlogicblock.md)
+* [VM0033 Policy JSON](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/vm0033-policy.json)
 
 ### Code Examples
 

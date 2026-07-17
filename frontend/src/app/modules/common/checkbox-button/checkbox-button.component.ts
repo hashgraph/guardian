@@ -6,7 +6,8 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 @Component({
     selector: 'checkbox-button',
     templateUrl: './checkbox-button.component.html',
-    styleUrls: ['./checkbox-button.component.scss']
+    styleUrls: ['./checkbox-button.component.scss'],
+    standalone: false
 })
 export class CheckboxButton {
     @Input('value') value!: boolean;

@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-formulas',
     templateUrl: './formulas.component.html',
     styleUrls: ['./formulas.component.scss'],
+    standalone: false
 })
 export class FormulasComponent implements OnInit {
     public readonly title: string = 'Formulas';
@@ -41,6 +42,7 @@ export class FormulasComponent implements OnInit {
     public currentPolicy: any = null;
 
     private subscription = new Subscription();
+    private initialized = false;
 
     constructor(
         private profileService: ProfileService,
@@ -141,6 +143,10 @@ export class FormulasComponent implements OnInit {
         this.pageCount = 0;
         this.subscription.add(
             this.route.queryParams.subscribe((queryParams) => {
+                if (this.initialized) {
+                    return;
+                }
+                this.initialized = true;
                 this.loadProfile();
             })
         );
@@ -253,7 +259,7 @@ export class FormulasComponent implements OnInit {
                 policy: this.currentPolicy,
                 action: 'Create'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -280,7 +286,7 @@ export class FormulasComponent implements OnInit {
             data: {
                 type: ImportEntityType.Formula,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -301,7 +307,7 @@ export class FormulasComponent implements OnInit {
                 policy: this.currentPolicy,
                 formula
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.policyId) {
                 this.loading = true;
@@ -357,7 +363,7 @@ export class FormulasComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -398,7 +404,7 @@ export class FormulasComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Publish') {
                 this.loading = true;

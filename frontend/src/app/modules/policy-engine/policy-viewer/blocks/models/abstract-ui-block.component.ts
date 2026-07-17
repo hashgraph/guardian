@@ -6,7 +6,9 @@ import { ProfileService } from "src/app/services/profile.service";
 import { WebSocketService } from "src/app/services/web-socket.service";
 import { Directive, Input } from '@angular/core';
 
-@Directive()
+@Directive({
+    standalone: false
+})
 export abstract class AbstractUIBlockComponent<T> {
     public id!: string;
     public policyId!: string;

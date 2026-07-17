@@ -1,7 +1,6 @@
 import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
-import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
-import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
+import { FilterObject, FilterQuery, FindAllOptions, MikroORM, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { Binary } from 'bson';
 import {
@@ -58,6 +57,7 @@ import {
     PolicyDiscussion,
     GlobalEventsReaderStream,
     GlobalEventsWriterStream,
+    PolicyParameters,
     MigrationMessageMap,
     MigrationFailedItem,
     DeleteCache,
@@ -961,6 +961,66 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeSchemaRule(rule: SchemaRule): Promise<void> {
         return await new DataBaseHelper(SchemaRule).remove(rule);
+    }
+
+    /**
+     * Create Policy Parameters
+     * @param parameters
+     */
+    public static async createPolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        const item = new DataBaseHelper(PolicyParameters).create(parameters);
+        return await new DataBaseHelper(PolicyParameters).save(item);
+    }
+
+    /**
+     * Set flag updated true
+     * @param parameters
+     * @param policyId
+     */
+    public static async setPolicyParametersUpdated(
+        parameters: PolicyParameters[],
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).updateMany(parameters);
+    }
+
+    /**
+     * Update Policy Parameters
+     * @param label
+     */
+    public static async updatePolicyParameters(
+        parameters: PolicyParameters
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).update(parameters);
+    }
+
+    /**
+     * Get Policy Parameters
+     * @param filters
+     */
+    public static async getPolicyParameters(
+        userDID: string,
+        policyId: string
+    ): Promise<PolicyParameters> {
+        return await new DataBaseHelper(PolicyParameters).findOne({
+            userDID,
+            policyId
+        });
+    }
+
+    /**
+     * Get Policy Parameters by Policy Id
+     * @param filters
+     */
+    public static async getPolicyParametersByPolicyId(
+        policyId: string
+    ): Promise<PolicyParameters[]> {
+        return await new DataBaseHelper(PolicyParameters).findAll({
+            where: {
+                policyId
+            }
+        });
     }
 
     /**
@@ -2623,6 +2683,27 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await this.find(DocumentState, filters, options);
     }
 
+    public async getDocumentStateHistory(
+        filters: FilterObject<DocumentState>,
+        documentSubpaths: string[],
+    ): Promise<{ createDate: Date, document: any }[]> {
+        const topLevelKeys = Array.from(new Set(
+            documentSubpaths.map(p => (p || '').split('.', 1)[0])
+        ));
+        const projection: any = { _id: 0, createDate: 1 };
+        for (const key of topLevelKeys) {
+            if (!key || key.startsWith('$') || key.includes('.') || key.includes('\0')) {
+                continue;
+            }
+            projection[`document.${key}`] = 1;
+        }
+        const pipeline: any[] = [
+            { $match: filters },
+            { $project: projection },
+        ];
+        return await this.aggregate(DocumentState, pipeline) as any;
+    }
+
     /**
      * Get Dry Run id
      * @returns Dry Run id
@@ -3035,7 +3116,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyCategories(): Promise<PolicyCategory[]> {
-        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory as FilterQuery<PolicyCategory>);
+        return await new DataBaseHelper(PolicyCategory).find({});
     }
 
     /**
@@ -3052,7 +3133,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyProperties(): Promise<PolicyProperty[]> {
-        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty as FilterQuery<PolicyProperty>);
+        return await new DataBaseHelper(PolicyProperty).find({});
     }
 
     /**
@@ -4024,7 +4105,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async getVirtualUser(policyId: string): Promise<DryRun | null> {
+    public static async getVirtualUser(policyId: string, userId?: string | null): Promise<DryRun | null> {
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            if (!pointer?.did) {
+                return null;
+            }
+            return await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'VirtualUsers',
+                did: pointer.did
+            }, {
+                fields: [
+                    'id',
+                    'did',
+                    'username',
+                    'hederaAccountId',
+                    'active'
+                ]
+            } as unknown as FindOptions<object>);
+        }
+        // Legacy fallback: single shared active pointer. Used only when no
+        // real (authenticated) user context is available, e.g. background
+        // jobs. Callers resolving a request on behalf of a real user should
+        // always pass `userId`, so that each real user driving a dry-run
+        // policy keeps their own independently selected virtual persona
+        // instead of sharing one global pointer with every other tester.
         return await new DataBaseHelper(DryRun).findOne({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -4044,6 +4154,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get All Virtual Users
      * @param policyId
      * @param savepointIds
+     * @param virtualKey
+     * @param document
+     * @param userId Real (authenticated) user requesting the list. When
+     * provided, each returned user's `active` field is recomputed against
+     * that real user's own selected persona (`ActiveVirtualUser` pointer)
+     * instead of the legacy shared `active` column, so concurrent dry-run
+     * testers each see their own persona highlighted.
      * @virtual
      */
     public static async getVirtualUsers(
@@ -4051,6 +4168,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         savepointIds?: string[],
         virtualKey?: boolean,
         document?: boolean,
+        userId?: string | null,
     ): Promise<DryRun[]> {
         const filter: any = {
             dryRunId: policyId,
@@ -4077,6 +4195,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 createDate: 1
             }
         });
+
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            for (const user of users) {
+                user.active = !!pointer?.did && pointer.did === user.did;
+            }
+        }
 
         if (virtualKey) {
             for (const user of users) {
@@ -5026,7 +5155,25 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async setVirtualUser(policyId: string, did: string): Promise<void> {
+    public static async setVirtualUser(policyId: string, did: string, userId?: string | null): Promise<void> {
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            if (pointer) {
+                pointer.did = did;
+                await new DataBaseHelper(DryRun).save(pointer);
+            } else {
+                await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+                    did,
+                    userId
+                }, policyId, 'ActiveVirtualUser', false));
+            }
+            return;
+        }
+        // Legacy fallback: see getVirtualUser() above.
         const items = (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'
@@ -5165,6 +5312,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         model.policyGroups = data.policyGroups;
         model.categories = data.categories;
         model.projectSchema = data.projectSchema;
+        model.editableParametersSettings = data.editableParametersSettings;
         model.policyDocumentation = data.policyDocumentation;
 
         return await new DataBaseHelper(Policy).save(model);

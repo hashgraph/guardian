@@ -1,0 +1,60 @@
+@if (automationService.state$ | async; as state) {
+  <div class="policy-test-automation-popup">
+    <div class="policy-test-header">
+      <span class="policy-test-title">Policy Test Automation</span>
+    </div>
+    <label class="policy-test-capture-row">
+      <input
+        type="checkbox"
+        [checked]="state.captureNextFormSubmit"
+        (change)="onCaptureChange($any($event.target).checked)"
+        />
+      <span>Capture test data on next form submission</span>
+    </label>
+    <div class="policy-test-cases">
+      @if (state.testCases.length === 0) {
+        <div class="policy-test-empty-title">Test Data</div>
+        <div class="policy-test-empty-msg">Not captured yet</div>
+      }
+      @for (tc of state.testCases; track tc; let i = $index) {
+        <div class="policy-test-case-card">
+          <div class="test-case-header">
+            <span class="test-case-name">Test Data {{ i + 1 }}</span>
+            <button type="button" class="test-case-discard-btn" (click)="discardTestCase(tc.id)">
+              <i class="pi pi-trash"></i> Discard
+            </button>
+          </div>
+          <div class="test-case-body">
+            <div class="test-case-input-col">
+              <button type="button" class="test-case-link-btn" (click)="viewInput(tc.id)">
+                <i class="pi pi-search"></i> View Input
+              </button>
+            </div>
+            <div class="test-case-outputs-col">
+              @for (out of tc.outputs; track out) {
+                <div class="test-case-output-row">
+                  <label class="test-case-output-check">
+                    <input
+                      type="checkbox"
+                      [checked]="out.selected"
+                      (change)="toggleOutputSelected(tc.id, out.documentId)"
+                      />
+                    <span>{{ out.tag }}</span>
+                  </label>
+                  <button type="button" class="test-case-link-btn" (click)="viewOutput(tc.id, out.documentId)">
+                    <i class="pi pi-search"></i> View Document
+                  </button>
+                </div>
+              }
+              @if (tc.outputs.length === 0) {
+                <div class="test-case-loading">
+                  Loading outputs...
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

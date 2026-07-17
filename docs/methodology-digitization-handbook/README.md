@@ -1,6 +1,10 @@
-# 📚 Methodology Digitization Handbook
+---
+description: >-
+  A comprehensive guide to digitizing environmental methodologies on Guardian
+  platform
+---
 
-> A comprehensive guide to digitizing environmental methodologies on Guardian platform
+# 📚 Methodology Digitization Handbook
 
 ## Summary
 
@@ -44,7 +48,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 **Complete Process Coverage**: From initial PDF analysis to production deployment with VM0033 digitization example throughout.
 {% endhint %}
 
-<table><thead><tr><th width="200">Features</th><th>Description</th></tr></thead><tbody><tr><td><strong>Comprehensive Coverage</strong></td><td>• Complete process from PDF analysis to deployment<br>• Real examples from VM0033 implementation<br>• Practical focus with actionable steps<br>• Best practices from successful digitizations</td></tr><tr><td><strong>Why VM0033?</strong></td><td>• 135-page methodology that covers most challenges<br>• Active use in blue carbon projects<br>• Guardian policy being used by Verra in production<br>• Built in collaboration with Verra &#x26; Allcot with real project data and testing</td></tr><tr><td><strong>Streamlined Structure</strong></td><td>• 27 focused chapters across 8 parts<br>• 20-30 hours total reading time<br>• Practical, hands-on approach throughout<br>• Reduced complexity while maintaining comprehensive coverage</td></tr></tbody></table>
+<table><thead><tr><th width="200">Features</th><th>Description</th></tr></thead><tbody><tr><td><strong>Comprehensive Coverage</strong></td><td>• Complete process from PDF analysis to deployment<br>• Real examples from VM0033 implementation<br>• Practical focus with actionable steps<br>• Best practices from successful digitalizations</td></tr><tr><td><strong>Why VM0033?</strong></td><td>• 135-page methodology that covers most challenges<br>• Active use in blue carbon projects<br>• Guardian policy being used by Verra in production<br>• Built in collaboration with Verra &#x26; Allcot with real project data and testing</td></tr><tr><td><strong>Streamlined Structure</strong></td><td>• 27 focused chapters across 8 parts<br>• 20-30 hours total reading time<br>• Practical, hands-on approach throughout<br>• Reduced complexity while maintaining comprehensive coverage</td></tr></tbody></table>
 
 ## Handbook Structure and Flow
 
@@ -53,6 +57,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 {% endhint %}
 
 <details>
+
 <summary><strong>Part I: Foundation (Chapters 1-3)</strong> - 20-30 minutes</summary>
 
 **Purpose**: Establish understanding of methodology digitization and Guardian platform **Outcome**: Clear comprehension of the digitization process and platform capabilities
@@ -64,6 +69,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
+
 <summary><strong>Part II: Analysis and Planning (Chapters 4-7)</strong> - 30-40 minutes</summary>
 
 **Purpose**: Systematic analysis of methodology documents and preparation for digitization **Outcome**: Complete understanding of methodology requirements and test artifacts
@@ -76,6 +82,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
+
 <summary><strong>Part III: Schema Design and Development (Chapters 8-12)</strong> - 3-4 hours</summary>
 
 **Purpose**: Practical schema development and Guardian management features **Outcome**: Production-ready PDD and monitoring schemas with testing validation
@@ -89,6 +96,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
+
 <summary><strong>Part IV: Policy Workflow Design and Implementation (Chapters 13-17)</strong> - 3-4 hours</summary>
 
 **Purpose**: Transform Part III schemas into complete Guardian policies with automated workflows **Outcome**: Production-ready policies with stakeholder workflows and token minting
@@ -102,6 +110,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
+
 <summary><strong>Part V: Calculation Logic Implementation (Chapters 18-21)</strong> - 2-3 hours</summary>
 
 **Purpose**: Convert methodology equations into executable code and implement comprehensive testing **Outcome**: Production-ready calculation implementations with Guardian's testing framework
@@ -114,6 +123,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
+
 <summary><strong>Part VI: Integration and Testing (Chapters 22-24)</strong> - 7-10 hours</summary>
 
 **Purpose**: End-to-end testing and API automation for production deployment **Outcome**: Production-ready methodology with testing coverage and API integration
@@ -125,6 +135,7 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 </details>
 
 <details>
+
 <summary><strong>Part VII: Advanced Topics (Chapters 25-26)</strong> - 5-7 hours</summary>
 
 **Purpose**: Advanced integration techniques and troubleshooting **Outcome**: Expert-level understanding and problem-solving capabilities
@@ -199,36 +210,39 @@ The Methodology Digitization Handbook is a comprehensive guide for transforming 
 ## Getting Started
 
 ### Quick Navigation
-- **📋 [Table of Contents](table-of-contents.md)** - Complete handbook overview with reading time estimates
-- **📝 [Chapter Outlines](chapter-outlines.md)** - Detailed descriptions of all chapters and topics
-- **🏗️ [Part I: Foundation and Preparation](part-1/README.md)** - Start your learning journey here (Available Now)
-- **🔍 [Part II: Analysis and Planning](part-2/README.md)** - Systematic methodology analysis techniques (Available Now)
-- **🏗️ [Part III: Schema Design and Development](part-3/README.md)** - Schema development and testing (Available Now)
-- **⚙️ [Part IV: Policy Workflow Design and Implementation](part-4/README.md)** - Complete policy workflow development (Available Now)
-- **🧮 [Part V: Calculation Logic Implementation](part-5/README.md)** - CustomLogicBlock development, Guardian Tools, and testing (Available Now)
-- **🔗 [Part VI: Integration and Testing](part-6/README.md)** - End-to-end testing, API integration, and production deployment validation (Available Now)
-- **⚡ [Part VII: Advanced Topics and Best Practices](part-7/README.md)** - External integration and troubleshooting (Available Now)
+
+* **📋** [**Table of Contents**](table-of-contents.md) - Complete handbook overview with reading time estimates
+* **📝** [**Chapter Outlines**](chapter-outlines.md) - Detailed descriptions of all chapters and topics
+* **🏗️** [**Part I: Foundation and Preparation**](part-1/) - Start your learning journey here (Available Now)
+* **🔍** [**Part II: Analysis and Planning**](part-2/) - Systematic methodology analysis techniques (Available Now)
+* **🏗️** [**Part III: Schema Design and Development**](part-3/) - Schema development and testing (Available Now)
+* **⚙️** [**Part IV: Policy Workflow Design and Implementation**](part-4/) - Complete policy workflow development (Available Now)
+* **🧮** [**Part V: Calculation Logic Implementation**](part-5/) - CustomLogicBlock development, Guardian Tools, and testing (Available Now)
+* **🔗** [**Part VI: Integration and Testing**](part-6/) - End-to-end testing, API integration, and production deployment validation (Available Now)
+* **⚡** [**Part VII: Advanced Topics and Best Practices**](part-7/) - External integration and troubleshooting (Available Now)
 
 ### Available Content
+
 {% hint style="success" %}
 **Parts I-VII are now available** with all twenty-six chapters complete and ready for use, covering the complete foundation through advanced integration and troubleshooting.
 {% endhint %}
 
-| Part             | Status          | Chapters                           | Description                                                               |
-| ---------------- | --------------- | ---------------------------------- | ------------------------------------------------------------------------- |
-| **Part I**       | ✅ **Available** | [Chapters 1-3](part-1/README.md)   | Foundation concepts, VM0033 overview, Guardian platform introduction      |
-| **Part II**      | ✅ **Available** | [Chapters 4-7](part-2/README.md)   | Methodology analysis, equation mapping, tools integration, test artifacts |
-| **Part III**     | ✅ **Available** | [Chapters 8-12](part-3/README.md)  | Schema development, field management, testing checklist                   |
-| **Part IV**      | ✅ **Available** | [Chapters 13-17](part-4/README.md) | Policy workflow design, VM0033 implementation, user roles, production deployment      |
-| **Part V**       | ✅ **Available** | [Chapters 18-21](part-5/README.md) | Calculation logic, customLogicBlock development, Guardian Tools, testing  |
-| **Part VI**      | ✅ **Available** | [Chapters 22-24](part-6/README.md) | End-to-end testing, API integration, Guardian Indexer analytics                  |
-| **Part VII**     | ✅ **Available** | [Chapters 25-26](part-7/README.md) | External integration, troubleshooting, advanced best practices            |
+| Part         | Status          | Chapters                  | Description                                                                      |
+| ------------ | --------------- | ------------------------- | -------------------------------------------------------------------------------- |
+| **Part I**   | ✅ **Available** | [Chapters 1-3](part-1/)   | Foundation concepts, VM0033 overview, Guardian platform introduction             |
+| **Part II**  | ✅ **Available** | [Chapters 4-7](part-2/)   | Methodology analysis, equation mapping, tools integration, test artifacts        |
+| **Part III** | ✅ **Available** | [Chapters 8-12](part-3/)  | Schema development, field management, testing checklist                          |
+| **Part IV**  | ✅ **Available** | [Chapters 13-17](part-4/) | Policy workflow design, VM0033 implementation, user roles, production deployment |
+| **Part V**   | ✅ **Available** | [Chapters 18-21](part-5/) | Calculation logic, customLogicBlock development, Guardian Tools, testing         |
+| **Part VI**  | ✅ **Available** | [Chapters 22-24](part-6/) | End-to-end testing, API integration, Guardian Indexer analytics                  |
+| **Part VII** | ✅ **Available** | [Chapters 25-26](part-7/) | External integration, troubleshooting, advanced best practices                   |
 
 ### Shared Resources
-- **🔧 [Shared Resources](_shared/README.md)** - Templates, integration guides, and reference materials
-- **📄 [Templates](_shared/templates/README.md)** - Standardized chapter and section templates
-- **🔗 [VM0033 Integration](_shared/vm0033-integration/README.md)** - VM0033-specific integration system
 
----
+* **🔧** [**Shared Resources**](_shared/) - Templates, integration guides, and reference materials
+* **📄** [**Templates**](_shared/templates/) - Standardized chapter and section templates
+* **🔗** [**VM0033 Integration**](_shared/vm0033-integration/) - VM0033-specific integration system
 
-*This handbook represents the collective knowledge and experience of the Guardian community, with special thanks to the Verra and Allcot team for their collaboration on the VM0033 implementation that serves as our primary example throughout this guide.*
+***
+
+_This handbook represents the collective knowledge and experience of the Guardian community, with special thanks to the Verra and Allcot team for their collaboration on the VM0033 implementation that serves as our primary example throughout this guide._

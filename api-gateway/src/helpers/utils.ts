@@ -5,6 +5,7 @@ import { PolicyEngine } from './policy-engine.js';
 
 interface MessageError extends Error {
     code: number;
+    data?: any;
 }
 
 /**
@@ -103,7 +104,12 @@ export async function InternalException(error: HttpException | string | MessageE
         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     } else {
         if (error.code) {
-            throw new HttpException(error.message, error.code);
+            throw new HttpException(
+                error.data
+                    ? { statusCode: error.code, message: error.message, data: error.data }
+                    : error.message,
+                error.code
+            );
         } else {
             throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }

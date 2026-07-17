@@ -1,7 +1,8 @@
 import { assert } from 'chai';
+import { PrivateKey } from '@hiero-ledger/sdk';
 
 import { DIDMessage } from '../../../../dist/hedera-modules/message/did-message.js';
-import { DIDDocument } from '../../../../dist/hedera-modules/vcjs/did-document.js';
+import { HederaDidDocument } from '../../../../dist/hedera-modules/vcjs/did/hedera-did-document.js';
 
 import { MessageStatus } from '../../../../dist/hedera-modules/message/message.js';
 import { MessageType } from '../../../../dist/hedera-modules/message/message-type.js';
@@ -25,7 +26,8 @@ describe('DIDMessage', function () {
         assert.throws(DIDMessage.fromMessage);
         assert.throws(DIDMessage.fromMessageObject);
 
-        const testDidDocument = await DIDDocument.create();
+        const privateKey = PrivateKey.generate();
+        const testDidDocument = await HederaDidDocument.generate('testnet', privateKey, '0.0.0');
         const didMessage = new DIDMessage(MessageAction.CreateDID);
         assert.exists(didMessage);
         didMessage.setDocument(testDidDocument);

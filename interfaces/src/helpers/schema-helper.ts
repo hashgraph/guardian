@@ -93,7 +93,8 @@ export class SchemaHelper {
             suggest,
             autocalculate,
             expression,
-            isUpdatable
+            isUpdatable,
+            enumName,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
         if (field.isRef) {
@@ -137,6 +138,7 @@ export class SchemaHelper {
         field.expression = expression;
         field.order = orderPosition || -1;
         field.isUpdatable = isUpdatable;
+        field.enumName = enumName;
         return field;
     }
 
@@ -274,14 +276,33 @@ export class SchemaHelper {
         const buildFields = (node: any) =>
             SchemaHelper.parseFields(node, context, schemaCache, document.$defs || defs) as SchemaField[];
 
-        const predicatesFromProperties = (props: any): SchemaFieldPredicate[] => {
+        const predicatesFromProperties = (
+            props: any,
+            currentFields: SchemaField[] = fields,
+            pathSoFar: string[] = []
+        ): SchemaFieldPredicate[] => {
             const preds: SchemaFieldPredicate[] = [];
             for (const key of Object.keys(props || {})) {
                 const rule = props[key];
-                if (rule && Object.prototype.hasOwnProperty.call(rule, 'const')) {
-                    const f = fields.find(x => x.name === key);
+                if (!rule) { continue; }
+                if (Object.prototype.hasOwnProperty.call(rule, 'const')) {
+                    const f = currentFields.find(x => x.name === key);
                     if (f) {
-                        preds.push({ field: f, fieldValue: rule.const });
+                        const fullPath = [...pathSoFar, key];
+                        preds.push({
+                            field: f,
+                            fieldValue: rule.const,
+                            fieldPath: fullPath.length > 1 ? fullPath : undefined,
+                        });
+                    }
+                } else if (rule.properties) {
+                    const refField = currentFields.find(x => x.name === key && x.isRef);
+                    if (refField && (refField as any).fields?.length) {
+                        preds.push(...predicatesFromProperties(
+                            rule.properties,
+                            (refField as any).fields,
+                            [...pathSoFar, key]
+                        ));
                     }
                 }
             }
@@ -333,6 +354,102 @@ export class SchemaHelper {
             return null;
         };
 
+        const extractCrossFromLevel = (
+            node: any,
+            refFieldsAtLevel: SchemaField[],
+            pathPrefix: string[],
+        ): {
+            thenTargets: { field: SchemaField; fieldPath: string[] }[];
+            elseTargets: { field: SchemaField; fieldPath: string[] }[];
+            cleanProps: any;
+            hasCrossKeys: boolean;
+        } => {
+            const thenTargets: { field: SchemaField; fieldPath: string[] }[] = [];
+            const elseTargets: { field: SchemaField; fieldPath: string[] }[] = [];
+            const cleanProps: any = {};
+            let hasCrossKeys = false;
+
+            if (!node?.properties) {
+                return { thenTargets, elseTargets, cleanProps: node?.properties, hasCrossKeys };
+            }
+
+            for (const key of Object.keys(node.properties)) {
+                const val = node.properties[key];
+                const refField = refFieldsAtLevel.find(f => f.name === key && f.isRef);
+                const isCrossConstraint = refField && val && !val.$comment && !val.type && !val.$ref;
+                if (isCrossConstraint) {
+                    hasCrossKeys = true;
+                    const childPath = [...pathPrefix, key];
+                    const childFields: SchemaField[] = (refField as any).fields || [];
+                    if (Array.isArray(val.required)) {
+                        for (const fieldName of val.required) {
+                            const childField = childFields.find(f => f.name === fieldName);
+                            if (childField) {
+                                thenTargets.push({ field: childField, fieldPath: [...childPath, fieldName] });
+                            }
+                        }
+                    }
+                    if (val.properties) {
+                        for (const fieldName of Object.keys(val.properties)) {
+                            const subVal = val.properties[fieldName];
+                            if (subVal === false) {
+                                const childField = childFields.find(f => f.name === fieldName);
+                                if (childField) {
+                                    elseTargets.push({ field: childField, fieldPath: [...childPath, fieldName] });
+                                }
+                            } else {
+                                const subRefField = childFields.find(f => f.name === fieldName && f.isRef);
+                                if (subRefField) {
+                                    const subResult = extractCrossFromLevel(
+                                        { properties: { [fieldName]: subVal } },
+                                        childFields,
+                                        childPath,
+                                    );
+                                    thenTargets.push(...subResult.thenTargets);
+                                    elseTargets.push(...subResult.elseTargets);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    cleanProps[key] = val;
+                }
+            }
+            return { thenTargets, elseTargets, cleanProps, hasCrossKeys };
+        };
+
+        const extractCrossTargets = (node: any): {
+            thenTargets: { field: SchemaField; fieldPath: string[] }[];
+            elseTargets: { field: SchemaField; fieldPath: string[] }[];
+            cleanNode: any;
+        } => {
+            if (!node?.properties) {
+                return { thenTargets: [], elseTargets: [], cleanNode: node };
+            }
+            const result = extractCrossFromLevel(node, fields, []);
+            if (!result.hasCrossKeys) {
+                return { thenTargets: [], elseTargets: [], cleanNode: node };
+            }
+            const cleanNode: any = { ...node };
+            if (result.cleanProps && Object.keys(result.cleanProps).length) {
+                cleanNode.properties = result.cleanProps;
+                if (Array.isArray(node.required)) {
+                    cleanNode.required = node.required.filter((n: string) => n in result.cleanProps);
+                }
+            } else {
+                delete cleanNode.properties;
+                delete cleanNode.required;
+            }
+            return {
+                thenTargets: result.thenTargets,
+                elseTargets: result.elseTargets,
+                cleanNode: Object.keys(cleanNode).length ? cleanNode : null,
+            };
+        };
+
+        const dedupeTargets = (targets: { field: SchemaField; fieldPath: string[] }[]) =>
+            [...new Map(targets.map(t => [t.fieldPath.join('.'), t])).values()];
+
         const parseArray = (arr: any[]): SchemaCondition[] => {
             const out: SchemaCondition[] = [];
             for (const n of arr || []) {
@@ -340,9 +457,20 @@ export class SchemaHelper {
                     continue;
                 }
                 const ifCondition = toIfCondition(n.if);
-                const thenFields = buildFields(n.then);
-                const elseFields = buildFields(n.else);
-                out.push({ ifCondition, thenFields, elseFields });
+                const { thenTargets, elseTargets, cleanNode: cleanThen } = extractCrossTargets(n.then);
+                const {
+                    thenTargets: elseRequiredTargets,
+                    elseTargets: elseForbiddenTargets,
+                    cleanNode: cleanElse,
+                } = extractCrossTargets(n.else);
+                const thenFields = buildFields(cleanThen);
+                const elseFields = buildFields(cleanElse);
+                const allThenTargets = dedupeTargets([...thenTargets, ...elseForbiddenTargets]);
+                const allElseTargets = dedupeTargets([...elseTargets, ...elseRequiredTargets]);
+                const condition: any = { ifCondition, thenFields, elseFields };
+                if (allThenTargets.length) { condition.thenTargets = allThenTargets; }
+                if (allElseTargets.length) { condition.elseTargets = allElseTargets; }
+                out.push(condition as SchemaCondition);
             }
             return out;
         };
@@ -355,6 +483,19 @@ export class SchemaHelper {
         }
 
         return results;
+    }
+
+    /**
+     * Clone a SchemaField array
+     */
+    private static cloneFields(fields: SchemaField[]): SchemaField[] {
+        return fields.map((f) => {
+            const clone: SchemaField = { ...f };
+            if (Array.isArray(f.fields)) {
+                clone.fields = SchemaHelper.cloneFields(f.fields);
+            }
+            return clone;
+        });
     }
 
     /**
@@ -388,6 +529,7 @@ export class SchemaHelper {
         const properties = Object.keys(document.properties);
         for (const name of properties) {
             const property = document.properties[name];
+            if (property === false) { continue; }
             if (!includeSystemProperties && property.readOnly) {
                 continue;
             }
@@ -415,7 +557,7 @@ export class SchemaHelper {
                     });
                 }
                 const subSchema = schemaCache.get(field.type);
-                field.fields = subSchema.fields;
+                field.fields = SchemaHelper.cloneFields(subSchema.fields);
                 field.conditions = subSchema.conditions;
             }
             if (field.order === -1) {
@@ -504,9 +646,14 @@ export class SchemaHelper {
             }
 
             const single = (p: SchemaFieldPredicate | { field: SchemaField; fieldValue: any }) => {
-                return {
-                    properties: { [p.field.name]: { const: p.fieldValue } }
+                const path = ('fieldPath' in p && p.fieldPath && p.fieldPath.length > 1)
+                    ? p.fieldPath
+                    : [p.field.name];
+                let node: any = { const: p.fieldValue };
+                for (let i = path.length - 1; i >= 0; i--) {
+                    node = { properties: { [path[i]]: node }, required: [path[i]] };
                 }
+                return node;
             };
 
             if ('field' in ic && 'fieldValue' in ic) {
@@ -540,6 +687,79 @@ export class SchemaHelper {
             return null;
         };
 
+        const deepMergeSchemaObj = (a: any, b: any): any => {
+            if (a === null || a === undefined) { return b; }
+            if (b === null || b === undefined) { return a; }
+            if (b === false || a === false) { return false; }
+            const result: any = { ...a };
+            for (const key of Object.keys(b)) {
+                if (key === 'properties') {
+                    result.properties = { ...(a.properties || {}) };
+                    for (const pk of Object.keys(b.properties)) {
+                        result.properties[pk] = (a.properties?.[pk] !== undefined)
+                            ? deepMergeSchemaObj(a.properties[pk], b.properties[pk])
+                            : b.properties[pk];
+                    }
+                } else if (key === 'required') {
+                    result.required = [...new Set([...(a.required || []), ...(b.required || [])])];
+                } else {
+                    result[key] = b[key];
+                }
+            }
+            if (Array.isArray(result.required) && result.properties) {
+                result.required = result.required.filter(
+                    (name: string) => result.properties[name] !== false
+                );
+                if (result.required.length === 0) { delete result.required; }
+            }
+            return result;
+        };
+
+        const buildCrossRequired = (targets?: { field: SchemaField; fieldPath: string[] }[]): any | undefined => {
+            if (!targets?.length) { return undefined; }
+            const root: any = {};
+            for (const t of targets) {
+                const path = t.fieldPath;
+                if (!path || path.length < 2) { continue; }
+                let node = root;
+                for (let i = 0; i < path.length - 1; i++) {
+                    if (!node.properties) { node.properties = {}; }
+                    if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
+                    node = node.properties[path[i]];
+                }
+                const fieldName = path[path.length - 1];
+                if (!node.required) { node.required = []; }
+                if (!node.required.includes(fieldName)) { node.required.push(fieldName); }
+            }
+            return Object.keys(root).length ? root : undefined;
+        };
+
+        const buildCrossForbidden = (targets?: { fieldPath: string[] }[]): any | undefined => {
+            if (!targets?.length) { return undefined; }
+            const root: any = {};
+            for (const t of targets) {
+                const path = t.fieldPath;
+                if (!path || path.length < 2) { continue; }
+                let node = root;
+                for (let i = 0; i < path.length - 1; i++) {
+                    if (!node.properties) { node.properties = {}; }
+                    if (!node.properties[path[i]]) { node.properties[path[i]] = {}; }
+                    node = node.properties[path[i]];
+                }
+                const fieldName = path[path.length - 1];
+                if (!node.properties) { node.properties = {}; }
+                node.properties[fieldName] = false;
+            }
+            return Object.keys(root).length ? root : undefined;
+        };
+
+        const buildForbid = (sub?: SchemaField[]) => {
+            if (!sub?.length) { return undefined; }
+            const props: any = {};
+            for (const f of sub) { props[f.name] = false; }
+            return { properties: props };
+        };
+
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -553,9 +773,24 @@ export class SchemaHelper {
                 return Object.keys(props).length ? { properties: props, required: req } : undefined;
             };
 
-            const thenObj = buildSub(cond.thenFields);
-            const elseObj = buildSub(cond.elseFields);
+            const thenObj = deepMergeSchemaObj(
+                deepMergeSchemaObj(
+                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
+                    buildCrossForbidden(cond.elseTargets)
+                ),
+                buildForbid(cond.elseFields?.filter(f => !cond.thenFields?.some(t => t.name === f.name)))
+            );
+            const elseObj = deepMergeSchemaObj(
+                deepMergeSchemaObj(
+                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
+                    buildCrossForbidden(cond.thenTargets)
+                ),
+                buildForbid(cond.thenFields?.filter(f => !cond.elseFields?.some(t => t.name === f.name)))
+            );
 
+            if (!thenObj && !elseObj) {
+                return null;
+            }
             const obj: any = { if: ifNode };
             if (thenObj) {
                 obj.then = thenObj;
@@ -577,6 +812,22 @@ export class SchemaHelper {
         }
 
         SchemaHelper.getFieldsFromObject(fields, document.required, document.properties, schema.contextURL);
+
+        const conditionFieldNames = new Set<string>();
+        for (const cond of (conditions || [])) {
+            for (const f of (cond.thenFields || [])) { conditionFieldNames.add(f.name); }
+            for (const f of (cond.elseFields || [])) { conditionFieldNames.add(f.name); }
+        }
+        if (conditionFieldNames.size && Array.isArray(document.required)) {
+            const fieldNameCount = new Map<string, number>();
+            for (const f of (fields || [])) {
+                fieldNameCount.set(f.name, (fieldNameCount.get(f.name) ?? 0) + 1);
+            }
+            document.required = document.required.filter(
+                (name: string) =>
+                    !conditionFieldNames.has(name) || (fieldNameCount.get(name) ?? 0) > 1
+            );
+        }
 
         return document;
     }
@@ -638,6 +889,9 @@ export class SchemaHelper {
         }
         if (field.isUpdatable) {
             comment.isUpdatable = field.isUpdatable;
+        }
+        if (field.enumName) {
+            comment.enumName = field.enumName;
         }
         return JSON.stringify(comment);
     }
@@ -838,7 +1092,7 @@ export class SchemaHelper {
      */
     public static findRefs(target: Schema, schemas: Schema[]) {
         const map = {};
-        const schemaMap = {
+        const schemaMap: Record<string, any> = {
             '#GeoJSON': geoJson,
             '#SentinelHUB': SentinelHubSchema
         };
@@ -850,6 +1104,7 @@ export class SchemaHelper {
                 map[field.type] = schemaMap[field.type];
             }
         }
+
         return SchemaHelper.uniqueRefs(map, {});
     }
 

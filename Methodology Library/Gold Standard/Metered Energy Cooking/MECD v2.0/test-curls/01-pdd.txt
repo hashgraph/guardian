@@ -1,0 +1,243 @@
+curl --location 'https://<YOUR_GUARDIAN_HOST>/api/v1/policies/<POLICY_ID>/blocks/<BLOCK_ID>' \
+--header 'Authorization: Bearer <YOUR_GUARDIAN_API_TOKEN>' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "document": {
+        "gsid": "11815",
+        "project_title": "Electric Cooking Program by ATEC",
+        "first_submission_date": "2022-08-05",
+        "design_cert_date": "2023-10-05",
+        "pdd_version": "03",
+        "pdd_completion_date": "2023-09-13",
+        "project_developer": "ATEC Australia-International Pty Ltd",
+        "project_representative": "Ben Jeffreys",
+        "project_participants": "ATEC Australia-International Pty Ltd as CME; local VPA implementers in host countries; Climate Impact Partners as carbon asset development consultant.",
+        "host_countries": "Bangladesh; Cambodia",
+        "activity_type": "Community Service Activity",
+        "project_scale": "Large Scale",
+        "other_requirements": "Community Services Activity requirements under GS4GG apply; the PoA is structured to generate GHG emission reductions from clean cooking adoption.",
+        "methodology_applied": "Methodology for Metered & Measured Energy Cooking Devices",
+        "product_requirements": "GHG Emissions Reduction & Sequestration",
+        "project_cycle": "Regular",
+        "methodology_method": "method_1_wbt",
+        "baseline_emission_case": "CASE 1",
+        "project_fuel": "Electricity",
+        "baseline_emission_tech": {
+            "project_technology": "ATEC PAYGO-enabled eCook induction stove",
+            "baseline_cookstove_type": "Mixed biomass and fossil baseline stoves",
+            "project_tech_useful_lifetime": 7,
+            "methodology_method": "method_1_wbt",
+            "project_technology_category": "electric_cooking",
+            "performance_test_protocol": "WBT_4.2.4",
+            "ctec_monitoring_mode": "digital_metering",
+            "metering_system_description": "Device-level telemetry with calibrated meters and backend ingestion"
+        },
+        "sdg_contributions": [
+            {
+                "sdg_number": 1,
+                "sdg_name": "No Poverty",
+                "sdg_impact": "The programme reduces household expenditure and time burden associated with collecting or purchasing traditional cooking fuels.",
+                "estimated_annual_avg": "Meaningful household savings in time and cooking-energy expenditure.",
+                "sdg_unit": "qualitative"
+            },
+            {
+                "sdg_number": 3,
+                "sdg_name": "Good Health and Well-being",
+                "sdg_impact": "Replacing polluting cooking fuels improves indoor air quality and reduces exposure to smoke in beneficiary households.",
+                "estimated_annual_avg": "Improved health conditions from reduced indoor air pollution.",
+                "sdg_unit": "qualitative"
+            },
+            {
+                "sdg_number": 7,
+                "sdg_name": "Affordable and Clean Energy",
+                "sdg_impact": "Grid-connected households gain access to cleaner, efficient cooking through PAYGO-enabled induction stoves.",
+                "estimated_annual_avg": "Expanded access to modern clean cooking energy.",
+                "sdg_unit": "qualitative"
+            },
+            {
+                "sdg_number": 8,
+                "sdg_name": "Decent Work and Economic Growth",
+                "sdg_impact": "The programme creates employment opportunities through distribution, support, and local implementation roles.",
+                "estimated_annual_avg": "Jobs created directly and indirectly across implementation activities.",
+                "sdg_unit": "qualitative"
+            },
+            {
+                "sdg_number": 13,
+                "sdg_name": "Climate Action",
+                "sdg_impact": "The programme reduces greenhouse-gas emissions by displacing non-renewable biomass and fossil-fuel cooking with efficient electric cooking.",
+                "estimated_annual_avg": "Climate mitigation through lower cooking-related emissions.",
+                "sdg_unit": "tCO2e"
+            }
+        ],
+        "a1_purpose_description": "The Programme of Activities was developed by ATEC Australia-International Pty Ltd to replace polluting non-renewable biomass and fossil fuels used for cooking in target project areas through distribution and installation of ATEC PAYGO-enabled eCook induction cookstoves.",
+        "a2_location": "Multi-country PoA with initial implementation in Cambodia and Bangladesh. Additional geographically distinct VPAs may be included later in line with Gold Standard rules.",
+        "a3_technologies": "ATEC PAYGO-enabled eCook induction cookstoves with GSM communications and IoT functionality, mobile-money enabled payment support, remote credit synchronization, and device-level usage monitoring.",
+        "a4_scale": "Large-scale multi-country Programme of Activities coordinated by ATEC, with initial VPAs in Cambodia and Bangladesh and scope for future expansion to other host-country areas.",
+        "a5_funding": "The PoA does not receive public funding. An ODA declaration form was submitted as supporting evidence.",
+        "b1_methodology_reference": "Gold Standard Methodology for Metered & Measured Energy Cooking Devices Version 2.0, together with applicable GS4GG requirements and supporting guidance such as RECH V4.0 where referenced for baseline and sampling approaches.",
+        "b2_applicability": "The PoA distributes efficient electric induction cooking devices to grid-connected households that currently rely on polluting baseline fuels. Device telemetry, sales records, and management procedures support the methodological conditions for metered and measured energy cooking devices.",
+        "project_boundary": [
+            {
+                "pb_source_name": "Combustion of non-renewable biomass and fossil fuels displaced in participating households",
+                "pb_ghg_type": "CO2",
+                "pb_scenario": "Baseline scenario",
+                "pb_included": true,
+                "pb_justification": "Baseline cooking emissions from fuels such as firewood, charcoal, LPG, and other fossil fuels are displaced by the project technology."
+            },
+            {
+                "pb_source_name": "Non-CO2 emissions from displaced baseline fuel combustion",
+                "pb_ghg_type": "CH4",
+                "pb_scenario": "Baseline scenario",
+                "pb_included": true,
+                "pb_justification": "Methane emissions from baseline biomass and fossil fuel use are included under the applied methodology where relevant."
+            },
+            {
+                "pb_source_name": "Grid electricity consumed by PAYGO-enabled induction cookstoves",
+                "pb_ghg_type": "CO2",
+                "pb_scenario": "Project scenario",
+                "pb_included": true,
+                "pb_justification": "Project emissions arise from the electricity consumed by the distributed eCook devices."
+            }
+        ],
+        "b4_baseline_scenario": "In the absence of the project activity, representative end users would continue meeting similar cooking energy needs through single or multiple baseline fuel and device combinations. Because the project device uses grid electricity, the baseline is the emissions of kitchens of the same end-user type in each host country based on the observed fuel and device mix that can be replaced.",
+        "b5_auto_additionality": true,
+        "b5_auto_criteria": "The first two VPAs are located in Cambodia and Bangladesh, both Least Developed Countries. The PoA-DD notes that financial additionality can therefore be automatically deemed for those VPAs under applicable GS4GG community services rules, while other VPAs would be assessed as required.",
+        "b51_prior_consideration": "The PoA first reached Gold Standard design review on 2022-08-05. Validation records state that this first-submission evidence was checked and accepted as the basis for the PoA start date.",
+        "b52_ongoing_financial": "Carbon revenues are intended to subsidize stove costs, support PAYGO financing, and leverage investment in the design, production, and sale of eCook stoves. The PoA structure is designed so carbon finance can support affordability and scale-up of the technology.",
+        "sdg_outcomes": [
+            {
+                "sdg_number": "1 No Poverty",
+                "most_relevant_target": "1.4",
+                "sdg_indicator": "Reduced household expenditure and time spent on cooking-energy access."
+            },
+            {
+                "sdg_number": "3 Good Health and Well-being",
+                "most_relevant_target": "3.9",
+                "sdg_indicator": "Reduced exposure to indoor air pollution from baseline cooking fuels."
+            },
+            {
+                "sdg_number": "7 Affordable and Clean Energy",
+                "most_relevant_target": "7.1",
+                "sdg_indicator": "Access to modern clean cooking energy for grid-connected households."
+            },
+            {
+                "sdg_number": "8 Decent Work and Economic Growth",
+                "most_relevant_target": "8.5",
+                "sdg_indicator": "Jobs and local economic activity created through distribution and service delivery."
+            },
+            {
+                "sdg_number": "13 Climate Action",
+                "most_relevant_target": "13.2",
+                "sdg_indicator": "Lower cooking-related greenhouse-gas emissions."
+            }
+        ],
+        "b61_methodological_choices": "Baseline scenario and fuel/device mixes are determined at VPA level using baseline scenario surveys in line with MECD v2.0 and applicable RECH guidance. The project applies Method 1 WBT with ex-ante technology descriptors and digital monitoring because the project device records electricity use and operational data.",
+        "b62_ex_ante_parameters": [
+            {
+                "parameter_name": "Baseline fuel/device mix",
+                "parameter_unit": "n/a",
+                "parameter_description": "Observed pre-project cooking technologies and fuels used by representative target households in each host country.",
+                "value_applied": "Determined at VPA level from baseline scenario survey",
+                "consistency_check": "Cross-checked against survey evidence and VPA-DD assumptions.",
+                "parameter_comment": "The PoA-level document references VPA-specific baseline surveys."
+            },
+            {
+                "parameter_name": "Project device electricity use",
+                "parameter_unit": "kWh",
+                "parameter_description": "Metered electricity consumption of ATEC PAYGO-enabled eCook induction stoves.",
+                "value_applied": "Measured through device telemetry",
+                "consistency_check": "Supported by GSM/IoT monitoring capability described in the PoA-DD.",
+                "parameter_comment": "Used primarily in ex-post monitoring and ER quantification."
+            }
+        ],
+        "b63_ex_ante_estimation": "Ex-ante emission reductions are forecast at VPA level using host-country baseline factors, fuel-switch assumptions, and the applied methodology. The emission reduction forecast is conducted at VPA level and remains dependent on monitored electricity consumption, baseline fuel mix, fNRB, and current project-emission factors.",
+        "b71_monitoring_parameters": [
+            {
+                "parameter_name": "Electricity consumption per device",
+                "parameter_unit": "Wh/day",
+                "parameter_description": "Measured electricity consumption recorded by the eCook stove and transmitted through the GSM/IoT system.",
+                "value_applied": "Digitally monitored",
+                "measurement_methods": "Device telemetry collected at short intervals and aggregated in the backend system.",
+                "monitoring_frequency": "Continuous",
+                "qa_qc_procedures": "Automated validation, missing-data checks, and anomaly review in the digital backend.",
+                "data_purpose": "Project-emissions and emission-reduction calculations",
+                "parameter_comment": "Core monitored parameter for the MECD digital workflow."
+            },
+            {
+                "parameter_name": "Device geolocation and project-boundary confirmation",
+                "parameter_unit": "n/a",
+                "parameter_description": "Location captured on activation and updated periodically to confirm inclusion within the approved VPA boundary.",
+                "value_applied": "Digitally monitored",
+                "measurement_methods": "Device activation and GSM-based location capture.",
+                "monitoring_frequency": "At activation and updated periodically",
+                "qa_qc_procedures": "Cross-checks against sales and activation databases.",
+                "data_purpose": "Boundary control and double-counting prevention",
+                "parameter_comment": "Used to confirm host-country and VPA eligibility."
+            },
+            {
+                "parameter_name": "Unique stove serial number and sales record linkage",
+                "parameter_unit": "n/a",
+                "parameter_description": "Unique identifiers linking devices, beneficiaries, and VPA records to avoid double counting.",
+                "value_applied": "Recorded for each distributed stove",
+                "measurement_methods": "Sales database and backend device registry.",
+                "monitoring_frequency": "At sale, activation, and throughout monitoring",
+                "qa_qc_procedures": "Traceability checks and database reconciliation.",
+                "data_purpose": "Traceability, inclusion control, and audit support",
+                "parameter_comment": "Supports VPA assignment and verification access."
+            }
+        ],
+        "b72_sampling_plan": "Where sampling is required for survey-based parameters, the PoA applies the relevant GS and RECH sampling guidance. For digitally metered electricity-consumption data, sampling is reduced or avoided because consumption is monitored at device level.",
+        "b73_other_monitoring": "VPA implementers maintain stove sales databases, unique serial numbers, and beneficiary records to support traceability and avoid double counting. Training, after-sales support, and local awareness activities are also managed at VPA level.",
+        "c11_project_start_date": "2022-08-05",
+        "c12_operational_lifetime": "20 years 0 months",
+        "c21_crediting_start_date": "2022-01-01",
+        "c22_crediting_length": "15 years (5 years renewable twice)",
+        "d1_safeguarding_summary": "The PoA promotes cleaner cooking, reduced indoor air pollution, safer household cooking conditions, and structured stakeholder engagement. The PoA-DD states that there are no laws or mandatory household requirements forcing purchase of efficient eCook stoves in the target countries.",
+        "d2_gender_q1": "Women and girls are expected to benefit from reduced fuel collection burden and cleaner kitchens.",
+        "d2_gender_q2": "Time savings can be redirected toward education, income-generating work, and other productive activities.",
+        "d2_gender_q3": true,
+        "d2_gender_q4": true,
+        "e1_stakeholder_mitigation": "PoA-level design consultation ran from 2022-04-10 to 2022-05-21 through online channels, with additional local stakeholder consultations to be conducted at VPA level.",
+        "e2_grievance_method": "Other",
+        "e2_grievance_details": "Continuous input and grievance mechanisms are established at VPA level, supported by designated phone and email channels and local project-implementer processes.",
+        "project_contact_info": {
+            "org_name": "ATEC Australia International Pty. Ltd.",
+            "org_street_address": "10 Templeton St",
+            "org_city": "Castlemaine",
+            "org_state_province": "Victoria",
+            "org_country": "Australia",
+            "org_phone": "+61418347822",
+            "org_email": "bjeffreys@atecglobal.io",
+            "contact_person": "Ben Jeffreys",
+            "contact_title": "CEO",
+            "org_website": "https://www.atecglobal.io"
+        },
+        "baseline_fuel_taxonomy": [
+            {
+                "fuel_type": "Wood",
+                "fuel_group": "Non-renewable biomass",
+                "is_non_renewable_biomass": true
+            },
+            {
+                "fuel_type": "LPG",
+                "fuel_group": "Fossil fuel",
+                "is_non_renewable_biomass": false
+            },
+            {
+                "fuel_type": "Natural gas",
+                "fuel_group": "Fossil fuel",
+                "is_non_renewable_biomass": false
+            }
+        ],
+        "project_consumption_cap": {
+            "reference_value": 1,
+            "reference_unit": "kWh/capita/day",
+            "people_per_household": 4,
+            "household_count": 1,
+            "people_count": 4,
+            "is_substantiated": true,
+            "substantiation_status": "Substantiated",
+            "substantiation_evidence_ref": "PDD annex and telemetry baseline study"
+        }
+    }
+}'

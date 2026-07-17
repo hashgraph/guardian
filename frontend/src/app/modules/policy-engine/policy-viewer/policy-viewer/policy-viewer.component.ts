@@ -20,9 +20,11 @@ import { OnLoadSavepointDialog } from "../dialogs/on-load-savepoint-dialog/on-lo
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
+import { PolicyParametersDialog } from '../../dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IImportEntityResult, ImportEntityDialog, ImportEntityType } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 import { MockDialog } from '../../dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationService } from '../policy-test-automation/policy-test-automation.service';
 
 type MockItemType = 'IPFS' | 'MESSAGE' | 'TOKEN' | 'ACCOUNT' | 'API';
 const MockTabs = ['API', 'IPFS', 'Topics'];
@@ -35,6 +37,7 @@ const MockTabs = ['API', 'IPFS', 'Topics'];
     selector: 'app-policy-viewer',
     templateUrl: './policy-viewer.component.html',
     styleUrls: ['./policy-viewer.component.scss'],
+    standalone: false
 })
 export class PolicyViewerComponent implements OnInit, OnDestroy {
     private subscription = new Subscription();
@@ -53,6 +56,14 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         transactions: ['createDate', 'type', 'owner', 'document'],
         artifacts: ['createDate', 'type', 'owner', 'document'],
         ipfs: ['createDate', 'size', 'url', 'document'],
+    };
+    public viewLabels: any = {
+        policy: 'Policy View',
+        transactions: 'Transactions',
+        artifacts: 'Artifacts',
+        ipfs: 'IPFS',
+        mock_config: 'Mock Config',
+        mock_data: 'Mock Data',
     };
     public pageIndex: number;
     public pageSize: number;
@@ -73,6 +84,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private destroy$: Subject<boolean> = new Subject<boolean>();
     public activeTabIndex = 0;
     public disconnected: boolean = false;
+    public editableParameters: any[] = [];
 
     public currentSavepoint: any = null;
     private restoreDialogOpened: boolean = false;
@@ -80,6 +92,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
     private forceAdminAfterReload = false;
 
     public mockTab: string = 'API';
+    public mockTabIndex: number = 0;
     public mockConfig: any = {
         enabled: false,
         blocks: []
@@ -102,7 +115,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         private changeDetector: ChangeDetectorRef,
         private router: Router,
         private savepointFlow: SavepointFlowService,
-        private indexedDb: IndexedDbRegistryService
+        private indexedDb: IndexedDbRegistryService,
+        private policyTest: PolicyTestAutomationService
     ) {
         this.policy = null;
         this.pageIndex = 0;
@@ -243,6 +257,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
         }
 
         this.policyId = policyId;
+        this.policyTest.loadForPolicy(policyId);
 
         this.policy = null;
         this.isMultipleGroups = false;
@@ -279,7 +294,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 } else {
                     this.loadPolicyById(this.policyId);
                 }
-            }, (e) => {
+            }, (e: any) => {
                 this.loading = false;
             });
     }
@@ -292,7 +307,8 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policyEngineService.policy(policyId),
                 this.policyEngineService.policyBlock(policyId, null),
                 this.policyEngineService.getGroups(policyId, this.savepointIds),
-                this.externalPoliciesService.getActionRequestsCount({ policyId })
+                this.externalPoliciesService.getActionRequestsCount({ policyId }),
+                this.policyEngineService.getParametersConfig(policyId),
             ]))
         ).subscribe(
             (value) => {
@@ -300,6 +316,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 this.policy = value[1];
                 this.groups = value[2] || [];
                 const count: any = value[3]?.body || {};
+                this.editableParameters = value[4];
 
                 this.virtualUsers = [];
                 this.isMultipleGroups = !!(this.policyInfo?.policyGroups && this.groups?.length);
@@ -338,6 +355,10 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
 
                 this.newRequestsExist = count.requestsCount > 0;
                 this.newActionsExist = count.actionsCount > 0 || count.delayCount > 0;
+
+                if (this.editableParameters?.length && this.editableParameters.some((p: any) => p.required && !p.value)) {
+                    this.openParametersSettings();
+                }
             }, (e) => {
                 this.loading = false;
             });
@@ -448,9 +469,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             storeNames,
             keyPrefix
         );
+        this.policyTest.reset();
     }
 
-    onView(view: string) {
+    onView(view: string, menu?: any) {
+        if (menu) { menu.hide(); }
         this.view = view;
         this.columns = this.columnsMap[this.view];
         if (this.view === 'mock_config' || this.view === 'mock_data') {
@@ -514,7 +537,20 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 title: 'Document',
                 type: 'JSON',
             }
-        });
+        })!;
+        dialogRef.onClose.subscribe(async (result) => { });
+    }
+
+    public openParametersSettings() {
+        const dialogRef = this.dialogService.open(PolicyParametersDialog, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                policyId: this.policyId
+            },
+        })!;
+
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -662,10 +698,11 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             })
     }
 
-    public onTabChange(index: number) {
+    public onTabChange(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
         this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { tab: index },
+            queryParams: { tab: tabIndex },
             queryParamsHandling: 'merge',
         });
     }
@@ -676,7 +713,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
             closable: false,
             width: '560px',
             styleClass: 'guardian-dialog add-savepoint-dialog'
-        });
+        })!;
 
         ref.onClose.subscribe((result?: AddSavepointResult) => {
             if (!result || result.type !== 'add') return;
@@ -825,7 +862,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                         width: '90%',
                         styleClass: 'guardian-dialog restore-onload-dialog',
                         data: { policyId: this.policyId, items, currentSavepointId: currentId }
-                    });
+                    })!;
 
                     ref.onClose.subscribe((res?: { type: 'apply' | 'close'; savepoint?: any }) => {
                         this.restoreDialogOpened = false;
@@ -910,23 +947,24 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reconnect') {
                 this.loading = true;
                 this.policyEngineService
                     .reconnect(this.policyId)
-                    .subscribe((result) => {
+                    .subscribe((result: any) => {
                         this.checkPolicyStatus(this.policyId);
-                    }, (e) => {
+                    }, (e: any) => {
                         this.loading = false;
                     });
             }
         });
     }
 
-    public onMockTab(tab: any) {
-        this.mockTab = MockTabs[tab.index] || 'IPFS';
+    public onMockTab(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.mockTab = MockTabs[tabIndex] || 'IPFS';
     }
 
     private serializeMockData(type: MockItemType, item: any) {
@@ -1028,7 +1066,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 type,
                 item: this.serializeMockData(type, item)
             }
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const newItem: any = this.deserializeMockData(type, result);
@@ -1092,7 +1130,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result === 'Delete') {
                 if (type === 'IPFS') {
@@ -1131,7 +1169,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 action: 'Add',
                 type
             }
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const newItem: any = this.deserializeMockData(type, result);
@@ -1194,7 +1232,7 @@ export class PolicyViewerComponent implements OnInit, OnDestroy {
                 type: ImportEntityType.Mock,
                 policyId: this.policyInfo.id
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.loading = true;

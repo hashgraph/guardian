@@ -1,44 +1,11 @@
+:host {
+    display: block;
+    height: 100%;
+}
+
 ::ng-deep .set-pool-dialog .p-dialog-content {
     border-radius: 10px;
     padding: 0 40px 24px 40px;
-}
-
-.sp-dialog {
-    display: grid;
-    grid-template-rows: 100px 175px auto;
-}
-
-.sp-dialog__header {
-    margin: 30px 0;
-    display: grid;
-    grid-template-columns: 95% 1fr;
-}
-
-.sp-dialog__title {
-    margin: 0;
-    font-size: 22px
-}
-
-.sp-dialog__close {
-    width: 28px;
-    height: 28px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background .15s;
-    outline: none !important;
-    box-shadow: none !important;
-    .pi {
-        font-size: 18px;
-        color: #6b6b6b;
-    }
-    &:hover {
-        background: rgba(0, 0, 0, 0.05);
-        border-radius: 50%;
-    }
 }
 
 .set-pool__header {
@@ -79,7 +46,7 @@
     height: 38px;
 }
 
-::ng-deep .token-row .p-dropdown,
+::ng-deep .token-row .p-select,
 ::ng-deep .token-row .p-inputnumber {
     width: 100%;
     border-radius: 8px;
@@ -146,31 +113,4 @@
 ::ng-deep .p-dialog-content hr,
 ::ng-deep .p-dialog-content .mat-progress-bar {
     display: none !important;
-}
-
-[dir='rtl'] .sp-dialog__close {
-    margin-left: 0;
-    margin-right: auto;
-}
-
-.sp-dialog__footer {
-    margin-top: 80px;
-    padding-top: 16px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-
-    ::ng-deep .p-button {
-        min-width: 96px;
-        height: 42px;
-        border-radius: 8px;
-        font-size: 16px;
-    }
-
-    ::ng-deep .button-cancel {
-        color: #1976d2 !important;
-    }
-
-    ::ng-deep .button-set {
-    }
 }

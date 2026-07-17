@@ -92,7 +92,7 @@
             font-style: normal;
             font-weight: 500;
             margin-left: 10px;
-            background-color: #ffffff;
+            background-color: var(--guardian-background, #ffffff);
             height: 40px;
             border: 1px solid var(--color-secondary);
             border-radius: 8px;
@@ -152,7 +152,7 @@
         grid-template-columns: 1fr 1fr;
         column-gap: 10px;
 
-        background-color: white;
+        background-color: var(--guardian-background, white);
         margin-bottom: 0;
         padding: 20px 0;
         position: fixed;

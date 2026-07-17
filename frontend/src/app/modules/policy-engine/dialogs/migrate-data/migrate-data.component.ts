@@ -333,6 +333,7 @@ class MigrationConfig {
     selector: 'migrate-data',
     templateUrl: './migrate-data.component.html',
     styleUrls: ['./migrate-data.component.scss'],
+    standalone: false
 })
 export class MigrateData {
     loading = false;
@@ -819,8 +820,8 @@ export class MigrateData {
         return this.stepsWithBottomLayout.has(stepId);
     }
 
-    onTabChange(event: any) {
-        this.activeTabIndex = event.index;
+    onTabChange(index: string | number | undefined) {
+        this.activeTabIndex = Number(index) || 0;
         if (this.activeTabIndex === 1) {
             this.loadMigrationRuns();
         }
@@ -1315,7 +1316,7 @@ export class MigrateData {
                         4
                     ),
                 },
-            })
+            })!
             .onClose.subscribe((result: any) => {
             if (!result) {
                 return;

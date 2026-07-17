@@ -3,7 +3,7 @@ import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, Mess
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyEvents, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 import { escapeRegExp } from './helpers/api-helper.js';
@@ -1115,7 +1115,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const notifier = NewNotifier.empty();
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const root = await users.getHederaAccount(owner.owner, owner?.id);
                 const item = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.complete();
                 return new MessageResponse(item);
@@ -1174,7 +1174,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('The tool already exists');
                 }
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const root = await users.getHederaAccount(owner.owner, owner?.id);
                 const { tool, errors } = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.complete();
                 if (errors?.length) {

@@ -91,7 +91,8 @@ const tagSchemaColumns: string[] = [
 @Component({
     selector: 'app-schema-config',
     templateUrl: './schemas.component.html',
-    styleUrls: ['./schemas.component.scss']
+    styleUrls: ['./schemas.component.scss'],
+    standalone: false
 })
 export class SchemaConfigComponent implements OnInit {
     public loading: boolean = true;
@@ -1130,7 +1131,7 @@ export class SchemaConfigComponent implements OnInit {
                 properties: this.properties,
                 category: this.getCategory()
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
         });
@@ -1143,7 +1144,7 @@ export class SchemaConfigComponent implements OnInit {
     public onOpenForm(schema: Schema, example: boolean): void {
         this.dialog.open(SchemaFormDialog, {
             showHeader: false,
-            header: 'Dry run with test data',
+            header: example ? 'Dry run with test data' : 'Preview',
             width: '90%',
             styleClass: 'guardian-dialog',
             data: {
@@ -1168,7 +1169,7 @@ export class SchemaConfigComponent implements OnInit {
                 schemaId: element.id,
                 category: this.getCategory()
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -1209,7 +1210,7 @@ export class SchemaConfigComponent implements OnInit {
                 scheme: element,
                 category: this.getCategory()
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.updateSchema(String(element.id), schema);
         });
@@ -1243,7 +1244,7 @@ export class SchemaConfigComponent implements OnInit {
                         deletableChildren: result.deletableChildren,
                         blockedChildren: result.blockedChildren
                     },
-                });
+                })!;
                 dialogRef.onClose.subscribe((result: any) => {
                     if (result.action === 'Delete') {
                         this.deleteSchema(element.id, result.includeChildren);
@@ -1291,7 +1292,7 @@ export class SchemaConfigComponent implements OnInit {
                 scheme: element,
                 category: this.getCategory(),
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.newVersionSchema(element.id, schema);
         });
@@ -1323,7 +1324,7 @@ export class SchemaConfigComponent implements OnInit {
                 scheme: newDocument,
                 category: this.getCategory()
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (schema: Schema | null) => {
             this.createSchema(schema);
         });
@@ -1354,7 +1355,7 @@ export class SchemaConfigComponent implements OnInit {
                 properties: this.properties,
                 scheme: newDocument,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (copyInfo: any | null) => {
             if (copyInfo) {
                 this.schemaService.copySchema(copyInfo).subscribe((result) => {
@@ -1379,7 +1380,7 @@ export class SchemaConfigComponent implements OnInit {
             data: {
                 schema: element
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (version) => {
             if (version) {
                 this.publishSchema(element.id, version);
@@ -1400,7 +1401,7 @@ export class SchemaConfigComponent implements OnInit {
             width: '720px',
             styleClass: 'custom-dialog',
             data: { timeStamp: messageId }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.importSchemasDetails(result);
@@ -1423,7 +1424,7 @@ export class SchemaConfigComponent implements OnInit {
                 modules: this.modules,
                 tools: this.draftTools
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.messageId) {
                 this.onImportSchemas(result.messageId);
@@ -1487,7 +1488,7 @@ export class SchemaConfigComponent implements OnInit {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
             if (resultWithSchemasForReplace) {
                 this.importByMessage(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
@@ -1506,7 +1507,7 @@ export class SchemaConfigComponent implements OnInit {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
             if (resultWithSchemasForReplace) {
                 this.importByFile(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
@@ -1525,7 +1526,7 @@ export class SchemaConfigComponent implements OnInit {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (resultWithSchemasForReplace) => {
             if (resultWithSchemasForReplace) {
                 this.importByExcel(data, result.topicId, resultWithSchemasForReplace.selectedSchemaIds);
@@ -1618,7 +1619,7 @@ export class SchemaConfigComponent implements OnInit {
                     schemas: allSchemas,
                     entityType: entityType
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
                 if (result && result.schemaId1 && result.schemaId2) {
                     const items = btoa(JSON.stringify({
@@ -1772,7 +1773,7 @@ export class SchemaConfigComponent implements OnInit {
                         deletableChildren: result.deletableChildren,
                         blockedChildren: result.blockedChildren
                     },
-                });
+                })!;
                 dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
                     if (result.action === 'Delete') {
                         this.loading = true;

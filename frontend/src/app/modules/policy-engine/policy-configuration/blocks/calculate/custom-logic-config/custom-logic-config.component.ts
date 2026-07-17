@@ -9,7 +9,8 @@ import { ScriptLanguageOption } from '@guardian/interfaces';
     selector: 'app-custom-logic-config',
     templateUrl: './custom-logic-config.component.html',
     styleUrls: ['./custom-logic-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class CustomLogicConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -78,7 +79,7 @@ export class CustomLogicConfigComponent implements OnInit {
                 expression: this.properties.expression,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.properties.expression = result.expression;
@@ -105,7 +106,7 @@ export class CustomLogicConfigComponent implements OnInit {
                 readonly: this.readonly,
                 policyId: this.item?.rootParent?.policyId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {});
     }
 }

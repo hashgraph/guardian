@@ -5,11 +5,11 @@
 
 Guardian platform manage to segregate secret data basing on the variables defined in the ecosystem environment. As in the database case the two variables leveraged to discriminate secret storage are the GUARDIAN_ENV and HEDERA_NET variables. 
 
-Each KMS use slight different approach to naming conventiion of holded secret. the KMS have to be configured  with this two dimension(GUARDIAN_ENV and HEDERA_NET) and insert them in the secret name, in the Roles name and in the Policies that define the access rules to that secret.
+Each KMS use slight different approach to naming convention of held secret. the KMS have to be configured  with this two dimension(GUARDIAN_ENV and HEDERA_NET) and insert them in the secret name, in the Roles name and in the Policies that define the access rules to that secret.
 
 Guardian has adopted a specialized adapter to interact with secret managers. To implement the data separation each specialized adapter instance adds a two dimensional prefix GUARDIAN_ENV and HEDERA_NET to the PATH or NAME that identify the secret. So the adapter is aware of the MultiEnvironment. 
 
-The SECRET_MANAGER variable has to be configured in the system environemnt to grant the general secret manager class to work properly by the means of the right adapter in the way that is described at docs/secrets manager/guardian-vault.md
+The SECRET_MANAGER variable has to be configured in the system environment to grant the general secret manager class to work properly by the means of the right adapter in the way that is described at docs/secrets manager/guardian-vault.md
 
 *Set SECRET_MANAGER as empty when not using any Secret Manager*
 
@@ -17,7 +17,7 @@ The SECRET_MANAGER variable has to be configured in the system environemnt to gr
 
 SECRET_MANAGER can assume the following values:  ['hcp', 'aws', 'azure']
 
-On the other hand the following variables have been mantained for compliance backward reason, and possible developed guardian extensions, but are not used for the Guardian Secret Manager implementation.
+On the other hand the following variables have been maintained for compliance backward reason, and possible developed guardian extensions, but are not used for the Guardian Secret Manager implementation.
 
     VAULT_PROVIDER="database"               #Always set to "database"
     HASHICORP_TOKEN="Q5D>3nu+Z#TbN.@9PWHSyL"                  #just written in NodeVault.VaultOptions never used
@@ -35,7 +35,7 @@ Hashicorp Vault manage the TLS communication between each of the services as cli
 
 The R/W secrets permission Keys are added to the right environment file depending on the GUARDIAN_ENV variable. For this reason the guardian /vault/hashicorp/.env.template file has been enriched with the two variables GUARDIAN_ENV and HEDERA_NET. Then, as it is described at docs/secrets manager/guardian-vault.md, before the execution of the script, cut and paste the  /vault/hashicorp/.env.template to create a /vault/hashicorp/.env file and configure the variables in it as of your needs.
 
-The following environment variables has been introduced in the ecosystem environemnt to grant the Hashicorp Vault to work properly. 
+The following environment variables has been introduced in the ecosystem environment to grant the Hashicorp Vault to work properly. 
 
     SECRET_MANAGER="hcp" added in the ecosystem environment variable
     VAULT_API_VERSION=v1
@@ -57,7 +57,7 @@ In this latter case the steps described for [hashicorp](https://github.com/hashg
 
 - **Step 5** is not needed any more: jump step 5.
 
-- **Step 6** bring vault and consul up. Step 6 is breaked down in the following two steps:
+- **Step 6** bring vault and consul up. Step 6 is broken down in the following two steps:
     1. Only for first guardian installation: the guardian_default docker Network need to exist before Vault server Use it, in guardian folder execute: 
 
         >$ docker network create guardian_default
@@ -68,7 +68,7 @@ In this latter case the steps described for [hashicorp](https://github.com/hashg
 
         >$ docker compose up -d consul vault
 
-    The two cointainers are going to run referencing the guardian_default network as all other guradian services.
+    The two containers are going to run referencing the guardian_default network as all other Guardian services.
 
 - **Step 7** When the two services are running execute the script ./vault/hashicorp/scripts/vault/vault_init.sh from the guardian folder (or the vault_init_mac.init in apple platforms).
 
@@ -77,29 +77,29 @@ In this latter case the steps described for [hashicorp](https://github.com/hashg
         VAULT_APPROLE_ROLE_ID= 
         VAULT_APPROLE_SECRET_ID=
 
-    if not present the variables are inserted only in the 4 services: auth-service, guardian-ervice, policy-service, and worker-service. Their value are populated in the ./\<service\>/configs/.env.\<GUARDIAN_ENV\>.\<SERVICE NAME\> files by the script basing on the previously defined GUARDIAN_ENV variable.
+    if not present the variables are inserted only in the 4 services: auth-service, guardian-service, policy-service, and worker-service. Their value are populated in the ./\<service\>/configs/.env.\<GUARDIAN_ENV\>.\<SERVICE NAME\> files by the script basing on the previously defined GUARDIAN_ENV variable.
 
     The same script create a set of files in folder ./vault/hashicorp/configs/vault/secrets/tokens/<service_name>/.env.secrets this files are kept to allow configuration of other environment
 
 - **Step 8** start Guardian as usual
 
-For Hashicorpp Vault the secret multienvironment naming convetion defined in the Vault by the execution of the script is going to be:
+For HashiCorp Vault the secret multienvironment naming convention defined in the Vault by the execution of the script is going to be:
 
     <GUARDIAN_ENV> / <HEDERA_NET> / <PATH_TO_SECRET>
 
-The script executed at stop 7 produce two kind of policies to manage the case when varialbe <GUARDIAN_ENV>  is empty.
+The script executed at stop 7 produce two kind of policies to manage the case when variable <GUARDIAN_ENV>  is empty.
 
 	Policy1: <HEDERA_NET> / <PATH_TO_SECRET>                                       
 	Policy2: <GUARDIAN_ENV> / <HEDERA_NET> / <PATH_TO_SECRET>
 
 - **Adding other new environment :**
 After the first execution of the 8 steps every of the services is configured as Application with the Role needed to access the secrets following the policies configured. 
-To add other environment you need to create new secrets in the Vault per every of the environemt and configure the two variables in every of the right environmet in the ./<service_name>/configs/.env.<service_name>.<GUARDIAN_ENV>.
+To add other environment you need to create new secrets in the Vault per every of the environment and configure the two variables in every of the right environment in the ./<service_name>/configs/.env.<service_name>.<GUARDIAN_ENV>.
 
         VAULT_APPROLE_ROLE_ID= 
         VAULT_APPROLE_SECRET_ID=
 
-    To execute this actions automatically configure the GUARDIAN_ENV variable at folder ./vault/hashicorp/.env with the new environment name and run the provided script: ./vault/hashicorp/scripts/vault/vault_new_env.sh. The script configure the environemnt file of every of the four service and push the new secrets to the vault server.
+    To execute this actions automatically configure the GUARDIAN_ENV variable at folder ./vault/hashicorp/.env with the new environment name and run the provided script: ./vault/hashicorp/scripts/vault/vault_new_env.sh. The script configure the environment file of every of the four service and push the new secrets to the vault server.
     Now you can stop and start the guardian application: configure the new ecosystem environment per all its files and restart the application.
 
 ## AWS Secret Manager
@@ -107,15 +107,15 @@ To add other environment you need to create new secrets in the Vault per every o
 Change in the ecosystem environment the SECRET_MANAGER variable to 
 SECRET_MANAGER="aws"
 
-For AWS Secret Manager one variable has been added to the system environemnt  templates files of Guardian.
+For AWS Secret Manager one variable has been added to the system environment  templates files of Guardian.
 
     # AWS
     AWS_REGION=eu-central-1
 
-The script provided by Guardian and described at  docs/secrets manager/guardian-vault.md  is able to configure the ROLE / POLICIES secret in a Multi-environment fashion inside the AWS Secret Manager. As in the preciding case, the script is based on the two new environment variables defined at ./vault/aws/.env.template GUARDIAN_ENV and HEDERA_NET
+The script provided by Guardian and described at  docs/secrets manager/guardian-vault.md  is able to configure the ROLE / POLICIES secret in a Multi-environment fashion inside the AWS Secret Manager. As in the preceding case, the script is based on the two new environment variables defined at ./vault/aws/.env.template GUARDIAN_ENV and HEDERA_NET
 The Policies that are defined in the scripts are compliant with the AWS security rules and the Action defined in the policies json files (folder:vault/aws/configs/policies) do not use wildcards but specified the following single actions: GetSecretValue, CreateSecret, ListSecrets.
 
-In the case of AWS Secret Manager  the secret multienvironment naming convetion defined is
+In the case of AWS Secret Manager  the secret multienvironment naming convention defined is
 
     <GUARDIAN_ENV> / <HEDERA_NET> / <PATH_TO_SECRET>
 
@@ -125,12 +125,12 @@ In the case of AWS Secret Manager  the secret multienvironment naming convetion 
 Change the SECRET_MANAGER variable to "azure" in the ecosystem environment.
 SECRET_MANAGER="azure" 
 
-For Azure Key Vault one variable has been added to the system environemnt templates files of Guardian.
+For Azure Key Vault one variable has been added to the system environment templates files of Guardian.
 
     # Azure Key Vault Configs
     AZURE_VAULT_NAME="<vault name>"
 
-The secret multienvironment naming convetion defined is
+The secret multienvironment naming convention defined is
 
     GuardianenvHederanetPathToSecret
 

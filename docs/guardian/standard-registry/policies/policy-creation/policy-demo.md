@@ -2,7 +2,7 @@
 
 Once you login as a Standard Registry and finish the setup, click on Policies tab.
 
-![](<../../../../.gitbook/assets/image (4) (1) (2) (1) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (4) (1) (2) (1).png>)
 
 We have two options to create Policy :
 
@@ -43,7 +43,7 @@ Instead of creating Policy from scratch, there is an option of importing the Pol
 **Note:** Files with **.policy** extension are only accepted. These files are in zip format, i.e. they are zip archives of the text file.
 {% endhint %}
 
-![](<../../../../.gitbook/assets/image (11) (1) (3) (1) (1).png>)
+![](<../../../../.gitbook/assets/image (11) (1) (3).png>)
 
 2.1 Once the .zip file is selected, we get the Policy Import Review screen. Once everything looks good, click on Import Button.
 
@@ -77,9 +77,9 @@ When you click on Save to file, Policy is exported as a .zip file.
 
 **Note:** While importing tool via file, or policy via file or IPFS, you can change used tools in preview dialog, it will change tools references in schemas and config automatically.
 
-To get complete information about tools, please refer to [Tools](../../../../../Methodology%20Library/CDM/Tools/) section.
+To get complete information about tools, please refer to [Tools](https://github.com/hashgraph/guardian/blob/develop/Methodology%20Library/CDM/Tools/README.md) section.
 
-<figure><img src="../../../../.gitbook/assets/image (587) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (587).png" alt=""><figcaption></figcaption></figure>
 
 ### 3. Filtering Policies
 
@@ -89,7 +89,7 @@ On the Policy page, it is now possible to filter the policies list by policy nam
 
 Users can select and delete policies from the Policies table in Guardian UI and also through the API.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note:
@@ -97,3 +97,23 @@ Note:
 1. Selected items remain selection across pagination.
 2. Dependencies are considered when deleting multiple schemas.
 {% endhint %}
+
+### 5. Policy Disconnection
+
+#### 5.1 Disconnecting from a Local Policy
+
+<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+
+After disconnection:
+
+* The policy is removed from your active policies grid and moved to the Disconnected Policies section
+
+<figure><img src="../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+
+* All documents created by you within that policy are marked accordingly to inform other policy participants that you have disconnected.
+
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (5).png" alt=""><figcaption></figcaption></figure>
+
+The disconnection operation is reversible. If necessary (for example, in case of accidental disconnection), you can reconnect to the policy at any time.
+
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>

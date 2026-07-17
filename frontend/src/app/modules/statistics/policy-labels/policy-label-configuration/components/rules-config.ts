@@ -29,6 +29,7 @@ export class RulesConfig {
     public selectedNode: SchemaNode | null = null;
     public rootNode: SchemaNode | null = null;
     public schemaFilterType: number = 1;
+    public tabIndex: number = 0;
     public schemas: Schema[];
     public policy: any;
 
@@ -288,8 +289,9 @@ export class RulesConfig {
         this.step.next(index);
     }
 
-    public schemaConfigChange($event: any) {
-        if ($event.index === 1) {
+    public schemaConfigChange(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        if (tabIndex === 1) {
             this.schemaFilterType = 2;
         } else {
             this.schemaFilterType = 1;
@@ -521,7 +523,7 @@ export class RulesConfig {
             data: {
                 score: JSON.parse(JSON.stringify(score))
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 score.description = result.description;
@@ -546,7 +548,7 @@ export class RulesConfig {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.scores.delete(score);
@@ -576,7 +578,7 @@ export class RulesConfig {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.formulas.delete(formula);
@@ -598,7 +600,7 @@ export class RulesConfig {
                 readonly: this.readonly,
                 enums: this.getEnums()
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 const rule: FormulaRule | ConditionRule | RangeRule = result.rule;

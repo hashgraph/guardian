@@ -1,6 +1,6 @@
-import didContexts from '@transmute/did-context';
-import credentialsContexts from '@transmute/credentials-context';
-import securityContexts from '@transmute/security-context';
+import didContexts from 'did-context';
+import { contexts as credentialsContexts } from '@digitalbazaar/credentials-context';
+import securityContexts from '@digitalbazaar/security-context';
 import { DocumentLoader } from './document-loader.js';
 import { IDocumentFormat } from './document-format.js';
 
@@ -13,7 +13,7 @@ export class DefaultDocumentLoader extends DocumentLoader {
         if ((didContexts.contexts as Map<string, object>).has(iri)) {
             return true;
         }
-        if ((credentialsContexts.contexts as Map<string, object>).has(iri)) {
+        if ((credentialsContexts as Map<string, object>).has(iri)) {
             return true;
         }
         if ((securityContexts.contexts as Map<string, object>).has(iri)) {
@@ -29,10 +29,10 @@ export class DefaultDocumentLoader extends DocumentLoader {
                 document: didContexts.contexts.get(iri),
             };
         }
-        if ((credentialsContexts.contexts as Map<string, object>).has(iri)) {
+        if ((credentialsContexts as Map<string, object>).has(iri)) {
             return {
                 documentUrl: iri,
-                document: credentialsContexts.contexts.get(iri),
+                document: credentialsContexts.get(iri),
             };
         }
         if ((securityContexts.contexts as Map<string, object>).has(iri)) {

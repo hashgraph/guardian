@@ -1,5 +1,5 @@
 import { Worker } from 'node:worker_threads';
-import path from 'path'
+import path from 'node:path';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -11,8 +11,9 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { IGenerateDidBatch } from '../policy-actions/generate-did.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
@@ -60,19 +61,22 @@ interface IMetadata {
                 name: 'unsigned',
                 label: 'Unsigned VC',
                 title: 'Unsigned document',
-                type: PropertyType.Checkbox
+                type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'passOriginal',
                 label: 'Pass original',
                 title: 'Pass original document',
-                type: PropertyType.Checkbox
+                type: PropertyType.Checkbox,
+                editable: true
             },
             {
                 name: 'selectedScriptLanguage',
                 label: 'Script Language',
                 title: 'Select script language',
                 type: PropertyType.Select,
+                editable: true,
                 items: [
                     {
                         label: 'JavaScript',
@@ -114,6 +118,7 @@ export class CustomLogicBlock {
     @CatchErrors()
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
@@ -132,7 +137,13 @@ export class CustomLogicBlock {
             await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);
             ref.backup();
         } catch (error) {
-            ref.error(PolicyUtils.getErrorMessage(error));
+            const message = PolicyUtils.getErrorMessage(error);
+            ref.error(message);
+            // Also surface to the UI: this local catch pre-empts @CatchErrors, which would
+            // otherwise broadcast the failure via BlockErrorFn. Without it the error is logged only.
+            PolicyComponentsUtils.BlockErrorFn(ref.blockType, message, event.user)
+                .catch((broadcastError) => ref.error(PolicyUtils.getErrorMessage(broadcastError)));
+            ref.triggerEvents(PolicyOutputEventType.ErrorEvent, event.user, event.data, event.actionStatus);
         }
 
         return event.data;
@@ -174,6 +185,9 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             let settled = false;
+            // Set synchronously when a terminal 'complete' message starts being handled, so
+            // the worker 'exit' fallback below does not race the in-progress completion.
+            let finalizing = false;
             const safeResolve = (value: any) => {
                 if (!settled) {
                     settled = true;
@@ -188,6 +202,8 @@ export class CustomLogicBlock {
             };
             try {
                 const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
+                const options = await ref.getOptions(user);
+
                 let documents: IPolicyDocument[];
                 if (Array.isArray(state.data)) {
                     documents = state.data;
@@ -196,7 +212,7 @@ export class CustomLogicBlock {
                 }
 
                 let metadata: IMetadata;
-                if (ref.options.unsigned) {
+                if (options.unsigned) {
                     metadata = null;
                 } else {
                     if (!documents || !documents.length) {
@@ -204,6 +220,7 @@ export class CustomLogicBlock {
                     }
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
+                const didBatch: IGenerateDidBatch = {};
                 const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
                         await triggerEvents(null);
@@ -219,20 +236,17 @@ export class CustomLogicBlock {
                         return;
                     }
                     const processing = async (json: any): Promise<IPolicyDocument> => {
-                        if (ref.options.passOriginal) {
+                        if (options.passOriginal) {
                             return json;
                         }
-                        if (ref.options.unsigned) {
+                        if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else {
-                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id);
+                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
                     }
                     if (Array.isArray(result)) {
-                        const items: IPolicyDocument[] = [];
-                        for (const r of result) {
-                            items.push(await processing(r))
-                        }
+                        const items = await this.processItems(result, processing, ref);
                         await triggerEvents(items);
                         if (final) {
                             try {
@@ -259,7 +273,7 @@ export class CustomLogicBlock {
                     }
                 }
 
-                const files = Array.isArray(ref.options.artifacts) ? ref.options.artifacts : [];
+                const files = Array.isArray(options.artifacts) ? options.artifacts : [];
                 const execCodeArtifacts = files.filter((file: any) => file.type === ArtifactType.EXECUTABLE_CODE);
                 let execCode = '';
                 for (const execCodeArtifact of execCodeArtifacts) { // todo for python???
@@ -287,8 +301,8 @@ export class CustomLogicBlock {
 
                 collectTablesPack(context.documents, tablesPack);
 
-                const expression = ref.options.expression || '';
-                if (ref.options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
+                const expression = options.expression || '';
+                if (options.selectedScriptLanguage === ScriptLanguageOption.PYTHON) {
                     const pythonWorkerData = {
                         execFunc: `${execCode}${expression}`,
                         user,
@@ -298,7 +312,11 @@ export class CustomLogicBlock {
                         tablesPack
                     };
 
-                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS || '120000', 10);
+                    const pythonTimeoutMs = parseInt(process.env.PYTHON_SANDBOX_TIMEOUT_MS, 10);
+                    if (!Number.isFinite(pythonTimeoutMs) || pythonTimeoutMs <= 0) {
+                        safeReject(new Error('PYTHON_SANDBOX_TIMEOUT_MS is not configured (must be a positive integer)'));
+                        return;
+                    }
 
                     if (process.env.PYTHON_SANDBOX_MODE === 'docker') {
                         const { runPythonInDocker } = await import('../helpers/workers/custom-logic-python-docker-worker.js');
@@ -324,9 +342,31 @@ export class CustomLogicBlock {
                             safeReject(error);
                         }
                     } else {
+                        // Give the worker an explicit minimal env instead of inheriting the
+                        // full process environment. The worker reads nothing from process.env;
+                        // these keys cover Node/pyodide runtime needs.
+                        const sandboxEnvAllowlist = ['PATH', 'HOME', 'TMPDIR', 'LANG', 'LC_ALL', 'TZ'];
+                        const sandboxEnv: Record<string, string> = {};
+                        for (const key of sandboxEnvAllowlist) {
+                            if (typeof process.env[key] === 'string') {
+                                sandboxEnv[key] = process.env[key];
+                            }
+                        }
+
+                        // Cap the pyodide worker's heap (MB) so a misbehaving script can't exhaust
+                        // host memory. Env-tunable; the default is conservative.
+                        const parsedHeapMb = parseInt(process.env.PYTHON_SANDBOX_HEAP_MB, 10);
+                        const maxOldGenerationSizeMb = Number.isFinite(parsedHeapMb) && parsedHeapMb > 0
+                            ? parsedHeapMb
+                            : 512;
+
                         const worker = new Worker(
                             path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
-                            { workerData: pythonWorkerData });
+                            {
+                                workerData: pythonWorkerData,
+                                env: sandboxEnv,
+                                resourceLimits: { maxOldGenerationSizeMb }
+                            });
 
                         const pendingDones: Promise<void>[] = [];
 
@@ -338,7 +378,15 @@ export class CustomLogicBlock {
 
                         worker.on('exit', async (code) => {
                             clearTimeout(workerTimer);
-                            // Wait for all pending done() calls to finish
+                            // Fallback only: normal completion is handled by the 'complete'
+                            // message below. Reaching here unsettled means the worker died
+                            // without sending a terminal message (crash, OOM heap cap, terminate).
+                            if (settled || finalizing) {
+                                // A terminal message already drove resolution; just make sure
+                                // tables are released (e.g. the python-error path doesn't dispose).
+                                try { disposeTables(); } catch { /* */ }
+                                return;
+                            }
                             if (pendingDones.length > 0) {
                                 try { await Promise.all(pendingDones); } catch { /* already handled */ }
                             } else {
@@ -355,10 +403,26 @@ export class CustomLogicBlock {
                             try { disposeTables(); } catch { /* */ }
                             safeReject(error);
                         });
-                        worker.on('message', (data) => {
+                        worker.on('message', async (data) => {
                             if (data?.error) {
                                 clearTimeout(workerTimer);
                                 safeReject(new Error(data.error));
+                                return;
+                            }
+                            // Terminal sentinel: every done/debug message preceding it on this
+                            // FIFO channel has already been handled, so awaiting pendingDones
+                            // here drains them all before we dispose and resolve. disposeTables
+                            // is idempotent, so calling it here (a final done() may have already
+                            // disposed) is safe; safeResolve(null) is a no-op once a done() with
+                            // final=true has resolved with its result.
+                            if (data?.type === 'complete') {
+                                finalizing = true;
+                                clearTimeout(workerTimer);
+                                if (pendingDones.length > 0) {
+                                    try { await Promise.all(pendingDones); } catch { /* already handled */ }
+                                }
+                                try { disposeTables(); } catch { /* */ }
+                                safeResolve(null);
                                 return;
                             }
                             try {
@@ -387,18 +451,33 @@ export class CustomLogicBlock {
                                 tablesPack
                             },
                         });
+                    // Release the worker's V8 isolate; without this each invocation leaks ~30 MB.
+                    const cleanup = () => {
+                        worker.terminate().catch(() => {
+                            // Ignore errors during worker termination
+                        });
+                    };
+                    worker.on('exit', (code) => {
+                        cleanup();
+                        if (code !== 0 && code !== null) {
+                            reject(new Error(`Custom logic worker exited with code ${code}`));
+                        }
+                    });
                     worker.on('error', (error) => {
+                        cleanup();
                         reject(error);
                     });
                     worker.on('message', async (data) => {
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);
+                                if (data.final) { cleanup(); }
                             }
                             if (data?.type === 'debug') {
                                 ref.debug(data.message);
                             }
                         } catch (error) {
+                            cleanup();
                             reject(error);
                         }
                     });
@@ -407,6 +486,49 @@ export class CustomLogicBlock {
                 safeReject(error);
             }
         });
+    }
+
+    /**
+     * Process result items with bounded concurrency
+     * @param items
+     * @param task
+     * @param ref
+     */
+    private async processItems(
+        items: any[],
+        task: (json: any) => Promise<IPolicyDocument>,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument[]> {
+        // Recording and replay consume UUID/DID sequences in order, so they require sequential processing.
+        let limit = 1;
+        if (!ref.components.runAndRecordController) {
+            const configured = parseInt(process.env.CUSTOM_LOGIC_CONCURRENCY, 10);
+            limit = Number.isFinite(configured) && configured > 0 ? configured : 10;
+        }
+        limit = Math.min(limit, items.length);
+        const results = new Array<IPolicyDocument>(items.length);
+        let index = 0;
+        let failed = false;
+        const workers: Promise<void>[] = [];
+        for (let i = 0; i < limit; i++) {
+            workers.push((async () => {
+                while (!failed && index < items.length) {
+                    const current = index++;
+                    try {
+                        results[current] = await task(items[current]);
+                    } catch (error) {
+                        failed = true;
+                        throw error;
+                    }
+                }
+            })());
+        }
+        const settled = await Promise.allSettled(workers);
+        const failure = settled.find((s) => s.status === 'rejected');
+        if (failure) {
+            throw (failure as PromiseRejectedResult).reason;
+        }
+        return results;
     }
 
     /**
@@ -427,6 +549,7 @@ export class CustomLogicBlock {
         const owner = await PolicyUtils.getDocumentOwner(ref, firstDocument, userId);
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, firstDocument, userId);
         const relationships = [];
+        const options = await ref.getOptions(user);
         let accounts: any = {};
         let tokens: any = {};
         let id: string;
@@ -468,7 +591,7 @@ export class CustomLogicBlock {
         }
 
         let issuer: string;
-        switch (ref.options.documentSigner) {
+        switch (options.documentSigner) {
             case 'owner':
                 issuer = owner.did;
                 break;
@@ -495,6 +618,8 @@ export class CustomLogicBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         actionStatusId: string,
+        user?: PolicyUser,
+        didBatch?: IGenerateDidBatch
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -510,7 +635,9 @@ export class CustomLogicBlock {
         // <-- new vc
         const VCHelper = new VcHelper();
 
-        const outputSchema = await PolicyUtils.loadSchemaByID(ref, ref.options.outputSchema);
+        const options = await ref.getOptions(user);
+
+        const outputSchema = await PolicyUtils.loadSchemaByID(ref, options.outputSchema);
         const vcSubject: any = {
             ...SchemaHelper.getContext(outputSchema),
             ...json
@@ -535,11 +662,11 @@ export class CustomLogicBlock {
 
         const newId = await PolicyActionsUtils.generateId({
             ref,
-            type: ref.options.idType,
+            type: options.idType,
             user: owner,
             relayerAccount,
             userId
-        }, actionStatusId);
+        }, actionStatusId, didBatch);
         if (newId) {
             vcSubject.id = newId;
         }

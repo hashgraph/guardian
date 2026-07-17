@@ -1,37 +1,39 @@
 <div class="dialog-body">
-    <div>
-        <div class="header-step">Step 1</div>
-        <span>Use an authentication app (such as Google Authenticator or another) on your mobile device to scan this QR
-            code.
-        </span>
-    </div>
-    <qrcode [qrdata]="config.url" [width]="140" [errorCorrectionLevel]="'M'"></qrcode>
-    <div class="">
-        <div>If the scan isn't working, manually enter this key into your authentication app.</div>
-        <div class="secret"><span>{{config.secret}}</span><i class="pi pi-copy"
-                [cdkCopyToClipboard]="config.secret" (click)="secretCopied()"></i>
-        </div>
+  <div>
+    <div class="header-step">Step 1</div>
+    <span>Use an authentication app (such as Google Authenticator or another) on your mobile device to scan this QR
+      code.
+    </span>
+  </div>
+  <qrcode [qrdata]="config.url" [width]="140" [errorCorrectionLevel]="'M'"></qrcode>
+  <div class="">
+    <div>If the scan isn't working, manually enter this key into your authentication app.</div>
+    <div class="secret"><span>{{config.secret}}</span><i class="pi pi-copy"
+  [cdkCopyToClipboard]="config.secret" (click)="secretCopied()"></i>
+</div>
 
-    </div>
+</div>
 
-    <div>
-        <div class="header-step">Step 2</div>
-        <span>Enter the code given by the app on your mobile device.</span>
-    </div>
-    <form [formGroup]="form">
-        <div class="form-input-container">
-            <label class="p-field-label" for="login">Code</label>
-            <input class="p-field-input code-input" [ngClass]="{'input-error':tokenError}" minlength="6" maxlength="6"
-                formControlName="token" id="toekn" pInputText placeholder="Code" type="text" />
-            <div class="error" *ngIf="tokenError">Wrong or expired code! Please enter the code again to confirm setup.
-            </div>
-        </div>
+<div>
+  <div class="header-step">Step 2</div>
+  <span>Enter the code given by the app on your mobile device.</span>
+</div>
+<form [formGroup]="form">
+  <div class="form-input-container">
+    <label class="p-field-label" for="login">Code</label>
+    <input class="p-field-input code-input" [ngClass]="{'input-error':tokenError}" minlength="6" maxlength="6"
+      formControlName="token" id="toekn" pInputText placeholder="Code" type="text" />
+    @if (tokenError) {
+      <div class="error">Wrong or expired code! Please enter the code again to confirm setup.
+      </div>
+    }
+  </div>
 
-    </form>
+</form>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <button (click)="onEnable()" [disabled]="form.invalid" class="button" label="Enable" pButton></button>
-        <button (click)="onNoClick()" class="button secondary" label="Cancel" pButton></button>
-    </div>
+  <div class="action-buttons">
+    <button (click)="onEnable()" [disabled]="form.invalid" class="button" label="Enable" pButton></button>
+    <button (click)="onNoClick()" class="button secondary" label="Cancel" pButton></button>
+  </div>
 </div>

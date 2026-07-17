@@ -10,7 +10,7 @@ Block for retrieving information from outside (3rd party) services via HTTP requ
 | Permissions      | Which entity has rights to interact at this part of the workflow.                 | Standard Registry         |        |
 | Default Active   | Shows whether this block is active at this time and whether it needs to be shown. | Checked or UnChecked      |        |
 | Stop Propagation | End processing here, don't pass control to the next block.                        | Checked or UnChecked      |        |
-| On Errors        | Called if the system error has occurs in the Block                                | <p>No action<br>Retry</p> |        |
+| On Errors        | Called if the system error occurs in the Block                                | <p>No action<br>Retry</p> |        |
 | URL              | URL of the external service end point                                             | http://localhost:8080     |        |
 | Method           | HTTP method of the request                                                        | GET/POST/DELETE/PUT/PATCH |        |
 | Body             | Body of the HTTP request                                                          | $(document)               |        |

@@ -1,8 +1,8 @@
 import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
-import { IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole } from '@guardian/interfaces';
+import { findBlocks, IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
+import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole, PolicyEditableFieldDTO } from '@guardian/interfaces';
 import {
     Body,
     Controller,
@@ -74,6 +74,7 @@ import {
     ServiceUnavailableErrorDTO,
     TaskDTO,
     ResponseDTOWithSyncEvents,
+    PolicyParametersDTO,
     MigrationRunsResponseDTO,
     MigrationRunStatusDTO,
     MigrationStatusResponseDTO,
@@ -313,6 +314,20 @@ export class PolicyApi {
         required: false,
         example: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED]
     })
+    @ApiQuery({
+        name: 'name',
+        type: String,
+        description: 'Filter by policy name.',
+        required: false,
+        example: 'Example Policy'
+    })
+    @ApiQuery({
+        name: 'version',
+        type: String,
+        description: 'Filter by policy version.',
+        required: false,
+        example: '1.0.0'
+    })
     @ApiOkResponse({
         description:
             'Successful operation. Two examples: regular user (userGroups usually reflect roles on published policies) and Standard Registry (dry-run: last active role and its userGroups; Administrator has userGroups []). Other combinations are possible depending on policy state and assignments.',
@@ -344,15 +359,21 @@ export class PolicyApi {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('type') type?: string,
-        @Query('status') status?: string
+        @Query('status') status?: string,
+        @Query('name') name?: string,
+        @Query('version') version?: string,
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
         }
         try {
+            const filters: any = {};
+            if (status) { filters.status = { $in: status.split(',') }; }
+            if (name) { filters.name = { $regex: name, $options: 'i' }; }
+            if (version) { filters.version = version; }
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
-                filters: status ? { status: { $in: status.split(',') } } : {},
+                filters,
                 type,
                 pageIndex,
                 pageSize
@@ -1486,10 +1507,21 @@ export class PolicyApi {
                     { name: 'filterByUUID', type: 'string', description: 'Filter by document UUID' },
                 ],
             };
+            const schemaByTag = new Map<string, string>(
+                entries.length
+                    ? findBlocks(policy.config, (node: any) => !!(node.tag && node.schema))
+                        .map((block: any) => [block.tag, block.schema])
+                    : []
+            );
             return entries.map((entry: any) => {
                 const getParams = getParamsByBlockType[entry.blockType] || [];
+                const rawSchemaId = schemaByTag.get(entry.target);
+                const schemaId = rawSchemaId
+                    ? rawSchemaId.replace(/^#/, '')
+                    : undefined;
                 return {
                     ...entry,
+                    ...(schemaId ? { schemaId } : {}),
                     getQueryParams: entry.method !== 'POST' ? getParams : [],
                     postQueryParams: entry.method !== 'GET' ? postParams : [],
                 };
@@ -1642,6 +1674,7 @@ export class PolicyApi {
             model.policyGroups = policy.policyGroups;
             model.categories = policy.categories;
             model.projectSchema = policy.projectSchema;
+            model.editableParametersSettings = policy.editableParametersSettings;
             model.policyDocumentation = policy.policyDocumentation;
 
             const invalidedCacheTags = [`${PREFIXES.POLICIES}${policyId}/navigation`, `${PREFIXES.POLICIES}${policyId}/groups`, `${PREFIXES.SCHEMES}schema-with-sub-schemas`];
@@ -3134,7 +3167,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadPolicyData(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.data`
+                FilenameSanitizer.contentDisposition(policy.name, '.data')
             );
             res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
@@ -3248,7 +3281,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadVirtualKeys(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.vk`
+                FilenameSanitizer.contentDisposition(policy.name, '.vk')
             );
             res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
@@ -4397,6 +4430,7 @@ export class PolicyApi {
     @Auth(
         Permissions.POLICIES_POLICY_UPDATE,
         Permissions.POLICIES_POLICY_TAG,
+        Permissions.POLICIES_POLICY_READ,
         Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE
         // UserRole.STANDARD_REGISTRY,
@@ -4480,7 +4514,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportFile(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(policy.name));
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
@@ -4588,7 +4622,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportXlsx(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(policy.name));
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
@@ -8214,6 +8248,83 @@ export class PolicyApi {
             return await engineService.getAllVersionVcDocuments(user, policyId, documentId);
         } catch (error) {
             error.code = HttpStatus.UNPROCESSABLE_ENTITY;
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Save Parameters Values
+     */
+    @Post('/:policyId/parameters')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        Permissions.POLICIES_POLICY_EXECUTE,
+        Permissions.POLICIES_POLICY_MANAGE,
+    )
+    @ApiOperation({
+        summary: 'Save policy config with values',
+        description: 'Save policy config with values to the PolicyParameters table',
+    })
+    @ApiBody({
+        description: 'Policy parameters.',
+        isArray: true,
+        type: PolicyEditableFieldDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyParametersDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async savePolicyParametersValues(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+        @Body() body: PolicyEditableFieldDTO[],
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.savePolicyParameters(new EntityOwner(user), policyId, body);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Get Parameters
+     */
+    @Get('/:policyId/parameters/config')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+    )
+    @ApiOperation({
+        summary: 'Get policy parameters.',
+        description: 'Get policy parameters.',
+    })
+    @ApiBody({
+        description: 'Policy parameters.',
+        isArray: true,
+        type: PolicyEditableFieldDTO,
+    })
+    @ApiOkResponse({
+        description: 'Successful operation.'
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+    })
+    @ApiExtraModels(PolicyParametersDTO, InternalServerErrorDTO)
+    @HttpCode(HttpStatus.OK)
+    async getPolicyParametersConfig(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string,
+    ): Promise<any> {
+        try {
+            const engineService = new PolicyEngine();
+            return await engineService.getPolicyParametersConfig(new EntityOwner(user), user, policyId );
+        } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
     }

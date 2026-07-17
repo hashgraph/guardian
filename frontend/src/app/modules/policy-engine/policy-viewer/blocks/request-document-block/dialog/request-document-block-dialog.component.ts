@@ -10,7 +10,6 @@ import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { DocumentValidators } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
@@ -18,11 +17,13 @@ import { autosaveValueChanged, getMinutesAgoStream } from 'src/app/utils/autosav
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyTestAutomationService } from '../../../policy-test-automation/policy-test-automation.service';
 
 @Component({
     selector: 'request-document-block-dialog',
     templateUrl: './request-document-block-dialog.component.html',
     styleUrls: ['./request-document-block-dialog.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockDialog {
     public loading: boolean = true;
@@ -101,7 +102,7 @@ export class RequestDocumentBlockDialog {
 
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
-        
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -110,11 +111,11 @@ export class RequestDocumentBlockDialog {
         private schemaRulesService: SchemaRulesService,
         private relayerAccountsService: RelayerAccountsService,
         private fb: UntypedFormBuilder,
-        private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         this.parent = this.config.data;
         this.dataForm = this.fb.group({});
@@ -294,16 +295,29 @@ export class RequestDocumentBlockDialog {
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
+        const payload = {
+            document: data,
+            ref: this.docRef,
+            draft,
+            draftId,
+            relayerAccount: this.getRelayerAccount(),
+            ...(evidence?.length ? { evidence } : {})
+        };
+
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
+
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                document: data,
-                ref: this.docRef,
-                draft: draft,
-                draftId: draftId,
-                relayerAccount: this.getRelayerAccount(),
-                ...(evidence?.length ? { evidence } : {})
-            })
-            .subscribe(() => {
+            .setBlockDataWithResult(this.id, this.policyId, payload)
+            .subscribe((result) => {
+                if (captureOutput) {
+                    this.policyTest.captureTestCase({
+                        policyId: this.policyId,
+                        blockId: this.id,
+                        blockType: 'requestDocumentBlock',
+                        ...payload,
+                        result: result?.result || result?.response
+                    });
+                }
                 setTimeout(() => {
                     this.loading = false;
                     if (!draft) {
@@ -354,7 +368,7 @@ export class RequestDocumentBlockDialog {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
 
             dialogOptionRef.onClose.subscribe((result: string) => {
                 if (result == 'Confirm') {
@@ -386,6 +400,11 @@ export class RequestDocumentBlockDialog {
         if (!this.loading) {
             data.onStep(true);
         }
+    }
+
+    public onDraftImported(doc: any): void {
+        this.parent.preset(doc);
+        this.dataSaved = false;
     }
 
     public getButtonName(item: any) {

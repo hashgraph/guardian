@@ -11,7 +11,8 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     selector: 'http-request-config',
     templateUrl: './http-request-config.component.html',
     styleUrls: ['./http-request-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class HttpRequestConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -87,7 +88,7 @@ export class HttpRequestConfigComponent implements OnInit {
                 expression: this.properties.messageBody,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.properties.messageBody = result.expression;
@@ -116,7 +117,7 @@ export class HttpRequestConfigComponent implements OnInit {
                         { name: 'Yes', class: 'primary'   }
                     ]
                 }
-            });
+            })!;
 
             dialogRef.onClose.subscribe(result => {
                 if (!result) {

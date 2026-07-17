@@ -1,0 +1,28 @@
+.p-tag {
+    display: inline-flex;
+    align-items: center;
+    width: min-content;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: 16px;
+}
+
+.p-tag-error {
+    background: var(--color-accent-red-2, #F5D7D7) !important;
+    color: var(--color-accent-red-1, #FF432A) !important;
+}
+
+.p-tag-green,
+.p-tag-success {
+    background: var(--color-accent-green-2, #D7F5F5) !important;
+    color: var(--color-accent-green-1, #19BE47) !important;
+}
+
+.p-tag-grey {
+    background: var(--color-grey-2, #EFF3F7) !important;
+    color: var(--color-grey-5, #848FA9) !important;
+}

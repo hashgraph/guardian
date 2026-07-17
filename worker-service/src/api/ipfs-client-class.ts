@@ -1,11 +1,10 @@
-import axios from 'axios';
+import { axiosGetWithRetry } from './helpers/utils.js';
 import { create } from 'kubo-rpc-client'
 import { FilebaseClient } from '@filebase/client';
 import { StoreMemory } from '@storacha/client/stores/memory';
 import * as Proof from '@storacha/client/proof';
 import { Signer } from '@storacha/client/principal/ed25519';
 import * as Client from '@storacha/client';
-import * as url from 'url';
 import CID from 'cids';
 
 /**
@@ -35,7 +34,7 @@ export class IpfsClientClass {
     private readonly IPFS_PUBLIC_GATEWAY = process.env.IPFS_PUBLIC_GATEWAY || 'https://ipfs.io/ipfs/{cid}';
 
     /**
-     * Web3storage instance
+     * IPFS client instance
      * @private
      */
     private client: any;
@@ -109,12 +108,7 @@ export class IpfsClientClass {
                 if (!this.options.nodeAddress) {
                     throw new Error('IPFS_NODE_ADDRESS variable is not set');
                 }
-                const { protocol, hostname, port } = url.parse(this.options.nodeAddress);
-                client = create({
-                    protocol,
-                    host: hostname,
-                    port: parseInt(port, 10),
-                });
+                client = create(this.options.nodeAddress);
                 break;
             }
 
@@ -135,14 +129,14 @@ export class IpfsClientClass {
         let cid: string;
         switch (this.IPFS_PROVIDER) {
             case IpfsProvider.WEB3STORAGE: {
-                const result = await this.client.uploadFile(new Blob([file]));
+                const result = await this.client.uploadFile(new Blob([new Uint8Array(file)]));
 
                 cid = result.toString()
                 break;
             }
 
             case IpfsProvider.FILEBASE: {
-                cid = await this.client.storeBlob(new Blob([file]))
+                cid = await this.client.storeBlob(new Blob([new Uint8Array(file)]))
                 break;
             }
 
@@ -201,7 +195,8 @@ export class IpfsClientClass {
      */
     public async getFile(cid: string): Promise<any> {
         const _cid = this.parseCID(cid);
-        const fileRes = await axios.get(
+        const fileRes = await axiosGetWithRetry(
+            'IPFS gateway',
             this.IPFS_PUBLIC_GATEWAY
                 ?.replace('${cid}', _cid)
                 ?.replace('{cid}', _cid),

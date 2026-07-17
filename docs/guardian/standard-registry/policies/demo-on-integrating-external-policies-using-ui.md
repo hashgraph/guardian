@@ -13,7 +13,7 @@ Here are the following steps to Integrate external policies as data sources:
 
 2. Once the topicID is entered, second step is to display the policy information associated with the entered topic.
 
-<figure><img src="../../../.gitbook/assets/image (5) (9) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (5) (9).png" alt=""><figcaption></figcaption></figure>
 
 3. Once, policy information is reviewed and confirmed, third step is to select the schemas/documents from the policy to be integrated.
 
@@ -24,7 +24,7 @@ Here are the following steps to Integrate external policies as data sources:
 <figure><img src="../../../.gitbook/assets/image (16) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
-**Note:** Documents between the policies are synchronized automatically. Additionally, it can also be synched by clicking on sync button as shown below:
+**Note:** Documents between the policies are synchronized automatically. Additionally, it can also be synced by clicking on sync button as shown below:
 {% endhint %}
 
 <figure><img src="../../../.gitbook/assets/image (34) (1) (2).png" alt=""><figcaption></figcaption></figure>

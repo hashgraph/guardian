@@ -235,7 +235,7 @@ The first step is that you will need to either login in to your account that you
 
 _**Note: You can access the ‘Demo Admin Panel’ where you can just select the ‘Project Proponent’ for demo purposes.**_
 
-<figure><img src="../../../.gitbook/assets/image (124) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (124).png" alt=""><figcaption></figcaption></figure>
 
 **Step 2**
 

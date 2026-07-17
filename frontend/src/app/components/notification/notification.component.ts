@@ -1,7 +1,7 @@
-import { Component, EventEmitter, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationType, NotifyAPI, } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 import { forkJoin, Subscription } from 'rxjs';
 import { NotificationService } from 'src/app/services/notify.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -10,6 +10,7 @@ import { WebSocketService } from 'src/app/services/web-socket.service';
     selector: 'app-notification',
     templateUrl: './notification.component.html',
     styleUrls: ['./notification.component.scss'],
+    standalone: false
 })
 export class NotificationComponent implements OnInit {
     notifications: any[] = [];
@@ -17,6 +18,9 @@ export class NotificationComponent implements OnInit {
     progressNotifications: any[] = [];
     menuOpened: boolean = false;
     subscription = new Subscription();
+
+    /** Show a plain red dot instead of the unread count (used in the collapsed menu). */
+    @Input() compact: boolean = false;
 
     @Output() menuOpenedChange = new EventEmitter<boolean>();
 
@@ -30,7 +34,7 @@ export class NotificationComponent implements OnInit {
     constructor(
         private ws: WebSocketService,
         private notificationService: NotificationService,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         public router: Router,
     ) {
     }
@@ -68,36 +72,16 @@ export class NotificationComponent implements OnInit {
     toastNotification(notification: any) {
         switch (notification.type) {
             case NotificationType.SUCCESS:
-                this.toastr.success(notification.message, notification.title, {
-                    timeOut: 3000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true,
-                });
+                this.toastService.success(notification.message, notification.title);
                 break;
             case NotificationType.ERROR:
-                this.toastr.error(notification.message, notification.title, {
-                    timeOut: 3000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true,
-                });
+                this.toastService.error(notification.message, notification.title);
                 break;
             case NotificationType.WARN:
-                this.toastr.warning(notification.message, notification.title, {
-                    timeOut: 3000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true,
-                });
+                this.toastService.warn(notification.message, notification.title);
                 break;
             case NotificationType.INFO:
-                this.toastr.info(notification.message, notification.title, {
-                    timeOut: 3000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    enableHtml: true,
-                });
+                this.toastService.info(notification.message, notification.title);
                 break;
             default:
                 break;
@@ -105,12 +89,7 @@ export class NotificationComponent implements OnInit {
     }
 
     toastProgress(notification: any) {
-        this.toastr.info(notification.message, notification.action, {
-            timeOut: 3000,
-            closeButton: true,
-            positionClass: 'toast-bottom-right',
-            enableHtml: true,
-        });
+        this.toastService.info(notification.message, notification.action);
     }
 
     countUnreadNotification() {

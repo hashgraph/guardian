@@ -1,28 +1,47 @@
-# Returns report data by report uuid
+# Returns Statistic Assessment by ID
 
-{% swagger method="get" path="" baseUrl="/analytics/reports/{uuid}" summary="Returns report data by report uuid" %}
-{% swagger-description %}
-Returns report data by report uuid
-{% endswagger-description %}
+**`GET /api/v1/policy-statistics/{definitionId}/assessment/{assessmentId}`**
 
-{% swagger-parameter in="path" name="uuid" required="true" type="String" %}
-Report Identifier
-{% endswagger-parameter %}
+Retrieves the statistic assessment for the specified definition and assessment identifiers.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-<pre><code><strong>content:
-</strong>            application/json:
-              schema:
-                "$ref": "#/components/schemas/DataContainerDTO"
-</code></pre>
-{% endswagger-response %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+**Permission:** `Permissions.STATISTICS_STATISTIC_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `definitionId` | string | Yes | Statistic definition identifier |
+| `assessmentId` | string | Yes | Statistic assessment identifier |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "definitionId": "63e3e5e8a01b3c001234aaaa",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "createDate": "2026-01-15T10:00:00.000Z",
+  "updateDate": "2026-01-15T12:00:00.000Z"
+}
 ```
- content:
-            application/json:
-              schema:
-                "$ref": "#/components/schemas/InternalServerErrorDTO"
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Invalid or missing `definitionId` or `assessmentId` |
+| `500 Internal Server Error` | Unexpected server failure |

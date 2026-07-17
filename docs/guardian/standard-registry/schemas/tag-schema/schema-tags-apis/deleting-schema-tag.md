@@ -1,37 +1,41 @@
 # Deleting Schema Tag
 
-{% swagger method="delete" path="" baseUrl="/tags/schemas/{schemaId}" summary="Delete the schema." %}
-{% swagger-description %}
-Deletes the schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`DELETE /tags/schemas/{schemaId}`**
 
-{% swagger-parameter in="path" name="schemaId" type="String" required="true" %}
-Schema ID.
-{% endswagger-parameter %}
+Deletes the tag schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SCHEMAS_SCHEMA_DELETE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Schema ID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns `true` if the schema was successfully deleted.
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                type: boolean
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

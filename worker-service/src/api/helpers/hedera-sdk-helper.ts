@@ -46,12 +46,12 @@ import {
     TransactionRecordQuery,
     TransferTransaction
 } from '@hiero-ledger/sdk';
-import { HederaUtils, timeout } from './utils.js';
+import { axiosGetWithRetry, HederaUtils, timeout } from './utils.js';
 import axios, { AxiosResponse } from 'axios';
 import { ContractParamType, FireblocksCreds, GenerateUUIDv4, HederaResponseCode, ISignOptions, SignType } from '@guardian/interfaces';
 import Long from 'long';
 import { TransactionLogger } from './transaction-logger.js';
-import process from 'process';
+import process from 'node:process';
 import { FireblocksHelper } from './fireblocks-helper.js';
 import { Environment, MockEntityType, MockService, MockType, MockHelper } from '@guardian/common';
 
@@ -1132,9 +1132,13 @@ export class HederaSDKHelper {
             }
         }
 
-        const res = await axios.get(
+        const res = await axiosGetWithRetry(
+            'Mirror node',
             `${Environment.HEDERA_MESSAGE_API}/${timeStamp}`,
-            { responseType: 'json' }
+            {
+                responseType: 'json',
+                timeout: process.env.REST_API_TIMEOUT ? parseInt(process.env.REST_API_TIMEOUT, 10) : 30000
+            }
         );
         if (!res || !res.data || !res.data.message) {
             throw new Error(`Invalid message '${timeStamp}'`);

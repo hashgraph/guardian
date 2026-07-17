@@ -77,7 +77,7 @@ export interface ISchemaDocument {
      * Properties
      */
     properties?: {
-        [x: string]: ISchemaDocument;
+        [x: string]: ISchemaDocument | false;
     }
     /**
      * Required fields
@@ -590,4 +590,8 @@ export interface IRecordResult {
      * Document body (JSON)
      */
     document: any;
+    /**
+     * Recorded action identifier
+     */
+    recordActionId?: string | null;
 }

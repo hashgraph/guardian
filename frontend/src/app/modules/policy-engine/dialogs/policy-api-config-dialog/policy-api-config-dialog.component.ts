@@ -1,6 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { IPolicyDocumentationEntry } from '@guardian/interfaces';
+import { IPolicyDocumentationEntry, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
+import { ToastService } from 'src/app/services/toast.service';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
@@ -8,6 +9,7 @@ import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
     selector: 'app-policy-api-config-dialog',
     templateUrl: './policy-api-config-dialog.component.html',
     styleUrls: ['./policy-api-config-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];
@@ -47,7 +49,8 @@ export class PolicyApiConfigDialogComponent {
     constructor(
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
-        private registeredService: RegisteredService
+        private registeredService: RegisteredService,
+        private toastService: ToastService
     ) {
         this.policyId = this.config.data?.policyId ?? '';
         this.blocks = this.config.data?.blocks ?? [];
@@ -139,7 +142,7 @@ export class PolicyApiConfigDialogComponent {
 
     onAliasChange(index: number): void {
         const entry = this.entries[index];
-        entry.alias = entry.alias.toLowerCase().replace(/[^a-z0-9-]/g, '');
+        entry.alias = entry.alias.toLowerCase().replace(/[^a-z0-9\-/]/g, '');
         this.revalidate();
     }
 
@@ -220,8 +223,8 @@ export class PolicyApiConfigDialogComponent {
         if (!entry.alias) {
             return 'Alias is required';
         }
-        if (!/^[a-z0-9-]+$/.test(entry.alias)) {
-            return 'Alias: only lowercase letters, digits and hyphens';
+        if (!POLICY_ALIAS_REGEX.test(entry.alias)) {
+            return "Alias: lowercase letters, digits, hyphens; use '/' to separate path segments";
         }
         if (!block || !about || (!about.get && !about.post)) {
             return 'Selected block does not support API aliases';
@@ -278,24 +281,43 @@ export class PolicyApiConfigDialogComponent {
         const file = input.files[0];
         const reader = new FileReader();
         reader.onload = () => {
+            let imported: unknown;
             try {
-                const imported = JSON.parse(reader.result as string);
-                if (Array.isArray(imported)) {
-                    this.entries = imported.map((e: any) => ({
-                        name: e.name || '',
-                        description: e.description || '',
-                        target: e.target || '',
-                        method: e.method || 'GET',
-                        alias: e.alias || '',
-                        url: e.url || '',
-                        dmrvUrl: e.dmrvUrl || '',
-                        blockType: e.blockType || '',
-                    }));
-                    this.revalidate();
-                }
+                imported = JSON.parse(reader.result as string);
             } catch {
-                // invalid JSON — ignore
+                this.toastService.error(
+                    'Could not parse the selected file. Expected a JSON array exported from this dialog.',
+                    'Import failed',
+                    { sticky: true }
+                );
+                return;
             }
+            if (!Array.isArray(imported)) {
+                this.toastService.error(
+                    'Unexpected file contents. Expected a JSON array of API entries.',
+                    'Import failed',
+                    { sticky: true }
+                );
+                return;
+            }
+            this.entries = imported.map((e: any) => ({
+                name: e.name || '',
+                description: e.description || '',
+                target: e.target || '',
+                method: e.method || 'GET',
+                alias: e.alias || '',
+                url: e.url || '',
+                dmrvUrl: e.dmrvUrl || '',
+                blockType: e.blockType || '',
+            }));
+            this.revalidate();
+        };
+        reader.onerror = () => {
+            this.toastService.error(
+                'Could not read the selected file.',
+                'Import failed',
+                { sticky: true }
+            );
         };
         reader.readAsText(file);
         input.value = '';

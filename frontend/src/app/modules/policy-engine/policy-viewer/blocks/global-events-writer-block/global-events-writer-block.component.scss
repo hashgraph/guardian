@@ -240,8 +240,8 @@
     bottom: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
-    padding-left: calc(var(--header-width-expand) + 48px);
+    background: var(--guardian-background, #FFF);
+    padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
     transition: padding-left 0.125s ease-in-out;
     z-index: 999;
 }
@@ -260,7 +260,7 @@
                 font-style: normal;
                 font-weight: 500;
                 line-height: 30px;
-                color: var(--color-grey-white, #FFF);
+                color: var(--guardian-on-primary-color, #FFF);
             }
 
             &:disabled {

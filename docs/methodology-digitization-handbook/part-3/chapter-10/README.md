@@ -2,7 +2,7 @@
 
 This chapter teaches you how to build monitoring report schemas that handle time-series data collection and calculation updates. You'll learn the exact field-by-field process used for VM0033's monitoring schema, building on the PDD foundation from Chapter 9.
 
-By the end of this chapter, you'll know how to create the [VM0033 Monitoring schema](../../_shared/artifacts/Monitoring-schema.xlsx) structure yourself, understanding temporal data management, annual parameter tracking, and calculation update mechanisms.
+By the end of this chapter, you'll know how to create the [VM0033 Monitoring schema](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/Monitoring-schema.xlsx) structure yourself, understanding temporal data management, annual parameter tracking, and calculation update mechanisms.
 
 ## Monitoring Schema Purpose and Structure
 
@@ -13,9 +13,9 @@ Monitoring schemas extend your PDD implementation to handle ongoing project oper
 * **Quality Control**: Data validation and evidence documentation for verification activities
 * **Temporal Relationships**: Maintaining connections between annual data and cumulative results
 
-Usually, there's always a section on methodology PDF(including VM0033) on data and parameters to be monitored. Typcially, those fields are submitted as part of Monitoring report.
+Usually, there's always a section on methodology PDF(including VM0033) on data and parameters to be monitored. Typically, those fields are submitted as part of Monitoring report.
 
-![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (38) (4).png>)
+![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (5).png>)
 
 ## Building the Primary Monitoring Schema
 
@@ -27,7 +27,7 @@ Start your monitoring Excel file with the main schema structure:
 Row 1: Monitoring Report (Auto)
 Row 2: Description | Monitoring period input parameters for measuring carbon stock changes and GHG emissions
 Row 3: Schema Type | Verifiable Credentials
-Row 4: Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Row 4: Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 ```
 
 This establishes the monitoring schema as a Verifiable Credentials type that will create on-chain records for each monitoring submission.
@@ -63,14 +63,14 @@ Create a new worksheet "(New) Monitoring Period Inputs" with the monitoring para
 (New) Monitoring Period Inputs
 Description | Monitoring period input parameters for measuring carbon stock changes and GHG emissions
 Schema Type | Verifiable Credentials
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Boolean | | | Baseline Aboveground non-tree biomass | No | True
 No | (New) MP Baseline Herbaceous V | | | Baseline herbaceous vegetation monitoring data | Yes |
 Yes | Number | | | Monitoring year | No | 7
 Yes | (New) MP Herbaceous Vegetat 1 | | | Measurements for each stratum | Yes |
 ```
 
-![Monitoring Period Inputs Sheet](<../../../.gitbook/assets/image-1 (2) (1).png>)
+![Monitoring Period Inputs Sheet](<../../../.gitbook/assets/image-1 (1).png>)
 
 ## Implementing Stratum-Level Data Collection
 
@@ -78,13 +78,13 @@ Yes | (New) MP Herbaceous Vegetat 1 | | | Measurements for each stratum | Yes |
 
 For methodologies with multiple strata like VM0033, create stratum-specific monitoring:
 
-Create "(New) MP Herbaceous Vegetat 1" worksheet(names are trimmed to accomodate excel's limitations):
+Create "(New) MP Herbaceous Vegetat 1" worksheet(names are trimmed to accommodate excel's limitations):
 
 ```excel
 (New) MP Herbaceous Vegetation Stratum Data for Project
 Description | Stratum-level herbaceous vegetation monitoring
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | String | | | Stratum number | No | 1
 Yes | Number | | | Carbon stock in herbaceous vegetation (t C/ha) - CBSL-herb,i,t | No | 1.5
 Yes | Number | | | Initial time T for measurement - Start_T (BSL) | No | True
@@ -119,7 +119,7 @@ Create "(New) Annual Inputs Parameters" worksheet:
 (New) Annual Inputs Parameters Baseline
 Description | Annual input parameters for baseline calculations
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Area of stratum (ha) – Ai,t | No | 1
 Yes | Number | | | Change in baseline tree-biomass carbon stock (t CO₂-e yr⁻¹) – ΔCTREE_BSL,i,t | No | 1
 Yes | Number | | | CO₂ emissions from in-situ soil (t CO₂e ha⁻¹ yr⁻¹) – GHGBSL-insitu-CO₂,i,t | No | 1
@@ -140,7 +140,7 @@ Create "(New) Annual Inputs Paramet 1" worksheet with project-specific parameter
 (New) Annual Inputs Parameters Baseline
 Description | Annual input parameters for project calculations
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Area of stratum (ha) – Ai,t | No | 1
 Yes | Number | | | Change in project tree-biomass carbon stock (t CO₂-e yr⁻¹) – ΔCTREE_WPS,i,t | No | 1
 Yes | Number | | | CO₂ emissions from project soil (t CO₂e ha⁻¹ yr⁻¹) – GHGWPS-insitu-CO₂,i,t | No | 1
@@ -324,7 +324,7 @@ Create efficient annual data structure in "(New) Project Emissions Annual":
 (New) Project Emissions Annual
 Description | Annual project emissions data
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Year | No | 2024
 Yes | String | | | Data collector | No | example
 [Include only essential annual fields to maintain performance]

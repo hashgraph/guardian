@@ -1,51 +1,55 @@
 # Returning Schema by SchemaID
 
-<mark style="color:blue;">`GET`</mark> `/schema/{schemaId}`
+**`GET /schema/{schemaId}`**
 
-Returns schema by schema ID
+Returns schema by schema ID.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description |
-| ------------------------------------------ | ------ | ----------- |
-| schemaId<mark style="color:red;">\*</mark> | String | Schema ID   |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_READ`
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Schema ID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-      content:
-            application/json:
-              schema:
-                  $ref: '#/components/schemas/Schema'
+  "id": "f3b2a9c1e4d5678901234567",
+  "uuid": "f3b2a9c1e4d5678901234567",
+  "name": "Schema name",
+  "description": "Description",
+  "entity": "string",
+  "iri": "string",
+  "status": "PUBLISHED",
+  "topicId": "f3b2a9c1e4d5678901234567",
+  "version": "1.0.0",
+  "owner": "did:hedera:testnet:...",
+  "messageId": "1700000000.000000001",
+  "documentURL": "https://example.com",
+  "contextURL": "https://example.com",
+  "document": {},
+  "context": {}
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

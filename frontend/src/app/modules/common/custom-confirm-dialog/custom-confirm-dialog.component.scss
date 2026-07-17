@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     border-radius: 16px;

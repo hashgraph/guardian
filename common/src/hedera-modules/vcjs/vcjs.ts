@@ -1,9 +1,10 @@
-import Ajv from 'ajv';
+import { Ajv } from 'ajv';
 import addFormats from 'ajv-formats';
-import { ld as vcjs } from '@transmute/vc.js';
-import { Ed25519Signature2018, Ed25519VerificationKey2018 } from '@transmute/ed25519-signature-2018';
+import * as vcLib from '@digitalbazaar/vc';
+import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
+import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
-import { CheckResult } from '@transmute/jsonld-schema';
+import { SchemaValidationResult } from './schema-validation-result.js';
 import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
@@ -11,17 +12,21 @@ import { VcSubject } from './vc-subject.js';
 import { TimestampUtils } from '../timestamp-utils.js';
 import { DocumentLoaderFunction } from '../document-loader/document-loader-function.js';
 import { DocumentLoader } from '../document-loader/document-loader.js';
+import { IDocumentFormat } from '../document-loader/document-format.js';
 import { SchemaLoader, SchemaLoaderFunction } from '../document-loader/schema-loader.js';
 import { Issuer } from './issuer.js';
 import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
-import { BBSDidRootKey, DidRootKey } from './did-document.js';
 
-import * as pkg from 'jsonld-signatures';
+import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
-const { verify, purposes } = pkg;
+// BbsBlsSignature2020 targets jsonld-signatures@7. Drive its sign/verify with the v7 alias
+// (jsonld-signatures@11, used by @digitalbazaar/vc for Ed25519, is incompatible with it).
+// Under ESM the CJS named exports live on `.default`, so resolve that before destructuring.
+const jsigV7: any = (jsigV7Module as any).default ?? jsigV7Module;
+const { sign: signV7, verify: verifyV7, purposes: purposesV7 } = jsigV7;
 
 /**
  * Suite interface
@@ -194,16 +199,20 @@ export class VCJS {
      * @returns {boolean} - status
      */
     public async verify(json: any, documentLoader: DocumentLoaderFunction): Promise<boolean> {
-        let result;
-        if (json.proof.type === SignatureType.Ed25519Signature2018) {
-            result = await vcjs.verifyVerifiableCredential({
+        let result: vcLib.VerificationResult;
+        const proof = Array.isArray(json?.proof) ? json.proof[0] : json?.proof;
+        if (!proof || !proof.type) {
+            throw new Error('Verification error: document is missing a proof');
+        }
+        if (proof.type === SignatureType.Ed25519Signature2018) {
+            result = await vcLib.verifyCredential({
                 credential: json,
                 suite: [new Ed25519Signature2018()],
-                documentLoader,
+                documentLoader: this.ed25519VerificationDocumentLoader(documentLoader),
             });
         } else {
-            result = await verify(json, {
-                purpose: new purposes.AssertionProofPurpose(),
+            result = await verifyV7(json, {
+                purpose: new purposesV7.AssertionProofPurpose(),
                 suite: [new BbsBlsSignature2020(), new BbsBlsSignatureProof2020()],
                 documentLoader,
             });
@@ -223,13 +232,57 @@ export class VCJS {
     }
 
     /**
+     * Adapt a document loader for @digitalbazaar/ed25519-signature-2018 verification.
+     *
+     * The digitalbazaar suite requires the resolved verification method to carry the
+     * suite context, and it authorizes the controller by absolute assertionMethod id.
+     * Guardian DID documents declare only the did/v1 context and use relative
+     * assertionMethod references, so this wrapper: serves the suite context, returns the
+     * requested verification method as a key node carrying that context, and rewrites the
+     * controller's relative assertionMethod references to absolute ids. Non-DID documents
+     * and non-Ed25519 verification methods pass through unchanged, so the BBS path that
+     * shares this loader is unaffected.
+     *
+     * @param {DocumentLoaderFunction} documentLoader - base document loader
+     *
+     * @returns {DocumentLoaderFunction} - wrapped document loader
+     */
+    private ed25519VerificationDocumentLoader(documentLoader: DocumentLoaderFunction): DocumentLoaderFunction {
+        const contextUrl = Ed25519Signature2018.CONTEXT_URL;
+        const context = Ed25519Signature2018.CONTEXT;
+        return async (iri: string): Promise<IDocumentFormat> => {
+            if (iri === contextUrl) {
+                return { documentUrl: iri, document: context };
+            }
+            const result = await documentLoader(iri);
+            const document = result?.document;
+            if (document && Array.isArray(document.verificationMethod)) {
+                if (iri.indexOf('#') !== -1) {
+                    const method = document.verificationMethod.find((item: any) => item?.id === iri);
+                    if (method && method.type === HederaEd25519Method.TYPE) {
+                        return { documentUrl: iri, document: { '@context': contextUrl, ...method } };
+                    }
+                } else if (Array.isArray(document.assertionMethod)) {
+                    const assertionMethod = document.assertionMethod.map((reference: any) =>
+                        (typeof reference === 'string' && reference.startsWith('#'))
+                            ? document.id + reference
+                            : reference
+                    );
+                    return { documentUrl: iri, document: { ...document, assertionMethod } };
+                }
+            }
+            return result;
+        };
+    }
+
+    /**
      * Verify Schema
      *
      * @param {HcsVcDocument<VcSubject>} vcDocument - VC Document
      *
-     * @returns {CheckResult} - is verified
+     * @returns {SchemaValidationResult} - is verified
      */
-    public async verifySchema(vcDocument: VcDocument | any): Promise<CheckResult> {
+    public async verifySchema(vcDocument: VcDocument | any): Promise<SchemaValidationResult> {
         let vc: IVC;
         if (vcDocument && typeof vcDocument.toJsonTree === 'function') {
             vc = vcDocument.toJsonTree();
@@ -259,7 +312,7 @@ export class VCJS {
         const ajv = new Ajv({
             loadSchema: this.loadSchema
         });
-        addFormats(ajv);
+        addFormats.default(ajv);
 
         this.prepareSchema(schema);
 
@@ -269,8 +322,9 @@ export class VCJS {
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
+        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
 
-        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
     }
 
     /**
@@ -301,6 +355,8 @@ export class VCJS {
      * @param schema Schema
      */
     private prepareSchema(schema: any) {
+        this.stripIfOnly(schema);
+
         const defsObj = schema.$defs;
         if (!defsObj) {
             return;
@@ -309,12 +365,200 @@ export class VCJS {
         const defsKeys = Object.keys(defsObj);
         for (const key of defsKeys) {
             const nestedSchema = defsObj[key];
+            this.stripIfOnly(nestedSchema);
             const required = nestedSchema.required;
             if (!required || required.length === 0) {
                 continue;
             }
             nestedSchema.required = required.filter((field: any) => !nestedSchema.properties[field] || !nestedSchema.properties[field].readOnly);
         }
+
+        if (!Array.isArray(schema.allOf)) {
+            return;
+        }
+        const rootProperties = schema.properties || {};
+
+        // Collect fields to strip keyed by container dot-path (not by IRI).
+        // Multiple conditions targeting the same container accumulate into one Set.
+        const stripByPath = new Map<string, Set<string>>();
+
+        const collectPath = (constraint: any, pathSoFar: string[], currentProps: any) => {
+            if (!constraint?.properties) { return; }
+            for (const [propKey, val] of Object.entries(constraint.properties) as [string, any][]) {
+                if (!val || typeof val !== 'object') { continue; }
+                const ref = currentProps[propKey]?.$ref;
+                if (!ref || !defsObj[ref]) { continue; }
+                const containerPath = [...pathSoFar, propKey];
+                const pathKey = containerPath.join('.');
+                if (Array.isArray(val.required)) {
+                    if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
+                    for (const f of val.required) { stripByPath.get(pathKey)!.add(f); }
+                }
+                if (val.properties) {
+                    for (const [fieldName, fieldVal] of Object.entries(val.properties) as [string, any][]) {
+                        if (fieldVal === false) {
+                            if (!stripByPath.has(pathKey)) { stripByPath.set(pathKey, new Set()); }
+                            stripByPath.get(pathKey)!.add(fieldName);
+                        }
+                    }
+                    collectPath(val, containerPath, defsObj[ref]?.properties || {});
+                }
+            }
+        };
+
+        for (const condEntry of schema.allOf) {
+            if (!condEntry?.if) { continue; }
+            for (const branch of [condEntry.then, condEntry.else]) {
+                collectPath(branch, [], rootProperties);
+            }
+        }
+
+        if (!stripByPath.size) { return; }
+
+        // Pre-compute original IRIs for every path and its ancestors before any $ref rewrite.
+        const originalIriByPath = new Map<string, string>();
+        const computeOriginalIri = (pathArr: string[]): string | undefined => {
+            let props = rootProperties;
+            for (let i = 0; i < pathArr.length; i++) {
+                const ref = props[pathArr[i]]?.$ref;
+                if (!ref || !defsObj[ref]) { return undefined; }
+                if (i === pathArr.length - 1) { return ref; }
+                props = defsObj[ref]?.properties || {};
+            }
+            return undefined;
+        };
+
+        // Include all ancestor paths so passthrough clones can be created for them.
+        const allPathsNeeded = new Set<string>();
+        for (const pathKey of stripByPath.keys()) {
+            const parts = pathKey.split('.');
+            for (let d = 1; d <= parts.length; d++) {
+                allPathsNeeded.add(parts.slice(0, d).join('.'));
+            }
+        }
+        for (const pathKey of allPathsNeeded) {
+            const iri = computeOriginalIri(pathKey.split('.'));
+            if (iri) { originalIriByPath.set(pathKey, iri); }
+        }
+
+        // Process shortest paths first so parent clones exist before children need them.
+        const cloneKeys = new Map<string, string>();
+        const sortedPaths = [...allPathsNeeded].sort(
+            (a, b) => a.split('.').length - b.split('.').length
+        );
+
+        for (const pathKey of sortedPaths) {
+            const iri = originalIriByPath.get(pathKey);
+            if (!iri) { continue; }
+            const pathArr = pathKey.split('.');
+            const fieldsToStrip = stripByPath.get(pathKey);
+            const cloneKey = `${iri}__${pathArr.join('__')}`;
+
+            // Deep-copy original def so the shared entry is never mutated.
+            const clone = JSON.parse(JSON.stringify(defsObj[iri]));
+            // Give the clone a unique $id so AJV can resolve the rewritten $ref to
+            // it, without conflicting with the original entry's $id anchor.
+            clone.$id = cloneKey;
+            delete clone.$anchor;
+            delete clone.$dynamicAnchor;
+            if (fieldsToStrip?.size && Array.isArray(clone.required)) {
+                clone.required = clone.required.filter((r: string) => !fieldsToStrip.has(r));
+                if (!clone.required.length) { delete clone.required; }
+            }
+            defsObj[cloneKey] = clone;
+            cloneKeys.set(pathKey, cloneKey);
+
+            // Rewrite the $ref on this specific container only.
+            if (pathArr.length === 1) {
+                if (rootProperties[pathArr[0]]) {
+                    rootProperties[pathArr[0]] = { ...rootProperties[pathArr[0]], $ref: cloneKey };
+                }
+            } else {
+                const parentPathKey = pathArr.slice(0, -1).join('.');
+                const parentCloneKey = cloneKeys.get(parentPathKey);
+                const leafProp = pathArr[pathArr.length - 1];
+                if (parentCloneKey && defsObj[parentCloneKey]?.properties?.[leafProp]) {
+                    defsObj[parentCloneKey].properties[leafProp] = {
+                        ...defsObj[parentCloneKey].properties[leafProp],
+                        $ref: cloneKey,
+                    };
+                }
+            }
+        }
+    }
+
+    private stripIfOnly(schema: any) {
+        if (!Array.isArray(schema?.allOf)) {
+            return;
+        }
+        schema.allOf = schema.allOf.filter(
+            (entry: any) => !entry?.if || entry.then !== undefined || entry.else !== undefined
+        );
+        if (schema.allOf.length === 0) {
+            delete schema.allOf;
+        }
+    }
+
+    /**
+     * Converts the nested JSON Schema `if` node into a readable condition string
+     */
+    private describeIfCondition(node: any): string {
+        if (!node) { return ''; }
+        if (Array.isArray(node.anyOf)) {
+            return node.anyOf.map((b: any) => this.describeIfCondition(b)).filter(Boolean).join(' OR ');
+        }
+        if (Array.isArray(node.allOf)) {
+            return node.allOf.map((b: any) => this.describeIfCondition(b)).filter(Boolean).join(' AND ');
+        }
+        if (node.properties) {
+            return Object.entries(node.properties as Record<string, any>)
+                .map(([key, val]) => this.describeIfConditionLeaf(val, key))
+                .filter(Boolean)
+                .join(', ');
+        }
+        return '';
+    }
+
+    private describeIfConditionLeaf(node: any, leafKey: string): string {
+        if (!node) { return ''; }
+        if (node.const !== undefined) {
+            return `${leafKey} = '${node.const}'`;
+        }
+        if (node.properties) {
+            return Object.entries(node.properties as Record<string, any>)
+                .map(([key, val]) => this.describeIfConditionLeaf(val, key))
+                .filter(Boolean)
+                .join(', ');
+        }
+        if (Array.isArray(node.anyOf)) {
+            return node.anyOf.map((b: any) => this.describeIfConditionLeaf(b, leafKey)).filter(Boolean).join(' OR ');
+        }
+        if (Array.isArray(node.allOf)) {
+            return node.allOf.map((b: any) => this.describeIfConditionLeaf(b, leafKey)).filter(Boolean).join(' AND ');
+        }
+        return '';
+    }
+
+    /**
+     * Replaces AJV messages with a human-readable description
+     */
+    private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
+        if (!errors?.length || !Array.isArray(schema?.allOf)) {
+            return errors;
+        }
+        return errors.map(error => {
+            if (error.keyword !== 'false schema') { return error; }
+            const match = (error.schemaPath as string)?.match(/^#\/allOf\/(\d+)\/(then|else)\//);
+            if (!match) { return error; }
+            const condEntry = schema.allOf[parseInt(match[1], 10)];
+            if (!condEntry?.if) { return error; }
+            const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
+            const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
+            return {
+                ...error,
+                message: `Field '${fieldName}' is not allowed unless: ${condition}`,
+            };
+        });
     }
 
     /**
@@ -322,9 +566,9 @@ export class VCJS {
      *
      * @param {any} subject - subject
      *
-     * @returns {CheckResult} - is verified
+     * @returns {SchemaValidationResult} - is verified
      */
-    public async verifySubject(subject: any): Promise<CheckResult> {
+    public async verifySubject(subject: any): Promise<SchemaValidationResult> {
         if (!this.schemaLoader) {
             throw new Error('Schema Loader not found');
         }
@@ -338,15 +582,15 @@ export class VCJS {
         const ajv = new Ajv({
             loadSchema: this.loadSchema
         });
-        addFormats(ajv);
+        addFormats.default(ajv);
 
         this.prepareSchema(schema);
 
         const validate = await ajv.compileAsync(schema);
-
         const valid = validate(subject);
+        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
 
-        return new CheckResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', validate.errors as any);
+        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
     }
 
     /**
@@ -468,16 +712,24 @@ export class VCJS {
     ): Promise<VcDocument> {
         const vc: any = vcDocument.getDocument();
         ContextHelper.clearContext(vc);
-        const verifiableCredential = await vcjs.createVerifiableCredential({
-            credential: vc,
-            suite,
-            documentLoader,
-        });
-        if (
-            suite instanceof BbsBlsSignature2020 &&
-            verifiableCredential.proof?.type
-        ) {
-            verifiableCredential.proof.type = SignatureType.BbsBlsSignature2020;
+        let verifiableCredential: any;
+        if (suite instanceof BbsBlsSignature2020) {
+            // BbsBlsSignature2020 must be signed with the v7 driver; @digitalbazaar/vc's
+            // issue() (jsonld-signatures@11) calls APIs the v7-era suite does not implement.
+            verifiableCredential = await signV7(vc, {
+                suite,
+                purpose: new purposesV7.AssertionProofPurpose(),
+                documentLoader,
+            });
+            if (verifiableCredential.proof?.type) {
+                verifiableCredential.proof.type = SignatureType.BbsBlsSignature2020;
+            }
+        } else {
+            verifiableCredential = await vcLib.issue({
+                credential: vc,
+                suite,
+                documentLoader,
+            });
         }
         vcDocument.proofFromJson(verifiableCredential);
         return vcDocument;
@@ -497,8 +749,9 @@ export class VCJS {
         suite: Ed25519Signature2018,
         documentLoader: DocumentLoaderFunction
     ): Promise<VpDocument> {
+        // signPresentation attaches a proof to an already-formed VP; it does not build one.
         const vp = vpDocument.toJsonTree();
-        const verifiablePresentation = await vcjs.createVerifiablePresentation({
+        const verifiablePresentation = await vcLib.signPresentation({
             presentation: vp,
             challenge: '123',
             suite,
@@ -506,25 +759,6 @@ export class VCJS {
         });
         vpDocument.proofFromJson(verifiablePresentation);
         return vpDocument;
-    }
-
-    /**
-     * Create Suite by DID
-     *
-     * @param {DidRootKey} document - DID document
-     *
-     * @returns {Ed25519Signature2018} - Ed25519Signature2018
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createSuite(document: DidRootKey | BBSDidRootKey): Promise<Ed25519Signature2018 | BbsBlsSignature2020> {
-        const verificationMethod: any = document.getPrivateVerificationMethod();
-        switch (verificationMethod.type) {
-            case BBSDidRootKey.DID_ROOT_KEY_TYPE:
-                return this.createBBSSuite(verificationMethod);
-            default:
-                return this.createEd25519Suite(verificationMethod);
-        }
     }
 
     /**
@@ -573,92 +807,6 @@ export class VCJS {
      */
     public async generateDid(suiteOptions: ISuiteOptions): Promise<HederaDidDocument> {
         return await HederaDidDocument.generateByDid(suiteOptions.did, suiteOptions.key);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {any} subject - Credential Object
-     * @param {any} [group] - Issuer
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVC(
-        did: string,
-        key: string | PrivateKey,
-        subject: ICredentialSubject,
-        group?: any,
-        signatureType: SignatureType = SignatureType.Ed25519Signature2018,
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid({ did, key, signatureType });
-        return await this.createVerifiableCredential(subject, didDocument, signatureType, { group });
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {VcDocument} vc - json
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async issueVC(
-        did: string,
-        key: string | PrivateKey,
-        vc: VcDocument
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid({ did, key });
-        const signatureType = vc.getSignatureType();
-        return await this.issueVerifiableCredential(vc, didDocument, signatureType);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {ICredentialSubject} subject - Credential Object
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key, Signature Type)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVcDocument(
-        subject: ICredentialSubject,
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid(suiteOptions);
-        const signatureType = suiteOptions.signatureType || SignatureType.Ed25519Signature2018;
-        return await this.createVerifiableCredential(subject, didDocument, signatureType, documentOptions);
-    }
-
-    /**
-     * Create VC Document
-     *
-     * @param {VcDocument} vc - VC Document
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VcDocument} - VC Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async issueVcDocument(
-        vc: VcDocument,
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VcDocument> {
-        const didDocument = await this.generateDid(suiteOptions);
-        const signatureType = vc.getSignatureType();
-        return await this.issueVerifiableCredential(vc, didDocument, signatureType, documentOptions);
     }
 
     /**
@@ -722,48 +870,6 @@ export class VCJS {
         verifiableCredential.setIssuanceDate(TimestampUtils.now());
         verifiableCredential.setProof(null);
         return await this.issue(verifiableCredential, suite, this.loader);
-    }
-
-    /**
-     * Create VP Document
-     *
-     * @param {string} did - DID
-     * @param {PrivateKey | string} key - Private Key
-     * @param {VcDocument[]} vcs - VC Documents
-     * @param {string} [uuid] - new uuid
-     *
-     * @returns {VpDocument} - VP Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVP(
-        did: string,
-        key: string | PrivateKey,
-        vcs: VcDocument[],
-        uuid?: string
-    ): Promise<VpDocument> {
-        const didDocument = await this.generateDid({ did, key });
-        return await this.createVerifiablePresentation(vcs, didDocument, SignatureType.Ed25519Signature2018, { uuid });
-    }
-
-    /**
-     * Create VP Document
-     *
-     * @param {VcDocument[]} vcs - VC Documents
-     * @param {ISuiteOptions} suiteOptions - Suite Options (Issuer, Private Key)
-     * @param {IDocumentOptions} [documentOptions] - Document Options (UUID, Group)
-     *
-     * @returns {VpDocument} - VP Document
-     *
-     * @deprecated 2024-02-12
-     */
-    public async createVpDocument(
-        vcs: VcDocument[],
-        suiteOptions: ISuiteOptions,
-        documentOptions?: IDocumentOptions
-    ): Promise<VpDocument> {
-        const didDocument = await this.generateDid(suiteOptions);
-        return await this.createVerifiablePresentation(vcs, didDocument, SignatureType.Ed25519Signature2018, documentOptions);
     }
 
     /**

@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module } from '@nestjs/common';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import hpp from 'hpp';
-import process from 'process';
+import process from 'node:process';
 import express from 'express';
 import fileUpload from 'express-fileupload';
 import { AnalyticsApi } from './api/analytics.js';

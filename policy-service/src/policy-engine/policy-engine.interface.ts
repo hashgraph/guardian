@@ -2,7 +2,7 @@ import { BlockCacheType, EventConfig, IPolicyEvent, PolicyOutputEventType } from
 import { DatabaseServer, Policy } from '@guardian/common';
 import { PolicyUser, UserCredentials } from './policy-user.js';
 import { ComponentsService } from './helpers/components-service.js';
-import { LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
+import { IBlockErrorData, LocationType, PolicyAvailability, PolicyStatus } from '@guardian/interfaces';
 import { IDebugContext } from './block-engine/block-result.js';
 import { RecordActionStep } from './record-action-step.js';
 
@@ -490,6 +490,8 @@ export interface IPolicyBlock {
         value: T,
         user?: PolicyUser | string
     ): Promise<void>;
+
+    getOptions(user?: PolicyUser | null): Promise<any>;
 }
 
 /**
@@ -848,7 +850,7 @@ export interface IPolicyValidatorBlock extends IPolicyBlock {
      * @param event
      * @returns error
      */
-    run(event: IPolicyEvent<any>): Promise<string>;
+    run(event: IPolicyEvent<any>): Promise<{ message: string; data?: IBlockErrorData } | null>;
 }
 
 /**

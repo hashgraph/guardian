@@ -14,6 +14,7 @@ const ACTIVE_CLASS = 'content-search-highlight-active';
     selector: 'content-search',
     templateUrl: './content-search.component.html',
     styleUrls: ['./content-search.component.scss'],
+    standalone: false
 })
 export class ContentSearchComponent implements OnDestroy {
     @Input() searchContainer!: HTMLElement;

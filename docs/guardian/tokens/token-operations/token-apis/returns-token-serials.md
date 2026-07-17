@@ -1,39 +1,42 @@
 # Returns Token Serials
 
-{% swagger method="get" path="" baseUrl="/tokens/{tokenId}/serials" summary="Return token serials." %}
-{% swagger-description %}
-Returns token serials of current user.
-{% endswagger-description %}
+**`GET /api/v1/tokens/{tokenId}/serials`**
 
-{% swagger-parameter in="path" name="tokenId" type="String" required="true" %}
-Token Identifier
-{% endswagger-parameter %}
+Returns the serial numbers of non-fungible token instances owned by the current user for the specified token.
 
-{% swagger-response status="200: OK" description="Token Serials" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOKENS_TOKEN_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The internal database ID of the token |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[1, 2, 5, 12]
 ```
-content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: number
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+An array of serial numbers (integers) for the non-fungible token instances held by the current user.
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | User or token does not exist |
+| `500 Internal Server Error` | Unexpected server failure |

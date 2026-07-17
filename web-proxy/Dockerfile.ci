@@ -1,26 +1,29 @@
 # syntax=docker/dockerfile:1
 # Stage 0: # Define the versions of the base images used
-ARG NODE_VERSION=20.19.5-alpine
-ARG NGINX_VERSION=1.27.4-alpine
+ARG NODE_VERSION=24.18.0-alpine
+ARG NGINX_VERSION=1.30.3-alpine
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
-# Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
-ARG YARN_CACHE_FOLDER=/root/.yarn
+RUN corepack enable
 
-# Stage 1: Build interfaces module
-FROM base AS interfaces
-COPY --link interfaces/package.json interfaces/tsconfig*.json yarn.lock ./
-# Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+# Stage 1: Install workspace deps, then build and pack the interfaces module.
+FROM base AS deps-dev
+COPY --link package.json yarn.lock .yarnrc.yml ./
+COPY --link .yarn .yarn
+COPY --link --parents */package.json ./
+RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
     yarn install --immutable
-COPY --link interfaces/src src/
-RUN yarn pack
+
+FROM deps-dev AS interfaces
+COPY --link interfaces/tsconfig*.json interfaces/
+COPY --link interfaces/src interfaces/src/
+RUN yarn workspace @guardian/interfaces pack --out /usr/local/app/interfaces.tgz
 
 # Stage 2: Build frontend
 FROM base AS build
 ENV NODE_OPTIONS="--openssl-legacy-provider"
-COPY --link --from=interfaces /usr/local/app/guardian-interfaces-*.tgz ./interfaces.tgz
+COPY --link --from=interfaces /usr/local/app/interfaces.tgz ./interfaces.tgz
 COPY --link ./frontend/. ./
 RUN npm install interfaces.tgz && npm run build:prod
 

@@ -15,23 +15,25 @@ export enum Dictionary {
     REQUIRED_FIELD = 'Required Field',
     FIELD_TYPE = 'Field Type',
     PARAMETER = 'Parameter',
-    QUESTION = 'Question',
+    QUESTION = 'Description',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
-    ANSWER = 'Answer',
+    ANSWER = 'Test Value',
     KEY = 'Key',
     AUTO_CALCULATE = 'Auto-Calculate',
     SUB_SCHEMA = 'Sub-Schema',
     SCHEMA_NAME = 'Schema',
-    SCHEMA_DESCRIPTION = 'Description',
+    SCHEMA_DESCRIPTION = 'Schema Description',
     VISIBILITY = 'Visibility',
     SCHEMA_TYPE = 'Schema Type',
     SCHEMA_TOOL = 'Tool',
     SCHEMA_TOOL_ID = 'Tool Id',
-    ENUM_SCHEMA_NAME = 'Schema name',
-    ENUM_FIELD_NAME = 'Field name',
+    ENUM_NAME = 'Enum Name',
     ENUM_IPFS = 'Loaded to IPFS',
-    DEFAULT = 'Default',
-    SUGGEST = 'Suggest',
+    ENUM_VALUE = 'Value',
+    SHARED_ENUM_SHEET = 'Enums',
+    README_SHEET = 'README',
+    DEFAULT = 'Default Value',
+    SUGGEST = 'Suggest Value',
 }
 
 export class FieldTypes {
@@ -304,6 +306,18 @@ export class FieldTypes {
             customType: undefined,
             hidden: false,
             pars: (value: any) => String(value)
+        },
+        {
+            name: 'Sub-Schema',
+            type: null,
+            format: undefined,
+            pattern: undefined,
+            isRef: true,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'subSchema',
+            hidden: false,
+            pars: (value: any) => value
         },
     ];
 

@@ -1,42 +1,55 @@
-# Get next and nested suggested block types
+# Get Next and Nested Suggested Block Types
 
-{% swagger method="post" path="" baseUrl="/suggestions" summary="Get next and nested suggested block types" %}
-{% swagger-description %}
-Get next and nested suggested block types. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/suggestions`**
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains suggestions input
-{% endswagger-parameter %}
+Returns the suggested next and nested block types based on the current policy configuration context. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="200: OK" description="Successful operation. Suggested next and nested block types respectively." %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.SUGGESTIONS_SUGGESTIONS_READ`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "blockType": "requestVcDocumentBlock",
+  "children": []
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  next:
-                    type: string
-                  nested:
-                    type: string
+
+| Field       | Type   | Required | Description                                          |
+|-------------|--------|----------|------------------------------------------------------|
+| `blockType` | string | Yes      | The current block type to base suggestions on        |
+| `children`  | array  | No       | Current children blocks for nested suggestions       |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "next": "sendToGuardianBlock",
+  "nested": "calculateContainerBlock"
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field    | Type   | Description                          |
+|----------|--------|--------------------------------------|
+| `next`   | string | Suggested next block type            |
+| `nested` | string | Suggested nested block type          |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

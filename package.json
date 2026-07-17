@@ -2,42 +2,45 @@
     "devDependencies": {
         "detect-secrets": "^1.0.6"
     },
+    "engines": {
+        "node": ">=24.15.0"
+    },
     "name": "guardian",
-    "packageManager": "yarn@1.22.21",
+    "packageManager": "yarn@4.16.0",
     "private": true,
     "resolutions": {
-        "@azure/core-rest-pipeline": "1.12.1",
-        "@azure/msal-node": "2.9.0",
-        "image-size": "1.0.2"
+        "@mattrglobal/bls12381-key-pair": "2.0.0",
+        "@mattrglobal/bbs-signatures": "2.0.0"
     },
     "scripts": {
         "detect-secrets": "detect-secrets-launcher --word-list exclude-secrets.txt k8s-manifests/**/* */src/**.ts **/.env*",
-        "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\""
+        "publish-policies": "guardian-cli publish-policies \"Methodology Library\" -c \"configs/automatic-publish-policies.config.json\" -o \"published-policies.txt\"",
+        "clean": "find . -type d \\( -name dist -o -name node_modules \\) -prune -exec rm -rf {} +"
     },
-    "version": "3.5.0",
+    "version": "3.6.0",
     "workspaces": [
         "interfaces",
         "common",
+        "ai-service",
+        "analytics-service",
         "api-gateway",
+        "application-events",
         "auth-service",
+        "guardian-cli",
         "guardian-service",
         "logger-service",
         "mrv-sender",
-        "topic-viewer",
-        "queue-service",
-        "tree-viewer",
-        "analytics-service",
-        "worker-service",
-        "policy-service",
-        "api-tests",
-        "ai-service",
         "notification-service",
+        "policy-service",
+        "queue-service",
         "topic-listener-service",
+        "topic-viewer",
+        "tree-viewer",
+        "worker-service",
         "indexer-interfaces",
         "indexer-common",
         "indexer-api-gateway",
         "indexer-service",
-        "indexer-worker-service",
-        "contracts"
+        "indexer-worker-service"
     ]
 }

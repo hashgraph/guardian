@@ -16,13 +16,15 @@ import { CompareComponent } from './compare/compare.component';
 import { CompareToolComponent } from './compare-tool/compare-tool.component';
 import { CompareRecordComponent } from './compare-record/compare-record.component';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
+import { OverflowTitleDirective } from './directives/overflow-title.directive';
 
 @NgModule({
     declarations: [
@@ -35,7 +37,8 @@ import { TooltipModule } from 'primeng/tooltip';
         SearchPolicyDialog,
         CompareDocumentComponent,
         CompareToolComponent,
-        CompareRecordComponent
+        CompareRecordComponent,
+        OverflowTitleDirective
     ],
     imports: [
         CommonModule,
@@ -45,7 +48,7 @@ import { TooltipModule } from 'primeng/tooltip';
         TagEngineModule,
         AppRoutingModule,
         ButtonModule,
-        DropdownModule,
+        SelectModule,
         DynamicDialogModule,
         CheckboxModule,
         InputTextModule,
@@ -66,7 +69,7 @@ import { TooltipModule } from 'primeng/tooltip';
         CompareRecordComponent
     ],
     providers: [
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
     ]
 })
 export class CompareModule { }

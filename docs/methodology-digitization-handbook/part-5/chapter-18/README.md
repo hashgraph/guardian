@@ -20,13 +20,13 @@ After completing this chapter, you will be able to:
 * Completed Part IV: Policy Workflow Design and Implementation
 * Understanding of VM0033 methodology and equations from Part I
 * Basic programming knowledge for implementing mathematical formulas (JavaScript or Python)
-* Access to validation artifacts: [equation implementations](../../_shared/artifacts/er-calculations.js), [test input data](../../_shared/artifacts/final-PDD-vc.json), and [Allcot validation spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
+* Access to validation artifacts: [equation implementations](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/er-calculations.js), [test input data](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json), and [Allcot validation spreadsheet](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
 
 ## Guardian customLogicBlock: Your Calculation Engine
 
 ### The Mathematical Execution Environment
 
-Guardian's [customLogicBlock](../../../available-policy-workflow-blocks/customlogicblock.md) is your calculation engine for environmental methodologies - it's where mathematical equations become executable code. Think of it as a computational engine that processes monitoring data through formulas to produce emission reductions that match methodology equations precisely.
+Guardian's [customLogicBlock](https://github.com/hashgraph/guardian/blob/develop/docs/available-policy-workflow-blocks/customlogicblock.md) is your calculation engine for environmental methodologies - it's where mathematical equations become executable code. Think of it as a computational engine that processes monitoring data through formulas to produce emission reductions that match methodology equations precisely.
 
 You can write your calculations in **JavaScript** or **Python** - Guardian supports both languages. Most of our examples use JavaScript, but the concepts apply equally to Python.
 
@@ -39,7 +39,7 @@ You can write your calculations in **JavaScript** or **Python** - Guardian suppo
 }
 ```
 
-![customLogicBlock in VM0033's PDD submission flow](<../../../.gitbook/assets/image (151) (1).png>)
+![customLogicBlock in VM0033's PDD submission flow](<../../../.gitbook/assets/image (73).png>)
 
 ### Understanding Your Input Data
 
@@ -88,7 +88,7 @@ This is actual data from the ABC Blue Carbon Mangrove Project in Senegal - the s
 
 ### Field Access Patterns from Production Code
 
-Let's look at how VM0033's production code accesses data. These utility functions from [er-calculations.js](../../_shared/artifacts/er-calculations.js) make your code clean and readable:
+Let's look at how VM0033's production code accesses data. These utility functions from [er-calculations.js](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/er-calculations.js) make your code clean and readable:
 
 ```javascript
 // VM0033 Production Utility Functions - Clean data access patterns
@@ -493,7 +493,7 @@ function processInstanceSafely(instance, project_boundary) {
 
 ### Ensuring Mathematical Accuracy
 
-The [Allcot test artifact](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) is your validation benchmark - it contains input parameters and expected output results calculated manually according to VM0033 methodology equations. Your code must reproduce these results exactly to ensure mathematical accuracy.
+The [Allcot test artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) is your validation benchmark - it contains input parameters and expected output results calculated manually according to VM0033 methodology equations. Your code must reproduce these results exactly to ensure mathematical accuracy.
 
 Your equation implementations must produce the same results as the manual calculations to be valid.
 
@@ -595,7 +595,7 @@ While Chapter 21 covers comprehensive testing, here are quick validation techniq
 **Quick Testing Strategies:**
 
 * **Debug logging**: `debug('Processing year:', year_t, 'Emissions:', asl.GHGBSL_soil_CO2_i_t);`
-* **Guardian testing interface**: Use Chapter 21's testing guide with [final-PDD-vc.json](../../_shared/artifacts/final-PDD-vc.json) data
+* **Guardian testing interface**: Use Chapter 21's testing guide with [final-PDD-vc.json](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json) data
 * **Unit tests**: `const expected = -(CARBON_TO_CO2 * 100) * 10; debug('Test passed:', Math.abs(result - expected) < 0.01);`
 
 ## Real Results: ABC Mangrove Project
@@ -621,7 +621,7 @@ This demonstrates what your code should produce - substantial carbon credits fro
 
 > **Note for Readers**: This section provides an detailed analysis of VM0033 calculation implementation in Guardian's customLogicBlock. It's intended for developers who need to understand, write, or maintain VM0033. You can skip this section if you only need to understand the basic customLogicBlock concepts.
 
-This deep dive examines the complete production implementation of VM0033 tidal wetland restoration calculations in Guardian, using the [VM0033 Allcot Test Case Artifact](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) and [er-calculations.js](../../_shared/artifacts/er-calculations.js) as our reference implementations.
+This deep dive examines the complete production implementation of VM0033 tidal wetland restoration calculations in Guardian, using the [VM0033 Allcot Test Case Artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) and [er-calculations.js](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/er-calculations.js) as our reference implementations.
 
 ### Complete VM0033 Production Code Architecture
 

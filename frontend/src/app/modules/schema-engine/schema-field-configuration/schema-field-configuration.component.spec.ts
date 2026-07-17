@@ -56,6 +56,22 @@ describe('SchemaFieldConfigurationComponent', () => {
         });
     });
 
+    describe('clearFieldPresetControls', () => {
+
+        it('clears default/suggest/example when field type changes', () => {
+            const component = Object.create(SchemaFieldConfigurationComponent.prototype);
+            component.field = {
+                controlDefault: new UntypedFormControl('old'),
+                controlSuggest: new UntypedFormControl('old'),
+                controlExample: new UntypedFormControl('example'),
+            };
+            component['clearFieldPresetControls']();
+            expect(component.field.controlDefault.value).toBeNull();
+            expect(component.field.controlSuggest.value).toBeNull();
+            expect(component.field.controlExample.value).toBeNull();
+        });
+    });
+
     describe('onEditExpression help context', () => {
 
         it('should include all documented operators as valid JS operators', () => {

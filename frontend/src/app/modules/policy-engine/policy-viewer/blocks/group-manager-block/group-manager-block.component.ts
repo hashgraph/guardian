@@ -15,6 +15,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'app-group-manager-block',
     templateUrl: './group-manager-block.component.html',
     styleUrls: ['./group-manager-block.component.scss'],
+    standalone: false
 })
 export class GroupManagerBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -160,7 +161,7 @@ export class GroupManagerBlockComponent implements OnInit {
             styleClass: 'g-dialog',
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(async () => {
         });
     }
@@ -179,7 +180,7 @@ export class GroupManagerBlockComponent implements OnInit {
             data: {title, description},
             modal: true,
             closable: false,
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (result) {

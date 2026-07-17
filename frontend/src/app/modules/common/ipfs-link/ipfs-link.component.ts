@@ -4,7 +4,8 @@ import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from 'src/app/services/api';
 @Component({
     selector: 'ipfs-link',
     templateUrl: './ipfs-link.component.html',
-    styleUrls: ['./ipfs-link.component.scss']
+    styleUrls: ['./ipfs-link.component.scss'],
+    standalone: false
 })
 export class IPFSLinkComponent {
     @Input('url') url: string | undefined;

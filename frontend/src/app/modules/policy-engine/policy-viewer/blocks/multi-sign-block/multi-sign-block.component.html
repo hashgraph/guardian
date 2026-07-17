@@ -1,91 +1,107 @@
 <div class="content" [attr.readonly-block]="readonly">
-    <div *ngIf="confirmationStatus">
-        <div class="status status-{{confirmationStatus}}" (click)="menu1.toggle($event)">
-            {{ confirmationStatus }}
-        </div>
-        <p-overlayPanel #menu1>
-            <div (click)="onClickMenu($event)">
-                <div *ngFor="let doc of documents" class="documents">
-                    <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
-                    <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
-                </div>
+  @if (confirmationStatus) {
+    <div>
+      <div class="status status-{{confirmationStatus}}" (click)="menu1.toggle($event)">
+        {{ confirmationStatus }}
+      </div>
+      <p-popover #menu1>
+        <div (click)="onClickMenu($event)">
+          @for (doc of documents; track doc) {
+            <div class="documents">
+              <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
+              <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
             </div>
-        </p-overlayPanel>
-    </div>
-    <div *ngIf="!confirmationStatus && documentStatus === 'NEW'">
-        <div class="btn-option btn-SIGN" (click)="onSelect('SIGNED')">
-            Sign
+          }
         </div>
-        <div class="btn-option btn-DECLINE" (click)="onSelect('DECLINED')">
-            Decline
-        </div>
+      </p-popover>
     </div>
-    <div *ngIf="!confirmationStatus && documentStatus !== 'NEW'">
-        <div class="progress-container"
-             pTooltip="Click here to see more details"
-             tooltipPosition="top"
-             tooltipStyleClass="helpText"
-             (click)="onDetails($event)"
-             (contextmenu)="menu2.toggle($event); $event.preventDefault()"
+  }
+  @if (!confirmationStatus && documentStatus === 'NEW') {
+    <div>
+      <div class="btn-option btn-SIGN" (click)="onSelect('SIGNED')">
+        Sign
+      </div>
+      <div class="btn-option btn-DECLINE" (click)="onSelect('DECLINED')">
+        Decline
+      </div>
+    </div>
+  }
+  @if (!confirmationStatus && documentStatus !== 'NEW') {
+    <div>
+      <div class="progress-container"
+        pTooltip="Click here to see more details"
+        tooltipPosition="top"
+        tooltipStyleClass="helpText"
+        (click)="onDetails($event)"
+        (contextmenu)="menu2.toggle($event); $event.preventDefault()"
         >
-            <div class="progress">
-                <div class="signed" [style.width.%]="signed">
-                    <span *ngIf="signed>12" class="p-value">{{ signedCount }}</span>
-                </div>
-                <div class="declined" [style.width.%]="declined">
-                    <span *ngIf="declined>12" class="p-value">{{ declinedCount }}</span>
-                </div>
-                <div class="threshold" [style.left.%]="threshold"></div>
-            </div>
-            <div class="icon-details" (click)="onDetails($event)">
-                <i class="pi pi-info-circle"></i>
-            </div>
+        <div class="progress">
+          <div class="signed" [style.width.%]="signed">
+            @if (signed>12) {
+              <span class="p-value">{{ signedCount }}</span>
+            }
+          </div>
+          <div class="declined" [style.width.%]="declined">
+            @if (declined>12) {
+              <span class="p-value">{{ declinedCount }}</span>
+            }
+          </div>
+          <div class="threshold" [style.left.%]="threshold"></div>
         </div>
-        <p-overlayPanel #menu2>
-            <div (click)="onClickMenu($event)">
-                <div>
-                    <div class="details">Required number of signatures</div>
-                    <div class="result">
-                        <div class="result-status status-SIGNED">Signed:</div>
-                        <div class="result-progress">
-                            <div>0</div>
-                            <div class="result-progress-bar">
-                                <div class="result-progress-signed" [style.width.%]="signedCount/signedMax*100">
-                                    {{ signedCount }}
-                                </div>
-                            </div>
-                            <div>{{ signedMax }}</div>
-                        </div>
-                    </div>
-                    <div class="result">
-                        <div class="result-status status-DECLINED">Declined:</div>
-                        <div class="result-progress">
-                            <div>0</div>
-                            <div class="result-progress-bar">
-                                <div class="result-progress-declined" [style.width.%]="declinedCount/declinedMax*100">
-                                    {{ declinedCount }}
-                                </div>
-                            </div>
-                            <div>{{ declinedMax }}</div>
-                        </div>
-                    </div>
+        <div class="icon-details" (click)="onDetails($event)">
+          <i class="pi pi-info-circle"></i>
+        </div>
+      </div>
+      <p-popover #menu2>
+        <div (click)="onClickMenu($event)">
+          <div>
+            <div class="details">Required number of signatures</div>
+            <div class="result">
+              <div class="result-status status-SIGNED">Signed:</div>
+              <div class="result-progress">
+                <div>0</div>
+                <div class="result-progress-bar">
+                  <div class="result-progress-signed" [style.width.%]="signedCount/signedMax*100">
+                    {{ signedCount }}
+                  </div>
                 </div>
-                <div class="details">Details</div>
-                <div style="max-height: 150px;overflow: auto">
-                    <div *ngFor="let doc of documents" class="documents">
-                        <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
-                        <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
-                    </div>
-                </div>
+                <div>{{ signedMax }}</div>
+              </div>
             </div>
-        </p-overlayPanel>
+            <div class="result">
+              <div class="result-status status-DECLINED">Declined:</div>
+              <div class="result-progress">
+                <div>0</div>
+                <div class="result-progress-bar">
+                  <div class="result-progress-declined" [style.width.%]="declinedCount/declinedMax*100">
+                    {{ declinedCount }}
+                  </div>
+                </div>
+                <div>{{ declinedMax }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="details">Details</div>
+          <div style="max-height: 150px;overflow: auto">
+            @for (doc of documents; track doc) {
+              <div class="documents">
+                <div class="doc-did" [title]="doc.did">{{ doc.username }}</div>
+                <div class="doc-status status-{{doc.status}}">{{ doc.status }}</div>
+              </div>
+            }
+          </div>
+        </div>
+      </p-popover>
     </div>
+  }
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

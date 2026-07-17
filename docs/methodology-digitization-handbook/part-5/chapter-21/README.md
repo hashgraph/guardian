@@ -19,7 +19,7 @@ After completing this chapter, you will be able to:
 ## Prerequisites
 
 * Completed Chapters 18-20: Custom Logic Block Development, Formula Linked Definitions, and Guardian Tools Architecture
-* Access to test artifacts: [Final PDD VC with net ERR data](../../_shared/artifacts/final-PDD-vc.json), [AR Tool 14 implementation](../../_shared/artifacts/AR-Tool-14.json), [VM0033 test spreadsheet](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
+* Access to test artifacts: [Final PDD VC with net ERR data](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json), [AR Tool 14 implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json), [VM0033 test spreadsheet](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx)
 * Understanding of Guardian [dry-run mode](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
 * Familiarity with Guardian [testing interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
 
@@ -51,9 +51,9 @@ Our recommended testing framework supports multiple validation levels:
 
 Our methodology implementation includes comprehensive test artifacts extracted from the official VM0033 test spreadsheet:
 
-* [**VM0033 Test Spreadsheet**](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) - Complete Allcot test case with all calculation stages
-* [**Final PDD VC**](../../_shared/artifacts/final-PDD-vc.json) - Complete Guardian Verifiable Credential with net ERR data and test calculations
-* [**ER Calculations**](../../_shared/artifacts/er-calculations.js) - JavaScript implementation of emission reduction calculations
+* [**VM0033 Test Spreadsheet**](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) - Complete Allcot test case with all calculation stages
+* [**Final PDD VC**](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json) - Complete Guardian Verifiable Credential with net ERR data and test calculations
+* [**ER Calculations**](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/er-calculations.js) - JavaScript implementation of emission reduction calculations
 
 ### Understanding VM0033 Test Data Structure
 
@@ -100,7 +100,7 @@ Following Guardian's [testing documentation](../../../guardian/standard-registry
 4. **Configure Test Data** - Use schema-based input, JSON editor, or file upload
 5. **Execute Test** - Run the calculation and examine results
 
-![Custom Logic Block Testing UI](<../../../.gitbook/assets/image (148) (1).png>)
+![Custom Logic Block Testing UI](<../../../.gitbook/assets/image (38).png>)
 
 #### Testing Input Methods
 
@@ -128,9 +128,9 @@ Guardian supports three primary input methods for testing:
 
 #### Step 1: Get the PDD VC generated after submitting the new project data
 
-Using our [Final PDD VC](../../_shared/artifacts/final-PDD-vc.json) artifact, fill in the JSON input data
+Using our [Final PDD VC](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/final-PDD-vc.json) artifact, fill in the JSON input data
 
-![VC JSON INPUT](<../../../.gitbook/assets/image-2 (7) (1).png>)
+![VC JSON INPUT](<../../../.gitbook/assets/image-2 (7).png>)
 
 #### Step 2: Execute Test
 
@@ -167,7 +167,7 @@ function calculateBaseline(document) {
 
 Debug output appears in the **Logs** tab of the testing interface.
 
-![Logs Tab UI](<../../../.gitbook/assets/image-3 (4) (1).png>)
+![Logs Tab UI](<../../../.gitbook/assets/image-3 (4).png>)
 
 ## Testing with Guardian's Dry-Run Mode
 
@@ -215,7 +215,7 @@ Track files that would be stored in IPFS:
 
 ### Automated Testing with Guardian APIs
 
-Guardian provides comprehensive APIs for automated testing workflows. Reference the [API automation testing guide](../../../api-automation-testing/how-to-perform-api-automation-testing.md).
+Guardian provides comprehensive APIs for automated testing workflows. Reference the [API automation testing guide](https://github.com/hashgraph/guardian/blob/develop/docs/api-automation-testing/how-to-perform-api-automation-testing.md).
 
 #### Setting Up Cypress Testing
 
@@ -280,7 +280,7 @@ When calculations don't match expected results:
 2. **Check Units and Conversions** - Verify unit consistency across calculations
 3. **Validate Input Data** - Ensure test data matches spreadsheet exactly
 4. **Review Intermediate Results** - Break complex calculations into testable components
-5. **Compare Against Reference Implementation** - Use our [ER calculations](../../_shared/artifacts/er-calculations.js) as reference
+5. **Compare Against Reference Implementation** - Use our [ER calculations](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/er-calculations.js) as reference
 
 ## Chapter Summary
 
@@ -309,8 +309,8 @@ This completes Part V: Calculation Logic Implementation. With comprehensive test
 
 * [Guardian Dry-Run Mode Documentation](../../../guardian/standard-registry/policies/dry-run/demo-guide-on-dry-run-operations.md)
 * [CustomLogicBlock Testing Interface](../../../guardian/standard-registry/policies/testing-debugging-code/testing-debugging-code-for-calculate-and-custom-logic-block-using-ui.md)
-* [Guardian API Automation Testing](../../../api-automation-testing/how-to-perform-api-automation-testing.md)
+* [Guardian API Automation Testing](https://github.com/hashgraph/guardian/blob/develop/docs/api-automation-testing/how-to-perform-api-automation-testing.md)
 * [VM0033 Test Artifacts](../../_shared/artifacts/) - Complete test dataset for validation
-* [AR Tool 14 Implementation](../../_shared/artifacts/AR-Tool-14.json) - Production tool configuration
+* [AR Tool 14 Implementation](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/AR-Tool-14.json) - Production tool configuration
 
 ***

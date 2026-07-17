@@ -12,7 +12,8 @@ export interface ISavepointItem {
 @Component({
     selector: 'app-restore-onload-dialog',
     templateUrl: './on-load-savepoint-dialog.component.html',
-    styleUrls: ['./on-load-savepoint-dialog.component.scss']
+    styleUrls: ['./on-load-savepoint-dialog.component.scss'],
+    standalone: false
 })
 export class OnLoadSavepointDialog {
     policyId!: string;

@@ -33,7 +33,7 @@ Demonstrate how an administrator configures validation and routing rules before 
   * `BEEF`
   * `DAIRY`
 
-<figure><img src="../../../../.gitbook/assets/image (5).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Schema Assignment
 
@@ -70,9 +70,9 @@ Show how message channels are created and routing rules are defined.
   * Processed data publishing
   * Forwarding to second and third external topics
 
-<figure><img src="../../../../.gitbook/assets/image (2) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 Each topic is:
 
@@ -90,7 +90,7 @@ Routing logic is configured inside the Reader block:
   * If `commodityType = DAIRY` → Route to DAIRY branch
 * Routing only occurs after schema validation passes
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 ## 4. External Input Simulation
 
@@ -107,7 +107,7 @@ Two messages are sent:
 1. Message 1 → `commodityType = BEEF`
 2. Message 2 → `commodityType = DAIRY`
 
-<figure><img src="../../../../.gitbook/assets/image (6).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../.gitbook/assets/image (7).png" alt=""><figcaption></figcaption></figure>
 

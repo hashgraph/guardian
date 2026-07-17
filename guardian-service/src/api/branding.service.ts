@@ -47,7 +47,7 @@ Temporibus autem quibusdam et aut officiis debitis aut rerum necessitatibus saep
                 'primaryColor': '#0031ff',
                 'companyName': 'GUARDIAN',
                 'companyLogoUrl': '/assets/images/logo.png',
-                'loginBannerUrl': '/assets/bg.jpg',
+                'loginBannerUrl': '',
                 'faviconUrl': 'favicon.ico',
                 termsAndConditions
             });

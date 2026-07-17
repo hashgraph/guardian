@@ -4,7 +4,7 @@ icon: python
 
 # Python Implementation in Guardian
 
-### Overview
+## Overview
 
 The Guardian platform now supports Python scripting within its Custom Logic blocks, expanding its flexibility and enabling developers to perform complex computations and logic more easily. This feature introduces a new Script Language selection option and includes enhancements to VC (Verifiable Credential) document schemas for better version tracking.
 
@@ -21,7 +21,7 @@ A new dropdown setting has been added to the Custom Logic block in the Policy Ed
 
 <figure><img src="../../../.gitbook/assets/image (3) (1) (2).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 #### Use Case
 
@@ -37,12 +37,30 @@ Guardian now supports Python as a language for defining business logic in Custom
 * Access context variables and input data in Python syntax.
 * Perform conditional logic, calculations, or transformations using Python.
 
+#### Available globals
+
+The following names are pre-populated in the script's global scope:
+
+| Name | Type | Description |
+| :--- | :--- | :---------- |
+| `documents` | `list[dict]` | Input documents passed into the block |
+| `user` | `dict` | Information about the user running the block |
+| `artifacts` | `list` | Policy artifacts attached to the block |
+| `sources` | `list[dict]` | Documents collected from configured sources |
+| `table` | object | Helper for accessing table-field data (see Table Data Input Field docs) |
+| `done(result)` | function | Return the final result from the script |
+| `debug(value)` | function | Emit a debug message visible in the policy logs |
+
+`documents`, `user`, `artifacts`, and `sources` are converted to native Python types, so dict idioms work as expected (`document.get('credentialSubject', [])`, `.keys()`, `.items()`, etc.).
+
 #### Example
 
 ```python
-pythonCopyEdit# Sample Python logic inside Custom Logic block
-if document['type'] == 'Certificate':
-    document['status'] = 'Verified'
+# Sample Python logic inside Custom Logic block
+for document in documents:
+    if document.get('type') == 'Certificate':
+        document['status'] = 'Verified'
+done(documents)
 ```
 
 > Python code is sandboxed and only has access to allowed libraries/packages pre-installed in the Guardian environment.
@@ -65,8 +83,10 @@ This field helps track the Guardian system version that was used to generate or 
 <figure><img src="../../../.gitbook/assets/image (4) (1) (4).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
+
 * Ensure your logic is compatible with the version of Guardian being used, especially when importing Python packages.
 * Python execution is subject to the limitations and security constraints defined in Guardian's runtime.
+
 {% endhint %}
 
 ### 4. Supported Python Libraries
@@ -119,7 +139,7 @@ These libraries require native C/C++ dependencies (GDAL) and are only available 
 | six | `six` | Python 2/3 compatibility | pandas → python-dateutil |
 | matplotlib | `matplotlib` | Data visualization | networkx (transitive) |
 
-#### Removed Libraries (Issue #5505)
+#### Removed Libraries starting from Guardian v3.6.0
 
 The following libraries were removed as part of sandbox hardening. They are unnecessary for computation — their data processing features are covered by pandas, and they were designed to work with external resources (databases, networks, web servers) that are not available in the sandbox.
 
@@ -141,7 +161,8 @@ Guardian supports two execution modes for Python custom logic blocks, controlled
 The default mode runs Python code using Pyodide (CPython compiled to WebAssembly) inside a Node.js Worker Thread.
 
 * **No additional infrastructure required** — works out of the box
-* **Startup:** packages are pre-cached at policy-service startup for faster execution
+* **Startup:** package wheels are pre-downloaded at policy-service startup so they are warm in the on-disk cache
+* **Per-execution install:** each script is parsed with `pyodide.code.find_imports`, and only the allowlisted packages it actually imports are installed into the worker (e.g. importing only `pandas` skips the cost of unpacking `geopandas`, `astropy`, etc.)
 * **Limitation:** some C-extension packages (rasterio, rioxarray) are unavailable in WASM
 
 **Configuration:** No env var needed (default), or explicitly set `PYTHON_SANDBOX_MODE=pyodide`
@@ -166,20 +187,24 @@ Runs Python code in an ephemeral Docker container using native CPython 3.12. Pro
 **Setup:**
 
 1. Build the sandbox image:
-```bash
-docker buildx build -t guardian/python-sandbox:latest policy-service/docker/python-sandbox
-```
-Or uncomment the `python-sandbox` image build definition in the compose file and run:
-```bash
-docker compose -f docker-compose-build.yml build python-sandbox
-```
+
+    ```bash
+    docker buildx build -t guardian/python-sandbox:latest policy-service/docker/python-sandbox
+    ```
+
+    Or uncomment the `python-sandbox` image build definition in the compose file and run:
+
+    ```bash
+    docker compose -f docker-compose-build.yml build python-sandbox
+    ```
 
 2. Set `PYTHON_SANDBOX_MODE=docker` in `configs/.env..guardian.system` (or the corresponding system env file for your environment). The variable is present as a commented-out example in all env templates.
 
 3. For docker-compose deployments, uncomment the Docker socket volume mount for policy-service in the relevant compose file:
-   - `docker-compose-build.yml`, `docker-compose.yml`, `docker-compose-production.yml`, `docker-compose-production-build.yml`, `docker-compose-quickstart.yml`
-   - The socket must be mounted without `:ro` (policy-service needs read-write access to communicate with the Docker daemon)
-   - For non-Docker deployments (running services directly), skip this step — Docker socket is already accessible on the host
+
+   * `docker-compose-build.yml`, `docker-compose.yml`, `docker-compose-production.yml`, `docker-compose-production-build.yml`, `docker-compose-quickstart.yml`
+   * The socket must be mounted without `:ro` (policy-service needs read-write access to communicate with the Docker daemon)
+   * For non-Docker deployments (running services directly), skip this step — Docker socket is already accessible on the host
 
 {% hint style="warning" %}
 Docker mode requires the Docker daemon to be available. The policy-service needs access to the Docker socket to spawn sandbox containers. For production deployments, consider using a Docker API proxy to restrict operations to sandbox container management only.
@@ -195,13 +220,19 @@ Python code in custom logic blocks runs in a sandboxed environment. The followin
 | :---------- | :----- |
 | JavaScript bridge (`from js import ...`) | Blocked via module stub + import hook |
 | `pyodide.http` network access | Blocked via module stub + import hook |
+| `pyodide.code` (exposes `run_js` → arbitrary Node host code) | Cached entry evicted, stubbed in `sys.modules` *and* on the parent `pyodide` package, blocked via import hook |
+| `pyodide.ffi`, `pyodide.webloop`, `pyodide.console` | Same treatment as `pyodide.code` |
+| `micropip` (would let user code extend the install allowlist) | Removed from `sys.modules` after controlled install, blocked via import hook |
+| `sqlite3` (pulled transitively by geopandas → fiona) | Blocked via module stub + import hook |
 | `os.system`, `os.popen`, `os.exec*`, `os.spawn*` | All replaced with blocked function |
 | `subprocess.run`, `subprocess.Popen` | All execution functions replaced |
 | `socket.socket`, `socket.connect` | All networking functions replaced |
 | `os.environ` (secrets) | Cleared on startup (only HOME/PATH kept) |
 | `importlib.reload` | Blocked to prevent undoing patches |
 | `builtins.__import__` | Guarded via closure to prevent bypass |
+| Dry-run input depth/size | Capped at 64 levels / 100k nodes before `pyodide.toPy` conversion |
 | Execution timeout | Configurable via `PYTHON_SANDBOX_TIMEOUT_MS` (default 120s) |
+| Worker heap memory | Capped via the Worker's `resourceLimits`, tunable with `PYTHON_SANDBOX_HEAP_MB` (default 512 MB). Applies only to Pyodide mode; Docker mode uses `PYTHON_SANDBOX_MEMORY` instead. |
 
 #### Docker Mode Restrictions
 
@@ -211,7 +242,7 @@ All restrictions above are provided by Docker container isolation:
 * **File system:** `--read-only` + no host mounts — container sees only its own minimal filesystem
 * **Processes:** commands run inside isolated container only, destroyed after execution
 * **Environment:** `os.environ` cleared before user code runs
-* **Resources:** container destroyed with `--rm` after each execution
+* **Resources:** `--memory` (default 512m, also pins `--memory-swap`), `--cpus` (default 1.0), `--pids-limit` (default 128) bound a misbehaving script; container destroyed with `--rm` after each execution. Each cap is tunable via `PYTHON_SANDBOX_MEMORY` / `PYTHON_SANDBOX_CPUS` / `PYTHON_SANDBOX_PIDS`.
 
 #### Vulnerability Comparison
 
@@ -223,17 +254,24 @@ All restrictions above are provided by Docker container isolation:
 | `os.environ` secrets | Cleared | Cleared + container has own env |
 | `ctypes` C function calls | Not blocked (needed by pandas, harmless in WASM) | Runs inside isolated container |
 | Python introspection bypass | Possible (known limitation) | Irrelevant — container is isolated |
-| Memory/CPU exhaustion | Timeout only | Timeout + container destroyed |
+| Memory/CPU exhaustion | Timeout only | `--memory` / `--cpus` / `--pids-limit` + timeout + container destroyed |
 
 {% hint style="info" %}
+
 * **Pyodide mode** is suitable when users are trusted or semi-trusted. It blocks common attack vectors but is vulnerable to sophisticated Python introspection attacks.
 * **Docker mode** is suitable for untrusted code. OS-level isolation makes Python-level bypasses irrelevant — the container has no network, no host access, and is destroyed after execution.
+
 {% endhint %}
 
 ### 7. Configuration Reference
 
-| Environment Variable | Default | Description |
-| :------------------- | :------ | :---------- |
-| `PYTHON_SANDBOX_MODE` | `pyodide` | Execution mode: `pyodide` (default) or `docker` |
-| `PYTHON_SANDBOX_TIMEOUT_MS` | `120000` | Execution timeout in milliseconds (both modes) |
-| `PYTHON_SANDBOX_IMAGE` | `guardian/python-sandbox:latest` | Docker sandbox image name (Docker mode only) |
+| Environment Variable | Template Value | Required | Description |
+| :------------------- | :------------- | :------- | :---------- |
+| `PYTHON_SANDBOX_MODE` | `pyodide` | No (defaults to `pyodide` if unset) | Execution mode: `pyodide` or `docker` |
+| `PYTHON_SANDBOX_TIMEOUT_MS` | `120000` | Yes | Execution timeout in milliseconds (both modes). Provided by all `configs/.env.*.guardian.system` templates; the policy-service has no in-code fallback, so the variable must be present or block execution will fail immediately. |
+| `PYTHON_SANDBOX_IMAGE` | `guardian/python-sandbox:latest` | No (Docker mode only) | Docker sandbox image name |
+| `PYTHON_SANDBOX_MEMORY` | `512m` | No (Docker mode only) | Container memory limit (passed to `docker run --memory` and `--memory-swap`). Accepts the same suffix forms as Docker (`b`, `k`, `m`, `g`). |
+| `PYTHON_SANDBOX_CPUS` | `1.0` | No (Docker mode only) | Container CPU quota (passed to `docker run --cpus`). |
+| `PYTHON_SANDBOX_PIDS` | `128` | No (Docker mode only) | Container PID limit (passed to `docker run --pids-limit`). |
+| `PYTHON_SANDBOX_HEAP_MB` | `512` | No (Pyodide mode only) | Pyodide worker heap cap in megabytes (Node `Worker` `resourceLimits.maxOldGenerationSizeMb`). Ignored in Docker mode, which uses `PYTHON_SANDBOX_MEMORY`. |
+| `DRY_RUN_BLOCK_TIMEOUT_MS` | `180000` | Yes | Overall timeout for the Policy Editor "Test" dialog (dry-run block execution). Provided by all env templates; no in-code fallback. Must be larger than `PYTHON_SANDBOX_TIMEOUT_MS` to leave room for Pyodide cold start. |

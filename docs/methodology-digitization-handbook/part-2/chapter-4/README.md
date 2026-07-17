@@ -9,6 +9,7 @@ The analysis process transforms a complex PDF into organized components ready fo
 During VM0033 digitization, we developed a reading approach that prioritizes sections based on their importance for digital implementation. This approach emerged from trial and error - we initially tried to understand everything equally, which led to information overload.
 
 **Reading Priority Order We Used**:
+
 1. **Applicability Conditions** - Tells us what projects can use this methodology
 2. **Quantification of GHG Emission Reductions and Removals** - Contains all the math we need to implement
 3. **Monitoring** - Defines what data users need to collect
@@ -44,6 +45,7 @@ Most carbon methodologies, including VM0033, work within a standard three-actor 
 **Project Developer**: The organization implementing the restoration project and seeking carbon credits. For VM0033, this would be whoever is planting and maintaining the mangroves.
 
 **How They Interact**:
+
 1. **Project Registration**: Project developer submits project documents to the registry
 2. **Validation**: Project developer hires a VVB to validate their project design
 3. **Project Approval**: Registry approves the project based on VVB validation
@@ -58,9 +60,10 @@ When we designed the Guardian policy for VM0033, we built this workflow into the
 For the Allcot ABC Mangrove project, we focused on mangrove restoration as the primary activity. The project involves planting mangroves in coastal areas where they had been lost or degraded. This kept our initial implementation focused rather than trying to handle all possible restoration activities that VM0033 theoretically allows.
 
 The three-actor workflow works well for mangrove projects because:
-- Project developers can focus on planting and monitoring mangroves
-- VVBs can verify that restoration activities meet VM0033 requirements
-- The registry can issue credits knowing the work has been independently validated
+
+* Project developers can focus on planting and monitoring mangroves
+* VVBs can verify that restoration activities meet VM0033 requirements
+* The registry can issue credits knowing the work has been independently validated
 
 ## Parameter Extraction and Organization
 
@@ -93,10 +96,11 @@ When we first looked at VM0033's final calculation equation, it seemed simple. B
 NERRWE = BE - PE - LK
 
 Where:
-- NERRWE = Net emission reductions from the wetland project
-- BE = Baseline emissions (what would have happened without the project)
-- PE = Project emissions (emissions from project activities)
-- LK = Leakage (emissions that might occur elsewhere because of the project)
+
+* NERRWE = Net emission reductions from the wetland project
+* BE = Baseline emissions (what would have happened without the project)
+* PE = Project emissions (emissions from project activities)
+* LK = Leakage (emissions that might occur elsewhere because of the project)
 
 **The Challenge**: Each of these terms (BE, PE, LK) has its own complex calculations with many sub-components. To implement this digitally, we needed to trace back from the final answer to identify every piece of data a user would need to provide.
 
@@ -115,7 +119,7 @@ Where:
 VM0033 references several external calculation tools that we needed to understand and integrate. During our first digitization attempt, we implemented the ones that were most essential for the mangrove restoration focus.
 
 {% hint style="info" %}
-**Reference Materials**: For detailed VM0033 analysis, consult the [parsed methodology document](../../_shared/artifacts/VM0033-Methodology.md) and [test case artifact](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) in our [Artifacts Collection](../../_shared/artifacts/README.md).
+**Reference Materials**: For detailed VM0033 analysis, consult the [parsed methodology document](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) and [test case artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) in our [Artifacts Collection](../../_shared/artifacts/).
 {% endhint %}
 
 **Tools We Implemented**:
@@ -164,7 +168,7 @@ The analysis work creates a foundation for the more detailed equation mapping an
 
 **Validation Framework**: The validation requirements we identified during analysis inform the test artifact development in Chapter 7.
 
----
+***
 
 ## Analysis Summary and Next Steps
 
@@ -173,12 +177,13 @@ The analysis work creates a foundation for the more detailed equation mapping an
 {% endhint %}
 
 **Key Analysis Outcomes**:
-- [ ] Structured methodology reading with focus on implementation requirements
-- [ ] Three-actor workflow understanding with role and permission implications
-- [ ] Parameter extraction with classification and reuse opportunities identified
-- [ ] Introduction to recursive analysis concepts for dependency mapping
-- [ ] External tool identification with integration requirements
-- [ ] Implementation prioritization based on project focus (mangrove restoration)
+
+* [ ] Structured methodology reading with focus on implementation requirements
+* [ ] Three-actor workflow understanding with role and permission implications
+* [ ] Parameter extraction with classification and reuse opportunities identified
+* [ ] Introduction to recursive analysis concepts for dependency mapping
+* [ ] External tool identification with integration requirements
+* [ ] Implementation prioritization based on project focus (mangrove restoration)
 
 **Preparation for Chapter 5**: Your parameter extraction work and understanding of calculation structure from this chapter will be essential for the detailed equation mapping we'll cover next. Chapter 5 builds directly on this foundation to create complete mathematical dependency maps.
 

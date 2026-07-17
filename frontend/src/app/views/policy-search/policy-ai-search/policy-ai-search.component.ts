@@ -10,7 +10,8 @@ import { Router } from '@angular/router';
 @Component({
     selector: 'app-policy-ai-search',
     templateUrl: './policy-ai-search.component.html',
-    styleUrls: ['./policy-ai-search.component.scss']
+    styleUrls: ['./policy-ai-search.component.scss'],
+    standalone: false
 })
 export class PolicyAISearchComponent implements OnInit {
     loading: boolean = false;
@@ -50,7 +51,7 @@ export class PolicyAISearchComponent implements OnInit {
         });
     }
 
-    @HostListener('document:keydown.enter', ['$event']) onKeydownHandler(event: KeyboardEvent) {
+    @HostListener('document:keydown.enter', ['$event']) onKeydownHandler(event: Event) {
         if (this.requestTextControl.value) {
             this.sendRequest();
         }

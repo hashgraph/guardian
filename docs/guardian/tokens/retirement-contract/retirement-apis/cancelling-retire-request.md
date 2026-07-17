@@ -1,32 +1,39 @@
 # Cancelling Retire Request
 
-{% swagger method="delete" path="" baseUrl="/contracts/retire/requests/{requestId}/cancel" summary="Cancel retire request." %}
-{% swagger-description %}
-Cancel retire contract request.
-{% endswagger-description %}
+**`DELETE /api/v1/contracts/retire/requests/{requestId}/cancel`**
 
-{% swagger-parameter in="path" name="requestId" type="String" required="true" %}
-Request Identifier
-{% endswagger-parameter %}
+Cancels a retire contract request. Accessible by Standard Registry and User roles.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% endswagger-response %}
+**Permission:** `Permissions.CONTRACTS_RETIRE_REQUEST_CREATE`
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+---
 
-{% endswagger-response %}
+## Request
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+### Path Parameters
 
-{% endswagger-response %}
+| Parameter   | Type   | Required | Description        |
+|-------------|--------|----------|--------------------|
+| `requestId` | string | Yes      | Request identifier |
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+true
 ```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

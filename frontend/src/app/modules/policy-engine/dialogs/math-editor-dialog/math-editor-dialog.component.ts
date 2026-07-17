@@ -5,7 +5,6 @@ import { FieldLinkDialog } from '../field-link-dialog/field-link-dialog.componen
 import { SchemaVariables } from '../../structures';
 import { Validators } from '@angular/forms';
 import { TreeListData, TreeListView } from 'src/app/modules/common/tree-graph/tree-list';
-import { FieldData } from 'src/app/modules/common/models/schema-node';
 import { Code, FieldLink, MathContext, MathFormula, MathEngine, setDocumentValueByPath, DocumentMap } from './math-model/index';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { MathGroups } from './math-model/math-groups';
@@ -13,6 +12,7 @@ import { MathGroup } from './math-model/math-group';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { DataInputDialogComponent } from 'src/app/modules/common/data-input-dialog/data-input-dialog.component';
 import { AddDocumentDialog } from '../add-document-dialog/add-document-dialog.component';
+import { MathLiveComponent } from 'src/app/modules/common/mathlive/mathlive.component';
 
 class Tooltip {
     public visible: boolean;
@@ -101,7 +101,8 @@ class Tooltip {
 @Component({
     selector: 'math-editor-dialog',
     templateUrl: './math-editor-dialog.component.html',
-    styleUrls: ['./math-editor-dialog.component.scss']
+    styleUrls: ['./math-editor-dialog.component.scss'],
+    standalone: false
 })
 export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     @ViewChild('contextBody', { static: false }) contextBodyRef: ElementRef;
@@ -174,6 +175,20 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
     public tooltip: Tooltip;
     public readonly: boolean = false;
 
+    public varPickerFormula: MathFormula | null = null;
+    public varPickerSearchMap = new Map<string, string>();
+    public filteredVars: { name: string; label: string }[] = [];
+    private _varPickerBase: { name: string; label: string }[] = [];
+    private activeMathLive: MathLiveComponent | null = null;
+    private activeFormula: MathFormula | null = null;
+    private varPickerRedirectToMath = false;
+    private latexCursorSave: { formula: MathFormula; start: number; end: number } | null = null;
+    private mathLiveMap = new Map<string, MathLiveComponent>();
+
+    public activePathItem: FieldLink | null = null;
+    public pathSuggestions: string[] = [];
+    public fieldWarnings = new Map<string, boolean>();
+
     public inputDocumentValue: any = null;
     public inputRelationshipsValue: any[] = [];
 
@@ -228,6 +243,9 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         this.engine.from(this.expression);
         this.engine.validate();
         this.updateSchema();
+        for (const item of this.engine.variables.getItems()) {
+            this._updateFieldWarning(item);
+        }
     }
 
     ngAfterContentInit() {
@@ -294,17 +312,28 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
     public onKeyboard($event: boolean) {
         this.keyboard = $event;
+        if (!$event && this.varPickerFormula) {
+            this.varPickerSearchMap.delete(this.varPickerFormula.id);
+            this.varPickerFormula = null;
+        }
     }
 
     public deleteFormula(formula: MathFormula) {
+        this.mathLiveMap.delete(formula.id);
+        this.varPickerSearchMap.delete(formula.id);
+        if (this.varPickerFormula === formula) {
+            this.varPickerFormula = null;
+        }
         this.engine.deleteFormula(formula);
     }
 
     public deleteVariable(variable: FieldLink) {
+        this.fieldWarnings.delete(variable.id);
         this.engine.deleteVariable(variable);
     }
 
     public deleteOutput(output: FieldLink) {
+        this.fieldWarnings.delete(output.id);
         this.engine.deleteOutput(output);
     }
 
@@ -437,12 +466,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
 
         const groups = [];
         const schemas = this.schemas.filter((s) => s !== this.inputSchema && s.entity !== 'NONE');
-        for (const item of schemas) {
+        for (const s of schemas) {
             groups.push({
-                id: item.iri,
-                name: item.name,
-                subName: item.iri,
-                view: this.createSchemaView(item),
+                id: s.iri,
+                name: s.name,
+                subName: s.iri,
+                view: this.createSchemaView(s),
                 highlighted: false,
                 searchHighlighted: false,
             })
@@ -460,7 +489,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: ['Select Schema', 'Select Field'],
                 value: item.field,
@@ -468,12 +496,13 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 view,
                 groups
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
                 item.schema = result.group || schema?.iri || null;
                 item.update();
+                this._updateFieldWarning(item);
             }
         });
     }
@@ -487,13 +516,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: 'Select Field',
                 value: item.field,
                 view: this.createSchemaView(schema),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.field = result.value;
@@ -548,15 +576,6 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         }
     }
 
-    public getFieldPath(type: 'input' | 'output', schema: string | null, link: string): string {
-        const field = this.getField(type, schema, link);
-        if (field) {
-            return field.path;
-        } else {
-            return '';
-        }
-    }
-
     public getItemValue(value: any) {
         if (value === undefined || value === null) {
             return '';
@@ -574,6 +593,66 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         $event.preventDefault();
         $event.stopPropagation();
         item.field = null;
+        item.update();
+        this._updateFieldWarning(item);
+    }
+
+    public onPathChange(item: FieldLink, value: string): void {
+        item.field = value;
+        item.update();
+        this._computePathSuggestions(item);
+        this._updateFieldWarning(item);
+    }
+
+    public onPathKeyup(event: KeyboardEvent): void {
+        if (event.key === 'Escape') {
+            this.activePathItem = null;
+            this.pathSuggestions = [];
+        }
+    }
+
+    public onPathBlur(item: FieldLink): void {
+        setTimeout(() => {
+            if (this.activePathItem === item) {
+                this.activePathItem = null;
+                this.pathSuggestions = [];
+            }
+        }, 200);
+    }
+
+    public selectPathSuggestion(item: FieldLink, path: string): void {
+        item.field = path;
+        item.update();
+        this._updateFieldWarning(item);
+        this.activePathItem = null;
+        this.pathSuggestions = [];
+    }
+
+    private _updateFieldWarning(item: FieldLink): void {
+        this.fieldWarnings.set(item.id, !!(item.field && !this.getField('input', item.schema, item.field)));
+    }
+
+    private _computePathSuggestions(item: FieldLink): void {
+        const prefix = item.field || '';
+        if (!prefix) {
+            this.pathSuggestions = [];
+            this.activePathItem = null;
+            return;
+        }
+        const map = item.schema
+            ? this.schemaFieldMap.get(item.schema)
+            : this.inputSchemaFieldMap;
+        if (!map) {
+            this.pathSuggestions = [];
+            this.activePathItem = null;
+            return;
+        }
+        const suggestions = Array.from(map.keys())
+            .filter(p => p.includes(prefix))
+            .sort((a, b) => a.length - b.length)
+            .slice(0, 10);
+        this.pathSuggestions = suggestions;
+        this.activePathItem = suggestions.length ? item : null;
     }
 
     public onStep(
@@ -667,12 +746,11 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: this.inputSchema?.name || 'Set Link',
                 view: this.createSchemaView(this.inputSchema),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
@@ -714,13 +792,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '800px',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 title: 'Select components',
                 view: this.createComponentView(),
                 subName: false
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 const cursor = this.getCursor();
@@ -730,8 +807,131 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
         });
     }
 
-    public onCodeChangeTab(tab: any) {
-        this.codeTab = tab.index === 0 ? 'general' : 'advanced';
+    public onVarPickerFocus(formula: MathFormula): void {
+        this.activeMathLive?.keepKeyboard();
+        if (this.varPickerFormula && this.varPickerFormula !== formula) {
+            this.varPickerSearchMap.delete(this.varPickerFormula.id);
+        }
+        this.varPickerFormula = formula;
+        this.varPickerSearchMap.set(formula.id, '');
+        this._varPickerBase = this.getFilteredVars(formula);
+        this.filteredVars = this._varPickerBase;
+    }
+
+    public onVarPickerSearch(formula: MathFormula, value: string): void {
+        this.varPickerSearchMap.set(formula.id, value);
+        if (!value) {
+            this.filteredVars = this._varPickerBase;
+            return;
+        }
+        const q = value.toLowerCase();
+        this.filteredVars = this._varPickerBase.filter(
+            v => v.label.toLowerCase().includes(q) || v.name.toLowerCase().includes(q)
+        );
+    }
+
+
+    public onVarPickerBlur(formula: MathFormula): void {
+        setTimeout(() => {
+            const shouldKeep = this.varPickerRedirectToMath && this.varPickerFormula === formula;
+            this.varPickerRedirectToMath = false;
+            if (shouldKeep) {
+                return;
+            }
+            if (this.varPickerFormula === formula) {
+                this.varPickerFormula = null;
+                this.varPickerSearchMap.delete(formula.id);
+            }
+        }, 150);
+    }
+
+    public onMathLiveFocus(formula: MathFormula, mathLive: MathLiveComponent): void {
+        this.mathLiveMap.set(formula.id, mathLive);
+        this.activeMathLive = mathLive;
+        this.activeFormula = formula;
+        this.latexCursorSave = null;
+        if (this.varPickerFormula === formula) {
+            this.varPickerRedirectToMath = true;
+        }
+        setTimeout(() => {
+            const el: HTMLElement = mathLive.getElement().nativeElement;
+            (el.closest('.rows-container') || el).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 150);
+    }
+
+    private getLiveMathComponent(formula: MathFormula): MathLiveComponent | null {
+        const ml = this.mathLiveMap.get(formula.id)
+            ?? (this.activeFormula === formula ? this.activeMathLive : null);
+        if (!ml) {
+            return null;
+        }
+        if (!ml.getElement().nativeElement.isConnected) {
+            this.mathLiveMap.delete(formula.id);
+            return null;
+        }
+        return ml;
+    }
+
+    public onLatexFocus(formula: MathFormula): void {
+        this.activeFormula = formula;
+        this.activeMathLive = null;
+    }
+
+    public onLatexBlur(formula: MathFormula, event: FocusEvent): void {
+        const input = event.target as HTMLInputElement;
+        this.latexCursorSave = {
+            formula,
+            start: input.selectionStart ?? formula.functionBodyText.length,
+            end: input.selectionEnd ?? formula.functionBodyText.length,
+        };
+    }
+
+    private getFilteredVars(formula: MathFormula): { name: string; label: string }[] {
+        const result: { name: string; label: string }[] = [];
+        for (const item of this.engine.variables.getItems()) {
+            if (item.validName) {
+                result.push({ name: item.name, label: item.variableNameText || item.name });
+            }
+        }
+        for (const f of this.engine.formulas.getItems()) {
+            if (f !== formula && f.validName) {
+                result.push({ name: f.name, label: f.functionNameText || f.name });
+            }
+        }
+        return result;
+    }
+
+    public insertFormulaVariable(formula: MathFormula, varName: string): void {
+        const latex = `\\operatorname{${varName}}`;
+
+        if (formula.view === 'formula') {
+            const ml = this.getLiveMathComponent(formula);
+            if (ml) {
+                ml.insert(latex);
+                setTimeout(() => formula.updateBody());
+            } else {
+                formula.functionBodyText = (formula.functionBodyText || '') + latex;
+                formula.updateBody();
+            }
+        } else if (formula.view === 'latex') {
+            if (this.latexCursorSave?.formula === formula) {
+                const { start, end } = this.latexCursorSave;
+                const text = formula.functionBodyText;
+                formula.functionBodyText = text.slice(0, start) + latex + text.slice(end);
+                this.latexCursorSave = { formula, start: start + latex.length, end: start + latex.length };
+            } else {
+                formula.functionBodyText = (formula.functionBodyText || '') + latex;
+            }
+            formula.updateBody();
+        } else {
+            formula.functionBodyText = (formula.functionBodyText || '') + latex;
+            formula.updateBody();
+        }
+    }
+
+    public onCodeChangeTab(index: string | number | undefined) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.codeTab = tabIndex === 0 ? 'general' : 'advanced';
     }
 
     public cursorActivity($event: any) {
@@ -743,13 +943,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schemas: null,
                 schema: this.inputSchema,
                 policyId: this.policyId
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 this.inputDocumentValue = result;
@@ -763,13 +962,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schemas: schemas,
                 schema: null,
                 policyId: this.policyId
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 this.inputRelationshipsValue.push(result);
@@ -783,13 +981,12 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
             showHeader: false,
             width: '90%',
             styleClass: 'guardian-dialog',
-            focusOnClose: false,
             data: {
                 schema: schema,
                 policyId: this.policyId,
                 value: item.document
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: any | null) => {
             if (result) {
                 item.document = result.document;
@@ -976,7 +1173,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                 title: 'Rename',
                 button: 'Save'
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any) => {
             if (!result) {
                 return;
@@ -1001,7 +1198,7 @@ export class MathEditorDialogComponent implements OnInit, AfterContentInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 pages.delete($event);

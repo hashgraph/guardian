@@ -1,17 +1,18 @@
 import { PolicyBlockDefaultOptions } from '../../helpers/policy-block-default-options.js';
 import { BlockCacheType, EventConfig } from '../../interfaces/index.js';
 import { PolicyBlockDecoratorOptions, PolicyBlockFullArgumentList } from '../../interfaces/block-options.js';
-import { LocationType, PolicyAvailability, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
+import { LocationType, PolicyAvailability, PolicyEditableFieldDTO, PolicyHelper, PolicyRole, PolicyStatus } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyBlock, IPolicyDocument, ISerializedBlock, } from '../../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../../policy-components-utils.js';
 import { IPolicyEvent, PolicyLink } from '../../interfaces/policy-event.js';
 import { PolicyInputEventType, PolicyOutputEventType } from '../../interfaces/policy-event-type.js';
-import { DatabaseServer, Policy } from '@guardian/common';
+import { DatabaseServer, Policy, PolicyParameters } from '@guardian/common';
 import deepEqual from 'deep-equal';
 import { PolicyUser } from '../../policy-user.js';
 import { ComponentsService } from '../components-service.js';
 import { IDebugContext } from '../../block-engine/block-result.js';
 import { RecordActionStep } from '../../record-action-step.js';
+import { PolicyUtils } from '../utils.js';
 
 /**
  * Basic block decorator
@@ -662,7 +663,7 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
             public async allAvailableUsers(currentUser: PolicyUser, userId: string | null): Promise<Map<string, PolicyUser>> {
                 const result: Map<string, PolicyUser> = new Map<string, PolicyUser>();
                 if (this.dryRun) {
-                    const virtualUser = await PolicyComponentsUtils.GetActiveVirtualUser(this as any);
+                    const virtualUser = await PolicyComponentsUtils.GetActiveVirtualUser(this as any, userId);
                     if (virtualUser) {
                         result.set(virtualUser.did, virtualUser);
                     }
@@ -955,6 +956,103 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                 await this.databaseServer.saveBlockCache(
                     this.policyId, this.uuid, did, name, value, true
                 );
+            }
+
+            setPropValue(properties: any, path: string, value: any) {
+                if (!path) {
+                    return;
+                }
+
+                const keys = path.split('.');
+                const last = keys.pop();
+                if (!last) {
+                    return;
+                }
+
+                const DANGEROUS_KEYS = new Set(['__proto__', 'constructor', 'prototype']);
+                for (const key of keys) {
+                    if (DANGEROUS_KEYS.has(key)) {
+                        return;
+                    }
+                }
+                if (DANGEROUS_KEYS.has(last)) {
+                    return;
+                }
+
+                let current = properties;
+
+                for (const key of keys) {
+                    if (!(current[key] && typeof current[key] === 'object')) {
+                        current[key] = {};
+                    }
+
+                    current = current[key];
+                }
+
+                current[last] = value;
+            }
+
+            private _editableParametersSettings: PolicyEditableFieldDTO[] | null | undefined = undefined;
+
+            public async getOptions(user?: PolicyUser | null) {
+                if (!user) {
+                    return this.options;
+                }
+
+                if (this._editableParametersSettings === undefined) {
+                    const policy = await DatabaseServer.getPolicyById(this.policyId);
+                    this._editableParametersSettings = policy?.editableParametersSettings ?? null;
+                }
+                if (!this._editableParametersSettings || this._editableParametersSettings.length === 0) {
+                    return this.options;
+                }
+
+                const row = await DatabaseServer.getPolicyParameters(user.did, this.policyId);
+                let properties: Record<string, Record<string, unknown>>;
+                if (!row || row.updated || !row.properties || Object.keys(row.properties).length === 0) {
+                    properties = {};
+                    const policyRows = await this.databaseServer.find(PolicyParameters, { policyId: this.policyId });
+                    for (const item of policyRows) {
+                        for (const config of item.config ?? []) {
+                            const applyTo = Array.isArray(config.applyTo) ? config.applyTo : [];
+                            if (
+                                applyTo.includes('All') ||
+                                applyTo.includes(user.role) ||
+                                (applyTo.includes('Self') && item.userDID === user.did)
+                            ) {
+                                if (!properties[config.blockTag]) {
+                                    properties[config.blockTag] = {};
+                                }
+                                this.setPropValue(properties[config.blockTag], config.propertyPath, config.value);
+                            }
+                        }
+                    }
+                    // Upsert keyed on (policyId, userDID); concurrent inserts
+                    // are caught by the unique index.
+                    try {
+                        await this.databaseServer.save(
+                            PolicyParameters,
+                            {
+                                policyId: this.policyId,
+                                userDID: user.did,
+                                config: row?.config ?? [],
+                                updated: false,
+                                properties,
+                            },
+                            { policyId: this.policyId, userDID: user.did }
+                        );
+                    } catch (err) {
+                        // A concurrent call already upserted the same row.
+                    }
+                } else {
+                    properties = row.properties as Record<string, Record<string, unknown>>;
+                }
+
+                if (properties && properties[this.tag]) {
+                    return PolicyUtils.deepAssign({}, this.options, properties[this.tag]);
+                } else {
+                    return this.options;
+                }
             }
         };
     };

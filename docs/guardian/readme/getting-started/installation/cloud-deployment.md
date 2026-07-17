@@ -84,7 +84,7 @@ kubectl --kubeconfig KUBECONFIG-FILE -n ingress-nginx get svc -o wide
 
 ```
 
-You can also find the load balancer using your cloud privider console. The domain name configuration and, DNS records and TLS certificates with SSL termination on the load balancer are out of the scope of this document.
+You can also find the load balancer using your cloud provider console. The domain name configuration and, DNS records and TLS certificates with SSL termination on the load balancer are out of the scope of this document.
 
 #### Guardian manifests
 
@@ -163,7 +163,7 @@ These are third party services that are not part of the Guardian platform, but a
 * mongo
 * ipfs/kubo
 * message-broker
-* hashicorp vault
+* HashiCorp vault
 * mongo-express
 
 For production workloads it is recommended to use a more robust setup for these services, like a replica set for mongo, a cluster for ipfs, a cluster for the message broker, etc. Navigating to the Apps section of Rancher, you can find the official [Helm](https://helm.sh/) charts for these services, with Rancher support, which can be used to deploy them in a more robust way. As an example, you can follow the steps below to deploy a message broker cluster using the Rancher UI, you'll see something similar to this:

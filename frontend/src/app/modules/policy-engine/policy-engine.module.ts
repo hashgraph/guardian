@@ -44,7 +44,7 @@ import { HttpRequestConfigComponent } from './policy-configuration/blocks/main/h
 import { PolicyTreeComponent } from './policy-configuration/policy-tree/policy-tree.component';
 import { ModulePropertiesComponent } from './policy-configuration/module-properties/module-properties.component';
 import { ModuleComponent } from './policy-configuration/blocks/module/module.component';
-import { ToolComponent } from "./policy-configuration/blocks/tool/tool.component";
+import { ToolComponent } from './policy-configuration/blocks/tool/tool.component';
 import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens/create-token-config/create-token-config.component';
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
@@ -58,6 +58,7 @@ import { RequestDocumentBlockAddonComponent } from './policy-viewer/blocks/reque
 import { DialogBlock } from './policy-viewer/dialog-block/dialog-block.component';
 import { PolicyViewerComponent } from './policy-viewer/policy-viewer/policy-viewer.component';
 import { RequestDocumentBlockComponent } from './policy-viewer/blocks/request-document-block/request-document-block.component';
+import { DraftFileActionsComponent } from './policy-viewer/blocks/request-document-block/draft-file-actions/draft-file-actions.component';
 import { DocumentsSourceBlockComponent } from './policy-viewer/blocks/documents-source-block/documents-source-block.component';
 import { ContainerBlockComponent } from './policy-viewer/blocks/container-block/container-block.component';
 import { InformationBlockComponent } from './policy-viewer/blocks/information-block/information-block.component';
@@ -100,6 +101,7 @@ import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
 import { RecordResultDialog } from './record/record-result-dialog/record-result-dialog.component';
+import { SavePolicyTestRecordDialog } from './record/save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 import { RecordResultsComponent } from './record/record-results/record-results.component';
 import { TestResultsComponent } from './record/test-results/test-results.component';
 import { SearchBlocksComponent } from './helpers/search-blocks/search-blocks.component';
@@ -111,8 +113,8 @@ import { SearchToolDialog } from './dialogs/search-tool-dialog/search-tool-dialo
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { CalendarModule } from 'primeng/calendar';
-import { StepsModule } from 'primeng/steps';
+import { DatePickerModule } from 'primeng/datepicker';
+import { StepperModule } from 'primeng/stepper';
 import { CheckboxModule } from 'primeng/checkbox';
 //Services
 import { RegisteredService } from './services/registered.service';
@@ -121,23 +123,23 @@ import { WizardService } from './services/wizard.service';
 import { PoliciesComponent } from './policies/policies.component';
 import { InputTextModule } from 'primeng/inputtext';
 import { TableModule } from 'primeng/table';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { ButtonModule } from 'primeng/button';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { DialogService, DynamicDialogModule } from 'primeng/dynamicdialog';
-import { TabMenuModule } from 'primeng/tabmenu';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
+
 import { TooltipModule } from 'primeng/tooltip';
-import { SplitButtonModule } from 'primeng/splitbutton';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { DialogModule } from 'primeng/dialog';
 import { DeleteDialogComponent } from './dialogs/delete-dialog/delete-dialog.component';
 import { PolicyDocumentationDialogComponent } from './dialogs/policy-documentation-dialog/policy-documentation-dialog.component';
 import { PolicyApiConfigDialogComponent } from './dialogs/policy-api-config-dialog/policy-api-config-dialog.component';
 import { ProgressTrackerComponent } from './policy-viewer/progress-tracker/progress-tracker.component';
 import { PolicyProgressService } from './services/policy-progress.service';
-import { InputSwitchModule } from 'primeng/inputswitch';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { PopoverModule } from 'primeng/popover';
 import { AngularSvgIconModule } from 'angular-svg-icon';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { PasswordModule } from 'primeng/password';
@@ -162,25 +164,30 @@ import { MintRequestsComponent } from './policy-viewer/mint-requests/mint-reques
 import { TransformationButtonBlockComponent } from './policy-viewer/blocks/transformation-button-block/transformation-button-block.component';
 import { IntegrationButtonBlockComponent } from './policy-viewer/blocks/integration-button-block/integration-button-block.component';
 import { RestoreSavepointDialog } from './policy-viewer/dialogs/restore-savepoint-dialog/restore-savepoint-dialog.component';
-import { AddSavepointDialog } from "./policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component";
-import { OnLoadSavepointDialog } from "./policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component";
-import { IgnoreRulesDialog } from "./dialogs/ignore-rules-dialog/ignore-rules-dialog.component";
+import { AddSavepointDialog } from './policy-viewer/dialogs/add-savepoint-dialog/add-savepoint-dialog.component';
+import { OnLoadSavepointDialog } from './policy-viewer/dialogs/on-load-savepoint-dialog/on-load-savepoint-dialog.component';
+import { IgnoreRulesDialog } from './dialogs/ignore-rules-dialog/ignore-rules-dialog.component';
 import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
-import { GlobalEventsWriterBlockComponent} from "./policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component";
-import { GlobalEventsReaderBlockComponent } from "./policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component";
-import { GlobalEventsReaderFiltersDialogComponent } from "./policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component";
-import { AddGlobalEventTopicDialogComponent } from "./policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component";
+import { GlobalEventsWriterBlockComponent} from './policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component';
+import { GlobalEventsReaderBlockComponent } from './policy-viewer/blocks/global-events-reader-block/global-events-reader-block.component';
+import { GlobalEventsReaderFiltersDialogComponent } from './policy-viewer/dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
+import { AddGlobalEventTopicDialogComponent } from './policy-viewer/dialogs/add-global-event-topic/add-global-event-topic-dialog.component';
 import { MathConfigComponent } from './policy-configuration/blocks/calculate/math-config/math-config.component';
 import { MathEditorDialogComponent } from './dialogs/math-editor-dialog/math-editor-dialog.component';
 import { FieldLinkDialog } from './dialogs/field-link-dialog/field-link-dialog.component';
 import { ChangeBlockSettingsDialog } from './dialogs/change-block-settings-dialog/change-block-settings-dialog.component';
 import { ApproveUpdateVcDocumentDialogComponent } from './dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component'
 import { AddDocumentDialog } from './dialogs/add-document-dialog/add-document-dialog.component';
+import { PolicyParametersDialog } from './dialogs/policy-parameters-dialog/policy-parameters-dialog.component';
+import { PolicyParameterPropertyComponent } from 'src/app/components/policy-parameter-property/policy-parameter-property.component';
+import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
+import { ParameterDocumentPathComponent } from './helpers/parameter-document-path/parameter-document-path.component';
 import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
 
 @NgModule({
     declarations: [
@@ -203,6 +210,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         SourceAddonConfigComponent,
         ActionBlockComponent,
         RequestDocumentBlockComponent,
+        DraftFileActionsComponent,
         UploadDocumentBlockComponent,
         ContainerBlockComponent,
         DocumentsSourceBlockComponent,
@@ -282,6 +290,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         ProgressTrackerComponent,
         RecordControllerComponent,
         RecordResultDialog,
+        SavePolicyTestRecordDialog,
         RecordResultsComponent,
         TestResultsComponent,
         ResizingDirective,
@@ -318,7 +327,12 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         AddDocumentDialog,
         ChangeBlockSettingsDialog,
         ApproveUpdateVcDocumentDialogComponent,
-        MockDialog
+        PolicyParametersConfigDialog,
+        PolicyParametersDialog,
+        PolicyParameterPropertyComponent,
+        ParameterDocumentPathComponent,
+        MockDialog,
+        PolicyTestAutomationPopupComponent
     ],
     imports: [
         CommonModule,
@@ -336,23 +350,22 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
         TableModule,
         InputTextareaModule,
         ButtonModule,
-        DropdownModule,
+        SelectModule,
         MultiSelectModule,
         TableModule,
         DynamicDialogModule,
-        TabMenuModule,
+
         TooltipModule,
-        SplitButtonModule,
-        TabViewModule,
+        TabsModule,
         RadioButtonModule,
         PasswordModule,
-        InputSwitchModule,
+        ToggleSwitchModule,
         AppRoutingModule,
         DialogModule,
-        OverlayPanelModule,
+        PopoverModule,
         SelectButtonModule,
-        CalendarModule,
-        StepsModule,
+        DatePickerModule,
+        StepperModule,
         CheckboxModule,
         PaginatorModule,
         AngularSvgIconModule.forRoot(),
@@ -361,7 +374,7 @@ import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
     providers: [
         RegisteredService,
         WizardService,
-        DialogService,
+        { provide: DialogService, useClass: GuardianDialogService },
         PolicyProgressService,
         DynamicMsalAuthService,
         DatePipe,

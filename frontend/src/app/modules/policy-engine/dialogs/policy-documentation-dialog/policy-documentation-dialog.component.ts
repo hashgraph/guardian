@@ -1,10 +1,12 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { ToastService } from 'src/app/services/toast.service';
 
 @Component({
     selector: 'app-policy-documentation-dialog',
     templateUrl: './policy-documentation-dialog.component.html',
     styleUrls: ['./policy-documentation-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyDocumentationDialogComponent implements OnInit {
     public loading = true;
@@ -16,7 +18,8 @@ export class PolicyDocumentationDialogComponent implements OnInit {
 
     constructor(
         public ref: DynamicDialogRef,
-        public config: DynamicDialogConfig
+        public config: DynamicDialogConfig,
+        private toastService: ToastService
     ) {
         this.title = this.config.header || 'API Documentation';
         this.entries = this.config.data?.entries || [];
@@ -43,7 +46,11 @@ export class PolicyDocumentationDialogComponent implements OnInit {
     }
 
     copyUrl(url: string): void {
-        navigator.clipboard.writeText(url);
+        navigator.clipboard.writeText(url).then(() => {
+            this.toastService.success('URL copied to clipboard');
+        }, () => {
+            this.toastService.error('Failed to copy URL');
+        });
     }
 
     toggleSize(): void {

@@ -20,7 +20,7 @@ Token ID
 ```
 {% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthroized" %}
+{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
 ```javascript
 {
     // Response

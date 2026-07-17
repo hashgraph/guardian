@@ -32,8 +32,8 @@ import {
 } from '@hiero-ledger/sdk';
 import { HederaUtils } from './helpers/utils.js';
 import axios from 'axios';
-import process from 'process';
-import { MAX_REDIRECTS } from '../constants/index.js';
+import process from 'node:process';
+import {MAX_REDIRECTS} from '../constants/index.js';
 
 /**
  * Sleep helper
@@ -1287,7 +1287,7 @@ export class Worker extends NatsService {
                 case WorkerTaskType.GET_USER_NFTS_SERIALS: {
                     const { hederaAccountId, tokenId } = task.data;
                     const { mockId } = task;
-                    const nfts = (await HederaSDKHelper.getSerialsNFT(hederaAccountId, tokenId, { mockId })) || [];
+                    const nfts = (await HederaSDKHelper.setNetwork(networkOptions).getSerialsNFT(hederaAccountId, tokenId, { mockId })) || [];
                     const serials = {};
                     nfts.forEach(item => {
                         if (serials[item.token_id]) {

@@ -24,8 +24,8 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./ai-service/faiss-vector:/usr/local/app/faiss-vector:rw
-      - ./ai-service/data:/usr/local/app/data:rw
+      - ./ai-service/faiss-vector:/usr/local/app/ai-service/faiss-vector:rw
+      - ./ai-service/data:/usr/local/app/ai-service/data:rw
     environment:
       VECTOR_STORAGE_PATH: ./faiss-vector
       DOCS_STORAGE_PATH: ./data/generated-data
@@ -46,7 +46,7 @@ services:
       - mongo
       # - seq
     volumes:
-      - ./api-gateway/configs:/usr/local/app/configs:ro
+      - ./api-gateway/configs:/usr/local/app/api-gateway/configs:ro
     <<: *service-template
     expose:
       - '3002'
@@ -76,15 +76,15 @@ services:
       - mongo
       - vault
     volumes:
-      - ./auth-service/tls:/usr/local/app/tls:ro
-      - ./auth-service/configs:/usr/local/app/configs:ro
+      - ./auth-service/tls:/usr/local/app/auth-service/tls:ro
+      - ./auth-service/configs:/usr/local/app/auth-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
       - '5005'
 
   cache:
-    image: registry.redict.io/redict:7.3.6-alpine
+    image: valkey/valkey:8.1-alpine
     restart: always
     expose:
       - '6379'
@@ -120,15 +120,15 @@ services:
       - policy-service
       - worker-service
     volumes:
-      - ./guardian-service/tls:/usr/local/app/tls:ro
-      - ./guardian-service/configs:/usr/local/app/configs:ro
+      - ./guardian-service/tls:/usr/local/app/guardian-service/tls:ro
+      - ./guardian-service/configs:/usr/local/app/guardian-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
       - '5007'
 
   ipfs-node:
-    image: ipfs/kubo:v0.39.0
+    image: ipfs/kubo:v0.41.0
     volumes:
       - ipfs_data:/data/ipfs:rw
       - ipfs_export:/export:rw
@@ -147,7 +147,7 @@ services:
     depends_on:
       - message-broker
     volumes:
-      - ./logger-service/configs:/usr/local/app/configs:ro
+      - ./logger-service/configs:/usr/local/app/logger-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
@@ -164,7 +164,7 @@ services:
     init: true
 
   mongo:
-    image: mongo:6.0.26
+    image: mongo:6.0.28
     command: "--setParameter allowDiskUseByDefault=true"
     # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
     restart: always
@@ -179,7 +179,7 @@ services:
     depends_on:
       - message-broker
     volumes:
-      - ./notification-service/configs:/usr/local/app/configs:ro
+      - ./notification-service/configs:/usr/local/app/notification-service/configs:ro
     <<: *service-template
 
   policy-service:
@@ -192,8 +192,8 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./policy-service/tls:/usr/local/app/tls:ro
-      - ./policy-service/configs:/usr/local/app/configs:ro
+      - ./policy-service/tls:/usr/local/app/policy-service/tls:ro
+      - ./policy-service/configs:/usr/local/app/policy-service/configs:ro
       # Uncomment for PYTHON_SANDBOX_MODE=docker:
       # - /var/run/docker.sock:/var/run/docker.sock
     <<: *service-template
@@ -234,7 +234,7 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./queue-service/configs:/usr/local/app/configs:ro
+      - ./queue-service/configs:/usr/local/app/queue-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
@@ -260,7 +260,7 @@ services:
       - mongo
       - queue-service
     volumes:
-      - ./topic-listener-service/configs:/usr/local/app/configs:ro
+      - ./topic-listener-service/configs:/usr/local/app/topic-listener-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
@@ -309,8 +309,8 @@ services:
       queue-service:
         condition: service_started
     volumes:
-      - ./worker-service/tls:/usr/local/app/tls:ro
-      - ./worker-service/configs:/usr/local/app/configs:ro
+      - ./worker-service/tls:/usr/local/app/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/app/worker-service/configs:ro
     <<: *service-template
     deploy:
       replicas: 2

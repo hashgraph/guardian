@@ -1,5 +1,5 @@
-import { MessageType } from '../types/message-type.type';
-import { Message } from './message.interface';
+import { MessageType } from '../types/message-type.type.js';
+import { Message } from './message.interface.js';
 
 /**
  * Relationship category

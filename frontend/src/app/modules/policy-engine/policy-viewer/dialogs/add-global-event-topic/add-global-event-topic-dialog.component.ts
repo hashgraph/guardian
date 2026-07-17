@@ -3,7 +3,8 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 @Component({
     selector: 'app-add-global-event-topic',
     templateUrl: './add-global-event-topic-dialog.component.html',
-    styleUrls: ['./add-global-event-topic-dialog.component.scss']
+    styleUrls: ['./add-global-event-topic-dialog.component.scss'],
+    standalone: false
 })
 export class AddGlobalEventTopicDialogComponent implements OnChanges {
     @Input()

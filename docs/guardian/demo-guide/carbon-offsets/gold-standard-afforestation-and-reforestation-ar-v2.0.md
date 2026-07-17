@@ -12,7 +12,7 @@ description: Policy developed by Envision Blockchain
 
 ## **Policy Description**:
 
-The Gold Standard Afforestation and Reforestation (AR) methodology is a set of guidelines and procedures developed by The Gold Standard Foundation for quantifying and verifying greenhouse gas (GHG) emissions reductions resulting from afforestation and reforestation projects. The methodology provides a standardized framework for calculating the carbon sequestration potential of these types of projects, taking into account removals from both aboveground and belowground tree biomass, and also quantifies emissions from biomass burning for site preparation and the use of nitrogen fertilizer.
+The Gold Standard Afforestation and Reforestation (AR) methodology is a set of guidelines and procedures developed by The Gold Standard Foundation for quantifying and verifying greenhouse gas (GHG) emissions reductions resulting from afforestation and reforestation projects. The methodology provides a standardized framework for calculating the carbon sequestration potential of these types of projects, taking into account removals from both above ground and belowground tree biomass, and also quantifies emissions from biomass burning for site preparation and the use of nitrogen fertilizer.
 
 The AR methodology sets out requirements for project design, implementation, and monitoring. It outlines the steps necessary to establish a baseline for GHG emissions and carbon sequestration potential, and to assess the project's impact on local biodiversity. The methodology also includes provisions for addressing potential leakage and permanence risks, which can impact the long-term effectiveness of the project in sequestering carbon.
 
@@ -30,7 +30,7 @@ Create a Standard Registry user if you haven't done so already.
 
 You'll now be prompted to configure your Standard Registry account. Go through the user profile setup screen. At the last step of the user profile screen, Standard Registry users will need to fill out the Standard Registry attribute form (see screenshot below). Press Connect when finished. This will now initialize the Guardian instance on the correct Hedera Consensus Service Topics, create a DID document, create a Verifiable Credential, etc.
 
-<figure><img src="../../../.gitbook/assets/image (38) (2) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (38) (2).png" alt=""><figcaption></figcaption></figure>
 
 Now we will be creating the Policy. Click on the "Policies" tab and select "Policies." We have two ways to create policies.
 
@@ -74,7 +74,7 @@ After successfully assigning the VVB to the project, the next step is to access 
 
 To proceed with the workflow, the Standard Registry will validate the project details and schemas. Access the Standard Registry profile and go to the "Project Pipeline" tab. Here, select "Approve" to continue.
 
-<figure><img src="../../../.gitbook/assets/image (16) (3) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../.gitbook/assets/image (16) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 If you access the Technical Advisory Committee profile, you will find a "Comment" button. You can utilize this button to provide any feedback or comments regarding the project details and schemas.
 

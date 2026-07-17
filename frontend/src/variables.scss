@@ -1,20 +1,10 @@
-:root {
+:root,
+:root.guardian-theme-light {
     --font-family-poppins: 'Poppins', sans-serif;
     --font-family-inter: 'Inter', sans-serif;
 
-    --color-background: #F9FAFC;
     --color-primary: #4169E2;
     --color-secondary: #CDDDFD;
-
-    --color-grey-black-1: #181818;
-    --color-grey-black-2: #23252E;
-    --color-grey-1: #F9FAFC;
-    --color-grey-2: #EFF3F7;
-    --color-grey-3: #E1E7EF;
-    --color-grey-4: #B0B5BA;
-    --color-grey-5: #848FA9;
-    --color-grey-6: #495057;
-    --color-grey-white: #FFFFFF;
 
     --color-accent-red-1: #FF432A;
     --color-accent-red-2: #F5D7D7;
@@ -36,7 +26,13 @@
 
     --app-font-family: 'Lato', sans-serif;
     --primary-color: #4169E2;
-    --text-color: #000;
+
+    /* PrimeNG styled-mode bridge: old flat palette names removed in the v18 migration,
+       mapped to the new --p-* tokens so existing screens keep their colors. */
+    --blue-100: var(--p-blue-100);
+    --blue-700: var(--p-blue-700);
+    --gray-500: var(--p-gray-500);
+    --surface-border: var(--p-content-border-color);
 
     --header-width-expand: 280px;
     --header-width-collapse: 80px;
@@ -49,12 +45,153 @@
     --header-height-policy: 175px;
     --header-background-color: #000;
 
+    /* Navigation menu (sidebar / top bar) — brand-tinted, light mode.
+       The look is driven entirely by these tokens; swap the ~9 values below for a
+       different palette (e.g. a neutral surface) without touching the template or
+       behavior. --sidebar-accent defaults to the brand primary, so customer branding
+       that overrides --color-primary automatically re-tints the active state. */
+    --sidebar-bg: #F4F7FE;
+    --sidebar-item-color: #3A4A73;
+    --sidebar-item-hover: #E6EDFB;
+    --sidebar-section-color: #7F88A8;
+    --sidebar-active-bg: var(--color-primary);
+    --sidebar-active-color: #FFFFFF;
+    --sidebar-accent: var(--color-primary);
+    --sidebar-border: #D9E4FB;
+    --sidebar-logo-color: #26215C;
+
     --table-row-height: 64px;
 
     --button-primary-color: #4169E2;
     --button-primary-color-hover: #476ff1;
 
+    --input-icon-color: #6c757d;
+
     --vh: 1vh;
+
+    /* App theme tokens — single source of truth for every theme-dependent color.
+       These MUST stay in this global stylesheet (not in a component-scoped file), so
+       the :root.guardian-theme-<name> selectors actually match the <html> element.
+       Add a new theme (e.g. grey) by appending one more :root.guardian-theme-<name>
+       block with the same token names; no component changes are needed. Light is also
+       applied to bare :root so colors are valid before the theme class is set. */
+
+    /* Guardian theme-dependent tokens - light mode */
+    --color-background: #F9FAFC;
+    --color-grey-black-1: #181818;
+    --color-grey-black-2: #23252E;
+    --color-grey-1: #F9FAFC;
+    --color-grey-2: #EFF3F7;
+    --color-grey-3: #E1E7EF;
+    --color-grey-4: #B0B5BA;
+    --color-grey-5: #848FA9;
+    --color-grey-6: #495057;
+    --color-grey-white: #FFFFFF;
+    --guardian-on-primary-color: #FFFFFF;
+    --text-color: #000;
+
+    --guardian-header-color: #000;
+    --guardian-font-color: #23252E;
+    --guardian-background: #FFFFFF;
+    --guardian-hover: #F0F3FC;
+    --guardian-primary-background: #e1e7fa;
+    --guardian-secondary-color: #FFFFFF;
+    --guardian-secondary-background: #FFFFFF;
+    --guardian-menu-color-2: #8259ef;
+    --guardian-success-background: #CAFDD9;
+    --guardian-failure-background: #FFEAEA;
+    --guardian-disabled-color: #848FA9;
+    --guardian-disabled-background: #EFF3F7;
+    --guardian-disabled-icon: #C4D0E1;
+    --guardian-dry-run-background: #f5f7fd;
+    --guardian-grey-color: #EFF3F7;
+    --guardian-grey-background: #F9FAFC;
+    --guardian-grey-color-2: #E1E7EF;
+    --guardian-grey-color-3: #AAB7C4;
+    --guardian-grey-color-4: #6C7791;
+    --guardian-delete-background: #FFEAEA;
+    --guardian-grid-color: #848FA9;
+    --guardian-border-color: #E1E7EF;
+    --guardian-shadow: #00000014;
+    --guardian-warning-background: #FFF6E3;
+    --formula-constant-background: #e1e7fa;
+    --formula-variable-background: #FFF6E3;
+    --formula-function-background: #fbd9ef;
+    --formula-text-background: #d7f5e2;
+}
+
+:root.guardian-theme-dark {
+    --color-background: #10131A;
+    --color-grey-black-1: #AAB4C5;
+    --color-grey-black-2: #AAB4C5;
+    --color-grey-1: #10131A;
+    --color-grey-2: #171B24;
+    --color-grey-3: #303746;
+    --color-grey-4: #778299;
+    --color-grey-5: #AAB4C5;
+    --color-grey-6: #C3CAD8;
+    --color-grey-white: #171B24;
+    --guardian-on-primary-color: #AAB4C5;
+    --text-color: #AAB4C5;
+
+    --header-color-primary: #CCCCCC;
+    --header-preloader-color: #10131A;
+    --header-color-primary-dark: rgba(255, 255, 255, 0.9);
+
+    --button-primary-color: #4169E2;
+    --button-primary-color-hover: #5A7AF5;
+
+    --input-icon-color: #9A9A9A;
+
+    /* Guardian theme-dependent tokens - dark mode */
+    --guardian-header-color: #AAB4C5;
+    --guardian-font-color: #AAB4C5;
+    --guardian-background: #171B24;
+    --guardian-hover: #202735;
+    --guardian-primary-background: #1C2742;
+    --guardian-secondary-color: #AAB4C5;
+    --guardian-secondary-background: #171B24;
+    --guardian-menu-color-2: #9e7bf5;
+    --guardian-success-background: #12351F;
+    --guardian-failure-background: #3A1717;
+    --guardian-disabled-color: #778299;
+    --guardian-disabled-background: #202735;
+    --guardian-disabled-icon: #566174;
+    --guardian-dry-run-background: #1C2742;
+    --guardian-grey-color: #303746;
+    --guardian-grey-background: #10131A;
+    --guardian-grey-color-2: #303746;
+    --guardian-grey-color-3: #566174;
+    --guardian-grey-color-4: #AAB4C5;
+    --guardian-delete-background: #3A1717;
+    --guardian-grid-color: #AAB4C5;
+    --guardian-border-color: #303746;
+    --guardian-shadow: #00000040;
+    --guardian-warning-background: #3A2E12;
+    --formula-constant-background: #1C2742;
+    --formula-variable-background: #3A2E12;
+    --formula-function-background: #3A1730;
+    --formula-text-background: #12351F;
+
+    /* Navigation menu — brand-tinted, dark mode */
+    --sidebar-bg: #171B24;
+    --sidebar-item-color: #AAB4C5;
+    --sidebar-item-hover: #202735;
+    --sidebar-section-color: #778299;
+    --sidebar-active-bg: #1C2742;
+    --sidebar-active-color: #B5D4F4;
+    --sidebar-accent: #5D7FE8;
+    --sidebar-border: #303746;
+    --sidebar-logo-color: #FFFFFF;
+}
+
+/* Horizontal (top-bar) layout: zero the rail width so page content loses its left
+   gutter, and give the bar a height so content drops below it. Toggled on <html> by
+   MenuLayoutService. */
+:root.layout-horizontal {
+    --header-width-expand: 0px;
+    --header-width-collapse: 0px;
+    --header-height: 56px;
 }
 
 @media (max-width: 810px) {

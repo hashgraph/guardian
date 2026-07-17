@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 
@@ -65,7 +66,7 @@ context("Register", { tags: ['accounts', 'firstPool', 'all'] }, () => {
     });
 
     it('Register with invalid input data - Negative', () => {
-        const randomName = `${Math.floor(Math.random() * 999)}test001`;
+        const randomName = `${randomInt(999)}test001`;
         postRegister({ username: randomName, name: 'test' }).then((response) => {
             expect(response.status).to.eq(STATUS_CODE.UNPROCESSABLE);
         });

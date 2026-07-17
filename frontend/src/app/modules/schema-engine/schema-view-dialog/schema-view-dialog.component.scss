@@ -23,7 +23,7 @@ form {
     padding: 12px;
     box-sizing: border-box;
     text-align: center;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-weight: 500;
 }
 
@@ -46,7 +46,7 @@ form {
 }
 
 .field-value {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-size: 16px;
 }
 
@@ -93,7 +93,7 @@ form {
 }
 
 .field-name {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -101,7 +101,7 @@ form {
 }
 
 .field-array {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 14px;
     font-style: normal;
@@ -164,6 +164,6 @@ form {
     display: block;
     padding: 12px 12px 12px 0px;
     box-sizing: border-box;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-weight: 500;
 }

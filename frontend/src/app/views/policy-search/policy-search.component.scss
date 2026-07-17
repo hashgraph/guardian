@@ -1,17 +1,4 @@
 .policy-search {
-  padding: 56px 48px 0 48px;
-
-  h1 {
-    // font-family: Poppins;
-    font-family: Inter;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
-    margin-bottom: 24px;
-    color: #000;
-  }
-
   ::ng-deep {
     .mat-tab-body-content {
       overflow: unset;
@@ -67,7 +54,7 @@
 }
 
 .loading {
-  background: #fff;
+  background: var(--guardian-background, #fff);
   position: absolute;
   z-index: 99;
   top: 0;

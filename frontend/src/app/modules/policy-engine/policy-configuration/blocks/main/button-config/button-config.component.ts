@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'button-config',
     templateUrl: './button-config.component.html',
     styleUrls: ['./button-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ButtonConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

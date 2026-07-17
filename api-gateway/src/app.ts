@@ -4,12 +4,12 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, OldSecretManager, PinoLogger } from '@guardian/common';
+import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, markServiceBooted, MessageBrokerChannel, OldSecretManager, PinoLogger, setGlobalErrorLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
@@ -23,18 +23,22 @@ import fastifyMultipart from '@fastify/multipart';
 
 const PORT = process.env.PORT || 3002;
 
-const BODY_LIMIT = 1024 * 1024 * 1024
+const BODY_LIMIT = 1024 * 1024 * 1024;
+const MAX_PARAM_LENGTH = 4096;
 
 Promise.all([
     NestFactory.create<NestFastifyApplication>(AppModule,
         new FastifyAdapter({
-            ignoreTrailingSlash: true,
             bodyLimit: BODY_LIMIT,
-            maxParamLength: BODY_LIMIT
-        }), {
-        rawBody: true,
-        bodyParser: false,
-    }),
+            routerOptions: {
+                ignoreTrailingSlash: true,
+                maxParamLength: MAX_PARAM_LENGTH,
+            },
+        }),
+        {
+            rawBody: true
+        }
+    ),
     MessageBrokerChannel.connect('API_GATEWAY'),
 ]).then(async ([app, cn]) => {
     try {
@@ -62,8 +66,8 @@ Promise.all([
         }));
 
         const logger: PinoLogger = app.get(PinoLogger);
+        setGlobalErrorLogger(logger);
 
-        app.useBodyParser('json', { bodyLimit: BODY_LIMIT });
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
 
         await app.register(fastifyFormbody, {
@@ -82,7 +86,7 @@ Promise.all([
         await new ProjectService().setConnection(cn).init();
 
         await new MeecoAuth().setConnection(cn).init();
-        await new MeecoAuth().registerListeners();
+        new MeecoAuth().registerListeners();
 
         const server = app.getHttpServer();
         const wsService = new WebSocketsService(logger);
@@ -101,8 +105,6 @@ Promise.all([
                 }
             }) as any
         });
-        // Object.assign(document.paths, SwaggerPaths)
-        // Object.assign(document.components.schemas, SwaggerModels.schemas);
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
@@ -112,6 +114,10 @@ Promise.all([
         app.listen(PORT, '0.0.0.0', async () => {
             await logger.info(`Started on ${PORT}`, ['API_GATEWAY'], null);
         });
+
+        // Bootstrap complete: from here on, a stray unhandled rejection is logged
+        // and swallowed instead of terminating the process.
+        markServiceBooted();
     } catch (error) {
         console.error(error.message);
         process.exit(1);

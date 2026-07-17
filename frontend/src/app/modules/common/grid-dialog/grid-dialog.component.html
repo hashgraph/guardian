@@ -1,51 +1,65 @@
 <div class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{ header }}</div>
-    </div>
-    <div class="header-icon" (click)="onClick()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{ header }}</div>
+  </div>
+  <div class="header-icon" (click)="onClick()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 
 <div class="dialog-body">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 
-    <div class="dialog-grid-container">
-        <div *ngIf="data?.length" class="dialog-grid-header">
-            <div *ngFor="let col of columns" class="col-{{col.width}} col-id-header-{{col.id}}">
-                {{col.title}}
-            </div>
+  <div class="dialog-grid-container">
+    @if (data.length) {
+      <div class="dialog-grid-header">
+        @for (col of columns; track col) {
+          <div class="col-{{col.width}} col-id-header-{{col.id}}">
+            {{col.title}}
+          </div>
+        }
+      </div>
+    }
+    @if (data.length) {
+      <div class="dialog-grid-body">
+        @for (item of data; track item) {
+          <div class="dialog-grid-row row-{{height}}">
+            @for (col of columns; track col) {
+              <div class="col-{{col.width}} col-id-{{col.id}}">
+                <div class="{{colClass(col, item)}}">{{item[col.field]}}</div>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    }
+    @if (!data.length) {
+      <div class="dialog-grid-empty">
+        <div>
+          <svg-icon
+            class="icon-btn"
+            src="/assets/images/icons/list.svg"
+            svgClass="icon-color-disabled">
+          </svg-icon>
         </div>
-        <div *ngIf="data?.length" class="dialog-grid-body">
-            <ng-container *ngFor="let item of data" >
-                <div class="dialog-grid-row row-{{height}}">
-                    <div *ngFor="let col of columns" class="col-{{col.width}} col-id-{{col.id}}">
-                       <div class="{{colClass(col, item)}}">{{item[col.field]}}</div> 
-                    </div>
-                </div>
-            </ng-container>
-        </div>
-        <div *ngIf="!data?.length" class="dialog-grid-empty">
-            <div>
-                <svg-icon
-                    class="icon-btn"
-                    src="/assets/images/icons/list.svg"
-                    svgClass="icon-color-disabled">
-                </svg-icon>
-            </div>
-            <div>There are no data</div>
-        </div>
-    </div>
+        <div>There are no data</div>
+      </div>
+    }
+  </div>
 </div>
 
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div *ngFor="let button of buttons" class="{{button.class}}-button">
-            <button 
-                (click)="onClick(button)" 
-                class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
-        </div>
-    </div>
+  <div class="action-buttons">
+    @for (button of buttons; track button) {
+      <div class="{{button.class}}-button">
+        <button
+          (click)="onClick(button)"
+        class="guardian-button guardian-button-{{button.class}}">{{button.name}}</button>
+      </div>
+    }
+  </div>
 </div>

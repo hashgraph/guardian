@@ -22,6 +22,7 @@ interface IConfig {
     selector: 'app-grid-dialog',
     templateUrl: './grid-dialog.component.html',
     styleUrls: ['./grid-dialog.component.scss'],
+    standalone: false
 })
 export class GridDialogComponent implements OnInit {
     public loading = true;

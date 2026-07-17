@@ -1,3 +1,4 @@
+import { randomInt } from "../../../support/random";
 import { METHOD, STATUS_CODE } from "../../../support/api/api-const";
 import API from "../../../support/ApiUrls";
 import * as Authorization from "../../../support/authorization";
@@ -5,7 +6,7 @@ import * as Authorization from "../../../support/authorization";
 context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
     const username = "StandartRegistry";
-    const schemaUUID = ("0000b23a-b1ea-408f-a573" + Math.floor(Math.random() * 999999) + "a2060a")
+    const schemaUUID = ("0000b23a-b1ea-408f-a573" + randomInt(999999) + "a2060a")
 
     it("Make the created scheme active", () => {
         //Create new schema
@@ -39,7 +40,7 @@ context("Schemas", { tags: ['schema', 'thirdPool', 'all'] }, () => {
 
                     let schemaId = response.body.at(0).id;
 
-                    const versionNum = "1." + Math.floor(Math.random() * 999);
+                    const versionNum = "1." + randomInt(999);
 
                     cy.request({
                         method: METHOD.PUT,

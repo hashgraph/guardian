@@ -9,7 +9,8 @@ import { ArtifactService } from 'src/app/services/artifact.service';
 @Component({
     selector: 'artifact-properties',
     templateUrl: './artifact-properties.component.html',
-    styleUrls: ['./artifact-properties.component.css']
+    styleUrls: ['./artifact-properties.component.css'],
+    standalone: false
 })
 export class ArtifactPropertiesComponent implements OnInit {
     policyArtifacts!: IArtifact[]

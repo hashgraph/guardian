@@ -1,11 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { UntypedFormControl, UntypedFormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
-import { AuthStateService } from 'src/app/services/auth-state.service';
-import { AuthService } from 'src/app/services/auth.service';
-import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ToastrService } from "ngx-toastr";
+import { ToastService } from 'src/app/services/toast.service';
 
 /**
  * Registration page.
@@ -13,7 +8,8 @@ import { ToastrService } from "ngx-toastr";
 @Component({
     selector: 'app-otp-codes-dialog',
     templateUrl: './otp-codes-dialog.component.html',
-    styleUrls: ['./otp-codes-dialog.component.scss']
+    styleUrls: ['./otp-codes-dialog.component.scss'],
+    standalone: false
 })
 export class OtpCodesDialogComponent implements OnInit {
     public codes: string[] | undefined;
@@ -21,7 +17,7 @@ export class OtpCodesDialogComponent implements OnInit {
     constructor(
         private dialogRef: DynamicDialogRef,
         private dialogConfig: DynamicDialogConfig,
-        private toastr: ToastrService,
+        private toastService: ToastService,
     ) {
         this.codes = this.dialogConfig.data?.codes;
         this.codesText = this.codes?.join('\t') || '';
@@ -39,7 +35,7 @@ export class OtpCodesDialogComponent implements OnInit {
     }
 
     onCopy() {
-        this.toastr.success('Codes copied');
+        this.toastService.success('Codes copied');
     }
 
     saveToFile() {

@@ -1,4 +1,4 @@
-import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyStatus, Schema, Token, } from '@guardian/interfaces';
+import { BlockType, GenerateUUIDv4, GroupRelationshipType, PolicyEditableFieldDTO, PolicyStatus, Schema, Token, } from '@guardian/interfaces';
 import { PolicyRole } from './policy-role.model';
 import { PolicyGroup } from './policy-group.model';
 import { PolicyToken } from './policy-token.model';
@@ -39,6 +39,7 @@ export class PolicyTemplate {
     public readonly tests!: any;
     public policyDocumentation!: any[];
 
+    private _editableParametersSettings?: PolicyEditableFieldDTO[];
     private _policyTag!: string;
     private _name!: string;
     private _description!: string;
@@ -100,6 +101,8 @@ export class PolicyTemplate {
         this.version = policy.version;
         this.previousVersion = policy.previousVersion;
         this.tests = policy.tests;
+        this.editableParametersSettings = policy.editableParametersSettings;
+        this.policyDocumentation = policy.policyDocumentation;
 
         this.buildPolicy(policy);
         this.buildBlock(policy.config);
@@ -120,6 +123,15 @@ export class PolicyTemplate {
         this.isRun = this.isDryRun || this.isPublished || this.isDemo;
         this.isTest = this.isDraft || this.isDryRun;
     }
+
+    public get editableParametersSettings(): PolicyEditableFieldDTO[] | undefined {
+        return this._editableParametersSettings;
+    }
+
+    public set editableParametersSettings(value: PolicyEditableFieldDTO[] | undefined) { 
+        this._editableParametersSettings = value;
+    }
+
 
     public get policyTag(): string {
         return this._policyTag;
@@ -658,6 +670,7 @@ export class PolicyTemplate {
             policyGroups: Array<any>(),
             policyDocumentation: this.policyDocumentation || [],
             config: null,
+            editableParametersSettings: this.editableParametersSettings
         };
         for (const role of this.policyRoles) {
             json.policyRoles.push(role.getJSON());

@@ -1,0 +1,68 @@
+.p-toast-detail {
+    white-space: pre-line;
+    word-break: break-word;
+    max-height: 180px;
+    overflow-y: auto;
+}
+
+.toast-validator-error {
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.toast-validator-summary {
+    font-size: 0.9em;
+    opacity: 0.85;
+}
+
+.toast-validator-condition {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    column-gap: 8px;
+}
+
+.toast-validator-condition + .toast-validator-condition {
+    border-top: 1px solid #555;
+    padding-top: 4px;
+}
+
+.toast-validator-label {
+    font-weight: 600;
+    font-size: 0.9em;
+    grid-column: 1;
+    grid-row: 1;
+}
+
+.toast-validator-count {
+    font-size: 0.85em;
+    font-weight: 700;
+    opacity: 0.75;
+    grid-column: 2;
+    grid-row: 1;
+    white-space: nowrap;
+
+    &.is-partial {
+        color: #4caf50;
+        opacity: 1;
+    }
+}
+
+
+.toast-validator-hint {
+    font-size: 0.8em;
+    opacity: 0.65;
+    grid-column: 1 / -1;
+    grid-row: 2;
+}
+
+.toast-logs-link {
+    color: #126db3;
+    font-weight: 500;
+    padding: 0 2px;
+    text-decoration: underline;
+    display: inline-block;
+    margin-top: 4px;
+}

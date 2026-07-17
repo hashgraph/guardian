@@ -8,7 +8,7 @@
         "guardian": {
             "architect": {
                 "build": {
-                    "builder": "@angular-devkit/build-angular:application",
+                    "builder": "@angular/build:application",
                     "configurations": {
                         "development": {
                           "extractLicenses": false,
@@ -107,26 +107,30 @@
                             "./node_modules/leader-line/leader-line.min.js"
                         ],
                         "styles": [
-                          "./node_modules/ngx-toastr/toastr.css",
-                          "./node_modules/primeng/resources/themes/saga-blue/theme.css",
-                          "./node_modules/primeng/resources/primeng.min.css",
                           "./node_modules/primeicons/primeicons.css",
                           "node_modules/ol/ol.css",
                           "src/styles.scss"
                         ],
                         "tsConfig": "tsconfig.app.json",
                         "browser": "src/main.ts",
-                        "preserveSymlinks": true
+                        "preserveSymlinks": true,
+                        "stylePreprocessorOptions": {
+                            "sass": {
+                                "silenceDeprecations": [
+                                    "import"
+                                ]
+                            }
+                        }
                     }
                 },
                 "extract-i18n": {
-                    "builder": "@angular-devkit/build-angular:extract-i18n",
+                    "builder": "@angular/build:extract-i18n",
                     "options": {
                         "buildTarget": "guardian:build"
                     }
                 },
                 "serve": {
-                    "builder": "@angular-devkit/build-angular:dev-server",
+                    "builder": "@angular/build:dev-server",
                     "configurations": {
                         "development": {
                             "buildTarget": "guardian:build:development",
@@ -144,7 +148,7 @@
                     "defaultConfiguration": "development"
                 },
                 "test": {
-                    "builder": "@angular-devkit/build-angular:karma",
+                    "builder": "@angular/build:karma",
                     "options": {
                         "assets": [
                             "src/favicon.ico",
@@ -153,12 +157,13 @@
                         "inlineStyleLanguage": "scss",
                         "karmaConfig": "karma.conf.js",
                         "main": "src/test.ts",
-                        "polyfills": "src/polyfills.ts",
+                        "polyfills": [
+                            "src/polyfills.ts"
+                        ],
                         "scripts": [
                             "./node_modules/leader-line/leader-line.min.js"
                         ],
                         "styles": [
-                            "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
                             "src/styles.scss"
                         ],
                         "tsConfig": "tsconfig.spec.json"
@@ -179,5 +184,31 @@
             "sourceRoot": "src"
         }
     },
-    "version": 1
+    "version": 1,
+    "schematics": {
+      "@schematics/angular:component": {
+        "type": "component"
+      },
+      "@schematics/angular:directive": {
+        "type": "directive"
+      },
+      "@schematics/angular:service": {
+        "type": "service"
+      },
+      "@schematics/angular:guard": {
+        "typeSeparator": "."
+      },
+      "@schematics/angular:interceptor": {
+        "typeSeparator": "."
+      },
+      "@schematics/angular:module": {
+        "typeSeparator": "."
+      },
+      "@schematics/angular:pipe": {
+        "typeSeparator": "."
+      },
+      "@schematics/angular:resolver": {
+        "typeSeparator": "."
+      }
+    }
 }

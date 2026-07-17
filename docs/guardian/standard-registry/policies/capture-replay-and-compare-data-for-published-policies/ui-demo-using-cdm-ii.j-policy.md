@@ -9,7 +9,7 @@
 
 In the **Publish Policy modal**, highlight **☑ Record policy actions** (enabled by default)
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: By default, Guardian records every action executed by the policy once it’s published.\
@@ -18,7 +18,7 @@ These actions are written to Hedera and stored immutably, with payloads in IPFS.
 
 2. Once the policy is published, submit the Project Registration by logging in as Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="info" %}
 Note: “Each step you see here—data submission, validation, calculations—is recorded as a discrete step.\
@@ -27,7 +27,7 @@ These steps are timestamped, ordered, and linked to IPFS payloads.”
 
 3. Login as Standard Registry and approve the Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 4. Login as VVB and submit VVB Registration:
 
@@ -35,13 +35,13 @@ These steps are timestamped, ordered, and linked to IPFS payloads.”
 
 5. Login as Standard Registry and approve the VVB:
 
-<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 6. Submit the Project Data as Project Proponent:
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../../.gitbook/assets/image (6) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (6) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 7. Assign the VVB to the submitted Project for review:
 
@@ -83,7 +83,7 @@ Optional: Also, include newly recorded steps (steps that were recorded after pol
 
 14. We should be able to see all the recorded steps when clicked on "Run"
 
-<figure><img src="../../../../.gitbook/assets/image (17) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (17) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
 15. We can also view the Playback information:
 

@@ -11,6 +11,7 @@ export interface NavItem {
     selector: 'app-schema-form-navigation',
     templateUrl: './schema-form-navigation.component.html',
     styleUrls: ['./schema-form-navigation.component.scss'],
+    standalone: false
 })
 export class SchemaFormNavigationComponent {
     @Input() schemaFields: IFieldControl<any>[] | null;

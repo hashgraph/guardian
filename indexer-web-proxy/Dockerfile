@@ -1,40 +1,40 @@
 # syntax=docker/dockerfile:1
 # Stage 0: # Define the versions of the base images used
-ARG NODE_VERSION=20.19.5-alpine
-ARG NGINX_VERSION=1.27.4-alpine
+ARG NODE_VERSION=20.20.2-alpine
+ARG NGINX_VERSION=1.30.3-alpine
 
 FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
-# Define an argument `YARN_CACHE_FOLDER` for the Yarn cache directory
-ARG YARN_CACHE_FOLDER=/root/.yarn
+RUN corepack enable
 
-# Stage 1: Build interfaces module
-FROM base AS interfaces
-COPY --link indexer-interfaces/package.json indexer-interfaces/tsconfig*.json yarn.lock ./
-# Leverage a cache mount to `YARN_CACHE_FOLDER` to speed up subsequent builds
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
+# Stage 1: Install workspace deps for building.
+FROM base AS deps-dev
+COPY --link package.json yarn.lock .yarnrc.yml ./
+COPY --link .yarn .yarn
+COPY --link --parents */package.json ./
+RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
     yarn install --immutable
-COPY --link indexer-interfaces/src src/
-RUN yarn pack
 
-# Stage 2: Build common module
-FROM base AS common
-COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz ./indexer-interfaces.tgz
-COPY --link indexer-common/package.json indexer-common/tsconfig*.json yarn.lock ./
-RUN node -e "const fs=require('fs'); const input=JSON.parse(fs.readFileSync('package.json')); input.dependencies['@indexer/interfaces']='file:./indexer-interfaces.tgz'; fs.writeFileSync('package.json', JSON.stringify(input));"
-RUN --mount=type=cache,target=${YARN_CACHE_FOLDER} \
-    yarn install
-COPY --link indexer-common/src src/
-RUN yarn pack
+# Stage 2: Build and pack the indexer-interfaces module.
+FROM deps-dev AS interfaces
+COPY --link indexer-interfaces/tsconfig*.json indexer-interfaces/
+COPY --link indexer-interfaces/src indexer-interfaces/src/
+RUN yarn workspace @indexer/interfaces pack --out /usr/local/app/indexer-interfaces.tgz
 
-# Stage 3: Build frontend
+# Stage 3: Build and pack the indexer-common module (depends on indexer-interfaces).
+FROM interfaces AS common
+COPY --link indexer-common/tsconfig*.json indexer-common/
+COPY --link indexer-common/src indexer-common/src/
+RUN yarn workspace @indexer/common pack --out /usr/local/app/indexer-common.tgz
+
+# Stage 4: Build frontend
 FROM base AS build
-COPY --link --from=interfaces /usr/local/app/indexer-interfaces-*.tgz ./indexer-interfaces.tgz
-COPY --link --from=common /usr/local/app/indexer-common-*.tgz ./indexer-common.tgz
+COPY --link --from=interfaces /usr/local/app/indexer-interfaces.tgz ./indexer-interfaces.tgz
+COPY --link --from=common /usr/local/app/indexer-common.tgz ./indexer-common.tgz
 COPY --link ./indexer-frontend/. ./
 RUN npm install indexer-interfaces.tgz && npm install indexer-common.tgz && npm run build
 
-# Stage 4: Create the final image
+# Stage 5: Create the final image
 FROM nginxinc/nginx-unprivileged:${NGINX_VERSION} AS image
 
 # Copy config and built application from the build stage into the image

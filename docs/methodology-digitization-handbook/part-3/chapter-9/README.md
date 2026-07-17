@@ -2,11 +2,11 @@
 
 This chapter teaches you how to build Guardian schemas step-by-step for PDD implementation. You'll learn the exact field-by-field process used for VM0033, translating methodology analysis from Part II into working Guardian schema structures.
 
-By the end of this chapter, you'll know how to create the [VM0033 PDD schema](../../_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
+By the end of this chapter, you'll know how to create the [VM0033 PDD schema](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/PDD-schema.xlsx) like structure yourself, understanding each Guardian field type, conditional logic implementation, and how methodology parameters become functional data collection forms.
 
 ## Guardian Schema Development Process
 
-Complex Guardian schemas can be built using Excel templates that define the data structure, and then imported into Guardian. The [schema template](../../_shared/artifacts/schema-template-excel.xlsx) shows all available field types and their configuration options.
+Complex Guardian schemas can be built using Excel templates that define the data structure, and then imported into Guardian. The [schema template](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/schema-template-excel.xlsx) shows all available field types and their configuration options.
 
 **Alternative Schema Building Methods:**
 
@@ -17,15 +17,15 @@ Complex Guardian schemas can be built using Excel templates that define the data
 Excel-first approach also enables easier collaboration with carbon domain experts and non-technical stakeholders to provide better feedback with back-and-forth when schemas are complex.
 {% endhint %}
 
-![PDD Schema Screenshot](<../../../.gitbook/assets/image-2 (1) (1).png>)
+![PDD Schema Screenshot](<../../../.gitbook/assets/image-2 (3).png>)
 
 ### Schema Template Structure
 
 Every Guardian schema follows this Excel structure:
 
-| Required Field | Field Type             | Parameter         | Visibility        | Question             | Allow Multiple Answers | Answer        |
-| -------------- | ---------------------- | ----------------- | ----------------- | -------------------- | ---------------------- | ------------- |
-| Yes/No         | String/Number/Enum/etc | Reference to enum | TRUE/FALSE/hidden | User-facing question | Yes/No                 | Default value |
+| Required Field | Field Type             | Parameter         | Visibility        | Description       | Allow Multiple Answers | Test Value   |
+| -------------- | ---------------------- | ----------------- | ----------------- | ----------------- | ---------------------- | ------------ |
+| Yes/No         | String/Number/Enum/etc | Reference to enum | TRUE/FALSE/hidden | User-facing label | Yes/No                 | Sample value |
 
 **Field Configuration Meaning**:
 
@@ -33,15 +33,15 @@ Every Guardian schema follows this Excel structure:
 * **Field Type**: Data type (String, Number, Date, Enum, Boolean, Sub-Schema, etc.)
 * **Parameter**: Reference to enum options or calculation parameters
 * **Visibility**: Field display conditions (TRUE=always visible, FALSE=hidden unless condition met)
-* **Question**: Text that users see as the field label
+* **Description**: Text that users see as the field label
 * **Allow Multiple Answers**: Whether field accepts multiple values
-* **Answer**: Default value or example shown to users
+* **Test Value**: Sample value used when pressing the Test button in dry-run mode
 
 ## Building the Primary Schema Structure
 
 Let's build a PDD schema step-by-step, starting with the main schema definition like VM0033's "Project Description (Auto)" tab.
 
-![Project description tab Excel Screenshot](<../../../.gitbook/assets/image (61) (1).png>)
+![Project description tab Excel Screenshot](<../../../.gitbook/assets/image (12).png>)
 
 ### Step 1: Create Main Schema Header
 
@@ -51,7 +51,7 @@ Start your Excel file with these header rows:
 Row 1: Project Description (Auto)
 Row 2: Description
 Row 3: Schema Type | Verifiable Credentials
-Row 4: Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Row 4: Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 ```
 
 This establishes your schema as a Verifiable Credentials type that Guardian will process into on-chain records.
@@ -64,9 +64,9 @@ The first functional field should be your primary conditional logic driver. For 
 Row 5: Yes | Enum | Choose project certific (enum) | | Choose project certification type | No | VCS v4.4
 ```
 
-This creates an enum field that determines which additional requirements appear. The parameter reference "Choose project certific (enum)" points to a separate enum tab defining the options.
+This creates an enum field that determines which additional requirements appear. The parameter reference "Choose project certificate (enum)" points to a separate enum tab defining the options.
 
-**Create the Enum Tab**: Add a new worksheet named "Choose project certific (enum)" with(sheet names might be trimmed to accomodate excel's limitations):
+**Create the Enum Tab**: Add a new worksheet named "Choose project certificate (enum)" with(sheet names might be trimmed to accommodate excel's limitations):
 
 ```excel
 Schema name | Project Description (Auto)
@@ -97,7 +97,7 @@ Create a new worksheet "VCS Project Description v4.4" with basic project informa
 VCS Project Description v4.4
 Description
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | String | | | Project title | No | example
 Yes | String | | | Project ID | No | example
 Yes | URL | | | Project Website | No | https://example.com
@@ -113,7 +113,7 @@ Create "CCB" worksheet for additional community/biodiversity requirements:
 CCB
 Description
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | String | | | CCB Standard | No | example
 Yes | String | | | CCB Project Type | No | example
 Yes | Date | | | Auditor Site Visit Start Date | No | 2000-01-01
@@ -212,7 +212,7 @@ Description | Biomass estimation using AR Tool 14
 Schema Type | Tool-integration
 Tool | AR Tool 14
 Tool Id | [tool message id if available]
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Tree height (m) | No | 1
 Yes | Number | | | Diameter at breast height (cm) | No | 1
 Yes | Number | | | Wood density (g cm-3) | No | 1
@@ -234,7 +234,7 @@ Create "(New) Final Baseline Emissions" worksheet:
 (New) Final Baseline Emissions
 Description
 Schema Type | Sub-Schema
-Required Field | Field Type | Parameter | Visibility | Question | Allow Multiple Answers | Answer
+Required Field | Field Type | Parameter | Visibility | Description | Allow Multiple Answers | Test Value
 Yes | Number | | | Year t | No | 1
 Yes | String | | | Stratum number | No | example
 Yes | Enum | It's a baseline scenari (enum) | | It's a baseline scenario or project scenario? | No | Baseline scenario
@@ -345,7 +345,7 @@ Before importing to Guardian, verify:
 5. **Review and rename field keys** for meaningful calculation code
 6. Update the schema ID in relevant policy workflow block
 
-![alt text](<../../../.gitbook/assets/image-1 (4) (1).png>)
+![alt text](<../../../.gitbook/assets/image-1 (4).png>)
 
 #### Important: Field Key Management
 
@@ -364,7 +364,7 @@ When Guardian imports Excel schemas, it generates default field keys that may no
    * `carbon_stock_baseline_t` instead of `carbonStockBaselineT`
    * `emission_reduction_total` instead of `emissionReductionTotal`
 
-![Guardian schema UI showing field key editing interface](<../../../.gitbook/assets/image-3 (6).png>)
+![Guardian schema UI showing field key editing interface](<../../../.gitbook/assets/image-3 (1).png>)
 
 **Why This Matters**: Meaningful field keys make calculation code much easier to write and maintain:
 

@@ -1,349 +1,407 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{title}}</div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{title}}</div>
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
+  @if (!loading) {
     <content-search
-        *ngIf="!loading"
-        [searchContainer]="dialogContent"
+      [searchContainer]="dialogContent"
     ></content-search>
-    <div #dialogContent>
-    <div *ngIf="loading" class="loading">
+  }
+  <div #dialogContent>
+    @if (loading) {
+      <div class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
-    </div>
+      </div>
+    }
 
-    <div *ngIf="policy">
-        <div class="field-container" *ngIf="canImportRecords">
+    @if (policy) {
+      <div>
+        @if (canImportRecords) {
+          <div class="field-container">
             <div class="field-value checkbox-field">
-                <p-checkbox
-                    [(ngModel)]="importRecords"
-                    inputId="import-records"
-                    binary="true"
-                    tabindex="-1"
-                ></p-checkbox>
-                <label for="import-records">Import existing records for this policy</label>
+              <p-checkbox
+                [(ngModel)]="importRecords"
+                inputId="import-records"
+                binary="true"
+                tabindex="-1"
+              ></p-checkbox>
+              <label for="import-records">Import existing records for this policy</label>
             </div>
+          </div>
+        }
+        <div class="group-container">
+          <div class="group-header">Import mode</div>
+          <div class="field-container">
+            <div class="field-value">
+              <div class="change-mode">
+                <div (click)="onSelectMode('new')">
+                  <p-radioButton
+                    (onChange)="onChangeType()"
+                    [(ngModel)]="mode"
+                    value="new"
+                    id="new-mode"
+                    inputId="new-mode"
+                    name="mode"
+                  tabindex="-1"></p-radioButton>
+                  <label class="radio-label" for="new-mode">As New Policy</label>
+                </div>
+                <div (click)="onSelectMode('version')"
+                  [attr.disabled]="!policies.length">
+                  <p-radioButton
+                    (onChange)="onChangeType()"
+                    [disabled]="!policies.length"
+                    [(ngModel)]="mode"
+                    value="version"
+                    id="version-mode"
+                    inputId="version-mode"
+                    name="mode"
+                  tabindex="-1"></p-radioButton>
+                  <label class="radio-label" for="version-mode">As New Version</label>
+                </div>
+                <div (click)="onSelectMode('demo')">
+                  <p-radioButton
+                    (onChange)="onChangeType()"
+                    [(ngModel)]="mode"
+                    value="demo"
+                    id="demo-mode"
+                    inputId="demo-mode"
+                    name="mode"
+                  tabindex="-1"></p-radioButton>
+                  <label class="radio-label" for="demo-mode">In Demo mode</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          @if (mode==='version') {
+            <div class="field-container">
+              <div class="field-header">Version of</div>
+              <div class="field-value">
+                <p-select
+                  [(ngModel)]="versionOfTopicId"
+                  [options]="policies"
+                  appendTo="body"
+                  class="version-of-dropdown guardian-dropdown"
+                  panelStyleClass="guardian-dropdown-panel"
+                  id="versionOf"
+                  optionLabel="name"
+                  optionValue="topicId"
+                  placeholder="Select Policy"
+                ></p-select>
+              </div>
+            </div>
+          }
         </div>
         <div class="group-container">
-            <div class="group-header">Import mode</div>
-            <div class="field-container">
-                <div class="field-value">
-                    <div class="change-mode">
-                        <div (click)="onSelectMode('new')">
-                            <p-radioButton 
-                                (onChange)="onChangeType()"
-                                [(ngModel)]="mode"
-                                value="new"
-                                id="new-mode"
-                                inputId="new-mode"
-                                name="mode"
-                                tabindex="-1"></p-radioButton>
-                            <label class="radio-label" for="new-mode">As New Policy</label>
-                        </div>
-                        <div (click)="onSelectMode('version')" 
-                            [attr.disabled]="!policies.length">
-                            <p-radioButton 
-                                (onChange)="onChangeType()"
-                                [disabled]="!policies.length"
-                                [(ngModel)]="mode"
-                                value="version"
-                                id="version-mode"
-                                inputId="version-mode"
-                                name="mode"
-                                tabindex="-1"></p-radioButton>
-                            <label class="radio-label" for="version-mode">As New Version</label>
-                        </div>
-                        <div (click)="onSelectMode('demo')">
-                            <p-radioButton 
-                                (onChange)="onChangeType()"
-                                [(ngModel)]="mode"
-                                value="demo"
-                                id="demo-mode"
-                                inputId="demo-mode"
-                                name="mode"
-                                tabindex="-1"></p-radioButton>
-                            <label class="radio-label" for="demo-mode">In Demo mode</label>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div *ngIf="mode==='version'" class="field-container">
-                <div class="field-header">Version of</div>
-                <div class="field-value">
-                    <p-dropdown
-                        [(ngModel)]="versionOfTopicId"
-                        [options]="policies"
-                        appendTo="body"
-                        class="version-of-dropdown guardian-dropdown"
-                        panelStyleClass="guardian-dropdown-panel"
-                        id="versionOf"
-                        optionLabel="name"
-                        optionValue="topicId"
-                        placeholder="Select Policy"
-                ></p-dropdown>
-                </div>
-            </div>
-        </div>
-        <div class="group-container">
-            <div class="group-header">Details</div>
-            <div class="field-container">
-                <div class="field-header">Description</div>
-                <div class="field-value">{{ policy.description || 'N\\A' }}</div>
-            </div>
-            <div class="field-container">
-                <div class="field-header">Version</div>
-                <div class="field-value">{{ policy.version || 'N\\A' }}</div>
-                <div *ngIf="newVersions?.length" class="field-value">
-                    <app-new-versions
-                        (onClick)="onNewVersionClick($event)"
-                        [newVersions]="newVersions"
-                        class="version-container__new-versions"
-                        type="policy"
+          <div class="group-header">Details</div>
+          <div class="field-container">
+            <div class="field-header">Description</div>
+            <div class="field-value">{{ policy.description || 'N\\A' }}</div>
+          </div>
+          <div class="field-container">
+            <div class="field-header">Version</div>
+            <div class="field-value">{{ policy.version || 'N\\A' }}</div>
+            @if (newVersions.length) {
+              <div class="field-value">
+                <app-new-versions
+                  (onClick)="onNewVersionClick($event)"
+                  [newVersions]="newVersions"
+                  class="version-container__new-versions"
+                  type="policy"
                 ></app-new-versions>
-                </div>
-            </div>
+              </div>
+            }
+          </div>
+          <div class="field-container">
+            <div class="field-header">Tag</div>
+            <div class="field-value">{{ policy.policyTag || 'N\\A' }}</div>
+          </div>
+          <div class="field-container">
+            <div class="field-header">Creator</div>
+            <div class="field-value" [title]="policy.owner">{{ policy.owner || 'N\\A' }}</div>
+          </div>
+          <div class="field-container">
+            <div class="field-header">Involved Roles</div>
+            <div class="field-value">Standard Registry, {{ policyGroups }}</div>
+          </div>
+          @if (schemas) {
             <div class="field-container">
-                <div class="field-header">Tag</div>
-                <div class="field-value">{{ policy.policyTag || 'N\\A' }}</div>
+              <div class="field-header">Schemas Overview</div>
+              <div class="field-value">{{ schemas }}</div>
             </div>
+          }
+          @if (tokens) {
             <div class="field-container">
-                <div class="field-header">Creator</div>
-                <div class="field-value" [title]="policy.owner">{{ policy.owner || 'N\\A' }}</div>
+              <div class="field-header">Tokens</div>
+              <div class="field-value">{{ tokens }}</div>
             </div>
+          }
+          @if (formulas) {
             <div class="field-container">
-                <div class="field-header">Involved Roles</div>
-                <div class="field-value">Standard Registry, {{ policyGroups }}</div>
+              <div class="field-header">Formulas</div>
+              <div class="field-value">{{ formulas }}</div>
             </div>
-            <div *ngIf="schemas" class="field-container">
-                <div class="field-header">Schemas Overview</div>
-                <div class="field-value">{{ schemas }}</div>
+          }
+          @if (similar) {
+            <div class="field-container">
+              <div class="field-header">Similar Policies</div>
+              <div class="field-value">{{ similar }}</div>
             </div>
-            <div *ngIf="tokens" class="field-container">
-                <div class="field-header">Tokens</div>
-                <div class="field-value">{{ tokens }}</div>
-            </div>
-            <div *ngIf="formulas" class="field-container">
-                <div class="field-header">Formulas</div>
-                <div class="field-value">{{ formulas }}</div>
-            </div>
-            <div *ngIf="similar" class="field-container">
-                <div class="field-header">Similar Policies</div>
-                <div class="field-value">{{ similar }}</div>
-            </div>
-            <div *ngIf="toolConfigs?.length" class="field-container">
-                <div class="field-header">Tools</div>
-                <form [formGroup]="toolForm">
-                    <div class="field-input guardian-input-container tool-item" *ngFor="let toolConfig of toolConfigs" >
-                        <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
-                        <input 
-                            [id]="toolConfig.messageId" 
-                            class="input" 
-                            type="text" 
-                            pInputText 
-                            [formControlName]="toolConfig.messageId"
-                            (change)="onFilters(toolConfig.messageId, $event)"
-                            [attr.status]="validTool[toolConfig.messageId]"
-                            maxlength="20"
-                            tabindex="-1"
-                            (input)="enforceMask(toolConfig.messageId, $event)">
-                        <div class="tool-search">
-                            <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
-                                <svg-icon 
-                                    class="icon-btn svg-icon" 
-                                    src="/assets/images/icons/search.svg" 
-                                    svgClass="icon-color-primary"></svg-icon>
-                            </div>
-                        </div>
-                        <div class="tool-status">
-                            <div *ngIf="validTool[toolConfig.messageId]==='load'">
-                                <div class="preloader-image"></div>
-                            </div>
-                            <div *ngIf="validTool[toolConfig.messageId]==='valid'">
-                                <svg-icon
-                                    class="svg-icon"
-                                    src="/assets/images/icons/check.svg"
-                                    svgClass="icon-color-success">
-                                </svg-icon>
-                            </div>
-                            <div 
-                                *ngIf="validTool[toolConfig.messageId]==='invalid'"
-                                pTooltip="This Tool is inaccessible."
-                                [tooltipOptions]="{showDelay: 300}"
-                                tooltipPosition="top"
-                            >
-                                <svg-icon
-                                    class="svg-icon"
-                                    src="/assets/images/icons/warning.svg"
-                                    svgClass="icon-color-failure">
-                                </svg-icon>
-                            </div>
-                        </div>
+          }
+          @if (toolConfigs.length) {
+            <div class="field-container">
+              <div class="field-header">Tools</div>
+              <form [formGroup]="toolForm">
+                @for (toolConfig of toolConfigs; track toolConfig) {
+                  <div class="field-input guardian-input-container tool-item" >
+                    <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
+                    <input
+                      [id]="toolConfig.messageId"
+                      class="input"
+                      type="text"
+                      pInputText
+                      [formControlName]="toolConfig.messageId"
+                      (change)="onFilters(toolConfig.messageId, $event)"
+                      [attr.status]="validTool[toolConfig.messageId]"
+                      maxlength="20"
+                      tabindex="-1"
+                      (input)="enforceMask(toolConfig.messageId, $event)">
+                    <div class="tool-search">
+                      <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
+                        <svg-icon
+                          class="icon-btn svg-icon"
+                          src="/assets/images/icons/search.svg"
+                        svgClass="icon-color-primary"></svg-icon>
+                      </div>
                     </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="module">
-        <div class="group-container">
-            <div class="group-header">Details</div>
-            <div class="field-container">
-                <div class="field-header">Description</div>
-                <div class="field-value">{{ module.description || 'N\\A' }}</div>
-            </div>
-            <div class="field-container">
-                <div class="field-header">Creator</div>
-                <div class="field-value" [title]="module.owner">{{ module.owner || 'N\\A' }}</div>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="tool">
-        <div class="group-container">
-            <div class="group-header">Details</div>
-            <div class="field-container">
-                <div class="field-header">Name</div>
-                <div class="field-value">{{ tool.name || 'N\\A' }}</div>
-            </div>
-            <div class="field-container">
-                <div class="field-header">Description</div>
-                <div class="field-value">{{ tool.description || 'N\\A' }}</div>
-            </div>
-            <div class="field-container">
-                <div class="field-header">Creator</div>
-                <div class="field-value" [title]="tool.owner">{{ tool.owner || 'N\\A' }}</div>
-            </div>
-            <div *ngIf="!isFile" class="field-container">
-                <div class="field-header">Tools</div>
-                <div class="field-value">{{ tools }}</div>
-            </div>
-            <div *ngIf="isFile" class="field-container">
-                <div class="field-header">Tools</div>
-                <form [formGroup]="toolForm!">
-                    <div class="field-input guardian-input-container tool-item" *ngFor="let toolConfig of toolConfigs">
-                        <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
-                        <input 
-                            [id]="toolConfig.messageId" 
-                            class="input" 
-                            type="text" 
-                            pInputText 
-                            [formControlName]="toolConfig.messageId"
-                            (change)="onFilters(toolConfig.messageId, $event)"
-                            [attr.status]="validTool[toolConfig.messageId]"
-                            maxlength="20"
-                            tabindex="-1"
-                            (input)="enforceMask(toolConfig.messageId, $event)">
-                        <div class="tool-search">
-                            <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
-                                <svg-icon 
-                                    class="icon-btn svg-icon" 
-                                    src="/assets/images/icons/search.svg" 
-                                    svgClass="icon-color-primary"></svg-icon>
-                            </div>
-                        </div>
-                        <div class="tool-status">
-                            <div *ngIf="validTool[toolConfig.messageId]==='load'">
-                                <div class="preloader-image"></div>
-                            </div>
-                            <div *ngIf="validTool[toolConfig.messageId]==='valid'">
-                                <svg-icon
-                                    class="svg-icon"
-                                    src="/assets/images/icons/check.svg"
-                                    svgClass="icon-color-success">
-                                </svg-icon>
-                            </div>
-                            <div 
-                                *ngIf="validTool[toolConfig.messageId]==='invalid'"
-                                pTooltip="This Tool is inaccessible."
-                                [tooltipOptions]="{showDelay: 300}"
-                                tooltipPosition="top"
-                            >
-                                <svg-icon
-                                    class="svg-icon"
-                                    src="/assets/images/icons/warning.svg"
-                                    svgClass="icon-color-failure">
-                                </svg-icon>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <div *ngIf="xlsx">
-        <div class="group-container">
-            <div class="group-header">Details</div>
-            <div *ngIf="schemas" class="field-container">
-                <div class="field-header">Schemas Overview</div>
-                <div class="field-value">{{ schemas }}</div>
-            </div>
-            <div *ngIf="tools" class="field-container">
-                <div class="field-header">Tools Overview</div>
-                <div class="field-value">{{ tools }}</div>
-            </div>
-            <div *ngIf="errors?.length" class="field-container">
-                <div class="field-header">Warning & Errors</div>
-                <div class="field-value field-array">
-                    <div *ngFor="let error of errors" class="field-array-item error-type-{{error.type}}">
-                        <div>{{error.worksheet}}</div>
-                        <div>{{error.__path}}</div>
+                    <div class="tool-status">
+                      @if (validTool[toolConfig.messageId]==='load') {
                         <div>
-                            <div>{{error.text}}</div>
-                            <div 
-                                *ngIf="error.message && error.message !== error.text"
-                                class="error-message">{{error.message}}</div>
+                          <div class="preloader-image"></div>
                         </div>
+                      }
+                      @if (validTool[toolConfig.messageId]==='valid') {
+                        <div>
+                          <svg-icon
+                            class="svg-icon"
+                            src="/assets/images/icons/check.svg"
+                            svgClass="icon-color-success">
+                          </svg-icon>
+                        </div>
+                      }
+                      @if (validTool[toolConfig.messageId]==='invalid') {
+                        <div
+                          pTooltip="This Tool is inaccessible."
+                          [tooltipOptions]="{showDelay: 300}"
+                          tooltipPosition="top"
+                          >
+                          <svg-icon
+                            class="svg-icon"
+                            src="/assets/images/icons/warning.svg"
+                            svgClass="icon-color-failure">
+                          </svg-icon>
+                        </div>
+                      }
                     </div>
-                </div>
+                  </div>
+                }
+              </form>
             </div>
+          }
         </div>
-    </div>
-    </div>
+      </div>
+    }
+
+    @if (module) {
+      <div>
+        <div class="group-container">
+          <div class="group-header">Details</div>
+          <div class="field-container">
+            <div class="field-header">Description</div>
+            <div class="field-value">{{ module.description || 'N\\A' }}</div>
+          </div>
+          <div class="field-container">
+            <div class="field-header">Creator</div>
+            <div class="field-value" [title]="module.owner">{{ module.owner || 'N\\A' }}</div>
+          </div>
+        </div>
+      </div>
+    }
+
+    @if (tool) {
+      <div>
+        <div class="group-container">
+          <div class="group-header">Details</div>
+          <div class="field-container">
+            <div class="field-header">Name</div>
+            <div class="field-value">{{ tool.name || 'N\\A' }}</div>
+          </div>
+          <div class="field-container">
+            <div class="field-header">Description</div>
+            <div class="field-value">{{ tool.description || 'N\\A' }}</div>
+          </div>
+          <div class="field-container">
+            <div class="field-header">Creator</div>
+            <div class="field-value" [title]="tool.owner">{{ tool.owner || 'N\\A' }}</div>
+          </div>
+          @if (!isFile) {
+            <div class="field-container">
+              <div class="field-header">Tools</div>
+              <div class="field-value">{{ tools }}</div>
+            </div>
+          }
+          @if (isFile) {
+            <div class="field-container">
+              <div class="field-header">Tools</div>
+              <form [formGroup]="toolForm!">
+                @for (toolConfig of toolConfigs; track toolConfig) {
+                  <div class="field-input guardian-input-container tool-item">
+                    <label [for]="toolConfig.messageId">{{toolConfig.name}}</label>
+                    <input
+                      [id]="toolConfig.messageId"
+                      class="input"
+                      type="text"
+                      pInputText
+                      [formControlName]="toolConfig.messageId"
+                      (change)="onFilters(toolConfig.messageId, $event)"
+                      [attr.status]="validTool[toolConfig.messageId]"
+                      maxlength="20"
+                      tabindex="-1"
+                      (input)="enforceMask(toolConfig.messageId, $event)">
+                    <div class="tool-search">
+                      <div class="guardian-icon-button" (click)="onToolSearch(toolConfig)">
+                        <svg-icon
+                          class="icon-btn svg-icon"
+                          src="/assets/images/icons/search.svg"
+                        svgClass="icon-color-primary"></svg-icon>
+                      </div>
+                    </div>
+                    <div class="tool-status">
+                      @if (validTool[toolConfig.messageId]==='load') {
+                        <div>
+                          <div class="preloader-image"></div>
+                        </div>
+                      }
+                      @if (validTool[toolConfig.messageId]==='valid') {
+                        <div>
+                          <svg-icon
+                            class="svg-icon"
+                            src="/assets/images/icons/check.svg"
+                            svgClass="icon-color-success">
+                          </svg-icon>
+                        </div>
+                      }
+                      @if (validTool[toolConfig.messageId]==='invalid') {
+                        <div
+                          pTooltip="This Tool is inaccessible."
+                          [tooltipOptions]="{showDelay: 300}"
+                          tooltipPosition="top"
+                          >
+                          <svg-icon
+                            class="svg-icon"
+                            src="/assets/images/icons/warning.svg"
+                            svgClass="icon-color-failure">
+                          </svg-icon>
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              </form>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (xlsx) {
+      <div>
+        <div class="group-container">
+          <div class="group-header">Details</div>
+          @if (schemas) {
+            <div class="field-container">
+              <div class="field-header">Schemas Overview</div>
+              <div class="field-value">{{ schemas }}</div>
+            </div>
+          }
+          @if (tools) {
+            <div class="field-container">
+              <div class="field-header">Tools Overview</div>
+              <div class="field-value">{{ tools }}</div>
+            </div>
+          }
+          @if (errors?.length) {
+            <div class="field-container">
+              <div class="field-header">Warning & Errors</div>
+              <div class="field-value field-array">
+                @for (error of errors; track error) {
+                  <div class="field-array-item error-type-{{error.type}}">
+                    <div>{{error.worksheet}}</div>
+                    <div>{{error.__path}}</div>
+                    <div>
+                      <div>{{error.text}}</div>
+                      @if (error.message && error.message !== error.text) {
+                        <div
+                        class="error-message">{{error.message}}</div>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="actions">
-        <div class="original-tracking">
-            <p-checkbox
-                class="guardian-checkbox"
-                [(ngModel)]="originalTracking"
-                binary="true"
-                inputId="originalTracking"
-            >
-            </p-checkbox>
-            <label for="originalTracking">
-                Show if the original policy will be modified
-            </label>
-        </div>
-        <div class="action-buttons">
-            <div class="dialog-button cancel-button">
-                <button
-                    (click)="onClose()"
-                    class="guardian-button guardian-button-secondary">Close</button>
-            </div>
-            <div class="dialog-button" [ngSwitch]="!!(xlsx && errors?.length)">
-                <button
-                    *ngSwitchCase="true"
-                    style="min-width: 120px"
-                    (click)="onImport()"
-                    class="guardian-button guardian-button-primary">Skip & Import</button>
-                <button
-                    *ngSwitchCase="false"
-                    pTooltip="This policy references inaccessible Tools. Please provide replacements."
-                    [tooltipOptions]="{showDelay: 300}"
-                    tooltipPosition="top"
-                    [tooltipDisabled]="!inValid"
-                    [disabled]="inValid"
-                    (click)="onImport()"
-                    class="guardian-button guardian-button-primary">Import</button>
-            </div>
-        </div>
+  <div class="actions">
+    <div class="original-tracking">
+      <p-checkbox
+        class="guardian-checkbox"
+        [(ngModel)]="originalTracking"
+        binary="true"
+        inputId="originalTracking"
+        >
+      </p-checkbox>
+      <label for="originalTracking">
+        Show if the original policy will be modified
+      </label>
     </div>
+    <div class="action-buttons">
+      <div class="dialog-button cancel-button">
+        <button
+          (click)="onClose()"
+        class="guardian-button guardian-button-secondary">Close</button>
+      </div>
+      <div class="dialog-button">
+        @switch (!!(xlsx && errors?.length)) {
+          @case (true) {
+            <button
+              style="min-width: 120px"
+              (click)="onImport()"
+            class="guardian-button guardian-button-primary">Skip & Import</button>
+          }
+          @case (false) {
+            <button
+              pTooltip="This policy references inaccessible Tools. Please provide replacements."
+              [tooltipOptions]="{showDelay: 300}"
+              tooltipPosition="top"
+              [tooltipDisabled]="!inValid"
+              [disabled]="inValid"
+              (click)="onImport()"
+            class="guardian-button guardian-button-primary">Import</button>
+          }
+        }
+      </div>
+    </div>
+  </div>
 </div>

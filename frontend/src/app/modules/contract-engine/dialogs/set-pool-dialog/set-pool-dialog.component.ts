@@ -21,6 +21,7 @@ import {DynamicDialogRef} from 'primeng/dynamicdialog';
     templateUrl: './set-pool-dialog.component.html',
     styleUrls: ['./set-pool-dialog.component.scss'],
     providers: [],
+    standalone: false
 })
 export class SetPoolDialogComponent {
     loading: boolean = false;
@@ -105,11 +106,11 @@ export class SetPoolDialogComponent {
     getTokenList(tokenId: string) {
         const chosenTokens =
             this.tokens.value
-                ?.filter((item: { token: string }) => item.token !== tokenId)
+                ?.filter((item: { token: any }) => item.token?.tokenId !== tokenId)
                 .map((item: { token: any }) => item.token) || [];
 
         return this._tokenList.filter((tokenFromList) =>
-            !chosenTokens.find((chosenToken: Token) => chosenToken.tokenId === tokenFromList.tokenId))
+            !chosenTokens.find((chosenToken: Token) => chosenToken?.tokenId === tokenFromList.tokenId))
     }
 
     moreThanTokensZeroValidator(): ValidatorFn {

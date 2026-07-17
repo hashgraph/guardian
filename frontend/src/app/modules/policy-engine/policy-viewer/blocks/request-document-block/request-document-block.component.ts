@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -14,7 +14,6 @@ import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
@@ -23,6 +22,7 @@ import { PolicyStatus } from '@guardian/interfaces';
 import { RelayerAccountsService } from 'src/app/services/relayer-accounts.service';
 import { AttachedFile } from 'src/app/modules/common/policy-comments/attached-file';
 import { IPFSService } from 'src/app/services/ipfs.service';
+import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
 interface IRequestDocumentData {
     readonly: boolean;
@@ -55,17 +55,18 @@ interface IRequestDocumentData {
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.scss']
+    styleUrls: ['./request-document-block.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockComponent
     extends AbstractUIBlockComponent<IRequestDocumentData>
     implements OnInit {
 
-    @Input('id') id!: string;
-    @Input('policyId') policyId!: string;
-    @Input('static') static!: any;
+    @Input('id') override id!: string;
+    @Input('policyId') override policyId!: string;
+    @Input('static') override static!: any;
     @Input('dryRun') dryRun!: any;
-    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('savepointIds') override savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
@@ -145,11 +146,11 @@ export class RequestDocumentBlockComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -419,17 +420,21 @@ export class RequestDocumentBlockComponent
 
         const evidence = this.enableAdditionalData ? this.buildEvidence() : undefined;
 
+        const payload = {
+            document: data,
+            ref: this.ref,
+            draft,
+            draftId: this.draftId,
+            relayerAccount: this.getRelayerAccount(),
+            ...(evidence?.length ? { evidence } : {})
+        };
+
+        const captureOutput = this.dryRun && !draft && this.policyTest.state.captureNextFormSubmit;
+
         let requestSucceeded = false;
 
         this.policyEngineService
-            .setBlockData(this.id, this.policyId, {
-                document: data,
-                ref: this.ref,
-                draft,
-                draftId: this.draftId,
-                relayerAccount: this.getRelayerAccount(),
-                ...(evidence?.length ? { evidence } : {})
-            })
+            .setBlockDataWithResult(this.id, this.policyId, payload)
             .pipe(
                 finalize(async () => {
                     try {
@@ -441,8 +446,17 @@ export class RequestDocumentBlockComponent
                     }
                 })
             )
-            .subscribe(() => {
+            .subscribe((result) => {
                 requestSucceeded = true;
+                if (captureOutput) {
+                    this.policyTest.captureTestCase({
+                        policyId: this.policyId,
+                        blockId: this.id,
+                        blockType: 'requestDocumentBlock',
+                        ...payload,
+                        result: result?.result || result?.response
+                    });
+                }
 
                 setTimeout(() => {
                     this.loading = false;
@@ -461,6 +475,10 @@ export class RequestDocumentBlockComponent
         if (!this.loading) {
             this.onStep(true);
         }
+    }
+
+    public onDraftImported(doc: any): void {
+        this.preset(doc);
     }
 
     public onEvidenceDrop($event: DragEvent) {
@@ -608,7 +626,7 @@ export class RequestDocumentBlockComponent
                     class: 'primary'
                 }]
             },
-        });
+        })!;
 
         dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {

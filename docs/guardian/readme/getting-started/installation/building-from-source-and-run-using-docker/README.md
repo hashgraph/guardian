@@ -169,7 +169,7 @@ For each service, you must add its secret key \`SERVICE\_JWT\_SECRET\_KEY\` and 
 {% endhint %}
 
 {% hint style="info" %}
-Note: Please use the appropriate Private Key and Public Key as shown in the above iimage.
+Note: Please use the appropriate Private Key and Public Key as shown in the above image.
 {% endhint %}
 
 ## 4. Setup IPFS
@@ -183,7 +183,7 @@ Now, we have four options to setup IPFS node : 1. Local node 2. IPFS Web3Storage
 
 ```
 IPFS_NODE_ADDRESS="..." # Default IPFS_NODE_ADDRESS="http://ipfs-node:5001"
-IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='http://ipfs-node:8080/ipfs/${cid}'
+IPFS_PUBLIC_GATEWAY='...' # Default IPFS_PUBLIC_GATEWAY='http://ipfs-node:8080/ipfs/{cid}'
 IPFS_PROVIDER="local"
 ```
 

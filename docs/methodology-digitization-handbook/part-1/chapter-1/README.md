@@ -118,7 +118,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Variable Monitoring**: Requirements vary by project activities, ecosystem types, carbon pools
 * **Role-Based Access**: Sophisticated user management and workflow coordination required
 
-![Roles Available for VM0033](<../../../.gitbook/assets/image (36).png>)
+![Roles Available for VM0033](<../../../.gitbook/assets/image (1).png>)
 
 ### Calculation Methodology and Technical Requirements
 
@@ -136,13 +136,13 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Geographic Boundaries**: Dynamic boundaries affected by sea level rise over time
 * **Uncertainty Analysis**: Sophisticated error propagation across multiple variables
 
-![A calculation code sample](<../../../.gitbook/assets/image-1 (12).png>)
+![A calculation code sample](../../../.gitbook/assets/image-1.png)
 
 ### Guardian Implementation Patterns
 
 **Modular Architecture Benefits**:
 
-* **Reusable Tools**: [CDM tools](../../../Methodology%20Library/Clean%20Development%20Mechanism%20\(CDM\)/Tools/) - AR-Tool05, AR-Tool14, AFLOU Non permanence risk implemented as Guardian tools
+* **Reusable Tools**: [CDM tools](https://github.com/hashgraph/guardian/blob/develop/docs/Methodology%20Library/Clean%20Development%20Mechanism%20\(CDM\)/Tools/README.md) - AR-Tool05, AR-Tool14, AFLOU Non permanence risk implemented as Guardian tools
 * **Cross-Methodology Sharing**: Tools can be shared across multiple methodologies
 * **Strata Management**: Sophisticated data organization for strata-level calculations
 * **Data Integrity**: Schema system maintains validation requirements and data structures
@@ -156,7 +156,7 @@ VM0033 (Methodology for Tidal Wetland and Seagrass Restoration) serves as the id
 * **Compliance Maintained**: Full adherence to VM0033's scientific and regulatory requirements
 * **Process Streamlining**: Digital implementation reduces development time while improving accuracy
 
-![Allcot ABC Mangrove Project](<../../../.gitbook/assets/image-2 (9).png>)
+![Allcot ABC Mangrove Project](../../../.gitbook/assets/image-2.png)
 
 ### About Blue Carbon Projects
 
@@ -319,7 +319,7 @@ Guardian offers two deployment options for accessing the platform's methodology 
 
 * [Guardian Architecture](../../../guardian/architecture/architecture-2.md) - Technical platform overview
 * [Guardian Installation Guide](../../../guardian/readme/getting-started/) - Setup instructions
-* [VM0033 Methodology](../../VM0033-methodology-pdf-parsed/VM0033-Methodology.md) - Source methodology document
+* [VM0033 Methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/VM0033-methodology-pdf-parsed/VM0033-Methodology.md) - Source methodology document
 * [Policy Workflow Engine](../../../guardian/architecture/architecture-2.md) - Core digitization capabilities
 
 {% hint style="success" %}

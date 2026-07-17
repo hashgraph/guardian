@@ -32,6 +32,7 @@ interface IDocumentDetailsContext {
 interface IFieldContext {
     fantom: boolean;
     type: string;
+    totalRate: number;
     lvl: number;
     offset: number;
     name: string;
@@ -45,7 +46,8 @@ interface IFieldContext {
 @Component({
     selector: 'app-compare-record',
     templateUrl: './compare-record.component.html',
-    styleUrls: ['./compare-record.component.scss']
+    styleUrls: ['./compare-record.component.scss'],
+    standalone: false
 })
 export class CompareRecordComponent implements OnInit {
     @Input('value') value!: any;
@@ -54,8 +56,14 @@ export class CompareRecordComponent implements OnInit {
     @Input() propLvl: string = '2';
     @Input() childrenLvl: string = '2';
     @Input() idLvl: string = '1';
+    @Input() scrollToDoc: string | null = null;
+    @Input() showTotal: boolean = true;
+    @Input() fieldStatusFilter: string = 'all';
+    @Input() fieldNameFilter: string = '';
 
     @Output() change = new EventEmitter<any>();
+    @Output() documentOpen = new EventEmitter<string>();
+    @Output() documentClose = new EventEmitter<string>();
 
     public minWidth: number;
     public headers: any[];
@@ -92,8 +100,18 @@ export class CompareRecordComponent implements OnInit {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (this.value) {
+        if (changes['value'] && this.value) {
             this.onInit();
+        }
+        if (changes['scrollToDoc'] && changes['scrollToDoc'].currentValue) {
+            const idx = parseInt(changes['scrollToDoc'].currentValue, 10);
+            const row = this.treeContext?.[idx];
+            if (row) {
+                row.open = true;
+                setTimeout(() => {
+                    document.getElementById('doc-row-' + row.index)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 50);
+            }
         }
     }
 
@@ -117,6 +135,15 @@ export class CompareRecordComponent implements OnInit {
         this.displayedColumns = this.columns
             .filter(c => c.label)
             .map(c => c.name);
+    }
+
+    public onRowOpen(row: ITreeContext<IDocumentContext, IDocumentDetailsContext>): void {
+        row.open = !row.open;
+        if (row.open) {
+            this.documentOpen.emit(String(row.index));
+        } else {
+            this.documentClose.emit(String(row.index));
+        }
     }
 
     private createHeaders(data: any): void {
@@ -324,6 +351,7 @@ export class CompareRecordComponent implements OnInit {
         const fieldContext: IFieldContext = {
             fantom: true,
             type: index === 0 ? 'RIGHT' : 'LEFT',
+            totalRate: 0,
             lvl: 0,
             offset: 0,
             name: '',
@@ -347,6 +375,7 @@ export class CompareRecordComponent implements OnInit {
         if (field && item) {
             fieldContext.fantom = false;
             fieldContext.type = field.type;
+            fieldContext.totalRate = field?.totalRate ?? 0;
             fieldContext.lvl = item.lvl;
             fieldContext.offset = 10 * item.lvl;
             fieldContext.name = item.name;
@@ -482,6 +511,14 @@ export class CompareRecordComponent implements OnInit {
                 break;
             }
         }
+    }
+
+    public isFieldVisible(field: IFieldContext): boolean {
+        if (this.fieldStatusFilter === 'matched' && field.type !== 'FULL') { return false; }
+        if (this.fieldStatusFilter === 'mismatched' && (field.type === 'FULL' || field.totalRate >= 100)) { return false; }
+        if (this.fieldStatusFilter === 'system' && (field.type === 'FULL' || field.totalRate < 100)) { return false; }
+        if (this.fieldNameFilter && field.name !== this.fieldNameFilter) { return false; }
+        return true;
     }
 
     public onScroll(event: any) {

@@ -1,0 +1,168 @@
+import { Component } from '@angular/core';
+import { AbstractControl, FormArray, FormControl, FormGroup, UntypedFormControl, Validators } from '@angular/forms';
+import { PolicyEditableFieldDTO, UserPermissions } from '@guardian/interfaces';
+import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { RegisteredService } from '../../services/registered.service';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { PolicyBlock } from '../../structures';
+import { Subject, takeUntil } from 'rxjs';
+
+/**
+ * Policy parameters dialog.
+ */
+interface PolicyParameterItem {
+    block: PolicyBlock,
+    property: any,
+    propertyPath: string,
+    config: PolicyEditableFieldDTO,
+}
+
+@Component({
+    selector: 'policy-parameters-dialog',
+    templateUrl: './policy-parameters-dialog.component.html',
+    styleUrls: ['./policy-parameters-dialog.component.scss'],
+    standalone: false
+})
+export class PolicyParametersDialog {
+    public blockInfo: any;
+    public loading = false;
+    public policyId: string;
+    public editableParameters: PolicyEditableFieldDTO[] = [];
+
+    public user: UserPermissions = new UserPermissions();
+
+    public searchFilter = new UntypedFormControl('');
+    public readonly: boolean = false;
+    private _destroy$ = new Subject<void>();
+
+    public items: PolicyParameterItem[] = [];
+
+    public form: FormGroup<any>;
+
+    constructor(
+        public ref: DynamicDialogRef,
+        public config: DynamicDialogConfig,
+        private registeredService: RegisteredService,
+        private policyEngineService: PolicyEngineService
+    ) {
+        this.policyId = this.config.data?.policyId;
+
+        this.form = new FormGroup({
+            items: new FormArray<AbstractControl<any>>([])
+        });
+    }
+
+    ngOnInit() {
+        this.policyEngineService.getBlockInformation()
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(blockInfo => {
+                this.registeredService.registerConfig(blockInfo);
+                this.blockInfo = blockInfo;
+                this.loadConfig();
+            });
+    }
+
+    loadConfig() {
+        this.policyEngineService.getParametersConfig(this.policyId).subscribe((response: PolicyEditableFieldDTO[]) => {
+            this.editableParameters = response || [];
+            this.items = [];
+            this.form = new FormGroup({});
+            this.loadItems();
+        });
+    }
+
+    loadItems() {
+        for(let i=0; i< this.editableParameters.length; i++) {
+            const field = this.editableParameters[i];
+            const block = structuredClone(this.blockInfo[field.blockType]);
+
+            const property = this.findByPath(block.properties, field.propertyPath);
+            if (!property) {
+                continue;
+            }
+
+            this.items.push({
+                block,
+                property,
+                propertyPath: field.propertyPath,
+                config: field
+            });
+
+            if (property.type === 'Array') {
+                const values = Array.isArray(field.value) ? field.value : [];
+
+                const arr = new FormArray<AbstractControl>(
+                    values.map(v => {
+                    const g: Record<string, FormControl> = {};
+                    for (const p of property.items.properties ?? []) {
+                        g[p.name] = new FormControl(
+                        v?.[p.name] ?? null,
+                        p.required ? [Validators.required] : []
+                        );
+                    }
+                    return new FormGroup(g);
+                    })
+                );
+                
+                this.form.addControl(field.propertyPath, arr);
+            } 
+            else {
+                this.form.addControl(
+                        field.propertyPath,
+                        new FormControl(
+                        field.value ?? null,
+                        field.required ? [Validators.required] : []
+                    )
+                );
+            }
+        }
+
+        setTimeout(() => {
+            Object.values(this.form.controls).forEach(ctrl => {
+                ctrl.markAsDirty();
+                ctrl.markAsTouched();
+            });
+        })
+    }
+
+    findByPath(items: any[], path: string): any | undefined {
+        const parts = path.split('.');
+        let currentLevel = items;
+        let found;
+
+        for (const part of parts) {
+            found = currentLevel.find(p => p.name === part);
+            if (!found) return undefined;
+
+            currentLevel = found.properties || [];
+        }
+
+        return found;
+    }
+
+    async onSubmit() {
+        for(let i = 0; i< this.editableParameters.length; i++) {
+            const field = this.editableParameters[i];
+            const item = this.items.find(item => item.propertyPath === field.propertyPath);
+            if(item) {
+                field.value = this.form.controls[item.propertyPath]?.value;;
+            }
+        }
+
+        this.policyEngineService.saveParameters(
+            this.policyId,
+            this.editableParameters
+        ).subscribe(
+            (_) => {
+                this.onClose();
+            }
+        );
+    }
+
+    onSave() {
+    }
+
+    public onClose(): void {
+        this.ref.close(null);
+    }
+}

@@ -11,11 +11,18 @@ import {
     ImportEntityDialog,
     ImportEntityType
 } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
+import { PolicyTestAutomationService } from '../../policy-viewer/policy-test-automation/policy-test-automation.service';
+import {IRecordPolicyTestMetadata} from '@guardian/interfaces';
+import {
+    SavePolicyTestRecordDialog,
+    SavePolicyTestRecordResult
+} from '../save-policy-test-record-dialog/save-policy-test-record-dialog.component';
 
 @Component({
     selector: 'app-record-controller',
     templateUrl: './record-controller.component.html',
-    styleUrls: ['./record-controller.component.scss']
+    styleUrls: ['./record-controller.component.scss'],
+    standalone: false
 })
 export class RecordControllerComponent implements OnInit {
     @Input('policyId') policyId!: string;
@@ -47,6 +54,7 @@ export class RecordControllerComponent implements OnInit {
         private recordService: RecordService,
         private router: Router,
         private dialog: DialogService,
+        private policyTest: PolicyTestAutomationService,
     ) {
         this._showActions = (localStorage.getItem('SHOW_RECORD_ACTIONS') || 'true') === 'true';
         this._overlay = localStorage.getItem('HIDE_RECORD_OVERLAY');
@@ -107,6 +115,7 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public startRecording() {
+        this.policyTest.reset();
         this.loading = true;
         this.recordItems = [];
         this.recordService.startRecording(this.policyId).subscribe((result) => {
@@ -121,27 +130,115 @@ export class RecordControllerComponent implements OnInit {
     }
 
     public stopRecording() {
+        if (this.policyTest.shouldWarnBeforeStop()) {
+            this.openNoOutputWarning();
+            return;
+        }
+
+        this.openSaveRecordDialog(true);
+    }
+
+    private openNoOutputWarning(): void {
+        const dialogRef = this.dialog.open(ConfirmDialog, {
+            width: '560px',
+            data: {
+                title: 'Stop Recording?',
+                description: [
+                    'You have captured test data but no documents are selected.',
+                    'Nothing will be saved to the test record. Stop and discard captured data?'
+                ],
+                submitButton: 'Confirm',
+                cancelButton: 'Cancel'
+            },
+            modal: true,
+            closable: false
+        })!;
+
+        dialogRef.onClose.subscribe((confirmed: boolean) => {
+            if (confirmed) {
+                this.openSaveRecordDialog(false);
+            }
+        });
+    }
+
+    private openSaveRecordDialog(includePolicyTestMetadata: boolean): void {
+        const dialogRef = this.dialog.open(SavePolicyTestRecordDialog, {
+            showHeader: false,
+            width: '560px',
+            styleClass: 'guardian-dialog',
+            data: {
+                name: this.policyTest.state.name,
+                description: this.policyTest.state.description
+            }
+        })!;
+
+        dialogRef.onClose.subscribe((result: SavePolicyTestRecordResult | null) => {
+            if (!result) {
+                return;
+            }
+
+            this.policyTest.setMetadata(result.name, result.description);
+            this.stopRecordingInternal(result, includePolicyTestMetadata);
+        });
+    }
+
+    private stopRecordingInternal(
+        saveMetadata: SavePolicyTestRecordResult,
+        includePolicyTestMetadata: boolean
+    ): void {
         this.loading = true;
         this.recordItems = [];
-        this.recordService.stopRecording(this.policyId).subscribe((fileBuffer) => {
+        const filename = this.sanitizeRecordFilename(saveMetadata.name);
+        const policyTest = this.buildPolicyTestMetadata(saveMetadata, includePolicyTestMetadata);
+        this.recordService.stopRecording(this.policyId, { policyTest }).subscribe((fileBuffer) => {
             this.recording = false;
             this.running = false;
             this.updateActive();
             this.loading = false;
-            const downloadLink = document.createElement('a');
-            downloadLink.href = window.URL.createObjectURL(
-                new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-policy-record'
-                }));
-            downloadLink.setAttribute('download', `record_${Date.now()}.record`);
-            document.body.appendChild(downloadLink);
-            downloadLink.click();
+            this.policyTest.reset();
+            if (saveMetadata.saveToFile !== false) {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(
+                    new Blob([new Uint8Array(fileBuffer)], {
+                        type: 'application/guardian-policy-record'
+                    }));
+                downloadLink.setAttribute('download', filename);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+            }
         }, (e) => {
             this.recording = false;
             this.running = false;
             this.updateActive();
             this.loading = false;
+            this.policyTest.reset();
         });
+    }
+
+    private buildPolicyTestMetadata(
+        saveMetadata: SavePolicyTestRecordResult,
+        includePolicyTestMetadata: boolean
+    ): IRecordPolicyTestMetadata {
+        const baseMetadata = includePolicyTestMetadata
+            ? this.policyTest.getRecordMetadata()
+            : null;
+
+        return {
+            ...(baseMetadata || {}),
+            name: saveMetadata.name,
+            description: saveMetadata.description
+        };
+    }
+
+    private sanitizeRecordFilename(name: string): string {
+        const value = (name || '')
+            .trim()
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '')
+            .slice(0, 80);
+
+        return `${value || `record_${Date.now()}`}.record`;
     }
 
     public runRecord() {
@@ -154,7 +251,7 @@ export class RecordControllerComponent implements OnInit {
                 withRecords: this.withRecords,
                 policyId: this.policyId
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.loading = true;
@@ -195,6 +292,7 @@ export class RecordControllerComponent implements OnInit {
             this.recordId = null;
             this.updateActive();
             this.loading = false;
+            this.policyTest.reset();
         }, (e) => {
             this.running = false;
             this.recordId = null;
@@ -452,7 +550,7 @@ export class RecordControllerComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.overlay = this.recordId;
