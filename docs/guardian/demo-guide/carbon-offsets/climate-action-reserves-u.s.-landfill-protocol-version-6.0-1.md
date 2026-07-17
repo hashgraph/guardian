@@ -6,29 +6,29 @@ icon: mountain
 
 ## Table of Contents
 
-[Introduction](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc1569113010)
+[Introduction](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc1569113010)
 
-[Need and Use](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312046)
+[Need and Use](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312046)
 
-[Monitoring and Quantification Approach](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312047)
+[Monitoring and Quantification Approach](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312047)
 
-[Project Eligibility and Additionality](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312048)
+[Project Eligibility and Additionality](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312048)
 
-[Project Type](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312049)
+[Project Type](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312049)
 
-[Demo Video](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc80095333)
+[Demo Video](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc80095333)
 
-[Policy Workflow](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312050)
+[Policy Workflow](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312050)
 
-[Policy Import](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312051)
+[Policy Import](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312051)
 
-[Available Roles](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312052)
+[Available Roles](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312052)
 
-[Important Schemas](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312053)
+[Important Schemas](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312053)
 
-[Token (Climate Reserve Tonnes - CRTs)](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312054)
+[Token (Climate Reserve Tonnes - CRTs)](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312054)
 
-[Step By Step](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312055)
+[Step By Step](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312055)
 
 ## **Introduction** <a href="#toc1569113010" id="toc1569113010"></a>
 
@@ -91,7 +91,7 @@ This policy is available for import via GitHub or IPFS timestamp.
 * **Attestation of Regulatory Compliance:** This attestation confirms that the project complies with all applicable federal, state, and local laws and regulations (e.g., environmental, safety). The Project Developer must disclose any instances of non-compliance to the verifier, who assesses the impact on credit issuance.
 * **Environmental Safeguards:** This schema ensures that project activities align with environmental best practices, minimizing unintended impacts on local ecosystems, air, water, and soil quality. The Project Developer must document steps taken to prevent adverse environmental effects, such as controlling potential pollutants, managing resource use, and protecting nearby habitats. This schema may also include periodic environmental impact assessments as part of ongoing compliance and verification.
 
-## **Token (**Climate Reserve Tonnes - CRTs**)** <a href="#toc182312054" id="toc182312054"></a>
+## **Token (Climate Reserve Tonnes - CRTs)** <a href="#toc182312054" id="toc182312054"></a>
 
 Each CRT represents one metric tonne of carbon dioxide equivalent (tCO₂e) reduced or avoided through the approved project activities.
 
