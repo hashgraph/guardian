@@ -27,6 +27,7 @@ import {
   Pencil,
   Download,
   Globe,
+  History,
 } from "lucide-vue-next";
 import { formatCredits, formatNumber } from "~/lib/format";
 import { allocateDonutColors } from "~/lib/chart-colors";
@@ -36,7 +37,7 @@ import type {
   MethodologyDto,
   MethodologiesResponse,
 } from "~/composables/api/useMethodologiesApi";
-import type { DecodedMethodologyResponse } from "~/composables/api/useDecodedMethodologyApi";
+import type { DecodedMethodologyResponse, MappingAuditEntry, PaginatedMappingAudit } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
 import { meetsDashboardThreshold } from "~/lib/methodology-threshold";
 import { naturalCompare } from '~/lib/utils';
@@ -235,24 +236,22 @@ const aggregatedSdgIds = computed(() => {
 
 // Compact lifecycle-stage + expected-year filter over the already-loaded set (§8 — no new queries).
 const linkedProjectsStageFilter = ref<'all' | typeof LIFECYCLE_STAGES[number]>('all');
-const linkedProjectsYearFrom = ref('');
-const linkedProjectsYearTo = ref('');
+const linkedProjectsYearFilter = ref('all');
+const linkedProjectsAvailableYears = computed<string[]>(() => {
+  const years = new Set<string>();
+  for (const p of linkedProjectsMapped.value) {
+    if (p.expectedIssuanceYear) years.add(p.expectedIssuanceYear);
+  }
+  return [...years].sort((a, b) => Number(b) - Number(a));
+});
 
 const linkedProjectsFiltered = computed(() => {
   let result = linkedProjectsMapped.value;
   if (linkedProjectsStageFilter.value !== 'all') {
     result = result.filter(p => p.lifecycleStage === linkedProjectsStageFilter.value);
   }
-  const from = linkedProjectsYearFrom.value;
-  const to = linkedProjectsYearTo.value;
-  if (from || to) {
-    result = result.filter(p => {
-      const year = p.expectedIssuanceYear;
-      if (!year) return false;
-      if (from && year < from) return false;
-      if (to && year > to) return false;
-      return true;
-    });
+  if (linkedProjectsYearFilter.value !== 'all') {
+    result = result.filter(p => p.expectedIssuanceYear === linkedProjectsYearFilter.value);
   }
   return result;
 });
@@ -302,6 +301,56 @@ const decodedPending = ref(false);
 const decodedError = ref<string | null>(null);
 const decodedLoaded = ref(false);
 const allSchemaFieldsExpanded = ref(false);
+const mappingAuditEntries = ref<MappingAuditEntry[]>([]);
+const mappingAuditPending = ref(false);
+const mappingAuditPage = ref(1);
+const mappingAuditPageSize = ref(10);
+const mappingAuditTotal = ref(0);
+const mappingAuditTotalPages = ref(1);
+const mappingAuditSkeletonRows = computed(() => Array.from({ length: Math.min(mappingAuditPageSize.value, 10) }, (_, i) => i));
+
+async function fetchMappingAudit() {
+  if (!import.meta.client) return;
+  const config = useRuntimeConfig();
+  const baseURL = config.public.apiBaseUrl as string;
+  mappingAuditPending.value = true;
+  try {
+    const res = await apiFetch<PaginatedMappingAudit>(
+      `/api/v1/${network.value}/methodologies/${id.value}/mapping-audit`,
+      {
+        baseURL,
+        credentials: 'include',
+        query: { page: mappingAuditPage.value, limit: mappingAuditPageSize.value },
+      },
+    );
+    mappingAuditEntries.value = res.data;
+    mappingAuditTotal.value = res.meta.total;
+    mappingAuditTotalPages.value = res.meta.totalPages;
+  } catch {
+    // Best-effort — audit history is a secondary panel, not core mapping data.
+    mappingAuditEntries.value = [];
+    mappingAuditTotal.value = 0;
+    mappingAuditTotalPages.value = 1;
+  } finally {
+    mappingAuditPending.value = false;
+  }
+}
+
+function refreshMappingAudit() {
+  mappingAuditPage.value = 1;
+  void fetchMappingAudit();
+}
+
+function onMappingAuditPageChange(p: number) {
+  mappingAuditPage.value = p;
+  void fetchMappingAudit();
+}
+
+function onMappingAuditPageSizeChange(size: number) {
+  mappingAuditPageSize.value = size;
+  mappingAuditPage.value = 1;
+  void fetchMappingAudit();
+}
 
 if (import.meta.client) {
   const config = useRuntimeConfig();
@@ -327,6 +376,7 @@ if (import.meta.client) {
         decodedPending.value = false;
         decodedLoaded.value = true;
       }
+      void fetchMappingAudit();
     },
     { immediate: true },
   );
@@ -340,13 +390,17 @@ const decodeStatusClass = (status: string | null | undefined) => {
   return 'bg-muted text-muted-foreground';
 };
 
+const mappingSourceClass = (source: string | null | undefined) => {
+  return source === 'manual' ? 'bg-stat-blue/10 text-stat-blue' : 'bg-muted text-muted-foreground';
+};
+
 // ─── Action: re-run decoder ──────────────────────────────────────────────────
 
 // Decode / reparse / edit-mapping are admin-only maintenance actions (spec).
 // isAuthenticated gates the policy-package download (auth-only endpoint).
 const { isAdmin, isAuthenticated } = useAuth();
 const { header: csrfHeader } = useCsrf();
-const { authFetch } = useApiFetch();
+const { apiFetch, authFetch } = useApiFetch();
 const redecodePending = ref(false);
 
 async function triggerRedecode() {
@@ -355,7 +409,7 @@ async function triggerRedecode() {
   const baseURL = config.public.apiBaseUrl as string;
   redecodePending.value = true;
   try {
-    await $fetch(
+    await apiFetch(
       `/api/v1/${network.value}/methodologies/${id.value}/redecode`,
       { method: 'POST', baseURL, credentials: 'include', headers: csrfHeader() },
     );
@@ -379,7 +433,7 @@ async function triggerReparse() {
   const baseURL = config.public.apiBaseUrl as string;
   reparsePending.value = true;
   try {
-    const res = await $fetch<{ enqueued: number }>(
+    const res = await apiFetch<{ enqueued: number }>(
       `/api/v1/${network.value}/methodologies/${id.value}/reparse-projects`,
       { method: 'POST', baseURL, credentials: 'include', headers: csrfHeader() },
     );
@@ -434,8 +488,13 @@ const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
 };
 
 const editingMapping = ref(false);
-// formState: key → "schemaId.fieldKey" or '' (unmapped)
+// formState: key → "schemaId.fieldKey" or '' (unmapped) — the BASE path, without
+// any array-index suffix. formIndexState holds the optional array-index suffix
+// (a manually-picked element of an array-valued field) per key, e.g. "2" for
+// "pick the third value". Kept separate from formState so the <select>'s bound
+// value always matches one of mappingSelectOptions (which are index-free).
 const formState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
+const formIndexState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
 const saveMappingPending = ref(false);
 
 // Look up the schemaIri that owns a given fieldPath. For nested paths like
@@ -452,72 +511,86 @@ function findOwningSchemaIri(fieldPath: string, defaultIri: string): string {
   return defaultIri;
 }
 
-function enterEditMode() {
-  if (!decodedData.value?.projectSchema) return;
-  const resolved = decodedData.value.projectSchema.resolvedFields as Record<string, { fieldKey: string } | null>;
-  const ps = decodedData.value.projectSchema;
-  const projectIri = ps.schemaId;
-  const state = {} as Record<ResolvedFieldKey, string>;
-  for (const key of EDITABLE_FIELD_KEYS) {
-    if (key === 'geo') {
-      if (ps.geoKey) {
-        const iri = findOwningSchemaIri(ps.geoKey, projectIri);
-        state[key] = `${iri}.${ps.geoKey}`;
-      } else {
-        state[key] = '';
-      }
-      continue;
-    }
-    const rf = resolved[key];
-    if (rf) {
-      const iri = findOwningSchemaIri(rf.fieldKey, projectIri);
-      state[key] = `${iri}.${rf.fieldKey}`;
-    } else {
-      state[key] = '';
+function splitArrayIndex(fieldPath: string): { base: string; index: string } {
+  const m = fieldPath.match(/^(.+)\.(\d+)$/);
+  return m ? { base: m[1], index: m[2] } : { base: fieldPath, index: '' };
+}
+
+const fieldTypeByPath = computed<Map<string, string>>(() => {
+  const map = new Map<string, string>();
+  for (const schema of decodedData.value?.availableSchemas ?? []) {
+    for (const field of schema.fields ?? []) {
+      map.set(`${schema.schemaId}.${field.fieldKey}`, field.type);
     }
   }
+  return map;
+});
+
+function isArrayPath(value: string): boolean {
+  return !!value && fieldTypeByPath.value.get(value) === 'array';
+}
+
+function composePath(base: string, index: string): string {
+  if (!base) return '';
+  return index !== '' && isArrayPath(base) ? `${base}.${index}` : base;
+}
+
+function resolveFieldPathParts(key: ResolvedFieldKey): { base: string; index: string } {
+  const ps = decodedData.value?.projectSchema;
+  if (!ps) return { base: '', index: '' };
+  const projectIri = ps.schemaId;
+  if (key === 'geo') {
+    if (!ps.geoKey) return { base: '', index: '' };
+    const { base: baseKey, index } = splitArrayIndex(ps.geoKey);
+    const iri = findOwningSchemaIri(baseKey, projectIri);
+    return { base: `${iri}.${baseKey}`, index };
+  }
+  const resolved = ps.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const rf = resolved[key];
+  if (!rf) return { base: '', index: '' };
+  const { base: baseKey, index } = splitArrayIndex(rf.fieldKey);
+  const iri = findOwningSchemaIri(baseKey, projectIri);
+  return { base: `${iri}.${baseKey}`, index };
+}
+
+function enterEditMode() {
+  if (!decodedData.value?.projectSchema) return;
+  const state = {} as Record<ResolvedFieldKey, string>;
+  const indexState = {} as Record<ResolvedFieldKey, string>;
+  for (const key of EDITABLE_FIELD_KEYS) {
+    const parts = resolveFieldPathParts(key);
+    state[key] = parts.base;
+    indexState[key] = parts.index;
+  }
   formState.value = state;
+  formIndexState.value = indexState;
   editingMapping.value = true;
 }
 
 function cancelEditMode() {
   editingMapping.value = false;
   formState.value = {} as Record<ResolvedFieldKey, string>;
+  formIndexState.value = {} as Record<ResolvedFieldKey, string>;
 }
 
 // Compute the initial (original) form state so we can diff to find changes.
 const originalFormState = computed<Record<ResolvedFieldKey, string>>(() => {
-  if (!decodedData.value?.projectSchema) return {} as Record<ResolvedFieldKey, string>;
-  const resolved = decodedData.value.projectSchema.resolvedFields as Record<string, { fieldKey: string } | null>;
-  const ps = decodedData.value.projectSchema;
-  const projectIri = ps.schemaId;
   const state = {} as Record<ResolvedFieldKey, string>;
-  for (const key of EDITABLE_FIELD_KEYS) {
-    if (key === 'geo') {
-      if (ps.geoKey) {
-        const iri = findOwningSchemaIri(ps.geoKey, projectIri);
-        state[key] = `${iri}.${ps.geoKey}`;
-      } else {
-        state[key] = '';
-      }
-      continue;
-    }
-    const rf = resolved[key];
-    if (rf) {
-      const iri = findOwningSchemaIri(rf.fieldKey, projectIri);
-      state[key] = `${iri}.${rf.fieldKey}`;
-    } else {
-      state[key] = '';
-    }
-  }
+  for (const key of EDITABLE_FIELD_KEYS) state[key] = resolveFieldPathParts(key).base;
+  return state;
+});
+
+const originalIndexState = computed<Record<ResolvedFieldKey, string>>(() => {
+  const state = {} as Record<ResolvedFieldKey, string>;
+  for (const key of EDITABLE_FIELD_KEYS) state[key] = resolveFieldPathParts(key).index;
   return state;
 });
 
 const pendingChanges = computed<Record<string, string>>(() => {
   const changes: Record<string, string> = {};
   for (const key of EDITABLE_FIELD_KEYS) {
-    const current = formState.value[key] ?? '';
-    const original = originalFormState.value[key] ?? '';
+    const current = composePath(formState.value[key] ?? '', formIndexState.value[key] ?? '');
+    const original = composePath(originalFormState.value[key] ?? '', originalIndexState.value[key] ?? '');
     if (current !== original) {
       // key in PATCH body is the human-readable LABEL, value is "schemaId.fieldPath"
       changes[FIELD_LABELS[key]] = current;
@@ -546,10 +619,11 @@ const mappingSelectOptions = computed<SelectOption[]>(() => {
     for (const field of schema.fields) {
       if (field.isGeoJson) continue;
       if (SKIP_KEYS.has(field.fieldKey)) continue;
-      if (field.type === 'object' || field.type === 'array' || field.type === '') continue;
+      if (field.type === 'object' || field.type === '') continue;
+      const arraySuffix = field.type === 'array' ? ' — all values, comma-joined' : '';
       options.push({
         value: `${schema.schemaId}.${field.fieldKey}`,
-        label: `${field.title || field.fieldKey} (${field.fieldKey})`,
+        label: `${field.title || field.fieldKey} (${field.fieldKey})${arraySuffix}`,
         groupLabel,
       });
     }
@@ -644,7 +718,7 @@ async function saveMapping() {
   }
 
   try {
-    const updated = await $fetch<DecodedMethodologyResponse>(
+    const updated = await apiFetch<DecodedMethodologyResponse>(
       `/api/v1/${network.value}/methodologies/${id.value}/decoded`,
       {
         method: 'PATCH',
@@ -656,6 +730,7 @@ async function saveMapping() {
     );
     decodedData.value = updated;
     cancelEditMode();
+    refreshMappingAudit();
     const { toast } = await import('vue-sonner');
     toast.success(t('methodologies.detail.decoded.actions.saveSuccess'));
   } catch (err: any) {
@@ -1452,6 +1527,15 @@ function getResolvedField(fieldKey: string) {
                 >
                   {{ decodedData.decodeStatus }}
                 </span>
+                <span
+                  v-if="decodedData.decodeStatus === 'success'"
+                  :class="[
+                    mappingSourceClass(decodedData.mappingSource),
+                    'text-xs font-medium rounded-full px-2.5 py-1',
+                  ]"
+                >
+                  {{ $t('methodologies.mappingSource.' + decodedData.mappingSource) }}
+                </span>
                 <span class="text-xs text-muted-foreground">
                   {{ $t('methodologies.detail.decoded.lastAttempt') }}:
                   {{ formatLastAttempt(decodedData.lastAttemptAt) }}
@@ -1669,12 +1753,23 @@ function getResolvedField(fieldKey: string) {
                     <!-- Regular fields — select in edit mode, text in view mode -->
                     <template v-else>
                       <template v-if="editingMapping">
-                        <MappingFieldSelect
-                          v-model="formState[row.fieldKey as ResolvedFieldKey]"
-                          :groups="mappingOptionGroups"
-                          :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
-                          :placeholder="$t('common.searchEllipsis')"
-                        />
+                        <div class="flex items-center gap-2">
+                          <MappingFieldSelect
+                            v-model="formState[row.fieldKey as ResolvedFieldKey]"
+                            :groups="mappingOptionGroups"
+                            :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
+                            :placeholder="$t('common.searchEllipsis')"
+                          />
+                          <input
+                            v-if="isArrayPath(formState[row.fieldKey as ResolvedFieldKey])"
+                            v-model="formIndexState[row.fieldKey as ResolvedFieldKey]"
+                            type="number"
+                            min="0"
+                            :placeholder="$t('methodologies.detail.decoded.actions.arrayIndexPlaceholder')"
+                            :title="$t('methodologies.detail.decoded.actions.arrayIndexHint')"
+                            class="w-16 shrink-0 rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                          />
+                        </div>
                       </template>
                       <template v-else>
                         <template v-if="getResolvedField(row.fieldKey)">
@@ -1696,6 +1791,70 @@ function getResolvedField(fieldKey: string) {
                 </tr>
               </tbody>
             </table>
+          </div>
+
+          <!-- 2b. Manual mapping edit history -->
+          <div v-if="isAdmin">
+            <div class="rounded-xl border bg-card overflow-hidden">
+              <div class="px-5 py-3.5 border-b bg-muted/30">
+                <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                  <History class="h-4 w-4 text-primary" />
+                  {{ $t('methodologies.detail.decoded.auditHistory.title') }}
+                </h2>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-muted/20 border-b">
+                    <tr>
+                      <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        {{ $t('methodologies.detail.decoded.auditHistory.user') }}
+                      </th>
+                      <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        {{ $t('methodologies.detail.decoded.auditHistory.fieldsChanged') }}
+                      </th>
+                      <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                        {{ $t('methodologies.detail.decoded.auditHistory.when') }}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y">
+                    <!-- Loading skeleton -->
+                    <template v-if="mappingAuditPending && mappingAuditEntries.length === 0">
+                      <tr v-for="i in mappingAuditSkeletonRows" :key="`sk-${i}`">
+                        <td v-for="col in 3" :key="col" class="py-3 px-4">
+                          <Skeleton class="h-4 w-full max-w-[160px]" />
+                        </td>
+                      </tr>
+                    </template>
+
+                    <template v-else>
+                      <tr v-if="mappingAuditEntries.length === 0">
+                        <td colspan="3" class="py-12 text-center text-sm text-muted-foreground">
+                          {{ $t('methodologies.detail.decoded.auditHistory.empty') }}
+                        </td>
+                      </tr>
+
+                      <tr v-for="entry in mappingAuditEntries" :key="entry.id" class="hover:bg-muted/30 transition-colors">
+                        <td class="py-2.5 px-5 text-sm text-foreground">{{ entry.actorEmail }}</td>
+                        <td class="py-2.5 px-4 text-sm text-muted-foreground">{{ entry.changedLabels.join(', ') }}</td>
+                        <td class="py-2.5 px-4 text-xs text-muted-foreground whitespace-nowrap" :title="new Date(entry.createdAt).toLocaleString()">
+                          {{ formatLastAttempt(entry.createdAt) }}
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <Pagination
+              :current-page="mappingAuditPage"
+              :page-size="mappingAuditPageSize"
+              :total-pages="mappingAuditTotalPages"
+              :total-items="mappingAuditTotal"
+              @update:current-page="onMappingAuditPageChange"
+              @update:page-size="onMappingAuditPageSizeChange"
+            />
           </div>
 
           <!-- 3. All schema fields (collapsible) -->
@@ -2012,9 +2171,21 @@ function getResolvedField(fieldKey: string) {
               <Layers class="h-4 w-4 text-primary" />
               {{ $t('methodologies.detail.linkedProjects.title') }}
             </h2>
-            <span v-if="!linkedProjectsPending" class="text-xs text-muted-foreground">
-              {{ linkedProjects.length }} project{{ linkedProjects.length !== 1 ? 's' : '' }}
-            </span>
+            <div v-if="!linkedProjectsPending && policyTopicId" class="flex items-center gap-2">
+              <select
+                v-if="linkedProjectsAvailableYears.length > 0"
+                v-model="linkedProjectsYearFilter"
+                :title="$t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear')"
+                :aria-label="$t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear')"
+                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+              >
+                <option value="all">{{ $t('common.allYears') }}</option>
+                <option v-for="y in linkedProjectsAvailableYears" :key="y" :value="y">{{ y }}</option>
+              </select>
+              <span class="text-xs text-muted-foreground">
+                {{ linkedProjectsFiltered.length }} project{{ linkedProjectsFiltered.length !== 1 ? 's' : '' }}
+              </span>
+            </div>
           </div>
 
           <!-- Loading skeleton -->
@@ -2039,7 +2210,7 @@ function getResolvedField(fieldKey: string) {
           </div>
 
           <template v-else>
-            <!-- Compact Lifecycle Stage + Expected Year filter -->
+            <!-- Compact Lifecycle Stage filter (Expected Issuance Year now lives in the header, matching IssuancesTable.vue) -->
             <div class="px-5 py-3 border-b bg-muted/10 flex flex-wrap items-center gap-3">
               <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span>{{ $t('methodologies.detail.linkedProjects.stageFilter.label') }}</span>
@@ -2052,22 +2223,6 @@ function getResolvedField(fieldKey: string) {
                     {{ $t(`projects.lifecycleStages.${stage}`) }}
                   </option>
                 </select>
-              </div>
-              <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span>{{ $t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear') }}</span>
-                <input
-                  v-model="linkedProjectsYearFrom"
-                  type="number"
-                  :placeholder="$t('common.yearFrom')"
-                  class="w-20 rounded-md border bg-card px-2 py-1"
-                />
-                <span>–</span>
-                <input
-                  v-model="linkedProjectsYearTo"
-                  type="number"
-                  :placeholder="$t('common.yearTo')"
-                  class="w-20 rounded-md border bg-card px-2 py-1"
-                />
               </div>
             </div>
 

@@ -841,6 +841,13 @@
                 },
                 "fetchError": "Failed to load decoded mapping.",
                 "unresolved": "—",
+                "auditHistory": {
+                    "title": "Manual mapping history",
+                    "user": "User",
+                    "fieldsChanged": "Fields Changed",
+                    "when": "When",
+                    "empty": "No manual edits yet"
+                },
                 "actions": {
                     "title": "Mapping actions",
                     "rerunDecoder": "Re-run decoder",
@@ -857,7 +864,9 @@
                     "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
                     "saveSuccess": "Mapping updated",
                     "saveNoChanges": "No changes to save",
-                    "saveError": "Failed to save mapping"
+                    "saveError": "Failed to save mapping",
+                    "arrayIndexPlaceholder": "Index",
+                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record."
                 }
             },
             "summary": {
@@ -987,6 +996,10 @@
             "failed": "Failed",
             "pending": "Decoding",
             "unknown": "Not decoded"
+        },
+        "mappingSource": {
+            "auto": "Auto-Decoded",
+            "manual": "Manually Edited"
         }
     },
     "registries": {
