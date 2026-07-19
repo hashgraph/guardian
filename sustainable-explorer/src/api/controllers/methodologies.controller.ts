@@ -17,7 +17,10 @@ import {
 } from '../dto/methodology.dto';
 import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { UpdateMappingDto } from '../dto/update-mapping.dto';
-import { AdminWrite } from '../auth/decorators/admin-write.decorator';
+import { MappingAuditQueryDto, PaginatedMappingAuditDto } from '../dto/mapping-audit.dto';
+import { AdminWrite, AdminRead } from '../auth/decorators/admin-write.decorator';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import { JwtAuthGuard } from '@api/auth/guards/jwt-auth.guard';
 
 @ApiTags('methodologies')
@@ -153,8 +156,11 @@ export class MethodologiesController {
         description:
             'Enqueues a fresh POLICY_DECODE job for the methodology\'s policy ZIP so that ' +
             'improvements to CrossSchemaFuzzyMapperService or MappingPipelineService are picked up ' +
-            'without waiting for the normal re-sync cycle. ' +
-            'The processor is idempotent: it upserts decode columns and overwrites any stale mapping. ' +
+            'without waiting for the normal re-sync cycle. Resets decodeStatus to "pending" first ' +
+            'so the job actually re-runs instead of being skipped by the processor\'s dedup guard. ' +
+            'Manual policyMapping edits made via PATCH /:id/decoded are DISCARDED and replaced by ' +
+            'fresh classification — use POST /:id/reparse-projects to replay VCs against the current ' +
+            'mapping without overwriting it. ' +
             'Returns immediately — check GET /:id/decoded for the updated status after the job completes.',
     })
     @ApiParam({
@@ -312,7 +318,32 @@ export class MethodologiesController {
         @Param('network') network: string,
         @Param('id') id: string,
         @Body() body: UpdateMappingDto,
+        @CurrentUser() actor: AuthenticatedUser,
     ): Promise<DecodedMethodologyResponseDto> {
-        return this.mappingReprocessService.updateMapping(network, id, body);
+        return this.mappingReprocessService.updateMapping(network, id, body, actor);
+    }
+
+    @AdminRead()
+    @Get(':id/mapping-audit')
+    @ApiOperation({
+        summary: 'List recent manual field-mapping edits for a methodology',
+        description:
+            'Returns the most recent admin edits made via PATCH /:id/decoded, newest first — ' +
+            'who made the change and which field labels were touched.',
+    })
+    @ApiParam({
+        name: 'network',
+        enum: ['mainnet', 'testnet', 'previewnet'],
+        description: 'Hedera network',
+    })
+    @ApiParam({ name: 'id', description: 'Hedera policy topic ID of the methodology' })
+    @ApiResponse({ status: 200, type: PaginatedMappingAuditDto })
+    @ApiResponse({ status: 404, description: 'Methodology not found' })
+    async getMappingAudit(
+        @Param('network') network: string,
+        @Param('id') id: string,
+        @Query() query: MappingAuditQueryDto,
+    ): Promise<PaginatedMappingAuditDto> {
+        return this.mappingReprocessService.getMappingAudit(network, id, query);
     }
 }

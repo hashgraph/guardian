@@ -295,7 +295,7 @@ export class ProjectMapperService {
             const path = crossSchemaFieldMap[field.key];
             if (!path) continue;
 
-            const raw = getByPath(cs, path);
+            const raw = resolveFieldValue(cs, path);
             if (field.key === 'geo') {
                 geoLngLat = parseGeoValue(raw);
             } else if (field.key === 'creditingPeriodStart' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'from' in (raw as object)) {
@@ -816,6 +816,28 @@ export class ProjectMapperService {
 function getByPath(obj: any, path: string): unknown {
     if (!path) return obj;
     return resolvePath(obj, path.split('.'));
+}
+
+/**
+ * Same as getByPath, but when the path ends in a bare numeric index (e.g. a
+ * mapping editor selection of "pick element 2" for an array-valued field), and
+ * that index doesn't extract to anything USABLE on THIS VC's array — out of
+ * range, an empty string, or an object with no usable string field — falls
+ * back to resolving the base path instead — i.e. the current
+ * join-all-values-with-commas behavior (see unwrapValue) rather than
+ * silently dropping the field for that VC. Uses unwrapValue itself (rather
+ * than a raw null/undefined check) to judge usability, since a present-but-
+ * empty element (e.g. "") is neither null nor undefined but still extracts
+ * to nothing. Paths without a trailing bare index (including the existing
+ * `locations.0.country` / `locations.*.country` array-of-objects convention,
+ * which always has a further key after the index) are unaffected.
+ */
+function resolveFieldValue(obj: any, path: string): unknown {
+    const m = path.match(/^(.+)\.(\d+)$/);
+    if (!m) return getByPath(obj, path);
+    const indexed = getByPath(obj, path);
+    if (unwrapValue(indexed)) return indexed;
+    return getByPath(obj, m[1]);
 }
 
 function resolvePath(cur: any, parts: string[]): unknown {
