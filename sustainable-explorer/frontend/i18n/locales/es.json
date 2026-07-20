@@ -338,6 +338,7 @@
         "sdgs": "ODS",
         "analytics": "Analíticas",
         "reports": "Informes",
+        "glossary": "Glosario",
         "syncStatus": "Estado de sincronización",
         "dataSyncedUpTo": "Datos sincronizados hasta",
         "sustainable": "Sustainability",
@@ -1703,5 +1704,255 @@
         "registryRecordId": "Identificador del registro de origen — enlaza directamente con el registro en el sistema emisor.",
         "verificationUrl": "Enlace directo a verificación independiente — redirige a HashScan o al registro para validación independiente.",
         "sourceSystemId": "Identificador en el sistema de origen externo a Guardian."
+    },
+    "glossaryPage": {
+        "title": "Glosario",
+        "subtitle": "Definiciones en lenguaje sencillo de los términos de mercados de carbono y Hedera usados en el Atlas",
+        "searchPlaceholder": "Buscar términos...",
+        "resultCount": "{count} términos",
+        "resultCountInCategory": "{count} términos en {category}",
+        "noResults": "Ningún término coincide con \"{query}\"",
+        "relatedLabel": "Relacionados:",
+        "whereShownTitle": "Dónde aparece esto",
+        "whereShownSubtitle": "Los íconos de información junto a las etiquetas de campo abren una definición rápida en línea — sin salir de la página",
+        "categories": {
+            "all": "Todos los términos",
+            "carbon": "Mercados de carbono",
+            "chain": "Blockchain y Hedera",
+            "sdg": "ODS",
+            "platform": "Plataforma y datos"
+        },
+        "demo": {
+            "registries": "Registros",
+            "methodologies": "Metodologías",
+            "issuances": "Emisiones totales"
+        },
+        "terms": {
+            "issuance": {
+                "term": "Emisión",
+                "short": "La creación de nuevos créditos de carbono en cadena una vez verificada la reducción de emisiones de un proyecto.",
+                "long": "Cada emisión acuña un lote de créditos (tokens fungibles o NFTs) vinculado a un proyecto, metodología y año de cosecha específicos. Los créditos emitidos comienzan en el suministro activo hasta que se transfieren o retiran."
+            },
+            "retirement": {
+                "term": "Retiro",
+                "short": "Eliminar permanentemente un crédito de circulación una vez que se usa para compensar una emisión.",
+                "long": "Un crédito retirado nunca puede revenderse ni reutilizarse — retirarlo es el paso que reclama el beneficio ambiental. La tasa de retiro compara los créditos retirados con el total emitido."
+            },
+            "vintage": {
+                "term": "Año de cosecha",
+                "short": "El año calendario en que ocurrió realmente la reducción o remoción de emisiones que representa un crédito.",
+                "long": "El año de cosecha es independiente de la fecha de emisión — un crédito puede emitirse años después de su año de cosecha, una vez que la verificación se pone al día. Los compradores suelen preferir cosechas más recientes."
+            },
+            "registry": {
+                "term": "Registro",
+                "short": "Un organismo independiente que verifica proyectos y administra la emisión oficial de créditos bajo su estándar.",
+                "long": "Registros como Gold Standard, Verra, TolamEarth y otros definen reglas, verifican el cumplimiento de metodologías y registran la propiedad de los créditos."
+            },
+            "methodology": {
+                "term": "Metodología",
+                "short": "El protocolo técnico que sigue un proyecto para calcular y demostrar su reducción o remoción de emisiones.",
+                "long": "Una metodología define líneas base, requisitos de monitoreo y fórmulas de cálculo. Los registros publican y aprueban metodologías; las políticas de Guardian las codifican como flujos de trabajo."
+            },
+            "sectoral-scope": {
+                "term": "Alcance sectorial",
+                "short": "La categoría amplia de actividad a la que pertenece un proyecto (p. ej. Energía, Uso de Suelo y Silvicultura).",
+                "long": "El alcance sectorial agrupa proyectos según el tipo de intervención que realizan, y se usa para desgloses de cartera y comparabilidad entre registros."
+            },
+            "crediting-period": {
+                "term": "Período de acreditación",
+                "short": "El intervalo de tiempo durante el cual un proyecto es elegible para generar y emitir créditos.",
+                "long": "Establecido al registrar el proyecto (p. ej. ene 2022 – dic 2031), delimita cuántos años de cosecha puede reclamar un proyecto antes de renovar o volver a verificarse."
+            },
+            "tco2e": {
+                "term": "tCO2e",
+                "short": "Tonelada de CO2-equivalente — la unidad estándar que representa un crédito de carbono.",
+                "long": "tCO2e normaliza distintos gases de efecto invernadero (metano, N2O, etc.) a una cantidad equivalente de CO2 según su impacto en el calentamiento, de modo que los créditos de distintos tipos de proyecto se comparen 1:1."
+            },
+            "active-supply": {
+                "term": "Suministro activo",
+                "short": "Créditos actualmente en circulación — emitidos menos retirados.",
+                "long": "El suministro activo es el conjunto de créditos vivos y negociables; se reduce solo cuando los créditos se retiran, no cuando simplemente se transfieren entre titulares."
+            },
+            "mint-amount": {
+                "term": "Cantidad acuñada",
+                "short": "La cantidad de créditos creados en una sola transacción de acuñación.",
+                "long": "Se registra por cada evento de emisión — sumar las cantidades acuñadas a lo largo del historial de un token da su suministro total acuñado."
+            },
+            "total-credits": {
+                "term": "Créditos totales",
+                "short": "El número acumulado de créditos que un proyecto ha generado en todas sus emisiones.",
+                "long": "Se muestra en la página de un proyecto como un total acumulado; crece con cada nueva acuñación sin importar lo que ocurra después con esos créditos."
+            },
+            "transfer": {
+                "term": "Transferencia",
+                "short": "Mover la propiedad de créditos activos de un titular a otro sin retirarlos.",
+                "long": "Las transferencias no eliminan créditos del suministro activo — solo el retiro lo hace. El Atlas rastrea el volumen de transferencias por separado de la emisión y el retiro."
+            },
+            "standard": {
+                "term": "Estándar",
+                "short": "El conjunto de reglas que aplica un registro — su aprobación de metodologías, verificación y requisitos de emisión.",
+                "long": "Gold Standard, VCS (Verra) y similares son estándares; un registro administra proyectos bajo uno (o más) estándar."
+            },
+            "category": {
+                "term": "Categoría",
+                "short": "Una clasificación más específica dentro del alcance sectorial que describe el tipo de intervención concreto.",
+                "long": "Donde el alcance sectorial podría decir 'Energía', la categoría lo precisa más — p. ej. cocinas limpias frente a generación de energía renovable."
+            },
+            "developer": {
+                "term": "Desarrollador",
+                "short": "La organización que diseña, implementa y es dueña de un proyecto de sostenibilidad.",
+                "long": "Los desarrolladores registran proyectos ante un registro, gestionan la operación diaria y reciben los créditos que genera una emisión."
+            },
+            "credit-lifecycle": {
+                "term": "Ciclo de vida del crédito",
+                "short": "El recorrido completo de un crédito: emisión, transferencias y eventual retiro.",
+                "long": "Las páginas de proyecto lo visualizan como una barra dividida entre créditos activos y retirados, para ver cuánto de lo emitido ya se ha utilizado."
+            },
+            "guardian": {
+                "term": "Hedera Guardian",
+                "short": "La plataforma de código abierto que ejecuta políticas de verificación y emite créditos de sostenibilidad en Hedera.",
+                "long": "Guardian codifica una metodología como un flujo de trabajo de política paso a paso, y ancla cada documento y decisión como una credencial verificable en el libro mayor público de Hedera — el sistema del que este Atlas obtiene sus datos."
+            },
+            "policy": {
+                "term": "Política",
+                "short": "Un flujo de trabajo de Guardian que codifica las reglas de una metodología como un proceso auditable en cadena.",
+                "long": "Una política define los roles (dueño del proyecto, verificador, registro), los documentos que cada uno debe presentar, y las acciones — como acuñar un token — que se activan cuando se cumplen los requisitos."
+            },
+            "onchain": {
+                "term": "En cadena",
+                "short": "Registrado directamente en el libro mayor público de Hedera, en lugar de en una base de datos privada.",
+                "long": "Los datos en cadena son verificables de forma independiente por cualquiera — el Atlas enlaza al explorador de Hedera (HashScan) para que puedas confirmar tú mismo una emisión, transferencia o retiro."
+            },
+            "topic-id": {
+                "term": "ID de tópico",
+                "short": "La dirección de un tópico del Hedera Consensus Service — un flujo donde los mensajes se registran en orden.",
+                "long": "Cada instancia de política y cada proyecto tienen IDs de tópico (formato 0.0.xxxxx); Guardian escribe allí cada paso de verificación, creando un registro de auditoría inmutable y con marca de tiempo."
+            },
+            "mainnet": {
+                "term": "Mainnet",
+                "short": "La red pública en vivo de Hedera, donde ocurren transacciones reales y con valor financiero.",
+                "long": "A diferencia de una testnet (usada para pruebas sin valor real), los datos de Mainnet reflejan créditos realmente emitidos y retirados — el selector de red confirma cuál estás viendo."
+            },
+            "testnet": {
+                "term": "Testnet",
+                "short": "Una red de Hedera gratuita y sin producción usada para pruebas — nada en ella tiene valor real.",
+                "long": "Los desarrolladores prueban políticas, tokens e integraciones en Testnet antes de pasar a producción; el Atlas mantiene Testnet y Mainnet completamente separadas para que la actividad de prueba nunca se mezcle con créditos reales."
+            },
+            "did": {
+                "term": "DID",
+                "short": "Identificador Descentralizado — un ID portátil y anclado en blockchain para un proyecto, organización o registro.",
+                "long": "Un DID (p. ej. did:hedera:mainnet:...) permite que una entidad demuestre su identidad y credenciales sin depender de una autoridad centralizada única."
+            },
+            "vc": {
+                "term": "Credencial Verificable (VC)",
+                "short": "Un documento digital a prueba de manipulación que prueba una afirmación — como \"las emisiones de este proyecto se redujeron en X toneladas\".",
+                "long": "Las VC son el bloque básico de las políticas de Guardian: cada envío de documento, revisión y acción de acuñación produce una VC anclada en Hedera, formando la cadena de confianza completa de un proyecto."
+            },
+            "nft": {
+                "term": "Token No Fungible (NFT)",
+                "short": "Un token único que representa un lote o certificado de crédito específico y no intercambiable.",
+                "long": "Algunos registros emiten créditos como NFTs para que cada número de serie siga siendo rastreable individualmente, en lugar de agruparse en un solo saldo fungible."
+            },
+            "fungible": {
+                "term": "Token Fungible",
+                "short": "Una unidad de crédito intercambiable — cualquiera equivale en valor a otra.",
+                "long": "La mayoría de los créditos de carbono son fungibles: 1 tCO2e de un lote se trata igual que cualquier otro, lo que facilita su comercio y agrupación."
+            },
+            "token-supply": {
+                "term": "Suministro de token",
+                "short": "El número total de unidades de un token que existen actualmente en Hedera.",
+                "long": "Para tokens de crédito fungibles, es el saldo vivo entre todos los titulares; puede diferir ligeramente del total acuñado si algunas unidades fueron quemadas."
+            },
+            "total-minted": {
+                "term": "Total acuñado",
+                "short": "La suma histórica de todas las transacciones de acuñación de un token.",
+                "long": "El total acuñado (todos) incluye actividad fuera de cualquier proyecto rastreado, mientras que el total acuñado (proyecto) se limita a un proyecto — ambos pueden diferir."
+            },
+            "instance-topic-id": {
+                "term": "ID de tópico de instancia",
+                "short": "El tópico de Hedera que registra la ejecución de política de un proyecto específico.",
+                "long": "Cada instancia de proyecto escribe su propia secuencia de pasos de verificación en este tópico, distinto del tópico de la definición de política compartida."
+            },
+            "policy-topic-id": {
+                "term": "ID de tópico de política",
+                "short": "El tópico de Hedera que registra la definición del flujo de política compartido en el que se ejecuta un proyecto.",
+                "long": "Varios proyectos pueden ejecutarse bajo la misma política publicada y compartir su ID de tópico de política, mientras cada uno mantiene su propio tópico de instancia."
+            },
+            "root-vc": {
+                "term": "VC raíz",
+                "short": "La credencial verificable de origen de la que se ramifica toda la cadena de confianza de un proyecto.",
+                "long": "Cada documento, revisión y acción de acuñación posterior en el proceso se remonta a la VC raíz, anclando todo el historial a un único punto de partida."
+            },
+            "hashscan": {
+                "term": "HashScan",
+                "short": "El explorador de bloques público de Hedera.",
+                "long": "Usa HashScan para confirmar de forma independiente cualquier transacción, token o tópico en cadena referenciado por el Atlas — es la fuente de verdad detrás de cada enlace 'Ver en el explorador'."
+            },
+            "ipfs": {
+                "term": "IPFS",
+                "short": "InterPlanetary File System — almacenamiento descentralizado para documentos más grandes referenciados por una credencial.",
+                "long": "Guardian almacena archivos voluminosos (como informes de monitoreo completos) en IPFS y los referencia desde una credencial, manteniendo liviano el registro en cadena."
+            },
+            "schema": {
+                "term": "Esquema",
+                "short": "El formato de datos estructurado que debe seguir un documento dentro de una política.",
+                "long": "Un esquema define qué campos tiene un formulario como 'Datos del Proyecto' o 'Datos de Serie' — Guardian valida los envíos contra él antes de que puedan avanzar."
+            },
+            "sdg": {
+                "term": "ODS",
+                "short": "Objetivo de Desarrollo Sostenible — una de las 17 metas globales de la ONU para el progreso social y ambiental hacia 2030.",
+                "long": "Los proyectos etiquetan a qué ODS contribuyen (p. ej. ODS 13: Acción por el Clima); el Atlas agrega esto en gráficos de Cobertura de ODS para toda la cartera."
+            },
+            "watchlist": {
+                "term": "Lista de seguimiento",
+                "short": "Una lista corta guardada de proyectos, créditos o registros que sigue un usuario registrado.",
+                "long": "Los widgets del panel se pueden filtrar para mostrar datos solo de la lista de seguimiento, convirtiendo el Atlas general en una vista de cartera personalizada."
+            },
+            "custom-chart": {
+                "term": "Gráfico personalizado",
+                "short": "Un gráfico agregado por el usuario, construido a partir de cualquier métrica rastreada.",
+                "long": "Los gráficos personalizados se ubican junto a los widgets predeterminados en un panel personalizado, extrayendo datos de la misma fuente subyacente."
+            },
+            "widget-library": {
+                "term": "Biblioteca de widgets",
+                "short": "El catálogo de widgets de gráficos e indicadores disponibles para añadir a un panel.",
+                "long": "Los usuarios eligen entre widgets prediseñados (gráficos de tendencia, desgloses, tablas) en lugar de crear visualizaciones desde cero."
+            },
+            "raw-data": {
+                "term": "Datos brutos",
+                "short": "Los documentos y credenciales originales y sin procesar detrás de una cifra mostrada.",
+                "long": "Cada número calculado en el Atlas enlaza de vuelta a las credenciales verificables brutas de las que se derivó, para total transparencia y auditoría."
+            },
+            "mock-data": {
+                "term": "Datos de ejemplo",
+                "short": "Cifras de marcador de posición mostradas donde aún no hay una fuente de datos en vivo conectada.",
+                "long": "Claramente etiquetadas para que nunca se confundan con valores reales — común en campos como los conteos de Transferido/Retirado que aún se están integrando por registro."
+            },
+            "guest-view": {
+                "term": "Vista de invitado",
+                "short": "Navegar el Atlas sin iniciar sesión.",
+                "long": "Los invitados tienen acceso completo de solo lectura a los datos públicos de la red; iniciar sesión desbloquea funciones de personalización como una Lista de seguimiento o un panel personalizado."
+            },
+            "sync-status": {
+                "term": "Estado de sincronización",
+                "short": "Qué tan actualizados están los datos del Atlas respecto a la red Hedera en vivo.",
+                "long": "Se muestra como una marca de tiempo de última sincronización en la barra lateral y en la página dedicada de Estado de sincronización, para que sepas cuán reciente es cualquier cifra en pantalla."
+            },
+            "quick-filter": {
+                "term": "Filtro rápido",
+                "short": "Un filtro preestablecido de un clic, como 'Año de cosecha 2022' o 'Gold Standard'.",
+                "long": "Los filtros rápidos se ubican encima de una tabla como atajos superpuestos a los controles de filtro manuales completos, para los criterios de acotación más comunes."
+            },
+            "system-user": {
+                "term": "Usuario del sistema",
+                "short": "Una cuenta con sesión iniciada con acceso estándar a funciones personalizadas como una Lista de seguimiento o un panel personalizado.",
+                "long": "Los usuarios del sistema ven los mismos datos públicos de red que los invitados, además de poder guardar listas de seguimiento, crear gráficos personalizados y conservar el diseño de su propio panel."
+            },
+            "system-administrator": {
+                "term": "Administrador del sistema",
+                "short": "Una cuenta con privilegios elevados que administra la instancia del Atlas en sí, no solo datos personales.",
+                "long": "Los administradores gestionan cosas que los usuarios individuales no pueden — indexación de registros, configuración de sincronización y gestión de otras cuentas — además de todo lo que puede hacer un Usuario del sistema."
+            }
+        }
     }
 }

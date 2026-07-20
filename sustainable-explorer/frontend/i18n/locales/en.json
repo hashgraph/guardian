@@ -338,6 +338,7 @@
         "sdgs": "SDGs",
         "analytics": "Analytics",
         "reports": "Reports",
+        "glossary": "Glossary",
         "syncStatus": "Sync Status",
         "dataSyncedUpTo": "Data synced up to",
         "sustainable": "Sustainability",
@@ -1711,5 +1712,255 @@
         "registryRecordId": "Source registry identifier — links directly to the record on the issuing registry.",
         "verificationUrl": "Direct link to independent verification — redirects to HashScan or the registry for independent validation.",
         "sourceSystemId": "Identifier in the originating system outside Guardian."
+    },
+    "glossaryPage": {
+        "title": "Glossary",
+        "subtitle": "Plain-language definitions for the carbon-market and Hedera terms used across the Atlas",
+        "searchPlaceholder": "Search terms...",
+        "resultCount": "{count} terms",
+        "resultCountInCategory": "{count} terms in {category}",
+        "noResults": "No terms match \"{query}\"",
+        "relatedLabel": "Related:",
+        "whereShownTitle": "Where this shows up",
+        "whereShownSubtitle": "Info icons next to field labels open a quick definition inline — no need to leave the page",
+        "categories": {
+            "all": "All Terms",
+            "carbon": "Carbon Markets",
+            "chain": "Blockchain & Hedera",
+            "sdg": "SDGs",
+            "platform": "Platform & Data"
+        },
+        "demo": {
+            "registries": "Registries",
+            "methodologies": "Methodologies",
+            "issuances": "Total Issuances"
+        },
+        "terms": {
+            "issuance": {
+                "term": "Issuance",
+                "short": "The creation of new carbon credits on-chain once a project's emissions reduction is verified.",
+                "long": "Each issuance mints a batch of credits (fungible tokens or NFTs) tied to a specific project, methodology and vintage year. Issued credits start in active supply until they are transferred or retired."
+            },
+            "retirement": {
+                "term": "Retirement",
+                "short": "Permanently removing a credit from circulation once it's used to offset an emission.",
+                "long": "A retired credit can never be resold or reused — retiring it is the step that claims the environmental benefit. Retirement rate compares retired credits to total issued."
+            },
+            "vintage": {
+                "term": "Vintage",
+                "short": "The calendar year in which the emission reduction or removal represented by a credit actually occurred.",
+                "long": "Vintage is separate from issuance date — a credit can be issued years after its vintage year, once verification catches up. Buyers often prefer newer vintages."
+            },
+            "registry": {
+                "term": "Registry",
+                "short": "An independent body that verifies projects and administers official credit issuance under its standard.",
+                "long": "Registries such as Gold Standard, Verra, TolamEarth and others define rules, verify methodology compliance, and record credit ownership."
+            },
+            "methodology": {
+                "term": "Methodology",
+                "short": "The technical protocol a project follows to calculate and prove its emissions reduction or removal.",
+                "long": "A methodology defines baselines, monitoring requirements and calculation formulas. Registries publish and approve methodologies; Guardian policies encode them as workflows."
+            },
+            "sectoral-scope": {
+                "term": "Sectoral Scope",
+                "short": "The broad activity category a project belongs to (e.g. Energy, Land Use & Forestry).",
+                "long": "Sectoral scope groups projects by the kind of intervention they make, used for portfolio breakdowns and comparability across registries."
+            },
+            "crediting-period": {
+                "term": "Crediting Period",
+                "short": "The span of time during which a project is eligible to generate and issue credits.",
+                "long": "Set at project registration (e.g. Jan 2022 – Dec 2031), it bounds how many vintages a project can claim before it must renew or re-verify."
+            },
+            "tco2e": {
+                "term": "tCO2e",
+                "short": "Tonne of CO2-equivalent — the standard unit one carbon credit represents.",
+                "long": "tCO2e normalizes different greenhouse gases (methane, N2O, etc.) into an equivalent amount of CO2 by warming impact, so credits from different project types compare 1:1."
+            },
+            "active-supply": {
+                "term": "Active Supply",
+                "short": "Credits currently in circulation — issued minus retired.",
+                "long": "Active supply is the pool of live, tradeable credits; it shrinks only when credits are retired, not when they're merely transferred between holders."
+            },
+            "mint-amount": {
+                "term": "Mint Amount",
+                "short": "The quantity of credits created in a single mint transaction.",
+                "long": "Recorded per issuance event — summing mint amounts across a token's history gives its total minted supply."
+            },
+            "total-credits": {
+                "term": "Total Credits",
+                "short": "The cumulative number of credits a project has generated across all its issuances.",
+                "long": "Shown on a project page as a running total; it grows with each new mint regardless of what happens to those credits afterward."
+            },
+            "transfer": {
+                "term": "Transfer",
+                "short": "Moving ownership of active credits from one holder to another without retiring them.",
+                "long": "Transfers do not remove credits from active supply — only retirement does. The Atlas tracks transfer volume separately from issuance and retirement."
+            },
+            "standard": {
+                "term": "Standard",
+                "short": "The rulebook a registry enforces — its methodology approval, verification and issuance requirements.",
+                "long": "Gold Standard, VCS (Verra) and similar are standards; a registry administers projects under one (or more) standard."
+            },
+            "category": {
+                "term": "Category",
+                "short": "A finer classification under sectoral scope describing the specific intervention type.",
+                "long": "Where sectoral scope might say 'Energy', category narrows it further — e.g. clean cookstoves vs. renewable power generation."
+            },
+            "developer": {
+                "term": "Developer",
+                "short": "The organization that designs, implements and owns a sustainability project.",
+                "long": "Developers submit projects to a registry, run day-to-day operations, and receive the credits an issuance generates."
+            },
+            "credit-lifecycle": {
+                "term": "Credit Lifecycle",
+                "short": "The full path a credit takes: issuance, transfers, and eventual retirement.",
+                "long": "Project pages visualize this as a bar split between active and retired credits, so you can see how much of what was issued has actually been used."
+            },
+            "guardian": {
+                "term": "Hedera Guardian",
+                "short": "The open-source platform that runs verification policies and issues sustainability credits on Hedera.",
+                "long": "Guardian encodes a methodology as a step-by-step policy workflow, and anchors every document and decision as a verifiable credential on the Hedera public ledger — the system this Atlas reads its data from."
+            },
+            "policy": {
+                "term": "Policy",
+                "short": "A Guardian workflow that encodes one methodology's rules as an auditable, on-chain process.",
+                "long": "A policy defines the roles (project owner, verifier, registry), the documents each must submit, and the actions — like minting a token — triggered when requirements are met."
+            },
+            "onchain": {
+                "term": "On-Chain",
+                "short": "Recorded directly on the Hedera public ledger, rather than in a private database.",
+                "long": "On-chain data is independently verifiable by anyone — the Atlas links out to Hedera's explorer (HashScan) so you can confirm an issuance, transfer or retirement yourself."
+            },
+            "topic-id": {
+                "term": "Topic ID",
+                "short": "The address of a Hedera Consensus Service topic — a stream where messages are recorded in order.",
+                "long": "Every policy instance and project has topic IDs (format 0.0.xxxxx); Guardian writes each verification step there, creating an immutable, timestamped audit trail."
+            },
+            "mainnet": {
+                "term": "Mainnet",
+                "short": "Hedera's live public network, where real, financially-binding transactions happen.",
+                "long": "As opposed to a testnet (used for trials with no real value), Mainnet data reflects actual issued and retired credits — the network selector confirms which one you're viewing."
+            },
+            "testnet": {
+                "term": "Testnet",
+                "short": "A free, non-production Hedera network used for testing — nothing on it carries real value.",
+                "long": "Developers trial policies, tokens and integrations on Testnet before going live; the Atlas keeps Testnet and Mainnet data fully separate so test activity never mixes with real credits."
+            },
+            "did": {
+                "term": "DID",
+                "short": "Decentralized Identifier — a portable, blockchain-anchored ID for a project, organization or registry.",
+                "long": "A DID (e.g. did:hedera:mainnet:...) lets an entity prove its identity and credentials without relying on a single centralized authority."
+            },
+            "vc": {
+                "term": "Verifiable Credential (VC)",
+                "short": "A tamper-evident digital document proving a claim — like \"this project's emissions were reduced by X tons.\"",
+                "long": "VCs are the building block of Guardian policies: each document submission, review, and mint action produces a VC anchored on Hedera, forming a project's full trust chain."
+            },
+            "nft": {
+                "term": "Non-Fungible Token (NFT)",
+                "short": "A unique token representing one specific, non-interchangeable credit batch or certificate.",
+                "long": "Some registries issue credits as NFTs so each serial number stays individually traceable, rather than pooled into one fungible balance."
+            },
+            "fungible": {
+                "term": "Fungible Token",
+                "short": "An interchangeable unit of credit — any one is equal in value to another.",
+                "long": "Most carbon credits are fungible: 1 tCO2e from a batch is treated the same as any other, making them easy to trade and pool."
+            },
+            "token-supply": {
+                "term": "Token Supply",
+                "short": "The total number of units of a token that currently exist on Hedera.",
+                "long": "For fungible credit tokens this is the live balance across all holders; it can differ slightly from total minted if some units were burned."
+            },
+            "total-minted": {
+                "term": "Total Minted",
+                "short": "The all-time sum of every mint transaction for a token.",
+                "long": "Total minted (all) includes activity outside any single tracked project, while total minted (project) scopes it to one project — the two can diverge."
+            },
+            "instance-topic-id": {
+                "term": "Instance Topic ID",
+                "short": "The Hedera topic recording one specific project's policy execution.",
+                "long": "Each project instance writes its own sequence of verification steps to this topic, distinct from the shared policy definition's topic."
+            },
+            "policy-topic-id": {
+                "term": "Policy Topic ID",
+                "short": "The Hedera topic recording the shared policy workflow definition a project runs on.",
+                "long": "Multiple projects can run under the same published policy and share its policy topic ID, while each keeps its own instance topic."
+            },
+            "root-vc": {
+                "term": "Root VC",
+                "short": "The originating verifiable credential a project's entire trust chain branches from.",
+                "long": "Every later document, review and mint action in the pipeline traces back to the root VC, anchoring the whole history to one starting point."
+            },
+            "hashscan": {
+                "term": "HashScan",
+                "short": "Hedera's public block explorer.",
+                "long": "Use HashScan to independently confirm any on-chain transaction, token or topic referenced by the Atlas — it's the source of truth behind every 'View on Explorer' link."
+            },
+            "ipfs": {
+                "term": "IPFS",
+                "short": "InterPlanetary File System — decentralized storage for larger documents referenced by a credential.",
+                "long": "Guardian stores bulky files (like full monitoring reports) on IPFS and references them from a credential, keeping the on-chain record itself lightweight."
+            },
+            "schema": {
+                "term": "Schema",
+                "short": "The structured data format a document must follow within a policy.",
+                "long": "A schema defines what fields a form like 'Project Data' or 'Serial Data' has — Guardian validates submissions against it before they can proceed."
+            },
+            "sdg": {
+                "term": "SDG",
+                "short": "Sustainable Development Goal — one of the UN's 17 global targets for social and environmental progress by 2030.",
+                "long": "Projects tag which SDGs they contribute to (e.g. SDG 13: Climate Action); the Atlas aggregates this into SDG Coverage charts across the whole portfolio."
+            },
+            "watchlist": {
+                "term": "Watchlist",
+                "short": "A saved shortlist of projects, credits or registries a signed-in user tracks.",
+                "long": "Dashboard widgets can be filtered to show data for just the watchlist, turning the general Atlas into a personalized portfolio view."
+            },
+            "custom-chart": {
+                "term": "Custom Chart",
+                "short": "A user-added chart built from any tracked metric.",
+                "long": "Custom charts sit alongside the default widgets on a personalized dashboard, pulling from the same underlying data."
+            },
+            "widget-library": {
+                "term": "Widget Library",
+                "short": "The catalog of chart and KPI widgets available to add to a dashboard.",
+                "long": "Users pick from pre-built widgets (trend charts, breakdowns, tables) rather than building visualizations from scratch."
+            },
+            "raw-data": {
+                "term": "Raw Data",
+                "short": "The original, unprocessed documents and credentials behind a displayed figure.",
+                "long": "Every computed number in the Atlas links back to the raw verifiable credentials it was derived from, for full transparency and audit."
+            },
+            "mock-data": {
+                "term": "Mock Data",
+                "short": "Placeholder figures shown where a live data source isn't wired up yet.",
+                "long": "Clearly labeled so they're never mistaken for real values — common on fields like Transferred/Retired counts still being integrated per registry."
+            },
+            "guest-view": {
+                "term": "Guest View",
+                "short": "Browsing the Atlas without signing in.",
+                "long": "Guests get full read-only access to public network data; signing in unlocks personalization features like a Watchlist or custom dashboard."
+            },
+            "sync-status": {
+                "term": "Sync Status",
+                "short": "How current the Atlas's data is relative to the live Hedera network.",
+                "long": "Shown as a last-synced timestamp in the sidebar and on the dedicated Sync Status page, so you know how fresh any figure on screen is."
+            },
+            "quick-filter": {
+                "term": "Quick Filter",
+                "short": "A one-click preset filter, like 'Vintage 2022' or 'Gold Standard.'",
+                "long": "Quick filters sit above a table as shortcuts layered on top of the full manual filter controls, for the most common narrowing criteria."
+            },
+            "system-user": {
+                "term": "System User",
+                "short": "A signed-in account with standard access to personalized features like a Watchlist or custom dashboard.",
+                "long": "System Users see the same public network data as guests, plus the ability to save watchlists, build custom charts, and persist their own dashboard layout."
+            },
+            "system-administrator": {
+                "term": "System Administrator",
+                "short": "An elevated account that manages the Atlas instance itself, not just personal data.",
+                "long": "Administrators handle things individual users can't — registry indexing, sync configuration, and managing other accounts — on top of everything a System User can do."
+            }
+        }
     }
 }

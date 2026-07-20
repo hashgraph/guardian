@@ -12,6 +12,7 @@ import {
     Activity,
     CheckCircle2,
     Briefcase,
+    Library,
 } from 'lucide-vue-next';
 
 const { t, locale } = useI18n();
@@ -43,6 +44,7 @@ const navItems = computed(() => [
     { label: t('nav.developers'), icon: Users, to: '/developers' },
     { label: t('nav.sdgs'), icon: Target, to: '/sdgs' },
     { label: t('nav.analytics'), icon: BarChart3, to: '/analytics' },
+    { label: t('nav.glossary'), icon: Library, to: '/glossary' },
     // Sync status page is viewable by everyone (read-only); actions are admin-only.
     { label: t('nav.syncStatus'), icon: Activity, to: '/status' },
 ]);
