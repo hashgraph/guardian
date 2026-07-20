@@ -5,7 +5,6 @@
             <button class="sc-back-crumb" (click)="goBack()" title="Back to schemas">
                 <i class="pi pi-arrow-left"></i>
             </button>
-            <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
             <a class="sc-crumb-link" (click)="goBack()">Schemas</a>
             @if (selectedSchema) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
@@ -64,7 +63,9 @@
                     <i class="pi pi-download"></i>
                     Export
                 </button>
-                <button class="sc-btn sc-btn-primary">
+                <button class="sc-btn sc-btn-primary"
+                    [disabled]="!canPublish"
+                    (click)="onPublish()">
                     <i class="pi pi-send"></i>
                     Publish
                 </button>
