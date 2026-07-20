@@ -1,51 +1,45 @@
 # Retrieval of Data from Root Policy Block
 
-### RETRIEVING DATA FROM ROOT POLICY BLOCK
+**`GET /policies/{policyId}/blocks`**
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/blocks" summary="Retrieves data for the policy root block" %}
-{% swagger-description %}
-Returns data from the root policy block. Only users with the Standard Registry and Installer role are allowed to make the request
-{% endswagger-description %}
+Returns data from the root policy block for the specified policy.
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-   content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyBlock'
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "blockType": "interfaceContainerBlock",
+  "children": []
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `503 Service Unavailable` | Policy block is temporarily unavailable |
+| `500 Internal Server Error` | Unexpected server failure |

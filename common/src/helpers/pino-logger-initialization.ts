@@ -1,7 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 
-import process from 'process';
+import process from 'node:process';
 
 //interfaces
 import { PinoLogType } from '@guardian/interfaces';

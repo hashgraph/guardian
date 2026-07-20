@@ -3,7 +3,8 @@ import {Component, EventEmitter, Input, OnInit, Output, SimpleChanges} from '@an
 @Component({
     selector: 'app-compare-module',
     templateUrl: './compare-module.component.html',
-    styleUrls: ['./compare-module.component.css']
+    styleUrls: ['./compare-module.component.css'],
+    standalone: false
 })
 export class CompareModuleComponent implements OnInit {
     @Input('value') value!: any;

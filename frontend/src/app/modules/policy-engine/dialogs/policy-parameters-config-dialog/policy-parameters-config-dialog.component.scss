@@ -59,7 +59,7 @@ form {
     font-family: Inter;
     font-weight: 400;
     font-size: 14px !important;
-    color: #23252E;
+    color: var(--guardian-font-color, #23252E);
     line-height: 16px;
     padding: 12px 16px;
   }
@@ -102,7 +102,7 @@ form {
 }
 
 .group-container {
-    background-color: #F9FAFC;
+    background-color: var(--guardian-grey-background, #F9FAFC);
     border-radius: 8px;
     border: 1px solid #E1E7EF;
     opacity: 1;
@@ -133,7 +133,7 @@ form {
 }
 
 ::ng-deep  .parameter-dropdown {
-    .p-dropdown,
+    .p-select,
     .p-multiselect {
         border-radius: 8px !important;
         height: 40px;
@@ -145,30 +145,30 @@ form {
         }
     }
 
-    .p-dropdown-label,
+    .p-select-label,
     .p-multiselect-label {
         height: 40px;
         font-family: Inter;
         font-weight: 400;
         font-size: 14px;
         padding: 12px 16px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         line-height: 16px;
     }
 
-    .guardian-dropdown .p-dropdown .p-inputtext {
+    .guardian-dropdown .p-select .p-inputtext {
         padding: 12px 16px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
     }
 
 }
 
 input.ng-invalid.ng-touched,
-::ng-deep .parameter-dropdown.ng-invalid.ng-touched .p-dropdown,
+::ng-deep .parameter-dropdown.ng-invalid.ng-touched .p-select,
 ::ng-deep .parameter-dropdown.ng-invalid.ng-touched .p-multiselect {
     border-color: #f44336;
 }
 
-::ng-deep .is-invalid .guardian-dropdown .p-dropdown {
+::ng-deep .is-invalid .guardian-dropdown .p-select {
     border-color: #f44336;
 }

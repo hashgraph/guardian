@@ -171,7 +171,7 @@ For complex scenarios where formulas are not sufficient for the required data tr
 
 In code, you can reference all defined formulas and variables by name.
 
-<figure><img src="../../../../../.gitbook/assets/image (8) (1) (3).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (8) (1) (3) (1).png" alt=""><figcaption></figcaption></figure>
 
 <figure><img src="../../../../../.gitbook/assets/image (9).png" alt=""><figcaption></figcaption></figure>
 
@@ -189,7 +189,7 @@ Use this section to configure which document fields receive the results of calcu
 
 In this section, you can reference input/output fields and variables only. Formulas can be referenced only in the Formulas section.
 
-<figure><img src="../../../../../.gitbook/assets/image (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (12) (6).png" alt=""><figcaption></figcaption></figure>
 
 {% hint style="warning" %}
 **Note — Output type constraint**: Only variables of type `variable` (not `function`) can be mapped to output fields. If a formula result needs to be written to an output, wrap it in an intermediate variable first.
@@ -201,7 +201,7 @@ For convenience Inputs\Formulas\Outputs can be visually partitioned using tabs. 
 
 #### 4.1 Creation
 
-<figure><img src="../../../../../.gitbook/assets/image (13).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../../.gitbook/assets/image (13) (4).png" alt=""><figcaption></figcaption></figure>
 
 #### 4.2 Renaming
 

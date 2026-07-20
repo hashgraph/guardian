@@ -1,137 +1,143 @@
 <div class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">Multi Policy</div>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">Multi Policy</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 
 <div class="dialog-body">
-    <div class="context">
-        <div *ngIf="loading" class="guardian-loading">
-            <div class="guardian-loading-image"></div>
-        </div>
+  <div class="context">
+    @if (loading) {
+      <div class="guardian-loading">
+        <div class="guardian-loading-image"></div>
+      </div>
+    }
 
-        <div style="width: 100%">
+    <div style="width: 100%">
 
-            <div *ngIf="!exists">
-                <div class="radio-group">
-                    <div>
-                        <div class="group-name">
-                            <p-radioButton
-                                name="policyType"
-                                [ngModel]="policyType"
-                                [value]="'Main'"
-                                (onClick)="onChange($event)"
-                                class="guardian-radio-button radio-button-24">
-                            </p-radioButton>
-                            <label>Create new multi policy</label>
-                        </div>
-                        <div class="group-value" [ngClass]="{'disabled': policyType !== 'Main'}">
-                            <div class="table-container" style="margin-bottom: 15px;color: #707070">
-                                <span>Type: </span>
-                                <span>Main Policy</span>
-                            </div>
-                            <div class="table-container" style="margin-bottom: 15px;color: #707070">
-                                <span>Main Policy: </span>
-                                <span>{{ mainPolicyTopicId1 }}</span>
-                            </div>
-                            <div class="table-container" style="margin-bottom: 15px;color: #707070">
-                                <span>Topic for synchronization: </span>
-                                <span>{{ synchronizationTopicId1 }}</span>
-                            </div>
-                            <div class="table-container">
-                                <div class="guardian-input-container">
-                                    <input [value]="link1" pInputText type="text" [readonly]="true"/>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <div class="group-name">
-                            <p-radioButton
-                                name="policyType"
-                                [ngModel]="policyType"
-                                [value]="'Sub'"
-                                (onClick)="onChange($event)"
-                                class="guardian-radio-button radio-button-24">
-                            </p-radioButton>
-                            <label>Join an existing policy</label>
-                        </div>
-                        <div class="group-value" [ngClass]="{'disabled': policyType !== 'Sub'}">
-                            <div class="table-container" style="margin-bottom: 15px;color: #707070">
-                                <span>Type: </span>
-                                <span>Sub Policy</span>
-                            </div>
-                            <div class="table-container" style="margin-bottom: 15px;color: #707070">
-                                <span>Main Policy: </span>
-                                <span>{{ mainPolicyTopicId2 }}</span>
-                            </div>
-                            <div class="table-container" style="margin-bottom: 15px;color: #707070">
-                                <span>Topic for synchronization: </span>
-                                <span>{{ synchronizationTopicId2 }}</span>
-                            </div>
-                            <div class="table-container">
-                                <div class="guardian-input-container">
-                                    <input [(ngModel)]="link2" pInputText type="text" (ngModelChange)="onParse($event)" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+      @if (!exists) {
+        <div>
+          <div class="radio-group">
+            <div>
+              <div class="group-name">
+                <p-radioButton
+                  name="policyType"
+                  [ngModel]="policyType"
+                  [value]="'Main'"
+                  (onClick)="onChange($event)"
+                  class="guardian-radio-button radio-button-24">
+                </p-radioButton>
+                <label>Create new multi policy</label>
+              </div>
+              <div class="group-value" [ngClass]="{'disabled': policyType !== 'Main'}">
+                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                  <span>Type: </span>
+                  <span>Main Policy</span>
                 </div>
-
+                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                  <span>Main Policy: </span>
+                  <span>{{ mainPolicyTopicId1 }}</span>
+                </div>
+                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                  <span>Topic for synchronization: </span>
+                  <span>{{ synchronizationTopicId1 }}</span>
+                </div>
+                <div class="table-container">
+                  <div class="guardian-input-container">
+                    <input [value]="link1" pInputText type="text" [readonly]="true"/>
+                  </div>
+                </div>
+              </div>
             </div>
-
-            <div *ngIf="exists">
-                <div style="margin-left: 10px;" class="group-name">
-                    Policy is already bound
+            <div>
+              <div class="group-name">
+                <p-radioButton
+                  name="policyType"
+                  [ngModel]="policyType"
+                  [value]="'Sub'"
+                  (onClick)="onChange($event)"
+                  class="guardian-radio-button radio-button-24">
+                </p-radioButton>
+                <label>Join an existing policy</label>
+              </div>
+              <div class="group-value" [ngClass]="{'disabled': policyType !== 'Sub'}">
+                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                  <span>Type: </span>
+                  <span>Sub Policy</span>
                 </div>
-                <div class="group-value">
-                    <div style="margin-bottom: 15px;color: #707070">
-                        <span>Type: </span>
-                        <span>{{ policyType }} Policy</span>
-                    </div>
-                    <div style="margin-bottom: 15px;color: #707070">
-                        <span>Main Policy: </span>
-                        <span>{{ mainPolicyTopicId1 }}</span>
-                    </div>
-                    <div style="margin-bottom: 15px;color: #707070">
-                        <span>Topic for synchronization: </span>
-                        <span>{{ synchronizationTopicId1 }}</span>
-                    </div>
-                    <div style="margin-bottom: 15px;color: #707070">
-                        <span>Current Policy: </span>
-                        <span>{{ instanceTopicId }}</span>
-                    </div>
-                    <div class="guardian-input-container">
-                        <label class="form-label" htmlFor="version">Link</label>
-                        <input [value]="link1" pInputText type="text" [readonly]="true"/>
-                    </div>
+                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                  <span>Main Policy: </span>
+                  <span>{{ mainPolicyTopicId2 }}</span>
                 </div>
+                <div class="table-container" style="margin-bottom: 15px;color: #707070">
+                  <span>Topic for synchronization: </span>
+                  <span>{{ synchronizationTopicId2 }}</span>
+                </div>
+                <div class="table-container">
+                  <div class="guardian-input-container">
+                    <input [(ngModel)]="link2" pInputText type="text" (ngModelChange)="onParse($event)" />
+                  </div>
+                </div>
+              </div>
             </div>
+          </div>
         </div>
+      }
 
-
-
+      @if (exists) {
+        <div>
+          <div style="margin-left: 10px;" class="group-name">
+            Policy is already bound
+          </div>
+          <div class="group-value">
+            <div style="margin-bottom: 15px;color: #707070">
+              <span>Type: </span>
+              <span>{{ policyType }} Policy</span>
+            </div>
+            <div style="margin-bottom: 15px;color: #707070">
+              <span>Main Policy: </span>
+              <span>{{ mainPolicyTopicId1 }}</span>
+            </div>
+            <div style="margin-bottom: 15px;color: #707070">
+              <span>Topic for synchronization: </span>
+              <span>{{ synchronizationTopicId1 }}</span>
+            </div>
+            <div style="margin-bottom: 15px;color: #707070">
+              <span>Current Policy: </span>
+              <span>{{ instanceTopicId }}</span>
+            </div>
+            <div class="guardian-input-container">
+              <label class="form-label" htmlFor="version">Link</label>
+              <input [value]="link1" pInputText type="text" [readonly]="true"/>
+            </div>
+          </div>
+        </div>
+      }
     </div>
+
+
+
+  </div>
 </div>
 
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div *ngIf="!exists" class="dialog-button">
-            <button 
-                (click)="onCreate()" 
-                class="guardian-button guardian-button-primary"
-                [disabled]="!(valid && initDialog)">{{
-                    policyType === 'Main' ? 'Create' : 'Join'
-                }}</button>
-        </div>
+  <div class="action-buttons">
+    <div class="dialog-button">
+      <button
+        (click)="onClose()"
+      class="guardian-button guardian-button-secondary">Close</button>
     </div>
+    @if (!exists) {
+      <div class="dialog-button">
+        <button
+          (click)="onCreate()"
+          class="guardian-button guardian-button-primary"
+          [disabled]="!(valid && initDialog)">{{
+          policyType === 'Main' ? 'Create' : 'Join'
+        }}</button>
+      </div>
+    }
+  </div>
 </div>

@@ -1,39 +1,28 @@
 <div class="content" [style.min-width.px]="minWidth">
-    <div *ngIf="headers && type==='tree'" class="item-headers" [style.grid-template-columns]="_gridStyle">
-        <div *ngFor="let item of headers" [style.grid-column-start]="item.column" class="item-header">
-            <span class="item-header-name">
-                {{ item.name }}
-            </span>
-            <span class="item-header-rate item-header-color-{{item.color}}">
-                {{ item.rate }}
-            </span>
-        </div>
-    </div>
-
     <div *ngIf="policies && policies.length>2" class="list">
-        <p-accordion [multiple]="true">
-            <p-accordionTab header="Description" [selected]="true">
-                <div class="info-container" [style.grid-template-columns]="_gridStyle">
-                    <ng-container *ngFor="let context of policies">
-                        <div *ngIf="context.left" class="left-compare-result compare-result" [attr.open]="true">
-                            <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
-                        </div>
-                        <div class="middle-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index"
-                             [attr.open]="true">
-                        </div>
-                        <div class="right-compare-result compare-result"
-                             *ngIf="context.right"
-                             [style.grid-column-start]="2 * context.index + 1"
-                             [attr.open]="true">
-                            <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
-                        </div>
-                    </ng-container>
-                </div>
-            </p-accordionTab>
 
-            <p-accordionTab header="Policy Roles" *ngIf="roles?.length">
+        <section class="policy-description-section">
+            <div class="policy-description-title">Description</div>
+            <div class="policy-description-card" [style.grid-template-columns]="'repeat(' + size + ', minmax(0, 1fr))'">
+                <div class="policy-description-column" *ngFor="let context of policies">
+                    <ng-container *ngTemplateOutlet="policyInfo; context: context"></ng-container>
+                </div>
+            </div>
+        </section>
+
+        <ng-content select="[policyControls]"></ng-content>
+
+        <p-accordion
+            class="multi-compare-policy-accordion"
+            [multiple]="true"
+            [value]="['blocks']"
+            expandIcon="pi pi-chevron-down icon-start"
+            collapseIcon="pi pi-chevron-up icon-start"
+        >
+
+            <p-accordion-panel value="roles" *ngIf="roles.length">
+    <p-accordion-header>Policy Roles</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-tree">
                     <div *ngFor="let item of roles"
                          class="report-item report-item-small"
@@ -62,9 +51,12 @@
 
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Groups" *ngIf="groups?.length">
+            <p-accordion-panel value="groups" *ngIf="groups.length">
+    <p-accordion-header>Policy Groups</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-tree">
                     <div *ngFor="let item of groups" class="report-item report-item-small"
                          [attr.type]="item.type"
@@ -89,9 +81,12 @@
                         </ng-container>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Topics" *ngIf="topics?.length">
+            <p-accordion-panel value="topics" *ngIf="topics.length">
+    <p-accordion-header>Policy Topics</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-tree">
                     <div *ngFor="let item of topics"
                          class="report-item report-item-small"
@@ -120,9 +115,12 @@
 
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Tokens" *ngIf="tokens?.length">
+            <p-accordion-panel value="tokens" *ngIf="tokens.length">
+    <p-accordion-header>Policy Tokens</p-accordion-header>
+    <p-accordion-content>
                 <div class="merge-tree">
                     <div *ngFor="let item of tokens"
                          class="report-item report-item-small"
@@ -157,9 +155,12 @@
 
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Tools">
+            <p-accordion-panel value="tools">
+    <p-accordion-header>Policy Tools</p-accordion-header>
+    <p-accordion-content>
                 <div *ngIf="tools && tools.length" class="merge-tree">
                     <div *ngFor="let item of tools"
                         class="report-item report-item-small"
@@ -193,9 +194,12 @@
                         </ng-container>
                     </div>
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
-            <p-accordionTab header="Policy Blocks" [selected]="true">
+            <p-accordion-panel value="blocks">
+    <p-accordion-header>Policy Blocks</p-accordion-header>
+    <p-accordion-content>
 
                 <div class="merge-container">
                     <div class="legend"
@@ -270,7 +274,7 @@
                                         <div class="block-icon">
                                             <i [ngClass]="'pi pi-' + context.blockIcon"></i>
                                         </div>
-                                        <div class="block-type">{{ context.blockName }}</div>
+                                        <div class="block-type" [appOverflowTitle]="context.blockName">{{ context.blockName }}</div>
                                     </div>
                                 </div>
 
@@ -341,7 +345,8 @@
                     </div>
 
                 </div>
-            </p-accordionTab>
+                </p-accordion-content>
+</p-accordion-panel>
 
         </p-accordion>
 
@@ -444,7 +449,7 @@
                     <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <i class="pi pi-search"></i>
                     </div>
-                    <span *ngIf="prop.propType" [title]="prop.value">
+                    <span *ngIf="prop.propType" [appOverflowTitle]="prop.value">
                         {{ prop.value }}
                     </span>
                 </div>
@@ -615,7 +620,7 @@
                     <div class="compare-btn" (click)="compareSchema(prop, data)">
                         <i class="pi pi-search"></i>
                     </div>
-                    <span *ngIf="prop.propType" [title]="prop.value">
+                    <span *ngIf="prop.propType" [appOverflowTitle]="prop.value">
                         {{ prop.value }}
                     </span>
                 </div>

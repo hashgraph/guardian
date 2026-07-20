@@ -15,7 +15,8 @@ import {DialogService} from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-artifact-config',
     templateUrl: './artifact-config.component.html',
-    styleUrls: ['./artifact-config.component.css']
+    styleUrls: ['./artifact-config.component.css'],
+    standalone: false
 })
 export class ArtifactConfigComponent implements OnInit {
     public loading: boolean = true;
@@ -159,7 +160,10 @@ export class ArtifactConfigComponent implements OnInit {
             },
             modal: true,
             closable: false,
-        });
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (!result) {

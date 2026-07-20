@@ -3,7 +3,7 @@ import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/c
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from './toast.service';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
 import { SILENT_HTTP_ERRORS } from '../constants';
 // import { AuthService } from './auth.service';
@@ -16,7 +16,7 @@ import { SILENT_HTTP_ERRORS } from '../constants';
 export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private messageTranslator: MessageTranslationService,
         // private auth: AuthService,
         // private authState: AuthStateService,
@@ -47,7 +47,7 @@ export class HandleErrorsService implements HttpInterceptor {
             const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
             header = `${error.status} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.statusText}`;
             if (error.message) {
-                text = `<div>${translatedMessage.text}</div><div>${this.messageToText(errorObject)}</div>`;
+                text = `${translatedMessage.text}\n${this.messageToText(errorObject)}`;
             } else {
                 text = `${errorObject}`;
             }
@@ -65,7 +65,7 @@ export class HandleErrorsService implements HttpInterceptor {
                     const header = `${_error.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                     let text;
                     if (_error.message) {
-                        text = `<div>${translatedMessage.text}</div><div>${this.messageToText(_error.error)}</div>`;
+                        text = `${translatedMessage.text}\n${this.messageToText(_error.error)}`;
                     } else {
                         text = `${_error.error}`;
                     }
@@ -76,7 +76,7 @@ export class HandleErrorsService implements HttpInterceptor {
             } else if (typeof errorObject.message === 'string') {
                 const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(errorObject.message));
                 if (errorObject.uuid) {
-                    text = `<div>${this.messageToText(translatedMessage.text)}</div><div>${errorObject.uuid}</div>`;
+                    text = `${this.messageToText(translatedMessage.text)}\n${errorObject.uuid}`;
                 } else {
                     text = `${this.messageToText(translatedMessage.text)}`;
                 }
@@ -98,29 +98,13 @@ export class HandleErrorsService implements HttpInterceptor {
 
     private createMessage(result: { warning: any, text: any, header: any }, error: any) {
         if (result.warning) {
-            this.toastr.warning(result.text, 'Waiting for initialization', {
-                timeOut: 30000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
+            this.toastService.warn(result.text, 'Waiting for initialization');
         } else {
             if (
                 !this.excludeErrorCodes.includes(String(error.status)) &&
                 !this.excludeErrorTexts.includes(String(result.text))
             ) {
-                const body = `
-                    <div>${result.text}</div>
-                    <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
-                `;
-                this.toastr.error(body, result.header, {
-                    timeOut: 100000,
-                    extendedTimeOut: 30000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    toastClass: 'ngx-toastr error-message-toastr',
-                    enableHtml: true,
-                });
+                this.toastService.error(result.text, result.header, { sticky: true, logMessage: result.text });
             }
         }
     }

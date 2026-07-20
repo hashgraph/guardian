@@ -174,7 +174,7 @@ $sizes: (
         font-family: Inter;
         font-size: 14px;
         font-weight: 400;
-        color: #848FA9;
+        color: var(--guardian-grid-color, #848FA9);
         height: 100px;
         display: flex;
         justify-content: center;
@@ -200,21 +200,21 @@ $sizes: (
         border-radius: 0px !important;
         border-bottom-left-radius: 8px !important;
         border-bottom-right-radius: 8px !important;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         box-shadow: none !important;
         position: relative;
 
-        .p-dropdown {
+        .p-select {
             border: 1px solid var(--guardian-grey-color-2, #E1E7EF);
             border-radius: 8px;
             outline: 0 none;
         }
 
-        .p-dropdown:not(.p-disabled):hover {
+        .p-select:not(.p-disabled):hover {
             border-color: var(--guardian-primary-color, #4169E2);
         }
 
-        .p-dropdown:not(.p-disabled).p-focus {
+        .p-select:not(.p-disabled).p-focus {
             box-shadow: none;
             border-color: var(--guardian-primary-color, #4169E2);
         }
@@ -227,6 +227,7 @@ $sizes: (
 
 .guardian-grid-container {
     position: relative;
+    background: var(--guardian-background, #fff);
 
     &::before {
         content: "";
@@ -245,6 +246,13 @@ $sizes: (
     .p-datatable-thead {
         background: transparent !important;
         background-color: transparent !important;
+    }
+
+    .p-datatable,
+    .p-datatable-table,
+    .p-datatable-tbody {
+        background: var(--guardian-background, #fff);
+        color: var(--guardian-font-color, #23252E);
     }
 
     .guardian-grid-header {
@@ -292,7 +300,9 @@ $sizes: (
 
         td {
             padding: 16px;
-            border-bottom: 1px solid #e9ecef;
+            border-bottom: 1px solid var(--guardian-border-color, #e9ecef);
+            background: var(--guardian-background, #fff);
+            color: var(--guardian-font-color, #23252E);
             position: relative;
 
             &:first-child {
@@ -364,7 +374,7 @@ $sizes: (
             top: 45px;
             bottom: 0px;
             pointer-events: none;
-            border-top: 1px solid #ebebeb;
+            border-top: 1px solid var(--guardian-border-color, #ebebeb);
             border-radius: 8px;
             z-index: 1;
             border-bottom-left-radius: 0px;
@@ -381,14 +391,14 @@ $sizes: (
         }
 
         .p-datatable-thead {
-            background: #fff !important;
-            background-color: #fff !important;
+            background: var(--guardian-background, #fff) !important;
+            background-color: var(--guardian-background, #fff) !important;
         }
     }
 
     .p-frozen-column {
         position: sticky !important;
-        background: #fff !important;
-        background-color: #fff !important;
+        background: var(--guardian-background, #fff) !important;
+        background-color: var(--guardian-background, #fff) !important;
     }
 }

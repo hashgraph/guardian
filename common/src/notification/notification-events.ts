@@ -25,6 +25,11 @@ export const notificationActionMap = new Map<TaskAction, NotificationAction>([
     [TaskAction.PUBLISH_POLICY_LABEL, NotificationAction.POLICY_LABEL_PAGE],
 ]);
 
+export const previewActions = new Set<TaskAction>([
+    TaskAction.PREVIEW_POLICY_MESSAGE,
+    TaskAction.PREVIEW_SCHEMA_MESSAGE,
+]);
+
 export const taskResultTitleMap = new Map<TaskAction, string>([
     [TaskAction.CREATE_POLICY, 'Policy created'],
     [TaskAction.CREATE_TOOL, 'Tool created'],
@@ -236,10 +241,14 @@ export class NotificationEvents {
         code: string | number,
         message: string
     }): void {
-        this.notify.stop({
-            title: this.action,
-            message: error.message
-        });
+        if (previewActions.has(this.action)) {
+            this.notify.stop();
+        } else {
+            this.notify.stop({
+                title: this.action,
+                message: error.message
+            });
+        }
         NotificationEvents.service.publish(MessageAPI.UPDATE_TASK_STATUS, {
             taskId: this.taskId,
             error,

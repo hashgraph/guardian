@@ -1,186 +1,116 @@
-# Creating new Policy
+# Creating a New Policy via Wizard
 
-{% swagger method="post" path="" baseUrl="/policy" summary="Creates a new policy." %}
-{% swagger-description %}
-Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request. security:
-{% endswagger-description %}
+**`POST /api/v1/wizard/policy`**
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains wizard configuration.
-{% endswagger-parameter %}
+Creates a new policy using the wizard configuration. Only Standard Registry users are allowed to make this request.
 
-{% swagger-response status="201: Created" description="Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "wizardConfig": {
+    "policy": {
+      "name": "Example Policy",
+      "description": "Policy description",
+      "topicDescription": "Topic description",
+      "policyTag": "ExampleTag"
+    },
+    "roles": ["OWNER"],
+    "schemas": [
+      {
+        "name": "Example Schema",
+        "iri": "#ExampleSchema",
+        "isApproveEnable": false,
+        "isMintSchema": false,
+        "mintOptions": {},
+        "dependencySchemaIri": null,
+        "relationshipsSchemaIri": null,
+        "initialRolesFor": [],
+        "rolesConfig": [
+          {
+            "role": "OWNER",
+            "isApprover": true,
+            "isCreator": true,
+            "fields": [],
+            "gridColumns": []
+          }
+        ]
+      }
+    ],
+    "trustChain": [
+      {
+        "role": "OWNER",
+        "mintSchemaIri": "#ExampleSchema",
+        "viewOnlyOwnDocuments": true
+      }
+    ]
+  }
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  policyId:
-                    type: string
-                  wizardConfig:
-                    $ref: "#/components/schemas/WizardConfig"
+
+| Field                       | Type    | Required | Description                                          |
+|-----------------------------|---------|----------|------------------------------------------------------|
+| `wizardConfig`              | object  | Yes      | Wizard configuration object                          |
+| `wizardConfig.policy`       | object  | Yes      | Policy metadata (name, description, tag, etc.)       |
+| `wizardConfig.roles`        | array   | No       | List of roles in the policy                          |
+| `wizardConfig.schemas`      | array   | No       | Schema configurations to include                     |
+| `wizardConfig.trustChain`   | array   | No       | Trust chain configuration per role                   |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "policyId": "63e3e5e8a01b3c001234abcd",
+  "wizardConfig": {}
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field          | Type   | Description                               |
+|----------------|--------|-------------------------------------------|
+| `policyId`     | string | The ID of the newly created policy        |
+| `wizardConfig` | object | The wizard configuration that was applied |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
+## Async Variant
+
+**`POST /api/v1/wizard/push/policy`**
+
+Asynchronous version of policy creation via wizard. Returns immediately with a task identifier.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+**Status:** `202 Accepted`
+
+```json
+{
+  "taskId": "63e3e5e8a01b3c001234abcd",
+  "expectation": "Create policy"
+}
 ```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
 
-{% swagger method="post" path="" baseUrl="/policy/push" summary="Creates a new policy. - Deprecated" %}
-{% swagger-description %}
-Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
-
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains wizard configuration.
-{% endswagger-parameter %}
-
-{% swagger-response status="201: Created" description="Successful Operation" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Task"
-```
-{% endswagger-response %}
-
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
-
-{% swagger method="post" path="" baseUrl="/wizard/push/policy" summary="Creates a new policy" %}
-{% swagger-description %}
-Creates a new policy by wizard. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
-
-{% swagger-parameter in="body" name="saveState" type="Boolean" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="policy name" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="policy description" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="topicDescription" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="policyTag" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="schemas name" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="iri" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="isApproveEnable" type="Boolean" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="isMintSchema" type="Boolean" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="mintOptions" type="Object" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="dependencySchemaIri" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="relationshipsSchemaIri" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="initialRolesFor" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="isApprover" type="Boolean" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="isCreator" type="Boolean" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="field" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="title" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="role" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="mintSchemaIri" type="String" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-parameter in="body" name="viewOnlyOwnDocuments" type="Boolean" required="true" %}
-
-{% endswagger-parameter %}
-
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```
-          content:
-            application/json:
-              schema:
-                type: boolean
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+Poll `GET /tasks/{taskId}` to retrieve the result.

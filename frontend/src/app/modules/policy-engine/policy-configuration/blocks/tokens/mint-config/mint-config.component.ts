@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables} f
     selector: 'mint-config',
     templateUrl: './mint-config.component.html',
     styleUrls: ['./mint-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class MintConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

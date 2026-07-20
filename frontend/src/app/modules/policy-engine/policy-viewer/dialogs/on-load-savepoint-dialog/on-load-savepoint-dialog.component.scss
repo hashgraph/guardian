@@ -38,7 +38,7 @@
         height: 32px;
         border-radius: 8px;
         border: none;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         color: var(--color-grey-5, #848FA9);
         cursor: pointer;
 
@@ -62,7 +62,7 @@
     font-family: Poppins, sans-serif;
     font-size: 22px;
     font-weight: 600;
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
 }
 
 .list-header {
@@ -82,7 +82,7 @@
         height: 32px;
         border-radius: 8px;
         border: none;
-        background: #fff;
+        background: var(--guardian-background, #fff);
         color: var(--color-primary, #0031ff);
         cursor: pointer;
 
@@ -103,7 +103,7 @@
         &.danger {
             color: #E11D48;
             border-color: #fff;
-            background: #fff;
+            background: var(--guardian-background, #fff);
         }
     }
 }
@@ -112,7 +112,7 @@
     border: 1px solid #E1E7EF;
     border-radius: 12px;
     overflow: hidden;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 
     .row {
         display: grid;
@@ -161,7 +161,7 @@
             height: 16px;
             border-radius: 999px;
             border: 2px solid #CBD5E1;
-            background: #fff;
+            background: var(--guardian-background, #fff);
             box-sizing: border-box;
 
             &[checked] {
@@ -191,7 +191,7 @@
         left: calc(-1 * var(--dlg-pad-x));
         right: calc(-1 * var(--dlg-pad-x));
         height: 1px;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
     }
 
     .guardian-button {
@@ -201,7 +201,7 @@
     }
 
     .guardian-button.ghost {
-        background: #fff;
+        background: var(--guardian-background, #fff);
         color: #2563eb;
         border: 1px solid #94a3b8;
     }

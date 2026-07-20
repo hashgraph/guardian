@@ -1,51 +1,47 @@
 # Exporting Message ID
 
-### EXPORTING MESSAGE ID FOR A POLICY
+**`GET /policies/{policyId}/export/message`**
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/export/message" summary="Return Hedera message ID for the specified published policy" %}
-{% swagger-description %}
-Returns the Hedera message ID for the specified policy published onto IPFS. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Returns the Hedera message ID for the specified published policy.
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.POLICIES_POLICY_READ`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ExportPolicy'
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "iREC Policy",
+  "description": "iREC standard policy",
+  "version": "1.0.0",
+  "messageId": "1680000000.000000001",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `500 Internal Server Error` | Unexpected server failure |

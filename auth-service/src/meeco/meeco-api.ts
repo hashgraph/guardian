@@ -1,5 +1,5 @@
 import axios from 'axios';
-import querystring from 'querystring';
+import querystring from 'node:querystring';
 import { IMe } from '../meeco/models/me.js';
 import { IDEK, IKEK, IKeypair, IPassphraseArtefact } from '../meeco/models/keys.js';
 import { IPresentationRequest, IPresentationSubmission, IPresentationSubmissions } from './models/presentation-request.js';

@@ -17,7 +17,7 @@ Key contracts:
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (v18+ recommended)
-- [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com/)
+- [NPM](https://www.npmjs.com/) or [Yarn](https://yarnpkg.com/getting-started/install)
 - [Foundry](https://book.getfoundry.sh/getting-started/installation) (optional, for advanced tooling)
 - [Hedera Local Node](https://github.com/hashgraph/hedera-local-node) (for local development)
 - [Hedera JSON-RPC Relay](https://github.com/hashgraph/hedera-json-rpc-relay)

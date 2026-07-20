@@ -1,52 +1,65 @@
 # Sends Data to Specified Block
 
-### SENDING BLOCK DATA
+**`POST /policies/{policyId}/blocks/{uuid}`**
 
-{% swagger method="post" path="" baseUrl="/policies/{policyId}/blocks/{uuid}" summary="Sends data to the specified block" %}
-{% swagger-description %}
-Sends data to the specified block
-{% endswagger-description %}
+Sends data to the specified block within a policy.
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="uuid" type="String" required="true" %}
-Selected block UUID
-{% endswagger-parameter %}
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+| `uuid` | string | Yes | The block UUID identifier |
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `timeout` | number | No | 60000 | Request timeout in milliseconds |
+| `waitRemotePolicy` | boolean | No | true | Wait for a response from a remote policy |
+
+### Request Body
+
+```json
 {
-    // Response
+  "document": {},
+  "ref": null
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+The request body is a JSON object containing the data to submit to the block (exact schema depends on the block type).
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "blockType": "requestVcDocumentBlock",
+  "data": {}
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy or block not found |
+| `422 Unprocessable Entity` | Invalid or rejected block data |
+| `503 Service Unavailable` | Policy block is temporarily unavailable |
+| `500 Internal Server Error` | Unexpected server failure |

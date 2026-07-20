@@ -69,13 +69,13 @@
     border-bottom: none;
 }
 
-::ng-deep .select-menu-panel.p-overlaypanel {
+::ng-deep .select-menu-panel.p-popover {
     border-radius: 8px;
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     padding: 0;
 }
 
-::ng-deep .select-menu-panel .p-overlaypanel-content {
+::ng-deep .select-menu-panel .p-popover-content {
     padding: 4px;
     width: 228px;
 }

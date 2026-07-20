@@ -1,44 +1,71 @@
 # Creation of a Policy
 
-### **POLICY CREATION**
+**`POST /api/v1/policies`**
 
-{% swagger method="post" path="" baseUrl="/policies" summary="Creates a new policy" %}
-{% swagger-description %}
-Creates a new policy. Only users with the Standard Registry role are allowed to make the request
-{% endswagger-description %}
+Creates a new policy. Only users with the Standard Registry role are allowed to make the request.
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains policy configuration.
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="201: Created" description="Created" %}
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
 
-{% endswagger-response %}
+---
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+## Request
+
+### Request Body
+
+```json
 {
-    // Response
+  "name": "iREC Policy",
+  "version": "1.0.0",
+  "description": "iREC renewable energy certificate policy",
+  "topicDescription": "iREC policy topic",
+  "config": {},
+  "policyRoles": ["INSTALLER"],
+  "policyTopics": [],
+  "policyTokens": [],
+  "policyGroups": []
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | Human-readable policy name |
+| `version` | string | No | Semantic version string (e.g. `1.0.0`) |
+| `description` | string | No | Short description of the policy |
+| `topicDescription` | string | No | Description for the Hedera topic |
+| `config` | object | No | Policy block configuration tree |
+| `policyRoles` | array | No | List of role names defined by this policy |
+| `policyTopics` | array | No | Topic configuration |
+| `policyTokens` | array | No | Token configuration |
+| `policyGroups` | array | No | Group configuration |
 
-{% swagger-response status="500: Internal Server Error" description="Internal server error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+Returns the updated list of all policies for the authenticated user.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "iREC Policy",
+    "version": "1.0.0",
+    "status": "DRAFT",
+    "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001"
+  }
+]
 ```
-{% endswagger-response %}
-{% endswagger %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

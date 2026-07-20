@@ -1,59 +1,61 @@
-# Creates a new discussion linked to the target document
+# Creates a New Discussion Linked to the Target Document
 
-<mark style="color:red;">`POST`</mark> `/policy-comments/{policyId}/{documentId}/schemas`
+**`POST /api/v1/policy-comments/{policyId}/{documentId}/discussions`**
 
-Creates a new discussion linked to the target document
+Creates a new discussion thread linked to the target document.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-**Body**
+---
 
-| Name       | Type   | Description         |
-| ---------- | ------ | ------------------- |
-| policyId   | string | Policy ID           |
-| documentId | string | Document Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PolicyDiscussionDTO'
-```
-{% endtab %}
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `policyId`   | string | Yes      | Policy identifier   |
+| `documentId` | string | Yes      | Document identifier |
 
-{% tab title="401" %}
-```json5
+### Request Body
+
+```json
 {
-   description: Unauthorized.
+  "title": "Query about facility capacity value",
+  "message": "The reported capacity of 500 MWh seems high — please verify."
 }
 ```
-{% endtab %}
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
+| Field     | Type   | Required | Description                  |
+|-----------|--------|----------|------------------------------|
+| `title`   | string | Yes      | Discussion title or subject  |
+| `message` | string | No       | Optional initial message body |
 
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "title": "Query about facility capacity value",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "createDate": "2026-03-30T10:00:00.000Z",
+  "commentCount": 0
+}
 ```
-{% endtab %}
-{% endtabs %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error — invalid field values |
+| `500 Internal Server Error` | Unexpected server failure |

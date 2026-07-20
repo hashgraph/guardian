@@ -99,13 +99,13 @@
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        background: #f9fafc;
+        background: var(--guardian-grey-background, #f9fafc);
     }
 
     .tab-container {
         height: 40px;
         width: 100%;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
         border-bottom: 1px solid #C4D0E1;
         padding: 0px 12px;
 
@@ -128,7 +128,7 @@
             }
 
             &[action="true"] {
-                background: #fff !important;
+                background: var(--guardian-background, #fff) !important;
 
                 .guardian-step-name {
                     color: var(--guardian-primary-color, #4169E2) !important;
@@ -274,7 +274,7 @@
                         padding: 2px;
 
                         &:hover {
-                            background: #e9ecef;
+                            background: var(--guardian-grey-background, #e9ecef);
                         }
                     }
 
@@ -306,7 +306,7 @@
                             font-weight: 500;
                             line-height: 14px;
                             padding-left: 8px;
-                            color: #23252E;
+                            color: var(--guardian-font-color, #23252E);
                             overflow: hidden;
                             white-space: nowrap;
                             text-overflow: ellipsis;
@@ -334,7 +334,7 @@
                 z-index: 1;
                 user-select: none;
                 padding: 24px;
-                background-color: #f9fafc;
+                background-color: var(--guardian-grey-background, #f9fafc);
                 // background-image: linear-gradient(#e8e8e8 0.8px, transparent 0.8px), linear-gradient(90deg, #e8e8e8 0.8px, transparent 0.8px), linear-gradient(#e8e8e8 0.4px, transparent 0.4px), linear-gradient(90deg, #e8e8e8 0.4px, #f9fafc 0.4px);
                 // background-size: 20px 20px, 20px 20px, 4px 4px, 4px 4px;
                 // background-position: -0.8px -0.8px, -0.8px -0.8px, -0.4px -0.4px, -0.4px -0.4px;
@@ -476,7 +476,7 @@
                                 display: flex;
                                 flex-direction: row;
                                 align-items: center;
-                                background: #fff;
+                                background: var(--guardian-background, #fff);
 
                                 .navigation-item-icon {
                                     width: 16px;
@@ -490,7 +490,7 @@
                                     font-weight: 500;
                                     line-height: 14px;
                                     padding-left: 8px;
-                                    color: #23252E;
+                                    color: var(--guardian-font-color, #23252E);
                                     width: 160px;
                                     overflow: hidden;
                                     white-space: nowrap;
@@ -642,7 +642,7 @@
                             font-size: 14px;
                             font-weight: 700;
                             line-height: 18px;
-                            color: #23252E;
+                            color: var(--guardian-font-color, #23252E);
                             margin-bottom: 24px;
                             margin-top: 24px;
                         }
@@ -1290,7 +1290,7 @@
                 padding: 1px 1px !important;
 
                 &::ng-deep {
-                    .p-dropdown-label {
+                    .p-select-label {
                         padding-left: 16px;
                     }
                 }
@@ -1394,7 +1394,7 @@
                 }
 
                 .rule-type-name {
-                    background: #E1E7EF;
+                    background: var(--guardian-grey-background, #E1E7EF);
                     height: 28px;
                     padding: 4px 10px 4px 10px;
                     border-radius: 6px;
@@ -1415,10 +1415,10 @@
 }
 
 .guardian-dropdown-cell {
-    &::ng-deep .p-dropdown {
+    &::ng-deep .p-select {
         width: 100%;
 
-        .p-dropdown-label {
+        .p-select-label {
             padding-left: 0px;
         }
     }
@@ -1496,7 +1496,7 @@
             font-weight: 600;
             line-height: 14px;
             text-align: left;
-            color: #23252E;
+            color: var(--guardian-font-color, #23252E);
         }
 
         .node-fields {
@@ -1511,7 +1511,7 @@
             text-overflow: ellipsis;
 
             .node-field {
-                color: #23252E;
+                color: var(--guardian-font-color, #23252E);
                 border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
                 padding: 8px 8px 8px 16px;
                 overflow: hidden;

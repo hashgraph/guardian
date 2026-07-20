@@ -1,64 +1,49 @@
-# Returns list of Groups of a particular user
+# Returns List of Groups of a Particular User
 
-{% swagger method="get" path="" baseUrl="/policies/{policyId}/groups" summary="Returns a list of groups the user is a member of." %}
-{% swagger-description %}
-Returns a list of groups the user is a member of.
-{% endswagger-description %}
+**`GET /policies/{policyId}/groups`**
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Selected policy ID.
-{% endswagger-parameter %}
+Returns a list of policy groups that the current user is a member of.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: string
-                    uuid:
-                      type: string
-                    role:
-                      type: string
-                    groupLabel:
-                      type: string
-                    groupName:
-                      type: string
-                    active:
-                      type: boolean
-}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "uuid": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "role": "INSTALLER",
+    "groupLabel": "Installers",
+    "groupName": "Installer Group",
+    "active": true
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `500 Internal Server Error` | Unexpected server failure |

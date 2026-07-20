@@ -14,14 +14,14 @@ Guardian's dry-run mode creates a sandbox environment where you can simulate mul
 
 **Setting Up Dry-Run Testing Environment:**
 
-1. **Import VM0033 Policy** - Start with the [VM0033 policy](../../_shared/artifacts/vm0033-policy.json) from shared artifacts
+1. **Import VM0033 Policy** - Start with the [VM0033 policy](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/vm0033-policy.json) from shared artifacts
 2. **Enable Dry-Run Mode** - Switch policy status from Draft to Dry-Run
 3. **Create Virtual Users** - Set up users for each role (Project Proponent, VVB, OWNER)
 4. **Execute Complete Workflows** - Test full project lifecycle with role transitions
 
-![Choose role during dry run](<../../../.gitbook/assets/image (151).png>)
+![Choose role during dry run](<../../../.gitbook/assets/image (62).png>)
 
-![Switch role UI](<../../../.gitbook/assets/image-1 (8).png>)
+![Switch role UI](<../../../.gitbook/assets/image-1 (11).png>)
 
 ![VVB documents review UI for Registry role](<../../../.gitbook/assets/image-3 (5).png>)
 
@@ -42,7 +42,7 @@ Guardian allows Standard Registry users (OWNER role) to create virtual users for
 
 ### VM0033 Complete Workflow Testing
 
-Let's walk through testing VM0033's complete workflow using the navigation structure from the [policy JSON](../../_shared/artifacts/vm0033-policy.json). This demonstrates how dry-run testing validates stakeholder interactions across the full methodology implementation.
+Let's walk through testing VM0033's complete workflow using the navigation structure from the [policy JSON](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/vm0033-policy.json). This demonstrates how dry-run testing validates stakeholder interactions across the full methodology implementation.
 
 #### Project Proponent Workflow Testing
 
@@ -70,7 +70,7 @@ After PDD submission and approval by registry, the project developer selects a V
 * Project status updates reflect VVB assignment
 * Document access permissions transfer correctly
 
-![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1) (1).png>)
+![Project approval/rejection UI within SR role](<../../../.gitbook/assets/image-5 (1).png>)
 
 ![VVB selection via dropdown](<../../../.gitbook/assets/image-6 (1).png>)
 
@@ -169,7 +169,7 @@ const multipleProjects = generateTestProjects(vm0033BaseProject, 25);
 
 ### Multi-Year Monitoring Period Simulation
 
-VM0033 projects can operate over 100-year crediting periods with annual monitoring in best scenarios. Testing long-term scenarios validates data consistency and calculation accuracy across extended timeframes using data patterns from our [VM0033 test case artifact](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx).
+VM0033 projects can operate over 100-year crediting periods with annual monitoring in best scenarios. Testing long-term scenarios validates data consistency and calculation accuracy across extended timeframes using data patterns from our [VM0033 test case artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx).
 
 Testing should validate:
 

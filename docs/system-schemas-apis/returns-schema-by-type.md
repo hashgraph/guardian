@@ -1,51 +1,51 @@
-# Returns Schema by Type
+# Returns Schema by Schema Type
 
-### FINDING SCHEMA USING JSON DOCUMENT
+**`GET /schemas/type/{schemaType}`**
 
-{% swagger method="get" path="" baseUrl="/schemas/type/{type}" summary="Returns Schema by Type" %}
-{% swagger-description %}
-Finds the schema using the json document type.
-{% endswagger-description %}
+Returns the schema matching the specified JSON document schema type string.
 
-{% swagger-parameter in="path" name="type" type="String" %}
-JSON type
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaType` | string | Yes | The schema type identifier (e.g. `#StandardRegistry`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Schema'
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "Standard Registry Schema",
+  "type": "#StandardRegistry",
+  "entity": "STANDARD_REGISTRY",
+  "status": "PUBLISHED",
+  "system": true,
+  "active": true,
+  "document": {
+    "$id": "#StandardRegistry",
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "type": "object",
+    "properties": {}
+  }
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

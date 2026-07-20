@@ -8,7 +8,8 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 @Component({
     selector: 'new-module-dialog',
     templateUrl: './new-module-dialog.component.html',
-    styleUrls: ['./new-module-dialog.component.scss']
+    styleUrls: ['./new-module-dialog.component.scss'],
+    standalone: false
 })
 export class NewModuleDialog {
     public type = 'module';

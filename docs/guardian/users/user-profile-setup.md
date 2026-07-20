@@ -34,7 +34,7 @@ At this step the user needs to fill out the operator id and key fields or click 
 
 ## User profile
 
-After submitting the wizard and successful account setup user will see the information about account, tokens and retire in the User Profile page. This view was also updated for the mobile version.
+After submitting the wizard and successful account setup user will see the information about account, tokens and retirement in the User Profile page. This view was also updated for the mobile version.
 
 <figure><img src="https://lh5.googleusercontent.com/xPiNIFt89bmB-O73gfZGMEkJ-zpNhDBDkvnGgfswAZL3tc9al3eupEN8UKnSDVfBmIkkGQAE5ixlfWepiow3Uj0zIeqa5yu-9MyaVFZrJSWypKgsUduB8a2P0d9tqPlLQkztJCOnyAZ1YpFFftpZ-_0" alt=""><figcaption></figcaption></figure>
 

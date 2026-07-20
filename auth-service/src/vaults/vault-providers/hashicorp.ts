@@ -1,7 +1,7 @@
 import NodeVault from 'node-vault';
 import { IVault } from '../vault.interface.js';
-import assert from 'assert';
-import crypto from 'crypto';
+import assert from 'node:assert';
+import crypto from 'node:crypto';
 
 /**
  * HashiCorp vault helper

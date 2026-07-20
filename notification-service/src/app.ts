@@ -4,7 +4,7 @@ import { MikroORM } from '@mikro-orm/core';
 import { MongoDriver } from '@mikro-orm/mongodb';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { AppModule } from './app.module.js';
 import { DEFAULT_MONGO } from '#constants';
 

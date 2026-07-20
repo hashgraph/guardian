@@ -12,7 +12,8 @@ import { SchemaType } from '../../policy-engine/structures/types/schema-type.typ
 @Component({
     selector: 'copy-schema-dialog',
     templateUrl: './copy-schema-dialog.html',
-    styleUrls: ['./copy-schema-dialog.scss']
+    styleUrls: ['./copy-schema-dialog.scss'],
+    standalone: false
 })
 export class CopySchemaDialog {
     @ViewChild('document') schemaControl!: SchemaConfigurationComponent;

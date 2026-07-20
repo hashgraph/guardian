@@ -32,7 +32,7 @@ form {
 }
 
 .form-label {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -152,7 +152,7 @@ form {
         height: 16px;
         border: 2px solid var(--color-grey-4);
         border-radius: 100%;
-        background: #fff;
+        background: var(--guardian-background, #fff);
     }
 
     [type="radio"]:checked+label:before {
@@ -164,7 +164,7 @@ form {
         height: 16px;
         border: 2px solid var(--color-primary);
         border-radius: 100%;
-        background: #fff;
+        background: var(--guardian-background, #fff);
     }
 
     [type="radio"]:checked+label:after,

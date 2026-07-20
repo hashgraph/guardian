@@ -47,7 +47,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
             border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
@@ -57,7 +57,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
             border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
@@ -78,7 +78,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #f9fafc;
+            background: var(--guardian-grey-background, #f9fafc);
             border: 1px solid #e1e7ef;
             padding: 16px;
             border-radius: 8px;
@@ -269,8 +269,8 @@ form {
                     }
                 }
 
-                p-dropdown::ng-deep {
-                    .p-dropdown {
+                p-select::ng-deep {
+                    .p-select {
                         border-color: var(--guardian-warning-color, #da9b22);
                     }
                 }
@@ -288,8 +288,8 @@ form {
                     }
                 }
 
-                p-dropdown::ng-deep {
-                    .p-dropdown {
+                p-select::ng-deep {
+                    .p-select {
                         border-color: var(--guardian-warning-color, #19be47);
                     }
                 }
@@ -366,7 +366,7 @@ form {
 .group-label,
 .array-label {
     color: rgba(0,0,0,.6);
-    background: #fff;
+    background: var(--guardian-background, #fff);
     top: -10px;
     left: 5px;
     padding-left: 5px;

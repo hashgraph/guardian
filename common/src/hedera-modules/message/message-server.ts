@@ -848,6 +848,7 @@ export class MessageServer {
                 return message;
             }
         } catch (error) {
+            new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
             return null;
         }
     }
@@ -881,6 +882,7 @@ export class MessageServer {
                 return message as T;
             }
         } catch (error) {
+            new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
             return null;
         }
     }

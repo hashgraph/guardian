@@ -1,58 +1,64 @@
-# Creates a new message in the target discussion
+# Creates a New Message in the Target Discussion
 
-<mark style="color:red;">`POST`</mark> `/policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments`
+**`POST /api/v1/policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments`**
 
-Creates a new message in the target discussion
+Creates a new message in the target discussion thread.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-**Body**
+---
 
-| Name         | Type   | Description           |
-| ------------ | ------ | --------------------- |
-| policyId     | string | Policy ID             |
-| documentId   | string | Document Identifier   |
-| discussionId | string | Discussion Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyCommentDTO'
-```
-{% endtab %}
+| Parameter      | Type   | Required | Description             |
+|----------------|--------|----------|-------------------------|
+| `policyId`     | string | Yes      | Policy identifier       |
+| `documentId`   | string | Yes      | Document identifier     |
+| `discussionId` | string | Yes      | Discussion identifier   |
 
-{% tab title="401" %}
-```json5
+### Request Body
+
+```json
 {
-   description: Unauthorized.
+  "message": "The capacity figure should be 50 MWh — the extra zero appears to be a typo.",
+  "mentionedUsers": [
+    "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001"
+  ]
 }
 ```
-{% endtab %}
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
+| Field            | Type     | Required | Description                           |
+|------------------|----------|----------|---------------------------------------|
+| `message`        | string   | Yes      | Comment text content                  |
+| `mentionedUsers` | string[] | No       | Array of user DIDs to mention/notify  |
 
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "message": "The capacity figure should be 50 MWh — the extra zero appears to be a typo.",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "createDate": "2026-03-30T10:05:00.000Z"
+}
 ```
-{% endtab %}
-{% endtabs %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error — invalid field values |
+| `500 Internal Server Error` | Unexpected server failure |
+| `503 Service Unavailable` | Policy block unavailable |

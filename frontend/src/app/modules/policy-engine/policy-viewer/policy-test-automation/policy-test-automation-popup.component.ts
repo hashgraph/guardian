@@ -7,7 +7,8 @@ import { PolicyTestAutomationService, PolicyTestCaseOutput } from './policy-test
 @Component({
     selector: 'policy-test-automation-popup',
     templateUrl: './policy-test-automation-popup.component.html',
-    styleUrls: ['./policy-test-automation-popup.component.scss']
+    styleUrls: ['./policy-test-automation-popup.component.scss'],
+    standalone: false
 })
 export class PolicyTestAutomationPopupComponent {
     constructor(

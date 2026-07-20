@@ -17,4 +17,8 @@ export class BrandingDTO {
     headerColor1: string;
     @ApiProperty()
     termsAndConditions: string;
+    @ApiProperty()
+    useCustomMenuColors: boolean;
+    @ApiProperty()
+    useSolidBackground: boolean;
 }

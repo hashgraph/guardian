@@ -1,60 +1,62 @@
 # Updates the Schema
 
-<mark style="color:orange;">`PUT`</mark> `/schemas/system/{schemaId}`
+**`PUT /schemas/system/{schemaId}`**
 
-Updates the system Schema with the provided Schema ID. Only users with the Standard Registry role are allowed to make the request.
+Updates the system schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description                       |
-| ------------------------------------------ | ------ | --------------------------------- |
-| schemaId<mark style="color:red;">\*</mark> | String | SchemaID                          |
-| <mark style="color:red;">\*</mark>         | String | Object that contains valid Schema |
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_UPDATE`
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Schema ID |
+
+### Request Body
+
+A valid schema object.
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "name": "Updated system schema name",
+  "description": "Updated description",
+  "document": {}
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+---
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+## Response
 
-{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
-```
-Schema is active.
-```
-{% endtab %}
+### Success Response
 
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
+**Status:** `200 OK`
+
+Returns an array of schema objects.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Updated system schema name",
+    "status": "DRAFT",
+    "version": "1.0.0"
+  }
+]
 ```
-{% endtab %}
-{% endtabs %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Schema is active |
+| `500 Internal Server Error` | Unexpected server failure |

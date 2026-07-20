@@ -17,7 +17,8 @@ import { PolicyBlock } from "../../structures/";
 @Component({
     selector: 'json-properties',
     templateUrl: './json-properties.component.html',
-    styleUrls: ['./json-properties.component.scss']
+    styleUrls: ['./json-properties.component.scss'],
+    standalone: false
 })
 export class JsonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;

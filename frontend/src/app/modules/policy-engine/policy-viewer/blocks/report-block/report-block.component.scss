@@ -5,7 +5,7 @@
     bottom: 0;
     top: 0;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .loading {
@@ -31,7 +31,7 @@
 
 .title {
     margin-left: 20px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: block;
     margin-top: 20px;
     text-align: center;
@@ -41,7 +41,7 @@
 }
 
 .description {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     display: block;
     text-align: center;
     font-size: 20px;
@@ -93,7 +93,7 @@ a[disabled="true"] {
     border-radius: 6px;
     padding: 4px 30px 4px 4px;
     position: relative;
-    background: #fafafa;
+    background: var(--guardian-grey-background, #fafafa);
     margin: 0 0 8px 8px;
 }
 
@@ -176,7 +176,7 @@ a[disabled="true"] {
 
     width: 282px;
     height: 190px;
-    background: #ffffff 0% 0% no-repeat padding-box;
+    background: var(--guardian-background, #ffffff) 0% 0% no-repeat padding-box;
     box-shadow: 0px 3px 6px #00000029;
     border-radius: 8px;
     vertical-align: bottom;
@@ -215,7 +215,7 @@ a[disabled="true"] {
     color: #0b73f8;
     font-weight: bold;
     padding: 0px 0px 0px 10px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 
     .p-button {
         padding: 6px 16px;
@@ -250,12 +250,12 @@ a[disabled="true"] {
     font-size: 12px;
     font-weight: 600;
     line-height: 14px;
-    color: #23252E;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .chain-title mat-icon {
     font-size: 30px;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     position: relative;
     top: -3px;
 }
@@ -361,7 +361,7 @@ a.go-back-link mat-icon {
 
 .header {
     font-size: 20px;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     padding: 45px;
 }
 
@@ -466,7 +466,7 @@ a.open-vp {
     font-weight: 600;
     line-height: 16px;
     text-align: left;
-    color: #23252E;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .parties-value,
@@ -575,7 +575,7 @@ a.open-vp {
     font-size: 12px;
     font-weight: 500;
     line-height: 14px;
-    color: #23252E;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .multiple-documents-count mat-icon {
@@ -588,7 +588,7 @@ a.open-vp {
     transform: rotate(180deg);
     width: 32px;
     height: 34px;
-    background: white;
+    background: var(--guardian-background, white);
     font-size: 35px;
     left: -11px;
     bottom: 45%;
@@ -616,7 +616,7 @@ a.open-vp {
     box-sizing: border-box;
     width: 370px;
     height: 150px;
-    background: #ffffff 0% 0% no-repeat padding-box;
+    background: var(--guardian-background, #ffffff) 0% 0% no-repeat padding-box;
     // box-shadow: 0px 3px 6px #00000029;
     border-radius: 8px;
     vertical-align: bottom;
@@ -763,7 +763,7 @@ a.open-vp {
 h3 {
     margin: 0;
     display: inline;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Inter;
     font-size: 16px;
     font-style: normal;
@@ -864,7 +864,7 @@ h3 {
             font-size: 12px;
             font-weight: 500;
             line-height: 14px;
-            color: #000000;
+            color: var(--guardian-font-color, #000000);
         }
     }
 
@@ -881,7 +881,7 @@ h3 {
     gap: 8px;
     border-radius: 8px;
     border: 1px solid #AAB7C4;
-    background-color: #F9FAFC;
+    background-color: var(--guardian-grey-background, #F9FAFC);
     color: #AAB7C4;
 
     p {

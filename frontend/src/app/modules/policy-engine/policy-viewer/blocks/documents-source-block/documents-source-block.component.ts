@@ -2,7 +2,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { DialogBlock } from '../../dialog-block/dialog-block.component';
-import { animate, state, style, transition, trigger } from '@angular/animations';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { VCViewerDialog } from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { ViewerDialog } from '../../../dialogs/viewer-dialog/viewer-dialog.component';
@@ -18,13 +17,7 @@ import { Subject } from 'rxjs';
     selector: 'documents-source-block',
     templateUrl: './documents-source-block.component.html',
     styleUrls: ['./documents-source-block.component.scss'],
-    animations: [
-        trigger('statusExpand', [
-            state('collapsed', style({ height: '0px', minHeight: '0' })),
-            state('expanded', style({ height: '*' })),
-            transition('expanded <=> collapsed', animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)')),
-        ]),
-    ]
+    standalone: false
 })
 export class DocumentsSourceBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -290,7 +283,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     policyId: this.policyId,
                     dryRun: this.dryRun
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         } else {
@@ -311,7 +304,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                     openComments: comments,
                     destroy: this._destroy$
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
             });
         }
@@ -464,9 +457,10 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 document: text,
                 title: field.title,
                 type: 'TEXT',
-                viewDocument: false
+                viewDocument: false,
+                canExport: true
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -498,7 +492,7 @@ export class DocumentsSourceBlockComponent implements OnInit {
                 value: links,
                 dryRun: this.dryRun
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

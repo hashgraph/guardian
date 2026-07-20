@@ -25,6 +25,7 @@ interface IColumn {
     selector: 'app-statistic-definitions',
     templateUrl: './statistic-definitions.component.html',
     styleUrls: ['./statistic-definitions.component.scss'],
+    standalone: false
 })
 export class StatisticDefinitionsComponent implements OnInit {
     public readonly title: string = 'Statistics';
@@ -242,7 +243,7 @@ export class StatisticDefinitionsComponent implements OnInit {
                 policy: this.currentPolicy,
                 action: 'Create'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.create(result)
@@ -269,7 +270,7 @@ export class StatisticDefinitionsComponent implements OnInit {
             data: {
                 type: ImportEntityType.Statistic,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -290,7 +291,7 @@ export class StatisticDefinitionsComponent implements OnInit {
                 policy: this.currentPolicy,
                 statistic
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -368,7 +369,7 @@ export class StatisticDefinitionsComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;
@@ -399,7 +400,7 @@ export class StatisticDefinitionsComponent implements OnInit {
                         class: 'secondary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result) => { });
         } else {
             const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
@@ -417,7 +418,7 @@ export class StatisticDefinitionsComponent implements OnInit {
                         class: 'primary'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result: string) => {
                 if (result === 'Publish') {
                     this.loading = true;

@@ -9,6 +9,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'export-schema-dialog',
     templateUrl: './export-schema-dialog.component.html',
     styleUrls: ['./export-schema-dialog.component.scss'],
+    standalone: false
 })
 export class ExportSchemaDialog {
     loading = true;

@@ -16,7 +16,7 @@ import { Tile as TileLayer, Vector as VectorLayer } from 'ol/layer.js';
 import Select from 'ol/interaction/Select.js';
 import { GeoForm } from '../schema-form-model/geo-form';
 import { GeoJsonService } from 'src/app/services/geo-json.service';
-import { DOMParser } from 'xmldom';
+import { DOMParser } from '@xmldom/xmldom';
 import { FeatureCollection } from 'geojson';
 import { kml } from '@tmcw/togeojson';
 
@@ -252,6 +252,7 @@ function importedStyleFunction(feature: any) {
     selector: 'app-geojson-type',
     templateUrl: './geojson-type.component.html',
     styleUrls: ['./geojson-type.component.scss'],
+    standalone: false
 })
 export class GeojsonTypeComponent implements OnChanges {
     @ViewChild('map', { static: false }) mapElementRef!: ElementRef;

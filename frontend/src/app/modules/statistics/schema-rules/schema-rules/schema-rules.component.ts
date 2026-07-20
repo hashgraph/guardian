@@ -24,6 +24,7 @@ interface IColumn {
     selector: 'app-schema-rules',
     templateUrl: './schema-rules.component.html',
     styleUrls: ['./schema-rules.component.scss'],
+    standalone: false
 })
 export class SchemaRulesComponent implements OnInit {
     public readonly title: string = 'Schema Rules';
@@ -203,7 +204,7 @@ export class SchemaRulesComponent implements OnInit {
                 policy: this.currentPolicy,
                 action: 'Create'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -230,7 +231,7 @@ export class SchemaRulesComponent implements OnInit {
             data: {
                 type: ImportEntityType.SchemaRule,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importDetails(result);
@@ -251,7 +252,7 @@ export class SchemaRulesComponent implements OnInit {
                 policy: this.currentPolicy,
                 rule
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result && result.policyId) {
                 this.loading = true;
@@ -307,7 +308,7 @@ export class SchemaRulesComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.loading = true;

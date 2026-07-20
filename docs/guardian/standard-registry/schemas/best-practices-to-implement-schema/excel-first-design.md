@@ -10,7 +10,7 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
     * Row 1: Schema Name (e.g., "Project Description (Auto)")
     * Row 2: Schema Description
     * Row 3: Schema Type (e.g., "Verifiable Credentials")
-    * Row 4: Column headings for schema field attributes (Required, Field Type, Parameter, Visibility, Question, Multi-Answer, Default).
+    * Row 4: Column headings for schema field attributes (Required Field, Field Type, Parameter, Visibility, Description, Allow Multiple Answers, Test Value, Default Value, Suggest Value, Key).
 
     <figure><img src="../../../../.gitbook/assets/image (4) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 *   **Define Each Field with Clear Attributes**\
@@ -25,13 +25,15 @@ Detailed best practices for Excel-first design in building Hedera Guardian schem
     * Default or example value for user guidance.
 
     <figure><img src="../../../../.gitbook/assets/image (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
-* **Use Enums for Controlled Vocabularies**\
-  Create separate enum tabs for all enumerated types used in the schema (units of measure, certifications, status types). This standardizes inputs and enables conditional field visibility through enum selections.
+* **Use a Shared Enum Tab for Controlled Vocabularies**\
+  All enumerated types are defined in a single shared `Enums` tab with four columns: Schema name, Field name, Loaded to IPFS, Value. Group values by field, fill in Schema name, Field name, and Loaded to IPFS only on the first row of each group, leaving them blank for subsequent values.
 
 <figure><img src="../../../../.gitbook/assets/image (2) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 
+* **Define Sub-Schemas Inline**\
+  Fields of type `Sub-Schema` group nested child fields directly.
 * **Implement Conditional Logic via Visibility Columns**\
-  Use TRUE to keep fields always visible; use FALSE to make fields conditionally visible based on enum selections or workflow stage; use "Hidden" for system-only or metadata fields. This reduces user burden and aligns forms dynamically with project selections.
+  Use TRUE to keep fields always visible; use FALSE or "Hidden" to permanently hide fields (e.g., system-only or metadata fields); use a formula (EXACT, OR, AND) in the Visibility column for conditional visibility based on enum selections or workflow stage. This reduces user burden and aligns forms dynamically with project selections.
 
 <figure><img src="../../../../.gitbook/assets/image (3) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

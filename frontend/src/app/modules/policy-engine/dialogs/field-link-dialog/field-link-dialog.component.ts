@@ -6,6 +6,7 @@ import { TreeListItem, TreeListView } from 'src/app/modules/common/tree-graph/tr
     selector: 'field-link-dialog',
     templateUrl: './field-link-dialog.component.html',
     styleUrls: ['./field-link-dialog.component.scss'],
+    standalone: false
 })
 export class FieldLinkDialog {
     public loading = true;

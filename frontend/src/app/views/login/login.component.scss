@@ -24,7 +24,7 @@ form {
 .login-menu {
     position: absolute;
     right: 10px;
-    background: white !important;
+    background: var(--guardian-background, white) !important;
     max-height: 345px;
     height: auto;
     width: 470px;
@@ -69,7 +69,7 @@ form {
         top: 0;
         width: 50%;
         height: 100vh;
-        background-color: #FFF;
+        background-color: var(--guardian-background, #FFF);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -82,6 +82,7 @@ form {
             justify-content: flex-start;
 
             h1 {
+                color: var(--color-grey-black-1, #181818);
                 font-family: Merriweather Sans, Poppins, sans-serif;
                 font-size: 32px;
                 font-style: normal;
@@ -149,6 +150,10 @@ form {
     align-items: center;
     justify-content: center;
     column-gap: 8px;
+
+    span:not(.primary-text-button) {
+        color: var(--color-grey-black-1, #181818);
+    }
 
     span {
         font-family: Inter, sans-serif;
@@ -233,6 +238,15 @@ form {
     box-shadow: unset !important;
 }
 
+/* The demo popover renders at <body> (appendTo='body'), so a non-host selector is needed
+   to reach its buttons. Clear only PrimeNG 20's focus OUTLINE (the blue ring) on the demo
+   panel buttons — NOT box-shadow, which is the card's raised elevation. Other app buttons
+   keep their focus ring. */
+::ng-deep .p-popover-content .p-button:focus,
+::ng-deep .p-popover-content .p-button:focus-visible {
+    outline: none !important;
+}
+
 .demo-block {
     .user-content-button {
         align-items: center;
@@ -247,7 +261,7 @@ form {
     }
 }
 
-::ng-deep .p-overlaypanel-content {
+::ng-deep .p-popover-content {
     max-height: 347px;
     overflow-y: scroll;
 
@@ -316,7 +330,7 @@ form {
 }
 
 .debug-user.buttons {
-    background: white !important;
+    background: var(--guardian-background, white) !important;
     width: 470px;
     max-height: 345px;
     height: auto;
@@ -332,13 +346,18 @@ form {
 }
 
 ::ng-deep p-button.raised-button .p-button {
-    background: none;
+    background: var(--guardian-hover);
     width: 145px;
     padding: 0 15px;
     border-radius: 24px;
     height: 47px;
     box-shadow: 0 3px 1px -2px rgba(0, 0, 0, 0.2), 0 2px 2px 0px rgba(0, 0, 0, 0.14), 0 1px 5px 0px rgba(0, 0, 0, 0.12);
-    border: none;
+    border: 1px solid var(--guardian-border-color);
+}
+
+::ng-deep p-button.raised-button .p-button:hover {
+    background: var(--guardian-primary-background);
+    border-color: var(--guardian-primary-color);
 }
 
 ::ng-deep p-button.raised-button .p-button-label {

@@ -1,5 +1,5 @@
 import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Schema, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4, SchemaCondition } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4 } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
@@ -49,10 +49,19 @@ type IfOp = 'SINGLE' | 'AND' | 'OR';
 interface IConditionPair {
     name: string;
     value: any;
+    path?: string;
 }
 interface IConditionExpr {
     op: IfOp;
     pairs: IConditionPair[];
+}
+
+interface ICrossSchemaConditionItem {
+    expr: IConditionExpr;
+    conditionInvert: boolean;
+    field: SchemaField;
+    fieldPath: string[];
+    visibility: boolean;
 }
 
 export class FieldForm {
@@ -70,8 +79,14 @@ export class FieldForm {
     public controls: IFieldControl<any>[] | null;
     private fieldControls: IFieldControl<any>[] | null;
     private conditionControls: IConditionControl<any>[] | null;
+    private crossSchemaItems: ICrossSchemaConditionItem[];
 
     private readonly conditionFields: Set<string>;
+    private ownParentControlledFields: Set<string>;
+    private readonly childControlledFields: Map<string, Set<string>>;
+    private readonly ancestorChildPaths: Map<string, Set<string>>;
+    public rootForm: FieldForm;
+
     private readonly destroy$: Subject<boolean>;
 
     private readonly validateLikeDryRun?: boolean;
@@ -82,10 +97,15 @@ export class FieldForm {
         this.validateLikeDryRun = validateLikeDryRun;
         this.privateFields = {};
         this.conditionFields = new Set<string>();
+        this.ownParentControlledFields = new Set<string>();
+        this.childControlledFields = new Map<string, Set<string>>();
+        this.ancestorChildPaths = new Map<string, Set<string>>();
         this.destroy$ = new Subject<boolean>();
         this.fieldControls = null;
         this.conditionControls = null;
+        this.crossSchemaItems = [];
         this.controls = null;
+        this.rootForm = this;
     }
 
     public destroy() {
@@ -94,31 +114,18 @@ export class FieldForm {
     }
 
     private normalizeIfCondition(raw: any): IConditionExpr {
+        const toPair = (r: any): IConditionPair => ({
+            name: r?.field?.name || r?.field?.key || r?.field,
+            value: r?.fieldValue,
+            path: r?.fieldPath?.length > 1 ? (r.fieldPath as string[]).join('.') : undefined,
+        });
         if (raw?.OR) {
-            return {
-                op: 'OR',
-                pairs: (raw.OR || []).map((r: any) => ({
-                    name: r?.field?.name || r?.field?.key || r?.field,
-                    value: r?.fieldValue
-                }))
-            };
+            return { op: 'OR', pairs: (raw.OR || []).map(toPair) };
         }
         if (raw?.AND) {
-            return {
-                op: 'AND',
-                pairs: (raw.AND || []).map((r: any) => ({
-                    name: r?.field?.name || r?.field?.key || r?.field,
-                    value: r?.fieldValue
-                }))
-            };
+            return { op: 'AND', pairs: (raw.AND || []).map(toPair) };
         }
-        return {
-            op: 'SINGLE',
-            pairs: [{
-                name: raw?.field?.name || raw?.field?.key || raw?.field,
-                value: raw?.fieldValue
-            }]
-        };
+        return { op: 'SINGLE', pairs: [toPair(raw)] };
     }
 
     public setData(data: {
@@ -128,6 +135,7 @@ export class FieldForm {
         preset?: any;
         privateFields?: { [x: string]: boolean; };
         readonlyFields?: any;
+        ownParentControlledFields?: Set<string>;
     }) {
         if (data.privateFields) {
             this.privateFields = data.privateFields;
@@ -147,10 +155,28 @@ export class FieldForm {
         if (data.preset) {
             this.preset = data.preset;
         }
+        if (data.ownParentControlledFields) {
+            this.ownParentControlledFields = new Set<string>();
+            this.ancestorChildPaths.clear();
+            for (const path of data.ownParentControlledFields) {
+                const dotIdx = path.indexOf('.');
+                if (dotIdx < 0) {
+                    this.ownParentControlledFields.add(path);
+                } else {
+                    const containerName = path.substring(0, dotIdx);
+                    const remaining = path.substring(dotIdx + 1);
+                    if (!this.ancestorChildPaths.has(containerName)) {
+                        this.ancestorChildPaths.set(containerName, new Set<string>());
+                    }
+                    this.ancestorChildPaths.get(containerName)!.add(remaining);
+                }
+            }
+        }
     }
 
     public build() {
         const { fields, conditions } = this.updateData();
+        this.crossSchemaItems = [];
         this.fieldControls = this.buildFields(fields);
         this.conditionControls = this.buildConditions(conditions);
         this.controls = this.rebuildControls();
@@ -176,6 +202,7 @@ export class FieldForm {
         }
 
         this.conditionFields.clear();
+        this.childControlledFields.clear();
         if (conditions) {
             for (const condition of conditions) {
                 for (const field of (condition.thenFields || [])) {
@@ -184,6 +211,27 @@ export class FieldForm {
                 for (const field of (condition.elseFields || [])) {
                     this.conditionFields.add(field.name);
                 }
+                const allTargets: SchemaConditionTarget[] = [
+                    ...(condition.thenTargets || []),
+                    ...(condition.elseTargets || []),
+                ];
+                for (const target of allTargets) {
+                    if (!target.fieldPath || target.fieldPath.length < 2) { continue; }
+                    const containerName = target.fieldPath[0];
+                    const remainingPath = target.fieldPath.slice(1).join('.');
+                    if (!this.childControlledFields.has(containerName)) {
+                        this.childControlledFields.set(containerName, new Set<string>());
+                    }
+                    this.childControlledFields.get(containerName)!.add(remainingPath);
+                }
+            }
+        }
+        for (const [containerName, paths] of this.ancestorChildPaths) {
+            if (!this.childControlledFields.has(containerName)) {
+                this.childControlledFields.set(containerName, new Set<string>());
+            }
+            for (const path of paths) {
+                this.childControlledFields.get(containerName)!.add(path);
             }
         }
 
@@ -207,7 +255,7 @@ export class FieldForm {
         if (!expr || !expr.pairs?.length) return false;
 
         const test = (p: IConditionPair) => {
-            const c = this.form.controls[p.name];
+            const c = p.path ? this.form.get(p.path) : this.form.controls[p.name];
             if (!c) return false;
             return this.equalsLoosely(c.value, p.value);
         };
@@ -224,7 +272,7 @@ export class FieldForm {
 
         const controls: IFieldControl<any>[] = [];
         for (const field of fields) {
-            if (this.privateFields[field.name] || this.conditionFields.has(field.name)) {
+            if (this.privateFields[field.name] || this.conditionFields.has(field.name) || this.ownParentControlledFields.has(field.name)) {
                 continue;
             }
             const item = this.createFieldControl(field, this.preset);
@@ -249,7 +297,7 @@ export class FieldForm {
 
         for (const condition of conditions) {
             const expr = this.normalizeIfCondition((condition as any).ifCondition);
-            const deps = Array.from(new Set(expr.pairs.map(p => p.name).filter(Boolean)));
+            const deps = Array.from(new Set(expr.pairs.map(p => p.path ? p.path.split('.')[0] : p.name).filter(Boolean)));
             for (const thenField of condition.thenFields) {
                 const fieldControl = this.createFieldControl(thenField, this.preset);
                 const item: IConditionControl<any> = {
@@ -273,6 +321,21 @@ export class FieldForm {
                 };
                 controls.push(item);
             }
+
+            const buildCrossItems = (targets: SchemaConditionTarget[] | undefined, invert: boolean) => {
+                for (const target of (targets || [])) {
+                    if (!target.fieldPath || target.fieldPath.length < 2) { continue; }
+                    this.crossSchemaItems.push({
+                        expr,
+                        conditionInvert: invert,
+                        field: target.field,
+                        fieldPath: target.fieldPath,
+                        visibility: false,
+                    });
+                }
+            };
+            buildCrossItems(condition.thenTargets, false);
+            buildCrossItems(condition.elseTargets, true);
         }
 
         for (const item of controls) {
@@ -282,7 +345,89 @@ export class FieldForm {
             }
         }
 
+        for (const item of this.crossSchemaItems) {
+            const childModel = this.resolveChildModel(item.fieldPath);
+            if (!childModel) { continue; }
+            const visible = this.checkCrossConditionValue(item);
+            item.visibility = visible;
+            if (visible) {
+                childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+            }
+        }
+
         return controls;
+    }
+
+    private checkCrossConditionValue(item: ICrossSchemaConditionItem): boolean {
+        const ok = this.evaluateIf(item.expr);
+        return item.conditionInvert ? !ok : ok;
+    }
+
+    public addParentControlledField(field: SchemaField, containerPreset?: any): void {
+        if (!this.fieldControls) { this.fieldControls = []; }
+        if (this.fieldControls.find(c => c.name === field.name)) { return; }
+        const item = this.createFieldControl(field, containerPreset?.[field.name]);
+        this.fieldControls.push(item);
+        if (item.control) {
+            this.form.addControl(item.name, item.control, { emitEvent: false });
+        }
+        this.controls = this.rebuildControls();
+    }
+
+    public removeParentControlledField(fieldName: string): void {
+        if (!this.fieldControls) { return; }
+        const idx = this.fieldControls.findIndex(c => c.name === fieldName);
+        if (idx < 0) { return; }
+        const item = this.fieldControls[idx];
+        this.fieldControls.splice(idx, 1);
+        this.form.removeControl(item.name, { emitEvent: false });
+        this.controls = this.rebuildControls();
+    }
+
+    private rebuildCrossSchemaConditions(force: boolean = true): void {
+        if (!this.crossSchemaItems.length) { return; }
+        for (const item of this.crossSchemaItems) {
+            const childModel = this.resolveChildModel(item.fieldPath);
+            if (!childModel) { continue; }
+            const visible = this.checkCrossConditionValue(item);
+            const wasVisible = item.visibility;
+            if (force || visible !== wasVisible) {
+                item.visibility = visible;
+                if (visible) {
+                    childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                } else {
+                    childModel.removeParentControlledField(item.field.name);
+                }
+            }
+        }
+    }
+
+    private resolveChildModel(fieldPath: string[]): FieldForm | null {
+        if (!fieldPath || fieldPath.length < 2) { return null; }
+        let model: FieldForm = this;
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            const name = fieldPath[i];
+            const ctrl = model.fieldControls?.find(c => c.name === name);
+            const next = ctrl?.model as FieldForm | null;
+            if (!next) { return null; }
+            model = next;
+        }
+        return model;
+    }
+
+    private getPresetForPath(fieldPath: string[]): any {
+        let val = this.preset;
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            if (val == null) { return undefined; }
+            val = val[fieldPath[i]];
+        }
+        return val;
+    }
+
+    private getMergedChildPaths(fieldName: string): Set<string> | undefined {
+        const own = this.childControlledFields.get(fieldName);
+        if (!own?.size) { return undefined; }
+        return own;
     }
 
     private subscribeConditions() {
@@ -383,6 +528,8 @@ export class FieldForm {
             if (!passChanged) break;
         }
 
+        this.rebuildCrossSchemaConditions(force);
+
         if (anyChanged) {
             this.controls = this.rebuildControls();
             this.form.updateValueAndValidity({ emitEvent: false });
@@ -398,7 +545,8 @@ export class FieldForm {
                         control.control,
                         control.preset,
                         control.fields,
-                        control.conditions
+                        control.conditions,
+                        control.name,
                     )
                 }
                 if (this.ifSubSchemaArray(control) && control.list) {
@@ -408,7 +556,8 @@ export class FieldForm {
                             listItem.control,
                             listItem.preset,
                             control.fields,
-                            control.conditions
+                            control.conditions,
+                            control.name,
                         )
                     }
                 }
@@ -422,6 +571,7 @@ export class FieldForm {
         preset: any,
         fields: any,
         conditions: any,
+        fieldName?: string,
     ) {
         if (type === 'geo') {
             const form = new GeoForm(control);
@@ -438,12 +588,17 @@ export class FieldForm {
             form.build();
             return form;
         } else {
+            const ownParentControlledFields = fieldName
+                ? this.getMergedChildPaths(fieldName)
+                : undefined;
             const form = new FieldForm(control, this.lvl + 1, this.validateLikeDryRun);
+            form.rootForm = this.rootForm;
             form.setData({
                 fields,
                 conditions,
                 preset,
                 privateFields: this.privateFields,
+                ownParentControlledFields,
             });
             form.build();
             return form;
@@ -677,7 +832,8 @@ export class FieldForm {
                     item.control,
                     item.preset,
                     item.fields,
-                    item.conditions
+                    item.conditions,
+                    field.name,
                 )
             }
         }
@@ -763,7 +919,8 @@ export class FieldForm {
                 listItem.control,
                 listItem.preset,
                 item.fields,
-                item.conditions
+                item.conditions,
+                item.name,
             )
         } else {
             // ifSimpleArray
@@ -867,9 +1024,14 @@ export class FieldForm {
             item.control,
             item.preset,
             item.fields,
-            item.conditions
+            item.conditions,
+            item.name,
         )
         this.form.addControl(item.name, item.control);
+        this.rebuildCrossSchemaConditions(true);
+        if (this.rootForm !== this) {
+            this.rootForm.rebuildCrossSchemaConditions(true);
+        }
     }
 
     public addItem(item: IFieldControl<UntypedFormArray>) {

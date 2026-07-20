@@ -1,55 +1,64 @@
 # Updates Policy Configuration
 
-### UPDATES **POLICY CONFIGURATION**
+**`PUT /policies/{policyId}`**
 
-{% swagger method="put" path="" baseUrl="/policies/{policyId}" summary="Updates policy configuration" %}
-{% swagger-description %}
-Updates policy configuration for the specified policy ID. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Updates the policy configuration for the specified policy ID.
 
-{% swagger-parameter in="path" name="policyID" type="String" required="true" %}
-Selected policy ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="body" type="application/json" required="true" %}
-Object that contains policy configuration
-{% endswagger-parameter %}
+**Permission:** `Permissions.POLICIES_POLICY_UPDATE`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `policyId` | string | Yes | The policy ID (MongoDB ObjectId, e.g. `63e3e5e8a01b3c001234abcd`) |
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyConfig'
+  "name": "iREC Policy",
+  "version": "1.0.0",
+  "description": "Updated description",
+  "config": {}
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | No | Policy name |
+| `version` | string | No | Policy version string |
+| `description` | string | No | Human-readable description |
+| `config` | object | No | Policy block configuration tree |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "iREC Policy",
+  "version": "1.0.0",
+  "status": "DRAFT",
+  "config": {}
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `500 Internal Server Error` | Unexpected server failure |

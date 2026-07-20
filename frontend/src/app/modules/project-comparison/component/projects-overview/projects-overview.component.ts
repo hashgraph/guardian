@@ -50,7 +50,8 @@ const SORT_BY_OPTION: SortByOption[] = [
 @Component({
     selector: 'app-projects-overview',
     templateUrl: './projects-overview.component.html',
-    styleUrls: ['./projects-overview.component.scss']
+    styleUrls: ['./projects-overview.component.scss'],
+    standalone: false
 })
 export class ProjectsOverviewComponent implements OnInit {
 

@@ -21,7 +21,7 @@ import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -48,11 +48,10 @@ import {
     ImportEntityType
 } from '../../common/import-entity-dialog/import-entity-dialog.component';
 import { SearchExternalPolicyDialog } from '../dialogs/search-external-policy-dialog/search-external-policy-dialog.component';
-import { OverlayPanel } from 'primeng/overlaypanel';
+import { Popover as OverlayPanel } from 'primeng/popover';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
-import { ToastrService } from 'ngx-toastr';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
@@ -223,6 +222,7 @@ const columns = [{
     selector: 'app-policies',
     templateUrl: './policies.component.html',
     styleUrls: ['./policies.component.scss'],
+    standalone: false
 })
 export class PoliciesComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
@@ -275,6 +275,12 @@ export class PoliciesComponent implements OnInit {
     ];
     private publishErrorMenuOption = [
         {
+            id: 'Draft',
+            title: 'To Draft',
+            description: 'Return to editing.',
+            color: '#9c27b0',
+        },
+        {
             id: 'Publish',
             title: 'Publish',
             description: 'Release version into public domain.',
@@ -291,6 +297,7 @@ export class PoliciesComponent implements OnInit {
         },
     ];
     public tab: 'local' | 'remote' | 'disconnected' = 'local';
+    public tabIndex: number = 0;
 
     private filteredPolicies: any[] = [];
     public filtersForm = new UntypedFormGroup({
@@ -716,11 +723,10 @@ export class PoliciesComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private dialogService: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
-        private toastr: ToastrService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
@@ -938,50 +944,75 @@ export class PoliciesComponent implements OnInit {
     }
 
     private dryRun(element: any) {
-        this.loading = true;
-        this.policyEngineService
-            .dryRun(element.id, {
-                enableMock: true
-            })
-            .pipe(takeUntil(this._destroy$))
-            .subscribe(
-                (data: any) => {
-                    const { policies, isValid, errors } = data;
-                    if (!isValid) {
-                        let text = [];
-                        const blocks = errors.blocks;
-                        const invalidBlocks = blocks.filter(
-                            (block: any) => !block.isValid
-                        );
-                        for (let i = 0; i < invalidBlocks.length; i++) {
-                            const block = invalidBlocks[i];
-                            for (let j = 0; j < block.errors.length; j++) {
-                                const error = block.errors[j];
-                                if (block.id) {
-                                    text.push(`<div>${block.id}: ${error}</div>`);
-                                } else {
-                                    text.push(`<div>${error}</div>`);
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Enable Mock',
+                texts: [
+                    `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
+                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`,
+                    `Note: enabling Mock pre-records responses for every schema in the policy, so moving to Dry-Run may take several minutes.`
+                ],
+                buttons: [{
+                    name: 'Disable',
+                    class: 'secondary'
+                }, {
+                    name: 'Enable',
+                    class: 'primary'
+                }]
+            },
+        });
+
+        dialogRef?.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
+            this.loading = true;
+            this.policyEngineService
+                .dryRun(element.id, {
+                    enableMock: result === 'Enable'
+                })
+                .pipe(takeUntil(this._destroy$))
+                .subscribe(
+                    (data: any) => {
+                        const { policies, isValid, errors } = data;
+                        if (!isValid) {
+                            let text = [];
+                            const blocks = errors.blocks;
+                            const invalidBlocks = blocks.filter(
+                                (block: any) => !block.isValid
+                            );
+                            for (let i = 0; i < invalidBlocks.length; i++) {
+                                const block = invalidBlocks[i];
+                                for (let j = 0; j < block.errors.length; j++) {
+                                    const error = block.errors[j];
+                                    if (block.id) {
+                                        text.push(`${block.id}: ${error}`);
+                                    } else {
+                                        text.push(error);
+                                    }
                                 }
                             }
+                            const msg = text.join('\n');
+                            this.toastService.error(
+                                msg,
+                                'The policy is invalid',
+                                { sticky: true, logMessage: msg }
+                            );
+                            this._configurationErrors.set(element.id, errors);
+                            this.router.navigate(['policy-configuration'], {
+                                queryParams: {
+                                    policyId: element.id,
+                                },
+                                replaceUrl: true,
+                            });
                         }
-                        this.informService.errorMessage(
-                            text.join(''),
-                            'The policy is invalid'
-                        );
-                        this._configurationErrors.set(element.id, errors);
-                        this.router.navigate(['policy-configuration'], {
-                            queryParams: {
-                                policyId: element.id,
-                            },
-                            replaceUrl: true,
-                        });
+                        this.loadAllPolicy();
+                    },
+                    (e) => {
+                        this.loading = false;
                     }
-                    this.loadAllPolicy();
-                },
-                (e) => {
-                    this.loading = false;
-                }
-            );
+                );
+        });
     }
 
     private draft(element: any) {
@@ -1033,7 +1064,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: selectedPolicy
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => {
             if (options) {
                 this.publish(element, options);
@@ -1095,7 +1126,7 @@ export class PoliciesComponent implements OnInit {
                     ? 'Are you sure want to delete policy with related schemas?'
                     : 'Are you sure want to delete policy?',
             },
-        });
+        })!;
         dialogRef.onClose
             .pipe(takeUntil(this._destroy$))
             .subscribe((result) => {
@@ -1157,7 +1188,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 notificationText: 'Are you sure want to delete all schemas for this policy?'
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
             if (!result) {
                 return;
@@ -1168,12 +1199,7 @@ export class PoliciesComponent implements OnInit {
             this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     this.loading = false;
-                    this.toastr.success(`All schemas of topic ${policy.topicId} was successfully deleted`, '', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true,
-                    });
+                    this.toastService.success(`All schemas of topic ${policy.topicId} was successfully deleted`);
                 },
                 (e) => {
                     this.loading = false;
@@ -1284,7 +1310,7 @@ export class PoliciesComponent implements OnInit {
                 type: ImportEntityType.Policy,
                 timeStamp: messageId
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importPolicyDetails(result);
@@ -1305,7 +1331,7 @@ export class PoliciesComponent implements OnInit {
                 policy: policy,
                 policies: distinctPolicies,
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 if (result.messageId) {
@@ -1366,7 +1392,7 @@ export class PoliciesComponent implements OnInit {
                 title: 'Schemas for replace',
                 schemasCanBeReplaced,
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (resultWithSchemasForReplace) => {
             if (resultWithSchemasForReplace) {
                 this.pushImportByXlsx(data, policyId, resultWithSchemasForReplace.selectedSchemaIds)
@@ -1403,7 +1429,7 @@ export class PoliciesComponent implements OnInit {
                 title: 'Preview',
                 xlsx: xlsx,
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (res) => {
             if (res) {
                 this.schemaService.checkForDublicates({
@@ -1464,7 +1490,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 type: ImportEntityType.Xlsx,
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: IImportEntityResult | null) => {
             if (result) {
                 this.importExcelDetails(result, policy?.id, policy?.topicId);
@@ -1513,7 +1539,7 @@ export class PoliciesComponent implements OnInit {
             let dialogRef: DynamicDialogRef<DiscontinuePolicy> | undefined = this.dialogService.open(DiscontinuePolicy, {
                 header: 'Discontinue policy',
                 width: '90%',
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;
@@ -1544,10 +1570,9 @@ export class PoliciesComponent implements OnInit {
     private onPublishErrorAction(event: any, element: any) {
         if (event.value.id === 'Publish') {
             this.setVersion(element);
+        } else if (event.value.id === 'Draft') {
+            this.draft(element);
         }
-        // else if (event.id === 'Draft') {
-        //     this.draft(element);
-        // }
         setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
@@ -1559,7 +1584,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policyId: element.id
             }
-        });
+        })!;
 
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
@@ -1579,7 +1604,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: item
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 const items = btoa(JSON.stringify({
@@ -1625,7 +1650,7 @@ export class PoliciesComponent implements OnInit {
                         policies: runnablePolicies,
                         contracts: contractsResponse.body
                     },
-                });
+                })!;
 
                 dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result?: MigrationActionResult) => {
                     if (!result?.action) {
@@ -1696,7 +1721,7 @@ export class PoliciesComponent implements OnInit {
             header: 'New Policy',
             width: '90%',
             styleClass: 'guardian-dialog',
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 this.loading = true;
@@ -1835,7 +1860,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy: item
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => {
             if (result) {
                 const items = btoa(JSON.stringify({
@@ -1858,7 +1883,7 @@ export class PoliciesComponent implements OnInit {
                 width: '90%',
                 showHeader: false,
                 styleClass: 'guardian-dialog',
-            })
+            })!
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
 
@@ -1891,7 +1916,7 @@ export class PoliciesComponent implements OnInit {
                 multiple: true,
                 type: 'File'
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (files) => {
             if (files) {
                 this.loading = true;
@@ -1919,7 +1944,7 @@ export class PoliciesComponent implements OnInit {
                 policy: item,
                 test
             }
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result) => { });
     }
 
@@ -1954,13 +1979,14 @@ export class PoliciesComponent implements OnInit {
         test.status = event.status;
     }
 
-    public onChangeTab(tab: any) {
+    public onChangeTab(index: string | number | undefined) {
         this.loading = true;
-        if (tab.index === 0) {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        if (tabIndex === 0) {
             this.tab = 'local';
-        } else if (tab.index === 1) {
+        } else if (tabIndex === 1) {
             this.tab = 'remote';
-        } else if (tab.index === 2) {
+        } else if (tabIndex === 2) {
             this.tab = 'disconnected';
         } else {
             this.tab = 'local';
@@ -1981,7 +2007,7 @@ export class PoliciesComponent implements OnInit {
             showHeader: false,
             width: '720px',
             styleClass: 'guardian-dialog',
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (result: any | null) => {
             if (result) {
                 if (result.status !== 'NEW') {
@@ -2010,7 +2036,7 @@ export class PoliciesComponent implements OnInit {
             data: {
                 policy
             },
-        });
+        })!;
         dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe(async (options) => { });
     }
 
@@ -2079,7 +2105,7 @@ export class PoliciesComponent implements OnInit {
                     notificationText: 'Are you sure want to delete these policies?',
                     itemNames: this.selectedItems.map(item => item.name),
                 },
-            });
+            })!;
             dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
                 if (!result) {
                     return;
@@ -2157,7 +2183,7 @@ export class PoliciesComponent implements OnInit {
                         class: 'delete'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result: string) => {
                 if (result === 'Disconnect') {
                     this.loading = true;
@@ -2200,7 +2226,7 @@ export class PoliciesComponent implements OnInit {
                         class: 'delete'
                     }]
                 },
-            });
+            })!;
             dialogRef.onClose.subscribe((result?: {
                 button: string,
                 option: boolean
@@ -2237,7 +2263,7 @@ export class PoliciesComponent implements OnInit {
                     class: 'primary'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Reconnect') {
                 this.loading = true;

@@ -314,6 +314,20 @@ export class PolicyApi {
         required: false,
         example: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED]
     })
+    @ApiQuery({
+        name: 'name',
+        type: String,
+        description: 'Filter by policy name.',
+        required: false,
+        example: 'Example Policy'
+    })
+    @ApiQuery({
+        name: 'version',
+        type: String,
+        description: 'Filter by policy version.',
+        required: false,
+        example: '1.0.0'
+    })
     @ApiOkResponse({
         description:
             'Successful operation. Two examples: regular user (userGroups usually reflect roles on published policies) and Standard Registry (dry-run: last active role and its userGroups; Administrator has userGroups []). Other combinations are possible depending on policy state and assignments.',
@@ -345,15 +359,21 @@ export class PolicyApi {
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
         @Query('type') type?: string,
-        @Query('status') status?: string
+        @Query('status') status?: string,
+        @Query('name') name?: string,
+        @Query('version') version?: string,
     ): Promise<any> {
         if (!user.did && user.role !== UserRole.AUDITOR) {
             return res.header('X-Total-Count', 0).send([]);
         }
         try {
+            const filters: any = {};
+            if (status) { filters.status = { $in: status.split(',') }; }
+            if (name) { filters.name = { $regex: name, $options: 'i' }; }
+            if (version) { filters.version = version; }
             const options: any = {
                 fields: Object.values(POLICY_REQUIRED_PROPS),
-                filters: status ? { status: { $in: status.split(',') } } : {},
+                filters,
                 type,
                 pageIndex,
                 pageSize
@@ -3147,7 +3167,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadPolicyData(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.data`
+                FilenameSanitizer.contentDisposition(policy.name, '.data')
             );
             res.header('Content-Type', 'application/policy-data');
             return res.send(downloadResult);
@@ -3261,7 +3281,7 @@ export class PolicyApi {
             const downloadResult = await engineService.downloadVirtualKeys(policyId, owner);
             res.header(
                 'Content-Disposition',
-                `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}.vk`
+                FilenameSanitizer.contentDisposition(policy.name, '.vk')
             );
             res.header('Content-Type', 'application/virtual-keys');
             return res.send(downloadResult);
@@ -4494,7 +4514,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportFile(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(policy.name));
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {
@@ -4602,7 +4622,7 @@ export class PolicyApi {
             const owner = new EntityOwner(user);
             const policy = await engineService.accessPolicy(policyId, owner, 'read');
             const policyFile: any = await engineService.exportXlsx(policyId, owner);
-            res.header('Content-disposition', `attachment; filename=${FilenameSanitizer.sanitize(policy.name)}`);
+            res.header('Content-Disposition', FilenameSanitizer.contentDisposition(policy.name));
             res.header('Content-type', 'application/zip');
             return res.send(policyFile);
         } catch (error) {

@@ -7,6 +7,7 @@ import { DialogService, DynamicDialogConfig, DynamicDialogRef } from 'primeng/dy
     selector: 'policy-label-preview-dialog',
     templateUrl: './policy-label-preview-dialog.component.html',
     styleUrls: ['./policy-label-preview-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyLabelPreviewDialog {
     public loading = true;

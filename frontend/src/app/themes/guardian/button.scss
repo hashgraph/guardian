@@ -1,7 +1,28 @@
+.toolbar-btn {
+    vertical-align: middle;
+
+    .p-button {
+        padding-top: 0;
+        padding-bottom: 0;
+
+        .pi {
+            color: inherit;
+        }
+
+        svg {
+            fill: currentColor;
+        }
+    }
+}
+
 .guardian-button {
     display: flex;
     border-radius: 6px;
     font-family: var(--guardian-font-family);
+    font-size: var(--guardian-primary-font-size);
+    font-style: var(--guardian-font-style);
+    font-weight: 500;
+    line-height: 20px;
     transition: all 0.25s ease-in-out;
     white-space: nowrap;
     user-select: none;
@@ -29,13 +50,13 @@
 
     &-secondary {
         color: var(--guardian-primary-color);
-        background-color: var(--guardian-secondary-color);
+        background-color: var(--guardian-secondary-background);
         border: 1px solid var(--guardian-primary-color);
     }
 
     &-delete {
         color: var(--guardian-delete-color);
-        background-color: var(--guardian-secondary-color);
+        background-color: var(--guardian-secondary-background);
         border: 1px solid var(--guardian-delete-color);
     }
 
@@ -123,7 +144,7 @@ div.guardian-button[disabled="true"] {
     }
 
     &-secondary {
-        background-color: var(--guardian-secondary-color);
+        background-color: var(--guardian-secondary-background);
         border: 1px solid var(--guardian-primary-color);
     }
 

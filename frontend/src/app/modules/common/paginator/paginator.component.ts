@@ -3,7 +3,8 @@ import { Component, EventEmitter, Input, Output, SimpleChanges } from '@angular/
 @Component({
     selector: 'app-paginator',
     templateUrl: './paginator.component.html',
-    styleUrls: ['./paginator.component.scss']
+    styleUrls: ['./paginator.component.scss'],
+    standalone: false
 })
 export class PaginatorComponent {
     @Input('pageIndex') pageIndex: number = 0;

@@ -87,7 +87,20 @@ export abstract class NatsService {
                     const serviceToken = msg.headers?.get('serviceToken');
                     const fn = this.responseCallbacksMap.get(messageId);
                     if (fn) {
-                        const message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                        let message: IMessageResponse<any>;
+                        try {
+                            message = (await this.codec.decode(msg.data)) as IMessageResponse<any>;
+                        } catch (e: any) {
+                            // Decode may fetch a large-payload directLink; a failure here (e.g.
+                            // ECONNREFUSED when the responder died mid-request) must fail this
+                            // request rather than throw out of the async callback and crash the process.
+                            // Log the detail server-side; return a generic message to the caller so
+                            // internal exception text (e.g. the directLink URL) is not leaked.
+                            console.error('Reply decode failed:', e.message);
+                            fn(null, 'Failed to decode reply payload', 500);
+                            this.responseCallbacksMap.delete(messageId);
+                            return;
+                        }
                         if (!message) {
                             fn(null)
                         } else {
@@ -193,7 +206,7 @@ export abstract class NatsService {
     public sendMessage<T>(subject: string, data?: unknown, isResponseCallback: boolean = true, externalMessageId?: string): Promise<T> {
         const messageId = externalMessageId ?? GenerateUUIDv4();
 
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             if (isResponseCallback) {
@@ -207,13 +220,22 @@ export abstract class NatsService {
             } else {
                 resolve(null);
             }
-            const token = await JwtServicesValidator.sign(subject);
-            head.append('serviceToken', token);
+            // Run the async work outside the Promise executor: a rejection from
+            // sign/encode/publish inside an async executor is neither caught nor
+            // settles this promise (it becomes an unhandledRejection and the
+            // caller hangs). Route it to reject and clean up the callback instead.
+            (async () => {
+                const token = await JwtServicesValidator.sign(subject);
+                head.append('serviceToken', token);
 
-            this.connection.publish(subject, await this.codec.encode(data), {
-                reply: this.replySubject,
-                headers: head
-            })
+                this.connection.publish(subject, await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            })().catch((e) => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            });
         });
     }
 
@@ -239,13 +261,82 @@ export abstract class NatsService {
     }
 
     /**
+     * Core NATS request over a dedicated inbox: a subject with no subscribers
+     * fails fast ("no responders") instead of waiting out the timeout. Throws
+     * Error{code:'NO_RESPONDERS'} (not delivered - safe to retry),
+     * Error{code:'REQUEST_TIMEOUT'} (maybe delivered - do NOT retry) or
+     * MessageError(code); otherwise returns the response body.
+     */
+    public async requestOrThrow<T>(
+        subject: string,
+        data?: unknown,
+        timeout: number = 1000,
+        extraHeaders?: Record<string, string>
+    ): Promise<T> {
+        const head = headers();
+        head.append('messageId', GenerateUUIDv4());
+        if (extraHeaders) {
+            for (const [key, value] of Object.entries(extraHeaders)) {
+                head.append(key, value);
+            }
+        }
+        const token = await JwtServicesValidator.sign(subject);
+        head.append('serviceToken', token);
+
+        let msg;
+        try {
+            msg = await this.connection.request(subject, await this.codec.encode(data), { timeout, headers: head });
+        } catch (error: any) {
+            // nats: NoResponders -> '503', Timeout -> 'TIMEOUT'
+            if (error?.code === '503' || /no responders/i.test(error?.message || '')) {
+                const e = new Error(`No responders for "${subject}"`);
+                (e as any).code = 'NO_RESPONDERS';
+                throw e;
+            }
+            if (error?.code === 'TIMEOUT' || /timeout/i.test(error?.message || '')) {
+                const e = new Error(`Timeout for "${subject}"`);
+                (e as any).code = 'REQUEST_TIMEOUT';
+                throw e;
+            }
+            throw error;
+        }
+
+        // Mirror the replySubject handler in init(): guard the decode so a
+        // failure (e.g. a directLink fetch that ECONNREFUSEs when the responder
+        // died mid-request) fails this request with a generic message instead of
+        // leaking internal exception text (the directLink URL).
+        let message: IMessageResponse<T>;
+        try {
+            message = (await this.codec.decode(msg.data)) as IMessageResponse<T>;
+        } catch (e: any) {
+            console.error('Reply decode failed:', e.message);
+            throw new MessageError('Failed to decode reply payload', 500);
+        }
+
+        // Verify the reply's serviceToken before trusting the body, so with
+        // QM_VERIFICATION enabled the reply-side auth check is not dropped.
+        const serviceToken = msg.headers?.get('serviceToken');
+        try {
+            await JwtServicesValidator.verify(serviceToken);
+        } catch (e: any) {
+            console.error('Reply validation failed:', e.message);
+            throw new MessageError(e.message, 401);
+        }
+
+        if (message && message.error) {
+            throw new MessageError(message.error, message.code);
+        }
+        return message ? message.body : null;
+    }
+
+    /**
      * Send raw message
      * @param subject
      * @param data
      */
     public sendRawMessage<T>(subject: string, data?: unknown): Promise<T> {
         const messageId = GenerateUUIDv4();
-        return new Promise(async (resolve, reject) => {
+        return new Promise((resolve, reject) => {
             const head = headers();
             head.append('messageId', messageId);
             // head.append('rawMessage', 'true');
@@ -256,15 +347,23 @@ export abstract class NatsService {
                 } else {
                     resolve(body);
                 }
-            })
+            });
 
-            const token = await JwtServicesValidator.sign(subject);
-            head.append('serviceToken', token);
+            // See sendMessage: keep async work out of the Promise executor so a
+            // sign/encode/publish failure rejects this promise (and clears the
+            // callback) instead of becoming an unhandledRejection.
+            (async () => {
+                const token = await JwtServicesValidator.sign(subject);
+                head.append('serviceToken', token);
 
-            this.connection.publish(subject, await this.codec.encode(data), {
-                reply: this.replySubject,
-                headers: head
-            })
+                this.connection.publish(subject, await this.codec.encode(data), {
+                    reply: this.replySubject,
+                    headers: head
+                })
+            })().catch((e) => {
+                this.responseCallbacksMap.delete(messageId);
+                reject(e instanceof Error ? e : new Error(String(e)));
+            });
         });
     }
 

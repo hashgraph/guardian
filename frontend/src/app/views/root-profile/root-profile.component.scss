@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 99;
     top: var(--header-height);
@@ -25,7 +25,7 @@
 .progress {
     width: 500px;
     margin-left: 20px;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     height: 50px;
     display: block;
     margin-top: 20px;
@@ -89,7 +89,7 @@
     p {
         font-size: 20px;
         margin: 0 0 16px 0;
-        color: #000000;
+        color: var(--guardian-font-color, #000000);
     }
 
     button {
@@ -103,7 +103,7 @@
     right: 0;
     top: 125px;
     bottom: 0;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     z-index: 9;
     display: flex;
     align-items: center;
@@ -113,7 +113,7 @@
     p {
         font-size: 20px;
         margin: 0 0 16px 0;
-        color: #000000;
+        color: var(--guardian-font-color, #000000);
         font-weight: 500;
     }
 }
@@ -199,7 +199,7 @@
             height: 40px;
             border-radius: 8px;
             background: var(--primary-color);
-            color: var(--color-grey-white);
+            color: var(--guardian-on-primary-color);
             font-family: Inter, sans-serif;
             font-size: 14px;
             font-style: normal;
@@ -229,13 +229,13 @@
     }
 
     .white-space {
-        background-color: white;
+        background-color: var(--guardian-background, white);
         width: 100%;
         height: 70px;
     }
 
     #connect-btn {
-        background-color: white;
+        background-color: var(--guardian-background, white);
         margin: 0 !important;
         padding: 20px 0 0 !important;
         position: fixed;
@@ -255,28 +255,6 @@
 }
 
 /*new Design*/
-
-.container {
-    display: flex;
-    flex-direction: column;
-    margin: 42px 48px;
-}
-
-.container>.header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.container>.header>h1 {
-    width: 100%;
-    color: #000;
-    font-family: Poppins, serif;
-    font-size: 32px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 40px;
-}
 
 .tokenId {
     display: flex;
@@ -307,18 +285,18 @@
     justify-content: space-between;
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 400px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
-:host ::ng-deep .p-dropdown-panel,
-.p-dropdown-items-wrapper {
+:host ::ng-deep .p-select-overlay,
+.p-select-list-container {
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #fff;
+    background: var(--guardian-background, #fff);
     margin-top: 4px;
     box-shadow: 0 0 1px 0 #000;
 }
@@ -395,7 +373,7 @@ button[disabled] {
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -409,92 +387,289 @@ button[disabled] {
     align-content: center;
 }
 
-:host ::ng-deep .topic-id-field .p-dropdown {
+:host ::ng-deep .topic-id-field .p-select {
     width: 200px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
-:host ::ng-deep.p-dropdown {
+:host ::ng-deep.p-select {
     width: 100px;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3);
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
-.user-info-container {
-    margin-top: 24px;
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    align-items: start;
+    padding-bottom: 24px;
+}
+
+.profile-info-column,
+.profile-config-column {
     display: flex;
     flex-direction: column;
-    grid-row-gap: 16px;
-    row-gap: 16px;
-    background: #FFFFFF;
-    box-shadow: 0px 4px 8px 0px #00000014;
-    padding: 24px;
+    gap: 12px;
+}
+
+:host ::ng-deep .profile-card {
     border-radius: 8px;
+    box-shadow: 0px 4px 8px 0px #00000014;
+    background: var(--guardian-background, #fff);
 
-    .item-header {
+    .p-card-body {
+        padding: 0;
+    }
+}
+
+.profile-card-inner {
+    padding: 16px 24px;
+}
+
+.profile-card-title {
+    font-family: Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 24px;
+    color: var(--color-grey-black-1, #181818);
+    padding-bottom: 12px;
+    margin-bottom: 4px;
+    border-bottom: 1px solid var(--guardian-border-color, var(--color-grey-3, #e1e7ef));
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.profile-card-title-icon {
+    font-size: 15px;
+    color: var(--color-grey-5, #848fa9);
+}
+
+.profile-account-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 0 16px;
+}
+
+.profile-avatar-initials {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: var(--color-primary, #4169E2);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 600;
+    font-family: Inter, sans-serif;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.profile-account-identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.profile-account-name {
+    font-family: Inter, sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-grey-black-1, #181818);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-account-role {
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--color-grey-5, #848fa9);
+}
+
+.profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 5px 0;
+}
+
+.profile-label-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.profile-label {
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-grey-5, #848fa9);
+    white-space: nowrap;
+}
+
+.profile-help-icon {
+    color: var(--color-grey-5, #848fa9);
+    font-size: 12px;
+    cursor: default;
+}
+
+.profile-value {
+    font-family: Inter, sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--color-grey-black-1, #181818);
+
+    &--truncate {
+        max-width: 180px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        display: inline-block;
+    }
+}
+
+.profile-value-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+}
+
+
+:host ::ng-deep .profile-copy-btn.p-button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+
+    .p-button-icon {
+        font-size: 12px;
+    }
+}
+
+.view-document-button {
+    cursor: pointer;
+    color: var(--color-primary);
+    display: flex;
+    column-gap: 8px;
+    height: 28px;
+    padding: 6px 16px;
+    align-items: center;
+    border-radius: 6px;
+    border: 1px solid var(--color-primary);
+    flex-shrink: 0;
+
+    i,
+    ::ng-deep svg {
+        color: var(--color-primary);
+        fill: var(--color-primary);
+    }
+
+    span {
+        color: var(--color-primary);
         font-family: Inter, sans-serif;
-        font-size: 16px;
-        font-weight: 600;
-        line-height: 32px;
-        text-align: left;
-        margin-top: 16px;
+        font-size: 14px;
+    }
+}
 
-        &:first-child {
-            margin-top: 0px;
-        }
+.config-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 8px 0;
+}
+
+.profile-toggle-wrapper {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.config-row-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.config-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.config-row-link {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-primary);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-primary);
+    white-space: nowrap;
+}
+
+.config-row-title {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-grey-black-1, #181818);
+}
+
+.config-row-desc {
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-grey-5, #848fa9);
+}
+
+:host ::ng-deep p-selectbutton {
+    p-togglebutton {
+        padding: 4px 10px;
     }
 
-    .item {
+    p-togglebutton > span {
         display: flex;
-        column-gap: 15px;
         align-items: center;
-
-        span {
-            color: var(--color-grey-5, #848fa9);
-        }
-
-        div,
-        .value-text {
-            color: var(--color-grey-black-1, #181818);
-        }
-
-        span,
-        .value-text {
-            width: 200px;
-            font-family: Inter, sans-serif;
-            font-size: 14px;
-            font-style: normal;
-            font-weight: 500;
-            line-height: normal;
-            white-space: nowrap;
-        }
-
-        .view-document-button {
-            cursor: pointer;
-            display: flex;
-            column-gap: 8px;
-            height: 28px;
-            padding: 6px 16px;
-            align-items: center;
-            border-radius: 6px;
-            border: 1px solid var(--color-secondary);
-
-            span {
-                width: min-content;
-                color: var(--color-primary);
-            }
-        }
+        gap: 6px;
     }
+
+    p-togglebutton i,
+    p-togglebutton span {
+        font-size: 14px !important;
+    }
+}
+
+/* The wizard centers vertically via its containers, not a form margin: the host
+   must stretch to the content-area height (components default to an inline host,
+   so the page's percentage height never resolves), and the page column centers
+   the form. :has() scopes both rules to the wizard state, so the
+   configured-profile tabs view keeps the default page flow. min-height instead
+   of the theme's fixed height lets an over-tall step grow and scroll instead of
+   clipping its top edge. */
+:host:has(.finish-setup-form) {
+    display: block;
+    height: 100%;
+}
+
+.guardian-page:has(> .finish-setup-form) {
+    height: 100%;
+    justify-content: center;
+    box-sizing: border-box;
 }
 
 .finish-setup-form {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin-top: 20vh;
 }
 
 .finish-setup-form-container {
@@ -525,8 +700,24 @@ button[disabled] {
     margin-bottom: 24px;
 }
 
+.input-field-container.checkbox-field {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+
+    p-checkbox {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .p-checkbox-label {
+        margin: 0;
+        line-height: 1;
+    }
+}
+
 .form-label {
-    color: #181818;
+    color: var(--guardian-font-color, #181818);
     font-family: Inter, sans-serif;
     font-size: 12px;
     font-style: normal;
@@ -596,11 +787,13 @@ mat-radio-button {
     min-width: 140px;
 }
 
-.guardian-user-page-toolbar {
+.guardian-page .guardian-user-page-toolbar {
     display: flex;
+    align-items: center;
     height: 40px;
     justify-content: flex-end;
-    margin: 24px 0px 18px 0px;
+    margin: 0;
+    padding: 0;
 
     .guardian-user-page-filters {
         width: 100%;
@@ -662,6 +855,7 @@ mat-radio-button {
     min-height: calc(100vh - 500px);
     width: 100%;
     position: relative;
+    margin-top: 40px;
 }
 
 .guardian-user-page-buttons {
@@ -760,26 +954,7 @@ mat-radio-button {
     min-width: 110px !important;
 }
 
-:host ::ng-deep .p-tabview-nav-link {
+:host ::ng-deep .p-tab {
     text-decoration: none !important;
 }
 
-.otp-status {
-    &.disabled {
-        border-color: var(--color-grey-3) !important;
-        background-color: var(--color-grey-3);
-
-        span {
-            color: var(--color-grey-6) !important;
-        }
-    }
-
-    &.active {
-        border-color: var(--color-accent-green-2) !important;
-        background-color: var(--color-accent-green-2);
-
-        span {
-            color: var(--color-accent-green-1) !important;
-        }
-    }
-}

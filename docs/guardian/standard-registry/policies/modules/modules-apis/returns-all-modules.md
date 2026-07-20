@@ -1,58 +1,54 @@
 # Returns all Modules
 
-{% swagger method="get" path="" baseUrl="/modules" summary="Return a list of all modules." %}
-{% swagger-description %}
-Returns all modules. Only users with the Standard Registry and Installer role are allowed to make the request.
-{% endswagger-description %}
+**`GET /modules`**
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="false" %}
-The number of pages to skip before starting to collect the result set
-{% endswagger-parameter %}
+Returns all modules. Only users with the Standard Registry role are allowed to make the request.
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="false" %}
-The numbers of items to return
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Module'
-}
+**Permission:** `Permissions.MODULES_MODULE_READ`
+
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `pageIndex` | Integer | No | The number of pages to skip before starting to collect the result set |
+| `pageSize` | Integer | No | The number of items to return |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of module objects. The total item count is provided in the `X-Total-Count` response header.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "Module name",
+    "description": "Description",
+    "status": "DRAFT",
+    "creator": "did:hedera:testnet:...",
+    "owner": "did:hedera:testnet:...",
+    "topicId": "0.0.5000001",
+    "messageId": "1700000000.000000001"
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-  content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

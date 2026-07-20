@@ -1,65 +1,58 @@
 # Returns Schema by Username
 
-<mark style="color:blue;">`GET`</mark> `/schemas/system/{username}`
+**`GET /schemas/system/{username}`**
 
-Return all system schemas by username. Only user with the Standard Registry are allowed to make the request.
+Returns all system schemas for the specified user. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description |
-| ------------------------------------------ | ------ | ----------- |
-| username<mark style="color:red;">\*</mark> | String | Username    |
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_READ`
 
-#### Query Parameters
+---
 
-| Name      | Type    | Description                                                            |
-| --------- | ------- | ---------------------------------------------------------------------- |
-| pageIndex | Integer | The number of pages to skip before starting to collect the result set. |
-| pageSize  | Integer | The number of items to return.                                         |
+## Request
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total number of items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `username` | String | Yes | Username |
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `pageIndex` | Integer | No | The number of pages to skip before starting to collect the result set |
+| `pageSize` | Integer | No | The number of items to return |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an array of system schema objects. The total item count is provided in the `X-Total-Count` response header.
+
+```json
+[
+  {
+    "id": "f3b2a9c1e4d5678901234567",
+    "uuid": "f3b2a9c1e4d5678901234567",
+    "name": "System Schema name",
+    "entity": "string",
+    "status": "PUBLISHED",
+    "version": "1.0.0",
+    "owner": "did:hedera:testnet:..."
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

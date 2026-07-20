@@ -1,66 +1,57 @@
-# User Info for selected token
+# User Info for Selected Token
 
-### DISPLAYS USER INFORMATION FOR SELECTED TOKEN
+**`GET /tokens/{tokenId}/{username}/info`**
 
-{% swagger method="get" path="" baseUrl="/tokens/{tokenId}/{username}/info" summary="Returns User information" %}
-{% swagger-description %}
-Returns user information for the selected token. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Returns the token status information for the specified user on the given Hedera token. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="path" name="username" required="true" %}
-Username
-{% endswagger-parameter %}
+**Permission:** `Permissions.TOKENS_TOKEN_READ`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The Hedera token ID (e.g. `0.0.5000001`) |
+| `username` | string | Yes | The username of the target user |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/TokenInfo'
+  "id": "63e3e5e8a01b3c001234abcd",
+  "tokenId": "0.0.5000001",
+  "associated": true,
+  "balance": "100",
+  "frozen": false,
+  "kyc": true
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="Bad Request" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Internal database ID |
+| `tokenId` | string | Hedera token ID |
+| `associated` | boolean | Whether the user is associated with the token |
+| `balance` | string | User's token balance |
+| `frozen` | boolean | Whether the user's token transfers are frozen |
+| `kyc` | boolean | Whether the user has passed KYC |
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `400 Bad Request` | Invalid token or username |
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

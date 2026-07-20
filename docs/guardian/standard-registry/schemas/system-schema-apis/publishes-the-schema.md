@@ -1,69 +1,39 @@
 # Publishes the Schema
 
-<mark style="color:orange;">`PUT`</mark> `/schemas/{schemaId}/active`
+**`PUT /schemas/system/{schemaId}/active`**
 
-Makes the selected schema active. Other schemas of the same type become inactive. Only suers with the Standard Registry role are allowed to make the request.
+Makes the selected system schema active. Other schemas of the same type become inactive. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description |
-| ------------------------------------------ | ------ | ----------- |
-| schemaID<mark style="color:red;">\*</mark> | String | schema ID   |
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_REVIEW`
 
-#### Request Body
+---
 
-| Name                               | Type   | Description                         |
-| ---------------------------------- | ------ | ----------------------------------- |
-| <mark style="color:red;">\*</mark> | String | Object that contains Policy Version |
+## Request
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
-```
-{% endtab %}
+### Path Parameters
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Schema ID |
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-Schema is not system.
-```
-{% endtab %}
+---
 
-{% tab title="404: Not Found Not Found" %}
-```
-Schema not found.
-```
-{% endtab %}
+## Response
 
-{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
-```
-Schema is active.
-```
-{% endtab %}
+### Success Response
 
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+**Status:** `200 OK`
+
+Returns `null` on success.
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Schema is not a system schema |
+| `404 Not Found` | Schema not found |
+| `422 Unprocessable Entity` | Schema is already active |
+| `500 Internal Server Error` | Unexpected server failure |

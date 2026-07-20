@@ -63,6 +63,7 @@ export class SchemaHelper {
                 ? String(_property.pattern)
                 : null;
             field.enum = _property.enum;
+            field.enumName = _property.enumName;
             field.remoteLink = _property.$ref;
         }
         field.readOnly = !!(_property.readOnly || readonly);

@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -70,6 +70,7 @@ export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
     selector: 'import-entity-dialog',
     templateUrl: './import-entity-dialog.component.html',
     styleUrls: ['./import-entity-dialog.component.scss'],
+    standalone: false
 })
 export class ImportEntityDialog implements OnInit {
     public loading: boolean = false;
@@ -80,6 +81,7 @@ export class ImportEntityDialog implements OnInit {
 
     public type: ImportEntityType = ImportEntityType.Policy;
     public importType: ImportType = ImportType.FILE;
+    public tabIndex: number = 0;
     public recordSource: 'file' | 'imported' | 'otherPolicy' = 'file';
     public selectedPolicy: { id?: string; name?: string } | null = null;
     public policiesWithImportedRecords: { id?: string; name?: string }[] = [];
@@ -117,7 +119,7 @@ export class ImportEntityDialog implements OnInit {
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private schemaRulesService: SchemaRulesService,
         private policyStatisticsService: PolicyStatisticsService,
@@ -272,8 +274,9 @@ export class ImportEntityDialog implements OnInit {
         }
     }
 
-    public setImportType(event: any): void {
-        this.importType = event.index;
+    public setImportType(index: string | number | undefined): void {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.importType = tabIndex;
         this.changeDetectorRef.detectChanges();
     }
 
@@ -286,7 +289,7 @@ export class ImportEntityDialog implements OnInit {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }

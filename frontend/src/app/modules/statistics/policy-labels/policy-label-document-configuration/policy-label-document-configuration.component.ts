@@ -13,6 +13,7 @@ import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
     selector: 'app-policy-label-document-configuration',
     templateUrl: './policy-label-document-configuration.component.html',
     styleUrls: ['./policy-label-document-configuration.component.scss'],
+    standalone: false
 })
 export class PolicyLabelDocumentConfigurationComponent implements OnInit {
     public readonly title: string = 'Configuration';

@@ -15,7 +15,7 @@ import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { CronJob } from 'cron';
 import express from 'express';
-import process from 'process';
+import process from 'node:process';
 import { ReportService } from './analytics/report.service.js';
 import { AppModule } from './app.module.js';
 import { SwaggerModule } from '@nestjs/swagger';

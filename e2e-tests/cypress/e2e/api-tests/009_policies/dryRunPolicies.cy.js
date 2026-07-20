@@ -5,7 +5,7 @@ import * as Authorization from "../../../support/authorization";
 
 context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
-
+    const policyMessageId = Cypress.env('irec_policy');
     const importMsgUrl = `${API.ApiServer}${API.PolicisImportMsg}`;
     const policiesUrl = `${API.ApiServer}${API.Policies}`;
     const dryRunBase = (policyId) => `${policiesUrl}${policyId}/${API.DryRun}`;
@@ -52,7 +52,7 @@ context("Policies", { tags: ['policies', 'secondPool', 'all'] }, () => {
 
     before(() => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            postWithAuth(authorization, importMsgUrl, { messageId: "1707125414.999819805" }, { timeout: 600000 })
+            postWithAuth(authorization, importMsgUrl, { messageId: policyMessageId }, { timeout: 600000 })
                 .then((response) => {
                     expect(response.status).to.eq(STATUS_CODE.SUCCESS);
                     policyId = response.body.at(0).id;

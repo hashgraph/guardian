@@ -1,47 +1,39 @@
 # User Session
 
-### DISPLAY CURRENT USER SESSION
+**`GET /accounts/session`**
 
-{% swagger method="get" path="" baseUrl="/accounts/session" summary="Returns current session of the user" %}
-{% swagger-description %}
-Returns current user session
-{% endswagger-description %}
+Returns the current session information for the authenticated user.
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+---
+
+## Request
+
+No request body or parameters required.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Session'
+  "username": "example_user",
+  "role": "STANDARD_REGISTRY",
+  "did": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "hederaAccountId": "0.0.4532001",
+  "permissionsGroup": [],
+  "permissions": []
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `500 Internal Server Error` | Unexpected server failure |

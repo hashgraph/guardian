@@ -7,6 +7,7 @@ import { RelayerAccountsService } from 'src/app/services/relayer-accounts.servic
     selector: 'new-relayer-account-dialog',
     templateUrl: './new-relayer-account-dialog.component.html',
     styleUrls: ['./new-relayer-account-dialog.component.scss'],
+    standalone: false
 })
 export class NewRelayerAccountDialog {
     public loading = true;

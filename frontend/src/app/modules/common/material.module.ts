@@ -3,21 +3,21 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { CdkTableModule } from '@angular/cdk/table';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { AccordionModule } from 'primeng/accordion';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { CalendarModule } from 'primeng/calendar';
+import { DatePickerModule } from 'primeng/datepicker';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { ToolbarModule } from 'primeng/toolbar';
-import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { PopoverModule } from 'primeng/popover';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { CheckboxModule } from 'primeng/checkbox';
-import { ChipsModule } from 'primeng/chips';
+import { StepperModule } from 'primeng/stepper';
 import { StepsModule } from 'primeng/steps';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TooltipModule } from 'primeng/tooltip';
@@ -29,20 +29,21 @@ import { PasswordModule } from 'primeng/password';
     declarations: [],
     imports: [
         CommonModule,
-        TabViewModule,
+        TabsModule,
+        StepperModule,
         StepsModule,
         AccordionModule,
         TableModule,
         ReactiveFormsModule,
         ButtonModule,
         SelectButtonModule,
-        CalendarModule,
+        DatePickerModule,
         RadioButtonModule,
         ProgressSpinnerModule,
         ToolbarModule,
-        OverlayPanelModule,
+        PopoverModule,
         ProgressBarModule,
-        DropdownModule,
+        SelectModule,
         CheckboxModule,
         TreeModule,
         TooltipModule,
@@ -52,26 +53,26 @@ import { PasswordModule } from 'primeng/password';
         PasswordModule
     ],
     exports: [
-        TabViewModule,
+        TabsModule,
+        StepperModule,
         StepsModule,
         AccordionModule,
         TableModule,
         ReactiveFormsModule,
         ButtonModule,
         SelectButtonModule,
-        CalendarModule,
+        DatePickerModule,
         RadioButtonModule,
         ProgressSpinnerModule,
         ToolbarModule,
-        OverlayPanelModule,
+        PopoverModule,
         ProgressBarModule,
-        DropdownModule,
+        SelectModule,
         MultiSelectModule,
         InputNumberModule,
         CheckboxModule,
         TreeModule,
         TooltipModule,
-        ChipsModule,
         DragDropModule,
         CdkTableModule,
         MenuModule

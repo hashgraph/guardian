@@ -1,53 +1,46 @@
 # Delete System Schema
 
-<mark style="color:red;">`DELETE`</mark> `/schemas/system/{schemaId}`
+**`DELETE /schemas/system/{schemaId}`**
 
-Deletes the system schema with the provided Schema ID. Only users with the Standard Registry role are allowed to make a request.
+Deletes the system schema with the provided schema ID. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description |
-| ------------------------------------------ | ------ | ----------- |
-| schemaId<mark style="color:red;">\*</mark> | String | SchemaID    |
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_DELETE`
 
-{% tabs %}
-{% tab title="204: No Content No Content" %}
-```javascript
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Schema ID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns an async task object. Use the `taskId` to poll the task status.
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
+  "taskId": "89e1e62a-7976-4e24-8dd3-997da02dc81e",
+  "expectation": 2,
+  "action": "Delete schemas",
+  "userId": "69c2cfc021d39e7b6d15e236"
 }
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-   content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

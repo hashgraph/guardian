@@ -6,7 +6,8 @@ import { ToolsService } from 'src/app/services/tools.service';
 @Component({
     selector: 'compare-modules-dialog',
     templateUrl: './compare-modules-dialog.component.html',
-    styleUrls: ['./compare-modules-dialog.component.scss']
+    styleUrls: ['./compare-modules-dialog.component.scss'],
+    standalone: false
 })
 export class CompareModulesDialogComponent {
     loading = true;

@@ -14,7 +14,6 @@ import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
@@ -56,17 +55,18 @@ interface IRequestDocumentData {
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.scss']
+    styleUrls: ['./request-document-block.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockComponent
     extends AbstractUIBlockComponent<IRequestDocumentData>
     implements OnInit {
 
-    @Input('id') id!: string;
-    @Input('policyId') policyId!: string;
-    @Input('static') static!: any;
+    @Input('id') override id!: string;
+    @Input('policyId') override policyId!: string;
+    @Input('static') override static!: any;
     @Input('dryRun') dryRun!: any;
-    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('savepointIds') override savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
@@ -146,7 +146,6 @@ export class RequestDocumentBlockComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
@@ -623,7 +622,7 @@ export class RequestDocumentBlockComponent
                     class: 'primary'
                 }]
             },
-        });
+        })!;
 
         dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {

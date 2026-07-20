@@ -10,6 +10,7 @@ import { ModelHelper } from "@guardian/interfaces"
     selector: 'publish-policy-dialog.component',
     templateUrl: './publish-policy-dialog.component.html',
     styleUrls: ['./publish-policy-dialog.component.scss'],
+    standalone: false
 })
 export class PublishPolicyDialog {
     public loading = true;

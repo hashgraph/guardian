@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, TopicVariables} from '../../../../structu
     selector: 'send-config',
     templateUrl: './send-config.component.html',
     styleUrls: ['./send-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class SendConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

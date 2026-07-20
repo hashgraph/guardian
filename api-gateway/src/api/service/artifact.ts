@@ -444,7 +444,7 @@ export class ArtifactApi {
             res.header('X-Content-Type-Options', 'nosniff');
             res.header(
                 'Content-Disposition',
-                `attachment; filename="${FilenameSanitizer.sanitize(filename || fileId)}"`
+                FilenameSanitizer.contentDisposition(filename || fileId)
             );
 
             return res.send(Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer));

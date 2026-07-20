@@ -12,6 +12,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     selector: 'app-token-confirmation-block',
     templateUrl: './token-confirmation-block.component.html',
     styleUrls: ['./token-confirmation-block.component.scss'],
+    standalone: false
 })
 export class TokenConfirmationBlockComponent implements OnInit {
     @Input('id') id!: string;

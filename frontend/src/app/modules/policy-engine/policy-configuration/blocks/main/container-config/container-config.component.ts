@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'container-config',
     templateUrl: './container-config.component.html',
     styleUrls: ['./container-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ContainerConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

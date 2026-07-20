@@ -67,7 +67,7 @@ Once, VVB name is submitted, its waiting for the approval.
 
 <figure><img src="../../../.gitbook/assets/3_10.png" alt=""><figcaption></figcaption></figure>
 
-After creating the group, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](../../../../Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
+After creating the group, we will see the New Project button. When we click on the button, we get a form, where complete project details need to be added. We have uploaded a [Sample test data](https://github.com/hashgraph/guardian/blob/develop/Demo%20Artifacts/REDD%20APD%20Schema%20Design%20Template.xlsx) file in our repo.
 
 ![](../../../.gitbook/assets/verra_new_8.png)
 

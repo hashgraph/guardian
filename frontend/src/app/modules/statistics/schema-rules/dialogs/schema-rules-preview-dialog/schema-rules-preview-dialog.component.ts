@@ -7,6 +7,7 @@ import { DocumentFieldValidators, ISchemaRuleData } from '@guardian/interfaces';
     selector: 'schema-rules-preview-dialog',
     templateUrl: './schema-rules-preview-dialog.component.html',
     styleUrls: ['./schema-rules-preview-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaRulesPreviewDialog {
     public loading = true;

@@ -1,33 +1,49 @@
 # Previews Imported Tool from Zip
 
-{% swagger method="post" path="" baseUrl="/tools/import/file/preview" summary="Previews Imported new tool from a zip file." %}
-{% swagger-description %}
-Previews Imported new tool and all associated artifacts, such as schemas and VCs, from the provided zip file into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/tools/import/file/preview`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+Returns a preview of the tool that would be imported from the provided zip file, without persisting any changes.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+Send the raw ZIP file bytes as the request body.
+
+**Content-Type:** `application/octet-stream`
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "tool": {
+    "name": "Preview Tool",
+    "description": "Tool preview from zip",
+    "config": {
+      "blockType": "tool",
+      "children": []
+    }
+  },
+  "schemas": []
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

@@ -1,46 +1,75 @@
 # Getting Policy Configuration
 
-{% swagger method="post" path="" baseUrl="/{policyId}/config" summary="Get policy config." %}
-{% swagger-description %}
-Get policy config by wizard. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/wizard/{policyId}/config`**
 
-{% swagger-parameter in="path" name="policyId" type="String" required="true" %}
-Policy identifier.
-{% endswagger-parameter %}
+Retrieves a policy configuration preview using the wizard settings for the specified policy. Only Standard Registry users are allowed to make this request.
 
-{% swagger-parameter in="body" type="Object" required="true" %}
-Object that contains wizard configuration.
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter  | Type   | Required | Description                     |
+|------------|--------|----------|---------------------------------|
+| `policyId` | string | Yes      | The ID of the policy to preview |
+
+### Request Body
+
+```json
+{
+  "wizardConfig": {
+    "policy": {
+      "name": "Example Policy",
+      "description": "Policy description",
+      "topicDescription": "Topic description",
+      "policyTag": "ExampleTag"
+    },
+    "roles": ["OWNER"],
+    "schemas": [],
+    "trustChain": []
+  }
+}
 ```
-content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  policyConfig: 
-                    $ref: "#/components/schemas/PolicyConfig"
-                  wizardConfig:
-                    $ref: "#/components/schemas/WizardConfig"
+
+| Field          | Type   | Required | Description                           |
+|----------------|--------|----------|---------------------------------------|
+| `wizardConfig` | object | Yes      | Wizard configuration object to preview |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+{
+  "policyConfig": {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "Example Policy",
+    "version": "1.0.0",
+    "config": {}
+  },
+  "wizardConfig": {}
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+| Field          | Type   | Description                                      |
+|----------------|--------|--------------------------------------------------|
+| `policyConfig` | object | The resulting policy configuration object        |
+| `wizardConfig` | object | The wizard configuration used to generate it     |
 
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Error"
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `404 Not Found` | Policy not found |
+| `500 Internal Server Error` | Unexpected server failure |

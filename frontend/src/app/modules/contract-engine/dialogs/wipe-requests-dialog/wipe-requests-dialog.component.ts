@@ -6,6 +6,7 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
     selector: 'app-wipe-requests-dialog',
     templateUrl: './wipe-requests-dialog.component.html',
     styleUrls: ['./wipe-requests-dialog.component.scss'],
+    standalone: false
 })
 export class WipeRequestsDialogComponent implements OnInit {
     contractId!: string;

@@ -23,7 +23,7 @@ services:
       - message-broker
       - queue-service
     volumes:
-      - ./analytics-service/configs:/usr/local/app/configs:ro
+      - ./analytics-service/configs:/usr/local/app/analytics-service/configs:ro
     ports:
       - '127.0.0.1:3000:3020'
     <<: *service-template
@@ -39,8 +39,8 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./auth-service/tls:/usr/local/app/tls:ro
-      - ./auth-service/configs:/usr/local/app/configs:ro
+      - ./auth-service/tls:/usr/local/app/auth-service/tls:ro
+      - ./auth-service/configs:/usr/local/app/auth-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
@@ -53,7 +53,7 @@ services:
     depends_on:
       - message-broker
     volumes:
-      - ./logger-service/configs:/usr/local/app/configs:ro
+      - ./logger-service/configs:/usr/local/app/logger-service/configs:ro
     <<: *service-template
 
   message-broker:
@@ -68,7 +68,7 @@ services:
     init: true
 
   mongo:
-    image: mongo:6.0.26
+    image: mongo:6.0.28
     command: "--setParameter allowDiskUseByDefault=true"
     # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
     restart: always
@@ -84,7 +84,7 @@ services:
       - message-broker
       - mongo
     volumes:
-      - ./queue-service/configs:/usr/local/app/configs:ro
+      - ./queue-service/configs:/usr/local/app/queue-service/configs:ro
     <<: *service-template
     expose:
       - '6555'
@@ -99,8 +99,8 @@ services:
       queue-service:
         condition: service_started
     volumes:
-      - ./worker-service/tls:/usr/local/app/tls:ro
-      - ./worker-service/configs:/usr/local/app/configs:ro
+      - ./worker-service/tls:/usr/local/app/worker-service/tls:ro
+      - ./worker-service/configs:/usr/local/app/worker-service/configs:ro
     <<: *service-template
     deploy:
       replicas: 10

@@ -21,7 +21,7 @@
 :host ::ng-deep {
     .mat-dialog-title {
         margin-bottom: 32px;
-        color: #000;
+        color: var(--guardian-font-color, #000);
         font-family: Poppins;
         font-size: 24px;
         font-style: normal;

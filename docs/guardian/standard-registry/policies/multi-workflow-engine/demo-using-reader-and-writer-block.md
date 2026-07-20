@@ -33,7 +33,7 @@ Demonstrate how an administrator configures validation and routing rules before 
   * `BEEF`
   * `DAIRY`
 
-<figure><img src="../../../../.gitbook/assets/image (5) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (5) (1) (3).png" alt=""><figcaption></figcaption></figure>
 
 #### 2.2 Schema Assignment
 
@@ -62,7 +62,7 @@ Show how message channels are created and routing rules are defined.
 * The topic is activated.
 * It becomes the ingestion point for external VC messages.
 
-<figure><img src="../../../../.gitbook/assets/image (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../../../.gitbook/assets/image (1) (16).png" alt=""><figcaption></figcaption></figure>
 
 #### Writer Block(s)
 

@@ -13,7 +13,7 @@
     font-size: 14px;
     text-align: left;
     list-style: none;
-    background-color: #fff;
+    background-color: var(--guardian-background, #fff);
     -webkit-background-clip: padding-box;
     background-clip: padding-box;
     border: 1px solid #E1E7EF;
@@ -27,13 +27,13 @@
     display: block;
     clear: both;
     white-space: nowrap;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     cursor: pointer;
     user-select: none;
     font-family: Inter;
     font-size: 14px;
     font-weight: 400;
-    color: #000;
+    color: var(--guardian-font-color, #000);
 }
 
 .dropdown-menu>li>div.item {

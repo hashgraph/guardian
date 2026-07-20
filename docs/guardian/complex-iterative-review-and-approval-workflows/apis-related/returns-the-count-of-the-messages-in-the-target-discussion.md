@@ -1,67 +1,44 @@
-# Returns the count of the messages in the target discussion
+# Returns the Count of Messages in the Target Discussion
 
-<mark style="color:green;">`GET`</mark> `/policy-comments/{policyId}/{documentId}/comments/count`
+**`GET /api/v1/policy-comments/{policyId}/{documentId}/comments/count`**
 
-Returns the count of the messages in the target discussion
+Returns the total count of messages across all discussions for the target document.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-**Body**
+---
 
-| Name       | Type   | Description         |
-| ---------- | ------ | ------------------- |
-| policyId   | string | Policy ID           |
-| documentId | string | Document Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PolicyCommentDTO'
-```
-{% endtab %}
+| Parameter    | Type   | Required | Description         |
+|--------------|--------|----------|---------------------|
+| `policyId`   | string | Yes      | Policy identifier   |
+| `documentId` | string | Yes      | Document identifier |
 
-{% tab title="401" %}
-```json5
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-   description: Unauthorized.
+  "count": 12
 }
 ```
-{% endtab %}
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endtab %}
-
-{% tab title="503" %}
-```json5
-description: Block Unavailable.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error — invalid field values |
+| `500 Internal Server Error` | Unexpected server failure |
+| `503 Service Unavailable` | Policy block unavailable |

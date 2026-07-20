@@ -8,7 +8,8 @@ import {IContract, PolicyCategoryType} from '@guardian/interfaces';
 @Component({
     selector: 'policy-properties',
     templateUrl: './policy-properties.component.html',
-    styleUrls: ['./policy-properties.component.scss']
+    styleUrls: ['./policy-properties.component.scss'],
+    standalone: false
 })
 export class PolicyPropertiesComponent implements OnInit {
     @Input('policy') policy!: PolicyTemplate;

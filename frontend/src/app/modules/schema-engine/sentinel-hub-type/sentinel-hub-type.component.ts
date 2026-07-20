@@ -9,6 +9,7 @@ import { SentinelHubForm } from '../schema-form-model/sentinel-hub-form';
     selector: 'app-sentinel-hub-type',
     templateUrl: './sentinel-hub-type.component.html',
     styleUrls: ['./sentinel-hub-type.component.scss'],
+    standalone: false
 })
 export class SentinelHubTypeComponent implements OnInit, OnChanges, AfterViewInit {
     @ViewChild('dateFrom') dateFrom: any

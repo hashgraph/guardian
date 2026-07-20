@@ -1,72 +1,78 @@
-# Creation of Token
+# Creation of a Token
 
-### CREATION OF A TOKEN
+**`POST /tokens/`**
 
-{% swagger method="post" path="" baseUrl="/tokens" summary="Creates a new token" %}
-{% swagger-description %}
-Creates a new token. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Creates a new Hedera token. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="body" required="true" %}
-Object that contains token information
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="201: Created" description="Created" %}
-```javascript
+**Permission:** `Permissions.TOKENS_TOKEN_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TokenInfo'
+  "tokenName": "Example Token",
+  "tokenSymbol": "ET",
+  "tokenType": "fungible",
+  "decimals": 2,
+  "initialSupply": 0,
+  "enableAdmin": true,
+  "changeSupply": true,
+  "enableFreeze": true,
+  "enableKYC": true,
+  "enableWipe": true
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="400: Bad Request" description="Bad Request" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `tokenName` | string | Yes | Name of the token |
+| `tokenSymbol` | string | Yes | Symbol of the token |
+| `tokenType` | string | Yes | Token type: `fungible` or `non-fungible` |
+| `decimals` | number | No | Number of decimal places (fungible only) |
+| `initialSupply` | number | No | Initial supply amount |
+| `enableAdmin` | boolean | No | Whether admin key is enabled |
+| `changeSupply` | boolean | No | Whether supply can be changed |
+| `enableFreeze` | boolean | No | Whether freeze key is enabled |
+| `enableKYC` | boolean | No | Whether KYC key is enabled |
+| `enableWipe` | boolean | No | Whether wipe key is enabled |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+Returns an updated array of all tokens.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "tokenId": "0.0.5000001",
+    "tokenName": "Example Token",
+    "tokenSymbol": "ET",
+    "tokenType": "fungible",
+    "decimals": 2,
+    "initialSupply": 0,
+    "policies": [],
+    "policyIds": []
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="422: Unprocessable Entity" description="Unprocessable Entity" %}
-
-
-```
-User not registered
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | User not registered with Hedera |
+| `500 Internal Server Error` | Unexpected server failure |

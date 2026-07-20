@@ -13,6 +13,7 @@ import { PolicyStatus } from '@guardian/interfaces';
     selector: 'button-block-addon',
     templateUrl: './button-block-addon.component.html',
     styleUrls: ['./button-block-addon.component.scss'],
+    standalone: false
 })
 export class ButtonBlockAddonComponent implements OnInit {
     @Input('id') id!: string;
@@ -161,7 +162,7 @@ export class ButtonBlockAddonComponent implements OnInit {
                 title: this.dialogOptions!.dialogTitle,
                 description: this.dialogOptions!.dialogDescription,
             },
-        });
+        })!;
 
         dialogRef.onClose.subscribe((result) => {
             if (result) {

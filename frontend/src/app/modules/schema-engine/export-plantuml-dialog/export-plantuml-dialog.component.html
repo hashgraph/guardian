@@ -1,15 +1,20 @@
 <div class="dialog-body">
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
-    <div class="export-options">
-        <p-checkbox [(ngModel)]="includeFields" [binary]="true" label="Include Fields"></p-checkbox>
-        <p-checkbox [(ngModel)]="includeFormulas" [binary]="true" label="Include Formulas"></p-checkbox>
-        <p-checkbox [(ngModel)]="includeDependencies" [binary]="true" [disabled]="!includeFormulas" label="Include Dependencies"></p-checkbox>
-    </div>
+  }
+  <div class="export-options">
+    <p-checkbox [(ngModel)]="includeFields" [binary]="true" inputId="includeFields"></p-checkbox>
+    <label class="p-checkbox-label" for="includeFields">Include Fields</label>
+    <p-checkbox [(ngModel)]="includeFormulas" [binary]="true" inputId="includeFormulas"></p-checkbox>
+    <label class="p-checkbox-label" for="includeFormulas">Include Formulas</label>
+    <p-checkbox [(ngModel)]="includeDependencies" [binary]="true" [disabled]="!includeFormulas" inputId="includeDependencies"></p-checkbox>
+    <label class="p-checkbox-label" for="includeDependencies">Include Dependencies</label>
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <button (click)="download()" [disabled]="loading" class="button" label="Download" pButton></button>
-    </div>
+  <div class="action-buttons">
+    <button (click)="download()" [disabled]="loading" class="button" label="Download" pButton></button>
+  </div>
 </div>

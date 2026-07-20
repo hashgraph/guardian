@@ -1,48 +1,46 @@
-# Associates the user with token
+# Associates the User with Token
 
-### ASSOCIATES USER WITH TOKEN
+**`PUT /tokens/{tokenId}/associate`**
 
-{% swagger method="put" path="" baseUrl="/tokens/{tokenId}/associate" summary="Associates the user with the provided Hedera token" %}
-{% swagger-description %}
-Associates the user with the provided Hedera token. Only users with the Installer role are allowed to make the request
-{% endswagger-description %}
+Associates the authenticated user with the specified Hedera token.
 
-{% swagger-parameter in="path" name="tokenID" type="String" required="true" %}
-Token ID
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.TOKENS_TOKEN_EXECUTE`
+
+---
+
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `tokenId` | string | Yes | The Hedera token ID (e.g. `0.0.5000001`) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "id": "63e3e5e8a01b3c001234abcd",
+  "tokenId": "0.0.5000001",
+  "associated": true,
+  "balance": "0",
+  "frozen": false,
+  "kyc": false
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

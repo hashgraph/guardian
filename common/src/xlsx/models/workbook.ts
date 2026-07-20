@@ -292,6 +292,12 @@ export class Cell {
     public getValue<T>(): T {
         if (this.cell && this.cell.value) {
             if (typeof this.cell.value === 'object') {
+                if ('richText' in (this.cell.value as object)) {
+                    const richText = (this.cell.value as ExcelJS.CellRichTextValue).richText;
+                    if (Array.isArray(richText)) {
+                        return richText.map((r) => r.text ?? '').join('') as T;
+                    }
+                }
                 return (this.cell.value as ExcelJS.CellHyperlinkValue).text as T;
             } else {
                 return this.cell.value as T;

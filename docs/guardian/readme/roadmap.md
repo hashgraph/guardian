@@ -8,7 +8,7 @@
 {% tab title="Upcoming Releases" %}
 **---February 2026---**
 
-#### Improvements for Data Migration Tool – Progress Tracking & Large Load Reliability
+**Improvements for Data Migration Tool – Progress Tracking & Large Load Reliability**
 
 Improved Progress Tracking:
 
@@ -26,14 +26,14 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5216](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/live-project-data-migration/live-project-data-migration-ui#id-6.-rerunning-migration](https://guardian.hedera.com/guardian/standard-registry/live-project-data-migration/live-project-data-migration-ui#id-6.-rerunning-migration)
 
-#### UI Ticket — Add Navigation Panel to Jump Between Sections
+**UI Ticket — Add Navigation Panel to Jump Between Sections**
 
 * A navigation panel should appear on the left or top, allowing users to jump to:
   * Major template sections
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5547](https://github.com/hashgraph/guardian/issues/5547)
 
-#### Redesign of the Hedera network configuration
+**Redesign of the Hedera network configuration**
 
 The developer should be able to clearly set all configurations for the network used by Guardian.
 
@@ -56,14 +56,14 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4930](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/readme/getting-started/installation/setting-up-environment-parameters](https://guardian.hedera.com/guardian/readme/getting-started/installation/setting-up-environment-parameters)
 
-#### Embed gitbook documentation assistant into Guardian
+**Embed gitbook documentation assistant into Guardian**
 
 1. Embed Guardian gitbook assistant into Guardian builds giving users instance access to Guardian knowledge base whenever they need it. See [Gitbook docs ](https://gitbook.com/docs/publishing-documentation/gitbook-ai-assistant/embedding)for instructions.
 2. Ensure Guardian documentation is utilising new features and improvements delivered in the [November 2025 release](https://www.gitbook.com/blog/new-in-gitbook-november-2025).
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5529](https://github.com/hashgraph/guardian/issues/5529)
 
-#### Disconnect functionality for Decentralized feature
+**Disconnect functionality for Decentralized feature**
 
 1. UI Enhancements — Add Disconnect Button
 
@@ -101,7 +101,7 @@ Documentation Link: [https://guardian.hedera.com/guardian/decentralized-guardian
 
 **---March 2026---**
 
-#### Improving Naming Conventions of the Features in Documentation
+**Improving Naming Conventions of the Features in Documentation**
 
 * Evaluate current documentation and identify areas that are overly technical or unclear for business users.
 * Review naming conventions across UI, APIs, and documentation for consistency and business relevance.
@@ -111,7 +111,7 @@ Documentation Link: [https://guardian.hedera.com/guardian/decentralized-guardian
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5558](https://github.com/hashgraph/guardian/issues/5558)
 
-#### Guardian UI improvements
+**Guardian UI improvements**
 
 * of the retirement of the tokens.
 * Tools
@@ -121,14 +121,14 @@ Introduce the usability enhancements to the UI:
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2834](https://github.com/hashgraph/guardian/issues/2834)
 
-#### API documentation improvements
+**API documentation improvements**
 
 1. Improve clarity of API documentation throughout
 2. Implement and document more descriptive error logs would significantly improve the debugging experience
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5178](https://github.com/hashgraph/guardian/issues/5178)
 
-#### Guardian Policy Development for VM0047 (Afforestation, Reforestation, and Revegetation v1.1)
+**Guardian Policy Development for VM0047 (Afforestation, Reforestation, and Revegetation v1.1)**
 
 * Build the full workflow following Verra’s process.
 * Add all required PD, monitoring, and verification templates.
@@ -138,7 +138,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5178](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5557](https://github.com/hashgraph/guardian/issues/5557)
 
-#### DR: policy state 'save points' capability to be restarted from for restore operations
+**DR: policy state 'save points' capability to be restarted from for restore operations**
 
 Introduce a new capability into Guardian policies to have 'restore points' at a particular stage of the policy execution, which would mark the point from which the execution of the policy can be restarted following the restore operation. The author of the policy would then be able to select an appropriate stage for restart by introducing a 'save state' block at the corresponding points, which for example could be:
 
@@ -147,7 +147,7 @@ Introduce a new capability into Guardian policies to have 'restore points' at a 
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2559](https://github.com/hashgraph/guardian/issues/2559)
 
-#### Revised documentation on Formula linked definitions feature
+**Revised documentation on Formula linked definitions feature**
 
 Need to revise the existing documentation which would focus on VM0042 methodology showing
 
@@ -159,13 +159,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4839](https://githu
 
 **---April 2026---**
 
-#### Top-level (generic) API calls for common tasks
+**Top-level (generic) API calls for common tasks**
 
 Propose and implement a set of 'top-level' API call for generic tasks such as finding an artifact, or messageID, or other information related to the policy.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/1987](https://github.com/hashgraph/guardian/issues/1987)
 
-#### Create Guardian UI terminology 'dictionary'
+**Create Guardian UI terminology 'dictionary'**
 
 * Refactor Guardian UI to as much as possible 'externalise' words/phrases/text into a separate file or module which we can then automatically run through a syntax checker.
 * Design this in such a way that it would be possible in the future to introduce 'language' choice feature and display translated text from this file/module in the UI. (note: the actual implementation of this functionality is not required for this ticket, this to ensure that its **design** is compatible with this vision).
@@ -173,7 +173,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/1987](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2835](https://github.com/hashgraph/guardian/issues/2835)
 
-#### Review the list of Blocks documentation
+**Review the list of Blocks documentation**
 
 1. Review the current list of blocks in the documentation.
 2. List out all the missing blocks, which are already present in Guardian but not in the documentation.
@@ -182,13 +182,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2835](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4874](https://github.com/hashgraph/guardian/issues/4874)
 
-#### Add filter/search option in schemas with their ID
+**Add filter/search option in schemas with their ID**
 
 It would be much easier to debug in this case if we have a filter/search options by schema ID so when looking at the error we dont have to open each schema and check if the schema ID matches with the one shown in the error.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4758](https://github.com/hashgraph/guardian/issues/4758)
 
-#### Configurable rounding strategy for the token minting process
+**Configurable rounding strategy for the token minting process**
 
 Developers can choose the rounding behavior for the token minting process when defining the policy.
 
@@ -202,7 +202,7 @@ The rounding behaviors apply only to positive numbers. Negative numbers are alwa
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4065](https://github.com/hashgraph/guardian/issues/4065)
 
-#### feat: user managed credentials for external services
+**feat: user managed credentials for external services**
 
 Core
 
@@ -232,7 +232,7 @@ API
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5246](https://github.com/hashgraph/guardian/issues/5246)
 
-#### Create external event for "token failed"
+**Create external event for "token failed"**
 
 Create a new external event for when the token(s) minting fails.
 
@@ -639,7 +639,7 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 **--— August 2025 ----**
 
-#### **Payload Shapefile Ingestion**
+**Payload Shapefile Ingestion**
 
 Make the payload ingest shapefiles, KML etc.
 
@@ -647,13 +647,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5046](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/how-to-handle-large-location-files)
 
-#### **Improvement in the error handling for excel schema imports​**
+**Improvement in the error handling for excel schema imports​**
 
 To have better validation when excel is imported into guardian which will help prevent all the points I mentioned above and some more that I probably missed while working on methodology digitization
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4755](https://github.com/hashgraph/guardian/issues/4755)
 
-#### **Dry-run savepoint\[s] to survive exit and policy editing**
+**Dry-run savepoint\[s] to survive exit and policy editing**
 
 1. Make savepoints 'survive' multiple "exit dry-run -> edit policy -> execute dry-run" cycles such that policy authors would not have to enter values in fields again on subsequent dry-runs.
 2. Enable to existence of multiple 'savepoints' per policy
@@ -664,7 +664,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5056](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/savepoints/demo-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/policies/savepoints/demo-using-ui)
 
-#### **Locations Data Field enhancement**
+**Locations Data Field enhancement**
 
 Validation Check: Implement a validation step to confirm that location data being passed to the policy is in polygon format (e.g., Polygon or MultiPolygon in GeoJSON).
 
@@ -674,7 +674,7 @@ GeoJSON Handling (Optional Enhancement): Explore and, if feasible, implement a c
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5061](https://github.com/hashgraph/guardian/issues/5061)
 
-#### **SLA Ticket Import and Policy Publish Performance in Guardian**
+**SLA Ticket Import and Policy Publish Performance in Guardian**
 
 Investigate bottlenecks in the SLA Ticket Import process:
 
@@ -705,7 +705,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5120](https://githu
 
 **--— September 2025----**
 
-#### **Validation for project data submission**
+**Validation for project data submission**
 
 Validation Rules Enhancement\
 Implement robust validation for schema fields in both UI-level form inputs and backend processing logic for key field types:
@@ -728,7 +728,7 @@ Unit and Integration Tests
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5060](https://github.com/hashgraph/guardian/issues/5060)
 
-#### **Add an option to hide some buttons in case the policy is discontinued**
+**Add an option to hide some buttons in case the policy is discontinued**
 
 * Policy developers can flag a button as available only if the policy is not discontinued.
 * Buttons flagged as _hide/WhenDiscontinued_ won't be displayed in the webUI when the policy is discontinued
@@ -737,7 +737,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4067](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/buttonblock](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-creation/introduction/buttonblock)
 
-#### **Guardian Form UI Improvements**
+**Guardian Form UI Improvements**
 
 These four can be made into their individual issues as well. Let me know, I'd be happy to submit four separate ones.
 
@@ -750,7 +750,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5042](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/available-schema-types/table-data-input-field](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/available-schema-types/table-data-input-field)
 
-#### **Make testing easier for subflows**
+**Make testing easier for subflows**
 
 There should be a way to test the sub-flows similar to unit test paradigm we have in programming. Each unit should be individually runnable and testable. Following the entire workflow for testing takes up \~50-60% of time of policy development.
 
@@ -758,7 +758,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5045](https://githu
 
 **--— October 2025----**
 
-#### **Complex iterative review and approval workflows​**
+**Complex iterative review and approval workflows​**
 
 Introduce `reviewVcDocumentBlock` as a complement to the `requestVcDocumentBlock` into Policy definition language and corresponding Guardian UI tools which would facilitate complex iterative document review workflows supporting rich communications, namely the ability to:
 
@@ -775,7 +775,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4548](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/complex-iterative-review-and-approval-workflows](https://docs.hedera.com/guardian/guardian/complex-iterative-review-and-approval-workflows)
 
-#### **Policy warnings**
+**Policy warnings**
 
 * Introduce the generic capability to highlight blocks, elements within them, and groups of blocks
 * Introduce the generic capability to produce and display warning/error/info messages, their numbers and ability to disable/resolve:
@@ -787,7 +787,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2230](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-warnings](https://docs.hedera.com/guardian/guardian/standard-registry/policies/policy-warnings)
 
-#### **Schema deletion with child schemas**
+**Schema deletion with child schemas**
 
 Implement a safe way to delete all schemas embedded into the parent schema in one operation such that:
 
@@ -798,7 +798,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/2692](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.1-deleting-schemas-with-child-schemas](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.1-deleting-schemas-with-child-schemas)
 
-#### **Project (Relayer) Account (ex:Project Developer or Accountable Impact Organization)**
+**Project (Relayer) Account (ex:Project Developer or Accountable Impact Organization)**
 
 * Each new Project must have a unique wallet address generated/associated upon creation.
 * The Project wallet must support:
@@ -811,7 +811,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5044](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/project-account-relayer-account/demo-using-ui](https://docs.hedera.com/guardian/guardian/standard-registry/project-account-relayer-account/demo-using-ui)
 
-#### **Need to implement best practices on Schema Cycle**
+**Need to implement best practices on Schema Cycle**
 
 We need to implement and document best practices covering the following aspects of the schema lifecycle:
 
@@ -837,7 +837,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5062](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/best-practices-to-implement-schema)
 
-#### **Update Walkthroughs in Documentation**
+**Update Walkthroughs in Documentation**
 
 A clear and concise description of what you expected to happen.
 
@@ -845,7 +845,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4507](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/readme/vm0033-api-workthrough](https://docs.hedera.com/guardian/guardian/readme/vm0033-api-workthrough)
 
-#### **Option to delete all schemas for a particular policy in Draft stage​**
+**Option to delete all schemas for a particular policy in Draft stage​**
 
 There may be another solution/improvement to the excel where it checks for duplicates and provides with an option to replace. Similar to the file system in macOS for example where it doesn't allow 2 folders with the same name at a particular destination. Issue for that created here: [#4754](https://github.com/hashgraph/guardian/issues/4754)
 
@@ -853,13 +853,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4753](https://githu
 
 Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.3-deleting-all-schemas](https://docs.hedera.com/guardian/guardian/standard-registry/schemas/deleting-schema#id-2.3-deleting-all-schemas)
 
-#### **Import Excel to check for duplicates by schema name​**
+**Import Excel to check for duplicates by schema name​**
 
 But I believe there is one more check which the guardian can do when the excel is imported and that is to check for duplicates and provide the user with an option to either replace the schema or keep both the files.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4754](https://github.com/hashgraph/guardian/issues/4754)
 
-#### **Nested schemas for complex conditions**
+**Nested schemas for complex conditions**
 
 * Cross-sub-schema referencing:\
   \- Conditions should be able to reference fields located in other sub-schemas or sections.\
@@ -887,7 +887,7 @@ Documentation Link: [https://docs.hedera.com/guardian/guardian/standard-registry
 
 **---November 2025---**
 
-#### **Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​**
+**Implementing Artifacts such as Schemas/Policies/tokens Deletion all at once​**
 
 1. Create a checkbox at the top of the schema/policy/token table, which will allow to select all the artifacts.
 2. Once, all the schemas/policies/tokens are selected, and clicked on delete, we should be able to delete all the schemas/policies/tokens at once
@@ -896,7 +896,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3375](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/policy-demo#id-4.-select-and-delete-multiple-policies](https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/policy-demo#id-4.-select-and-delete-multiple-policies)
 
-#### **Graphical View of formula linked definitions**
+**Graphical View of formula linked definitions**
 
 * Add the capability to display dependencies and relationships of data feeding into Formula definitions as a diagram similar to 'schema tree view' or 'statistics'.
 * Color code (or in other way identify) the data points based on:
@@ -908,7 +908,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4730](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view](https://guardian.hedera.com/guardian/standard-registry/policies/formula-linked-definitions/formulas-graphical-view)
 
-#### **Capture/replay and compare data of published policies**
+**Capture/replay and compare data of published policies**
 
 Introduce the capability to record and publish 'runs' of the policy for published policies such that it would be possible to replay these runs locally (in dry-run mode) and compare the results.
 
@@ -920,7 +920,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3008](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies](https://guardian.hedera.com/guardian/standard-registry/policies/capture-replay-and-compare-data-for-published-policies)
 
-#### **Formula-linked definitions enhancements**
+**Formula-linked definitions enhancements**
 
 1. "Name" column in formula records table should be wider. Now it's unreadable
 2. After creating a formula record I need to find it in a list to edit. It's quite difficult according to point 1
@@ -932,7 +932,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4952](https://githu
 
 **---December 2025---**
 
-#### **Guardian as a multi-workflow engine for independent data streams**
+**Guardian as a multi-workflow engine for independent data streams**
 
 Guardian should be able to inject machine-readable product data and process them simultaneously in multiple independent Policy processing streams, each with an independent ruleset, however with the possibility to coordinate and cross reference the artifacts produced by these streams, all while maintaining and referencing the single original instance of the 'master' data.
 
@@ -948,7 +948,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5018](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/multi-workflow-engine](https://guardian.hedera.com/guardian/standard-registry/policies/multi-workflow-engine)
 
-#### **Tamper-resistant Policy and Module export/import**
+**Tamper-resistant Policy and Module export/import**
 
 * Introduce the signing of Policies and Policy Modules such that on import their authenticity is evaluated - which proves that they have not been tampered with.
 * In an indicator into the Policy grid (or other appropriate place) which would show whether the Policies (and/or their elements such as schemas, modules etc) that have been imported (whether from the file system or IPFS) have been modified from their original state.
@@ -958,7 +958,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/1887](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/tamper-resistant-policy](https://guardian.hedera.com/guardian/standard-registry/policies/tamper-resistant-policy)
 
-#### **Data Entry Updatability**
+**Data Entry Updatability**
 
 An ability to make schema data that is non-material to calculations updatable, while not changing the token issuance in flight.
 
@@ -968,7 +968,7 @@ Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/data
 
 **---January 2026---**
 
-#### **Fine grained Policy workflow certification labels**
+**Fine grained Policy workflow certification labels**
 
 Introduce the capability to select arbitrary sections of Policy workflows and then assign tags to them, which should result in these tags being visible whenever the policy sections or any artifacts produced in these sections are viewed by users such that:
 
@@ -981,7 +981,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4534](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/fine-grained-policy-workflow-certification-labels](https://guardian.hedera.com/guardian/standard-registry/policies/fine-grained-policy-workflow-certification-labels)
 
-#### **Extend Policy definition language to include a Formula calculations block​**
+**Extend Policy definition language to include a Formula calculations block​**
 
 Introduce a Formula calculation block which would:
 
@@ -999,13 +999,13 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/4535](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/introduction/mathblock](https://guardian.hedera.com/guardian/standard-registry/policies/policy-creation/introduction/mathblock)
 
-#### **Deterministic compression**
+**Deterministic compression**
 
 Implement deterministic compression for all cases in which compression is applied by Guardian.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4931](https://github.com/hashgraph/guardian/issues/4931)
 
-#### Add API endpoint to generate example payloads matching UI auto-fill logic
+**Add API endpoint to generate example payloads matching UI auto-fill logic**
 
 * Add an API endpoint that generates an example payload based on the same logic currently used by the UI "Test" button in Dry Run mode.
 * The example payload generation must follow this exact priority order:
@@ -1020,7 +1020,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5552](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/schemas/schema-creation-using-apis/returns-a-sample-payload-for-the-schema-by-schema-id.](https://guardian.hedera.com/guardian/standard-registry/schemas/schema-creation-using-apis/returns-a-sample-payload-for-the-schema-by-schema-id.)
 
-#### Add Support for Synchronous Event Execution
+**Add Support for Synchronous Event Execution**
 
 * Introduce a configurable event type: synchronous or asynchronous.
 * New events must be synchronous by default.
@@ -1033,7 +1033,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/5544](https://githu
 
 Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/external-events/send-data-using-the-external-data-apis](https://guardian.hedera.com/guardian/standard-registry/external-events/send-data-using-the-external-data-apis)
 
-#### Implement Form View for Image Tags
+**Implement Form View for Image Tags**
 
 * Implement a Form View for VC documents that renders uploaded images in their proper visual format rather than as plain text links.
 * Provide the ability for users to toggle between Document View (text view) and the new Form View.
@@ -1041,7 +1041,7 @@ Documentation Link: [https://guardian.hedera.com/guardian/standard-registry/exte
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/3616](https://github.com/hashgraph/guardian/issues/3616)
 
-#### Improve schema version handling
+**Improve schema version handling**
 
 * Improve the UX such that it is immediately apparent that some schemas (published or not) are new versions of other schemas. This can be done via drop down list of schema versions, with the most recent (draft or published) displayed at the top
 * Enforce linear progression of schema versions such that only the most recent published schema can be the source/basis of new versions
@@ -1051,7 +1051,7 @@ Referral Link: [https://github.com/hashgraph/guardian/issues/3616](https://githu
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/2232](https://github.com/hashgraph/guardian/issues/2232)
 
-#### Enable the "Publish" button only when the policy version is correct
+**Enable the "Publish" button only when the policy version is correct**
 
 The "Publish Policy" popup window should:
 
@@ -1060,19 +1060,19 @@ The "Publish Policy" popup window should:
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/4958](https://github.com/hashgraph/guardian/issues/4958)
 
-#### UI Ticket — Pop-Up Window Size Too Small for Data Entry
+**UI Ticket — Pop-Up Window Size Too Small for Data Entry**
 
 Pop-up windows should automatically resize to utilize more of the screen area or allow manual resizing.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5546](https://github.com/hashgraph/guardian/issues/5546)
 
-#### UI Ticket — ERR Table Display: No Ability to See Tables for Summarized Information
+**UI Ticket — ERR Table Display: No Ability to See Tables for Summarized Information**
 
 Users should be able to see data in table format (rows + columns), consistent with Verra Project Hub.
 
 Referral Link: [https://github.com/hashgraph/guardian/issues/5545](https://github.com/hashgraph/guardian/issues/5545)
 
-#### UI Ticket — Add Tables to Improve Data Entry
+**UI Ticket — Add Tables to Improve Data Entry**
 
 The UI should support true tables where users can:
 

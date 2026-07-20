@@ -1,66 +1,58 @@
 # Returns Schema by Username
 
-### RETURNS ALL SYSTEM SCHEMAS BY USERNAME
+**`GET /schemas/system/{username}`**
 
-{% swagger method="get" path="" baseUrl="/schemas/system/{username}" summary="Returns all System Schemas by Username" %}
-{% swagger-description %}
-Return all system schemas by username. Only user with the Standard Registry are allowed to make the request.
-{% endswagger-description %}
+Returns a paginated list of all system schemas for the specified user. Only users with the Standard Registry role are allowed to make this request.
 
-{% swagger-parameter in="path" name="username" type="String" required="true" %}
-Username
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="query" name="pageIndex" type="Integer" required="false" %}
-The number of pages to skip before starting to collect the result set.
-{% endswagger-parameter %}
+**Permission:** `Permissions.SCHEMAS_SYSTEM_SCHEMA_READ`
 
-{% swagger-parameter in="query" name="pageSize" type="Integer" required="false" %}
-The number of items to return.
-{% endswagger-parameter %}
+---
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total number of items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Schema'
-}
+## Request
+
+### Path Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `username` | string | Yes | Username of the schema owner |
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pageIndex` | number | No | 0 | Zero-based page index |
+| `pageSize` | number | No | 25 | Items per page |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The response includes an `X-Total-Count` header with the total number of matching records.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "name": "Example System Schema",
+    "entity": "STANDARD_REGISTRY",
+    "status": "PUBLISHED",
+    "system": true,
+    "active": true,
+    "owner": "example_user"
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

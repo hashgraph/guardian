@@ -20,6 +20,7 @@ export interface StopResizingEvent {
 
 @Directive({
     selector: '[resizing]',
+    standalone: false
 })
 export class ResizingDirective {
     @Input() resizingDisabled: boolean = false;

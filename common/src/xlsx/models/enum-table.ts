@@ -3,8 +3,38 @@ import { Dictionary } from './dictionary.js';
 import { IPoint } from './workbook.js';
 import { TableHeader } from './table-header.js';
 
+export class SharedEnumTable {
+    static readonly COL_NAME  = 1;
+    static readonly COL_IPFS  = 2;
+    static readonly COL_VALUE = 3;
+    static readonly HEADER_ROW     = 1;
+    static readonly FIRST_DATA_ROW = 2;
+
+    public readonly headerStyle: Partial<ExcelJS.Style> = {
+        font: { size: 14, bold: true },
+        border: {
+            left:   { style: 'thin', color: { argb: 'FF000000' } },
+            right:  { style: 'thin', color: { argb: 'FF000000' } },
+            top:    { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } }
+        }
+    };
+
+    public readonly itemStyle: Partial<ExcelJS.Style> = {
+        font: { size: 11, bold: false },
+        alignment: { wrapText: true },
+        border: {
+            left:   { style: 'thin', color: { argb: 'FF000000' } },
+            right:  { style: 'thin', color: { argb: 'FF000000' } },
+            top:    { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } }
+        }
+    };
+}
+
 export class EnumTable {
     private readonly _headers: Map<string, TableHeader>;
+    private readonly _legacyHeaders: Set<string> = new Set(['Schema name', 'Field name']);
 
     public readonly headersStyle: Partial<ExcelJS.Style>;
     public readonly descriptionStyle: Partial<ExcelJS.Style>;
@@ -105,16 +135,6 @@ export class EnumTable {
         }
 
         this._headers = new Map<string, TableHeader>();
-        this._headers.set(Dictionary.ENUM_SCHEMA_NAME,
-            new TableHeader(Dictionary.ENUM_SCHEMA_NAME, false)
-                .setStyle(this.headersStyle)
-                .setWidth(30)
-        );
-        this._headers.set(Dictionary.ENUM_FIELD_NAME,
-            new TableHeader(Dictionary.ENUM_FIELD_NAME, false)
-                .setStyle(this.headersStyle)
-                .setWidth(30)
-        );
         this._headers.set(Dictionary.ENUM_IPFS,
             new TableHeader(Dictionary.ENUM_IPFS, false)
                 .setStyle(this.headersStyle)
@@ -147,8 +167,6 @@ export class EnumTable {
         const col = this.start.c;
         let row = this.start.r;
 
-        this._headers.get(Dictionary.ENUM_SCHEMA_NAME).setPoint(col, row++);
-        this._headers.get(Dictionary.ENUM_FIELD_NAME).setPoint(col, row++);
         this._headers.get(Dictionary.ENUM_IPFS).setPoint(col, row++);
         this.column = this.start.c
         this.end = {
@@ -161,16 +179,7 @@ export class EnumTable {
         this.end = { c, r };
     }
 
-    public getErrorHeader(): TableHeader | null {
-        for (const header of this._headers.values()) {
-            if (header.required && header.column === -1) {
-                return header;
-            }
-        }
-        return null;
-    }
-
     public isHeader(value: string): boolean {
-        return this._headers.has(value);
+        return this._headers.has(value) || this._legacyHeaders.has(value);
     }
 }

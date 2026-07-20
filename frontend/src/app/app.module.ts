@@ -1,14 +1,19 @@
 import { NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ToastrModule } from 'ngx-toastr';
+import { providePrimeNG } from 'primeng/config';
+import { definePreset } from '@primeuix/themes';
+import Aura from '@primeuix/themes/aura';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
+import { CardModule } from 'primeng/card';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
@@ -50,6 +55,7 @@ import { HomeComponent } from './views/home/home.component';
 import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootProfileComponent } from './views/root-profile/root-profile.component';
+import { NextGenBannerComponent } from './views/next-gen-banner/next-gen-banner.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -84,6 +90,7 @@ import { CommonComponentsModule } from './modules/common/common-components.modul
 import { TagEngineModule } from './modules/tag-engine/tag-engine.module';
 import { SchemaEngineModule } from './modules/schema-engine/schema-engine.module'
 import { ThemeService } from './services/theme.service';
+import { AppThemeService } from './services/app-theme.service';
 import { RecordService } from './services/record.service';
 import { StatisticsModule } from './modules/statistics/statistics.module';
 import { FormulasModule } from './modules/formulas/formulas.module';
@@ -92,7 +99,7 @@ import { GET_SCHEMA_NAME } from './injectors/get-schema-name.injector';
 import { BLOCK_TYPE_TIPS, BLOCK_TYPE_TIPS_VALUE, } from './injectors/block-type-tips.injector';
 import { SuggestionsService } from './services/suggestions.service';
 import { QrCodeDialogComponent } from './components/qr-code-dialog/qr-code-dialog.component';
-import { QRCodeModule } from 'angularx-qrcode';
+import { QRCodeComponent } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
@@ -106,15 +113,15 @@ import { ListOfTokensUserComponent } from './views/list-of-tokens-user/list-of-t
 // PrimeNG
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectButtonModule } from 'primeng/selectbutton';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { DialogModule } from 'primeng/dialog';
 import { TagModule } from 'primeng/tag';
 import { ButtonModule } from 'primeng/button';
 import { TooltipModule } from 'primeng/tooltip';
-import { StepsModule } from 'primeng/steps';
+import { StepperModule } from 'primeng/stepper';
 import { ProgressBarModule } from 'primeng/progressbar';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { ColorPickerModule } from 'primeng/colorpicker';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -126,8 +133,8 @@ import { AccountTypeSelectorDialogComponent } from './views/login/register-dialo
 import { ForgotPasswordDialogComponent } from './views/login/forgot-password-dialog/forgot-password-dialog.component';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { RadioButtonModule } from 'primeng/radiobutton';
-import { CalendarModule } from 'primeng/calendar';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { DatePickerModule } from 'primeng/datepicker';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { ContractEngineModule } from './modules/contract-engine/contract-engine.module';
 import { ProjectComparisonService } from './services/project-comparison.service';
 import { ProjectComparisonModule } from './modules/project-comparison/project-comparison.module';
@@ -144,7 +151,51 @@ import { PolicyRepositoryService } from './services/policy-repository.service';
 import { RelayerAccountsService } from './services/relayer-accounts.service';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 import { TreeTableModule } from 'primeng/treetable';
+import { MenubarModule } from 'primeng/menubar';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
+import { AppToastComponent } from './components/toast/app-toast.component';
+
+const GuardianPreset = definePreset(Aura, {
+    semantic: {
+        primary: {
+            50: '{blue.50}', 100: '{blue.100}', 200: '{blue.200}', 300: '{blue.300}',
+            400: '{blue.400}', 500: '{blue.500}', 600: '{blue.600}', 700: '{blue.700}',
+            800: '{blue.800}', 900: '{blue.900}', 950: '{blue.950}'
+        },
+        colorScheme: {
+            light: {
+                primary: { color: 'var(--primary-color)', contrastColor: 'var(--guardian-on-primary-color)',
+                    hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
+                content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
+                    borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
+                formField: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)',
+                    color: 'var(--guardian-font-color)', placeholderColor: 'var(--guardian-grid-color)', iconColor: 'var(--guardian-grid-color)' },
+                text: { color: 'var(--guardian-font-color)', mutedColor: 'var(--guardian-grid-color)' },
+                overlay: {
+                    select: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    popover: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    modal: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' }
+                },
+                list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
+            },
+            dark: {
+                primary: { color: 'var(--primary-color)', contrastColor: 'var(--guardian-on-primary-color)',
+                    hoverColor: 'var(--button-primary-color-hover)', activeColor: 'var(--button-primary-color-hover)' },
+                content: { background: 'var(--guardian-background)', hoverBackground: 'var(--guardian-hover)',
+                    borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)', hoverColor: 'var(--guardian-font-color)' },
+                formField: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)',
+                    color: 'var(--guardian-font-color)', placeholderColor: 'var(--guardian-grid-color)', iconColor: 'var(--guardian-grid-color)' },
+                text: { color: 'var(--guardian-font-color)', mutedColor: 'var(--guardian-grid-color)' },
+                overlay: {
+                    select: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    popover: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' },
+                    modal: { background: 'var(--guardian-background)', borderColor: 'var(--guardian-border-color)', color: 'var(--guardian-font-color)' }
+                },
+                list: { option: { color: 'var(--guardian-font-color)', focusBackground: 'var(--guardian-hover)', focusColor: 'var(--guardian-font-color)' } }
+            }
+        }
+    }
+});
 
 @NgModule({
     declarations: [
@@ -156,6 +207,7 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         HeaderComponent,
         RegisterComponent,
         RootProfileComponent,
+        NextGenBannerComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,
@@ -197,7 +249,8 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
-        OtpCodesDialogComponent
+        OtpCodesDialogComponent,
+        AppToastComponent
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -206,7 +259,6 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         CommonComponentsModule,
         MaterialModule,
         AppRoutingModule,
-        BrowserAnimationsModule,
         FormsModule,
         SchemaEngineModule,
         PolicyEngineModule,
@@ -214,37 +266,41 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
         FormulasModule,
         TagEngineModule,
         CompareModule,
-        ToastrModule.forRoot(),
-        QRCodeModule,
+        ToastModule,
+        QRCodeComponent,
         ButtonModule,
-        InputTextModule,        
+        InputTextModule,
         ClipboardModule,
         SelectButtonModule,
-        DropdownModule,
+        SelectModule,
         ButtonModule,
         DialogModule,
         TagModule,
         TableModule,
         TooltipModule,
-        StepsModule,
+        StepperModule,
         ProgressBarModule,
-        TabViewModule,
+        TabsModule,
         DynamicDialogModule,
         ColorPickerModule,
         ProgressSpinnerModule,
         PasswordModule,
         MultiSelectModule,
         RadioButtonModule,
-        CalendarModule,
+        DatePickerModule,
         InputTextareaModule,
         ContractEngineModule,
         ProjectComparisonModule,
         DndModule,
         CheckboxModule,
+        CardModule,
+        ToggleSwitchModule,
         AngularSvgIconModule.forRoot(),
-        TreeTableModule
+        TreeTableModule,
+        MenubarModule
     ],
     providers: [
+        MessageService,
         WebSocketService,
         AuthService,
         ProfileService,
@@ -305,8 +361,23 @@ import { CredentialsPanelComponent } from './components/credentials/credentials-
             useClass: AuthInterceptor,
             multi: true,
         },
+        providePrimeNG({
+            theme: {
+                preset: GuardianPreset,
+                options: {
+                    cssLayer: {
+                        name: 'primeng',
+                        order: 'app-styles, primeng'
+                    },
+                    darkModeSelector: '.guardian-theme-dark'
+                }
+            }
+        }),
         provideHttpClient(withInterceptorsFromDi(), withJsonpSupport())
     ]
 })
 export class AppModule {
+    constructor(appThemeService: AppThemeService) {
+        appThemeService.getCurrentTheme();
+    }
 }

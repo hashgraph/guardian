@@ -8,6 +8,7 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
     selector: 'app-retire-requests-dialog',
     templateUrl: './retire-requests-dialog.component.html',
     styleUrls: ['./retire-requests-dialog.component.scss'],
+    standalone: false
 })
 export class RetireRequestsDialogComponent implements OnInit {
     contractId!: any;

@@ -9,7 +9,8 @@ import { IModuleVariables, PolicyBlock, SchemaVariables } from '../../../../stru
     selector: 'action-config',
     templateUrl: './action-config.component.html',
     styleUrls: ['./action-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ActionConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

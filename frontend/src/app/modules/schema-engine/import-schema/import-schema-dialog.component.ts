@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { ImportType } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { MenuItem } from 'primeng/api';
@@ -13,9 +13,10 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'import-schema-dialog',
     templateUrl: './import-schema-dialog.component.html',
     styleUrls: ['./import-schema-dialog.component.scss'],
+    standalone: false
 })
 export class ImportSchemaDialog {
-    importType?: ImportType = 0;
+    importType?: ImportType | 2 = 0;
     dataForm = this.fb.group({
         timestamp: ['', Validators.required],
     });
@@ -40,7 +41,7 @@ export class ImportSchemaDialog {
         public config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
         private schemaService: SchemaService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService
     ) {
         if (this.config.data.timeStamp) {
@@ -58,11 +59,11 @@ export class ImportSchemaDialog {
         this.innerHeight = window.innerHeight;
     }
 
-    handleChangeTab(order: number): void {
-        this.setImportType(order);
+    handleChangeTab(order: string | number | undefined): void {
+        this.setImportType(typeof order === 'number' ? order : 0);
     }
 
-    setImportType(importType: ImportType) {
+    setImportType(importType: ImportType | 2) {
         this.importType = importType;
         this.isImportTypeSelected = true;
     }
@@ -93,7 +94,7 @@ export class ImportSchemaDialog {
     }
 
     onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }

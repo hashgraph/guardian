@@ -4,7 +4,7 @@ import { AuthStateService } from 'src/app/services/auth-state.service';
 import { AuthService } from 'src/app/services/auth.service';
 import { noWhitespaceValidator } from 'src/app/validators/no-whitespace-validator';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
-import { ToastrService } from "ngx-toastr";
+import { ToastService } from 'src/app/services/toast.service';
 
 
 /**
@@ -13,7 +13,8 @@ import { ToastrService } from "ngx-toastr";
 @Component({
     selector: 'app-config-otp-dialog',
     templateUrl: './otp-config-dialog.component.html',
-    styleUrls: ['./otp-config-dialog.component.scss']
+    styleUrls: ['./otp-config-dialog.component.scss'],
+    standalone: false
 })
 export class OtpConfigDialogComponent implements OnInit {
     public form = new UntypedFormGroup({
@@ -32,7 +33,7 @@ export class OtpConfigDialogComponent implements OnInit {
         private dialogRef: DynamicDialogRef,
         private dialogConfig: DynamicDialogConfig,
         private auth: AuthService,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private authState: AuthStateService
     ) {
         this.config = this.dialogConfig.data?.config;
@@ -41,7 +42,7 @@ export class OtpConfigDialogComponent implements OnInit {
     ngOnInit() {
     }
     secretCopied() {
-        this.toastr.success('Secret copied');
+        this.toastService.success('Secret copied');
     }
 
     onNoClick() {

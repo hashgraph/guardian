@@ -92,7 +92,10 @@ export class HttpRequestBlock {
         }
 
         const parsedUrl = new URL(url);
-        const hostname = parsedUrl.hostname;
+        const rawHostname = parsedUrl.hostname;
+        const hostname = rawHostname.startsWith('[') && rawHostname.endsWith(']')
+            ? rawHostname.slice(1, -1)
+            : rawHostname;
 
         const directFamily = net.isIP(hostname);
         if (directFamily) {

@@ -1,62 +1,55 @@
-# Returning all contracts
+# Returns All Contracts
 
-## Returns all contracts.
+**`GET /api/v1/contracts`**
 
-<mark style="color:blue;">`GET`</mark> `/contracts`
+Returns a paginated list of all smart contracts. Accessible by Standard Registry and User roles.
 
-Returns all contracts.
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-#### Query Parameters
+**Permission:** `Permissions.CONTRACTS_CONTRACT_READ`
 
-| Name                                        | Type    | Description                                                           |
-| ------------------------------------------- | ------- | --------------------------------------------------------------------- |
-| pageIndex<mark style="color:red;">\*</mark> | Integer | The number of pages to skip before starting to collect the result set |
-| pageSize<mark style="color:red;">\*</mark>  | Integer | The numbers of items to return                                        |
-| type                                        | String  | Contract type                                                         |
+---
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
-{
-    headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Contract'
-}
+## Request
+
+### Query Parameters
+
+| Parameter   | Type    | Required | Default | Description                                                       |
+|-------------|---------|----------|---------|-------------------------------------------------------------------|
+| `pageIndex` | number  | No       | 0       | The number of pages to skip before starting to collect the result |
+| `pageSize`  | number  | No       | 20      | The number of items to return                                     |
+| `type`      | string  | No       | —       | Filter by contract type (`RETIRE` or `WIPE`)                      |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Headers:
+
+| Header          | Description                        |
+|-----------------|------------------------------------|
+| `X-Total-Count` | Total number of contracts available |
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "contractId": "0.0.4532001",
+    "description": "Example retire contract",
+    "type": "RETIRE",
+    "owner": "example_user"
+  }
+]
 ```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Error Responses
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-   content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

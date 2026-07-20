@@ -5,7 +5,7 @@ import { IPFSService } from '../loaders/ipfs-service.js';
 import { LogService } from './log-service.js';
 import { DataBaseHelper, Job, MessageCache, Message, IndexerMessageAPI } from '@indexer/common';
 import { MessageStatus, PriorityOptions, PriorityStatus } from '@indexer/interfaces';
-import { ChannelService } from 'api/channel.service.js';
+import { ChannelService } from '../api/channel.service.js';
 
 export interface IFile {
     id?: ObjectId;

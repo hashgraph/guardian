@@ -1,108 +1,120 @@
 <div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
-    <div *ngIf="!selected">
-        <div *ngIf="groups" class="table-container">
-            <p-table [value]="groups" class="table">
-                <ng-template pTemplate="header">
-                    <tr class="header">
-                        <th class="mat-header-cell">Group Id</th>
-                        <th class="mat-header-cell">Label</th>
-                        <th class="mat-header-cell">Group Name</th>
-                        <th class="mat-header-cell">Role</th>
-                        <th class="mat-header-cell">Type</th>
-                        <th class="mat-header-cell"></th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-element>
-                    <tr class="body">
-                        <td class="mat-cell">
-                            <div (click)="onSelect(element)" class="select-btn">
-                                {{ element.id }}
-                            </div>
-                        </td>
-                        <td class="mat-cell">{{ element.groupLabel }}</td>
-                        <td class="mat-cell">{{ element.groupName }}</td>
-                        <td class="mat-cell">{{ element.role }}</td>
-                        <td class="mat-cell">{{ element.type }}</td>
-                        <td class="mat-cell">
-                            <p-button
-                                *ngIf="element.canInvite"
-                                label="Get Invite"
-                                (click)="onInvite(element)">
-                            </p-button>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
+  @if (!selected) {
+    <div>
+      @if (groups) {
+        <div class="table-container">
+          <p-table [value]="groups" class="table">
+            <ng-template pTemplate="header">
+              <tr class="header">
+                <th class="mat-header-cell">Group Id</th>
+                <th class="mat-header-cell">Label</th>
+                <th class="mat-header-cell">Group Name</th>
+                <th class="mat-header-cell">Role</th>
+                <th class="mat-header-cell">Type</th>
+                <th class="mat-header-cell"></th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-element>
+              <tr class="body">
+                <td class="mat-cell">
+                  <div (click)="onSelect(element)" class="select-btn">
+                    {{ element.id }}
+                  </div>
+                </td>
+                <td class="mat-cell">{{ element.groupLabel }}</td>
+                <td class="mat-cell">{{ element.groupName }}</td>
+                <td class="mat-cell">{{ element.role }}</td>
+                <td class="mat-cell">{{ element.type }}</td>
+                <td class="mat-cell">
+                  @if (element.canInvite) {
+                    <p-button
+                      label="Get Invite"
+                      (click)="onInvite(element)">
+                    </p-button>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
+      }
     </div>
+  }
 
-    <div *ngIf="selected">
-        <div class="actions">
-            <div class="role">
-                <div (click)="onBack()" class="link">
-                    <i class="pi pi-chevron-left"></i>
-                    Back
-                </div>
-            </div>
-            <div class="role">
-                <span>Role: </span>
-                <span>{{ role }}</span>
-            </div>
-            <div class="role">
-                <span>Type: </span>
-                <span>{{ type }}</span>
-            </div>
-            <div class="role">
-                <span>Relationship Type: </span>
-                <span>{{ groupRelationshipType }}</span>
-            </div>
-            <div class="role" style="flex: 1;">
-                <span>Access Type: </span>
-                <span>{{ groupAccessType }}</span>
-            </div>
-            <p-button
-                (click)="onInvite(selected)"
-                *ngIf="canInvite"
-                label="Get Invite"
+  @if (selected) {
+    <div>
+      <div class="actions">
+        <div class="role">
+          <div (click)="onBack()" class="link">
+            <i class="pi pi-chevron-left"></i>
+            Back
+          </div>
+        </div>
+        <div class="role">
+          <span>Role: </span>
+          <span>{{ role }}</span>
+        </div>
+        <div class="role">
+          <span>Type: </span>
+          <span>{{ type }}</span>
+        </div>
+        <div class="role">
+          <span>Relationship Type: </span>
+          <span>{{ groupRelationshipType }}</span>
+        </div>
+        <div class="role" style="flex: 1;">
+          <span>Access Type: </span>
+          <span>{{ groupAccessType }}</span>
+        </div>
+        @if (canInvite) {
+          <p-button
+            (click)="onInvite(selected)"
+            label="Get Invite"
             >
-            </p-button>
+          </p-button>
+        }
+      </div>
+      @if (users) {
+        <div class="table-container">
+          <p-table [value]="users" class="table">
+            <ng-template pTemplate="header">
+              <tr class="header">
+                <th class="mat-header-cell">User Name</th>
+                <th class="mat-header-cell">Role</th>
+                <th class="mat-header-cell">Type</th>
+                <th class="mat-header-cell"></th>
+              </tr>
+            </ng-template>
+            <ng-template pTemplate="body" let-element>
+              <tr class="body">
+                <td class="mat-cell">{{ element.username }}</td>
+                <td class="mat-cell">{{ element.role }}</td>
+                <td class="mat-cell">{{ element.type }}</td>
+                <td class="mat-cell">
+                  @if (canDelete && element.type !== 'Owner') {
+                    <div
+                      (click)="onDelete(element)"
+                      class="btn-settings btn-delete"
+                      >
+                      <i class="pi pi-trash"></i>
+                    </div>
+                  }
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
         </div>
-        <div *ngIf="users" class="table-container">
-            <p-table [value]="users" class="table">
-                <ng-template pTemplate="header">
-                    <tr class="header">
-                        <th class="mat-header-cell">User Name</th>
-                        <th class="mat-header-cell">Role</th>
-                        <th class="mat-header-cell">Type</th>
-                        <th class="mat-header-cell"></th>
-                    </tr>
-                </ng-template>
-
-                <ng-template pTemplate="body" let-element>
-                    <tr class="body">
-                        <td class="mat-cell">{{ element.username }}</td>
-                        <td class="mat-cell">{{ element.role }}</td>
-                        <td class="mat-cell">{{ element.type }}</td>
-                        <td class="mat-cell">
-                            <div
-                                *ngIf="canDelete && element.type !== 'Owner'"
-                                (click)="onDelete(element)"
-                                class="btn-settings btn-delete"
-                            >
-                                <i class="pi pi-trash"></i>
-                            </div>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
+      }
     </div>
+  }
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

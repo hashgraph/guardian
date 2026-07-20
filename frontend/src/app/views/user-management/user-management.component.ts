@@ -9,7 +9,8 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 @Component({
     selector: 'app-user-management',
     templateUrl: './user-management.component.html',
-    styleUrls: ['./user-management.component.scss']
+    styleUrls: ['./user-management.component.scss'],
+    standalone: false
 })
 export class UsersManagementComponent implements OnInit, OnDestroy {
     public loading: boolean = true;

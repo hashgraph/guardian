@@ -1,33 +1,34 @@
-# Returns Map API Key
+# Returns Sentinel API Key
 
-<mark style="color:blue;">`GET`</mark> `/map/key`
+**`GET /map/sh`**
 
-Returns map api key.
+Returns the Sentinel API key from Guardian service environment settings.
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+---
+
+## Request
+
+No request parameters.
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns the Sentinel API key as a string.
+
+```json
+"46e0a5e4-6a27-46a6-adcc-a4608a4513e4"
 ```
-content:
-            application/json:
-              schema:
-                type: string
-```
-{% endtab %}
 
-{% tab title="401: Unauthorized Unauthorized" %}
+### Error Responses
 
-{% endtab %}
-
-{% tab title="403: Forbidden Forbidden" %}
-
-{% endtab %}
-
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-```
-{% endtab %}
-{% endtabs %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `500 Internal Server Error` | Unexpected server failure |

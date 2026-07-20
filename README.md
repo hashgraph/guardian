@@ -69,14 +69,12 @@ To get a local copy up and running quickly, follow the steps below. Please refer
 
 1. **[Git](https://git-scm.com/downloads)** – source-control tooling
 2. **[Docker](https://www.docker.com/)** – one-command build & run (recommended)
-3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v20.19](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
+3. **[MongoDB v6](https://www.mongodb.com/)**, **[Node.js v24.15+](https://nodejs.org/en/download)**, and **[NATS 2.9.25](https://nats.io/)** – auto-provisioned when using Docker Compose
 4. **[IPFS storage](https://docs.ipfs.tech/concepts/what-is-ipfs/)** (choose one):
-
    - **[Storacha account](https://storacha.network/)** – IPFS pinning service (formerly Web3.Storage)
    - **[Filebase account](https://filebase.com/)** – S3-compatible IPFS pinning
    - Local IPFS node (e.g., **[Kubo](https://github.com/ipfs/kubo)**) – auto-provisioned when using Docker Compose
-
-5. **[Redict](https://redict.io/)** – in-memory cache & message broker, independent fork of Redis® (auto-provisioned by the Docker stack)
+5. **[Valkey](https://valkey.io)** – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
 When building the reference implementation, you can [manually build every component](#manual-installation) or run a single command with Docker.
 
@@ -124,7 +122,7 @@ When building the reference implementation, you can [manually build every compon
 
 - [Docker](https://www.docker.com)
 
-If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v20.19](https://nodejs.org), [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
+If you build with docker [MongoDB V6](https://www.mongodb.com), [Node.js v24.15+](https://nodejs.org/en/download), [Yarn](https://yarnpkg.com/getting-started/install) and [Nats 2.9.25](https://nats.io/) will be installed and configured automatically.
 
 ### Installation
 
@@ -407,10 +405,10 @@ If you want to manually build every component with debug information, then build
 ### Prerequisites for manual installation
 
 - [MongoDB V6](https://www.mongodb.com)
-- [Node.js v20.19](https://nodejs.org)
-- [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
+- [Node.js v24.15+](https://nodejs.org/en/download)
+- [Yarn](https://yarnpkg.com/getting-started/install)
 - [Nats 2.9.25](https://nats.io/)
-- [Redict](https://redict.io/)
+- [Valkey](https://valkey.io)
 - [Seq 2025.2 - optional for logging](https://datalust.co/seq)
 
 ### Build and start each component
@@ -892,10 +890,10 @@ Please refer to <https://guardian.hedera.com/> for complete documentation about 
 
 ## Contact information
 
-For any questions, please reach out to the Envision Blockchain Solutions team at:
+For any questions, please reach out to the Hashgraph team at:
 
-- Website: <www.envisionblockchain.com>
-- Email: [info@envisionblockchain.com](mailto:info@envisionblockchain.com)
+* Website: [https://hashgraph.com](https://hashgraph.com)
+* Email: [guardian@hashgraph.com](mailto:guardian@hashgraph.com)
 
 ([back to top](#guardian))
 

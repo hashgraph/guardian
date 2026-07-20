@@ -1,33 +1,55 @@
-# Imported Tool from IPFS
+# Import Tool from IPFS
 
-{% swagger method="post" path="" baseUrl="/tools/import/message" summary="Imports new tool from IPFS." %}
-{% swagger-description %}
-Imports new tool and all associated artifacts from IPFS into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`POST /api/v1/tools/import/message`**
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+Imports a new tool and all associated artifacts from IPFS into the local database using a Hedera message ID.
+
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.TOOLS_TOOL_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
+{
+  "messageId": "1700000000.000000001"
+}
 ```
- content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ToolDTO'
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | Hedera message ID referencing the tool on IPFS |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+```json
+{
+  "id": "63e3e5e8a01b3c001234abcd",
+  "name": "Imported Tool",
+  "description": "Tool imported from IPFS",
+  "status": "PUBLISHED",
+  "creator": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+  "topicId": "0.0.5000001",
+  "messageId": "1700000000.000000001"
+}
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
+### Error Responses
 
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | `messageId` is missing from the request body |
+| `500 Internal Server Error` | Unexpected server failure |

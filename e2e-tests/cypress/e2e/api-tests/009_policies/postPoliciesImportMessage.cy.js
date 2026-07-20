@@ -5,6 +5,7 @@ import * as Authorization from "../../../support/authorization";
 
 context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+    const policyMessageId = Cypress.env('policy_for_compare1');
 
     it('Imports new policy and all associated artifacts from file', { tags: ['policy_labels', 'formulas', 'trustchains', 'contracts', 'smoke'] }, () => {
         Authorization.getAccessToken(SRUsername).then((authorization) => {
@@ -12,7 +13,7 @@ context('Policies', { tags: ['policies', 'secondPool', 'all'] }, () => {
                 method: METHOD.POST,
                 url: API.ApiServer + API.PolicisImportMsg,
                 body: { 
-                    "messageId": "1707126227.976010003"},
+                    "messageId": policyMessageId },
                 headers: {
                     authorization,
                 },

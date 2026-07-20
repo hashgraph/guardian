@@ -8,7 +8,8 @@ import { PolicyBlock, SchemaVariables } from '../../structures';
     selector: 'select-schema',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './select-schema.component.html',
-    styleUrls: ['./select-schema.component.scss']
+    styleUrls: ['./select-schema.component.scss'],
+    standalone: false
 })
 export class SelectSchema {
     @Input('schemas') schemas!: SchemaVariables[];

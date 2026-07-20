@@ -1352,7 +1352,7 @@ export class PolicyComponentsUtils {
         let userFull: PolicyUser;
         const virtual = !!instance.dryRun;
         if (virtual) {
-            const virtualUser = await DatabaseServer.getVirtualUser(instance.policyId);
+            const virtualUser = await DatabaseServer.getVirtualUser(instance.policyId, userId);
             userFull = new VirtualUser(virtualUser || regUser, instance);
         } else {
             userFull = new PolicyUser(regUser, instance);
@@ -1459,9 +1459,10 @@ export class PolicyComponentsUtils {
     }
 
     public static async GetActiveVirtualUser(
-        instance: IPolicyInstance | AnyBlockType
+        instance: IPolicyInstance | AnyBlockType,
+        userId?: string | null
     ): Promise<PolicyUser> {
-        const virtualUser = await DatabaseServer.getVirtualUser(instance.policyId);
+        const virtualUser = await DatabaseServer.getVirtualUser(instance.policyId, userId);
         if (virtualUser) {
             const userFull = new VirtualUser(virtualUser, instance);
             const group = await instance

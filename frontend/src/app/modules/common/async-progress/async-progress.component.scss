@@ -12,7 +12,7 @@
 }
 
 .content {
-    background-color: white;
+    background-color: var(--guardian-background, white);
     position: absolute;
     left: 0;
     right: 0;
@@ -79,7 +79,7 @@
 }
 
 .task-viewer>.header {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, sans-serif;
     font-size: 24px;
     font-style: normal;
@@ -88,7 +88,7 @@
 }
 
 .task-viewer>.header {
-    color: #000;
+    color: var(--guardian-font-color, #000);
     font-family: Poppins, sans-serif;
     font-size: 24px;
     font-style: normal;

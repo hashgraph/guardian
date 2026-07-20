@@ -27,6 +27,7 @@ export * from './console-transport.js';
 export * from './mongo-logging-initialization.js';
 export * from './pino-logger.js';
 export * from './pino-logger-initialization.js';
+export * from './process-error-handlers.js';
 export * from './insert-variables.js';
 export * from './generate-tls-options.js';
 export * from './encrypt-vc-helper.js';

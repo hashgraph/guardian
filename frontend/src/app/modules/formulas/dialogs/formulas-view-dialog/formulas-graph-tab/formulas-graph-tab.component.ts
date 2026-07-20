@@ -34,6 +34,7 @@ class GraphNode extends TreeNode<GraphNodeData> {
     selector: 'formulas-graph-tab',
     templateUrl: './formulas-graph-tab.component.html',
     styleUrls: ['./formulas-graph-tab.component.scss'],
+    standalone: false
 })
 export class FormulasGraphTabComponent implements OnChanges {
     @Input()

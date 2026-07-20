@@ -1,58 +1,55 @@
-# Encrypts and loads the file into IPFS linked to the target discussion
+# Encrypts and Loads the File into IPFS Linked to the Target Discussion
 
-<mark style="color:red;">`POST`</mark> `/policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file`
+**`POST /api/v1/policy-comments/{policyId}/{documentId}/discussions/{discussionId}/comments/file`**
 
-Encrypts and loads the file into IPFS linked to the target discussion
+Encrypts and uploads a file to IPFS, attaching it to the target discussion thread.
 
-**Headers**
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name          | Value              |
-| ------------- | ------------------ |
-| Content-Type  | `application/json` |
-| Authorization | `Bearer <token>`   |
+**Permission:** `Permissions.POLICIES_POLICY_EXECUTE` or `Permissions.POLICIES_POLICY_MANAGE`
 
-**Body**
+---
 
-| Name         | Type   | Description           |
-| ------------ | ------ | --------------------- |
-| policyId     | string | Policy ID             |
-| documentId   | string | Document Identifier   |
-| discussionId | string | Discussion Identifier |
+## Request
 
-**Response**
+### Path Parameters
 
-{% tabs %}
-{% tab title="200" %}
-```json5
-description: Successful operation.
-          content:
-            application/json:
-              schema:
-                type: string
+| Parameter      | Type   | Required | Description           |
+|----------------|--------|----------|-----------------------|
+| `policyId`     | string | Yes      | Policy identifier     |
+| `documentId`   | string | Yes      | Document identifier   |
+| `discussionId` | string | Yes      | Discussion identifier |
+
+### Request Body
+
+Binary file data. The request body must not be empty.
+
 ```
-{% endtab %}
+Content-Type: application/octet-stream
 
-{% tab title="401" %}
-```json5
-{
-   description: Unauthorized.
-}
+<binary file content>
 ```
-{% endtab %}
 
-{% tab title="403" %}
-```json5
-description: Forbidden.
-```
-{% endtab %}
+---
 
-{% tab title="500" %}
-```json5
-description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
+## Response
+
+### Success Response
+
+**Status:** `201 Created`
+
+Returns the IPFS CID of the uploaded file as a JSON string.
+
+```json
+"bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi"
 ```
-{% endtab %}
-{% endtabs %}
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `400 Bad Request` | File could not be uploaded to IPFS |
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Request body is empty |
+| `500 Internal Server Error` | Unexpected server failure |

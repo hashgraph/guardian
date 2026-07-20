@@ -67,7 +67,16 @@ module.exports = defineConfig({
                 config.env.grepFilterSpecs = config.env.grepFilterSpecs.toLowerCase() === 'true';
             }
 
-            require('@cypress/grep/src/plugin')(config);
+            // @cypress/grep v6 reads its options from `config.expose`, not `config.env`.
+            // CI/Docker still pass them via CYPRESS_grepTags/--env, so forward them here.
+            config.expose = {
+                ...config.expose,
+                grepTags: config.env.grepTags,
+                grepFilterSpecs: config.env.grepFilterSpecs,
+                grepOmitFiltered: config.env.grepOmitFiltered,
+            };
+
+            require('@cypress/grep/plugin').plugin(config);
             require('cypress-mochawesome-reporter/plugin')(on);
             on('task', verifyDownloadTasks);
             on('task', {

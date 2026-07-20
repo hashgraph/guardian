@@ -10,7 +10,8 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 @Component({
     selector: 'app-table-dialog',
     templateUrl: './table-dialog.component.html',
-    styleUrls: ['./table-dialog.component.scss']
+    styleUrls: ['./table-dialog.component.scss'],
+    standalone: false
 })
 export class TableDialogComponent implements OnInit {
     theme = themeQuartz.withParams({ rowHeight: 42, headerHeight: 48 });

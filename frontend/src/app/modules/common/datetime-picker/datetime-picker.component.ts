@@ -8,6 +8,7 @@ import moment from 'moment';
     selector: 'datetime-picker',
     templateUrl: './datetime-picker.component.html',
     styleUrls: ['./datetime-picker.component.css'],
+    standalone: false
 })
 export class DatetimePicker {
     @Input() placeholder!: string;

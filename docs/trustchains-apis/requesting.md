@@ -1,49 +1,55 @@
-# Requesting
+# Requesting VP Documents
 
-### REQUESTS ALL VP DOCUMENTS
+**`GET /trust-chains/`**
 
-{% swagger method="get" path="" baseUrl="/trust-chains" summary="Returns a list of all VP documents" %}
-{% swagger-description %}
-Requests all VP documents. Only users with the Auditor role are allowed to make the request
-{% endswagger-description %}
+Returns a paginated list of all Verifiable Presentation (VP) documents.
 
-{% swagger-response status="200: OK" description="" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/VerifiablePresentation'
-}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
+
+**Permission:** `Permissions.AUDIT_TRUST_CHAIN_READ`
+
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Default | Description |
+|-----------|------|----------|---------|-------------|
+| `pageIndex` | number | No | 0 | Zero-based page index |
+| `pageSize` | number | No | 20 | Items per page |
+| `policyId` | string | No | — | Filter by policy ID |
+| `policyOwner` | string | No | — | Filter by policy owner DID |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+The response includes an `X-Total-Count` header with the total number of matching records.
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "policyId": "63e3e5e8a01b3c001234abce",
+    "owner": "did:hedera:testnet:zHcDLGFNymFAJiMBKnpbHDgjvTn6yZnwkPPeFhtJBECH_0.0.4532001",
+    "hash": "a1b2c3d4e5f6...",
+    "document": {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      "type": ["VerifiablePresentation"]
+    }
+  }
+]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

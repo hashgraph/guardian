@@ -1,52 +1,40 @@
 # Export Files from Schema
 
-<mark style="color:green;">`POST`</mark> `/schemas/{schemaId}/export/file`
+**`GET /schemas/{schemaId}/export/file`**
 
-Returns schema files for the schemas. Only users with the Standard Registry role are allowed to make the request.
+Returns schema files for the schemas as a zip archive. Only users with the Standard Registry role are allowed to make the request.
 
-#### Path Parameters
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-| Name                                       | Type   | Description        |
-| ------------------------------------------ | ------ | ------------------ |
-| schemaID<mark style="color:red;">\*</mark> | String | Selected schema ID |
+**Permission:** `Permissions.SCHEMAS_SCHEMA_READ`
 
-{% tabs %}
-{% tab title="200: OK Successful Operation" %}
-```javascript
-{
-   
-}
-```
-{% endtab %}
+---
 
-{% tab title="401: Unauthorized Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+## Request
 
-{% tab title="403: Forbidden Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endtab %}
+### Path Parameters
 
-{% tab title="422: Unprocessable Entity Unprocessable Entity" %}
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `schemaId` | String | Yes | Selected schema ID |
 
-{% endtab %}
+---
 
-{% tab title="500: Internal Server Error Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endtab %}
-{% endtabs %}
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Returns a binary zip file containing the schema files.
+
+**Content-Type:** `application/zip`
+
+### Error Responses
+
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Validation error |
+| `500 Internal Server Error` | Unexpected server failure |

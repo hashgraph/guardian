@@ -1,51 +1,40 @@
 # Returning Log Attributes
 
-## RETURNS LOGS ATTRIBUTES
+**`GET /logs/attributes`**
 
-{% swagger method="get" path="" baseUrl="/logs/attributes" summary="Returns logs attributes" %}
-{% swagger-description %}
-Returns logs attributes. For users with the Standard Registry role only.
-{% endswagger-description %}
+Returns a list of log source attribute names, optionally filtered by a name substring. For Standard Registry users only.
 
-{% swagger-parameter in="query" name="name" type="String" required="true" %}
-Part of the name
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
-{
-    application/json:
-              schema:
-                type: array
-                items: 
-                  type: string
-}
+**Permission:** `Permissions.LOG_LOG_READ`
+
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `name` | string | No | Substring to search within attribute names |
+| `existingAttributes` | string[] | No | Attributes already selected (excluded from results) |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
+["API_GATEWAY", "WORKER", "GUARDIAN_SERVICE"]
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

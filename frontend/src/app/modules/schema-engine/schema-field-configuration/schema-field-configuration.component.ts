@@ -16,7 +16,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
@@ -34,6 +34,7 @@ import { EditorHelpContext } from '../../policy-engine/dialogs/code-editor-dialo
     selector: 'schema-field-configuration',
     templateUrl: './schema-field-configuration.component.html',
     styleUrls: ['./schema-field-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
@@ -102,7 +103,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         public dialog: DialogService,
         private dialogService: DialogService,
         private ipfs: IPFSService,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private cdr: ChangeDetectorRef,
     ) {
         this.fieldType = new UntypedFormControl();
@@ -409,7 +410,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
             if (!res) {
                 return;
@@ -458,12 +459,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private errorHandler(errorMessage: string, errorHeader: string): void {
-        this.toastr.error(errorMessage, errorHeader, {
-            timeOut: 30000,
-            closeButton: true,
-            positionClass: 'toast-bottom-right',
-            enableHtml: true,
-        });
+        this.toastService.error(errorMessage, errorHeader, { sticky: true });
     }
 
     onEditExpression() {
@@ -556,7 +552,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 helpContext,
                 validate: true,
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.field.expression.setValidators([Validators.required]);

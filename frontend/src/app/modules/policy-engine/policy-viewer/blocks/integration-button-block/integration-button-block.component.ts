@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, }
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ToastrService } from 'ngx-toastr';
 import {DialogService} from 'primeng/dynamicdialog';
 import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IntegrationDataTypes } from '@guardian/interfaces';
@@ -15,7 +14,8 @@ import { PolicyStatus } from '@guardian/interfaces';
     selector: 'integration-button-block',
     templateUrl: './integration-button-block.component.html',
     styleUrls: ['./integration-button-block.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class IntegrationButtonBlockComponent implements OnInit {
     @Input('id') id!: string;
@@ -40,7 +40,6 @@ export class IntegrationButtonBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private cdref: ChangeDetectorRef,
-        private toastr: ToastrService,
         private dialogService: DialogService,
     ) {
     }
@@ -137,6 +136,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
                 viewDocument: true,
                 document: document.document,
                 type: 'VC',
+                canExport: true,
                 additionalOptions: [
                     { label: 'Integration Data', value: 'integration', icon: 'number' },
                 ],
@@ -148,7 +148,7 @@ export class IntegrationButtonBlockComponent implements OnInit {
                     }
                 ]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

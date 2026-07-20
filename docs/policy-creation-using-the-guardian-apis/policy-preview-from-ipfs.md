@@ -1,51 +1,54 @@
 # Policy Preview from IPFS
 
-### POLICY PREVIEW FROM IPFS
+**`POST /policies/import/message/preview`**
 
-{% swagger method="post" path="" baseUrl="/policies/import/message/preview" summary="Policy preview from IPFS" %}
-{% swagger-description %}
-Previews the policy from IPFS without loading it into the local DB. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+Previews a policy from IPFS without importing it into the local database.
 
-{% swagger-parameter in="body" type="Object" name="messageID" required="true" %}
-Object that contains the identifier of the Hedera message which contains the IPFS CID of the policy
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
-```javascript
+**Permission:** `Permissions.POLICIES_POLICY_CREATE`
+
+---
+
+## Request
+
+### Request Body
+
+```json
 {
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PreviewPolicy'
+  "messageId": "1680000000.000000001"
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-```javascript
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `messageId` | string | Yes | The Hedera message ID containing the IPFS CID of the policy |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+```json
 {
-    // Response
+  "policy": {
+    "name": "iREC Policy",
+    "version": "1.0.0",
+    "description": "iREC standard policy",
+    "messageId": "1680000000.000000001"
+  },
+  "schemas": []
 }
 ```
-{% endswagger-response %}
 
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-```javascript
-{
-    // Response
-}
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```javascript
-{
-    content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-}
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `422 Unprocessable Entity` | Message ID is missing or invalid |
+| `500 Internal Server Error` | Unexpected server failure |

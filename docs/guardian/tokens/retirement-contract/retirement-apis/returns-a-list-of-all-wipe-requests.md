@@ -1,53 +1,59 @@
-# Returns a list of all Wipe requests
+# Returns a List of All Wipe Requests
 
-{% swagger method="get" path="" baseUrl="/contracts/wipe/requests" summary="Return a list of all wipe requests" %}
-{% swagger-description %}
-Returns all wipe requests. Only users with the Standard Registry role are allowed to make the request.
-{% endswagger-description %}
+**`GET /api/v1/contracts/wipe/requests`**
 
-{% swagger-parameter in="query" name="contractId" type="String" %}
-Contract Identifier
-{% endswagger-parameter %}
+Returns a paginated list of all wipe requests. Only Standard Registry users are allowed to make this request.
 
-{% swagger-parameter in="query" name="pageSize" type="number" %}
-The numbers of items to return
-{% endswagger-parameter %}
+**Authentication:** Bearer token required (`Authorization: Bearer <token>`)
 
-{% swagger-parameter in="query" name="pageIndex" type="number" %}
-The number of pages to skip before starting to collect the result
-{% endswagger-parameter %}
+**Permission:** `Permissions.CONTRACTS_WIPE_REQUEST_READ`
 
-{% swagger-response status="200: OK" description="Successful Operation" %}
+---
+
+## Request
+
+### Query Parameters
+
+| Parameter    | Type   | Required | Default | Description                                                       |
+|--------------|--------|----------|---------|-------------------------------------------------------------------|
+| `contractId` | string | No       | —       | Filter requests by contract identifier                            |
+| `pageIndex`  | number | No       | 0       | The number of pages to skip before starting to collect the result |
+| `pageSize`   | number | No       | 20      | The number of items to return                                     |
+
+---
+
+## Response
+
+### Success Response
+
+**Status:** `200 OK`
+
+Headers:
+
+| Header          | Description                            |
+|-----------------|----------------------------------------|
+| `X-Total-Count` | Total number of wipe requests available |
+
+```json
+[
+  {
+    "id": "63e3e5e8a01b3c001234abcd",
+    "contractId": "0.0.4532001",
+    "user": "0.0.4532001",
+    "tokens": [
+      {
+        "token": "0.0.5000001",
+        "count": 50
+      }
+    ]
+  }
+]
 ```
-          headers:
-            x-total-count:
-              schema:
-                type: integer
-              description: Total items in the collection.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/WiperRequestDTO'
 
-```
-{% endswagger-response %}
+### Error Responses
 
-{% swagger-response status="401: Unauthorized" description="Unauthorized" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="403: Forbidden" description="Forbidden" %}
-
-{% endswagger-response %}
-
-{% swagger-response status="500: Internal Server Error" description="Internal Server Error" %}
-```
-content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalServerErrorDTO'
-```
-{% endswagger-response %}
-{% endswagger %}
+| Status | Description |
+|--------|-------------|
+| `401 Unauthorized` | Missing or invalid token |
+| `403 Forbidden` | Insufficient permissions |
+| `500 Internal Server Error` | Unexpected server failure |

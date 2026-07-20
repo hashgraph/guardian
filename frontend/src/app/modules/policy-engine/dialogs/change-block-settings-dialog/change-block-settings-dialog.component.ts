@@ -6,6 +6,7 @@ import { PolicyBlock } from '../../structures';
     selector: 'change-block-settings-dialog',
     templateUrl: './change-block-settings-dialog.component.html',
     styleUrls: ['./change-block-settings-dialog.component.scss'],
+    standalone: false
 })
 export class ChangeBlockSettingsDialog {
     public loading = true;

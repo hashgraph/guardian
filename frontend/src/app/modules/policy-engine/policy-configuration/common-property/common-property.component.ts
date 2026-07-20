@@ -13,6 +13,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     templateUrl: './common-property.component.html',
     styleUrls: ['./common-property.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class CommonPropertyComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -144,7 +145,7 @@ export class CommonPropertyComponent implements OnInit {
                     { name: 'Yes', class: 'primary' }
                 ]
             }
-        });
+        })!;
 
         dialogRef.onClose.subscribe(result => {
             if (result !== 'Yes') {
@@ -176,7 +177,7 @@ export class CommonPropertyComponent implements OnInit {
                 expression: this.value,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.value = result.expression;
