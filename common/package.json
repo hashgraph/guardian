@@ -48,7 +48,7 @@
         "reflect-metadata": "0.2.2",
         "rxjs": "7.8.2",
         "seq-logging": "^2.2.0",
-        "ws": "8.21.0"
+        "ws": "8.21.1"
     },
     "description": "Common package share cross all services",
     "devDependencies": {
