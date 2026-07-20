@@ -111,11 +111,10 @@
         @if (canCreate) {
           <p-button
             (click)="onNewInEditor()"
-            label="New"
-            icon="pi pi-sparkles"
             class="toolbar-btn-primary"
             [pTooltip]="'Create a schema in the new editor'"
             tooltipPosition="bottom">
+              <svg-icon src="/assets/images/icons/auto_awesome.svg" svgClass="color-white"></svg-icon>
           </p-button>
           <p-button
             (click)="onCreateSchemas()"

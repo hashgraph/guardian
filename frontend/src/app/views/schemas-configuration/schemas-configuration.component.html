@@ -58,7 +58,9 @@
                     <i class="pi pi-save"></i>
                     Save all
                 </button>
-                <button class="sc-btn">
+                <button class="sc-btn"
+                    [disabled]="!selectedSchemaId"
+                    (click)="onExport()">
                     <i class="pi pi-download"></i>
                     Export
                 </button>

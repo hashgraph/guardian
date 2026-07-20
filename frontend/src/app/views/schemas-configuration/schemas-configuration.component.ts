@@ -7,6 +7,7 @@ import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, 
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
+import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
 
 export interface FieldType {
     key: string;
@@ -89,6 +90,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get hasUnsavedChanges(): boolean {
         return this.dirtySchemaIds.size > 0;
+    }
+
+    public get selectedSchemaId(): string | null {
+        return this.selectedSchema?.id || (this.selectedSchema as any)?._id || null;
     }
 
     public hoveredSchemaId: string | null = null;
@@ -1234,6 +1239,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
         }
         return result;
+    }
+
+    public onExport(): void {
+        const id = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        if (!id) { return; }
+        this.schemaService.exportInMessage(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(schema => {
+                this.dialogService.open(ExportSchemaDialog, {
+                    header: 'Export Schema',
+                    width: '700px',
+                    styleClass: 'custom-dialog',
+                    data: { schema },
+                });
+            });
     }
 
     public onSidebarScroll(event: Event): void {
