@@ -130,14 +130,15 @@
                                 class="sc-search-input"
                                 type="text"
                                 placeholder="Search schemas…"
-                                [(ngModel)]="schemaSearch" />
+                                [ngModel]="schemaSearch"
+                                (ngModelChange)="schemaSearch$.next($event)" />
                         </div>
                         <button class="sc-btn-new-schema" (click)="onNewSchema()" title="New schema">
                             <i class="pi pi-plus"></i>
                         </button>
                     </div>
 
-                    <div class="sc-schemas-list">
+                    <div class="sc-schemas-list" (scroll)="onSidebarScroll($event)">
                         @if (schemasLoading) {
                             <div class="sc-schemas-empty">
                                 <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
@@ -180,6 +181,11 @@
                                             <i class="pi pi-trash"></i>
                                         </button>
                                     }
+                                </div>
+                            }
+                            @if (schemasLoadingMore) {
+                                <div class="sc-schemas-load-more">
+                                    <p-progressSpinner [style]="{ width: '20px', height: '20px' }"></p-progressSpinner>
                                 </div>
                             }
                         }
