@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { X, Loader2, Shield, User } from 'lucide-vue-next';
+import { X, Loader2, Shield, User, Eye, EyeOff } from 'lucide-vue-next';
 import type { AdminRole, AdminCreateUserBody } from '~/composables/useAdminUsers';
 
 const props = defineProps<{ open: boolean }>();
@@ -12,6 +12,7 @@ const { t } = useI18n();
 const role = ref<AdminRole>('system_user');
 const email = ref('');
 const password = ref('');
+const showPassword = ref(false);
 const firstName = ref('');
 const lastName = ref('');
 const organisation = ref('');
@@ -37,6 +38,7 @@ function reset() {
     role.value = 'system_user';
     email.value = '';
     password.value = '';
+    showPassword.value = false;
     firstName.value = '';
     lastName.value = '';
     organisation.value = '';
@@ -190,9 +192,18 @@ async function onSubmit() {
 
                         <div>
                             <label class="mb-1 block text-xs font-medium text-foreground">{{ $t('userMgmt.initialPassword') }} <span class="text-red-500">*</span></label>
-                            <input v-model="password" type="password" autocomplete="new-password"
-                                :class="['w-full rounded-md border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary', fieldErrors.password ? 'border-red-500' : '']"
-                                @input="fieldErrors.password = ''" />
+                            <div class="relative">
+                                <input v-model="password" :type="showPassword ? 'text' : 'password'" autocomplete="new-password"
+                                    :class="['w-full rounded-md border bg-background px-3 py-2 pr-9 text-sm focus:outline-none focus:ring-2 focus:ring-primary', fieldErrors.password ? 'border-red-500' : '']"
+                                    @input="fieldErrors.password = ''" />
+                                <button type="button"
+                                    :aria-label="showPassword ? $t('auth.hidePassword') : $t('auth.showPassword')"
+                                    class="absolute inset-y-0 right-0 flex items-center px-2 text-muted-foreground hover:text-foreground"
+                                    @click="showPassword = !showPassword">
+                                    <EyeOff v-if="showPassword" class="h-4 w-4" />
+                                    <Eye v-else class="h-4 w-4" />
+                                </button>
+                            </div>
                             <p v-if="fieldErrors.password" class="mt-1 text-xs text-red-600 dark:text-red-400">{{ fieldErrors.password }}</p>
                             <!-- Live password rules from the server policy -->
                             <ul class="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1">
