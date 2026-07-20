@@ -704,14 +704,38 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isCircularDependency(schema: Schema): boolean {
-        // Use findRefs (field-based) instead of document.$defs, because loadSchemas
-        // injects ALL topic schemas into every schema's $defs for parseFields to resolve
-        // $refs — that bloated $defs would make every schema look like it references root.
-        const refs = SchemaHelper.findRefs(schema, this.schemas);
-        const topId = (this.selectedSchema as any)?.document?.$id;
-        if (topId && refs[topId]) { return true; }
-        const contextIri = this.currentDrilledSchemaIri;
-        if (contextIri && refs[contextIri]) { return true; }
+        // Build IRI → Schema lookup from live fields (never document.$defs, which is
+        // bloated by withDefs() and causes false positives).
+        const schemaMap = new Map<string, Schema>();
+        for (const s of this.schemas) {
+            if (s.iri) { schemaMap.set(s.iri, s); }
+        }
+
+        // Every schema in the ancestry chain is an off-limits target.
+        const ancestors = new Set<string>();
+        if (this.selectedSchema?.iri) { ancestors.add(this.selectedSchema.iri); }
+        for (const entry of this.drillStack) {
+            if (entry.schemaIri) { ancestors.add(entry.schemaIri); }
+        }
+        if (!ancestors.size) { return false; }
+
+        // DFS through field-level $ref links only.
+        const visited = new Set<string>();
+        const visit = (s: Schema): void => {
+            if (!s.iri || visited.has(s.iri)) { return; }
+            visited.add(s.iri);
+            for (const f of (s.fields || [])) {
+                if (f.isRef && f.type) {
+                    const ref = schemaMap.get(f.type);
+                    if (ref) { visit(ref); }
+                }
+            }
+        };
+        visit(schema);
+
+        for (const iri of ancestors) {
+            if (visited.has(iri)) { return true; }
+        }
         return false;
     }
 
@@ -729,7 +753,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public getSchemaRowTooltip(schema: Schema): string {
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
-        if (selId && selId === schId) { return 'Cannot use the current schema as a sub-schema'; }
+        if (selId && selId === schId) {
+            return this.isDrilling
+                ? 'Would create a circular dependency'
+                : 'Cannot use the current schema as a sub-schema';
+        }
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return 'Cannot add the currently viewed sub-schema to itself'; }
         if (this.isCircularDependency(schema)) { return 'Would create a circular dependency'; }
