@@ -164,6 +164,20 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE "viewType" = 'PROJECT'
     `);
 
+    // Expression index on PROJECT rows' businessData->>'instanceTopicId'.
+    // Without this, every "projects belonging to this methodology instance"
+    // lookup (the methodology list's lifecycle LATERAL, findById's issuance
+    // query, the project detail credit fallback) is a sequential scan of
+    // every PROJECT row extracting the jsonb field on the fly. On the
+    // methodology list endpoint this scan repeats once per LATERAL per
+    // returned row, which is what made the Testnet methodologies page take
+    // 20+ seconds to respond.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_project_instance_topic
+        ON business_view ((("businessData"->>'instanceTopicId')))
+        WHERE "viewType" = 'PROJECT'
+    `);
+
     await dataSource.query(`
         CREATE TABLE IF NOT EXISTS guardian_event_log (
             id           BIGSERIAL    PRIMARY KEY,
