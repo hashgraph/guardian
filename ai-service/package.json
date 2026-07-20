@@ -8,7 +8,7 @@
         "@guardian/interfaces": "workspace:*",
         "@langchain/classic": "1.0.40",
         "@langchain/community": "1.1.29",
-        "@langchain/core": "1.2.2",
+        "@langchain/core": "1.2.3",
         "@langchain/openai": "1.5.5",
         "@langchain/textsplitters": "1.0.1",
         "@mikro-orm/core": "6.6.15",
