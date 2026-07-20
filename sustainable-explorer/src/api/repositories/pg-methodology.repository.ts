@@ -1,5 +1,5 @@
 import { DataSource } from 'typeorm';
-import { MV_METHODOLOGY_STATS_NAME } from '@shared/materialized-views';
+import { MV_METHODOLOGY_STATS_NAME, MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
 import {
     MethodologyRepository,
     MethodologyListQuery,
@@ -112,25 +112,26 @@ const METHODOLOGY_CANONICAL_DEDUP = `
     )
 `;
 
-/** LATERAL subquery that computes totalIssued/totalRetired for each methodology in the list, mirroring findById's primary path: sums project_mint_link mint amounts for totalIssued and counts deleted nft_cache serials for totalRetired. */
+/**
+ * LATERAL subquery that computes totalIssued/totalRetired for each methodology in the list.
+ *
+ * Sums the already-precomputed per-project ${MV_PROJECT_STATS_NAME} (issued/retired via
+ * project_mint_link + nft_cache, refreshed periodically by MvRefreshProcessor) over the
+ * projects belonging to this methodology instance, instead of re-deriving those sums live
+ * from project_mint_link/token_cache with a correlated nft_cache subquery per mint row —
+ * that per-row-per-mint recomputation, multiplied by every methodology row on the list page,
+ * is what made the methodologies list endpoint take 20+ seconds under Testnet's data volume.
+ * findById still computes this live for its single row/issuance-detail view, so it stays exact.
+ */
 const LIFECYCLE_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            COALESCE(SUM(pml.amount), 0)::bigint AS total_issued,
-            COALESCE(SUM(
-                CASE WHEN tc.type = 'NON_FUNGIBLE_UNIQUE' THEN
-                    (SELECT COUNT(*) FILTER (WHERE deleted = true)::bigint
-                     FROM nft_cache nc
-                     WHERE nc."tokenId" = pml.token_id)
-                ELSE 0::bigint END
-            ), 0)::bigint AS total_retired
-        FROM project_mint_link pml
-        JOIN business_view proj
-            ON proj."viewType" = 'PROJECT'
-           AND proj."projectKey" = pml.project_key
-           AND proj."businessData"->>'instanceTopicId' = bv."relatedTopicId"
-        LEFT JOIN token_cache tc ON tc."tokenId" = pml.token_id
-        WHERE pml.token_id IS NOT NULL
+            COALESCE(SUM(mps.total_issued), 0)::bigint AS total_issued,
+            COALESCE(SUM(mps.total_retired), 0)::bigint AS total_retired
+        FROM business_view proj
+        JOIN ${MV_PROJECT_STATS_NAME} mps ON mps."projectKey" = proj."projectKey"
+        WHERE proj."viewType" = 'PROJECT'
+          AND proj."businessData"->>'instanceTopicId' = bv."relatedTopicId"
           AND bv."relatedTopicId" IS NOT NULL
     ) lc_m ON true
 `;
