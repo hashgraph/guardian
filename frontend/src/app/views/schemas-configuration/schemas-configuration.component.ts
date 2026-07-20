@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } f
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, forkJoin } from 'rxjs';
-import { catchError, map, switchMap, takeUntil } from 'rxjs/operators';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -45,6 +45,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemas: Schema[] = [];
     public schemasLoading: boolean = false;
     public schemaSearch: string = '';
+    public readonly schemaSearch$ = new Subject<string>();
+    public schemasPage: number = 0;
+    public schemasPageSize: number = 50;
+    public schemasTotal: number = 0;
+    public schemasLoadingMore: boolean = false;
 
     public selectedSchema: Schema | null = null;
     public selectedField: SchemaField | null = null;
@@ -58,13 +63,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
 
-    // ── Drag-and-drop state ──
     public isDragOverCanvas: boolean = false;
     private _dragEnterCount: number = 0;
     private _dragFieldType: FieldType | null = null;
     private _dragSchema: Schema | null = null;
 
-    // ── Field card reorder state (mouse-based) ──
     public reorderField: SchemaField | null = null;
     public reorderOverIndex: number = -1;
     public reorderAtEnd: boolean = false;
@@ -73,7 +76,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public dragFloatY: number = 0;
     public dragFloatWidth: number = 0;
 
-    // ── Sidebar DnD insert-position state ──
     public sidebarDropIndex: number = -1;
     public sidebarDropPos: 'top' | 'bot' = 'bot';
 
@@ -93,7 +95,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public showNewSchemaDialog: boolean = false;
     public newSchemaName: string = '';
     public newSchemaSaving: boolean = false;
-    private newSchemaKeys = new Set<string>(); // 'new:<uuid>' keys for unsaved schemas
+    private newSchemaKeys = new Set<string>();
     public systemFieldsCollapsed: boolean = true;
     public schemaPropsCollapsed: boolean = false;
     public drillPropsCollapsed: boolean = false;
@@ -114,7 +116,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public readonly fieldTypes: FieldType[] = [
-        // Simple Types (matches FieldTypesDictionary.FieldTypes)
         { key: 'number',        label: 'Number',      icon: 'pi-hashtag',             group: 'Simple Types',    schemaType: 'number' },
         { key: 'integer',       label: 'Integer',     icon: 'pi-sort-numeric-up-alt', group: 'Simple Types',    schemaType: 'integer' },
         { key: 'string',        label: 'String',      icon: 'pi-pencil',              group: 'Simple Types',    schemaType: 'string' },
@@ -135,11 +136,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { key: 'geo',           label: 'GeoJSON',     icon: 'pi-map-marker',          group: 'Simple Types',    schemaType: '#GeoJSON',     isRef: true, customType: 'geo' },
         { key: 'sentinel',      label: 'SentinelHUB', icon: 'pi-globe',               group: 'Simple Types',    schemaType: '#SentinelHUB', isRef: true, customType: 'sentinel' },
         { key: 'table',         label: 'Table',       icon: 'pi-table',               group: 'Simple Types',    schemaType: 'string', customType: 'table' },
-        // Units of Measure (matches FieldTypesDictionary.CustomFieldTypes)
         { key: 'prefix',        label: 'Prefix',      icon: 'pi-hashtag',             group: 'Units of Measure', schemaType: 'number', unitSystem: 'prefix' },
         { key: 'postfix',       label: 'Postfix',     icon: 'pi-hashtag',             group: 'Units of Measure', schemaType: 'number', unitSystem: 'postfix' },
         { key: 'hederaAccount', label: 'Account',     icon: 'pi-id-card',             group: 'Hedera',           schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
-        // Schema-defined sub-schema reference
         { key: 'sub-schema',    label: 'Sub-schema',  icon: 'pi-sitemap',             group: 'Schema',           isRef: true, accent: true },
     ];
 
@@ -172,12 +171,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     ) {}
 
     public ngOnInit(): void {
-        // Use the same endpoint as the old editor: schema-with-sub-schemas returns
-        // both the target schema and all related topic schemas in a single call.
-        // This eliminates the race condition between getSchemaById and loadSchemas
-        // where loadSchemas completing last would overwrite this.schemas with new
-        // objects, breaking the reference link to this.selectedSchema and causing
-        // saveAll() to pick a stale sidebar copy instead of the edited schema.
         this.schemaLoad$.pipe(
             switchMap(id => {
                 this.schemaLoading = true;
@@ -185,10 +178,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 const topicId = this.topic;
                 return this.schemaService.getSchemaWithSubSchemas(category, id, topicId).pipe(
                     map((data: any) => {
-                        // Build $defs from all sub-schemas so parseFields can resolve
-                        // $ref pointers. Use throw-away spread copies — never mutate
-                        // the original document objects so this.schemas[i].document
-                        // stays clean for updateRefs() during save.
+                        // Spread $defs into throw-away copies so parseFields resolves $ref links
+                        // without mutating the originals — updateRefs() during save needs clean docs.
                         const defs: Record<string, any> = {};
                         for (const sub of (data.subSchemas || [])) {
                             if (sub.iri && sub.document) {
@@ -221,34 +212,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         ).subscribe(({ schema, subSchemas }) => {
             if (!schema) {
                 this.schemaLoading = false;
-                if (!this.schemasFetched && subSchemas.length > 0) {
-                    this.schemas = subSchemas;
-                    this.schemasFetched = true;
-                }
                 return;
             }
             this.selectedSchema = schema;
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
             if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
-            // Derive topic from the loaded schema if the URL param was absent.
-            // Without this, getSchemaWithSubSchemas is called without topicId,
-            // GET_SUB_SCHEMAS returns 0 schemas, and the sidebar shows only current schema.
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
             }
-            // GET_SUB_SCHEMAS returns all topic schemas with full documents, making it the
-            // best source for the sidebar (V2 endpoint strips document, breaking circular dep check).
-            if (!this.schemasFetched && !this.schemasLoading) {
-                if (subSchemas.length > 0) {
-                    // subSchemas populated — topicId was present in the request.
-                    this.schemas = subSchemas;
-                    this.schemasFetched = true;
-                } else if (this.topic) {
-                    // subSchemas empty because topicId was absent from the original request
-                    // but we've now derived it from the schema. Fall back to the V2 endpoint.
-                    this.loadSchemas(this.topic);
-                }
+            this.mergeSchemaNames(subSchemas);
+            if (!this.schemasFetched && this.topic) {
+                this.loadSchemas(this.topic);
             }
             this.upsertInSidebar(schema);
         });
@@ -261,13 +236,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const schemaId = params.get('schemaId') || '';
             const mode = params.get('mode') || '';
             if (schemaId) {
-                // getSchemaWithSubSchemas provides all topic schemas with full documents.
-                // The subscribe handler uses subSchemas to populate this.schemas so that
-                // $defs-based circular dependency detection works. No separate loadSchemas needed.
                 this.schemaLoad$.next(schemaId);
             } else {
                 if (this.topic && !this.schemasFetched) {
-                    this.schemaLoad$.next('');
+                    this.loadSchemas(this.topic);
                 }
                 if (mode === 'new') {
                     this.showNewSchemaDialog = true;
@@ -281,21 +253,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 }
             }
         });
+
+        this.schemaSearch$.pipe(
+            debounceTime(300),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(search => {
+            this.schemaSearch = search;
+            this.schemasPage = 0;
+            this.schemas = [];
+            this.loadSchemas(this.topic);
+        });
     }
 
     public get filteredSchemas(): Schema[] {
-        if (!this.schemaSearch.trim()) { return this.schemas; }
-        const q = this.schemaSearch.toLowerCase();
-        return this.schemas.filter(s => s.name?.toLowerCase().includes(q));
+        return this.schemas;
     }
 
     public isDraft(schema: Schema): boolean {
         return schema.status === SchemaStatus.DRAFT || schema.status === SchemaStatus.ERROR;
     }
 
-    // ── Validation ─────────────────────────────────────────────────────────────
-
-    // Reserved names: always-blocked JSON-LD keys + system fields from DefaultFieldDictionary
     private static readonly SYSTEM_KEYS = new Set([
         '@context', 'type', 'policyId', 'ref', 'guardianVersion',
     ]);
@@ -330,7 +308,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public fieldHasErrors(field: SchemaField): boolean {
-        // Use drillCurrentFields for uniqueness checks when this field is in drill context.
         const allFields = this.isDrilling && this.drillCurrentFields.includes(field)
             ? this.drillCurrentFields
             : (this.selectedSchema?.fields ?? []);
@@ -339,14 +316,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedFieldErrors(): string[] {
         if (!this.selectedField) { return []; }
-        // Validate against the correct sibling list so uniqueness errors are accurate.
         const allFields = this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
         return this.getFieldErrors(this.selectedField, allFields);
     }
 
     public get currentSchemaErrorCount(): number {
-        // Sum errors across ALL dirty schemas so the counter reflects every pending
-        // validation issue, even those in sub-schemas the user already drilled out of.
+        // Counts errors across all dirty schemas, not just the visible one.
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         let count = 0;
         for (const dirtyId of this.dirtySchemaIds) {
@@ -377,12 +352,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return true;
     }
 
-    // ────────────────────────────────────────────────────────────────────────────
-
     public switchSchema(schema: Schema): void {
         const id = schema.id || (schema as any)._id;
         if (!id) {
-            // New in-memory schema with no server ID yet — select directly.
             if (this.newSchemaKeys.has(`new:${(schema as any).uuid}`)) {
                 this.selectedField = null;
                 this.selectedSchema = schema;
@@ -391,8 +363,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         this.selectedField = null;
-        // Optimistic update: show schema header immediately while fields load.
-        this.selectedSchema = schema;
+        this.selectedSchema = schema; // optimistic: show header before fields load
         this.router.navigate(['/schema-configuration'], {
             queryParams: {
                 schemaId: id,
@@ -401,11 +372,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             },
             replaceUrl: false
         });
-        // Navigation triggers queryParamMap → schemaLoad$.next(id).
     }
 
     public goBack(): void {
-        // B1: only include params that are set; Angular drops undefined values.
         const queryParams: Record<string, string> = {};
         if (this.type) { queryParams['type'] = this.type; }
         if (this.topic) { queryParams['topic'] = this.topic; }
@@ -413,9 +382,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public markDirty(): void {
-        // When drilling, the edit belongs to the drilled sub-schema, not the root.
-        // Mark both: the sub-schema (because its fields changed) and the root schema
-        // (because its $defs will need to be rebuilt to embed the updated sub-document).
+        // Mark both root and drilled sub-schema dirty: root needs $defs rebuilt on save.
         if (this.isDrilling) {
             const contextIri = this.currentDrilledSchemaIri;
             const subSchema = contextIri ? this.schemas.find(s => s.iri === contextIri) : null;
@@ -432,18 +399,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public saveAll(): void {
         if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { return; }
-        // Build the save list by iterating dirty IDs so we always prefer
-        // this.selectedSchema over any sidebar copy. loadSchemas() and
-        // getSchemaById() race: if loadSchemas wins, this.schemas gets new
-        // objects that don't share a reference with this.selectedSchema, so
-        // a plain this.schemas.filter() would pick the stale sidebar copy
-        // (same ID, no user edits) and save the old document.
+        // Iterate dirtyIds and prefer selectedSchema over the sidebar copy to avoid
+        // saving a stale object when loadSchemas() ran after the user started editing.
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const toSave: Schema[] = [];
         const toCreate: Schema[] = [];
         for (const dirtyId of this.dirtySchemaIds) {
             if (this.newSchemaKeys.has(dirtyId)) {
-                const uuid = dirtyId.slice(4); // strip 'new:'
+                const uuid = dirtyId.slice(4);
                 const s = this.schemas.find(s => s.uuid === uuid);
                 if (s) { toCreate.push(s); }
             } else if (selId && dirtyId === selId && this.selectedSchema) {
@@ -456,14 +419,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!toSave.length && !toCreate.length) { return; }
         this.isSaving = true;
         const allSchemas = [...toCreate, ...toSave];
-        // Phase 1 — rebuild documents from current fields (system fields appended temporarily).
+        // Phase 1: rebuild document from fields (system fields appended, then stripped back).
         allSchemas.forEach(s => {
             const userFields = s.fields;
             const defaultFields = DefaultFieldDictionary.getDefaultFields(s.entity as SchemaEntity);
             s.update([...userFields, ...defaultFields], s.conditions);
             s.fields = userFields;
         });
-        // Phase 2 — rebuild $defs via BFS over actual field refs (avoids withDefs() self-reference).
+        // Phase 2: rebuild $defs via field-level BFS (avoids withDefs() self-reference bloat).
         allSchemas.forEach(s => { if (s.document) { s.document.$defs = this._buildRefs(s); } });
         const createObs = toCreate.map(s =>
             this.schemaService.create(s.category ?? this.getCategory(), s as unknown as ISchema, this.topic).pipe(
@@ -644,10 +607,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
         this.selectedField = null;
-        // Use the actual Schema.fields from this.schemas so that edits are tracked
-        // on the sub-schema entity itself and get saved separately.
-        // Fallback to field.fields (the cloned copy from parseFields) when the schema
-        // isn't in the sidebar list (e.g. GeoJSON / Sentinel built-in refs).
+        // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
+        // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
         const subSchema = this.schemas.find(s => s.iri === field.type);
         const fields = subSchema?.fields ?? field.fields ?? [];
         this.drillStack = [
@@ -693,8 +654,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    // ── Drag-and-drop ──────────────────────────────────────────────────────────
-
     public onFieldTypeDragStart(event: DragEvent, ft: FieldType): void {
         this._dragFieldType = ft;
         this._dragSchema = null;
@@ -704,14 +663,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isCircularDependency(schema: Schema): boolean {
-        // Build IRI → Schema lookup from live fields (never document.$defs, which is
-        // bloated by withDefs() and causes false positives).
+        // Use live field refs, not document.$defs — withDefs() bloats $defs and causes false positives.
         const schemaMap = new Map<string, Schema>();
         for (const s of this.schemas) {
             if (s.iri) { schemaMap.set(s.iri, s); }
         }
 
-        // Every schema in the ancestry chain is an off-limits target.
         const ancestors = new Set<string>();
         if (this.selectedSchema?.iri) { ancestors.add(this.selectedSchema.iri); }
         for (const entry of this.drillStack) {
@@ -719,7 +676,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         if (!ancestors.size) { return false; }
 
-        // DFS through field-level $ref links only.
         const visited = new Set<string>();
         const visit = (s: Schema): void => {
             if (!s.iri || visited.has(s.iri)) { return; }
@@ -743,7 +699,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
         if (selId && selId === schId) { return false; }
-        // Disable the schema we've drilled into — can't add it to its own fields
         const contextIri = this.currentDrilledSchemaIri;
         if (contextIri && schema.iri === contextIri) { return false; }
         if (this.isCircularDependency(schema)) { return false; }
@@ -790,8 +745,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.sidebarDropIndex = -1;
     }
 
-    // ── Field card reorder (mouse-based — no HTML5 DnD ghost) ─────────────────
-
     public onCardMouseDown(event: MouseEvent, field: SchemaField, fields: SchemaField[]): void {
         if ((event.target as HTMLElement).closest('button')) { return; }
         event.preventDefault();
@@ -834,17 +787,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const srcIdx = fields.indexOf(this.reorderField);
             if (srcIdx !== -1) {
                 if (this.reorderAtEnd) {
-                    // Drop on empty canvas = move to last position
                     if (srcIdx !== fields.length - 1) {
                         const [f] = fields.splice(srcIdx, 1);
                         fields.push(f);
                         this.markDirty();
                     }
                 } else if (this.reorderOverIndex !== -1 && this.reorderOverIndex !== srcIdx) {
-                    // Hover over another card: remove source then insert at that index.
-                    // No adjustment needed — splice target index stays valid in both
-                    // directions (srcIdx<target: target shifts down and we land after it;
-                    // srcIdx>target: target unchanged and we land before it).
+                    // No index adjustment needed: splice target is valid in both directions.
                     const [f] = fields.splice(srcIdx, 1);
                     fields.splice(this.reorderOverIndex, 0, f);
                     this.markDirty();
@@ -876,8 +825,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
         }
 
-        // No card hit — set reorderAtEnd only if below the last visible card.
-        // Checking the full canvas rect would incorrectly fire over the system-fields section.
+        // Checking full canvas rect would fire over the system-fields section — use last card bottom instead.
         if (cards.length > 0) {
             const lastRect = cards[cards.length - 1].getBoundingClientRect();
             if (clientY > lastRect.bottom) {
@@ -913,8 +861,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.isDragActive = false;
     }
 
-    // ────────────────────────────────────────────────────────────────────────────
-
     public onCanvasDragEnter(event: DragEvent): void {
         if (!this._dragFieldType && !this._dragSchema) { return; }
         this._dragEnterCount++;
@@ -929,8 +875,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private updateSidebarDropIndicator(clientY: number): void {
-        // Use card midpoints as boundaries so any Y — including the gap between
-        // cards — maps unambiguously to an insertion slot, no dead zones.
+        // Midpoint boundaries so gaps between cards map unambiguously to an insertion slot.
         const cardSelector = this.isDrilling
             ? '.sc-drill-card'
             : '.sc-field-card:not(.sc-field-card--system)';
@@ -947,7 +892,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 return;
             }
         }
-        // Below all midpoints → append after last card
         this.sidebarDropIndex = cards.length - 1;
         this.sidebarDropPos = 'bot';
     }
@@ -1043,8 +987,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
-    // ────────────────────────────────────────────────────────────────────────────
-
     public onNewSchema(): void {
         this.newSchemaName = '';
         this.showNewSchemaDialog = true;
@@ -1070,9 +1012,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.dirtySchemaIds.add(dirtyKey);
         this.showNewSchemaDialog = false;
         this.newSchemaName = '';
-        // Clear any stale schemaId from URL so a reload doesn't try to load the old schema.
-        // The queryParamMap else-branch skips the selectedSchema reset when the selected
-        // schema is a new in-memory entry (present in newSchemaKeys).
+        // Clear schemaId from URL — queryParamMap skips the selectedSchema reset for in-memory entries.
         this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { type: this.type || undefined, topic: this.topic || undefined },
@@ -1113,32 +1053,54 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    private loadSchemas(topicId: string): void {
-        this.schemasLoading = true;
+    private loadSchemas(topicId: string, append: boolean = false): void {
+        if (append) {
+            this.schemasLoadingMore = true;
+        } else {
+            this.schemasLoading = true;
+        }
+        const search = this.schemaSearch.trim() || undefined;
         this.schemaService.getSchemasByPage({
             category: this.getCategory(),
             topicId,
-            pageIndex: 0,
-            pageSize: 1000,
+            pageIndex: this.schemasPage,
+            pageSize: this.schemasPageSize,
+            search,
         })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (response: HttpResponse<ISchema[]>) => {
-                    // V2 endpoint returns only metadata fields (no document), so Schema
-                    // instances have empty fields but correct name/status/iri for display.
-                    this.schemas = (response.body || [])
+                    const total = Number(response.headers?.get('X-Total-Count') || 0);
+                    const items = (response.body || [])
                         .map(s => { try { return new Schema(s); } catch { return null; } })
                         .filter((s): s is Schema => s !== null);
-                    this.schemasLoading = false;
+                    this.schemasTotal = total;
+                    if (search) {
+                        items.sort((a, b) => this.rankMatch(b.name || '', search) - this.rankMatch(a.name || '', search));
+                    }
+                    if (append) {
+                        const selectedId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+                        const existing = new Set(this.schemas.map(s => s.id || (s as any)._id));
+                        const fresh = items.filter(s => {
+                            const id = s.id || (s as any)._id;
+                            return !id || id === selectedId || !existing.has(id);
+                        });
+                        this.schemas = [...this.schemas, ...fresh];
+                        this.schemasLoadingMore = false;
+                    } else {
+                        this.schemas = items;
+                        this.schemasLoading = false;
+                    }
                     this.schemasFetched = true;
-                    // If a schema was already selected, preserve its reference in the list
-                    // so saveAll() picks the edited copy rather than the freshly loaded one.
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                 },
                 error: () => {
-                    this.schemas = [];
-                    this.schemasLoading = false;
-                    // Don't set schemasFetched on error so the next navigation can retry.
+                    if (append) {
+                        this.schemasLoadingMore = false;
+                    } else {
+                        this.schemas = [];
+                        this.schemasLoading = false;
+                    }
                 }
             });
     }
@@ -1224,8 +1186,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 if (!dialogRef) { return; }
                 dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
                     if (res?.action === 'Delete') {
-                        // Compute return URL before navigating away so the task page
-                        // can come back to the right schema after delete completes.
                         const wasSelected = this.selectedSchema?.id === id || (this.selectedSchema as any)?._id === id;
                         let returnUrl = location.href;
                         if (wasSelected) {
@@ -1274,6 +1234,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
         }
         return result;
+    }
+
+    public onSidebarScroll(event: Event): void {
+        const el = event.target as HTMLElement;
+        const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
+        if (!nearBottom || this.schemasLoadingMore || this.schemasLoading) { return; }
+        if (this.schemas.length >= this.schemasTotal) { return; }
+        this.schemasPage++;
+        this.loadSchemas(this.topic, true);
+    }
+
+    private rankMatch(name: string, search: string): number {
+        const n = name.toLowerCase();
+        if (n === search) { return 3; }
+        if (n.startsWith(search)) { return 2; }
+        if (n.includes(search)) { return 1; }
+        return 0;
+    }
+
+    private mergeSchemaNames(subSchemas: Schema[]): void {
+        if (!subSchemas.length || !this.schemas.length) { return; }
+        const nameMap = new Map<string, string>();
+        for (const s of subSchemas) {
+            const id = s.id || (s as any)._id;
+            if (id && s.name) { nameMap.set(id, s.name); }
+        }
+        this.schemas = this.schemas.map(s => {
+            const id = s.id || (s as any)._id;
+            if (id && !s.name && nameMap.has(id)) {
+                return Object.assign(Object.create(Object.getPrototypeOf(s)), s, { name: nameMap.get(id) });
+            }
+            return s;
+        });
     }
 
     public ngOnDestroy(): void {
