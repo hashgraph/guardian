@@ -5,11 +5,8 @@
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Expression</td>
       <td class="propRowCell">
-        <button
-          (click)="editExpression($event)"
-          class="guardian-button guardian-button-secondary common-properties-button">
-          <div class="guardian-button-label">Expression</div>
-        </button>
+        <input class="prop-input code-preview" type="text" [(ngModel)]="properties.expression" [readonly]="true"
+          (click)="editExpression($event)">
       </td>
     </tr>
   </table>

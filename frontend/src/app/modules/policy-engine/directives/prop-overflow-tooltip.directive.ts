@@ -2,7 +2,7 @@ import { AfterViewInit, Directive, ElementRef, HostListener } from '@angular/cor
 import { Tooltip } from 'primeng/tooltip';
 
 @Directive({
-    selector: 'input.prop-input, input.input-end, p-select, p-multiselect, .not-editable-text',
+    selector: 'input.prop-input:not(.code-preview), input.input-end, p-select, p-multiselect, .not-editable-text',
     standalone: false,
     hostDirectives: [Tooltip]
 })

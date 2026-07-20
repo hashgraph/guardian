@@ -419,6 +419,11 @@
                     outline: none !important;
                 }
 
+                &.code-preview {
+                    cursor: pointer;
+                    caret-color: transparent;
+                }
+
                 &[type="checkbox"].prop-input {
                     appearance: none;
                     -webkit-appearance: none;
