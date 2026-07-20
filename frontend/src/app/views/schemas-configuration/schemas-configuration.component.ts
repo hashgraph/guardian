@@ -8,6 +8,7 @@ import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
+import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
 
 export interface FieldType {
     key: string;
@@ -94,6 +95,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedSchemaId(): string | null {
         return this.selectedSchema?.id || (this.selectedSchema as any)?._id || null;
+    }
+
+    public get canPublish(): boolean {
+        if (!this.selectedSchemaId) { return false; }
+        if (this.type === 'tag' || this.type === 'system') { return false; }
+        const s = this.selectedSchema?.status;
+        return s === SchemaStatus.DRAFT || s === SchemaStatus.UNPUBLISHED;
     }
 
     public hoveredSchemaId: string | null = null;
@@ -369,7 +377,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
-        this.router.navigate(['/schema-configuration'], {
+        void this.router.navigate(['/schema-configuration'], {
             queryParams: {
                 schemaId: id,
                 type: this.type || undefined,
@@ -383,7 +391,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const queryParams: Record<string, string> = {};
         if (this.type) { queryParams['type'] = this.type; }
         if (this.topic) { queryParams['topic'] = this.topic; }
-        this.router.navigate(['/schemas'], { queryParams });
+        void this.router.navigate(['/schemas'], { queryParams });
     }
 
     public markDirty(): void {
@@ -445,7 +453,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.newSchemaKeys.delete(dirtyKey);
                         this.dirtySchemaIds.delete(dirtyKey);
                         if (this.selectedSchema === s) {
-                            this.router.navigate([], {
+                            void this.router.navigate([], {
                                 relativeTo: this.route,
                                 queryParams: { schemaId: savedId, type: this.type || undefined, topic: this.topic || undefined },
                                 replaceUrl: true,
@@ -455,7 +463,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 })
             )
         );
-        const updateObs = toSave.map(s => this.schemaService.update(s as unknown as ISchema));
+        const toUpdate = toSave.filter(s => s.status !== SchemaStatus.PUBLISHED);
+        const toNewVersion = toSave.filter(s => s.status === SchemaStatus.PUBLISHED);
+
+        if (toNewVersion.length > 0) {
+            const s = toNewVersion[0];
+            this.schemaService.newVersion(s.category ?? this.getCategory(), s as unknown as ISchema)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(result => {
+                    this.isSaving = false;
+                    void this.router.navigate(['task', result.taskId], {
+                        queryParams: { last: btoa(location.href) },
+                    });
+                }, () => { this.isSaving = false; });
+            return;
+        }
+
+        const updateObs = toUpdate.map(s => this.schemaService.update(s as unknown as ISchema));
         forkJoin([...createObs, ...updateObs])
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -1018,7 +1042,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.showNewSchemaDialog = false;
         this.newSchemaName = '';
         // Clear schemaId from URL — queryParamMap skips the selectedSchema reset for in-memory entries.
-        this.router.navigate([], {
+        void this.router.navigate([], {
             relativeTo: this.route,
             queryParams: { type: this.type || undefined, topic: this.topic || undefined },
             replaceUrl: true,
@@ -1160,7 +1184,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.drillStack = [];
                 this.selectedField = null;
                 const nextId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
-                this.router.navigate([], {
+                void this.router.navigate([], {
                     relativeTo: this.route,
                     queryParams: {
                         schemaId: nextId || undefined,
@@ -1211,7 +1235,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemaService.delete(id, res.includeChildren)
                             .pipe(takeUntil(this.destroy$))
                             .subscribe((result: any) => {
-                                this.router.navigate(['task', result.taskId], {
+                                void this.router.navigate(['task', result.taskId], {
                                     queryParams: { last: btoa(returnUrl) },
                                 });
                             });
@@ -1239,6 +1263,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
         }
         return result;
+    }
+
+    public onPublish(): void {
+        const id = this.selectedSchemaId;
+        if (!id || !this.canPublish) { return; }
+        const dialogRef = this.dialogService.open(SetVersionDialog, {
+            width: '350px',
+            modal: true,
+            closable: false,
+            data: { schema: this.selectedSchema },
+        });
+        if (!dialogRef) { return; }
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((version: string) => {
+            if (!version) { return; }
+            this.schemaService.pushPublish(id, version)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(result => {
+                    void this.router.navigate(['task', result.taskId], {
+                        queryParams: { last: btoa(location.href) },
+                    });
+                });
+        });
     }
 
     public onExport(): void {
