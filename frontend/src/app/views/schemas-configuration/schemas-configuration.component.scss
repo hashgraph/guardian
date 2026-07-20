@@ -418,6 +418,21 @@
     }
 }
 
+.sc-schema-delete-btn {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    color: #aaa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover { color: #e53935; background: #fdecea; }
+    i { font-size: 13px; }
+}
+
 .sc-schema-icon {
     width: 26px;
     height: 26px;
@@ -689,10 +704,7 @@
     text-transform: none;
     letter-spacing: 0;
     font-family: var(--font-mono, monospace);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 220px;
+    word-break: break-all;
 }
 
 .sc-schema-props-toggle {

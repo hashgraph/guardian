@@ -148,14 +148,16 @@
                                 <span>{{ schemaSearch ? 'No results' : 'No schemas' }}</span>
                             </div>
                         } @else {
-                            @for (schema of filteredSchemas; track schema.id) {
+                            @for (schema of filteredSchemas; track (schema._id || schema.id || schema.uuid)) {
                                 <div
                                     class="sc-schema-row"
-                                    [class.active]="selectedSchema?.id === schema.id || selectedSchema?._id === schema._id"
+                                    [class.active]="(schema._id && selectedSchema?._id === schema._id) || (schema.id && selectedSchema?.id === schema.id)"
                                     [class.sc-schema-row--no-drop]="!canDragSchema(schema)"
                                     [draggable]="canDragSchema(schema)"
                                     [pTooltip]="getSchemaRowTooltip(schema)"
                                     tooltipPosition="right"
+                                    (mouseenter)="hoveredSchemaId = schema.id || schema._id"
+                                    (mouseleave)="hoveredSchemaId = null"
                                     (dragstart)="onSchemaDragStart($event, schema)"
                                     (dragend)="onDragEnd()"
                                     (click)="switchSchema(schema)">
@@ -173,6 +175,11 @@
                                             </span>
                                         </div>
                                     </div>
+                                    @if (hoveredSchemaId === (schema.id || schema._id)) {
+                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right">
+                                            <i class="pi pi-trash"></i>
+                                        </button>
+                                    }
                                 </div>
                             }
                         }
@@ -289,7 +296,7 @@
                                     </div>
                                     @if (!systemFieldsCollapsed) {
                                         <div class="sc-fields-list">
-                                            @for (field of systemFields; track field.name) {
+                                            @for (field of systemFields; track $index) {
                                                 <div class="sc-field-card sc-field-card--system">
                                                     <div class="sc-field-type-icon">
                                                         <i class="pi pi-lock"></i>
@@ -326,7 +333,7 @@
                                             <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
                                         </div>
                                     } @else if (selectedSchema.fields && selectedSchema.fields.length) {
-                                        @for (field of selectedSchema.fields; track field.name; let i = $index) {
+                                        @for (field of selectedSchema.fields; track $index; let i = $index) {
                                             <div
                                                 class="sc-field-card"
                                                 [class.active]="selectedField === field"
@@ -494,7 +501,7 @@
                              (dragover)="onCanvasDragOver($event)"
                              (drop)="onCanvasDrop($event)">
                             @if (drillCurrentFields.length) {
-                                @for (field of drillCurrentFields; track field.name; let i = $index) {
+                                @for (field of drillCurrentFields; track $index; let i = $index) {
                                     <div
                                         class="sc-drill-card"
                                         [class.active]="selectedField === field"
@@ -819,7 +826,7 @@
             <input
                 class="sc-rp-input"
                 type="text"
-                placeholder="e.g. Carbon Credit Report"
+                placeholder="e.g. Monitoring Report"
                 [(ngModel)]="newSchemaName"
                 (keydown.enter)="saveNewSchema()"
                 autofocus />
@@ -827,7 +834,7 @@
     </div>
 
     <ng-template pTemplate="footer">
-        <button class="sc-btn" (click)="showNewSchemaDialog = false; goBack()">Cancel</button>
+        <button class="sc-btn" (click)="showNewSchemaDialog = false">Cancel</button>
         <button
             class="sc-btn sc-btn-primary"
             [disabled]="!newSchemaName.trim() || newSchemaSaving"
