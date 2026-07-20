@@ -1547,15 +1547,15 @@ export class SchemaApi {
         try {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            const reqUrl = req.url;
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteSchema(schemaId, owner, task, String(includeChildren).toLowerCase() === 'true');
+                await this.cacheService.invalidate(getCacheKey([reqUrl, ...invalidedCacheKeys], user)).catch(() => null);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return task;
         } catch (error) {

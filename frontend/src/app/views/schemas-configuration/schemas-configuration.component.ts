@@ -1224,28 +1224,31 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 if (!dialogRef) { return; }
                 dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((res: any) => {
                     if (res?.action === 'Delete') {
+                        // Compute return URL before navigating away so the task page
+                        // can come back to the right schema after delete completes.
+                        const wasSelected = this.selectedSchema?.id === id || (this.selectedSchema as any)?._id === id;
+                        let returnUrl = location.href;
+                        if (wasSelected) {
+                            const deletedIndex = this.schemas.findIndex(s => s.id === id || (s as any)._id === id);
+                            const remaining = this.schemas.filter(s => s.id !== id && (s as any)._id !== id);
+                            const next = remaining[Math.min(deletedIndex, remaining.length - 1)] ?? null;
+                            const nextId = next?.id || (next as any)?._id;
+                            const urlTree = this.router.createUrlTree([], {
+                                relativeTo: this.route,
+                                queryParams: {
+                                    schemaId: nextId || undefined,
+                                    type: this.type || undefined,
+                                    topic: this.topic || undefined,
+                                },
+                            });
+                            returnUrl = location.origin + this.router.serializeUrl(urlTree);
+                        }
                         this.schemaService.delete(id, res.includeChildren)
                             .pipe(takeUntil(this.destroy$))
-                            .subscribe(() => {
-                                const wasSelected = this.selectedSchema?.id === id || (this.selectedSchema as any)?._id === id;
-                                const deletedIndex = this.schemas.findIndex(s => s.id === id || (s as any)._id === id);
-                                this.schemas = this.schemas.filter(s => s.id !== id && (s as any)._id !== id);
-                                if (wasSelected) {
-                                    const next = this.schemas[Math.min(deletedIndex, this.schemas.length - 1)] ?? null;
-                                    this.selectedSchema = next;
-                                    this.drillStack = [];
-                                    this.selectedField = null;
-                                    const nextId = next?.id || (next as any)?._id;
-                                    this.router.navigate([], {
-                                        relativeTo: this.route,
-                                        queryParams: {
-                                            schemaId: nextId || undefined,
-                                            type: this.type || undefined,
-                                            topic: this.topic || undefined,
-                                        },
-                                        replaceUrl: true,
-                                    });
-                                }
+                            .subscribe((result: any) => {
+                                this.router.navigate(['task', result.taskId], {
+                                    queryParams: { last: btoa(returnUrl) },
+                                });
                             });
                     }
                 });
