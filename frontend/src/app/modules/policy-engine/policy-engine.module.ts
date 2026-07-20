@@ -149,6 +149,7 @@ import { PasswordModule } from 'primeng/password';
 import { DynamicMsalAuthService } from './services/dynamic-msal-auth.service';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
+import { PropOverflowTooltipDirective } from './directives/prop-overflow-tooltip.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
 // Dialogs
 import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-policy.component';
@@ -298,6 +299,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         RecordResultsComponent,
         TestResultsComponent,
         ResizingDirective,
+        PropOverflowTooltipDirective,
         DiscontinuePolicy,
         MigrateData,
         JsonEditorDialogComponent,

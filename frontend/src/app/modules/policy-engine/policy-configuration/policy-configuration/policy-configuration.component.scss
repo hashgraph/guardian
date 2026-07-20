@@ -1501,6 +1501,14 @@
     }
 }
 
+.policy-configuration[readonly="true"]::ng-deep .right-bottom-toolbar input.prop-input,
+.policy-configuration[readonly="true"]::ng-deep .right-bottom-toolbar input.input-end,
+.policy-configuration[readonly="true"]::ng-deep .right-bottom-toolbar p-select.p-disabled,
+.policy-configuration[readonly="true"]::ng-deep .right-bottom-toolbar p-multiselect.p-disabled,
+.policy-configuration[readonly="true"]::ng-deep .right-bottom-toolbar .not-editable-text {
+    pointer-events: auto;
+}
+
 .policy-configuration[readonly="true"]::ng-deep .inspector-subsection {
     pointer-events: none;
     filter: grayscale(1);

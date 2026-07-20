@@ -388,6 +388,8 @@
                 padding: 4px 8px;
                 outline: none;
                 width: 100%;
+                overflow: hidden;
+                text-overflow: ellipsis;
                 font-size: var(--pc-row-font-size);
                 font-family: var(--pc-row-font-family);
                 font-style: var(--pc-row-font-style);
@@ -862,8 +864,7 @@
             font-weight: 400;
             line-height: 18px;
             color: var(--guardian-font-color, #23252E);
-            display: flex;
-            align-items: center;
+            display: block;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -1424,12 +1425,11 @@
     .right-bottom-toolbar .properties p-select .p-select-label,
     .right-bottom-toolbar .properties p-multiselect .p-multiselect-label {
         box-sizing: border-box !important;
-        display: flex !important;
-        align-items: center !important;
+        display: block !important;
         height: 100% !important;
         padding-top: 0 !important;
         padding-bottom: 0 !important;
-        line-height: normal !important;
+        line-height: var(--pc-control-height) !important;
     }
 
     .right-bottom-toolbar .properties .common-properties-button {
