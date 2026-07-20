@@ -999,7 +999,7 @@
     }
 }
 
-.right-bottom-toolbar common-properties[type="Common"] .grid-setting[readonly="true"] {
+.policy-configuration::ng-deep .right-bottom-toolbar common-properties[type="Common"] .grid-setting[readonly="true"] {
     filter: none;
 }
 
