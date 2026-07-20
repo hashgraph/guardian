@@ -96,6 +96,22 @@ export const COUNTRY_ALPHA3: Record<string, string> = {
     'Zambia': 'ZMB', 'Zimbabwe': 'ZWE',
 };
 
+export const ALPHA3_TO_NAME: Record<string, string> = {};
+for (const [name, code] of Object.entries(COUNTRY_ALPHA3)) {
+    if (name.toUpperCase() === code) continue;
+    if (!(code in ALPHA3_TO_NAME)) ALPHA3_TO_NAME[code] = name;
+}
+
+export function normalizeCountryName(raw: string): string {
+    const value = (raw ?? '').trim();
+    if (!value) return '';
+    const asCode = ALPHA3_TO_NAME[value.toUpperCase()];
+    if (asCode) return asCode;
+    const code = COUNTRY_ALPHA3[value];
+    if (code && ALPHA3_TO_NAME[code]) return ALPHA3_TO_NAME[code];
+    return value;
+}
+
 function parseSdgs(sdgs: unknown): number[] {
     if (Array.isArray(sdgs)) return (sdgs as unknown[]).map(Number).filter(Boolean);
     if (typeof sdgs === 'string' && sdgs.trim()) {
@@ -110,7 +126,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
         id: raw.sourceTimestamp || raw.id,
         name: raw.name ?? '',
         description: raw.description ?? '',
-        country: raw.country ?? '',
+        country: normalizeCountryName(raw.country ?? ''),
         countryCode,
         flag: '',
         lat: raw.lat ?? 0,
