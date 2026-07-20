@@ -1,15 +1,8 @@
 import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
 import { SectorType } from '~/types/enums';
 import { formatCredits } from '~/lib/format';
-import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { ALPHA3_TO_NAME as CODE_TO_COUNTRY } from '~/composables/useProjects';
 import { allocateDonutColors } from '~/lib/chart-colors';
-
-// Reverse of COUNTRY_ALPHA3 — used to display the human-readable name when a
-// project's country came from reverse-geocoding (we have the ISO3 but not
-// the original raw.country string).
-const CODE_TO_COUNTRY: Record<string, string> = Object.fromEntries(
-    Object.entries(COUNTRY_ALPHA3).map(([name, code]) => [code, name]),
-);
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { projects, pending } = useProjects();

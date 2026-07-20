@@ -26,6 +26,7 @@ interface PolicyRow {
     sourceCid: string;
     decodeStatus: string;
     policyMapping: Record<string, unknown> | null;
+    instanceTopicId?: string | null;
 }
 
 interface VcMessageRow {
@@ -92,6 +93,19 @@ export class MappingReprocessService {
      * The jobId intentionally includes `Date.now()` so successive re-runs show
      * up as distinct jobs in the BullMQ dashboard — the idempotent design is on
      * the processor side (it upserts, never inserts a duplicate row).
+     *
+     * `instanceTopicId` must be resolved (from the Instance-Policy message's
+     * `options.instanceTopicId` — the same source message-process.processor.ts
+     * uses on first decode — falling back to the existing policy row) and
+     * passed through in jobData. PolicyDecodeProcessor.runDecode
+     * unconditionally writes `job.data.instanceTopicId ?? null` back onto the
+     * policy row, so omitting it here would null out a previously-valid
+     * value. That then propagates into every project's
+     * `businessData.instanceTopicId` on the next reparse, zeroing
+     * mv_methodology_stats.instance_project_count and breaking the
+     * Methodology link on the project detail page. Deriving it from the
+     * message (rather than only the policy row) also lets a re-decode
+     * self-heal a methodology that already got nulled out by this bug.
      */
     async redecodePolicy(
         network: string,
@@ -101,7 +115,7 @@ export class MappingReprocessService {
         const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
 
         const policyRows: PolicyRow[] = await ds.query(
-            `SELECT "policyTopicId", "sourceCid", "decodeStatus"
+            `SELECT "policyTopicId", "sourceCid", "decodeStatus", "instanceTopicId"
              FROM policy
              WHERE "policyTopicId" = $1
              LIMIT 1`,
@@ -115,7 +129,7 @@ export class MappingReprocessService {
             );
         }
 
-        const { sourceCid } = policyRows[0];
+        const { sourceCid, instanceTopicId } = policyRows[0];
 
         await ds.query(
             `UPDATE policy
@@ -130,10 +144,11 @@ export class MappingReprocessService {
             [policyTopicId],
         );
 
-        // Recover the original message timestamp for the publish-policy message so
-        // the processor can locate the correct source in the message table.
-        const msgRows: Array<{ consensusTimestamp: string }> = await ds.query(
-            `SELECT "consensusTimestamp"
+        // Recover the original message timestamp (and instanceTopicId, straight from
+        // the source message rather than the policy row) for the publish-policy
+        // message so the processor can locate the correct source in the message table.
+        const msgRows: Array<{ consensusTimestamp: string; instanceTopicId: string | null }> = await ds.query(
+            `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
              FROM message
              WHERE type = 'Instance-Policy'
                AND action = 'publish-policy'
@@ -149,6 +164,7 @@ export class MappingReprocessService {
             cid: sourceCid,
             messageTimestamp,
             policyTopicId,
+            instanceTopicId: msgRows[0]?.instanceTopicId ?? instanceTopicId,
         };
 
         // Include timestamp in jobId so the operator can distinguish re-runs in
@@ -283,8 +299,12 @@ export class MappingReprocessService {
 
         for (const row of policyRows) {
             try {
-                const msgRows: Array<{ consensusTimestamp: string }> = await ds.query(
-                    `SELECT "consensusTimestamp"
+                // instanceTopicId read from the message (options->>'instanceTopicId'),
+                // not just the policy row, so this also self-heals a policy whose
+                // column was previously nulled by the same bug this guards against
+                // in redecodePolicy() above.
+                const msgRows: Array<{ consensusTimestamp: string; instanceTopicId: string | null }> = await ds.query(
+                    `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
                      FROM message
                      WHERE type = 'Instance-Policy'
                        AND action = 'publish-policy'
@@ -298,7 +318,7 @@ export class MappingReprocessService {
                     cid: row.sourceCid,
                     messageTimestamp: msgRows[0]?.consensusTimestamp ?? '0.0',
                     policyTopicId: row.policyTopicId,
-                    instanceTopicId: row.instanceTopicId,
+                    instanceTopicId: msgRows[0]?.instanceTopicId ?? row.instanceTopicId,
                 };
 
                 const jobId = `policy-decode-rerun-${row.policyTopicId}-${Date.now()}`;

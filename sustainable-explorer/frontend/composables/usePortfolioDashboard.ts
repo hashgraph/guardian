@@ -7,16 +7,9 @@ import type { WatchlistItem } from '~/composables/usePortfolioWatchlist';
 import type { ActivityItem, MapCountry, MapPoint } from '~/types/models';
 import type { SdgStatsDto } from '~/composables/api/useSdgsApi';
 import { useGeocodedCountries } from '~/composables/useGeocodedCountries';
-import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
+import { ALPHA3_TO_NAME as CODE_TO_COUNTRY } from '~/composables/useProjects';
 import { useWatchlistProjects } from '~/composables/useWatchlistProjects';
 import { usePortfolioStats } from '~/composables/usePortfolioStats';
-
-// Reverse of COUNTRY_ALPHA3 — used to display the human-readable name when a
-// project's country came from reverse-geocoding (we have the ISO3 but not
-// the original raw.country string). Mirrors useDashboard.ts.
-const CODE_TO_COUNTRY: Record<string, string> = Object.fromEntries(
-    Object.entries(COUNTRY_ALPHA3).map(([name, code]) => [code, name]),
-);
 
 /**
  * Returns all portfolio data filtered by watchlist.
