@@ -1182,6 +1182,29 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onDeleteSchema(schema: Schema): void {
+        const dirtyKey = `new:${(schema as any).uuid}`;
+        if (this.newSchemaKeys.has(dirtyKey)) {
+            const wasSelected = this.selectedSchema === schema;
+            this.schemas = this.schemas.filter(s => s !== schema);
+            this.newSchemaKeys.delete(dirtyKey);
+            this.dirtySchemaIds.delete(dirtyKey);
+            if (wasSelected) {
+                this.selectedSchema = this.schemas[0] ?? null;
+                this.drillStack = [];
+                this.selectedField = null;
+                const nextId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+                this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: {
+                        schemaId: nextId || undefined,
+                        type: this.type || undefined,
+                        topic: this.topic || undefined,
+                    },
+                    replaceUrl: true,
+                });
+            }
+            return;
+        }
         const id = schema.id || (schema as any)._id;
         if (!id) { return; }
         this.schemaService.getSchemaDeletionPreview([id])
