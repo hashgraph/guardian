@@ -493,10 +493,11 @@ export async function bootstrapSystemSchema(dataSource: DataSource): Promise<voi
 
     // ── Table: watchlist_subscriptions ──────────────────────────────────────
     // Reverse index over the watchlist JSONB (user_dashboards, name='watchlist').
-    // "projectKey" holds WatchlistItem.id (= business_view.id), NOT
+    // "projectKey" holds WatchlistItem.id (= business_view.sourceTimestamp, the
+    // frontend's app-wide project identifier), NOT business_view.id and NOT
     // project_mint_link.project_key — see NotificationScanService, which reads
     // business_view per batch to resolve mint rows' project_key to the matching
-    // business_view.id before matching against this table.
+    // business_view.sourceTimestamp before matching against this table.
     await dataSource.query(`
         CREATE TABLE IF NOT EXISTS "watchlist_subscriptions" (
             "userId"     uuid         NOT NULL,
@@ -514,8 +515,9 @@ export async function bootstrapSystemSchema(dataSource: DataSource): Promise<voi
     );
 
     // ── Table: notifications ────────────────────────────────────────────────
-    // "projectKey" stores business_view.id (same identifier watchlist_subscriptions
-    // uses) — never project_mint_link.project_key directly. "dedupeKey" (e.g.
+    // "projectKey" stores business_view.sourceTimestamp (same identifier
+    // watchlist_subscriptions uses) — never business_view.id and never
+    // project_mint_link.project_key directly. "dedupeKey" (e.g.
     // 'issuance:{mintConsensusTimestamp}') plus the UNIQUE("userId","dedupeKey")
     // constraint makes the scan-and-insert step idempotent (ON CONFLICT DO NOTHING).
     await dataSource.query(`
