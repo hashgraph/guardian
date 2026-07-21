@@ -115,7 +115,6 @@ export class PolicyConfigurationComponent implements OnInit {
     public nextBlock!: any;
     public nestedBlock!: any;
     public openType: 'Root' | 'Sub' = 'Root';
-    public openSettings: boolean = false;
     public openEditableFields: boolean = false;
     public themes!: Theme[];
     public theme!: Theme;
@@ -1687,7 +1686,6 @@ export class PolicyConfigurationComponent implements OnInit {
             { label: 'Policy wizard', icon: 'pi pi-sparkles', action: () => this.openPolicyWizardDialog() },
             { label: 'Validate policy', icon: 'pi pi-check-circle', action: () => this.validationPolicy() },
             { label: 'Schemas', icon: 'pi pi-database', action: () => this.onSchemas() },
-            { label: 'Settings', icon: 'pi pi-cog', action: () => this.onSettings() },
             { label: 'Parameters', icon: 'pi pi-sliders-h', action: () => this.onEditableFields() },
             { label: 'API documentation', icon: 'pi pi-book', action: () => this.openApiConfigDialog() },
             { label: 'View: Tree', icon: 'pi pi-table', action: () => this.onView('blocks') },
@@ -1914,13 +1912,6 @@ export class PolicyConfigurationComponent implements OnInit {
         this.loadState(item);
     }
 
-    public onChangeSettings(event: boolean) {
-        this.openSettings = false;
-        this.themes = this.themeService.getThemes();
-        this.theme = this.themeService.getCurrent();
-        this.updateCodeMirrorStyles();
-    }
-
     public blockStyle(rule: ThemeRule) {
         return this.themeService.getStyleByRule(rule)
     }
@@ -1928,10 +1919,6 @@ export class PolicyConfigurationComponent implements OnInit {
     public getLegendText(rule: ThemeRule): string {
         rule.updateLegend(this.openFolder);
         return rule.legend;
-    }
-
-    public onSettings() {
-        this.openSettings = true;
     }
 
     public onEditableFields() {

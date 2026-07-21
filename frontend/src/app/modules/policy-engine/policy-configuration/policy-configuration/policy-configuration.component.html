@@ -5,9 +5,6 @@
     </div>
   }
 
-  @if (openSettings) {
-    <policy-settings (update)="onChangeSettings($event)"></policy-settings>
-  }
   @if (blockSearchData) {
     <search-blocks (action)="onSearchAction($event)" [value]="blockSearchData"
     class="policy-configuration"></search-blocks>
@@ -1418,10 +1415,6 @@
       </div>
     }
     <div class="overflow-menu-divider"></div>
-    <div (click)="onSettings(); overflowMenu.hide()" class="toolbar-menu all-status">
-      <i class="pi pi-cog"></i>
-      <span>Settings</span>
-    </div>
     <div (click)="onEditableFields(); overflowMenu.hide()" class="toolbar-menu all-status">
       <i class="pi pi-sliders-h"></i>
       <span>Parameters</span>

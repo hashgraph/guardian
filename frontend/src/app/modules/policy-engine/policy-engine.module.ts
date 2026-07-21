@@ -52,7 +52,6 @@ import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
-import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 import { ButtonBlockAddonComponent } from './policy-viewer/blocks/button-block-addon/button-block-addon.component';
 import { DropdownBlockAddonComponent } from './policy-viewer/blocks/dropdown-block-addon/dropdown-block-addon.component';
 import { RequestAddonConfigComponent } from './policy-configuration/blocks/documents/request-addon-config/request-addon-config.component';
@@ -282,7 +281,6 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         NewModuleDialog,
         TagsManagerBlockComponent,
         NewPolicyDialog,
-        PolicySettingsComponent,
         NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
