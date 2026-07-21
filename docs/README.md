@@ -2,7 +2,7 @@
 
 ## The official [Hedera Guardian](https://guardian.hedera.com/) documentation
 
-The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets such as carbon credits, renewable energy certificates, emission disclosures, and other environmental assets on the Hedera network. It leverages a customizable workflow engine and web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & environmental markets.
+The Hedera Guardian is an open-source platform for creating, managing, and issuing digital environmental assets such as carbon credits, renewable energy certificates, emission disclosures, and others on the Hedera network. It leverages a customizable workflow engine, calculation engine, verifiable-credential based identity management, and web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & environmental markets.
 
 **The problem it solves**
 
@@ -12,11 +12,13 @@ Environmental markets depend on trust: trust that issued credits represent real 
 
 Guardian is built around a number of core aspects and understanding how they relate is a good foundation to navigate the docs further.
 
-* **Guardian Policies** are the rules of an environmental methodology — they can include data collection forms, role-based approval workflows, emission reduction calculations, dMRV endpoints — as executable software rather than PDF documents. A policy for Verra VM0047 specifies exactly what a project proponent submits, what a verifier approves, and how credits are calculated and issued.
+* **Guardian Policies** are the rules of an environmental methodology — they can include data collection forms, role-based approval workflows, calculations, and dMRV endpoints — as executable software rather than PDF documents. A policy for Verra VM0047 specifies exactly what a project proponent submits, what a verifier approves, and how credits are calculated and issued.
 * **Schemas** define the structure of every data submission within a policy — fields, types, and validation rules that make data submissions consistent and machine-readable.
-* **Tokens** are the digital environmental credits produced at key points within a policy workflow and represent outcomes recorded on Hedera as fungible or non-fungible tokens.
+* **Calculation Engine** powered by math blocks and formula linked definitions can be included inGuardian Policies. These are used to calculate emission reductions and application baselines, project, and net GHG emissions, applying leakage, uncertainty, and buffer-pool deductions, as well as converting verified results into credit quantities for token issuance.&#x20;
+* **Tokens** are the digital environmental assets produced at key points within a policy workflow and represent outcomes recorded on the Hedera network as fungible or non-fungible tokens.
 * **TrustChain** is the verifiable audit trail that links every token back to the original submissions, approvals, and calculations that produced it. Any participant can inspect the full chain of custody without relying on a central intermediary.
 * **Standard Registry** is the platform role that publishes policies, onboards project participants, and manages credit issuance. It is the organizing entity for everything that happens in Guardian.
+* **Methodology Library** is the world's largest open source repository of digitalized environmental methodologies. Anyone can download, import, inspect, test, and run these methodologies. The authoring process continues to be improved through global collaborations and feedback helping to bring costs down for all.
 
 **Platform adopters and ecosystem**
 
