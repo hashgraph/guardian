@@ -3,11 +3,11 @@ import {
     BookOpen, Coins, Layers, Shield,
     Globe, MapPin,
     Network, FileText, ChevronDown,
-    Database,
-    FolderKanban, BarChart3, RotateCcw, CloudDownload, Loader2, Search, X, Download,
-    ListChecks, TrendingUp,
+    FolderKanban, BarChart3, RotateCcw, CloudDownload, Download,
+    ListChecks, TrendingUp, GitBranch, ArrowRight, Radio,
 } from 'lucide-vue-next';
-import type { Credit } from '~/types/models';
+import type { Component } from 'vue';
+import type { Credit, VcDocData } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 import { exportProject, type ExportFormat } from '~/lib/project-export';
 import { getSDG } from '~/lib/sdgs';
@@ -46,8 +46,8 @@ const displayCountry = computed(() => {
 
 // ─── Tabs (synced with URL hash) ──────────────────────────────────────────────
 
-type TabKey = 'summary' | 'issuances' | 'documents' | 'advanced';
-const VALID_TABS = new Set<TabKey>(['summary', 'issuances', 'documents', 'advanced']);
+type TabKey = 'summary' | 'issuances' | 'documents' | 'mrv' | 'advanced';
+const VALID_TABS = new Set<TabKey>(['summary', 'issuances', 'documents', 'mrv', 'advanced']);
 
 const router = useRouter();
 // Always start with 'summary' — route.hash is empty on the server (browsers strip fragments
@@ -66,22 +66,26 @@ function setTab(key: TabKey) {
     router.replace({ hash: key === 'summary' ? '' : `#${key}` });
 }
 
-const tabs = [
-    { key: 'summary' as const,   label: 'Summary',              icon: FolderKanban },
-    { key: 'documents' as const, label: 'Detailed Information',  icon: FileText },
-    { key: 'issuances' as const, label: 'Issuances & Credits',  icon: Coins },
-    { key: 'advanced' as const,  label: 'Advanced',             icon: Shield },
-];
+const tabs = computed(() => {
+    const list: { key: TabKey; label: string; icon: Component }[] = [
+        { key: 'summary',   label: 'Summary',              icon: FolderKanban },
+        { key: 'documents', label: 'Detailed Information',  icon: FileText },
+        { key: 'issuances', label: 'Issuances & Credits',  icon: Coins },
+    ];
+    if (project.value?.hasMrvData) {
+        list.push({ key: 'mrv', label: 'MRV External Data', icon: CloudDownload });
+    }
+    list.push({ key: 'advanced', label: 'Advanced', icon: Shield });
+    return list;
+});
 
 // ─── VC business data (lazy-loaded per schema) ───────────────────────────────
 
-interface VcField { label: string; value: string; description?: string }
-interface VcTable { label: string; columns: string[]; rows: Record<string, string>[] }
-interface VcGroup { title: string; fields: VcField[]; tables: VcTable[] }
-interface VcDocData { fields: VcField[]; tables: VcTable[]; groups: VcGroup[] }
-
 // Shape of GET /projects/:id/additional-details — the backend now decodes the
 // VC "Detailed Information" once (at ingestion) and returns it grouped by schema.
+// Powers the Documents tab only — the MRV tab uses ProjectMrvDataExplorer's own
+// server-paginated GET /projects/:id/mrv-data/:schemaUuid instead (MRV datasets
+// can run to hundreds of thousands of records, too large to decode in one payload).
 interface AdditionalDetailsSchema { schemaUuid: string; schemaName: string | null; docType: string; records: VcDocData[] }
 
 const vcDataBySchema = ref<Record<string, VcDocData[]>>({});
@@ -92,50 +96,10 @@ const docSearchQuery = ref('');
 // Cache of the full additional-details payload — fetched once, sliced per schema.
 const allAdditionalDetails = ref<AdditionalDetailsSchema[] | null>(null);
 
-function filterDoc(doc: VcDocData, q: string): VcDocData | null {
-    if (!q) return doc;
-    const fieldMatches = (f: VcField) =>
-        f.label.toLowerCase().includes(q)
-        || f.value.toLowerCase().includes(q)
-        || (f.description?.toLowerCase().includes(q) ?? false);
-    const fields = doc.fields.filter(fieldMatches);
-    const tables = doc.tables.filter(t =>
-        t.label.toLowerCase().includes(q)
-        || t.columns.some(c => humanizeKey(c).toLowerCase().includes(q))
-        || t.rows.some(r => Object.values(r).some(v => v.toLowerCase().includes(q))),
-    );
-    const groups = doc.groups
-        .map(g => {
-            const gf = g.fields.filter(fieldMatches);
-            const gt = g.tables.filter(t =>
-                t.label.toLowerCase().includes(q)
-                || t.rows.some(r => Object.values(r).some(v => v.toLowerCase().includes(q))),
-            );
-            if (gf.length === 0 && gt.length === 0 && !g.title.toLowerCase().includes(q)) return null;
-            return { ...g, fields: gf.length > 0 || g.title.toLowerCase().includes(q) ? (gf.length > 0 ? gf : g.fields) : gf, tables: gt.length > 0 || g.title.toLowerCase().includes(q) ? (gt.length > 0 ? gt : g.tables) : gt };
-        })
-        .filter((g): g is VcGroup => g !== null);
-    if (fields.length === 0 && tables.length === 0 && groups.length === 0) return null;
-    return { fields, tables, groups };
-}
-
-function getFilteredDocs(schemaUuid: string): VcDocData[] {
-    const docs = vcDataBySchema.value[schemaUuid];
-    if (!docs) return [];
-    const q = docSearchQuery.value.trim().toLowerCase();
-    if (!q) return docs;
-    return docs.map(d => filterDoc(d, q)).filter((d): d is VcDocData => d !== null);
-}
+const mrvTotalRecords = computed(() => (project.value?.mrvSchemas ?? []).reduce((s, sch) => s + sch.vcCount, 0));
 
 function bareUuid(schemaId: string): string {
     return schemaId.replace(/^#/, '').replace(/&.*$/, '');
-}
-
-function humanizeKey(key: string): string {
-    return key
-        .replace(/([a-z])([A-Z])/g, '$1 $2')
-        .replace(/[_-]/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
 }
 
 function toggleSchema(schemaUuid: string) {
@@ -150,7 +114,8 @@ function toggleSchema(schemaUuid: string) {
 async function loadSchemaVcData(schemaUuid: string) {
     if (vcDataBySchema.value[schemaUuid] || vcDataPending.value[schemaUuid]) return;
     if (!project.value || !import.meta.client) return;
-    const schema = project.value.linkedSchemas?.find(s => s.schemaUuid === schemaUuid);
+    const schema = project.value.linkedSchemas?.find(s => s.schemaUuid === schemaUuid)
+        ?? project.value.mrvSchemas?.find(s => s.schemaUuid === schemaUuid);
     if (!schema?.linkedVcs.length) return;
 
     vcDataPending.value[schemaUuid] = true;
@@ -557,235 +522,70 @@ const emissions = computed(() => {
             </div>
 
             <!-- ── Tab: Documents (VC business data grouped by schema) ────────── -->
-            <div v-else-if="activeTab === 'documents'" class="p-6 space-y-4">
-                <!-- Search filter -->
-                <div class="relative">
-                    <Search class="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
-                    <input
-                        v-model="docSearchQuery"
-                        type="text"
-                        placeholder="Search fields, values, tables..."
-                        class="w-full h-9 rounded-lg border border-input bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                    />
-                    <button
-                        v-if="docSearchQuery"
-                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                        @click="docSearchQuery = ''"
-                    >
-                        <X class="h-3.5 w-3.5" />
-                    </button>
+            <div v-else-if="activeTab === 'documents'" class="p-6">
+                <ProjectVcSchemaList
+                    v-model:search-query="docSearchQuery"
+                    :schemas="project.linkedSchemas?.filter(s => s.schemaUuid !== 'MintToken') ?? []"
+                    :data-by-schema="vcDataBySchema"
+                    :pending="vcDataPending"
+                    :open-schema="vcSchemaOpen"
+                    :open-record="vcRecordOpen"
+                    empty-message="No linked documents found for this project."
+                    @toggle-schema="toggleSchema"
+                    @toggle-record="(key) => vcRecordOpen[key] = !(vcRecordOpen[key] ?? true)"
+                />
+            </div>
+
+            <!-- ── Tab: MRV External Data (VCs from externalDataBlock-bound schemas) ── -->
+            <div v-else-if="activeTab === 'mrv'" class="p-6 space-y-4">
+                <p class="text-xs text-muted-foreground">
+                    Records submitted through this methodology's external/IoT data-ingestion mechanism (dMRV), separate from human-submitted documents.
+                </p>
+
+                <!-- Data Flow — honest project-level summary, not a fabricated per-record trace -->
+                <div v-if="mrvTotalRecords > 0" class="rounded-xl border bg-card overflow-hidden">
+                    <div class="px-5 py-3.5 border-b bg-muted/30">
+                        <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
+                            <GitBranch class="h-4 w-4 text-primary" />
+                            Data Flow
+                        </h2>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">
+                            A snapshot of this project's monitoring activity and credit issuance so far — click through for the full issuance history.
+                        </p>
+                    </div>
+                    <div class="px-5 py-5 flex items-center gap-3 flex-wrap">
+                        <div class="flex items-center gap-2.5 rounded-lg border bg-muted/20 px-3.5 py-2.5">
+                            <Radio class="h-4 w-4 text-primary shrink-0" />
+                            <div>
+                                <div class="text-xs font-semibold text-foreground">MRV Data</div>
+                                <div class="text-[11px] text-muted-foreground">{{ mrvTotalRecords }} record{{ mrvTotalRecords !== 1 ? 's' : '' }}</div>
+                            </div>
+                        </div>
+                        <ArrowRight class="h-4 w-4 text-muted-foreground shrink-0" />
+                        <button
+                            class="flex items-center gap-2.5 rounded-lg border bg-muted/20 px-3.5 py-2.5 hover:bg-muted/40 transition-colors text-left"
+                            @click="setTab('issuances')"
+                        >
+                            <Coins class="h-4 w-4 text-primary shrink-0" />
+                            <div>
+                                <div class="text-xs font-semibold text-foreground">Credits Issued</div>
+                                <div class="text-[11px] text-muted-foreground">{{ project.totalIssued ?? 0 }} issued &middot; {{ project.issuanceCount ?? 0 }} issuance(s)</div>
+                            </div>
+                        </button>
+                    </div>
                 </div>
 
-                <template v-if="project.linkedSchemas?.length">
-                    <div
-                        v-for="schema in project.linkedSchemas.filter(s => s.schemaUuid !== 'MintToken')"
+                <template v-if="project.mrvSchemas?.length">
+                    <ProjectMrvDataExplorer
+                        v-for="schema in project.mrvSchemas.filter(s => s.schemaUuid !== 'MintToken')"
                         :key="schema.schemaUuid"
-                        class="rounded-xl border overflow-hidden"
-                        :class="schema.vcCount === 0 ? 'bg-muted/30 opacity-60' : 'bg-card'"
-                    >
-                        <!-- Schema header -->
-                        <button
-                            class="w-full px-5 py-3.5 flex items-center justify-between text-left transition-colors"
-                            :class="schema.vcCount === 0 ? 'cursor-default' : 'hover:bg-muted/30'"
-                            :disabled="schema.vcCount === 0"
-                            @click="schema.vcCount > 0 && toggleSchema(schema.schemaUuid)"
-                        >
-                            <div class="flex items-center gap-2.5 min-w-0">
-                                <div
-                                    class="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                                    :class="schema.vcCount > 0 ? 'bg-primary/10' : 'bg-muted'"
-                                >
-                                    <FileText class="h-3.5 w-3.5" :class="schema.vcCount > 0 ? 'text-primary' : 'text-muted-foreground'" />
-                                </div>
-                                <div class="min-w-0">
-                                    <h3 class="text-sm font-semibold truncate" :class="schema.vcCount > 0 ? 'text-foreground' : 'text-muted-foreground'">
-                                        {{ schema.schemaName || schema.schemaUuid }}
-                                    </h3>
-                                    <div class="flex items-center gap-2 mt-0.5">
-                                        <span
-                                            v-if="schema.isProjectSchema"
-                                            class="text-[10px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5"
-                                        >Project Schema</span>
-                                        <span
-                                            class="text-[10px] font-medium rounded-full px-2 py-0.5"
-                                            :class="schema.vcCount > 0
-                                                ? 'bg-stat-green/10 text-stat-green'
-                                                : 'bg-muted text-muted-foreground'"
-                                        >
-                                            {{ schema.vcCount }} record{{ schema.vcCount !== 1 ? 's' : '' }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                            <ChevronDown
-                                v-if="schema.vcCount > 0"
-                                class="h-4 w-4 text-muted-foreground transition-transform shrink-0"
-                                :class="vcSchemaOpen[schema.schemaUuid] ? 'rotate-180' : ''"
-                            />
-                        </button>
-
-                        <!-- Schema VC data (grouped, leveled view) -->
-                        <template v-if="!vcSchemaOpen[schema.schemaUuid]" />
-                        <template v-else-if="vcDataPending[schema.schemaUuid]">
-                            <div class="border-t px-5 py-6 text-center">
-                                <div class="inline-flex items-center gap-2 text-xs text-muted-foreground">
-                                    <Loader2 class="h-3.5 w-3.5 animate-spin" />
-                                    Loading document data...
-                                </div>
-                            </div>
-                        </template>
-                        <template v-else-if="vcDataBySchema[schema.schemaUuid]">
-                            <!-- No search results for this schema -->
-                            <div
-                                v-if="getFilteredDocs(schema.schemaUuid).length === 0 && docSearchQuery.trim()"
-                                class="border-t px-5 py-6 text-center text-xs text-muted-foreground"
-                            >
-                                No matching fields found in this schema.
-                            </div>
-                            <div
-                                v-for="(doc, vcIdx) in getFilteredDocs(schema.schemaUuid)"
-                                :key="vcIdx"
-                            >
-                                <!-- Record header (collapsible when multiple) -->
-                                <button
-                                    v-if="getFilteredDocs(schema.schemaUuid).length > 1"
-                                    class="w-full border-t px-5 py-3 bg-primary/8 flex items-center gap-2 hover:bg-primary/12 transition-colors text-left"
-                                    @click="vcRecordOpen[`${schema.schemaUuid}-${vcIdx}`] = !(vcRecordOpen[`${schema.schemaUuid}-${vcIdx}`] ?? true)"
-                                >
-                                    <div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
-                                        {{ vcIdx + 1 }}
-                                    </div>
-                                    <span class="text-sm font-semibold text-foreground flex-1">Record {{ vcIdx + 1 }}</span>
-                                    <span class="text-[10px] text-muted-foreground mr-2">{{ doc.fields.length + doc.groups.reduce((s, g) => s + g.fields.length, 0) }} fields</span>
-                                    <ChevronDown
-                                        class="h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0"
-                                        :class="(vcRecordOpen[`${schema.schemaUuid}-${vcIdx}`] ?? true) ? 'rotate-180' : ''"
-                                    />
-                                </button>
-                                <div v-else class="border-t" />
-
-                                <!-- Record content (collapsible) -->
-                                <template v-if="getFilteredDocs(schema.schemaUuid).length <= 1 || (vcRecordOpen[`${schema.schemaUuid}-${vcIdx}`] ?? true)">
-                                    <!-- Top-level fields -->
-                                    <div v-if="doc.fields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border">
-                                        <div
-                                            v-for="f in doc.fields"
-                                            :key="f.label"
-                                            class="bg-card px-5 py-3"
-                                        >
-                                            <div class="flex items-center gap-1 mb-0.5">
-                                                <span class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ f.label }}</span>
-                                                <InfoTooltip v-if="f.description" :text="f.description" />
-                                            </div>
-                                            <div class="text-sm text-foreground break-words">{{ f.value }}</div>
-                                        </div>
-                                        <div v-if="doc.fields.length % 2 === 1" class="hidden sm:block bg-card" />
-                                    </div>
-
-                                    <!-- Top-level tables (arrays of objects) -->
-                                    <div v-for="tbl in doc.tables" :key="tbl.label" class="border-t">
-                                        <div class="px-5 py-2.5 bg-muted/40 flex items-center gap-2 border-b">
-                                            <Database class="h-3.5 w-3.5 text-primary/60" />
-                                            <span class="text-xs font-semibold text-foreground">{{ tbl.label }}</span>
-                                            <span class="text-[10px] text-muted-foreground">{{ tbl.rows.length }} entries</span>
-                                        </div>
-                                        <div class="overflow-x-auto">
-                                            <table class="w-full text-sm">
-                                                <thead>
-                                                    <tr class="bg-muted/20 border-b">
-                                                        <th
-                                                            v-for="col in tbl.columns"
-                                                            :key="col"
-                                                            class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-                                                        >{{ humanizeKey(col) }}</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody class="divide-y">
-                                                    <tr v-for="(row, rIdx) in tbl.rows" :key="rIdx" class="hover:bg-muted/20">
-                                                        <td
-                                                            v-for="col in tbl.columns"
-                                                            :key="col"
-                                                            class="py-2 px-4 text-foreground tabular-nums max-w-[300px]"
-                                                            :title="row[col]"
-                                                        >
-                                                            <span class="block truncate">{{ row[col] }}</span>
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-
-                                    <!-- Nested groups (sub-schemas) -->
-                                    <div
-                                        v-for="group in doc.groups"
-                                        :key="group.title"
-                                        class="border-t"
-                                    >
-                                        <div class="px-5 py-2.5 bg-muted/40 flex items-center gap-2 border-b">
-                                            <Layers class="h-3.5 w-3.5 text-primary/60" />
-                                            <span class="text-xs font-semibold text-foreground">{{ group.title }}</span>
-                                            <span class="text-[10px] text-muted-foreground">{{ group.fields.length }} fields</span>
-                                        </div>
-                                        <div v-if="group.fields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
-                                            <div
-                                                v-for="f in group.fields"
-                                                :key="f.label"
-                                                class="bg-card px-5 py-3"
-                                            >
-                                                <div class="flex items-center gap-1 mb-0.5">
-                                                    <span class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ f.label }}</span>
-                                                    <InfoTooltip v-if="f.description" :text="f.description" />
-                                                </div>
-                                                <div class="text-sm text-foreground break-words tabular-nums">{{ f.value }}</div>
-                                            </div>
-                                            <template v-for="_ in (3 - (group.fields.length % 3)) % 3" :key="'pad-' + _">
-                                                <div class="hidden lg:block bg-card" />
-                                            </template>
-                                            <div v-if="group.fields.length % 2 === 1" class="hidden sm:block lg:hidden bg-card" />
-                                        </div>
-                                        <!-- Tables inside groups -->
-                                        <div v-for="tbl in group.tables" :key="tbl.label" class="border-t">
-                                            <div class="px-5 py-2 bg-muted/20 flex items-center gap-2 border-b">
-                                                <Database class="h-3 w-3 text-muted-foreground" />
-                                                <span class="text-[11px] font-medium text-foreground">{{ tbl.label }}</span>
-                                                <span class="text-[10px] text-muted-foreground">{{ tbl.rows.length }} entries</span>
-                                            </div>
-                                            <div class="overflow-x-auto">
-                                                <table class="w-full text-sm">
-                                                    <thead>
-                                                        <tr class="bg-muted/10 border-b">
-                                                            <th
-                                                                v-for="col in tbl.columns"
-                                                                :key="col"
-                                                                class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap"
-                                                            >{{ humanizeKey(col) }}</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody class="divide-y">
-                                                        <tr v-for="(row, rIdx) in tbl.rows" :key="rIdx" class="hover:bg-muted/20">
-                                                            <td
-                                                                v-for="col in tbl.columns"
-                                                                :key="col"
-                                                                class="py-2 px-4 text-foreground tabular-nums whitespace-nowrap"
-                                                            >{{ row[col] }}</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div v-if="doc.fields.length === 0 && doc.groups.length === 0 && doc.tables.length === 0" class="px-5 py-6 text-center text-xs text-muted-foreground">
-                                        No fields available.
-                                    </div>
-                                </template>
-                            </div>
-                        </template>
-                    </div>
+                        :project-id="projectId"
+                        :schema="schema"
+                        @view-record="handleViewVcJson"
+                    />
                 </template>
                 <div v-else class="rounded-xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
-                    No linked documents found for this project.
+                    No MRV external data submissions found for this project.
                 </div>
             </div>
 

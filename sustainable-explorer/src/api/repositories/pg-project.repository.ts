@@ -14,6 +14,7 @@ import {
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
+import { collectExternalDataBlockSchemas } from '../services/policy-graph.builder';
 
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
@@ -507,11 +508,12 @@ export class PgProjectRepository extends ProjectRepository {
                 policyTopicId: string;
                 sourceCid: string;
                 rawSchemaJson: Record<string, unknown> | null;
+                rawPolicyJson: Record<string, unknown> | null;
                 policyMapping: Record<string, unknown> | null;
                 createdAt: Date;
                 updatedAt: Date;
             }> = await this.dataSource.query(
-                `SELECT "policyTopicId", "sourceCid", "rawSchemaJson", "policyMapping", "createdAt", "updatedAt"
+                `SELECT "policyTopicId", "sourceCid", "rawSchemaJson", "rawPolicyJson", "policyMapping", "createdAt", "updatedAt"
                  FROM policy
                  WHERE "policyTopicId" = $1
                    AND "decodeStatus" = 'decoded'
@@ -528,9 +530,11 @@ export class PgProjectRepository extends ProjectRepository {
                     const doc = (schemaDoc ?? {}) as Record<string, unknown>;
                     schemaNamesByIri.set(iri, typeof doc['name'] === 'string' ? doc['name'] : null);
                 }
+                const mrvSchemaUuids = collectExternalDataBlockSchemas(pr.rawPolicyJson);
                 policySchemas = PgProjectRepository.buildPolicySchemas(
                     schemaNamesByIri,
                     (pr.policyMapping ?? {}) as Record<string, unknown[]>,
+                    mrvSchemaUuids,
                 );
             }
         }
@@ -763,9 +767,12 @@ export class PgProjectRepository extends ProjectRepository {
     }
 
     // Builds the PolicySchemaRow list the DTO uses to classify linked VCs, from a policy's {schemaIri -> name} map and its policyMapping.
+    // `mrvSchemaUuids` (bare UUIDs bound to an externalDataBlock) is only ever populated on the findById() path —
+    // findAll() intentionally skips fetching rawPolicyJson for list rows (perf), so every list-row schema is isMrvSchema=false.
     private static buildPolicySchemas(
         schemaNamesByIri: Map<string, string | null>,
         policyMapping: Record<string, unknown[]>,
+        mrvSchemaUuids: Set<string> = new Set(),
     ): PolicySchemaRow[] {
         const projectIris = new Set<string>();
         const docTypeByIri = new Map<string, string>();
@@ -788,6 +795,7 @@ export class PgProjectRepository extends ProjectRepository {
             name,
             isProjectSchema: projectIris.has(iri),
             docType: docTypeByIri.get(iri) ?? 'unknown',
+            isMrvSchema: mrvSchemaUuids.has(iri.replace(/^#/, '').split('&')[0].trim()),
         })).sort((a, b) => {
             if (a.isProjectSchema && !b.isProjectSchema) return -1;
             if (!a.isProjectSchema && b.isProjectSchema) return 1;

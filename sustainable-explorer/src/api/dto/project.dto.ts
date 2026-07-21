@@ -359,10 +359,22 @@ export class ProjectResponseDto {
     @ApiProperty({
         type: [LinkedSchemaDto],
         description:
-            'VCs attached to this project grouped by schema UUID. Includes schemas with zero VCs ' +
+            'VCs attached to this project grouped by schema UUID, EXCLUDING schemas bound to an externalDataBlock ' +
+            '(those are reported separately in mrvSchemas). Includes schemas with zero VCs ' +
             'so the frontend can surface "0 linked VCs" for project schemas that produced no matches.',
     })
     linkedSchemas: LinkedSchemaDto[];
+
+    @ApiProperty({
+        type: [LinkedSchemaDto],
+        description:
+            'VCs attached to this project whose schema is bound to a policy externalDataBlock — pushed ' +
+            'external/IoT MRV data, reported separately from the regular Detailed Information schemas.',
+    })
+    mrvSchemas: LinkedSchemaDto[];
+
+    @ApiProperty({ description: 'True when mrvSchemas contains at least one schema with vcCount > 0' })
+    hasMrvData: boolean;
 
     @ApiProperty({ description: 'Derived lifecycle stage: Registered | Validation | Monitoring | Verified | Issued' })
     lifecycleStage: string;
@@ -387,14 +399,22 @@ export class ProjectResponseDto {
         const trimSchemaId = (id: string): string =>
             id.replace(/^#/, '').split('&')[0].trim();
 
-        const schemaMetaMap = new Map<string, Pick<PolicySchemaRow, 'name' | 'isProjectSchema' | 'docType'>>();
+        const schemaMetaMap = new Map<string, Pick<PolicySchemaRow, 'name' | 'isProjectSchema' | 'docType' | 'isMrvSchema'>>();
         for (const s of (row.policySchemas ?? [])) {
             schemaMetaMap.set(trimSchemaId(s.schemaId), {
                 name: s.name,
                 isProjectSchema: s.isProjectSchema,
                 docType: s.docType,
+                isMrvSchema: s.isMrvSchema,
             });
         }
+        // Schemas bound to an externalDataBlock (pushed external/IoT MRV data) — reported via
+        // mrvSchemas instead of linkedSchemas. Lifecycle/milestone derivation below must still see
+        // the FULL schema list (allLinkedSchemas) so an MRV-classified schema that also happens to
+        // carry docType 'monitoringReport' doesn't silently stop counting toward that stage.
+        const mrvSchemaUuidSet = new Set(
+            [...schemaMetaMap.entries()].filter(([, meta]) => meta.isMrvSchema).map(([uuid]) => uuid),
+        );
 
         // Group linkedVcs entries by schemaUuid.
         const rawLinkedVcs = Array.isArray(data['linkedVcs'])
@@ -461,7 +481,7 @@ export class ProjectResponseDto {
             if (a.vcCount === 0 && a.isProjectSchema) return 2;
             return 3;
         };
-        const linkedSchemas: LinkedSchemaDto[] = [
+        const allLinkedSchemas: LinkedSchemaDto[] = [
             ...linkedFromVcs,
             ...emptySchemas,
         ].sort((a, b) => {
@@ -473,12 +493,18 @@ export class ProjectResponseDto {
             return 0;
         });
 
+        // Split out externalDataBlock-bound (MRV) schemas into their own group — the "Detailed
+        // Information" section only shows non-MRV schemas; MRV data gets its own dedicated section.
+        const linkedSchemas = allLinkedSchemas.filter(s => !mrvSchemaUuidSet.has(s.schemaUuid));
+        const mrvSchemas = allLinkedSchemas.filter(s => mrvSchemaUuidSet.has(s.schemaUuid));
+        const hasMrvData = mrvSchemas.some(s => s.vcCount > 0);
+
         // Friendly display name: when the stored displayName is a bare DID or
         // topic id (the project-schema VC never landed to supply a real title),
         // fall back to the project schema's name, then the methodology name.
         const rawName = row.displayName ?? '';
         const looksLikeId = !rawName || /^did:/i.test(rawName) || /^\d+\.\d+\.\d+$/.test(rawName) || rawName === (row.projectKey ?? '');
-        const projectSchemaName = linkedSchemas.find(s => s.isProjectSchema && s.schemaName)?.schemaName ?? null;
+        const projectSchemaName = allLinkedSchemas.find(s => s.isProjectSchema && s.schemaName)?.schemaName ?? null;
         const friendlyName = looksLikeId
             ? (projectSchemaName ?? (typeof data['methodology'] === 'string' ? (data['methodology'] as string) : null) ?? rawName)
             : rawName;
@@ -488,7 +514,7 @@ export class ProjectResponseDto {
 
         // Earliest VC of a given docType, by consensusTimestamp (F8 conversion).
         const earliestVcOfType = (docTypes: string[]): LinkedVcDto | null => {
-            const vcs = linkedSchemas
+            const vcs = allLinkedSchemas
                 .filter(s => docTypes.includes(s.docType))
                 .flatMap(s => s.linkedVcs)
                 .filter(vc => vc.consensusTimestamp);
@@ -507,9 +533,9 @@ export class ProjectResponseDto {
         // are carried as zero-VC entries (for the detail phantom-schema view) —
         // they must NOT advance the stage, or every project under a policy would
         // inherit that policy's most-advanced document type.
-        const hasVerification = linkedSchemas.some(s => s.docType === 'verificationReport' && s.vcCount > 0);
-        const hasMonitoring = linkedSchemas.some(s => s.docType === 'monitoringReport' && s.vcCount > 0);
-        const hasValidation = linkedSchemas.some(s => s.docType === 'validationReport' && s.vcCount > 0);
+        const hasVerification = allLinkedSchemas.some(s => s.docType === 'verificationReport' && s.vcCount > 0);
+        const hasMonitoring = allLinkedSchemas.some(s => s.docType === 'monitoringReport' && s.vcCount > 0);
+        const hasValidation = allLinkedSchemas.some(s => s.docType === 'validationReport' && s.vcCount > 0);
 
         const lifecycleStage = isIssued ? 'Issued'
             : hasVerification ? 'Verified'
@@ -635,6 +661,8 @@ export class ProjectResponseDto {
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,
             linkedSchemas,
+            mrvSchemas,
+            hasMrvData,
             lifecycleStage,
             expectedIssuanceYear,
             projectedVolume,

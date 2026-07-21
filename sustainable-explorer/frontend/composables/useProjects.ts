@@ -112,6 +112,23 @@ export function normalizeCountryName(raw: string): string {
     return value;
 }
 
+function mapLinkedSchema(s: Record<string, any>): LinkedSchema {
+    return {
+        schemaUuid: s['schemaUuid'] ?? '',
+        schemaName: s['schemaName'] ?? null,
+        isProjectSchema: Boolean(s['isProjectSchema']),
+        docType: typeof s['docType'] === 'string' ? s['docType'] : 'unknown',
+        vcCount: typeof s['vcCount'] === 'number' ? s['vcCount'] : 0,
+        linkedVcs: Array.isArray(s['linkedVcs'])
+            ? (s['linkedVcs'] as Array<Record<string, any>>).map((v): LinkedVc => ({
+                consensusTimestamp: v['consensusTimestamp'] ?? '',
+                topicId: v['topicId'] ?? '',
+                csId: v['csId'] ?? null,
+            }))
+            : [],
+    };
+}
+
 function parseSdgs(sdgs: unknown): number[] {
     if (Array.isArray(sdgs)) return (sdgs as unknown[]).map(Number).filter(Boolean);
     if (typeof sdgs === 'string' && sdgs.trim()) {
@@ -180,21 +197,12 @@ export function mapApiProject(raw: Record<string, any>): Project {
         totalRetired: typeof raw.totalRetired === 'number' ? raw.totalRetired : 0,
         totalActive: typeof raw.totalActive === 'number' ? raw.totalActive : 0,
         linkedSchemas: Array.isArray(raw.linkedSchemas)
-            ? (raw.linkedSchemas as Array<Record<string, any>>).map((s): LinkedSchema => ({
-                schemaUuid: s['schemaUuid'] ?? '',
-                schemaName: s['schemaName'] ?? null,
-                isProjectSchema: Boolean(s['isProjectSchema']),
-                docType: typeof s['docType'] === 'string' ? s['docType'] : 'unknown',
-                vcCount: typeof s['vcCount'] === 'number' ? s['vcCount'] : 0,
-                linkedVcs: Array.isArray(s['linkedVcs'])
-                    ? (s['linkedVcs'] as Array<Record<string, any>>).map((v): LinkedVc => ({
-                        consensusTimestamp: v['consensusTimestamp'] ?? '',
-                        topicId: v['topicId'] ?? '',
-                        csId: v['csId'] ?? null,
-                    }))
-                    : [],
-            }))
+            ? (raw.linkedSchemas as Array<Record<string, any>>).map(mapLinkedSchema)
             : [],
+        mrvSchemas: Array.isArray(raw.mrvSchemas)
+            ? (raw.mrvSchemas as Array<Record<string, any>>).map(mapLinkedSchema)
+            : [],
+        hasMrvData: Boolean(raw.hasMrvData),
         decodeMethod: typeof raw.decodeMethod === 'string' ? raw.decodeMethod : null,
         metadata: raw.metadata && typeof raw.metadata === 'object' ? (raw.metadata as Record<string, unknown>) : null,
         lifecycleStage: typeof raw.lifecycleStage === 'string' ? raw.lifecycleStage : ((raw.totalIssued ?? 0) > 0 ? 'Issued' : 'Registered'),
