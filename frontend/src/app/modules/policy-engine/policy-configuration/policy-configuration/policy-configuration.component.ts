@@ -1387,9 +1387,14 @@ export class PolicyConfigurationComponent implements OnInit {
 
         this.themeService.load().pipe(takeUntil(this._destroy$)).subscribe((themes: any) => {
             this.themeService.setThemes(themes);
-            this.themes = this.themeService.getThemes();
+            this.themes = this.themeService.getThemes().filter((theme) => theme.readonly);
             this.theme = this.themeService.getCurrent();
-            this.updateCodeMirrorStyles();
+            if (!this.theme.readonly) {
+                const defaultTheme = this.themes.find((theme) => theme.name === 'Default') || this.themes[0];
+                this.setTheme(defaultTheme);
+            } else {
+                this.updateCodeMirrorStyles();
+            }
         }, ({ message }) => {
             console.error(message);
         });
