@@ -8,8 +8,14 @@ import type { DataSource } from 'typeorm';
  * per-notification joins" guarantee true no matter how many sources exist.
  */
 export interface ProjectEnrichment {
-    /** business_view.id — this is the value written to notifications.projectKey and matched against watchlist_subscriptions.projectKey. */
-    bvId: string;
+    /**
+     * business_view.sourceTimestamp — the frontend's app-wide project
+     * identifier (WatchlistItem.id, used in project URLs). This is the value
+     * written to notifications.projectKey and matched against
+     * watchlist_subscriptions.projectKey — NOT business_view.id, which is an
+     * internal bigint PK the frontend never sees.
+     */
+    sourceTimestamp: string;
     displayName: string | null;
     relatedTopicId: string | null;
     registryName: string | null;

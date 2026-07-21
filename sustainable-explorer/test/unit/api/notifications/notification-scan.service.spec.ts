@@ -107,11 +107,11 @@ describe('NotificationScanService', () => {
             [
                 { mint_consensus_timestamp: '10', project_key: 'p1', token_id: 't1', amount: '1', mint_date: null },
             ],
-            [{ id: 'bv-1', projectKey: 'p1', displayName: 'Project One', relatedTopicId: '0.0.1' }],
+            [{ id: 'bv-1', projectKey: 'p1', sourceTimestamp: 'src-1', displayName: 'Project One', relatedTopicId: '0.0.1' }],
             [], // watermark upsert
         ]);
         const sysDs = new FakeQueryable([
-            [{ userId: 'user-1', projectKey: 'bv-1' }],  // one watcher
+            [{ userId: 'user-1', projectKey: 'src-1' }],  // one watcher, keyed by sourceTimestamp
             [],                                           // INSERT ... RETURNING — nothing inserted (already seen)
         ]);
 
@@ -129,11 +129,11 @@ describe('NotificationScanService', () => {
             [
                 { mint_consensus_timestamp: '10', project_key: 'p1', token_id: 't1', amount: '1', mint_date: null },
             ],
-            [{ id: 'bv-1', projectKey: 'p1', displayName: 'Project One', relatedTopicId: '0.0.1' }],
+            [{ id: 'bv-1', projectKey: 'p1', sourceTimestamp: 'src-1', displayName: 'Project One', relatedTopicId: '0.0.1' }],
             [],
         ]);
         const sysDs = new FakeQueryable([
-            [{ userId: 'user-1', projectKey: 'bv-1' }],
+            [{ userId: 'user-1', projectKey: 'src-1' }],
             [{ userId: 'user-1' }], // newly inserted
         ]);
 
@@ -152,13 +152,13 @@ describe('NotificationScanService', () => {
                 { mint_consensus_timestamp: '10', project_key: 'p1', token_id: 't1', amount: '1', mint_date: null },
             ],
             [{
-                id: 'bv-1', projectKey: 'p1', displayName: 'Project One', relatedTopicId: '0.0.1',
+                id: 'bv-1', projectKey: 'p1', sourceTimestamp: 'src-1', displayName: 'Project One', relatedTopicId: '0.0.1',
                 registryName: 'Gold Standard', methodology: 'GS TPDDTEC v3.1.0',
             }],
             [],
         ]);
         const sysDs = new FakeQueryable([
-            [{ userId: 'user-1', projectKey: 'bv-1' }],
+            [{ userId: 'user-1', projectKey: 'src-1' }],
             [{ userId: 'user-1' }],
         ]);
 

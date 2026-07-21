@@ -57,8 +57,12 @@ export class DashboardPreferencesRepository {
      * Syncs watchlist_subscriptions (the reverse index NotificationScanService
      * watches) to match the caller's current watchlist exactly, for this
      * (userId, network). "projectRefs" holds WatchlistItem.id values (=
-     * business_view.id), NOT project_mint_link.project_key — see the
-     * "watchlist_subscriptions" table comment in schema-bootstrap.ts.
+     * business_view.sourceTimestamp, the frontend's app-wide project
+     * identifier), NOT business_view.id and NOT project_mint_link.project_key
+     * — see the "watchlist_subscriptions" table comment in schema-bootstrap.ts.
+     * NotificationScanService resolves mint rows to business_view.sourceTimestamp
+     * (never business_view.id) before matching against this table, so no
+     * cross-DB lookup is needed here — the raw ref is already the right key.
      *
      * Two statements: delete rows no longer present, then insert any new ones
      * (ON CONFLICT DO NOTHING — existing rows are left untouched, so their
