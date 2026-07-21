@@ -13,6 +13,7 @@ import process from 'node:process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
+import { swaggerTags } from './helpers/swagger-tags.js';
 import { MeecoAuth } from './helpers/meeco.js';
 import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
@@ -105,6 +106,7 @@ Promise.all([
                 }
             }) as any
         });
+        (document as any).tags = swaggerTags;
         SwaggerModule.setup('api-docs', app, document);
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
