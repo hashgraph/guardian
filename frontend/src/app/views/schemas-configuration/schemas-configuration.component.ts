@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, ISchema, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
@@ -43,6 +43,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
+    public activeRpTab: 'settings' | 'logic' = 'settings';
 
     public schemas: Schema[] = [];
     public schemasLoading: boolean = false;
@@ -118,6 +119,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get drilledSchema(): Schema | null {
         const iri = this.currentDrilledSchemaIri;
         return iri ? (this.schemas.find(s => s.iri === iri) ?? null) : null;
+    }
+
+    public get currentContextSchema(): Schema | null {
+        return this.drilledSchema ?? this.selectedSchema;
     }
 
     public readonly entityOptions: { label: string; value: SchemaEntity }[] = [
@@ -1065,6 +1070,265 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public getRefSchemaName(field: SchemaField): string {
         if (!field.isRef) { return ''; }
         return this.schemas.find(s => s.iri === field.type)?.name || '';
+    }
+
+    // ── Conditions ─────────────────────────────────────────────────────────────
+
+    private get _contextFields(): SchemaField[] {
+        return this.isDrilling ? this.drillCurrentFields : (this.currentContextSchema?.fields ?? []);
+    }
+
+    public get conditionOwnedFieldNames(): Set<string> {
+        const names = new Set<string>();
+        for (const cond of this.currentContextSchema?.conditions ?? []) {
+            for (const f of cond.thenFields ?? []) { names.add(f.name); }
+            for (const f of cond.elseFields ?? []) { names.add(f.name); }
+        }
+        return names;
+    }
+
+    public get canvasFields(): SchemaField[] {
+        const all = this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []);
+        const owned = this.conditionOwnedFieldNames;
+        return all.filter(f => !owned.has(f.name));
+    }
+
+    public get ifTriggerFields(): SchemaField[] {
+        return this._contextFields.filter(f => !f.readOnly);
+    }
+
+    public get schemaConditionCount(): number {
+        return this.currentContextSchema?.conditions?.length ?? 0;
+    }
+
+    public isFieldConditional(field: SchemaField): boolean {
+        const schema = this.currentContextSchema;
+        if (!schema?.conditions?.length) { return false; }
+        return schema.conditions.some(c => {
+            const ic = c.ifCondition as any;
+            if ('AND' in ic) { return (ic.AND as any[])?.some((r: any) => r.field?.name === field.name); }
+            if ('OR' in ic) { return (ic.OR as any[])?.some((r: any) => r.field?.name === field.name); }
+            return ic.field?.name === field.name;
+        });
+    }
+
+    public get canAddCondition(): boolean {
+        return this.ifTriggerFields.length > 0;
+    }
+
+    // ── IF operator / rows ───────────────────────────────────────────────────
+
+    public getIfOperator(cond: SchemaCondition): 'SINGLE' | 'AND' | 'OR' {
+        const ic = cond.ifCondition as any;
+        if ('AND' in ic) { return 'AND'; }
+        if ('OR' in ic) { return 'OR'; }
+        return 'SINGLE';
+    }
+
+    public getIfRows(cond: SchemaCondition): any[] {
+        const ic = cond.ifCondition as any;
+        if ('AND' in ic) { return ic.AND || []; }
+        if ('OR' in ic) { return ic.OR || []; }
+        return [ic];
+    }
+
+    public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
+        const rows = this.getIfRows(cond);
+        const first = rows[0] ?? { field: this.ifTriggerFields[0], fieldValue: '' };
+        if (op === 'SINGLE') {
+            (cond as any).ifCondition = { field: first.field, fieldValue: first.fieldValue };
+        } else if (op === 'AND') {
+            (cond as any).ifCondition = { AND: [first] };
+        } else {
+            (cond as any).ifCondition = { OR: [first] };
+        }
+        this.markDirty();
+    }
+
+    public getIfRowFieldName(row: any): string { return row?.field?.name ?? ''; }
+    public getIfRowValue(row: any): any { return row?.fieldValue ?? ''; }
+    public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
+    public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
+
+    public setIfRowField(cond: SchemaCondition, rowIdx: number, fieldName: string): void {
+        const field = this._contextFields.find(f => f.name === fieldName);
+        if (!field) { return; }
+        const ic = cond.ifCondition as any;
+        if ('AND' in ic) { ic.AND[rowIdx] = { field, fieldValue: '' }; }
+        else if ('OR' in ic) { ic.OR[rowIdx] = { field, fieldValue: '' }; }
+        else { ic.field = field; ic.fieldValue = ''; }
+        this.markDirty();
+    }
+
+    public setIfRowValue(cond: SchemaCondition, rowIdx: number, value: any): void {
+        const ic = cond.ifCondition as any;
+        if ('AND' in ic) { ic.AND[rowIdx].fieldValue = value; }
+        else if ('OR' in ic) { ic.OR[rowIdx].fieldValue = value; }
+        else { ic.fieldValue = value; }
+        this.markDirty();
+    }
+
+    public addIfRow(cond: SchemaCondition): void {
+        const ic = cond.ifCondition as any;
+        const newRow = { field: this.ifTriggerFields[0], fieldValue: '' };
+        if ('AND' in ic) { ic.AND.push(newRow); }
+        else if ('OR' in ic) { ic.OR.push(newRow); }
+        this.markDirty();
+    }
+
+    public removeIfRow(cond: SchemaCondition, rowIdx: number): void {
+        const ic = cond.ifCondition as any;
+        if ('AND' in ic && ic.AND.length > 1) { ic.AND.splice(rowIdx, 1); }
+        else if ('OR' in ic && ic.OR.length > 1) { ic.OR.splice(rowIdx, 1); }
+        this.markDirty();
+    }
+
+    // ── THEN / ELSE fields ───────────────────────────────────────────────────
+
+    public addThenField(cond: SchemaCondition): void {
+        const schema = this.currentContextSchema;
+        if (!schema) { return; }
+        const newField = this.buildNewField(this.defaultFieldType, schema.fields);
+        schema.fields = [...(schema.fields ?? []), newField];
+        cond.thenFields = [...(cond.thenFields ?? []), newField];
+        this.markDirty();
+    }
+
+    public addElseField(cond: SchemaCondition): void {
+        const schema = this.currentContextSchema;
+        if (!schema) { return; }
+        const newField = this.buildNewField(this.defaultFieldType, schema.fields);
+        schema.fields = [...(schema.fields ?? []), newField];
+        cond.elseFields = [...(cond.elseFields ?? []), newField];
+        this.markDirty();
+    }
+
+    public removeThenField(cond: SchemaCondition, field: SchemaField): void {
+        cond.thenFields = (cond.thenFields || []).filter(f => f !== field);
+        const schema = this.currentContextSchema;
+        if (schema) { schema.fields = schema.fields.filter(f => f !== field); }
+        if (this.selectedField === field) { this.selectedField = null; }
+        this.markDirty();
+    }
+
+    public removeElseField(cond: SchemaCondition, field: SchemaField): void {
+        cond.elseFields = (cond.elseFields || []).filter(f => f !== field);
+        const schema = this.currentContextSchema;
+        if (schema) { schema.fields = schema.fields.filter(f => f !== field); }
+        if (this.selectedField === field) { this.selectedField = null; }
+        this.markDirty();
+    }
+
+    // ── Cross-schema targets ─────────────────────────────────────────────────
+
+    private _resolveFieldByPath(path: string[]): SchemaField | null {
+        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
+        let fields = this.currentContextSchema?.fields ?? [];
+        let field: SchemaField | null = null;
+        for (let i = 0; i < path.length; i++) {
+            field = fields.find(f => f.name === path[i]) ?? null;
+            if (!field) { return null; }
+            if (i < path.length - 1) {
+                const ref = schemaByIri.get(field.type);
+                fields = ref?.fields ?? [];
+            }
+        }
+        return field;
+    }
+
+    public getCrossTargetPaths(): Array<{ pathStr: string; label: string }> {
+        const schema = this.currentContextSchema;
+        if (!schema?.fields) { return []; }
+        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
+        const result: Array<{ pathStr: string; label: string }> = [];
+
+        const traverse = (fields: SchemaField[], pathParts: string[], labelParts: string[]) => {
+            for (const f of fields) {
+                if (f.isRef && f.type) {
+                    const ref = schemaByIri.get(f.type);
+                    if (ref?.fields) {
+                        traverse(ref.fields, [...pathParts, f.name], [...labelParts, f.title || f.name]);
+                    }
+                } else if (!f.readOnly) {
+                    result.push({
+                        pathStr: [...pathParts, f.name].join('.'),
+                        label: [...labelParts, f.title || f.name].join(' › '),
+                    });
+                }
+            }
+        };
+
+        for (const f of schema.fields) {
+            if (f.isRef && f.type) {
+                const ref = schemaByIri.get(f.type);
+                if (ref?.fields) {
+                    traverse(ref.fields, [f.name], [f.title || f.name]);
+                }
+            }
+        }
+        return result;
+    }
+
+    public addThenTarget(cond: SchemaCondition, pathStr: string): void {
+        if (!pathStr) { return; }
+        const path = pathStr.split('.');
+        if (cond.thenTargets?.some(t => t.fieldPath.join('.') === pathStr)) { return; }
+        const field = this._resolveFieldByPath(path);
+        if (!field) { return; }
+        cond.thenTargets = [...(cond.thenTargets ?? []), { field, fieldPath: path }];
+        this.markDirty();
+    }
+
+    public addElseTarget(cond: SchemaCondition, pathStr: string): void {
+        if (!pathStr) { return; }
+        const path = pathStr.split('.');
+        if (cond.elseTargets?.some(t => t.fieldPath.join('.') === pathStr)) { return; }
+        const field = this._resolveFieldByPath(path);
+        if (!field) { return; }
+        cond.elseTargets = [...(cond.elseTargets ?? []), { field, fieldPath: path }];
+        this.markDirty();
+    }
+
+    public removeThenTarget(cond: SchemaCondition, target: SchemaConditionTarget): void {
+        cond.thenTargets = (cond.thenTargets || []).filter(t => t !== target);
+        this.markDirty();
+    }
+
+    public removeElseTarget(cond: SchemaCondition, target: SchemaConditionTarget): void {
+        cond.elseTargets = (cond.elseTargets || []).filter(t => t !== target);
+        this.markDirty();
+    }
+
+    // ── Top-level condition management ────────────────────────────────────────
+
+    public addNewCondition(): void {
+        const schema = this.currentContextSchema;
+        if (!schema || !this.ifTriggerFields.length) { return; }
+        const newCond: SchemaCondition = {
+            ifCondition: { field: this.ifTriggerFields[0], fieldValue: '' } as any,
+            thenFields: [],
+            elseFields: [],
+        };
+        schema.conditions = [...(schema.conditions ?? []), newCond];
+        this.markDirty();
+    }
+
+    public removeConditionAt(index: number): void {
+        const schema = this.currentContextSchema;
+        if (!schema) { return; }
+        const cond = schema.conditions?.[index];
+        if (cond) {
+            const toRemove = new Set([
+                ...(cond.thenFields ?? []).map(f => f.name),
+                ...(cond.elseFields ?? []).map(f => f.name),
+            ]);
+            if (toRemove.size) {
+                schema.fields = schema.fields.filter(f => !toRemove.has(f.name));
+                if (toRemove.has(this.selectedField?.name ?? '')) { this.selectedField = null; }
+            }
+        }
+        schema.conditions = (schema.conditions ?? []).filter((_, i) => i !== index);
+        this.markDirty();
     }
 
     private upsertInSidebar(schema: Schema): void {
