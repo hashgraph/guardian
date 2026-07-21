@@ -23,7 +23,7 @@ export function bareUuid(schemaId: string): string {
 }
 
 /** camelCase / snake_case / kebab-case → Title Case. */
-function humanizeKey(key: string): string {
+export function humanizeKey(key: string): string {
     return key
         .replace(/([a-z])([A-Z])/g, '$1 $2')
         .replace(/[_-]/g, ' ')
@@ -218,8 +218,11 @@ export function buildVcTitleMaps(rawSchemaJson: Record<string, any> | null | und
         for (const [fieldKey, defRaw] of Object.entries(props)) {
             if (SYSTEM_KEYS.has(fieldKey)) continue;
             const def = (defRaw ?? {}) as Record<string, any>;
-            titleMap[fieldKey] = typeof def['title'] === 'string' && def['title'] ? def['title'] : fieldKey;
-            const desc = typeof def['description'] === 'string' ? def['description'] : '';
+            const title = typeof def['title'] === 'string' ? def['title'].trim() : '';
+            const desc = typeof def['description'] === 'string' ? def['description'].trim() : '';
+            // A field with no schema title (common on externally-fed/dMRV schemas) falls back to
+            // the schema description, then a humanized key — never the raw camelCase/snake_case key.
+            titleMap[fieldKey] = title || desc || humanizeKey(fieldKey);
             if (desc) {
                 descMap[fieldKey] = desc;
                 // First-seen wins so the most authoritative description sticks.
@@ -234,4 +237,137 @@ export function buildVcTitleMaps(rawSchemaJson: Record<string, any> | null | und
         }
     }
     return maps;
+}
+
+export interface MrvColumnDef {
+    key: string;
+    label: string;
+    description: string | null;
+    isDate: boolean;
+}
+
+export interface MrvSchemaLayout {
+    /** Scalar fields — become table columns. Arrays are never flattened into columns. */
+    columns: MrvColumnDef[];
+    /** Key of the first date-formatted column, or null. Drives the default sort + time-range filter. */
+    dateColumnKey: string | null;
+    /** Key of the first array-of-objects field (e.g. a repeatable "device"/"block" group), or null. */
+    deviceArrayKey: string | null;
+    /** Key inside the device array's item schema used as its display label, or null. */
+    deviceLabelKey: string | null;
+    /**
+     * True when the schema has NO top-level scalar fields at all (e.g. a bare
+     * `{ readings: [{device_id, value, ...}] }` shape with no envelope data) —
+     * `columns`/`dateColumnKey` were instead promoted from deviceArrayKey's own
+     * item schema, and the caller must render/query one row PER ARRAY ITEM
+     * rather than one row per VC.
+     */
+    flattenDeviceItems: boolean;
+}
+
+function findSchemaDocByUuid(rawSchemaJson: Record<string, any>, uuid: string): Record<string, any> | null {
+    for (const [iri, doc] of Object.entries(rawSchemaJson)) {
+        if (bareUuid(iri) === uuid) return (doc ?? {}) as Record<string, any>;
+    }
+    return null;
+}
+
+/** IWA/CADT dMRV schemas use `format: 'date-time'` for full timestamps and `format: 'date'` for bare dates — both are chronological and both should get the time-range filter. */
+function isDateFormat(def: Record<string, any>): boolean {
+    return def['format'] === 'date-time' || def['format'] === 'date';
+}
+
+/** Scalar (non-array) fields of a JSON-schema `properties` object → table columns, plus the first date-like column found. */
+function extractColumns(props: Record<string, any>): { columns: MrvColumnDef[]; dateColumnKey: string | null } {
+    const columns: MrvColumnDef[] = [];
+    let dateColumnKey: string | null = null;
+    for (const [key, defRaw] of Object.entries(props)) {
+        if (SYSTEM_KEYS.has(key)) continue;
+        const def = (defRaw ?? {}) as Record<string, any>;
+        if (def['type'] === 'array') continue; // never a flat column, even one level in
+        const title = typeof def['title'] === 'string' ? def['title'].trim() : '';
+        const desc = typeof def['description'] === 'string' ? def['description'].trim() : '';
+        const isDate = isDateFormat(def);
+        if (isDate && !dateColumnKey) dateColumnKey = key;
+        columns.push({ key, label: title || desc || humanizeKey(key), description: desc || null, isDate });
+    }
+    return { columns, dateColumnKey };
+}
+
+/**
+ * Picks whichever candidate key best identifies a "device"/"sensor"/"meter" —
+ * preferring an explicit name-like field, then a device/sensor/meter-themed
+ * field, then any `..._id`/`id` field, and only falling back to the first
+ * field when nothing in the schema hints at identity at all.
+ */
+function pickDeviceLabelKey(keys: string[]): string | null {
+    if (keys.length === 0) return null;
+    return keys.find((k) => /name/i.test(k))
+        ?? keys.find((k) => /device|sensor|meter/i.test(k))
+        ?? keys.find((k) => /(^|_)id$/i.test(k))
+        ?? keys[0];
+}
+
+/**
+ * Derives a business-friendly table layout for one schema — used by the MRV
+ * External Data table view (as opposed to the free-form fields/tables/groups
+ * "Detailed Information" rendering `structureVcData` produces). Scalar fields
+ * become sortable/filterable columns; the first repeatable object array (e.g.
+ * a policy's "blocks"/"devices"/"sensors" group) is treated as the record's
+ * device/measurement-point dimension rather than a column. When the schema has
+ * no top-level scalars at all (the array IS the whole schema), the item
+ * schema's own fields are promoted into columns instead, and the caller
+ * switches to one-row-per-item.
+ */
+export function detectMrvLayout(
+    rawSchemaJson: Record<string, any> | null | undefined,
+    schemaUuid: string,
+): MrvSchemaLayout {
+    const empty: MrvSchemaLayout = { columns: [], dateColumnKey: null, deviceArrayKey: null, deviceLabelKey: null, flattenDeviceItems: false };
+    if (!rawSchemaJson || typeof rawSchemaJson !== 'object') return empty;
+
+    const schemaDoc = findSchemaDocByUuid(rawSchemaJson, schemaUuid);
+    if (!schemaDoc) return empty;
+    const props = ((schemaDoc['document'] ?? {}) as Record<string, any>)['properties'] ?? {};
+
+    let deviceArrayKey: string | null = null;
+    let deviceRefUuid: string | null = null;
+    for (const [key, defRaw] of Object.entries(props as Record<string, any>)) {
+        if (SYSTEM_KEYS.has(key)) continue;
+        const def = (defRaw ?? {}) as Record<string, any>;
+        if (def['type'] !== 'array') continue;
+        const itemRef = (def['items'] as Record<string, any> | undefined)?.['$ref'];
+        if (!deviceArrayKey && typeof itemRef === 'string') {
+            deviceArrayKey = key;
+            deviceRefUuid = bareUuid(itemRef);
+        }
+    }
+
+    const top = extractColumns(props as Record<string, any>);
+
+    if (top.columns.length > 0) {
+        let deviceLabelKey: string | null = null;
+        if (deviceRefUuid) {
+            const deviceDoc = findSchemaDocByUuid(rawSchemaJson, deviceRefUuid);
+            const devProps = ((deviceDoc?.['document'] ?? {}) as Record<string, any>)['properties'] ?? {};
+            deviceLabelKey = pickDeviceLabelKey(Object.keys(devProps as Record<string, any>).filter((k) => !SYSTEM_KEYS.has(k)));
+        }
+        return { columns: top.columns, dateColumnKey: top.dateColumnKey, deviceArrayKey, deviceLabelKey, flattenDeviceItems: false };
+    }
+
+    // No top-level scalar fields — the schema's real content lives entirely inside
+    // the repeatable item array (e.g. a bare list of {device_id, date_from, date_to,
+    // ...} readings with no envelope fields). Promote the item schema's own scalar
+    // fields into columns; the device-identity field is excluded from columns since
+    // it's surfaced separately as the row's device label instead.
+    if (deviceRefUuid) {
+        const deviceDoc = findSchemaDocByUuid(rawSchemaJson, deviceRefUuid);
+        const devProps = ((deviceDoc?.['document'] ?? {}) as Record<string, any>)['properties'] ?? {};
+        const nested = extractColumns(devProps as Record<string, any>);
+        const deviceLabelKey = pickDeviceLabelKey(nested.columns.map((c) => c.key));
+        const columns = nested.columns.filter((c) => c.key !== deviceLabelKey);
+        return { columns, dateColumnKey: nested.dateColumnKey, deviceArrayKey, deviceLabelKey, flattenDeviceItems: true };
+    }
+
+    return empty;
 }

@@ -124,6 +124,39 @@ function labelOf(
 }
 
 /**
+ * Collects the bare schema UUIDs bound to `externalDataBlock` blocks — Guardian's
+ * mechanism for receiving pushed external/IoT MRV data (as opposed to a human
+ * filling in a `requestVcDocumentBlock` form). Used to identify which of a
+ * project's linked schemas represent externally-submitted MRV records, so the
+ * "MRV External Data" section can be shown only for those.
+ */
+export function collectExternalDataBlockSchemas(
+    rawPolicyJson: Record<string, unknown> | null | undefined,
+): Set<string> {
+    const schemas = new Set<string>();
+    const policy = asObject(rawPolicyJson);
+    const config = policy ? asObject(policy['config']) : null;
+    if (!config) return schemas;
+
+    const walk = (block: Record<string, unknown>): void => {
+        const blockType = typeof block['blockType'] === 'string' ? (block['blockType'] as string) : '';
+        if (blockType === 'externalDataBlock') {
+            const uuid = bareUuid(block['schema']);
+            if (uuid) schemas.add(uuid);
+        }
+        const children = block['children'];
+        if (Array.isArray(children)) {
+            for (const child of children) {
+                const c = asObject(child);
+                if (c) walk(c);
+            }
+        }
+    };
+    walk(config);
+    return schemas;
+}
+
+/**
  * Builds the workflow graph. Pure and fully defensive: any malformed/missing
  * input yields an empty graph rather than throwing.
  */

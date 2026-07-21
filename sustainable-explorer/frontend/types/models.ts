@@ -35,6 +35,30 @@ export interface LinkedSchema {
     linkedVcs: LinkedVc[];
 }
 
+export interface VcField {
+    label: string;
+    value: string;
+    description?: string;
+}
+
+export interface VcTable {
+    label: string;
+    columns: string[];
+    rows: Record<string, string>[];
+}
+
+export interface VcGroup {
+    title: string;
+    fields: VcField[];
+    tables: VcTable[];
+}
+
+export interface VcDocData {
+    fields: VcField[];
+    tables: VcTable[];
+    groups: VcGroup[];
+}
+
 export interface Milestone {
     key: string;
     label: string;
@@ -76,6 +100,8 @@ export interface Project {
     issuanceEvents?: IssuanceEvent[];
     issuanceCount?: number;
     linkedSchemas?: LinkedSchema[];
+    mrvSchemas?: LinkedSchema[];
+    hasMrvData?: boolean;
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;

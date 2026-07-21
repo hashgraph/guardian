@@ -7,6 +7,7 @@ import { ProjectRepository } from '../repositories/project.repository';
 import { MappingReprocessService } from './mapping-reprocess.service';
 import { PolicyWorkflowGraph } from './policy-graph.builder';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
+import { MrvDataQueryDto, MrvDataResponseDto } from '../dto/mrv-data.dto';
 
 @Injectable()
 export class ProjectsService {
@@ -167,6 +168,19 @@ export class ProjectsService {
      */
     async getAdditionalDetails(network: string, id: string): Promise<AdditionalDetailsSchemaDto[]> {
         return this.mappingReprocessService.getAdditionalDetails(network, id);
+    }
+
+    /**
+     * Returns one page of the server-paginated MRV data table for one
+     * externalDataBlock-bound schema. Delegates to MappingReprocessService.
+     */
+    async getMrvData(
+        network: string,
+        id: string,
+        schemaUuid: string,
+        query: MrvDataQueryDto,
+    ): Promise<MrvDataResponseDto> {
+        return this.mappingReprocessService.getMrvData(network, id, schemaUuid, query);
     }
 
     /**
