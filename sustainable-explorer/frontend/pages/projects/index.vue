@@ -654,7 +654,7 @@ async function downloadProjects() {
                     <div v-if="displayCountry(p)" class="flex items-center gap-2 max-w-full">
                       <CountryFlag :code="resolvedCode(p)" size="sm" class="shrink-0" />
                       <div class="min-w-0 flex-1">
-                        <TruncatedText :text="displayCountry(p)" />
+                        <TruncatedText :text="displayCountry(p)" :max-length="25" />
                       </div>
                     </div>
                     <span v-else class="text-muted-foreground/50 text-xs pl-1">—</span>

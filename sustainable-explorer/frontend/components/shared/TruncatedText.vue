@@ -1,13 +1,25 @@
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
     text: string | null | undefined;
     fallback?: string;
     class?: string;
+    /** If set, truncates by character count (with a trailing "...") instead of relying on CSS clipping. */
+    maxLength?: number;
 }>();
 
 const show = ref(false);
 const triggerRef = ref<HTMLElement | null>(null);
 const tooltipStyle = ref<Record<string, string>>({});
+
+const isLengthTruncated = computed(
+    () => !!props.maxLength && !!props.text && props.text.length > props.maxLength,
+);
+
+const displayText = computed(() => {
+    if (!props.text) return props.fallback ?? '-';
+    if (isLengthTruncated.value) return `${props.text.slice(0, props.maxLength)}...`;
+    return props.text;
+});
 
 function updatePosition() {
     if (!triggerRef.value) return;
@@ -33,8 +45,8 @@ function updatePosition() {
 
 function onEnter() {
     if (!triggerRef.value) return;
-    // Only show tooltip when text is actually clipped
-    if (triggerRef.value.scrollWidth > triggerRef.value.clientWidth) {
+    // Show tooltip when text is clipped by length, or (as a fallback) by CSS overflow
+    if (isLengthTruncated.value || triggerRef.value.scrollWidth > triggerRef.value.clientWidth) {
         updatePosition();
         show.value = true;
     }
@@ -51,7 +63,7 @@ function onLeave() {
         class="block truncate cursor-default"
         @mouseenter="onEnter"
         @mouseleave="onLeave"
-    >{{ text ?? fallback ?? '-' }}</span>
+    >{{ displayText }}</span>
 
     <Teleport to="body">
         <Transition
