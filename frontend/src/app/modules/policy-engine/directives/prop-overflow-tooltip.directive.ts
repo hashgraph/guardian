@@ -2,7 +2,7 @@ import { AfterViewInit, Directive, ElementRef, HostListener } from '@angular/cor
 import { Tooltip } from 'primeng/tooltip';
 
 @Directive({
-    selector: 'input.prop-input:not(.code-preview), input.input-end, p-select, p-multiselect, .not-editable-text',
+    selector: 'input.prop-input:not(.code-preview), input.input-end, p-select:not([pTooltip]), p-multiselect:not([pTooltip]), .not-editable-text',
     standalone: false,
     hostDirectives: [Tooltip]
 })
@@ -18,6 +18,10 @@ export class PropOverflowTooltipDirective implements AfterViewInit {
 
     @HostListener('mouseenter')
     public onMouseEnter(): void {
+        if (!this.isInScope()) {
+            this.tooltip.setOption({ tooltipLabel: '' });
+            return;
+        }
         const overflowTarget = this.getOverflowTarget();
         const isOverflowing = !!overflowTarget && overflowTarget.scrollWidth > overflowTarget.clientWidth;
         this.tooltip.setOption({ tooltipLabel: isOverflowing ? this.getText() : '' });
@@ -29,6 +33,12 @@ export class PropOverflowTooltipDirective implements AfterViewInit {
         if (hostElement instanceof HTMLInputElement && hostElement.readOnly) {
             event.preventDefault();
         }
+    }
+
+    private isInScope(): boolean {
+        return !!this.elementRef.nativeElement.closest(
+            '.right-bottom-toolbar, .right-top-toolbar, .psd-panel'
+        );
     }
 
     private getOverflowTarget(): HTMLElement | null {
