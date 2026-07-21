@@ -27,6 +27,8 @@ export interface PolicySchemaRow {
     name: string | null;
     isProjectSchema: boolean;
     docType: string;
+    /** True when this schema is bound to an `externalDataBlock` (pushed external/IoT MRV data). */
+    isMrvSchema: boolean;
 }
 
 export interface ProjectRow {

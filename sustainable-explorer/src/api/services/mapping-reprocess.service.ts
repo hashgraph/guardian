@@ -1,4 +1,5 @@
 import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import type { DataSource } from 'typeorm';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { QueueRegistry } from '../queues/queue.registry';
 import { BASE_QUEUE_NAMES } from '@shared/config/bullmq.config';
@@ -10,7 +11,9 @@ import { DecodedMethodologyResponseDto } from '../dto/decoded-methodology.dto';
 import { MappingAuditEntryDto, MappingAuditQueryDto, PaginatedMappingAuditDto } from '../dto/mapping-audit.dto';
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
 import { buildPolicyWorkflowGraph, PolicyWorkflowGraph } from './policy-graph.builder';
-import { bareUuid, buildVcTitleMaps, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
+import { bareUuid, buildVcTitleMaps, detectMrvLayout, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
+import type { MrvSchemaLayout } from '@shared/vc-detail/vc-detail.decoder';
+import { MrvDataQueryDto, MrvDataResponseDto } from '../dto/mrv-data.dto';
 import type { VcDocData, VcTitleMaps } from '@shared/vc-detail/vc-detail.types';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 import { SystemDataSource } from '../database/system-database.module';
@@ -1079,6 +1082,337 @@ export class MappingReprocessService {
             docType: docTypeByUuid.get(schemaUuid) ?? 'unknown',
             records,
         }));
+    }
+
+    /**
+     * Returns one page of a real, server-paginated table over an
+     * externalDataBlock-bound (MRV) schema's VC records — the "MRV External
+     * Data" table view. Unlike getAdditionalDetails (which decodes and returns
+     * every linked VC for every schema in one payload — fine for a handful of
+     * human-submitted documents, unworkable for pushed/IoT MRV datasets that
+     * can run to hundreds of thousands of records), this queries `message`
+     * directly with SQL-level filtering/sorting/pagination, scoped to the
+     * project's own instance topic (indexed via IDX_fd91b8cf96c0f01a20e3079838
+     * on (type, "topicId")) so the working set stays bounded to this project's
+     * own records regardless of how large the whole `message` table is.
+     */
+    async getMrvData(
+        network: string,
+        projectId: string,
+        schemaUuid: string,
+        query: MrvDataQueryDto,
+    ): Promise<MrvDataResponseDto> {
+        const ds = this.dataSources.getDataSource(network);
+        const bareSchemaUuid = bareUuid(schemaUuid);
+        const page = query.page ?? 1;
+        const limit = query.limit ?? 50;
+        const sortDir = query.sortDir === 'asc' ? 'ASC' : 'DESC';
+
+        const empty: MrvDataResponseDto = {
+            schemaUuid: bareSchemaUuid, schemaName: null, columns: [], rows: [],
+            total: 0, page, limit, devices: [], dateColumnKey: null, flattened: false,
+        };
+
+        const projectRows: Array<{ relatedTopicId: string | null; businessData: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "relatedTopicId", "businessData"
+             FROM business_view
+             WHERE "viewType" = 'PROJECT'
+               AND ("sourceTimestamp" = $1 OR "projectKey" = $1)
+             LIMIT 1`,
+            [projectId],
+        );
+        if (projectRows.length === 0) {
+            throw new NotFoundException(`Project with ID "${projectId}" not found on ${network}.`);
+        }
+        const topicId = projectRows[0].relatedTopicId;
+        const businessData = projectRows[0].businessData ?? {};
+        const policyTopicId = typeof businessData['policyTopicId'] === 'string' ? (businessData['policyTopicId'] as string) : null;
+        if (!topicId || !policyTopicId) return empty;
+
+        const policyRows: Array<{ rawSchemaJson: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "rawSchemaJson" FROM policy WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded' LIMIT 1`,
+            [policyTopicId],
+        );
+        const rawSchemaJson = (policyRows[0]?.rawSchemaJson ?? {}) as Record<string, any>;
+        const layout = detectMrvLayout(rawSchemaJson, bareSchemaUuid);
+        const schemaDocEntry = Object.entries(rawSchemaJson).find(([iri]) => bareUuid(iri) === bareSchemaUuid);
+        const schemaName = typeof schemaDocEntry?.[1]?.['name'] === 'string' ? (schemaDocEntry[1]['name'] as string) : null;
+        if (layout.columns.length === 0) return { ...empty, schemaName };
+
+        if (layout.flattenDeviceItems && layout.deviceArrayKey) {
+            return this.getFlattenedMrvData(ds, topicId, bareSchemaUuid, schemaName, layout, query, page, limit, sortDir);
+        }
+
+        // Base WHERE (topic + schema + optional device/date filters) and its own
+        // dedicated params array — frozen once built, so every other query below
+        // can safely append its own extra params after copying this array without
+        // touching positions the WHERE clause's placeholders already point to.
+        // Schema-derived keys (deviceArrayKey/deviceLabelKey/dateColumnKey) are
+        // server-controlled, never user input, but parameterizing them anyway costs nothing.
+        const filterParams: unknown[] = [topicId, bareSchemaUuid];
+        let whereExtra = '';
+
+        if (query.device && layout.deviceArrayKey && layout.deviceLabelKey) {
+            filterParams.push(layout.deviceArrayKey, layout.deviceLabelKey, query.device);
+            const arrIdx = filterParams.length - 2, keyIdx = filterParams.length - 1, valIdx = filterParams.length;
+            whereExtra += ` AND EXISTS (
+                SELECT 1 FROM jsonb_array_elements(COALESCE(documents->'credentialSubject'->0->$${arrIdx}, '[]'::jsonb)) b
+                WHERE b->>$${keyIdx} = $${valIdx}
+            )`;
+        }
+
+        if (layout.dateColumnKey && (query.from || query.to)) {
+            filterParams.push(layout.dateColumnKey);
+            const dateExpr = `(NULLIF(documents->'credentialSubject'->0->>$${filterParams.length}, ''))::timestamptz`;
+            if (query.from) {
+                filterParams.push(query.from);
+                whereExtra += ` AND ${dateExpr} >= $${filterParams.length}::timestamptz`;
+            }
+            if (query.to) {
+                filterParams.push(query.to);
+                whereExtra += ` AND ${dateExpr} <= $${filterParams.length}::timestamptz`;
+            }
+        }
+
+        const baseWhere = `"topicId" = $1 AND type = 'VC-Document'
+            AND split_part(documents->'credentialSubject'->0->>'type', '&', 1) = $2${whereExtra}`;
+
+        // Data query: own params array copied from filterParams, then column
+        // selects, an optional device-summary subselect, sort key, limit/offset —
+        // each appended (and referenced) against this query's own copy only.
+        const dataParams = [...filterParams];
+        const colSelects = layout.columns.map((c) => {
+            dataParams.push(c.key);
+            return `documents->'credentialSubject'->0->>$${dataParams.length} AS "col_${dataParams.length}"`;
+        });
+        const colIndexes = layout.columns.map((_c, i) => dataParams.length - layout.columns.length + i + 1);
+
+        let deviceSelect = '';
+        if (layout.deviceArrayKey && layout.deviceLabelKey) {
+            dataParams.push(layout.deviceArrayKey, layout.deviceLabelKey);
+            const arrIdx = dataParams.length - 1, keyIdx = dataParams.length;
+            deviceSelect = `, (SELECT string_agg(DISTINCT b->>$${keyIdx}, ', ')
+                FROM jsonb_array_elements(COALESCE(documents->'credentialSubject'->0->$${arrIdx}, '[]'::jsonb)) b) AS device_label`;
+        }
+
+        const sortCol = layout.columns.find((c) => c.key === query.sortBy) ?? layout.columns.find((c) => c.key === layout.dateColumnKey);
+        let orderBy = `"consensusTimestamp" ${sortDir}`;
+        if (sortCol) {
+            dataParams.push(sortCol.key);
+            orderBy = `documents->'credentialSubject'->0->>$${dataParams.length} ${sortDir}`;
+        }
+
+        dataParams.push(limit, (page - 1) * limit);
+        const limitIdx = dataParams.length - 1, offsetIdx = dataParams.length;
+
+        // Devices list: same topic/schema/date scope, deliberately WITHOUT the
+        // device filter itself (own params array, not baseWhere/filterParams) —
+        // the dropdown must always offer every option, independent of the
+        // currently-selected device.
+        let devicePromise: Promise<Array<{ device: string }>> = Promise.resolve([]);
+        if (layout.deviceArrayKey && layout.deviceLabelKey) {
+            const dateOnlyWhereBase = `"topicId" = $1 AND type = 'VC-Document'
+                AND split_part(documents->'credentialSubject'->0->>'type', '&', 1) = $2`;
+            const dateOnlyParams: unknown[] = [topicId, bareSchemaUuid];
+            let dateOnlyWhere = '';
+            if (layout.dateColumnKey && (query.from || query.to)) {
+                dateOnlyParams.push(layout.dateColumnKey);
+                const dateExpr = `(NULLIF(documents->'credentialSubject'->0->>$${dateOnlyParams.length}, ''))::timestamptz`;
+                if (query.from) {
+                    dateOnlyParams.push(query.from);
+                    dateOnlyWhere += ` AND ${dateExpr} >= $${dateOnlyParams.length}::timestamptz`;
+                }
+                if (query.to) {
+                    dateOnlyParams.push(query.to);
+                    dateOnlyWhere += ` AND ${dateExpr} <= $${dateOnlyParams.length}::timestamptz`;
+                }
+            }
+            dateOnlyParams.push(layout.deviceLabelKey, layout.deviceArrayKey);
+            const keyIdx = dateOnlyParams.length - 1, arrIdx = dateOnlyParams.length;
+            devicePromise = ds.query(
+                `SELECT DISTINCT b->>$${keyIdx} AS device
+                 FROM message, jsonb_array_elements(COALESCE(documents->'credentialSubject'->0->$${arrIdx}, '[]'::jsonb)) b
+                 WHERE ${dateOnlyWhereBase}${dateOnlyWhere} AND b->>$${keyIdx} IS NOT NULL
+                 ORDER BY 1
+                 LIMIT 200`,
+                dateOnlyParams,
+            );
+        }
+
+        const [countRows, dataRows, deviceRows] = await Promise.all([
+            ds.query(`SELECT COUNT(*)::int AS total FROM message WHERE ${baseWhere}`, filterParams),
+            ds.query(
+                `SELECT "consensusTimestamp", ${colSelects.join(', ')}${deviceSelect}
+                 FROM message
+                 WHERE ${baseWhere}
+                 ORDER BY ${orderBy}
+                 LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+                dataParams,
+            ),
+            devicePromise,
+        ]);
+
+        const rows = dataRows.map((r: Record<string, unknown>) => {
+            const values: Record<string, string> = {};
+            layout.columns.forEach((c, i) => { values[c.key] = (r[`col_${colIndexes[i]}`] as string | null) ?? ''; });
+            return {
+                consensusTimestamp: r['consensusTimestamp'] as string,
+                values,
+                device: (r['device_label'] as string | null) || null,
+            };
+        });
+
+        return {
+            schemaUuid: bareSchemaUuid,
+            schemaName,
+            columns: layout.columns.map((c) => ({ key: c.key, label: c.label, description: c.description, isDate: c.isDate })),
+            rows,
+            total: countRows[0]?.total ?? 0,
+            page,
+            limit,
+            devices: (deviceRows as Array<{ device: string }>).map((d) => d.device),
+            dateColumnKey: layout.dateColumnKey,
+            flattened: false,
+        };
+    }
+
+    /**
+     * Flattened variant of getMrvData for schemas with no top-level scalar fields
+     * (detectMrvLayout set flattenDeviceItems) — one row per device-array ITEM
+     * rather than one row per VC, via `jsonb_array_elements(...) WITH ORDINALITY`
+     * directly in the FROM clause so a single set-returning join gives correct
+     * SQL-level pagination/sort/filter over the flattened rows.
+     */
+    private async getFlattenedMrvData(
+        ds: DataSource,
+        topicId: string,
+        bareSchemaUuid: string,
+        schemaName: string | null,
+        layout: MrvSchemaLayout,
+        query: MrvDataQueryDto,
+        page: number,
+        limit: number,
+        sortDir: 'ASC' | 'DESC',
+    ): Promise<MrvDataResponseDto> {
+        const deviceArrayKey = layout.deviceArrayKey!;
+
+        // Base WHERE + its own dedicated params array (topic + schema + optional
+        // device/date filters, all applied to the flattened item `t.item`, not the
+        // outer VC document) — frozen once built, exactly like the record-mode path.
+        const filterParams: unknown[] = [topicId, bareSchemaUuid, deviceArrayKey];
+        let whereExtra = '';
+
+        if (query.device && layout.deviceLabelKey) {
+            filterParams.push(layout.deviceLabelKey, query.device);
+            whereExtra += ` AND t.item->>$${filterParams.length - 1} = $${filterParams.length}`;
+        }
+        if (layout.dateColumnKey && (query.from || query.to)) {
+            filterParams.push(layout.dateColumnKey);
+            const dateExpr = `(NULLIF(t.item->>$${filterParams.length}, ''))::timestamptz`;
+            if (query.from) {
+                filterParams.push(query.from);
+                whereExtra += ` AND ${dateExpr} >= $${filterParams.length}::timestamptz`;
+            }
+            if (query.to) {
+                filterParams.push(query.to);
+                whereExtra += ` AND ${dateExpr} <= $${filterParams.length}::timestamptz`;
+            }
+        }
+
+        const fromClause = `FROM message m,
+            jsonb_array_elements(m.documents->'credentialSubject'->0->$3) WITH ORDINALITY AS t(item, idx)`;
+        const baseWhere = `m."topicId" = $1 AND m.type = 'VC-Document'
+            AND split_part(m.documents->'credentialSubject'->0->>'type', '&', 1) = $2${whereExtra}`;
+
+        const dataParams = [...filterParams];
+        const colSelects = layout.columns.map((c) => {
+            dataParams.push(c.key);
+            return `t.item->>$${dataParams.length} AS "col_${dataParams.length}"`;
+        });
+        const colIndexes = layout.columns.map((_c, i) => dataParams.length - layout.columns.length + i + 1);
+
+        let deviceSelect = '';
+        if (layout.deviceLabelKey) {
+            dataParams.push(layout.deviceLabelKey);
+            deviceSelect = `, t.item->>$${dataParams.length} AS device_label`;
+        }
+
+        const sortCol = layout.columns.find((c) => c.key === query.sortBy) ?? layout.columns.find((c) => c.key === layout.dateColumnKey);
+        let orderBy = 'm."consensusTimestamp" ' + sortDir + ', t.idx ASC';
+        if (sortCol) {
+            dataParams.push(sortCol.key);
+            orderBy = `t.item->>$${dataParams.length} ${sortDir}`;
+        }
+
+        dataParams.push(limit, (page - 1) * limit);
+        const limitIdx = dataParams.length - 1, offsetIdx = dataParams.length;
+
+        let devicePromise: Promise<Array<{ device: string }>> = Promise.resolve([]);
+        if (layout.deviceLabelKey) {
+            const dateOnlyParams: unknown[] = [topicId, bareSchemaUuid, deviceArrayKey];
+            let dateOnlyWhere = '';
+            if (layout.dateColumnKey && (query.from || query.to)) {
+                dateOnlyParams.push(layout.dateColumnKey);
+                const dateExpr = `(NULLIF(t.item->>$${dateOnlyParams.length}, ''))::timestamptz`;
+                if (query.from) {
+                    dateOnlyParams.push(query.from);
+                    dateOnlyWhere += ` AND ${dateExpr} >= $${dateOnlyParams.length}::timestamptz`;
+                }
+                if (query.to) {
+                    dateOnlyParams.push(query.to);
+                    dateOnlyWhere += ` AND ${dateExpr} <= $${dateOnlyParams.length}::timestamptz`;
+                }
+            }
+            dateOnlyParams.push(layout.deviceLabelKey);
+            const keyIdx = dateOnlyParams.length;
+            devicePromise = ds.query(
+                `SELECT DISTINCT t.item->>$${keyIdx} AS device
+                 ${fromClause}
+                 WHERE m."topicId" = $1 AND m.type = 'VC-Document'
+                   AND split_part(m.documents->'credentialSubject'->0->>'type', '&', 1) = $2${dateOnlyWhere}
+                   AND t.item->>$${keyIdx} IS NOT NULL
+                 ORDER BY 1
+                 LIMIT 200`,
+                dateOnlyParams,
+            );
+        }
+
+        const [countRows, dataRows, deviceRows] = await Promise.all([
+            ds.query(`SELECT COUNT(*)::int AS total ${fromClause} WHERE ${baseWhere}`, filterParams),
+            ds.query(
+                `SELECT m."consensusTimestamp", t.idx::int AS item_index, ${colSelects.join(', ')}${deviceSelect}
+                 ${fromClause}
+                 WHERE ${baseWhere}
+                 ORDER BY ${orderBy}
+                 LIMIT $${limitIdx} OFFSET $${offsetIdx}`,
+                dataParams,
+            ),
+            devicePromise,
+        ]);
+
+        const rows = dataRows.map((r: Record<string, unknown>) => {
+            const values: Record<string, string> = {};
+            layout.columns.forEach((c, i) => { values[c.key] = (r[`col_${colIndexes[i]}`] as string | null) ?? ''; });
+            return {
+                consensusTimestamp: r['consensusTimestamp'] as string,
+                itemIndex: r['item_index'] as number,
+                values,
+                device: (r['device_label'] as string | null) || null,
+            };
+        });
+
+        return {
+            schemaUuid: bareSchemaUuid,
+            schemaName,
+            columns: layout.columns.map((c) => ({ key: c.key, label: c.label, description: c.description, isDate: c.isDate })),
+            rows,
+            total: countRows[0]?.total ?? 0,
+            page,
+            limit,
+            devices: (deviceRows as Array<{ device: string }>).map((d) => d.device),
+            dateColumnKey: layout.dateColumnKey,
+            flattened: true,
+        };
     }
 
     /**

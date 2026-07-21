@@ -12,6 +12,7 @@ import {
     ProjectIdsDto,
 } from '../dto/project.dto';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
+import { MrvDataQueryDto, MrvDataResponseDto } from '../dto/mrv-data.dto';
 import { AdminWrite } from '../auth/decorators/admin-write.decorator';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -320,6 +321,29 @@ export class ProjectsController {
         @Param('id') id: string,
     ): Promise<AdditionalDetailsSchemaDto[]> {
         return this.projectsService.getAdditionalDetails(network, id);
+    }
+
+    @Get(':id/mrv-data/:schemaUuid')
+    @ApiOperation({
+        summary: 'Get a page of MRV External Data for one schema',
+        description:
+            'Real, server-paginated table over one externalDataBlock-bound (MRV) schema\'s VC records — ' +
+            'supports column sorting, a time-range filter, and a device/measurement-point filter+drill-down. ' +
+            'Unlike GET :id/additional-details (which decodes and returns every linked VC in one payload), ' +
+            'this is designed to stay fast for MRV datasets with hundreds of thousands of records.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
+    @ApiParam({ name: 'id', description: 'HCS consensus timestamp (sourceTimestamp) or projectKey of the project' })
+    @ApiParam({ name: 'schemaUuid', description: 'Bare schema UUID (from project.mrvSchemas[].schemaUuid)' })
+    @ApiResponse({ status: 200, type: MrvDataResponseDto })
+    @ApiResponse({ status: 404, description: 'Project not found' })
+    async getMrvData(
+        @Param('network') network: string,
+        @Param('id') id: string,
+        @Param('schemaUuid') schemaUuid: string,
+        @Query() query: MrvDataQueryDto,
+    ): Promise<MrvDataResponseDto> {
+        return this.projectsService.getMrvData(network, id, schemaUuid, query);
     }
 
     @Get(':id/export/:format')
