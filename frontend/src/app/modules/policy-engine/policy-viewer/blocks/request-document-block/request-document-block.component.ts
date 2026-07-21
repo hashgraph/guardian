@@ -10,6 +10,7 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaService } from 'src/app/services/schema.service';
 import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
@@ -151,6 +152,7 @@ export class RequestDocumentBlockComponent
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
+        private schemaService: SchemaService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -209,6 +211,24 @@ export class RequestDocumentBlockComponent
     }
 
     protected override _onSuccess(data: any) {
+        // A schema reference (id, no document) is resolved to the full schema once
+        // before the render flow; a full schema is used as-is.
+        const schemaRef = data?.schema;
+        if (schemaRef && !schemaRef.document && schemaRef.id) {
+            this.loading = true;
+            this.schemaService.resolveSchemaById(schemaRef.id).subscribe({
+                next: (full) => {
+                    data.schema = full;
+                    this._applyBlockData(data);
+                },
+                error: () => this._applyBlockData(data)
+            });
+            return;
+        }
+        this._applyBlockData(data);
+    }
+
+    private _applyBlockData(data: any) {
         this.setData(data);
         if (this.type === 'dialog') {
             setTimeout(() => {

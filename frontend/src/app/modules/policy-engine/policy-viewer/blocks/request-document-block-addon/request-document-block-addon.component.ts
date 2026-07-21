@@ -17,6 +17,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaService } from 'src/app/services/schema.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
@@ -94,10 +95,28 @@ export class RequestDocumentBlockAddonComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private policyTest: PolicyTestAutomationService
+        private policyTest: PolicyTestAutomationService,
+        private schemaService: SchemaService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
+    }
+
+    protected override _onSuccess(data: any) {
+        // Resolve a schema reference (id, no document) to the full schema before setData.
+        const schemaRef = data?.schema;
+        if (schemaRef && !schemaRef.document && schemaRef.id) {
+            this.loading = true;
+            this.schemaService.resolveSchemaById(schemaRef.id).subscribe({
+                next: (full) => {
+                    data.schema = full;
+                    super._onSuccess(data);
+                },
+                error: () => super._onSuccess(data)
+            });
+            return;
+        }
+        super._onSuccess(data);
     }
 
     ngOnInit(): void {
