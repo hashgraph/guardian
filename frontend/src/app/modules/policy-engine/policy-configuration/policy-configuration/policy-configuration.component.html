@@ -681,7 +681,7 @@
                   </div>
                   @if (isTree) {
                     <div class="theme-legends-container">
-                      @for (rule of theme.rules; track rule) {
+                      @for (rule of getVisibleRules(theme); track rule) {
                         <div class="theme-rule">
                           <div [style]="blockStyle(rule)" class="theme-rule-prev" theme-all theme-block>
                           </div>

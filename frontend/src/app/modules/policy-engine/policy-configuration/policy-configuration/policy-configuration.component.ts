@@ -1926,6 +1926,17 @@ export class PolicyConfigurationComponent implements OnInit {
         return rule.legend;
     }
 
+    public getVisibleRules(theme: Theme): ThemeRule[] {
+        return theme.rules.filter((rule) => this.isRuleVisible(rule));
+    }
+
+    private isRuleVisible(rule: ThemeRule): boolean {
+        if (rule.type !== 'role') {
+            return true;
+        }
+        return rule.getMultipleValue().some((role) => !!this.openFolder?.getPermissionsName(role));
+    }
+
     public onEditableFields() {
         const dialogRef = this.dialogService.open(PolicyParametersConfigDialog, {
             showHeader: false,
