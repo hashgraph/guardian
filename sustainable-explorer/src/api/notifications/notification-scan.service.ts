@@ -20,6 +20,11 @@ interface WatermarkRow {
 interface BusinessViewRow {
     id: string;
     projectKey: string;
+    // The app-wide project identifier (matches WatchlistItem.id, as used
+    // everywhere on the frontend for project URLs/links) — NOT business_view.id.
+    // watchlist_subscriptions.projectKey stores THIS value, so this is what
+    // watchers must be looked up by. See the class docstring below.
+    sourceTimestamp: string;
     displayName: string | null;
     relatedTopicId: string | null;
     registryName: string | null;
@@ -33,7 +38,7 @@ interface WatcherRow {
 
 interface NotificationTuple {
     userId: string;
-    bvId: string;
+    projectKey: string;
     dedupeKey: string;
     payload: Record<string, unknown>;
 }
@@ -79,10 +84,11 @@ const ENABLED_SOURCES: readonly NotificationSource<any>[] = [issuanceSource];
  *      enriched with the registry's display name (LATERAL join on
  *      business_view WHERE viewType='REGISTRY') and businessData.methodology
  *      — one batched query, shared by every source, never per-notification.
- *   4. Resolve watchers for those business_view.id values via
+ *   4. Resolve watchers for those business_view.sourceTimestamp values via
  *      watchlist_subscriptions (system DB) — watchlist_subscriptions.projectKey
- *      stores business_view.id (= WatchlistItem.id), NOT the source row's own
- *      project_key, so the join key here is business_view.id.
+ *      stores business_view.sourceTimestamp (= WatchlistItem.id, the frontend's
+ *      app-wide project identifier used in URLs), NOT business_view.id and NOT
+ *      the source row's own project_key, so the join key here is sourceTimestamp.
  *   5. Insert one multi-row batch into `notifications` (system DB) with
  *      ON CONFLICT ("userId","dedupeKey") DO NOTHING.
  *   6. Advance the watermark to the batch's max cursor value (network DB) —
@@ -322,7 +328,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
 
             const bvRows: BusinessViewRow[] = projectKeys.length > 0
                 ? await netDs.query(
-                    `SELECT bv.id, bv."projectKey", bv."displayName", bv."relatedTopicId",
+                    `SELECT bv.id, bv."projectKey", bv."sourceTimestamp", bv."displayName", bv."relatedTopicId",
                             bv."businessData"->>'methodology' AS "methodology",
                             reg.registry_name AS "registryName"
                        FROM business_view bv
@@ -342,20 +348,23 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                 bvRows.map((r) => [r.projectKey, r]),
             );
 
-            const bvIds = [...new Set(bvRows.map((r) => r.id))];
+            // Watchers are matched by sourceTimestamp — the app-wide project
+            // identifier watchlist_subscriptions.projectKey actually stores
+            // (see BusinessViewRow.sourceTimestamp above) — NOT business_view.id.
+            const sourceTimestamps = [...new Set(bvRows.map((r) => r.sourceTimestamp))];
 
-            const watchersByBvId = new Map<string, string[]>();
-            if (bvIds.length > 0) {
+            const watchersBySourceTimestamp = new Map<string, string[]>();
+            if (sourceTimestamps.length > 0) {
                 const watcherRows: WatcherRow[] = await sysDs.query(
                     `SELECT "userId", "projectKey"
                        FROM watchlist_subscriptions
                       WHERE network = $1 AND "projectKey" = ANY($2::text[])`,
-                    [network, bvIds],
+                    [network, sourceTimestamps],
                 );
                 for (const row of watcherRows) {
-                    const list = watchersByBvId.get(row.projectKey) ?? [];
+                    const list = watchersBySourceTimestamp.get(row.projectKey) ?? [];
                     list.push(row.userId);
-                    watchersByBvId.set(row.projectKey, list);
+                    watchersBySourceTimestamp.set(row.projectKey, list);
                 }
             }
 
@@ -363,11 +372,11 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
             for (const row of batch) {
                 const bv = bvByProjectKey.get(source.projectKeyOf(row));
                 if (!bv) continue;
-                const watchers = watchersByBvId.get(bv.id);
+                const watchers = watchersBySourceTimestamp.get(bv.sourceTimestamp);
                 if (!watchers || watchers.length === 0) continue;
 
                 const enrich: ProjectEnrichment = {
-                    bvId: bv.id,
+                    sourceTimestamp: bv.sourceTimestamp,
                     displayName: bv.displayName,
                     relatedTopicId: bv.relatedTopicId,
                     registryName: bv.registryName,
@@ -377,7 +386,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                 const payload = source.buildPayload(row, enrich);
 
                 for (const userId of watchers) {
-                    tuples.push({ userId, bvId: bv.id, dedupeKey, payload });
+                    tuples.push({ userId, projectKey: bv.sourceTimestamp, dedupeKey, payload });
                 }
             }
 
@@ -386,7 +395,7 @@ export class NotificationScanService implements OnModuleInit, OnModuleDestroy {
                 const userIds = tuples.map((t) => t.userId);
                 const networksArr = tuples.map(() => network);
                 const typesArr = tuples.map(() => source.type);
-                const projectKeysArr = tuples.map((t) => t.bvId);
+                const projectKeysArr = tuples.map((t) => t.projectKey);
                 const payloadsArr = tuples.map((t) => JSON.stringify(t.payload));
                 const dedupeKeysArr = tuples.map((t) => t.dedupeKey);
 
