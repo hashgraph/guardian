@@ -9,7 +9,7 @@
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
-        "axios": "^1.16.1",
+        "axios": "^1.18.0",
         "axios-retry": "^3.2.4",
         "cids": "^1.1.9",
         "cross-blob": "^2.0.1",
