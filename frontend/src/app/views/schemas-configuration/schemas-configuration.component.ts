@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, ISchema, Schema, SchemaCategory, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
@@ -55,7 +55,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public selectedSchema: Schema | null = null;
     public selectedField: SchemaField | null = null;
-    public previewPill: 'submitter' | 'reviewer' | 'readonly' = 'submitter';
+    public previewPill: 'submitter' | 'readonly' = 'submitter';
+    public previewPreset: any = null;
+    public previewReadonlyFields: any = null;
 
     public drillStack: DrillEntry[] = [];
     public get isDrilling(): boolean { return this.drillStack.length > 0; }
@@ -239,6 +241,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.loadSchemas(this.topic);
             }
             this.upsertInSidebar(schema);
+            this.rebuildPreview();
         });
 
         this.route.queryParamMap.pipe(
@@ -1285,6 +1288,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     });
                 });
         });
+    }
+
+    public setPreviewPill(pill: 'submitter' | 'readonly'): void {
+        this.previewPill = pill;
+        this.rebuildPreview();
+    }
+
+    private rebuildPreview(): void {
+        if (!this.selectedSchema || this.previewPill === 'submitter') {
+            this.previewPreset = null;
+            this.previewReadonlyFields = null;
+            return;
+        }
+        this.previewPreset = DocumentGenerator.generateDocument(this.selectedSchema);
+        this.previewReadonlyFields = this.selectedSchema.fields;
     }
 
     public onExport(): void {

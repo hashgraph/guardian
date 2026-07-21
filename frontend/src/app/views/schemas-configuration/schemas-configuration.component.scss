@@ -1471,7 +1471,32 @@
 
 .sc-preview-viewport {
     flex: 1;
-    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px;
+
+    ::ng-deep app-schema-form-root {
+        display: block;
+        width: 100%;
+        max-width: 720px;
+
+        .schema-form-root {
+            display: block;
+        }
+
+        .schema-form-view-nav,
+        .resize-handler {
+            display: none !important;
+        }
+
+        .schema-form-content {
+            width: 100% !important;
+            max-width: 100% !important;
+            flex: unset !important;
+        }
+    }
 }
 
 .sc-preview-placeholder {

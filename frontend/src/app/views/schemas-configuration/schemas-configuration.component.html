@@ -420,15 +420,26 @@
                     <div class="sc-preview">
                         <div class="sc-preview-bar">
                             <span>View as:</span>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="previewPill = 'submitter'">Submitter</button>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'reviewer'" (click)="previewPill = 'reviewer'">Reviewer</button>
-                            <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="previewPill = 'readonly'">Read-only</button>
+                            <button class="sc-view-pill" [class.active]="previewPill === 'submitter'" (click)="setPreviewPill('submitter')">Submitter</button>
+                            <button class="sc-view-pill" [class.active]="previewPill === 'readonly'" (click)="setPreviewPill('readonly')">Read-only</button>
                         </div>
                         <div class="sc-preview-viewport">
-                            <div class="sc-preview-placeholder">
-                                <i class="pi pi-eye-slash"></i>
-                                <span>Preview</span>
-                            </div>
+                            @if (selectedSchema) {
+                                <app-schema-form-root
+                                    [schema]="selectedSchema"
+                                    [preset]="previewPreset"
+                                    [private-fields]="{}"
+                                    [readonly-fields]="previewReadonlyFields"
+                                    [example]="previewPill !== 'submitter'"
+                                    [showButtons]="false"
+                                    [paginationHidden]="true">
+                                </app-schema-form-root>
+                            } @else {
+                                <div class="sc-preview-placeholder">
+                                    <i class="pi pi-eye-slash"></i>
+                                    <span>Select a schema to preview</span>
+                                </div>
+                            }
                         </div>
                     </div>
 
