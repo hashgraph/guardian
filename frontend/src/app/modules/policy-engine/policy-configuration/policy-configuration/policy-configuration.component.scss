@@ -339,7 +339,7 @@
     height: 100%;
     width: 408px;
     flex: 0 0 408px;
-    min-width: 280px;
+    min-width: 352px;
     max-width: 500px;
     position: relative;
     box-sizing: border-box;
@@ -2215,6 +2215,10 @@
         background: transparent !important;
         box-sizing: border-box;
         transition: background 0.15s ease, color 0.15s ease;
+
+        .tab-header-label {
+            padding: 0;
+        }
 
         &:hover {
             background: transparent !important;

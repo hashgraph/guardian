@@ -898,12 +898,15 @@
                     <div class="pc-tabs">
                       <div class="pc-tabs-headers pc-tabs-headers--segment">
                         <div class="segment-track">
-                          <div (click)="select('properties')" [attr.selected]="options.properties || options.artifacts"
+                          <div (click)="select('properties')" [attr.selected]="options.properties"
                             class="tab-header">
                             <span class="tab-header-label">Properties</span>
                           </div>
                           <div (click)="select('events')" [attr.selected]="options.events" class="tab-header">
                             <span class="tab-header-label">Events</span>
+                          </div>
+                          <div (click)="select('artifacts')" [attr.selected]="options.artifacts" class="tab-header">
+                            <span class="tab-header-label">Artifacts</span>
                           </div>
                           <div (click)="select('json')" [attr.selected]="options.json" class="tab-header">
                             <span class="tab-header-label">JSON</span>
@@ -911,7 +914,7 @@
                         </div>
                       </div>
                       <div [attr.readonly]="!isTree" class="pc-tabs-content">
-                        <div [hidden]="!options.properties && !options.artifacts" class="prop-container">
+                        <div [hidden]="!options.properties" class="prop-container">
                           @if (errorsMap[currentBlock.id]) {
                             <div class="errors-properties">
                               @for (item of errorsMap[currentBlock.id]; track item) {
@@ -948,6 +951,8 @@
                             (selectParent)="onSelect({ block: $event, isMultiSelect: false })"
                             class="readonly-status"
                           type="Common"></common-properties>
+                        </div>
+                        <div [hidden]="!options.artifacts" class="prop-container">
                           <div class="inspector-subsection" [attr.collapse]="artifactsCollapsed">
                             <div class="inspector-subsection-header" (click)="artifactsCollapsed = !artifactsCollapsed"
                               [attr.collapse]="artifactsCollapsed">
