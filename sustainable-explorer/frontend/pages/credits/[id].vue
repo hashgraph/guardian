@@ -9,7 +9,7 @@ import {
     Receipt,
     Shield,
 } from 'lucide-vue-next';
-import { formatCredits, formatDate } from '~/lib/format';
+import { formatCredits, formatDate, formatTransactionType } from '~/lib/format';
 import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
 
 interface MintEvent {
@@ -570,7 +570,7 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                                         {{ e.amount ? formatCredits(parseFloat(e.amount)) : '—' }}
                                     </td>
                                     <td class="py-3.5 px-5 text-xs whitespace-nowrap">
-                                        {{ e.type ?? '—' }}
+                                        {{ formatTransactionType(e.type) }}
                                     </td>
                                     <td class="py-3.5 px-5 text-center">
                                         <button

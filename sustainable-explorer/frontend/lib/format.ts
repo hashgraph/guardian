@@ -16,6 +16,22 @@ export function formatNumber(value: number): string {
     return value.toLocaleString();
 }
 
+/** Truncates by character count, appending "..." when the text exceeds maxLength. */
+export function truncateText(text: string | null | undefined, maxLength: number): string {
+    if (!text) return text ?? '';
+    return text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
+}
+
+/**
+ * Guardian transaction type strings often carry a "&<version>" suffix
+ * (e.g. "MintToken&1.0.0"). Strip it for display.
+ */
+export function formatTransactionType(value: string | null | undefined): string {
+    if (!value) return '—';
+    const primary = value.split('&')[0].trim();
+    return primary || '—';
+}
+
 export function formatDate(value: string | number | null | undefined): string {
     if (!value) return '—';
     const s = String(value).trim();

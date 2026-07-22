@@ -5,7 +5,7 @@ import { Toaster } from 'vue-sonner';
 <template>
     <div class="flex min-h-screen">
         <AppSidebar />
-        <div class="flex flex-1 flex-col overflow-auto">
+        <div class="flex flex-1 flex-col min-w-0">
             <AppTopbar />
             <AccountBanner />
             <main class="flex-1 pb-24">
