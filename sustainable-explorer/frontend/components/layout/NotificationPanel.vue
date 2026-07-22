@@ -4,6 +4,7 @@ import { useNotificationDisplay } from '~/composables/useNotificationDisplay';
 import { useConfirmClick } from '~/composables/useConfirmClick';
 import { useNotificationExpand } from '~/composables/useNotificationExpand';
 import type { NotificationItem } from '~/composables/useNotifications';
+import { truncateText } from '~/lib/format';
 
 // Right-side slide-over treatment (à la a job-queue "failed jobs" drawer),
 // teleported to <body> so it isn't clipped by the topbar's overflow/z-index.
@@ -32,6 +33,12 @@ const { iconFor, colorFor, typeLabelFor, describe, projectNameFor, registryNameF
 const { toggle, isExpanded } = useNotificationExpand((id) => emit('markRead', id));
 
 const { confirming: confirmingClear, trigger: onClearAllClick } = useConfirmClick(() => emit('clearAll'));
+
+// Fixed cap so the "· 3m ago" timestamp never gets squeezed out by a long project name.
+const PROJECT_NAME_MAX_LENGTH = 20;
+function truncatedProjectName(item: NotificationItem): string {
+    return truncateText(projectNameFor(item), PROJECT_NAME_MAX_LENGTH);
+}
 </script>
 
 <template>
@@ -118,7 +125,10 @@ const { confirming: confirmingClear, trigger: onClearAllClick } = useConfirmClic
                                 <span v-if="!item.isRead" class="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
                             </div>
                             <p class="mt-0.5 line-clamp-2 text-xs font-medium text-foreground">{{ describe(item) }}</p>
-                            <p class="mt-0.5 truncate text-[10px] text-muted-foreground">{{ projectNameFor(item) }} · {{ timeAgo(item.createdAt) }}</p>
+                            <p class="mt-0.5 flex items-center gap-1 text-[10px] text-muted-foreground">
+                                <span class="truncate">{{ truncatedProjectName(item) }}</span>
+                                <span class="shrink-0">· {{ timeAgo(item.createdAt) }}</span>
+                            </p>
 
                             <div v-if="isExpanded(item.id)" class="mt-2 space-y-2 rounded-md border bg-muted/40 px-2.5 py-2 text-[11px]">
                                 <div>

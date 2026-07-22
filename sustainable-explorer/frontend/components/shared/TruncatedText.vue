@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { truncateText } from '~/lib/format';
+
 const props = defineProps<{
     text: string | null | undefined;
     fallback?: string;
@@ -17,7 +19,7 @@ const isLengthTruncated = computed(
 
 const displayText = computed(() => {
     if (!props.text) return props.fallback ?? '-';
-    if (isLengthTruncated.value) return `${props.text.slice(0, props.maxLength)}...`;
+    if (props.maxLength) return truncateText(props.text, props.maxLength);
     return props.text;
 });
 
