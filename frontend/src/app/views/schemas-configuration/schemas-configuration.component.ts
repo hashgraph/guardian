@@ -44,6 +44,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
     public activeRpTab: 'settings' | 'logic' = 'settings';
+    public activeCanvasTab: 'fields' | 'conditions' = 'fields';
+    public activeDrillTab: 'fields' | 'conditions' = 'fields';
 
     public schemas: Schema[] = [];
     public schemasLoading: boolean = false;
@@ -380,11 +382,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.selectedField = null;
                 this.selectedSchema = schema;
                 this.drillStack = [];
+                this.activeCanvasTab = 'fields';
             }
             return;
         }
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
+        this.activeCanvasTab = 'fields';
         void this.router.navigate(['/schema-configuration'], {
             queryParams: {
                 schemaId: id,
@@ -662,11 +666,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public drillBack(): void {
         this.drillStack = this.drillStack.slice(0, -1);
         this.selectedField = null;
+        this.activeDrillTab = 'fields';
     }
 
     public drillClose(): void {
         this.drillStack = [];
         this.selectedField = null;
+        this.activeDrillTab = 'fields';
     }
 
     public addDrillField(ft: FieldType): void {
@@ -1093,8 +1099,126 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return all.filter(f => !owned.has(f.name));
     }
 
-    public get ifTriggerFields(): SchemaField[] {
-        return this._contextFields.filter(f => !f.readOnly);
+    public getConditionFieldGroups(): Array<{
+        groupLabel: string;
+        isRoot: boolean;
+        fields: Array<{ pathStr: string; label: string }>;
+    }> {
+        const schema = this.currentContextSchema;
+        if (!schema) { return []; }
+        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
+        const rootGroup = { groupLabel: '', isRoot: true, fields: [] as Array<{ pathStr: string; label: string }> };
+        const nested: Array<{ groupLabel: string; isRoot: false; fields: Array<{ pathStr: string; label: string }> }> = [];
+
+        for (const f of schema.fields ?? []) {
+            if (f.readOnly) { continue; }
+            if (f.isRef && f.type) {
+                const ref = schemaByIri.get(f.type);
+                const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                if (refFields.length) {
+                    const group = { groupLabel: f.title || f.name, isRoot: false as const, fields: [] as Array<{ pathStr: string; label: string }> };
+                    this._collectLeafConditionFields(refFields, [f.name], schemaByIri, group.fields);
+                    if (group.fields.length) { nested.push(group); }
+                }
+            } else {
+                rootGroup.fields.push({ pathStr: f.name, label: f.title || f.name });
+            }
+        }
+
+        const result: Array<{ groupLabel: string; isRoot: boolean; fields: Array<{ pathStr: string; label: string }> }> = [];
+        if (rootGroup.fields.length) { result.push(rootGroup); }
+        result.push(...nested);
+        return result;
+    }
+
+    private _collectLeafConditionFields(
+        fields: SchemaField[],
+        pathParts: string[],
+        schemaByIri: Map<string, Schema>,
+        out: Array<{ pathStr: string; label: string }>
+    ): void {
+        for (const f of fields) {
+            if (f.readOnly) { continue; }
+            if (f.isRef && f.type) {
+                const ref = schemaByIri.get(f.type);
+                const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                if (refFields.length) {
+                    this._collectLeafConditionFields(refFields, [...pathParts, f.name], schemaByIri, out);
+                }
+            } else {
+                out.push({ pathStr: [...pathParts, f.name].join('.'), label: f.title || f.name });
+            }
+        }
+    }
+
+    // Reconstructs the dot-path for the field stored in a condition row.
+    // Needed because the stored object may be a field from a nested sub-schema.
+    public getIfRowFieldPath(row: any): string {
+        const field = row?.field;
+        if (!field) { return ''; }
+        const schema = this.currentContextSchema;
+        if (!schema) { return field.name ?? ''; }
+        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
+
+        // Direct field match
+        if (schema.fields?.some(f => f.name === field.name && !f.isRef)) { return field.name; }
+
+        // Search inside sub-schemas
+        for (const f of schema.fields ?? []) {
+            if (f.isRef && f.type) {
+                const ref = schemaByIri.get(f.type);
+                const refFields = ref?.fields ?? (Array.isArray((f as any).fields) ? (f as any).fields : []);
+                const found = this._findConditionFieldPath(field, refFields, [f.name], schemaByIri);
+                if (found) { return found; }
+            }
+        }
+        return field.name ?? '';
+    }
+
+    private _findConditionFieldPath(
+        target: SchemaField,
+        fields: SchemaField[],
+        pathParts: string[],
+        schemaByIri: Map<string, Schema>
+    ): string | null {
+        for (const f of fields) {
+            if (!f.isRef && f.name === target.name) { return [...pathParts, f.name].join('.'); }
+            if (f.isRef && f.type) {
+                const ref = schemaByIri.get(f.type);
+                const refFields = ref?.fields ?? (Array.isArray((f as any).fields) ? (f as any).fields : []);
+                const found = this._findConditionFieldPath(target, refFields, [...pathParts, f.name], schemaByIri);
+                if (found) { return found; }
+            }
+        }
+        return null;
+    }
+
+    private _resolveConditionField(pathStr: string): SchemaField | null {
+        const parts = pathStr.split('.');
+        const schema = this.currentContextSchema;
+        if (!schema) { return null; }
+        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
+
+        if (parts.length === 1) { return schema.fields?.find(f => f.name === parts[0]) ?? null; }
+
+        let fields = schema.fields ?? [];
+        for (let i = 0; i < parts.length - 1; i++) {
+            const refField = fields.find(f => f.name === parts[i] && f.isRef);
+            if (!refField) { return null; }
+            const ref = schemaByIri.get(refField.type);
+            fields = ref?.fields ?? (Array.isArray((refField as any).fields) ? (refField as any).fields : []);
+        }
+        return fields.find(f => f.name === parts[parts.length - 1]) ?? null;
+    }
+
+    private get _firstConditionField(): SchemaField | null {
+        for (const group of this.getConditionFieldGroups()) {
+            for (const opt of group.fields) {
+                const f = this._resolveConditionField(opt.pathStr);
+                if (f) { return f; }
+            }
+        }
+        return null;
     }
 
     public get schemaConditionCount(): number {
@@ -1113,7 +1237,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get canAddCondition(): boolean {
-        return this.ifTriggerFields.length > 0;
+        return this.getConditionFieldGroups().some(g => g.fields.length > 0);
     }
 
     // ── IF operator / rows ───────────────────────────────────────────────────
@@ -1134,7 +1258,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
         const rows = this.getIfRows(cond);
-        const first = rows[0] ?? { field: this.ifTriggerFields[0], fieldValue: '' };
+        const first = rows[0] ?? { field: this._firstConditionField, fieldValue: '' };
         if (op === 'SINGLE') {
             (cond as any).ifCondition = { field: first.field, fieldValue: first.fieldValue };
         } else if (op === 'AND') {
@@ -1150,8 +1274,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public isIfRowEnum(row: any): boolean { return !!(row?.field?.enum?.length); }
     public getIfRowOptions(row: any): string[] { return row?.field?.enum ?? []; }
 
-    public setIfRowField(cond: SchemaCondition, rowIdx: number, fieldName: string): void {
-        const field = this._contextFields.find(f => f.name === fieldName);
+    public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
+        const field = this._resolveConditionField(pathStr);
         if (!field) { return; }
         const ic = cond.ifCondition as any;
         if ('AND' in ic) { ic.AND[rowIdx] = { field, fieldValue: '' }; }
@@ -1170,7 +1294,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public addIfRow(cond: SchemaCondition): void {
         const ic = cond.ifCondition as any;
-        const newRow = { field: this.ifTriggerFields[0], fieldValue: '' };
+        const newRow = { field: this._firstConditionField, fieldValue: '' };
         if ('AND' in ic) { ic.AND.push(newRow); }
         else if ('OR' in ic) { ic.OR.push(newRow); }
         this.markDirty();
@@ -1246,8 +1370,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             for (const f of fields) {
                 if (f.isRef && f.type) {
                     const ref = schemaByIri.get(f.type);
-                    if (ref?.fields) {
-                        traverse(ref.fields, [...pathParts, f.name], [...labelParts, f.title || f.name]);
+                    // Fall back to field.fields resolved inline by Schema.parseFields via $defs
+                    const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                    if (refFields.length) {
+                        traverse(refFields, [...pathParts, f.name], [...labelParts, f.title || f.name]);
                     }
                 } else if (!f.readOnly) {
                     result.push({
@@ -1261,8 +1387,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         for (const f of schema.fields) {
             if (f.isRef && f.type) {
                 const ref = schemaByIri.get(f.type);
-                if (ref?.fields) {
-                    traverse(ref.fields, [f.name], [f.title || f.name]);
+                const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                if (refFields.length) {
+                    traverse(refFields, [f.name], [f.title || f.name]);
                 }
             }
         }
@@ -1303,9 +1430,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public addNewCondition(): void {
         const schema = this.currentContextSchema;
-        if (!schema || !this.ifTriggerFields.length) { return; }
+        const firstField = this._firstConditionField;
+        if (!schema || !firstField) { return; }
         const newCond: SchemaCondition = {
-            ifCondition: { field: this.ifTriggerFields[0], fieldValue: '' } as any,
+            ifCondition: { field: firstField, fieldValue: '' } as any,
             thenFields: [],
             elseFields: [],
         };
@@ -1595,9 +1723,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private rankMatch(name: string, search: string): number {
         const n = name.toLowerCase();
-        if (n === search) { return 3; }
-        if (n.startsWith(search)) { return 2; }
-        if (n.includes(search)) { return 1; }
+        const s = search.toLowerCase();
+        if (n === s) { return 3; }
+        if (n.startsWith(s)) { return 2; }
+        if (n.includes(s)) { return 1; }
         return 0;
     }
 
