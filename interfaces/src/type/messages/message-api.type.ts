@@ -64,6 +64,11 @@ export enum MessageAPI {
     KYC_TOKEN_ASYNC = 'KYC_TOKEN_ASYNC',
     ASSOCIATE_TOKEN = 'ASSOCIATE_TOKEN',
     ASSOCIATE_TOKEN_ASYNC = 'ASSOCIATE_TOKEN_ASYNC',
+    /**
+     * Associate/dissociate a token with an Organization's Hedera wallet, gated by the
+     * caller's org-role permissions (TOKEN_ASSOCIATE/TOKEN_DISSOCIATE), org-owner bypass.
+     */
+    ASSOCIATE_ORG_TOKEN = 'ASSOCIATE_ORG_TOKEN',
     GET_ASSOCIATED_TOKENS = 'GET_ASSOCIATED_TOKENS',
     GET_INFO_TOKEN = 'GET_INFO_TOKEN',
     GET_RELAYER_ACCOUNT_INFO = 'GET_RELAYER_ACCOUNT_INFO',

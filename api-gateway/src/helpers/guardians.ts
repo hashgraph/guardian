@@ -478,6 +478,28 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Associate/dissociate a token with an Organization's Hedera wallet, gated by the
+     * caller's org-role permissions (TOKEN_ASSOCIATE/TOKEN_DISSOCIATE), org-owner bypass.
+     * @param orgId
+     * @param tokenId
+     * @param associate
+     * @param owner
+     */
+    public async associateOrgToken(
+        orgId: string,
+        tokenId: string,
+        associate: boolean,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.ASSOCIATE_ORG_TOKEN, {
+            orgId,
+            tokenId,
+            associate,
+            owner,
+        });
+    }
+
+    /**
      * Transfer token
      * @param tokenId
      * @param body

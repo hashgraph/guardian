@@ -1,8 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
 import { ArrayMessageResponse, DatabaseServer, IAuthUser, INotificationStep, KeyType, MessageError, MessageResponse, NewNotifier, NotificationStep, PinoLogger, RunFunctionAsync, Token, TopicHelper, Users, Wallet, Workers } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, OrderDirection, OrgRolePermission, TokenType, TopicType, WorkerTaskType } from '@guardian/interfaces';
 import { FilterObject } from '@mikro-orm/core';
 import { publishTokenTags } from '../helpers/import-helpers/index.js'
+import { getOrgAssociatePermissionError } from './helpers/org-token-access.js';
 
 /**
  * Create token in Hedera network
@@ -474,20 +475,24 @@ async function deleteToken(
 }
 
 /**
- * Associate/dissociate token
+ * Shared core of token association/dissociation: finds the token, resolves the acting
+ * Hedera account via the caller-supplied resolver, and dispatches the
+ * `WorkerTaskType.ASSOCIATE_TOKEN` worker task. Used by both the personal
+ * (`associateToken`) and organization (`associateOrgToken`) cores so the notifier-step
+ * shape and worker-dispatch payload are defined in exactly one place.
  * @param tokenId
- * @param did
  * @param associate
  * @param dataBaseServer
  * @param notifier
+ * @param resolveAccount - resolves the acting Hedera account id, signing key, and the
+ * user id to attribute the worker payload to. Runs between the FIND_TOKEN and ACTION steps.
  */
-async function associateToken(
+async function dispatchAssociateWorker(
     tokenId: string,
-    accountId: string | null,
-    target: IOwner,
     associate: any,
     dataBaseServer: DatabaseServer,
-    notifier: INotificationStep
+    notifier: INotificationStep,
+    resolveAccount: () => Promise<{ accountId: string, accountKey: string, payloadUserId: string }>
 ): Promise<{ tokenName: string; status: boolean }> {
     // <-- Steps
     const STEP_FIND_TOKEN = 'Find token data';
@@ -508,21 +513,7 @@ async function associateToken(
     notifier.completeStep(STEP_FIND_TOKEN);
 
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
-    const users = new Users();
-    const user = await users.getUserById(target.creator, target.id);
-    if (!user) {
-        throw new Error('User not found');
-    }
-
-    const account: any = await users.getUserRelayerAccount(target.creator, accountId, target.id);
-    if (!account) {
-        throw new Error('Hedera Account not found');
-    }
-    if (account.default) {
-        account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
-    } else {
-        account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
-    }
+    const { accountId, accountKey, payloadUserId } = await resolveAccount();
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
     notifier.startStep(STEP_ACTION);
@@ -531,10 +522,10 @@ async function associateToken(
         type: WorkerTaskType.ASSOCIATE_TOKEN,
         data: {
             tokenId,
-            userID: account.account,
-            userKey: account.key,
+            userID: accountId,
+            userKey: accountKey,
             associate,
-            payload: { userId: user.id }
+            payload: { userId: payloadUserId }
         }
     }, {
         priority: 20
@@ -543,6 +534,83 @@ async function associateToken(
 
     notifier.complete();
     return { tokenName: token.tokenName, status };
+}
+
+/**
+ * Associate/dissociate token
+ * @param tokenId
+ * @param did
+ * @param associate
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function associateToken(
+    tokenId: string,
+    accountId: string | null,
+    target: IOwner,
+    associate: any,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<{ tokenName: string; status: boolean }> {
+    const users = new Users();
+    return dispatchAssociateWorker(tokenId, associate, dataBaseServer, notifier, async () => {
+        const user = await users.getUserById(target.creator, target.id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        const account: any = await users.getUserRelayerAccount(target.creator, accountId, target.id);
+        if (!account) {
+            throw new Error('Hedera Account not found');
+        }
+        if (account.default) {
+            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.KEY, user.did);
+        } else {
+            account.key = await (new Wallet()).getKey(user.walletToken, KeyType.RELAYER_ACCOUNT, `${user.did}/${account.account}`);
+        }
+        return { accountId: account.account, accountKey: account.key, payloadUserId: user.id };
+    });
+}
+
+/**
+ * Associate/dissociate a token with an Organization's Hedera wallet.
+ * Gated by the org-role permissions TOKEN_ASSOCIATE/TOKEN_DISSOCIATE (`getOrgAssociatePermissionError`),
+ * with an org-owner bypass. The permission check (and the org/context lookups it depends on)
+ * runs before any notifier step is started, so a rejected user or non-member never triggers
+ * a Hedera-side effect (fail closed).
+ * @param orgId
+ * @param tokenId
+ * @param associate
+ * @param actingOwner - the calling user, evaluated against the organization's membership/roles
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function associateOrgToken(
+    orgId: string,
+    tokenId: string,
+    associate: any,
+    actingOwner: IOwner,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<{ tokenName: string; status: boolean }> {
+    const users = new Users();
+
+    const ctx = await users.getOrgContextByDid(actingOwner.creator, actingOwner.id);
+    const org = await users.getOrgHederaInfo(orgId, actingOwner.id);
+    if (!org) {
+        throw new Error('Organization not found');
+    }
+    const isOwner = org.owner === actingOwner.creator;
+    const permission = associate ? OrgRolePermission.TOKEN_ASSOCIATE : OrgRolePermission.TOKEN_DISSOCIATE;
+    const permissionError = getOrgAssociatePermissionError(ctx, isOwner, orgId, permission);
+    if (permissionError) {
+        throw new Error(permissionError);
+    }
+
+    return dispatchAssociateWorker(tokenId, associate, dataBaseServer, notifier, async () => {
+        const key = await new Wallet().getKey(org.walletToken, KeyType.KEY, org.did);
+        return { accountId: org.hederaAccountId, accountKey: key, payloadUserId: actingOwner.id };
+    });
 }
 
 /**
@@ -1037,6 +1105,23 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             });
 
             return new MessageResponse(task);
+        })
+
+    ApiResponse(MessageAPI.ASSOCIATE_ORG_TOKEN,
+        async (msg: {
+            orgId: string,
+            tokenId: string,
+            associate: boolean,
+            owner: IOwner
+        }) => {
+            try {
+                const { orgId, tokenId, associate, owner } = msg;
+                const result = await associateOrgToken(orgId, tokenId, associate, owner, dataBaseServer, NewNotifier.empty());
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
         })
 
     ApiResponse(MessageAPI.GET_INFO_TOKEN,

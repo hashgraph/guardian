@@ -8,6 +8,7 @@ import {
     Delete,
     Get,
     HttpCode,
+    HttpException,
     HttpStatus,
     Param,
     Post,
@@ -38,6 +39,7 @@ import {
     OrganizationMemberDTO,
     PolicyOrgAssignmentDTO,
     PublishOrganizationDTO,
+    TokenInfoDTO,
     UpdateMemberRoleDTO,
     UpdateOrgRoleDTO,
     UpdateOrganizationDTO,
@@ -730,6 +732,86 @@ export class OrganizationApi {
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
+    }
+
+    //#endregion
+
+    //#region Org-wallet token association
+
+    /**
+     * Associate the organization's Hedera wallet with a token.
+     * Gated by the org-role permission TOKEN_ASSOCIATE; the organization's owner always bypasses
+     * the check.
+     */
+    @Put('/:id/tokens/:tokenId/associate')
+    @Auth(Permissions.TOKENS_TOKEN_EXECUTE)
+    @ApiOperation({
+        summary: 'Associate a token with the organization\'s Hedera wallet.',
+        description: 'Associates the provided token with the organization\'s Hedera account. Requires the caller to be an active member of the organization whose OrgRole carries TOKEN_ASSOCIATE, or the organization\'s owner (always allowed).'
+    })
+    @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
+    @ApiParam({ name: 'tokenId', type: String, required: true, description: 'Token identifier', example: Examples.DB_ID_2 })
+    @ApiOkResponse({ description: 'Successful operation.', type: TokenInfoDTO })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @HttpCode(HttpStatus.OK)
+    async associateOrgToken(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Param('tokenId') tokenId: string,
+    ): Promise<TokenInfoDTO> {
+        try {
+            const owner = new EntityOwner(user);
+            return await (new Guardians()).associateOrgToken(id, tokenId, true, owner);
+        } catch (error) {
+            await this.mapOrgTokenAccessError(error, user.id);
+        }
+    }
+
+    /**
+     * Dissociate the organization's Hedera wallet from a token.
+     * Gated by the org-role permission TOKEN_DISSOCIATE; the organization's owner always bypasses
+     * the check.
+     */
+    @Put('/:id/tokens/:tokenId/dissociate')
+    @Auth(Permissions.TOKENS_TOKEN_EXECUTE)
+    @ApiOperation({
+        summary: 'Dissociate a token from the organization\'s Hedera wallet.',
+        description: 'Dissociates the provided token from the organization\'s Hedera account. Requires the caller to be an active member of the organization whose OrgRole carries TOKEN_DISSOCIATE, or the organization\'s owner (always allowed).'
+    })
+    @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
+    @ApiParam({ name: 'tokenId', type: String, required: true, description: 'Token identifier', example: Examples.DB_ID_2 })
+    @ApiOkResponse({ description: 'Successful operation.', type: TokenInfoDTO })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @HttpCode(HttpStatus.OK)
+    async dissociateOrgToken(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Param('tokenId') tokenId: string,
+    ): Promise<TokenInfoDTO> {
+        try {
+            const owner = new EntityOwner(user);
+            return await (new Guardians()).associateOrgToken(id, tokenId, false, owner);
+        } catch (error) {
+            await this.mapOrgTokenAccessError(error, user.id);
+        }
+    }
+
+    /**
+     * Maps `associateOrgToken` error messages to their appropriate HTTP status: membership /
+     * permission failures are 403, 'Organization not found' / 'Token not found' are 404,
+     * everything else falls through to the controller's standard InternalException handling.
+     */
+    private async mapOrgTokenAccessError(error: any, userId: string): Promise<void> {
+        const message: string = String(error?.message || '').toLowerCase();
+        if (message.includes('not an active member') || message.includes('insufficient organization permissions')) {
+            await this.logger.error(error, ['API_GATEWAY'], userId);
+            throw new HttpException(error.message, HttpStatus.FORBIDDEN);
+        }
+        if (message.includes('organization not found') || message.includes('token not found')) {
+            await this.logger.error(error, ['API_GATEWAY'], userId);
+            throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+        }
+        await InternalException(error, this.logger, userId);
     }
 
     //#endregion

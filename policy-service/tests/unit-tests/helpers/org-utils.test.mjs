@@ -50,6 +50,14 @@ describe('Org token permission guard (pure decision core)', function () {
             getOrgTokenPermissionError(member([]), ORG_ACCOUNT, ORG_ACCOUNT, OrgRolePermission.TOKEN_RETIREMENT),
             'Insufficient organization permissions for token retirement'
         );
+        assert.equal(
+            getOrgTokenPermissionError(member([]), ORG_ACCOUNT, ORG_ACCOUNT, OrgRolePermission.TOKEN_ASSOCIATE),
+            'Insufficient organization permissions for token association'
+        );
+        assert.equal(
+            getOrgTokenPermissionError(member([]), ORG_ACCOUNT, ORG_ACCOUNT, OrgRolePermission.TOKEN_DISSOCIATE),
+            'Insufficient organization permissions for token dissociation'
+        );
     });
 
     it('does not treat one token permission as another', function () {

@@ -5,6 +5,8 @@ const ORG_TOKEN_PERMISSION_ERRORS: Record<OrgTokenPermission, string> = {
     [OrgRolePermission.TOKEN_MINTING]: 'Insufficient organization permissions for token minting',
     [OrgRolePermission.TOKEN_TRANSFER]: 'Insufficient organization permissions for token transfer',
     [OrgRolePermission.TOKEN_RETIREMENT]: 'Insufficient organization permissions for token retirement',
+    [OrgRolePermission.TOKEN_ASSOCIATE]: 'Insufficient organization permissions for token association',
+    [OrgRolePermission.TOKEN_DISSOCIATE]: 'Insufficient organization permissions for token dissociation',
 };
 
 /**

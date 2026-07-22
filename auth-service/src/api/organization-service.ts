@@ -842,7 +842,7 @@ export class OrganizationService extends NatsService {
 
         /**
          * Look up an organization's Hedera credential locators by org id (unscoped, internal).
-         * Returns { did, hederaAccountId, walletToken } or null.
+         * Returns { did, hederaAccountId, walletToken, owner } or null.
          */
         this.getMessages(AuthEvents.GET_ORG_HEDERA_INFO,
             async (msg: { organizationId: string, userId: string | null }) => {
@@ -860,7 +860,8 @@ export class OrganizationService extends NatsService {
                     return new MessageResponse({
                         did: org.did,
                         hederaAccountId: org.hederaAccountId,
-                        walletToken: org.walletToken
+                        walletToken: org.walletToken,
+                        owner: org.owner
                     });
                 } catch (error) {
                     await logger.error(error, ['AUTH_SERVICE'], userId);
