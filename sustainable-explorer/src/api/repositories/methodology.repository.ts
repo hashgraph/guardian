@@ -1,7 +1,7 @@
 /** Abstract repository for querying methodologies; database-specific logic (raw SQL, jsonb operators, tsvector, MV joins) lives in concrete implementations, so services depend only on this interface. */
 
-import { IssuanceRow } from './project.repository';
-export { IssuanceRow };
+import { IssuanceRow, IssuanceEventRow } from './project.repository';
+export { IssuanceRow, IssuanceEventRow };
 
 export interface MethodologyListQuery {
     page: number;
@@ -47,8 +47,10 @@ export interface MethodologyRow {
     createdAt: Date;
     updatedAt: Date;
     stats: MethodologyStatsRow;
-    /** Token issuances linked to this methodology's policy topic. Only populated by findById. */
+    /** Token issuances linked to this methodology's policy topic, aggregated per token. Only populated by findById. */
     issuances?: IssuanceRow[];
+    /** Per-mint-event issuance history (one entry per MintToken VC), oldest-first. Only populated by findById. */
+    issuanceEvents?: IssuanceEventRow[];
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;

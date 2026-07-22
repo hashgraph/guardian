@@ -32,6 +32,8 @@ export interface CreditRow {
     registry: string | null;
     registryDid: string | null;
     mintDate: string | null;
+    /** consensus timestamp of the underlying MintToken VC — set only when the row represents one individual mint event (project/methodology-scoped queries), null for token-aggregated rows. Gives the frontend a stable per-row key when several rows share the same tokenId. */
+    mintConsensusTimestamp: string | null;
 }
 
 export interface CreditListResult {

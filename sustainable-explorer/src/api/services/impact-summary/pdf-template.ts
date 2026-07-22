@@ -577,7 +577,7 @@ function buildSdgSection(summary: ImpactSummaryResponseDto): Content[] {
     return [
         ...rows,
         {
-            text: `${sdgs.length} of 17 SDGs addressed · Top goal: SDG ${topGoal.sdgId} ${topGoal.name} (${topGoal.projectCount} projects)`,
+            text: `${sdgs.length} of 17 SDG addressed · Top goal: SDG ${topGoal.sdgId} ${topGoal.name} (${topGoal.projectCount} projects)`,
             style: 'footerNote',
             margin: [0, 6, 0, 0],
         },

@@ -592,12 +592,20 @@ const filteredStats = computed(() => {
                         <div class="rounded-xl border bg-card overflow-hidden">
                             <div class="overflow-x-auto">
                             <table class="w-full text-sm table-fixed min-w-[420px]">
+                                <colgroup>
+                                    <!-- NAME: flexible, takes all remaining width -->
+                                    <col class="min-w-0" />
+                                    <!-- Numeric cols: fixed, compact -->
+                                    <col class="w-16 sm:w-20" />
+                                    <col class="w-20 sm:w-24" />
+                                    <col class="w-28 sm:w-36" />
+                                </colgroup>
                                 <thead>
                                     <tr class="border-b bg-muted/30">
                                         <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.name') }}</th>
-                                        <th class="w-20 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.policies') }}</th>
-                                        <th class="w-20 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.projectsCol') }}</th>
-                                        <th class="w-28 text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.issuancesCol') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.policies') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.projectsCol') }}</th>
+                                        <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('dashboard.issuancesCol') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
