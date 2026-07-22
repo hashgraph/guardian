@@ -101,7 +101,7 @@ export const PROJECT_EXTRACT_FIELDS: ProjectExtractField[] = [
     },
     {
         key: 'sdgOrCobenefits',
-        label: 'SDGs / Co-benefits',
+        label: 'SDG / Co-benefits',
         keywords: ['co-benefit', 'sustainable', 'sdg'],
         iwaField: 'ActivityImpactModule.benefitCategory',
     },

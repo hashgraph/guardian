@@ -31,6 +31,7 @@ interface RawRow {
     project_name: string | null;
     methodology_id: string | null;
     methodology_name: string | null;
+    mintConsensusTimestamp: string | null;
 }
 
 /** Raw row shape for `findAllForExport` — one MintToken VC per row (see `CreditExportRow` doc). */
@@ -54,7 +55,7 @@ interface RawExportRow {
     mitigation_type_raw: unknown;
 }
 
-// credentialSubject[0] tokenId path — used in SELECT, WHERE, GROUP BY, and ORDER BY
+// credentialSubject[0] tokenId path — used in SELECT and WHERE
 const TOKEN_ID_EXPR = `(m.documents->'credentialSubject'->0->>'tokenId')`;
 
 /**
@@ -141,23 +142,7 @@ const REGISTRY_JOIN = `
     ) reg ON true
 `;
 
-/**
- * GROUP BY: one output row per (tokenId, project_key) pair.
- * Metadata columns (tc.*, proj.*, meth.*, reg.*) are functionally determined
- * by these two keys but must be listed explicitly for PostgreSQL.
- */
-const GROUP_BY = `
-    GROUP BY
-        ${TOKEN_ID_EXPR},
-        pml.project_key,
-        tc.name, tc.symbol, tc.type,
-        proj.project_id, proj.project_name, proj.proj_topic_id,
-        proj.proj_methodology_name, proj.registry_did,
-        meth.methodology_id, meth.methodology_name,
-        reg.registry_name
-`;
-
-/** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology/registry fields. */
+/** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology/registry fields. One row per mint event (message row) — matches `findAllForExport()` and the project detail page's "Linked Issuances" grain, so the Issuances count/list is consistent everywhere, filtered or not. */
 export class PgCreditRepository extends CreditRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
@@ -236,7 +221,11 @@ export class PgCreditRepository extends CreditRepository {
         const limitParam  = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
-        // Supply = SUM of credentialSubject[0].amount from MintToken VCs (pre-parsed BIGINT for attributed mints, raw JSONB cast otherwise).
+        // Scoped to exactly one project or one methodology (the two Projects-table /
+        // One row per mint event (message row) — no aggregation, filtered or not.
+        // Supply/date/id come straight off the row: pml.amount/mint_date for
+        // attributed mints, falling back to the raw VC's amount/consensus timestamp
+        // for unattributed ones.
         const rowsSql = `
             SELECT
                 ${TOKEN_ID_EXPR}                                                                AS "tokenId",
@@ -244,42 +233,38 @@ export class PgCreditRepository extends CreditRepository {
                 tc.symbol,
                 tc.type                                                                         AS raw_type,
                 NULL::text                                                                      AS options_token_type,
-                COALESCE(SUM(COALESCE(pml.amount::numeric,
+                COALESCE(pml.amount::numeric,
                     (m.documents->'credentialSubject'->0->>'amount')::numeric
-                )), 0)                                                                          AS total_supply,
+                )                                                                               AS total_supply,
                 proj.registry_did                                                               AS "registryDid",
                 reg.registry_name,
-                MIN(COALESCE(pml.mint_date,
+                COALESCE(pml.mint_date,
                     to_timestamp(m."consensusTimestamp"::numeric)
-                ))                                                                              AS mint_date,
+                )                                                                               AS mint_date,
                 proj.project_id,
                 proj.project_name,
                 meth.methodology_id,
                 COALESCE(meth.methodology_name, proj.proj_methodology_name)                    AS methodology_name,
+                m."consensusTimestamp"                                                          AS "mintConsensusTimestamp",
                 ${rankExpr}                                                                     AS search_rank
             FROM ${MINT_FROM}
             ${PROJECT_JOIN}
             ${METHODOLOGY_JOIN}
             ${REGISTRY_JOIN}
             WHERE ${whereSql}
-            ${GROUP_BY}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count: number of distinct (tokenId, project_key) groups after filtering; metadata columns are omitted from GROUP BY since they don't affect the count.
+        // Count: one row per mint event, so a plain COUNT(*) over the filtered set.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
-            FROM (
-                SELECT 1
-                FROM ${MINT_FROM}
-                ${PROJECT_JOIN}
-                ${METHODOLOGY_JOIN}
-                ${REGISTRY_JOIN}
-                WHERE ${whereSql}
-                GROUP BY ${TOKEN_ID_EXPR}, pml.project_key
-            ) cnt
+            FROM ${MINT_FROM}
+            ${PROJECT_JOIN}
+            ${METHODOLOGY_JOIN}
+            ${REGISTRY_JOIN}
+            WHERE ${whereSql}
         `;
 
         const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
@@ -307,6 +292,7 @@ export class PgCreditRepository extends CreditRepository {
             registry: row.registry_name ?? null,
             registryDid: row.registryDid ?? null,
             mintDate: row.mint_date ? row.mint_date.toISOString() : null,
+            mintConsensusTimestamp: row.mintConsensusTimestamp ?? null,
         };
     }
 
@@ -539,6 +525,7 @@ export class PgCreditRepository extends CreditRepository {
             mintDate: creditRows[0].mint_date instanceof Date
                 ? creditRows[0].mint_date.toISOString()
                 : (creditRows[0].mint_date ?? null),
+            mintConsensusTimestamp: null,
         } : null;
 
         // 2. The raw Token message from HCS.

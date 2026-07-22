@@ -3,7 +3,7 @@ import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { MethodologyRow, MethodologyStatsRow } from '../repositories/methodology.repository';
-import { IssuanceDto } from './project.dto';
+import { IssuanceDto, IssuanceEventDto } from './project.dto';
 
 export class MethodologyQueryDto extends PaginationQueryDto {
     @ApiPropertyOptional({ description: 'Filter by methodology name (partial match)' })
@@ -126,8 +126,11 @@ export class MethodologyResponseDto {
     @ApiProperty({ type: MethodologyStats })
     stats: MethodologyStats;
 
-    @ApiProperty({ type: [IssuanceDto], description: 'Linked token issuances for this methodology' })
+    @ApiProperty({ type: [IssuanceDto], description: 'Linked token issuances for this methodology, aggregated per token' })
     issuances: IssuanceDto[];
+
+    @ApiProperty({ type: [IssuanceEventDto], description: 'Per-mint-event issuance history for this methodology, oldest first' })
+    issuanceEvents: IssuanceEventDto[];
 
     @ApiProperty({ description: 'Total credits ever minted (NFT serials + fungible supply)' })
     totalIssued: number;
@@ -197,6 +200,7 @@ export class MethodologyResponseDto {
                 mintDate: i.mintDate,
                 rawVc: i.rawVc ?? null,
             })),
+            issuanceEvents: (row.issuanceEvents ?? []).map(e => IssuanceEventDto.fromRow(e)),
             totalIssued: row.totalIssued ?? 0,
             totalRetired: row.totalRetired ?? 0,
             totalActive: row.totalActive ?? 0,

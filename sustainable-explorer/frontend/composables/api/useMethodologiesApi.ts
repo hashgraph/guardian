@@ -34,6 +34,18 @@ export interface MethodologyIssuance {
     rawVc?: Record<string, any> | null;
 }
 
+export interface MethodologyIssuanceEvent {
+    mintConsensusTimestamp: string;
+    tokenId: string | null;
+    name: string | null;
+    symbol: string | null;
+    type: string | null;
+    amount: number | null;
+    mintDate: string | null;
+    linkMethod: string | null;
+    rawVc: Record<string, any> | null;
+}
+
 export interface MethodologyDto {
     id: string;
     network: string;
@@ -52,6 +64,7 @@ export interface MethodologyDto {
     updatedAt: string;
     stats: MethodologyStats;
     issuances?: MethodologyIssuance[];
+    issuanceEvents?: MethodologyIssuanceEvent[];
     totalIssued?: number;
     totalRetired?: number;
     totalActive?: number;

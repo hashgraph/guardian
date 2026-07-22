@@ -34,7 +34,7 @@ const linkedRetirements = computed(() => [] as any[]);
         <div class="grid grid-cols-4 gap-px bg-border">
             <div class="bg-card px-5 py-4 text-center">
                 <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalIssued) }}</div>
-                <div class="text-[11px] text-muted-foreground">Total Issued</div>
+                <div class="text-[11px] text-muted-foreground">Total Minted Credits</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
                 <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalTransferred) }}</div>

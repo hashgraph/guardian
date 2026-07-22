@@ -293,7 +293,7 @@ const methodologyMappingRows = computed(() => {
         { label: 'Sector',                field: rf.sector },
         { label: 'Vintage / Start Date',  field: rf.vintageRaw },
         { label: 'Crediting Period',      field: rf.creditingPeriod },
-        { label: 'SDGs / Co-benefits',    field: rf.sdgOrCobenefits },
+        { label: 'SDG / Co-benefits',     field: rf.sdgOrCobenefits },
         {
             label: 'Project Location',
             field: ps.geoKey

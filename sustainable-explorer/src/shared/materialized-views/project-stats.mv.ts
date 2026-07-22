@@ -26,7 +26,7 @@ export const MV_PROJECT_STATS_CREATE_SQL = `
         -- issuance_count + total_issued, straight off project_mint_link.
         SELECT
             pml.project_key,
-            COUNT(DISTINCT pml.token_id) FILTER (WHERE pml.token_id IS NOT NULL)::int AS issuance_count,
+            COUNT(*) FILTER (WHERE pml.token_id IS NOT NULL)::int AS issuance_count,
             COALESCE(SUM(pml.amount), 0)::bigint AS total_issued
         FROM project_mint_link pml
         GROUP BY pml.project_key

@@ -1510,7 +1510,7 @@ onUnmounted(() => {
                                     <!-- Numeric cols: fixed, compact -->
                                     <col class="w-16 sm:w-20" />
                                     <col class="w-20 sm:w-24" />
-                                    <col class="w-20 sm:w-24" />
+                                    <col class="w-28 sm:w-36" />
                                 </colgroup>
                                 <thead>
                                     <tr class="border-b bg-muted/30">

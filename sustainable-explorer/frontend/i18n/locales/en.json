@@ -335,7 +335,7 @@
         "methodologies": "Methodologies",
         "registries": "Registries",
         "developers": "Developers",
-        "sdgs": "SDGs",
+        "sdgs": "SDG",
         "analytics": "Analytics",
         "reports": "Reports",
         "glossary": "Glossary",
@@ -375,9 +375,9 @@
             "projects": "Projects",
             "projectsSub": "Active verified projects",
             "projectsTooltip": "Count of sustainability projects registered and verified on the Guardian network matching the current filters. The change indicator shows the net increase in projects compared to the previous year.",
-            "totalIssuances": "Total Issuances",
+            "totalIssuances": "Total Minted Credits",
             "totalIssuancesSub": "Issued on-chain",
-            "totalIssuancesTooltip": "Sum of all issuances on-chain across matching projects. The change indicator shows the percentage growth in total issuances compared to the previous year.",
+            "totalIssuancesTooltip": "Total number of minted credits issued across all matching projects.",
             "totalRetired": "Total Retired",
             "totalRetiredSub": "Permanently retired",
             "totalRetiredTooltip": "Sum of all issuances permanently retired (burned) for offsetting purposes across matching projects."
@@ -391,23 +391,23 @@
         "noCountries": "No countries match the selected filters",
         "country": "Country",
         "projectsCol": "Projects",
-        "issuancesCol": "Issuances",
+        "issuancesCol": "Minted Credits",
         "methodologiesCol": "Methodologies",
         "sectorRegistryBreakdown": "Sector & Registry Breakdown",
-        "sectorRegistryBreakdownTooltip": "Distribution of projects and issuances by sector and registry. Toggle between project count and issuance volume. Reflects current developer/registry filters.",
-        "sectorRegistryBreakdownSub": "Distribution of projects and issuances by sector and registry",
+        "sectorRegistryBreakdownTooltip": "Distribution of projects and minted credits by sector and registry. Toggle between project count and issuance volume. Reflects current developer/registry filters.",
+        "sectorRegistryBreakdownSub": "Distribution of projects and minted credits by sector and registry",
         "bySector": "By Sector",
         "byRegistry": "By Registry",
         "otherCategory": "Other",
         "projectsToggle": "Projects",
-        "issuancesToggle": "Issuances",
+        "issuancesToggle": "Minted Credits",
         "topRegistries": "Top Registries",
-        "topRegistriesTooltip": "Ranked by project count. Policies = unique methodologies published. Issuances = total issued on-chain by this registry.",
+        "topRegistriesTooltip": "Ranked by project count. Policies = unique methodologies published. Minted Credits = total issued on-chain by this registry.",
         "topRegistriesSub": "Most active by policy and project count",
         "name": "Name",
         "policies": "Policies",
         "noRegistries": "No registries match the selected filters",
-        "issuanceTrend": "Issuance Trend",
+        "issuanceTrend": "Minted Credits Trend",
         "issuanceTrendTooltip": "Issuance volume over time derived from project creation dates.",
         "volumeMillions": "Volume (credits)",
         "monthly": "Monthly",
@@ -423,7 +423,7 @@
         "noRetirementData": "No retirement data matches the selected filters",
         "vintageDistribution": "Vintage Distribution",
         "vintageDistributionTooltip": "Distribution of issuances by vintage year. Shows which years have the most credits issued across matching projects.",
-        "vintageDistributionSub": "Issuances by vintage year",
+        "vintageDistributionSub": "Minted credits by vintage year",
         "vintages": "vintages",
         "projectsSuffix": "projects",
         "noVintageData": "No vintage data matches the selected filters",
@@ -498,7 +498,7 @@
             "lifecycleStage": "Stage",
             "projectedVolume": "Proj. Volume",
             "expectedIssuanceYear": "Exp. Year",
-            "sdgs": "SDGs",
+            "sdgs": "SDG",
             "rawData": "Raw Data"
         },
         "filters": {
@@ -509,7 +509,7 @@
             "sector": "Sector",
             "sectoralScope": "Sectoral Scope",
             "developer": "Developer",
-            "sdgs": "SDGs",
+            "sdgs": "SDG",
             "lifecycleStage": "Stage",
             "expectedIssuanceYear": "Expected Issuance Year",
             "pipeline": "Issuance Status"
@@ -838,7 +838,7 @@
                     "creditingPeriodStart": "Crediting Period Start",
                     "creditingPeriodEnd": "Crediting Period End",
                     "vintageRaw": "Vintage Date",
-                    "sdgOrCobenefits": "SDGs / Co-benefits"
+                    "sdgOrCobenefits": "SDG / Co-benefits"
                 },
                 "fetchError": "Failed to load decoded mapping.",
                 "unresolved": "—",
@@ -937,7 +937,7 @@
                 "schemaCountSub": "Data forms in this policy",
                 "projects": "Projects",
                 "projectsSub": "Registered under this methodology",
-                "issuances": "Issuances",
+                "issuances": "Total Minted Credits",
                 "issuancesSub": "Credits issued",
                 "trends": "Trends",
                 "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
@@ -952,7 +952,7 @@
                 "noGeographicData": "No geographic data available",
                 "geographicCountry": "country",
                 "geographicCountries": "countries",
-                "issuanceTrend": "Issuance Trend",
+                "issuanceTrend": "Minted Credits Trend",
                 "issuanceTrendSub": "Volume ({unit}) by year",
                 "noIssuanceData": "No issuance data available",
                 "issuanceTrendYear": "year",
@@ -1118,9 +1118,9 @@
     },
     "sdgs": {
         "title": "Sustainable Development Goals",
-        "subtitle": "Project contributions mapped to the UN SDGs",
-        "searchPlaceholder": "Search SDGs...",
-        "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDGs.",
+        "subtitle": "Project contributions mapped to the UN SDG",
+        "searchPlaceholder": "Search SDG...",
+        "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDG.",
         "viewProjects": "View projects tagged with {name}",
         "columns": {
             "sdg": "SDG",
@@ -1302,7 +1302,7 @@
             "transferred": "Transferred",
             "methodology": "Methodology",
             "creditingPeriod": "Crediting Period",
-            "sdgsLabel": "{n} SDGs",
+            "sdgsLabel": "{n} SDG",
             "open": "Open",
             "scrollLeft": "Scroll left",
             "scrollRight": "Scroll right",
@@ -1318,7 +1318,7 @@
         "syncedSub": "{network} · {projects} projects indexed",
         "kpi": {
             "totalIssued": {
-                "label": "Total Credits Issued",
+                "label": "Total Minted Credits",
                 "sub": "Issued on-chain ({network})",
                 "footer": "On-chain verified"
             },
@@ -1339,7 +1339,7 @@
             }
         },
         "sections": {
-            "issuanceTrend": "Issuance Trend",
+            "issuanceTrend": "Minted Credits Trend",
             "vintageDist": "Vintage Distribution",
             "breakdowns": "Project Breakdowns",
             "issuanceBreakdowns": "Issuance Breakdowns",
@@ -1353,7 +1353,7 @@
             "topCountriesSub": "Countries ranked by total credits issued",
             "topRegistries": "Top Registries",
             "recentIssuances": "Recent Issuances",
-            "topSdgs": "Top 10 SDGs by Project Count",
+            "topSdgs": "Top 10 SDG by Project Count",
             "networkActivity": "Network Activity",
             "retirementTrend": "Retirement Trend",
             "syncStatus": "Last Sync Timestamp",
@@ -1377,7 +1377,7 @@
             "topCountries": "Host countries ranked by total credits",
             "topRegistries": "Most active registries by policy and project count",
             "recentIssuances": "The 5 most recently minted tokens",
-            "sdgTopList": "Top SDGs ranked by project count",
+            "sdgTopList": "Top SDG ranked by project count",
             "networkActivity": "Recent changes across the Guardian network",
             "syncStatus": "Last successful data sync from Hedera Guardian"
         },
@@ -1389,7 +1389,7 @@
                     "country": "Country",
                     "methodology": "Methodology",
                     "registry": "Registry",
-                    "sdgs": "SDGs"
+                    "sdgs": "SDG"
                 },
                 "add": "Add",
                 "remove": "Remove",
@@ -1727,7 +1727,7 @@
             "all": "All Terms",
             "carbon": "Carbon Markets",
             "chain": "Blockchain & Hedera",
-            "sdg": "SDGs",
+            "sdg": "SDG",
             "platform": "Platform & Data"
         },
         "demo": {
@@ -1909,7 +1909,7 @@
             "sdg": {
                 "term": "SDG",
                 "short": "Sustainable Development Goal — one of the UN's 17 global targets for social and environmental progress by 2030.",
-                "long": "Projects tag which SDGs they contribute to (e.g. SDG 13: Climate Action); the Atlas aggregates this into SDG Coverage charts across the whole portfolio."
+                "long": "Projects tag which SDG they contribute to (e.g. SDG 13: Climate Action); the Atlas aggregates this into SDG Coverage charts across the whole portfolio."
             },
             "watchlist": {
                 "term": "Watchlist",
