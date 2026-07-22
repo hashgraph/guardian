@@ -405,7 +405,6 @@ const filteredStats = computed(() => {
                         <h2 class="text-base font-semibold text-foreground inline-flex items-center gap-1.5">{{ $t('dashboard.projectDistribution') }} <InfoTooltip :text="$t('dashboard.projectDistributionTooltip')" /></h2>
                         <p class="text-xs text-muted-foreground mt-0.5">{{ $t('dashboard.projectDistributionSub') }}</p>
                     </div>
-                    <AppLink to="/projects" class="text-xs font-medium text-primary hover:underline">{{ $t('dashboard.viewAllProjects') }}</AppLink>
                 </div>
                 <div class="flex items-center rounded-lg border p-0.5">
                     <button
