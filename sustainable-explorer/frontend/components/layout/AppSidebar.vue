@@ -130,7 +130,7 @@ const authedItems = computed(() => [
                  never see these tabs. -->
             <template v-if="isAuthenticated">
                 <div class="mx-1 my-1.5 h-px bg-border/60" />
-                <NuxtLink
+                <AppLink
                     v-for="item in authedItems"
                     :key="item.to"
                     :to="item.to"
@@ -152,7 +152,7 @@ const authedItems = computed(() => [
                     >
                         <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
                     </Transition>
-                </NuxtLink>
+                </AppLink>
             </template>
         </nav>
 
