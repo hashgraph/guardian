@@ -658,7 +658,7 @@ export class OrganizationApi {
     @ApiOperation({
         summary: 'Assign a policy to an organization.',
         description:
-            'Creates a PolicyOrgAssignment row that surfaces the policy to current and future members of the organization (visibility layer). Idempotent: an existing assignment is returned unchanged; a previously revoked assignment is reactivated.'
+            'Creates a PolicyOrgAssignment row that grants current and future members of the organization visibility into the policy and open/execute access to it. Does NOT auto-enroll members into policy groups (PolicyRoles group selection still applies on first entry). Idempotent: an existing assignment is returned unchanged; a previously revoked assignment is reactivated.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiBody({ description: 'Policy identifier to assign.', type: AssignPolicyToOrgDTO, required: true })

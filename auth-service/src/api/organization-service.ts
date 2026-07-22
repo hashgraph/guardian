@@ -1202,13 +1202,20 @@ export class OrganizationService extends NatsService {
         /**
          * List active PolicyOrgAssignment rows for an organization.
          *
-         * Intentionally UNSCOPED (no IOwner check) — internal NATS-only lookup invoked by
-         * guardian-service.PolicyEngine.addAccessFilters on behalf of an arbitrary user to extend
-         * policy visibility through org membership. Do NOT expose at the api-gateway layer.
+         * Intentionally UNSCOPED (no IOwner check) — internal NATS-only lookup invoked by an
+         * arbitrary user's own org membership, via Users.getOrgPolicyIds, from three consumers:
+         *  1. guardian-service PolicyEngine.addAccessFilters — extends the ACCESS_POLICY_ASSIGNED*
+         *     policy *list* visibility through org membership (fail-open/best-effort).
+         *  2. guardian-service PolicyEngine.accessPolicyCode — the policy open/execute *access
+         *     gate* (fail-closed): org assignment grants access equivalent to a personal
+         *     AssignEntity, but does NOT auto-enroll the member into policy groups.
+         *  3. policy-service actions-service.accessPolicy — the same access gate on the relayed
+         *     block-action path.
+         * Do NOT expose at the api-gateway layer.
          *
          * Note: GET_ORG_POLICIES is the owner-scoped sibling intended for SR management; this
-         * event exists specifically so the access-filter dynamic lookup is not blocked by owner
-         * scoping when the requesting user is a member rather than the org's SR owner.
+         * event exists specifically so these dynamic lookups are not blocked by owner scoping
+         * when the requesting user is a member rather than the org's SR owner.
          */
         this.getMessages(AuthEvents.GET_POLICIES_FOR_ORG,
             async (msg: { organizationId: string, userId: string | null }) => {

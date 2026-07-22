@@ -652,16 +652,20 @@ export async function enrollOrganizationMember({
 }
 
 /**
- * Look up all active policy IDs visible to a user through their organization membership.
+ * Look up all active policy IDs visible to and accessible by a user through their organization
+ * membership. Org assignment grants both list visibility (PolicyEngine.addAccessFilters) and
+ * open/execute access (PolicyEngine.accessPolicyCode) — it does NOT auto-enroll the member into
+ * the policy's groups (normal PolicyRoles flow still applies on first entry).
  *
  * Two-hop NATS dynamic lookup:
  *  1. AuthEvents.GET_ORG_MEMBERSHIP_BY_DID — find the user's organizationId (or null)
- *  2. AuthEvents.GET_POLICIES_FOR_ORG — list active PolicyOrgAssignment rows for that org
+ *  2. Users.getOrgPolicyIds — list active PolicyOrgAssignment policy IDs for that org
  *
  * Returns a deduped array of policy IDs. Empty array if the user has no active membership,
  * or if the org has no policy assignments.
  *
- * Used by PolicyEngine.addAccessFilters to extend ACCESS_POLICY_ASSIGNED visibility additively.
+ * Consumers: PolicyEngine.addAccessFilters (list, fail-open/best-effort) and
+ * PolicyEngine.accessPolicyCode (access gate, fail-closed — see call site).
  *
  * @param did user DID
  * @param logId log/user id for tracing
@@ -681,18 +685,5 @@ export async function getOrgPolicyIdsForUser(
     if (!membership || !membership.organizationId) {
         return [];
     }
-    const assignments = await users.sendMessage<{ policyId?: string }[]>(
-        AuthEvents.GET_POLICIES_FOR_ORG,
-        { organizationId: membership.organizationId, userId: logId }
-    );
-    if (!Array.isArray(assignments) || assignments.length === 0) {
-        return [];
-    }
-    const ids = new Set<string>();
-    for (const a of assignments) {
-        if (a && typeof a.policyId === 'string' && a.policyId) {
-            ids.add(a.policyId);
-        }
-    }
-    return Array.from(ids);
+    return users.getOrgPolicyIds(membership.organizationId, logId);
 }

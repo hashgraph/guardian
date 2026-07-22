@@ -3,6 +3,7 @@ import { assert } from 'chai';
 import { OrgRolePermission } from '@guardian/interfaces';
 
 import { getOrgTokenPermissionError } from '../../../dist/policy-engine/helpers/org-token-permission.js';
+import { isPolicyAssignedToUserOrg } from '../../../dist/policy-engine/helpers/org-utils.js';
 
 const ORG_ACCOUNT = '0.0.1001';
 const OTHER_ACCOUNT = '0.0.2002';
@@ -76,5 +77,23 @@ describe('Org token permission guard (pure decision core)', function () {
             ),
             'Insufficient organization permissions for token minting'
         );
+    });
+});
+
+describe('isPolicyAssignedToUserOrg (org policy-access gate)', function () {
+    it('returns false for a null user, without constructing Users', async function () {
+        assert.isFalse(await isPolicyAssignedToUserOrg(null, 'policy-1'));
+    });
+
+    it('returns false for an undefined user, without constructing Users', async function () {
+        assert.isFalse(await isPolicyAssignedToUserOrg(undefined, 'policy-1'));
+    });
+
+    it('returns false for a user with no organization, without constructing Users', async function () {
+        assert.isFalse(await isPolicyAssignedToUserOrg({ organization: null, userId: 'u-1' }, 'policy-1'));
+    });
+
+    it('returns false for an empty policyId, without constructing Users', async function () {
+        assert.isFalse(await isPolicyAssignedToUserOrg({ organization: 'org-1', userId: 'u-1' }, ''));
     });
 });

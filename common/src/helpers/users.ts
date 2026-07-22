@@ -406,6 +406,35 @@ export class Users extends NatsService {
     }
 
     /**
+     * Get the deduped IDs of all policies actively assigned to an organization (internal lookup).
+     * Wraps AuthEvents.GET_POLICIES_FOR_ORG. Drives both the ACCESS_POLICY_ASSIGNED* policy
+     * *list* filter (guardian-service addAccessFilters) and the policy *access gate*
+     * (accessPolicyCode / policy-service accessPolicy) — org assignment grants visibility and
+     * open/execute access, not auto-enrollment into policy groups.
+     * @param organizationId
+     * @param userId
+     */
+    public async getOrgPolicyIds(
+        organizationId: string,
+        userId: string | null
+    ): Promise<string[]> {
+        const assignments = await this.sendMessage<{ policyId?: string }[]>(
+            AuthEvents.GET_POLICIES_FOR_ORG,
+            { organizationId, userId }
+        );
+        if (!Array.isArray(assignments) || assignments.length === 0) {
+            return [];
+        }
+        const ids = new Set<string>();
+        for (const a of assignments) {
+            if (a && typeof a.policyId === 'string' && a.policyId) {
+                ids.add(a.policyId);
+            }
+        }
+        return Array.from(ids);
+    }
+
+    /**
      * Validate that the caller (SR owner or MEMBER_MANAGE admin) may manage the given
      * organization, and — when `orgRoleId` is supplied — that role is a valid assignment target
      * under R1/R2 on the admin branch. Internal lookup for guardian-service's enroll pre-flight;

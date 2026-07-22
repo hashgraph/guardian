@@ -69,6 +69,40 @@ export async function getOrgHederaAccountId(
 }
 
 /**
+ * Org-policy-assignment lookups memoized per acting PolicyUser instance — same lifetime and
+ * rationale as orgMemberDidsCache above. A policy action creates a fresh PolicyUser, so an entry
+ * lives for exactly one action; never cache by org id in a longer-lived structure, or a revoked
+ * assignment could keep granting access across requests.
+ */
+const orgPolicyIdsCache = new WeakMap<object, Promise<string[]>>();
+
+/**
+ * Whether the given policy is actively assigned to the user's organization (PolicyOrgAssignment).
+ * Org assignment is equivalent to a personal AssignEntity for access purposes — visibility and
+ * open/execute access — but does NOT auto-enroll the member into the policy's groups.
+ * Returns false when the user has no organization or no policyId is given, without any NATS call.
+ * The fetch happens at most once per policy action (memoized on the PolicyUser instance);
+ * callers are expected to fail closed on a rejected lookup (see actions-service.ts accessPolicy).
+ * @param user
+ * @param policyId
+ */
+export async function isPolicyAssignedToUserOrg(
+    user: Pick<PolicyUser, 'organization' | 'userId'> | null | undefined,
+    policyId: string
+): Promise<boolean> {
+    if (!user?.organization || !policyId) {
+        return false;
+    }
+    let promise = orgPolicyIdsCache.get(user);
+    if (!promise) {
+        promise = new Users().getOrgPolicyIds(user.organization, user.userId ?? null);
+        orgPolicyIdsCache.set(user, promise);
+    }
+    const ids = await promise;
+    return ids.includes(policyId);
+}
+
+/**
  * Org token-operation permission guard — the single enforcement contract for
  * TOKEN_MINTING / TOKEN_TRANSFER / TOKEN_RETIREMENT. Call it wherever a token
  * operation's account has been resolved, before any Hedera side effect.

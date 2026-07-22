@@ -6,9 +6,9 @@ import { BaseEntity } from '@guardian/common';
  *
  * Local mirror of the @guardian/common PolicyOrgAssignment entity so that auth-service's
  * MikroORM instance (which discovers only its own dist/entity/*.js) registers it.
- * Join of Organization x Policy controlling policy discoverability for the org's members.
- * Visibility only — does NOT auto-enroll members into policy groups; PolicyRoles still
- * governs group enrollment.
+ * Join of Organization x Policy controlling policy discoverability and access for the org's
+ * members. Grants visibility + open/execute access; does NOT auto-enroll members into policy
+ * groups — PolicyRoles still governs group enrollment.
  */
 @Entity()
 @Index({ name: 'org_policy_org_idx', properties: ['organizationId'] })
