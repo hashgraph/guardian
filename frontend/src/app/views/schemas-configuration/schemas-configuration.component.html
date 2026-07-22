@@ -285,6 +285,27 @@
                             }
                         </div>
 
+                        <!-- ── Canvas tab bar: Fields / Conditions ── -->
+                        <div class="sc-canvas-tab-bar">
+                            <div class="sc-canvas-tab-pill">
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeCanvasTab === 'fields'"
+                                    (click)="activeCanvasTab = 'fields'">
+                                    <i class="pi pi-list"></i>Fields
+                                </button>
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeCanvasTab === 'conditions'"
+                                    [class.sc-ctp-btn--conds]="activeCanvasTab === 'conditions'"
+                                    (click)="activeCanvasTab = 'conditions'">
+                                    <i class="pi pi-code-branch"></i>Conditions
+                                    @if (schemaConditionCount) {
+                                        <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+
+                        @if (activeCanvasTab === 'fields') {
                         <div class="sc-editor-body"
                              [class.sc-drop-active]="isDragOverCanvas"
                              (dragenter)="onCanvasDragEnter($event)"
@@ -412,6 +433,11 @@
                             </div>
 
                         </div>
+                        } <!-- /fields tab -->
+
+                        @if (activeCanvasTab === 'conditions') {
+                            <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
+                        }
                     </div>
 
                 } @else {
@@ -514,6 +540,27 @@
                             </div>
                         }
 
+                        <!-- ── Drill tab bar: Fields / Conditions ── -->
+                        <div class="sc-canvas-tab-bar sc-canvas-tab-bar--drill">
+                            <div class="sc-canvas-tab-pill">
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeDrillTab === 'fields'"
+                                    (click)="activeDrillTab = 'fields'">
+                                    <i class="pi pi-list"></i>Fields
+                                </button>
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeDrillTab === 'conditions'"
+                                    [class.sc-ctp-btn--conds]="activeDrillTab === 'conditions'"
+                                    (click)="activeDrillTab = 'conditions'">
+                                    <i class="pi pi-code-branch"></i>Conditions
+                                    @if (schemaConditionCount) {
+                                        <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
+                                    }
+                                </button>
+                            </div>
+                        </div>
+
+                        @if (activeDrillTab === 'fields') {
                         <div class="sc-drill-content"
                              [class.sc-drop-active]="isDragOverCanvas"
                              (dragenter)="onCanvasDragEnter($event)"
@@ -588,6 +635,11 @@
                                 Click to add a string field
                             </div>
                         </div>
+                        } <!-- /drill fields tab -->
+
+                        @if (activeDrillTab === 'conditions') {
+                            <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
+                        }
 
                         <div class="sc-drill-back-bar">
                             <button class="sc-btn" (click)="drillBack()">
@@ -615,25 +667,8 @@
                         <span class="sc-rp-badge">{{ getFieldTypeBadge(selectedField) }}</span>
                     </div>
 
-                    <!-- ── Tab bar ── -->
-                    <div class="sc-rp-tabs">
-                        <button class="sc-rp-tab"
-                            [class.active]="activeRpTab === 'settings'"
-                            (click)="activeRpTab = 'settings'">
-                            <i class="pi pi-cog"></i> Settings
-                        </button>
-                        <button class="sc-rp-tab"
-                            [class.active]="activeRpTab === 'logic'"
-                            (click)="activeRpTab = 'logic'">
-                            <i class="pi pi-sitemap"></i> Logic
-                            @if (schemaConditionCount) {
-                                <span class="sc-rp-tab-count">{{ schemaConditionCount }}</span>
-                            }
-                        </button>
-                    </div>
-
                     <!-- ── Settings pane ── -->
-                    <div class="sc-rp-pane" [class.active]="activeRpTab === 'settings'">
+                    <div class="sc-rp-pane" style="display:flex">
                         @if (selectedFieldErrors.length) {
                             <div class="sc-rp-errors">
                                 @for (err of selectedFieldErrors; track err) {
@@ -827,193 +862,215 @@
                         </div>
                     </div>
 
-                    <!-- ── Logic pane ── -->
-                    <div class="sc-rp-pane" [class.active]="activeRpTab === 'logic'">
-                        <p class="sc-cond-intro">
-                            IF/THEN/ELSE rules controlling which fields are shown.
-                            Conditions apply to the whole schema, not a single field.
-                        </p>
-
-                        @for (cond of (currentContextSchema?.conditions || []); track cond; let ci = $index) {
-                            <div class="sc-cond-card">
-
-                                <!-- Card header -->
-                                <div class="sc-cond-card-hd">
-                                    <span class="sc-cond-card-title">
-                                        <i class="pi pi-code-branch"></i> Condition {{ ci + 1 }}
-                                    </span>
-                                    <button class="sc-cond-remove" title="Remove" (click)="removeConditionAt(ci)">
-                                        <i class="pi pi-trash"></i>
-                                    </button>
-                                </div>
-
-                                <!-- IF section -->
-                                <div class="sc-cond-section">
-                                    <div class="sc-cond-section-hd">
-                                        <span class="sc-cond-kw sc-cond-kw--if">IF</span>
-                                        <select class="sc-rp-select sc-cond-op-sel"
-                                            (change)="setConditionOperator(cond, $any($event.target).value)">
-                                            <option value="SINGLE" [selected]="getIfOperator(cond) === 'SINGLE'">field matches</option>
-                                            <option value="AND"    [selected]="getIfOperator(cond) === 'AND'">ALL match (AND)</option>
-                                            <option value="OR"     [selected]="getIfOperator(cond) === 'OR'">ANY match (OR)</option>
-                                        </select>
-                                    </div>
-
-                                    @for (row of getIfRows(cond); track row; let ri = $index) {
-                                        <div class="sc-cond-if-row">
-                                            <select class="sc-rp-select"
-                                                (change)="setIfRowField(cond, ri, $any($event.target).value)">
-                                                @for (f of ifTriggerFields; track f.name) {
-                                                    <option [value]="f.name" [selected]="getIfRowFieldName(row) === f.name">
-                                                        {{ f.title || f.name }}
-                                                    </option>
-                                                }
-                                            </select>
-                                            <span class="sc-cond-eq">=</span>
-                                            @if (isIfRowEnum(row)) {
-                                                <select class="sc-rp-select"
-                                                    (change)="setIfRowValue(cond, ri, $any($event.target).value)">
-                                                    @for (opt of getIfRowOptions(row); track opt) {
-                                                        <option [value]="opt" [selected]="getIfRowValue(row) === opt">{{ opt }}</option>
-                                                    }
-                                                </select>
-                                            } @else {
-                                                <input class="sc-rp-input" type="text" placeholder="value"
-                                                    [value]="getIfRowValue(row)"
-                                                    (change)="setIfRowValue(cond, ri, $any($event.target).value)" />
-                                            }
-                                            @if (getIfOperator(cond) !== 'SINGLE') {
-                                                <button class="sc-cond-row-remove"
-                                                    [disabled]="getIfRows(cond).length <= 1"
-                                                    (click)="removeIfRow(cond, ri)">
-                                                    <i class="pi pi-times"></i>
-                                                </button>
-                                            }
-                                        </div>
-                                    }
-
-                                    @if (getIfOperator(cond) !== 'SINGLE') {
-                                        <button class="sc-cond-add-row" (click)="addIfRow(cond)">
-                                            <i class="pi pi-plus"></i> Add row
-                                        </button>
-                                    }
-                                </div>
-
-                                <!-- THEN section -->
-                                <div class="sc-cond-section">
-                                    <div class="sc-cond-section-hd">
-                                        <span class="sc-cond-kw sc-cond-kw--then">THEN</span>
-                                        <span class="sc-cond-section-sub">show these fields</span>
-                                    </div>
-
-                                    @for (f of (cond.thenFields || []); track f.name) {
-                                        <div class="sc-cond-target-row">
-                                            <i class="pi pi-eye sc-cond-target-ic"></i>
-                                            <span class="sc-cond-target-lbl">{{ f.title || f.name }}</span>
-                                            <button class="sc-cond-row-remove" (click)="removeThenField(cond, f)">
-                                                <i class="pi pi-times"></i>
-                                            </button>
-                                        </div>
-                                    }
-                                    @for (t of (cond.thenTargets || []); track t.fieldPath.join('.')) {
-                                        <div class="sc-cond-target-row sc-cond-target-row--cross">
-                                            <i class="pi pi-arrow-right-arrow-left sc-cond-target-ic"></i>
-                                            <span class="sc-cond-target-lbl sc-cond-target-lbl--path" title="{{ t.fieldPath.join('.') }}">
-                                                {{ t.fieldPath.join(' › ') }}
-                                            </span>
-                                            <button class="sc-cond-row-remove" (click)="removeThenTarget(cond, t)">
-                                                <i class="pi pi-times"></i>
-                                            </button>
-                                        </div>
-                                    }
-                                    @if (!cond.thenFields?.length && !cond.thenTargets?.length) {
-                                        <span class="sc-cond-empty-branch">None</span>
-                                    }
-                                    <div class="sc-cond-add-row-group">
-                                        <button class="sc-cond-add-field-btn" (click)="addThenField(cond)">
-                                            <i class="pi pi-plus"></i> New field
-                                        </button>
-                                        @if (getCrossTargetPaths().length) {
-                                            <select class="sc-rp-select sc-cond-cross-sel"
-                                                (change)="addThenTarget(cond, $any($event.target).value); $any($event.target).value = ''">
-                                                <option value="">+ Sub-schema field…</option>
-                                                @for (item of getCrossTargetPaths(); track item.pathStr) {
-                                                    <option [value]="item.pathStr">{{ item.label }}</option>
-                                                }
-                                            </select>
-                                        }
-                                    </div>
-                                </div>
-
-                                <!-- ELSE section -->
-                                <div class="sc-cond-section sc-cond-section--else">
-                                    <div class="sc-cond-section-hd">
-                                        <span class="sc-cond-kw sc-cond-kw--else">ELSE</span>
-                                        <span class="sc-cond-section-sub">show these fields</span>
-                                    </div>
-
-                                    @for (f of (cond.elseFields || []); track f.name) {
-                                        <div class="sc-cond-target-row">
-                                            <i class="pi pi-eye sc-cond-target-ic"></i>
-                                            <span class="sc-cond-target-lbl">{{ f.title || f.name }}</span>
-                                            <button class="sc-cond-row-remove" (click)="removeElseField(cond, f)">
-                                                <i class="pi pi-times"></i>
-                                            </button>
-                                        </div>
-                                    }
-                                    @for (t of (cond.elseTargets || []); track t.fieldPath.join('.')) {
-                                        <div class="sc-cond-target-row sc-cond-target-row--cross">
-                                            <i class="pi pi-arrow-right-arrow-left sc-cond-target-ic"></i>
-                                            <span class="sc-cond-target-lbl sc-cond-target-lbl--path" title="{{ t.fieldPath.join('.') }}">
-                                                {{ t.fieldPath.join(' › ') }}
-                                            </span>
-                                            <button class="sc-cond-row-remove" (click)="removeElseTarget(cond, t)">
-                                                <i class="pi pi-times"></i>
-                                            </button>
-                                        </div>
-                                    }
-                                    @if (!cond.elseFields?.length && !cond.elseTargets?.length) {
-                                        <span class="sc-cond-empty-branch">None</span>
-                                    }
-                                    <div class="sc-cond-add-row-group">
-                                        <button class="sc-cond-add-field-btn" (click)="addElseField(cond)">
-                                            <i class="pi pi-plus"></i> New field
-                                        </button>
-                                        @if (getCrossTargetPaths().length) {
-                                            <select class="sc-rp-select sc-cond-cross-sel"
-                                                (change)="addElseTarget(cond, $any($event.target).value); $any($event.target).value = ''">
-                                                <option value="">+ Sub-schema field…</option>
-                                                @for (item of getCrossTargetPaths(); track item.pathStr) {
-                                                    <option [value]="item.pathStr">{{ item.label }}</option>
-                                                }
-                                            </select>
-                                        }
-                                    </div>
-                                </div>
-
-                            </div>
-                        }
-
-                        @if (!schemaConditionCount) {
-                            <div class="sc-cond-empty">
-                                <i class="pi pi-code-branch"></i>
-                                <span>No conditions defined</span>
-                            </div>
-                        }
-
-                        <button class="sc-add-cond-btn"
-                            [disabled]="!canAddCondition"
-                            (click)="addNewCondition()">
-                            <i class="pi pi-plus"></i> Add condition
-                        </button>
-                    </div>
-
                 </aside>
             }
 
         </div>
 
     </div>
+
+    <!-- ── Shared conditions canvas template ── -->
+    <ng-template #conditionsCanvas>
+        <div class="sc-cond-canvas">
+            <div class="sc-cond-scope-note">
+                <i class="pi pi-info-circle"></i>
+                Conditions control field visibility: IF a field equals a value, THEN show / ELSE show other fields.
+            </div>
+
+            @for (cond of (currentContextSchema?.conditions || []); track cond; let ci = $index) {
+                <div class="sc-cond-block">
+
+                    <!-- Block header: IF / IF ALL / IF ANY toggle + delete -->
+                    <div class="sc-cond-block-hdr">
+                        <div class="sc-cond-type-group">
+                            <button class="sc-cond-type-btn"
+                                [class.active]="getIfOperator(cond) === 'SINGLE'"
+                                (click)="setConditionOperator(cond, 'SINGLE')">IF</button>
+                            <button class="sc-cond-type-btn"
+                                [class.active]="getIfOperator(cond) === 'AND'"
+                                (click)="setConditionOperator(cond, 'AND')">IF ALL</button>
+                            <button class="sc-cond-type-btn"
+                                [class.active]="getIfOperator(cond) === 'OR'"
+                                (click)="setConditionOperator(cond, 'OR')">IF ANY</button>
+                        </div>
+                        <span class="sc-cond-type-note">
+                            @if (getIfOperator(cond) === 'SINGLE') { — single condition }
+                            @else if (getIfOperator(cond) === 'AND') { — all must match }
+                            @else { — any must match }
+                        </span>
+                        <button class="sc-cond-block-del" title="Remove condition" (click)="removeConditionAt(ci)">
+                            <i class="pi pi-trash"></i>
+                        </button>
+                    </div>
+
+                    <!-- Rule rows -->
+                    <div class="sc-cond-block-body">
+                        <div class="sc-cond-when-label">When</div>
+
+                        @for (row of getIfRows(cond); track $index; let ri = $index) {
+                            <div class="sc-cond-rule-row">
+                                <span class="sc-cond-rule-num">{{ ri + 1 }}.</span>
+                                <select class="sc-cond-field-sel"
+                                    (change)="setIfRowField(cond, ri, $any($event.target).value)">
+                                    @for (group of getConditionFieldGroups(); track group.groupLabel) {
+                                        @if (group.isRoot) {
+                                            @for (opt of group.fields; track opt.pathStr) {
+                                                <option [value]="opt.pathStr"
+                                                    [selected]="getIfRowFieldPath(row) === opt.pathStr">
+                                                    {{ opt.label }}
+                                                </option>
+                                            }
+                                        } @else {
+                                            <optgroup [label]="group.groupLabel">
+                                                @for (opt of group.fields; track opt.pathStr) {
+                                                    <option [value]="opt.pathStr"
+                                                        [selected]="getIfRowFieldPath(row) === opt.pathStr">
+                                                        {{ opt.label }}
+                                                    </option>
+                                                }
+                                            </optgroup>
+                                        }
+                                    }
+                                </select>
+                                <span class="sc-cond-op-eq">=</span>
+                                @if (isIfRowEnum(row)) {
+                                    <select class="sc-cond-val-sel"
+                                        (change)="setIfRowValue(cond, ri, $any($event.target).value)">
+                                        @for (opt of getIfRowOptions(row); track opt) {
+                                            <option [value]="opt" [selected]="getIfRowValue(row) === opt">{{ opt }}</option>
+                                        }
+                                    </select>
+                                } @else {
+                                    <input class="sc-cond-val-inp" type="text" placeholder="value"
+                                        [value]="getIfRowValue(row)"
+                                        (change)="setIfRowValue(cond, ri, $any($event.target).value)" />
+                                }
+                                <button class="sc-cond-row-del"
+                                    [disabled]="getIfRows(cond).length <= 1"
+                                    (click)="removeIfRow(cond, ri)">
+                                    <i class="pi pi-times"></i>
+                                </button>
+                            </div>
+                        }
+
+                        @if (getIfOperator(cond) !== 'SINGLE') {
+                            <button class="sc-cond-add-rule" (click)="addIfRow(cond)">
+                                <i class="pi pi-plus"></i> Add condition row
+                            </button>
+                        }
+
+                        <!-- THEN / ELSE 2-column grid -->
+                        <div class="sc-cond-te-grid">
+
+                            <!-- THEN -->
+                            <div class="sc-cond-te-block">
+                                <div class="sc-cond-te-hdr sc-cond-te-hdr--then">
+                                    <i class="pi pi-check"></i>THEN
+                                </div>
+                                <div class="sc-cond-te-body">
+                                    @for (f of (cond.thenFields || []); track f.name) {
+                                        <div class="sc-cond-te-item"
+                                            [class.sc-cond-te-item--active]="selectedField === f"
+                                            title="Click to configure field"
+                                            (click)="selectField(f)">
+                                            <i class="pi pi-pencil"></i>
+                                            <span class="sc-cond-te-label">{{ f.title || f.name }}</span>
+                                            <span class="sc-cond-te-badge sc-cond-te-badge--new">new</span>
+                                            <button class="sc-cond-te-del" (click)="removeThenField(cond, f); $event.stopPropagation()">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    @for (t of (cond.thenTargets || []); track t.fieldPath.join('.')) {
+                                        <div class="sc-cond-te-item">
+                                            <i class="pi pi-eye"></i>
+                                            <span class="sc-cond-te-label sc-cond-te-label--path"
+                                                [title]="t.fieldPath.join('.')">{{ t.fieldPath.join(' › ') }}</span>
+                                            <span class="sc-cond-te-badge sc-cond-te-badge--show">show</span>
+                                            <button class="sc-cond-te-del" (click)="removeThenTarget(cond, t)">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    <div class="sc-cond-te-add-row">
+                                        <button class="sc-cond-te-add-btn" (click)="addThenField(cond)">
+                                            <i class="pi pi-plus"></i>New field
+                                        </button>
+                                        <select class="sc-cond-te-ref-sel"
+                                            [disabled]="!getCrossTargetPaths().length"
+                                            (change)="addThenTarget(cond, $any($event.target).value); $any($event.target).value = ''">
+                                            <option value="">{{ getCrossTargetPaths().length ? '🔗 Ref field' : '(no sub-schema fields)' }}</option>
+                                            @for (item of getCrossTargetPaths(); track item.pathStr) {
+                                                <option [value]="item.pathStr">{{ item.label }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ELSE -->
+                            <div class="sc-cond-te-block">
+                                <div class="sc-cond-te-hdr sc-cond-te-hdr--else">
+                                    <i class="pi pi-times"></i>ELSE
+                                </div>
+                                <div class="sc-cond-te-body">
+                                    @for (f of (cond.elseFields || []); track f.name) {
+                                        <div class="sc-cond-te-item"
+                                            [class.sc-cond-te-item--active]="selectedField === f"
+                                            title="Click to configure field"
+                                            (click)="selectField(f)">
+                                            <i class="pi pi-pencil"></i>
+                                            <span class="sc-cond-te-label">{{ f.title || f.name }}</span>
+                                            <span class="sc-cond-te-badge sc-cond-te-badge--new">new</span>
+                                            <button class="sc-cond-te-del" (click)="removeElseField(cond, f); $event.stopPropagation()">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    @for (t of (cond.elseTargets || []); track t.fieldPath.join('.')) {
+                                        <div class="sc-cond-te-item">
+                                            <i class="pi pi-eye-slash"></i>
+                                            <span class="sc-cond-te-label sc-cond-te-label--path"
+                                                [title]="t.fieldPath.join('.')">{{ t.fieldPath.join(' › ') }}</span>
+                                            <span class="sc-cond-te-badge sc-cond-te-badge--hide">hide</span>
+                                            <button class="sc-cond-te-del" (click)="removeElseTarget(cond, t)">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
+                                    }
+                                    <div class="sc-cond-te-add-row">
+                                        <button class="sc-cond-te-add-btn" (click)="addElseField(cond)">
+                                            <i class="pi pi-plus"></i>New field
+                                        </button>
+                                        <select class="sc-cond-te-ref-sel"
+                                            [disabled]="!getCrossTargetPaths().length"
+                                            (change)="addElseTarget(cond, $any($event.target).value); $any($event.target).value = ''">
+                                            <option value="">{{ getCrossTargetPaths().length ? '🔗 Ref field' : '(no sub-schema fields)' }}</option>
+                                            @for (item of getCrossTargetPaths(); track item.pathStr) {
+                                                <option [value]="item.pathStr">{{ item.label }}</option>
+                                            }
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (!schemaConditionCount) {
+                <div class="sc-cond-empty">
+                    <i class="pi pi-code-branch"></i>
+                    <span>No conditions defined yet</span>
+                </div>
+            }
+
+            <button class="sc-add-cond-btn" [disabled]="!canAddCondition" (click)="addNewCondition()">
+                <i class="pi pi-plus"></i> Add condition
+            </button>
+        </div>
+    </ng-template>
 
     <!-- ── Floating drag card (follows cursor during field reorder) ── -->
     @if (isDragActive && reorderField) {
