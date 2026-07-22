@@ -324,7 +324,7 @@ function onSearchKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-    <header class="relative z-40 flex shrink-0 items-center h-12 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 gap-4">
+    <header class="sticky top-0 z-40 flex shrink-0 items-center h-12 border-b bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80 px-4 gap-4">
         <!-- Left: sidebar toggle. Scale-down on active press for tactile feedback. -->
         <button
             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground active:scale-95 transition-all duration-150"
