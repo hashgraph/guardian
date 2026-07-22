@@ -1,34 +1,30 @@
----
-icon: mountain
----
-
 # Climate Action Reserve’s U.S. Landfill Protocol Version 6.0
 
 ## Table of Contents
 
-[Introduction](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc1569113010)
+[Introduction](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc1569113010)
 
-[Need and Use](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312046)
+[Need and Use](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312046)
 
-[Monitoring and Quantification Approach](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312047)
+[Monitoring and Quantification Approach](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312047)
 
-[Project Eligibility and Additionality](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312048)
+[Project Eligibility and Additionality](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312048)
 
-[Project Type](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312049)
+[Project Type](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312049)
 
-[Demo Video](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc80095333)
+[Demo Video](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc80095333)
 
-[Policy Workflow](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312050)
+[Policy Workflow](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312050)
 
-[Policy Import](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312051)
+[Policy Import](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312051)
 
-[Available Roles](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312052)
+[Available Roles](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312052)
 
-[Important Schemas](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312053)
+[Important Schemas](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312053)
 
-[Token (Climate Reserve Tonnes - CRTs)](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312054)
+[Token (Climate Reserve Tonnes - CRTs)](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312054)
 
-[Step By Step](climate-action-reserves-u.s.-landfill-protocol-version-6.0-1.md#toc182312055)
+[Step By Step](climate-action-reserves-u.s.-landfill-protocol-version-6.0.md#toc182312055)
 
 ## **Introduction** <a href="#toc1569113010" id="toc1569113010"></a>
 

@@ -2,6 +2,8 @@
 description: >-
   A comprehensive guide to digitizing environmental methodologies on Guardian
   platform
+tags:
+  - guide
 ---
 
 # 📚 Methodology Digitization Handbook
