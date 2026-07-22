@@ -23,21 +23,14 @@ export class SchemaFormNavigationComponent {
 
     private rebuildNavTree(): void {
         this.navTree = this.buildNavTree(this.schemaFields || []);
-        queueMicrotask(() => this.hasItemsChangeEvent.emit(this.navTree.length > 0));
-    }
-
-    ngOnInit(): void {
-        if (!this.navTree.length) { this.rebuildNavTree(); }
-        this.openFirstNavItem();
+        this.hasItemsChangeEvent.emit(this.navTree.length > 0);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.schemaFields) {
+            this.expanded.clear();
             this.rebuildNavTree();
-            if (!changes.schemaFields.firstChange) {
-                this.expanded.clear();
-                this.openFirstNavItem();
-            }
+            this.openFirstNavItem();
         }
     }
 
