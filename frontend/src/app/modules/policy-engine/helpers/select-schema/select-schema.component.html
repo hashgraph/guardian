@@ -7,6 +7,10 @@
     placeholder="Select a schema"
     optionLabel="displayName"
     optionValue="value"
+    [filter]="true"
+    filterBy="displayName"
+    filterPlaceholder="Search schema"
+    [resetFilterOnHide]="true"
     appendTo="body"
     (ngModelChange)="onChange()"
 >

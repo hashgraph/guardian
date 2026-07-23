@@ -184,6 +184,10 @@
                             optionValue="value"
                             [disabled]="readonly"
                             placeholder="Select schemas"
+                            [filter]="true"
+                            filterBy="displayName"
+                            filterPlaceholder="Search schema"
+                            [resetFilterOnHide]="true"
                             (onChange)="onSave()"
                             [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >

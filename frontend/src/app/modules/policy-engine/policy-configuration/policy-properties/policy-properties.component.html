@@ -96,6 +96,10 @@
                 optionValue="value"
                 [disabled]="!policySchemas?.length"
                 placeholder="Select a schema"
+                [filter]="true"
+                filterBy="name"
+                filterPlaceholder="Search schema"
+                [resetFilterOnHide]="true"
                 (onChange)="setProjectSchema($event.value)"
                 [appendTo]="'body'"
                 >
