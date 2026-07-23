@@ -8,6 +8,9 @@ export class ResolvedFieldDto {
     @ApiProperty({ description: 'Schema field key (e.g. "G2")' })
     fieldKey: string;
 
+    @ApiProperty({ description: 'Schema IRI that owns this field — disambiguates fieldKeys shared across schemas (e.g. "name" on both a Project schema and an Entity schema)' })
+    schemaIri: string;
+
     @ApiProperty({ description: 'Human-readable title from the schema (e.g. "Project Name")' })
     title: string;
 
@@ -290,7 +293,7 @@ export class DecodedMethodologyResponseDto {
             if (!resolved?.fieldPath) return null;
             const def = lookupFieldDef(resolved.fieldPath, resolved.schemaIri);
             if (!def) return null;
-            return { fieldKey: resolved.fieldPath, title: def.title, description: def.description };
+            return { fieldKey: resolved.fieldPath, schemaIri: resolved.schemaIri, title: def.title, description: def.description };
         };
 
         dto.projectSchema = {

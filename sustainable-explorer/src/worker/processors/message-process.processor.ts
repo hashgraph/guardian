@@ -251,7 +251,7 @@ export class MessageProcessProcessor extends WorkerHost {
                     fromSerial: 0,
                 },
                 {
-                    jobId: `token-${tokenId}`,
+                    jobId: `token-${tokenId}-${consensusTimestamp}`,
                 },
             );
         }

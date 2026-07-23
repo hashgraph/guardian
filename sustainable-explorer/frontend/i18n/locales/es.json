@@ -684,6 +684,8 @@
             "supplyDifferenceTooltip": "El monto de suministro y el monto acuñado de esta emisión son actualmente diferentes.",
             "tokenSupply": "Suministro del token",
             "tokenSupplyTooltip": "Número total de tokens que están actualmente en circulación.",
+            "tokenSupplyLiveTooltip": "Suministro total en vivo, obtenido directamente del Hedera Mirror Node.",
+            "live": "En vivo",
             "totalMinted": "Total acuñado",
             "totalMintedAll": "Total acuñado (Todos)",
             "totalMintedAllTooltip": "Número total de tokens acuñados en todos los proyectos para este token.",

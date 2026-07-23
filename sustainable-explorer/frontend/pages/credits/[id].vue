@@ -124,7 +124,8 @@ const tabs = computed(() => [
 
 // ─── Computed ─────────────────────────────────────────────────────────────────
 
-const tokenSupply = computed(() => credit.value?.supply ?? 0);
+const { liveSupply, isLive: isSupplyLive } = useLiveTokenSupply(tokenId, network);
+const tokenSupply = computed(() => liveSupply.value ?? credit.value?.supply ?? 0);
 
 const totalMintedAll = computed(() =>
     mintEvents.value.reduce((s, e) => s + (e.amount ? parseFloat(e.amount) : 0), 0),
@@ -433,7 +434,15 @@ function viewRawVc(title: string, doc: Record<string, any> | null) {
                             <div class="bg-card px-4 py-3">
                                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
                                     {{ $t('credits.detail.tokenSupply') }}
-                                    <InfoTooltip :text="$t('credits.detail.tokenSupplyTooltip')" />
+                                    <InfoTooltip :text="isSupplyLive ? $t('credits.detail.tokenSupplyLiveTooltip') : $t('credits.detail.tokenSupplyTooltip')" />
+                                    <span
+                                        v-if="isSupplyLive"
+                                        class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-1.5 py-0.5 text-[9px] font-semibold normal-case tracking-normal text-emerald-600 dark:text-emerald-400"
+                                        :title="$t('credits.detail.tokenSupplyLiveTooltip')"
+                                    >
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                        {{ $t('credits.detail.live') }}
+                                    </span>
                                 </div>
                                 <div class="text-lg font-semibold text-foreground tabular-nums">
                                     {{ formatCredits(tokenSupply) }}

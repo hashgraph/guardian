@@ -25,11 +25,13 @@ import type { AuthenticatedUser } from '../auth/auth.types';
 // ---------------------------------------------------------------------------
 
 interface PolicyRow {
+    id: string;
     policyTopicId: string;
     sourceCid: string;
     decodeStatus: string;
     policyMapping: Record<string, unknown> | null;
     instanceTopicId?: string | null;
+    rawSchemaJson?: Record<string, unknown> | null;
 }
 
 interface VcMessageRow {
@@ -115,24 +117,8 @@ export class MappingReprocessService {
         methodologyId: string,
     ): Promise<{ enqueued: boolean; jobId?: string }> {
         const ds = this.dataSources.getDataSource(network);
-        const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
-
-        const policyRows: PolicyRow[] = await ds.query(
-            `SELECT "policyTopicId", "sourceCid", "decodeStatus", "instanceTopicId"
-             FROM policy
-             WHERE "policyTopicId" = $1
-             LIMIT 1`,
-            [policyTopicId],
-        );
-
-        if (policyRows.length === 0) {
-            throw new NotFoundException(
-                `No policy row for policy topic "${policyTopicId}" on ${network}. ` +
-                `The policy must have been processed at least once before re-decoding.`,
-            );
-        }
-
-        const { sourceCid, instanceTopicId } = policyRows[0];
+        const resolved = await this.resolvePolicyVersion(network, methodologyId);
+        const { id: policyId, policyTopicId, sourceCid, instanceTopicId } = resolved;
 
         await ds.query(
             `UPDATE policy
@@ -143,22 +129,31 @@ export class MappingReprocessService {
                  "mappingSource" = 'auto',
                  error           = NULL,
                  "updatedAt"     = now()
-             WHERE "policyTopicId" = $1`,
-            [policyTopicId],
+             WHERE id = $1`,
+            [policyId],
         );
 
         // Recover the original message timestamp (and instanceTopicId, straight from
         // the source message rather than the policy row) for the publish-policy
         // message so the processor can locate the correct source in the message table.
         const msgRows: Array<{ consensusTimestamp: string; instanceTopicId: string | null }> = await ds.query(
-            `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
-             FROM message
-             WHERE type = 'Instance-Policy'
-               AND action = 'publish-policy'
-               AND "topicId" = $1
-             ORDER BY "consensusTimestamp" DESC
-             LIMIT 1`,
-            [policyTopicId],
+            instanceTopicId
+                ? `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
+                   FROM message
+                   WHERE type = 'Instance-Policy'
+                     AND action = 'publish-policy'
+                     AND "topicId" = $1
+                     AND options->>'instanceTopicId' = $2
+                   ORDER BY "consensusTimestamp" DESC
+                   LIMIT 1`
+                : `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
+                   FROM message
+                   WHERE type = 'Instance-Policy'
+                     AND action = 'publish-policy'
+                     AND "topicId" = $1
+                   ORDER BY "consensusTimestamp" DESC
+                   LIMIT 1`,
+            instanceTopicId ? [policyTopicId, instanceTopicId] : [policyTopicId],
         );
 
         const messageTimestamp = msgRows[0]?.consensusTimestamp ?? '0.0';
@@ -199,22 +194,27 @@ export class MappingReprocessService {
         methodologyId: string,
     ): Promise<{ enqueued: number }> {
         const ds = this.dataSources.getDataSource(network);
-        const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
+        const resolved = await this.resolvePolicyVersion(network, methodologyId);
+        const { policyTopicId, instanceTopicId, decodeStatus } = resolved;
 
-        const statusRows: Array<{ decodeStatus: string }> = await ds.query(
-            `SELECT "decodeStatus" FROM policy WHERE "policyTopicId" = $1 LIMIT 1`,
-            [policyTopicId],
-        );
-
-        if (statusRows.length === 0 || statusRows[0].decodeStatus !== 'decoded') {
+        if (decodeStatus !== 'decoded') {
             this.logger.log(
-                `reparseProjects skipped for policyTopicId=${policyTopicId}: ` +
-                `decodeStatus=${statusRows[0]?.decodeStatus ?? 'missing'} (must be "decoded")`,
+                `reparseProjects skipped for policyTopicId=${policyTopicId} ` +
+                `instanceTopicId=${instanceTopicId ?? ''}: decodeStatus=${decodeStatus} (must be "decoded")`,
             );
             return { enqueued: 0 };
         }
 
-        // Collect VC-Documents by walking the policy's topic subtree, rather
+        if (!instanceTopicId) {
+            this.logger.warn(
+                `reparseProjects skipped for policyTopicId=${policyTopicId}: decodeStatus is "decoded" ` +
+                `but instanceTopicId is unknown. Run redecode for this version first to self-heal it.`,
+            );
+            return { enqueued: 0 };
+        }
+
+        // Collect VC-Documents by walking the SPECIFIC VERSION's topic subtree
+        // (rooted at instanceTopicId, not the shared policyTopicId), rather
         // than joining on message.policyId = policy.policyId. Those two
         // columns are stamped independently — policy.policyId comes from
         // policy.json's id (or a legacy policyTag when absent), while
@@ -238,7 +238,7 @@ export class MappingReprocessService {
              FROM message m
              JOIN descendants d ON d."topicId" = m."topicId"
              WHERE m.type = 'VC-Document' AND m.documents IS NOT NULL`,
-            [policyTopicId],
+            [instanceTopicId],
         );
 
         const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
@@ -307,14 +307,23 @@ export class MappingReprocessService {
                 // column was previously nulled by the same bug this guards against
                 // in redecodePolicy() above.
                 const msgRows: Array<{ consensusTimestamp: string; instanceTopicId: string | null }> = await ds.query(
-                    `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
-                     FROM message
-                     WHERE type = 'Instance-Policy'
-                       AND action = 'publish-policy'
-                       AND "topicId" = $1
-                     ORDER BY "consensusTimestamp" DESC
-                     LIMIT 1`,
-                    [row.policyTopicId],
+                    row.instanceTopicId
+                        ? `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
+                           FROM message
+                           WHERE type = 'Instance-Policy'
+                             AND action = 'publish-policy'
+                             AND "topicId" = $1
+                             AND options->>'instanceTopicId' = $2
+                           ORDER BY "consensusTimestamp" DESC
+                           LIMIT 1`
+                        : `SELECT "consensusTimestamp", options->>'instanceTopicId' AS "instanceTopicId"
+                           FROM message
+                           WHERE type = 'Instance-Policy'
+                             AND action = 'publish-policy'
+                             AND "topicId" = $1
+                           ORDER BY "consensusTimestamp" DESC
+                           LIMIT 1`,
+                    row.instanceTopicId ? [row.policyTopicId, row.instanceTopicId] : [row.policyTopicId],
                 );
 
                 const jobData: PolicyDecodeJobData = {
@@ -359,11 +368,11 @@ export class MappingReprocessService {
     }> {
         const ds = this.dataSources.getDataSource(network);
 
-        const rows: Array<{ policy_topic: string }> = await ds.query(
-            `SELECT DISTINCT bv."businessData"->>'topicId' AS policy_topic
+        const rows: Array<{ instance_topic: string }> = await ds.query(
+            `SELECT DISTINCT bv."relatedTopicId" AS instance_topic
              FROM business_view bv
              WHERE bv."viewType" = 'METHODOLOGY'
-               AND bv."businessData"->>'topicId' IS NOT NULL`,
+               AND bv."relatedTopicId" IS NOT NULL`,
         );
 
         let succeeded = 0;
@@ -372,7 +381,7 @@ export class MappingReprocessService {
 
         for (const row of rows) {
             try {
-                const result = await this.reparseProjects(network, row.policy_topic);
+                const result = await this.reparseProjects(network, row.instance_topic);
                 if (result.enqueued > 0) {
                     succeeded++;
                     enqueued += result.enqueued;
@@ -382,7 +391,7 @@ export class MappingReprocessService {
             } catch (err) {
                 skipped++;
                 this.logger.warn(
-                    `reparseAllProjects: skipped policyTopicId=${row.policy_topic}: ` +
+                    `reparseAllProjects: skipped instanceTopicId=${row.instance_topic}: ` +
                     `${err instanceof Error ? err.message : String(err)}`,
                 );
             }
@@ -430,24 +439,10 @@ export class MappingReprocessService {
         actor: AuthenticatedUser,
     ): Promise<DecodedMethodologyResponseDto> {
         const ds = this.dataSources.getDataSource(network);
-        const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
+        const resolved = await this.resolvePolicyVersion(network, methodologyId);
+        const { id: policyId, policyTopicId } = resolved;
 
-        // ── Fetch existing policy row ────────────────────────────────────────────
-        const policyRows: PolicyRow[] = await ds.query(
-            `SELECT "policyTopicId", "sourceCid", "decodeStatus", "policyMapping"
-         FROM policy
-         WHERE "policyTopicId" = $1
-         LIMIT 1`,
-            [policyTopicId],
-        );
-
-        if (policyRows.length === 0) {
-            throw new NotFoundException(
-                `No policy row for policy topic "${policyTopicId}" on ${network}.`,
-            );
-        }
-
-        const existingMapping = (policyRows[0].policyMapping ?? {}) as Record<string, unknown[]>;
+        const existingMapping = (resolved.policyMapping ?? {}) as Record<string, unknown[]>;
 
         // Snapshot which schemas are already classified as "the project schema"
         // BEFORE merging, so a manual field-level remap can't silently promote an
@@ -478,20 +473,11 @@ export class MappingReprocessService {
             );
         }
 
-        // ── Load known schema IRIs for this policy (latest decoded row) ──────────
+        // ── Known schema IRIs for THIS version's own row ─────────────────────────
         // Needed up front because Guardian schema IRIs contain dots
         // (`#uuid&1.0.0`), so we can't split `schemaIri.fieldPath` with a naive
         // indexOf('.') — we match against the known IRI set longest-first.
-        const rawRows: Array<{ rawSchemaJson: Record<string, unknown> | null }> = await ds.query(
-            `SELECT "rawSchemaJson"
-         FROM policy
-         WHERE "policyTopicId" = $1
-         ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
-                  "updatedAt" DESC NULLS LAST
-         LIMIT 1`,
-            [policyTopicId],
-        );
-        const rawSchemaJson = (rawRows[0]?.rawSchemaJson ?? {}) as Record<string, unknown>;
+        const rawSchemaJson = (resolved.rawSchemaJson ?? {}) as Record<string, unknown>;
         const knownIris = Object.keys(rawSchemaJson).sort((a, b) => b.length - a.length);
 
         // ── Validate path format ─────────────────────────────────────────────────
@@ -591,12 +577,12 @@ export class MappingReprocessService {
          SET "policyMapping" = $2::jsonb,
              "mappingSource" = 'manual',
              "updatedAt"     = now()
-         WHERE "policyTopicId" = $1`,
-            [policyTopicId, JSON.stringify(mergedMapping)],
+         WHERE id = $1`,
+            [policyId, JSON.stringify(mergedMapping)],
         );
 
         this.logger.log(
-            `Updated policyMapping for policyTopicId=${policyTopicId} ` +
+            `Updated policyMapping for policyTopicId=${policyTopicId} (id=${policyId}) ` +
             `(${Object.keys(body.fieldMap).length} key(s) merged).`,
         );
 
@@ -1554,6 +1540,83 @@ export class MappingReprocessService {
             // Never let label resolution failures surface as HTTP errors
             return {};
         }
+    }
+
+    /**
+     * Resolves the URL `:id` param (the version-specific instanceTopicId in
+     * the normal case, or a bare policyTopicId for legacy/API callers) down
+     * to the SPECIFIC policy row for that version — not just the shared
+     * policyTopicId.
+     *
+     * `policy.policyTopicId` is shared across every published version of a
+     * methodology (one row per version, disambiguated by instanceTopicId /
+     * sourceCid — see docs/decode-flow.md). Every mutation must key on the
+     * row `id` returned here, never on bare policyTopicId, or a write meant
+     * for one version corrupts every sibling version sharing that topic.
+     */
+    private async resolvePolicyVersion(network: string, methodologyId: string): Promise<PolicyRow> {
+        const ds = this.dataSources.getDataSource(network);
+
+        const bvRows: Array<{
+            policy_topic: string | null;
+            instance_topic: string | null;
+            source_timestamp: string | null;
+        }> = await ds.query(
+            `SELECT bv."businessData"->>'topicId' AS policy_topic,
+                    bv."relatedTopicId" AS instance_topic,
+                    bv."sourceTimestamp" AS source_timestamp
+             FROM business_view bv
+             WHERE bv."viewType" = 'METHODOLOGY'
+               AND (bv."relatedTopicId" = $1 OR bv."businessData"->>'topicId' = $1)
+             ORDER BY bv."sourceTimestamp"::numeric DESC NULLS LAST, bv.id DESC
+             LIMIT 1`,
+            [methodologyId],
+        );
+
+        if (bvRows.length === 0 || !bvRows[0].policy_topic) {
+            throw new NotFoundException(
+                `Methodology with ID "${methodologyId}" not found on ${network}.`,
+            );
+        }
+
+        const { policy_topic: policyTopicId, instance_topic: instanceTopicId, source_timestamp: sourceTimestamp } = bvRows[0];
+
+        // Primary match: the specific version's own instanceTopicId. Fallback
+        // (instanceTopicId IS NULL on the policy row) covers a version whose
+        // column hasn't been populated yet — or was previously nulled out by
+        // the cross-version corruption bug this resolver exists to fix —
+        // matched via the originating publish-policy message's CID so the
+        // exact row can still be targeted directly to self-heal.
+        const policyRows: PolicyRow[] = await ds.query(
+            `SELECT p.id, p."policyTopicId", p."instanceTopicId", p."sourceCid",
+                    p."decodeStatus", p."policyMapping", p."rawSchemaJson"
+             FROM policy p
+             WHERE p."policyTopicId" = $1
+               AND (
+                     p."instanceTopicId" = $2
+                     OR (
+                          p."instanceTopicId" IS NULL
+                          AND $3::varchar IS NOT NULL
+                          AND p."sourceCid" IN (
+                              SELECT unnest(m.files) FROM message m
+                              WHERE m."topicId" = $1 AND m."consensusTimestamp" = $3
+                          )
+                     )
+                   )
+             ORDER BY (p."instanceTopicId" IS NOT NULL) DESC, p."updatedAt" DESC NULLS LAST
+             LIMIT 1`,
+            [policyTopicId, instanceTopicId, sourceTimestamp],
+        );
+
+        if (policyRows.length === 0) {
+            throw new NotFoundException(
+                `No policy row for policy topic "${policyTopicId}" ` +
+                `(instanceTopicId="${instanceTopicId ?? ''}") on ${network}. ` +
+                `The policy must have been processed at least once before this operation.`,
+            );
+        }
+
+        return policyRows[0];
     }
 
     /**
