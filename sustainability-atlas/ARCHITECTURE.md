@@ -1,6 +1,6 @@
-# Sustainable Explorer — Data Pipeline Architecture
+# Sustainability Atlas — Data Pipeline Architecture
 
-This document describes how the Sustainable Explorer worker ingests data from the Hedera Mirror Node and IPFS, maps it to business entities, and supports horizontal scaling and multi-network querying.
+This document describes how the Sustainability Atlas worker ingests data from the Hedera Mirror Node and IPFS, maps it to business entities, and supports horizontal scaling and multi-network querying.
 
 ## High-Level Topology
 
@@ -317,14 +317,14 @@ Key: all queues are always registered so any processor can enqueue jobs to any q
 # docker-compose.scale.yml
 services:
   worker-ingest:
-    image: sustainable-explorer-worker
+    image: sustainability-atlas-worker
     environment:
       WORKER_QUEUES: mirror-node-topics,mirror-node-messages
     deploy:
       replicas: 3
 
   worker-ipfs:
-    image: sustainable-explorer-worker
+    image: sustainability-atlas-worker
     environment:
       WORKER_QUEUES: ipfs-files
       WORKER_IPFS_CONCURRENCY: 10
@@ -332,14 +332,14 @@ services:
       replicas: 5
 
   worker-tokens:
-    image: sustainable-explorer-worker
+    image: sustainability-atlas-worker
     environment:
       WORKER_QUEUES: mirror-node-tokens
     deploy:
       replicas: 1
 
   worker-maintenance:
-    image: sustainable-explorer-worker
+    image: sustainability-atlas-worker
     environment:
       WORKER_QUEUES: maintenance-*
     deploy:

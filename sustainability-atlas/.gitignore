@@ -4,9 +4,9 @@ frontend/.output/**/*
 *.sql.gz
 data/policy-zips/**/*
 policy.json
-
+agentic-run/
 frontend/.env
-
+design/
 frontend/google-apps-script/**/*
 # Snapshot bundles (built by scripts/export-snapshot.sh).
 # The directory itself is kept (we ship the .gitkeep so the bind mount has a
@@ -14,7 +14,7 @@ frontend/google-apps-script/**/*
 snapshot/postgres-init/*.sql
 snapshot/postgres-init/*.sql.gz
 snapshot/policy-zips/
-sustainable-explorer-snapshot-*.tar.gz
+sustainability-atlas-snapshot-*.tar.gz
 
 # Production compose overlay — kept out of git so per-deployment tweaks
 # (cors origins, public URLs, redict eviction policy, etc.) don't leak.

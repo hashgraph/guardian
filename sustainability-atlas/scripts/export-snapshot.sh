@@ -8,7 +8,7 @@
 #     → snapshot/policy-zips/*.zip
 #
 # Both are bundled into a single tarball at the project root:
-#   sustainable-explorer-snapshot-<YYYYMMDD-HHMMSS>.tar.gz
+#   sustainability-atlas-snapshot-<YYYYMMDD-HHMMSS>.tar.gz
 #
 # That tarball is what you ship to another host. See `import-snapshot.sh`
 # for the receiving side.
@@ -28,7 +28,7 @@ DB_USER="${DB_USER:-explorer}"
 SNAPSHOT_DIR="snapshot"
 POLICY_ZIPS_SRC="data/policy-zips"
 TIMESTAMP="$(date +%Y%m%d-%H%M%S)"
-OUTPUT_PATH="${1:-sustainable-explorer-snapshot-${TIMESTAMP}.tar.gz}"
+OUTPUT_PATH="${1:-sustainability-atlas-snapshot-${TIMESTAMP}.tar.gz}"
 
 # Ensure postgres container is up
 if ! docker ps --format '{{.Names}}' | grep -qx "$POSTGRES_CONTAINER"; then

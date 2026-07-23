@@ -1,4 +1,4 @@
-# Sustainable Explorer — Frontend
+# Sustainability Atlas — Frontend
 
 Nuxt 3 application with Vue 3, TanStack Query/Table, shadcn-vue patterns, and Tailwind CSS v4.
 
