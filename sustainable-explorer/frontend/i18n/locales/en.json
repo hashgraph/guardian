@@ -447,7 +447,7 @@
         "mtco2AnnualEst": "MtCO2 Annual Est.",
         "sector": "Sector",
         "registry": "Registry",
-        "totalIssuancesLabel": "Total Issuances",
+        "totalIssuancesLabel": "Total Minted Credits",
         "sectorTypes": {
             "renewableEnergy": "Renewable Energy",
             "forestry": "Forestry",
