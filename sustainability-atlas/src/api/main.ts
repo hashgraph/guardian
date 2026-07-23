@@ -79,7 +79,7 @@ async function bootstrap() {
     const directApiUrl = `http://localhost:${apiPort}`;
     const corsOrigin = (process.env.API_CORS_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean)[0];
     const swaggerBuilder = new DocumentBuilder()
-        .setTitle('Sustainable Explorer API')
+        .setTitle('Sustainability Atlas API')
         .setDescription('REST API for querying indexed Hedera Guardian sustainability data')
         .setVersion('1.0')
         .addTag('registries', 'Standard Registries')

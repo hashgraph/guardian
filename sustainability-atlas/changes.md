@@ -1,8 +1,8 @@
-Hedera Guardian — Sustainable Explorer GitHub Issues
+Hedera Guardian — Sustainability Atlas GitHub Issues
 Issue 1: Build a Business Abstraction Layer for Blockchain Data
 Labels: enhancement, indexer, data-model, high-priority Action Items Covered: #1, #2, #3, #4, #5 Stakeholders: Nature Wired, Allcot, WinCL, Evercity, Earthood, Verra, ChangeCode, DOVU, CAD Trust Complexity: Very High
 Problem description
-The Sustainable Explorer (Indexer) currently presents raw blockchain data — transaction hashes, token IDs, and Hedera-native events — which are meaningless to business users in the carbon credit market. Non-technical stakeholders such as buyers, auditors, sustainability managers, and registry operators cannot understand what happened on-chain without deep blockchain knowledge. There is no standardized business entity model that translates blockchain events into real-world concepts, and different carbon registries (Verra, Gold Standard, ACR, etc.) use inconsistent terminology for the same concepts, making cross-registry comparison impossible.
+The Sustainability Atlas (Indexer) currently presents raw blockchain data — transaction hashes, token IDs, and Hedera-native events — which are meaningless to business users in the carbon credit market. Non-technical stakeholders such as buyers, auditors, sustainability managers, and registry operators cannot understand what happened on-chain without deep blockchain knowledge. There is no standardized business entity model that translates blockchain events into real-world concepts, and different carbon registries (Verra, Gold Standard, ACR, etc.) use inconsistent terminology for the same concepts, making cross-registry comparison impossible.
 Requirements
 Define standardized business entities — Create a canonical data model with the following entities: Project, Credit Issuance, Transfer, Retirement, Organization, Vintage, Standard, and Methodology. Each entity must have human-readable attributes (e.g., a Credit Issuance shows project name, organization, quantity, vintage, standard, and status).
 Create mapping logic from blockchain events to business concepts — Translate raw on-chain events to business terminology: Mint → Credit Issuance, Transfer → Ownership Change, Burn → Credit Retirement. Users must see the real-world meaning of blockchain events without needing to interpret raw data.
@@ -27,7 +27,7 @@ Acceptance criteria
 Issue 2: Implement Dual Interface Architecture (Business View & Technical View)
 Labels: enhancement, indexer, ui, medium-priority Action Items Covered: #6, #7, #8 Stakeholders: WinCL, Evercity, Envision Complexity: Medium
 Problem description
-The Sustainable Explorer currently presents data in a single format that tries to serve both business users and technical developers. Business users are overwhelmed by technical details (hashes, node data, raw events), while developers lack easy access to the granular technical information they need. There is no way to switch between a simplified business perspective and a detailed technical perspective.
+The Sustainability Atlas currently presents data in a single format that tries to serve both business users and technical developers. Business users are overwhelmed by technical details (hashes, node data, raw events), while developers lack easy access to the granular technical information they need. There is no way to switch between a simplified business perspective and a detailed technical perspective.
 Requirements
 Define two interface layers — Establish a Business View and a Technical View as distinct presentation modes within the Indexer.
 Business View — Provide simplified terminology, dashboards, lifecycle views, and grid-based data displays with filters. This view should hide blockchain-specific details and present only business-relevant information.
@@ -47,7 +47,7 @@ Acceptance criteria
 Issue 3: Build Advanced Search and Filtering Engine
 Labels: enhancement, indexer, search, high-priority Action Items Covered: #9, #10, #11, #12, #13 Stakeholders: Nature Wired, WinCL, Evercity, Envision, DOVU, NoviqTech Complexity: Very High
 Problem description
-The Sustainable Explorer currently lacks robust search and filtering capabilities that allow business users to find relevant projects and credits efficiently. Users cannot search across business attributes (project name, organization, vintage, methodology, sector, geography, status, SDGs), apply advanced filter conditions, chain filters progressively, share filtered views, or use predefined search templates. This forces users to manually sift through large datasets, severely limiting the platform's usability for procurement, analysis, and compliance workflows.
+The Sustainability Atlas currently lacks robust search and filtering capabilities that allow business users to find relevant projects and credits efficiently. Users cannot search across business attributes (project name, organization, vintage, methodology, sector, geography, status, SDGs), apply advanced filter conditions, chain filters progressively, share filtered views, or use predefined search templates. This forces users to manually sift through large datasets, severely limiting the platform's usability for procurement, analysis, and compliance workflows.
 Requirements
 Implement business-based filters — Enable search/filter by: project name, organization, vintage, geography, sector, methodology, status, and SDGs. Search results should show summary statistics (e.g., "3 Projects Found, Total Credits Issued: 75,000").
 Implement advanced operators — Support filter operators: Equals, Multiple select (IN), Range (volume), Greater/Less than, and Date range.
@@ -72,7 +72,7 @@ Acceptance criteria
 Issue 4: Implement Grid, Comparison, and Market Intelligence Views
 Labels: enhancement, indexer, ui, market-intelligence Action Items Covered: #14, #15, #16, #17 Stakeholders: Nature Wired, Allcot, WinCL, Evercity, Earthood, ChangeCode, DOVU Complexity: High
 Problem description
-The Sustainable Explorer does not provide sortable, comparable grid views that allow users to efficiently analyze and compare carbon credit projects. Users cannot sort project data by volume, vintage, geography, or other attributes; cannot compare projects side by side; and have no aggregated summary views by sector, geography, vintage, methodology, or SDG. This makes it difficult for procurement specialists, buyers, and analysts to evaluate and compare credit options before making decisions.
+The Sustainability Atlas does not provide sortable, comparable grid views that allow users to efficiently analyze and compare carbon credit projects. Users cannot sort project data by volume, vintage, geography, or other attributes; cannot compare projects side by side; and have no aggregated summary views by sector, geography, vintage, methodology, or SDG. This makes it difficult for procurement specialists, buyers, and analysts to evaluate and compare credit options before making decisions.
 Requirements
 Build sortable grid-based views — Display project and credit data in grid format, sortable by: volume, vintage, geography, standard, methodology, and status.
 Enable multi-column sorting — Allow sorting by multiple columns simultaneously (e.g., primary sort by vintage, secondary sort by volume).
@@ -93,7 +93,7 @@ Acceptance criteria
 Issue 5: Build Dashboards and Market Indicator Views
 Labels: enhancement, indexer, dashboard, high-priority Action Items Covered: #18, #19, #20 Stakeholders: Nature Wired, Allcot, WinCL, Evercity Complexity: High
 Problem description
-The Sustainable Explorer lacks pre-built dashboards that present key market indicators at a glance. Users (regulators, sustainability managers, market analysts) have no way to quickly view aggregate metrics like total credits issued, total retired, active project counts, or regional distributions. There are no charting capabilities for trend analysis and no year-over-year change indicators, making it impossible to assess market dynamics without manually compiling data.
+The Sustainability Atlas lacks pre-built dashboards that present key market indicators at a glance. Users (regulators, sustainability managers, market analysts) have no way to quickly view aggregate metrics like total credits issued, total retired, active project counts, or regional distributions. There are no charting capabilities for trend analysis and no year-over-year change indicators, making it impossible to assess market dynamics without manually compiling data.
 Requirements
 Dashboard framework — Build a dashboard layer displaying key metrics: Total Credits Issued, Total Credits Retired, Active Projects, and Top Regions.
 Charts and visualizations — Implement interactive charts for: issuance trends (over time), retirement trends (over time), vintage distribution, and geographic heatmap.
@@ -114,7 +114,7 @@ Acceptance criteria
 Issue 6: Implement SDG Framework Standardization
 Labels: enhancement, indexer, sdg, high-priority Action Items Covered: #21, #22, #23 Stakeholders: Nature Wired Complexity: High
 Problem description
-The Sustainable Explorer does not provide a structured framework for mapping projects and credits to the UN Sustainable Development Goals (SDGs). There is no consistent SDG mapping model, no ability to filter projects by SDG, and no SDG-focused dashboards. ESG analysts and sustainability managers cannot assess the SDG alignment of carbon credit projects or generate SDG-based impact reports, which is a fundamental requirement for modern sustainability reporting.
+The Sustainability Atlas does not provide a structured framework for mapping projects and credits to the UN Sustainable Development Goals (SDGs). There is no consistent SDG mapping model, no ability to filter projects by SDG, and no SDG-focused dashboards. ESG analysts and sustainability managers cannot assess the SDG alignment of carbon credit projects or generate SDG-based impact reports, which is a fundamental requirement for modern sustainability reporting.
 Requirements
 Create SDG mapping model — Map every project to relevant SDG goals, and link SDG goals to their specific targets. Provide methodology-level pre-mapping (i.e., certain methodologies automatically suggest applicable SDGs). Support the mapping structure: Project → SDG Goals → SDG Targets.
 Enable SDG filters (multi-select) — Allow users to select one or more SDGs and filter projects/credits accordingly. Combine SDG filters with geographic filters for targeted discovery (e.g., SDG 13 + SDG 15 + East Africa).
@@ -134,8 +134,8 @@ Acceptance criteria
 Issue 7: Build ESG and Compliance Reporting Engine
 Labels: enhancement, indexer, reporting, esg Action Items Covered: #24, #25, #26, #27 Stakeholders: WinCL, ChangeCode Complexity: Medium
 Problem description
-The Sustainable Explorer currently does not support exporting data in structured formats suitable for ESG and compliance reporting. Sustainability officers and reporting teams cannot easily extract datasets, impact summaries, or project documentation in commonly required formats (CSV, Excel, PDF).Additionally, exported reports lack data traceability and verification references. 
-Users cannot independently verify the authenticity of externally sourced data because reports do not include source references such as transaction IDs, registry links, or verification URLs.For data originating from external systems (outside Guardian), verification depends on the mechanisms provided by those systems. If such mechanisms are unavailable, only pre-approved data sources that support automated verification should be eligible for import into the Sustainable Explorer.The platform also lacks embedded guidance on disclosure standards, calculation methodologies, and assurance expectations, leaving users to determine reporting requirements independently.
+The Sustainability Atlas currently does not support exporting data in structured formats suitable for ESG and compliance reporting. Sustainability officers and reporting teams cannot easily extract datasets, impact summaries, or project documentation in commonly required formats (CSV, Excel, PDF).Additionally, exported reports lack data traceability and verification references. 
+Users cannot independently verify the authenticity of externally sourced data because reports do not include source references such as transaction IDs, registry links, or verification URLs.For data originating from external systems (outside Guardian), verification depends on the mechanisms provided by those systems. If such mechanisms are unavailable, only pre-approved data sources that support automated verification should be eligible for import into the Sustainability Atlas.The platform also lacks embedded guidance on disclosure standards, calculation methodologies, and assurance expectations, leaving users to determine reporting requirements independently.
 Requirements
 Build export engine - Allow users to export structured data in CSV, Excel (.xlsx), and PDF formats for reporting and sharing purposes.
 Structured export fields - Exports shall include standardized ESG reporting fields such as emissions reduced, reporting year, mitigation type, standard, and vintage to ensure consistency and comparability.
@@ -169,7 +169,7 @@ Exported files open correctly in standard applications (Excel, PDF readers)
 Issue 8: Build MRV Data Ingestion and Analysis Capabilities
 Labels: enhancement, indexer, mrv, data-pipeline Action Items Covered: #28, #29, #30 Stakeholders: WinCL, NoviqTech Complexity: Medium
 Problem description
-Monitoring, Reporting, and Verification (MRV) data is critical for validating the integrity of carbon credits, but the Sustainable Explorer currently has no capability to ingest, display, or analyze MRV datasets. Auditors, verifiers, and project operators cannot view raw sensor data, explore time-series measurements, drill down to individual device performance, or trace the lineage from MRV data through calculation logic to the resulting credit issuance. This lack of transparency undermines trust in the credit verification process.
+Monitoring, Reporting, and Verification (MRV) data is critical for validating the integrity of carbon credits, but the Sustainability Atlas currently has no capability to ingest, display, or analyze MRV datasets. Auditors, verifiers, and project operators cannot view raw sensor data, explore time-series measurements, drill down to individual device performance, or trace the lineage from MRV data through calculation logic to the resulting credit issuance. This lack of transparency undermines trust in the credit verification process.
 Discussion Point
 Requirements
 Build MRV ingestion pipeline — Support ingestion of large tabular and time-series MRV datasets, linked to their corresponding Guardian policies and projects.
@@ -190,7 +190,7 @@ Acceptance criteria
 Issue 9: Implement Pipeline and Forward Supply View
 Labels: enhancement, indexer, supply-planning, medium-priority Action Items Covered: #31, #32, #33, #34 Stakeholders: WinCL Complexity: Medium
 Problem description
-The Sustainable Explorer has no visibility into the pipeline of future credit supply. Buyers, market analysts, and procurement teams cannot see which projects are in the pipeline, what milestones they have reached (registration, MRV submission, verification), when credits are expected to be issued, or what projected volumes look like. This makes forward planning and procurement strategy impossible within the platform.
+The Sustainability Atlas has no visibility into the pipeline of future credit supply. Buyers, market analysts, and procurement teams cannot see which projects are in the pipeline, what milestones they have reached (registration, MRV submission, verification), when credits are expected to be issued, or what projected volumes look like. This makes forward planning and procurement strategy impossible within the platform.
 Requirements
 Display pipeline projects — Show projects that are in pre-issuance stages, clearly distinguished from already-issued projects.
 Show milestone tracking — For each pipeline project, display progress through key milestones: Registration → MRV Submission → Verification → Issuance, with dates (actual or expected).
@@ -211,7 +211,7 @@ Acceptance criteria
 Issue 10: Implement User Identity and Personalization Features
 Labels: enhancement, indexer, user-experience, personalization Action Items Covered: #35, #36, #37, #38, #39, #40, #41 Stakeholders: Nature Wired, WinCL, Envision Complexity: Medium
 Problem description
-The Sustainable Explorer currently operates as a generic public view with no user authentication, personalization, or role-based experience. All users see the same interface regardless of their role (buyer, auditor, registry operator, sustainability lead). Users cannot save searches, follow projects, receive notifications about changes, or build portfolios of tracked credits. This means every session starts from scratch, and users cannot tailor the platform to their specific workflows.
+The Sustainability Atlas currently operates as a generic public view with no user authentication, personalization, or role-based experience. All users see the same interface regardless of their role (buyer, auditor, registry operator, sustainability lead). Users cannot save searches, follow projects, receive notifications about changes, or build portfolios of tracked credits. This means every session starts from scratch, and users cannot tailor the platform to their specific workflows.
 Requirements
 Secure authentication — Implement user login and session management integrated with Guardian's identity mechanisms.
 Role definitions — Define and support roles: Buyer, Auditor, Registry Operator, and Sustainability Lead, with role-appropriate default views and dashboards.
@@ -237,7 +237,7 @@ Acceptance criteria
 Issue 11: Introduce a Methodology Explorer
 Labels: enhancement, indexer, methodology, transparency Action Items Covered: #42 Stakeholders: Nature Wired, WinCL, Evercity Complexity: Medium
 Problem description
-The Sustainable Explorer does not provide a dedicated section for exploring carbon credit methodologies. Users have no centralized place to view methodology details, compare versions, or discover which projects use a given methodology. This limits transparency and makes it difficult for buyers, auditors, and analysts to understand the technical basis behind carbon credit issuance.
+The Sustainability Atlas does not provide a dedicated section for exploring carbon credit methodologies. Users have no centralized place to view methodology details, compare versions, or discover which projects use a given methodology. This limits transparency and makes it difficult for buyers, auditors, and analysts to understand the technical basis behind carbon credit issuance.
 Requirements
 Create a dedicated Methodology Explorer section within the Indexer.
 Display methodology details: name, description, registry/standard owner, applicable sectors, and emission reduction approach.
@@ -256,7 +256,7 @@ Acceptance criteria
 Issue 12: Provide Access to Guardian Policies from the Indexer
 Labels: enhancement, indexer, governance, transparency Action Items Covered: #43 Stakeholders: Nature Wired, WinCL, Evercity Complexity: Medium
 Problem description
-Users of the Sustainable Explorer cannot view the Guardian policies that govern each methodology or project. The policies define the rules, workflows, and validation logic behind credit issuance, but this governance layer is invisible to Indexer users. This lack of transparency prevents stakeholders from understanding and verifying the rules under which credits were created.
+Users of the Sustainability Atlas cannot view the Guardian policies that govern each methodology or project. The policies define the rules, workflows, and validation logic behind credit issuance, but this governance layer is invisible to Indexer users. This lack of transparency prevents stakeholders from understanding and verifying the rules under which credits were created.
 Requirements
 Enable users to view the Guardian policy associated with each methodology or project directly from the Indexer.
 Display policy metadata: policy name, version, status, owner (Standard Registry), and description.
@@ -274,7 +274,7 @@ Acceptance criteria
 Issue 13: Display Hedera Policy References in the Indexer
 Labels: enhancement, indexer, hedera, compliance Action Items Covered: #44 Stakeholders: Nature Wired, WinCL, Evercity Complexity: Low–Medium
 Problem description
-Users of the Sustainable Explorer cannot view the Hedera on-chain policy references associated with each methodology or project. These Hedera policies represent the on-chain compliance framework behind credit issuance, and without visibility into them, users cannot fully verify the provenance and governance integrity of credits at the blockchain level.
+Users of the Sustainability Atlas cannot view the Hedera on-chain policy references associated with each methodology or project. These Hedera policies represent the on-chain compliance framework behind credit issuance, and without visibility into them, users cannot fully verify the provenance and governance integrity of credits at the blockchain level.
 Requirements
 Allow users to view Hedera policy references (Hedera topic IDs, message timestamps, and on-chain policy anchors) associated with each methodology or project.
 Display the relevant Hedera network references in the Technical View (and a simplified version in the Business View).
@@ -292,7 +292,7 @@ Acceptance criteria
 Issue 14: Create Methodology-Specific Dashboards (Priority Methodologies First)
 Labels: enhancement, indexer, dashboard, methodology Action Items Covered: #45 Stakeholders: Nature Wired, WinCL, Evercity Complexity: Medium
 Problem description
-The Sustainable Explorer currently does not provide analytics at the methodology level. When users explore a methodology, there is no dashboard showing how that methodology performs across all projects that use it. As a result, users cannot easily evaluate the adoption, impact, or performance of a specific carbon credit methodology.
+The Sustainability Atlas currently does not provide analytics at the methodology level. When users explore a methodology, there is no dashboard showing how that methodology performs across all projects that use it. As a result, users cannot easily evaluate the adoption, impact, or performance of a specific carbon credit methodology.
 However, implementing dashboards for every methodology would require significant effort and may not be necessary for methodologies with very low usage.
 Requirements
 Implement methodology-specific dashboards for a limited set of high-usage methodologies first. These dashboards should provide insights into how projects using the methodology are performing.

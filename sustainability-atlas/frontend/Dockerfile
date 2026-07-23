@@ -1,5 +1,5 @@
 # =============================================================================
-# Sustainable Explorer Frontend — Nuxt 3 SSR
+# Sustainability Atlas Frontend — Nuxt 3 SSR
 # =============================================================================
 #
 # Multi-stage build:

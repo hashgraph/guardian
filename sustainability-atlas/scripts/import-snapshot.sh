@@ -33,14 +33,14 @@ fi
 # runs /docker-entrypoint-initdb.d on a *fresh* data volume, so importing on
 # top of an existing volume is a footgun — the SQL is silently ignored and
 # the user thinks the import worked.
-if docker volume inspect sustainable-explorer_postgres_data >/dev/null 2>&1; then
-    echo "ERROR: docker volume 'sustainable-explorer_postgres_data' already exists."
+if docker volume inspect sustainability-atlas_postgres_data >/dev/null 2>&1; then
+    echo "ERROR: docker volume 'sustainability-atlas_postgres_data' already exists."
     echo "       Postgres only auto-runs /docker-entrypoint-initdb.d on a *fresh*"
     echo "       data volume, so an import here would do nothing."
     echo
     echo "       To wipe and re-import (DESTRUCTIVE — kills the local DB):"
     echo "           docker compose down"
-    echo "           docker volume rm sustainable-explorer_postgres_data"
+    echo "           docker volume rm sustainability-atlas_postgres_data"
     echo "           scripts/import-snapshot.sh $ARCHIVE"
     exit 1
 fi
@@ -52,7 +52,7 @@ echo "==> Extracting '$ARCHIVE'..."
 tar -xzf "$ARCHIVE" -C "$TMPDIR"
 
 if [ ! -d "$TMPDIR/postgres-init" ] || [ ! -d "$TMPDIR/policy-zips" ]; then
-    echo "ERROR: archive does not look like a sustainable-explorer snapshot."
+    echo "ERROR: archive does not look like a sustainability-atlas snapshot."
     echo "       Expected 'postgres-init/' and 'policy-zips/' at the archive root."
     ls "$TMPDIR"
     exit 1
