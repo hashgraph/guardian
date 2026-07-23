@@ -5,10 +5,12 @@ import { EMPTY, Subject, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, ISchema, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
+import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
+import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 export interface FieldType {
     key: string;
@@ -182,10 +184,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private schemaLoad$ = new Subject<string>();
     private schemasFetched: boolean = false;
 
+    public properties: any[] = [];
+
+    public readonly requiredModeOptions: { label: string; value: string }[] = [
+        { label: 'None',          value: 'none'          },
+        { label: 'Hidden',        value: 'hidden'        },
+        { label: 'Required',      value: 'required'      },
+        { label: 'Auto calculate', value: 'autocalculate' },
+    ];
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private schemaService: SchemaService,
+        private projectComparisonService: ProjectComparisonService,
         private dialogService: DialogService,
         private _elRef: ElementRef,
         private _zone: NgZone,
@@ -193,6 +205,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     ) {}
 
     public ngOnInit(): void {
+        this.projectComparisonService.getProperties()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({ next: (p) => { this.properties = p || []; }, error: () => {} });
+
         this.schemaLoad$.pipe(
             switchMap(id => {
                 this.schemaLoading = true;
@@ -535,10 +551,79 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = this.selectedField === field ? null : field;
     }
 
-    public toggleBehaviour(key: 'required' | 'isArray' | 'isUpdatable' | 'readOnly'): void {
+    public toggleBehaviour(key: 'isArray' | 'isUpdatable' | 'readOnly'): void {
         if (!this.selectedField) { return; }
         (this.selectedField as any)[key] = !(this.selectedField as any)[key];
         this.markDirty();
+    }
+
+    public getFieldRequiredMode(field: SchemaField): string {
+        const f = field as any;
+        if (f.autocalculate) { return 'autocalculate'; }
+        if (f.required)      { return 'required'; }
+        if (f.hidden)        { return 'hidden'; }
+        return 'none';
+    }
+
+    public setFieldRequiredMode(mode: string): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        f.required      = mode === 'required';
+        f.hidden        = mode === 'hidden';
+        f.autocalculate = mode === 'autocalculate';
+        if (mode !== 'autocalculate') { f.expression = ''; }
+        this.markDirty();
+    }
+
+    public openExpressionEditor(): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        const siblingFields = (this.isDrilling ? this.drillCurrentFields : (this.selectedSchema?.fields ?? []))
+            .filter(sf => sf !== this.selectedField)
+            .map(sf => sf.name);
+        const dialogRef = this.dialogService.open(CodeEditorDialogComponent, {
+            showHeader: false,
+            width: '90%',
+            styleClass: 'guardian-dialog',
+            data: {
+                mode: 'formula-lang',
+                variables: siblingFields,
+                expression: f.expression || '',
+                placeholder: 'e.g., fieldA + fieldB\nMath.round(fieldA / fieldB * 100) / 100',
+                helpContext: {
+                    availableFields: siblingFields,
+                    operators: [
+                        { label: 'Add', symbol: '+' }, { label: 'Subtract', symbol: '-' },
+                        { label: 'Multiply', symbol: '*' }, { label: 'Divide', symbol: '/' },
+                        { label: 'Equals', symbol: '==' }, { label: 'Not equals', symbol: '!=' },
+                        { label: 'Less than', symbol: '<' }, { label: 'Greater than', symbol: '>' },
+                        { label: 'And', symbol: '&&' }, { label: 'Or', symbol: '||' },
+                        { label: 'Ternary', symbol: '? :' },
+                    ],
+                    functions: [
+                        { category: 'Math', items: [
+                            { name: 'Math.abs', description: 'Absolute value' },
+                            { name: 'Math.round', description: 'Round to nearest integer' },
+                            { name: 'Math.floor', description: 'Round down' },
+                            { name: 'Math.ceil', description: 'Round up' },
+                            { name: 'Math.min', description: 'Minimum of values' },
+                            { name: 'Math.max', description: 'Maximum of values' },
+                            { name: 'Math.sqrt', description: 'Square root' },
+                            { name: 'Math.pow', description: 'Raise to power' },
+                        ]},
+                    ],
+                    scopeNote: 'Reference sibling fields by their key name. Evaluated as JavaScript on form submit.',
+                },
+                validate: true,
+            },
+        });
+        if (!dialogRef) { return; }
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe(result => {
+            if (result && this.selectedField) {
+                (this.selectedField as any).expression = result.expression;
+                this.markDirty();
+            }
+        });
     }
 
     public get selectedFieldIsEnum(): boolean {
@@ -985,6 +1070,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             property: '',
             customType: '',
             isUpdatable: false,
+            hidden: false,
+            autocalculate: false,
+            expression: '',
             fields: schema.fields ? [...schema.fields] : [],
         } as unknown as SchemaField;
         if (this.sidebarDropIndex !== -1) {
@@ -1018,6 +1106,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             property: '',
             customType: '',
             isUpdatable: false,
+            hidden: false,
+            autocalculate: false,
+            expression: '',
             fields: schema.fields ? [...schema.fields] : [],
         } as unknown as SchemaField;
         if (this.sidebarDropIndex !== -1) {
@@ -1354,7 +1445,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!field) { return null; }
             if (i < path.length - 1) {
                 const ref = schemaByIri.get(field.type);
-                fields = ref?.fields ?? [];
+                fields = ref?.fields
+                    ?? (Array.isArray((field as any).fields) && (field as any).fields.length ? (field as any).fields : []);
             }
         }
         return field;
@@ -1370,15 +1462,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             for (const f of fields) {
                 if (f.isRef && f.type) {
                     const ref = schemaByIri.get(f.type);
-                    // Fall back to field.fields resolved inline by Schema.parseFields via $defs
                     const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                     if (refFields.length) {
-                        traverse(refFields, [...pathParts, f.name], [...labelParts, f.title || f.name]);
+                        traverse(refFields, [...pathParts, f.name], [...labelParts, ref?.name || f.name]);
                     }
                 } else if (!f.readOnly) {
                     result.push({
                         pathStr: [...pathParts, f.name].join('.'),
-                        label: [...labelParts, f.title || f.name].join(' › '),
+                        label: [...labelParts, f.name].join(' › '),
                     });
                 }
             }
@@ -1389,11 +1480,99 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 const ref = schemaByIri.get(f.type);
                 const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    traverse(refFields, [f.name], [f.title || f.name]);
+                    traverse(refFields, [f.name], [ref?.name || f.name]);
                 }
             }
         }
         return result;
+    }
+
+    public getConditionFieldPSelectGroups(): Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> {
+        const schema = this.currentContextSchema;
+        if (!schema) { return []; }
+        const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
+        const result: Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> = [];
+
+        const nestLabel = (name: string, depth: number) =>
+            depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
+
+        const addGroups = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
+            const items: Array<{ pathStr: string; label: string }> = [];
+            for (const f of fields) {
+                if (f.readOnly || (f.isRef && f.type)) { continue; }
+                items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
+            }
+            if (items.length) {
+                result.push({ label: nestLabel(groupName, depth), items });
+            }
+            for (const f of fields) {
+                if (f.readOnly || !f.isRef || !f.type) { continue; }
+                const ref = schemaByIri.get(f.type);
+                const refFields = ref?.fields
+                    ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                if (refFields.length) {
+                    addGroups(refFields, [...pathParts, f.name], ref?.name || f.name, depth + 1);
+                }
+            }
+        };
+
+        addGroups(schema.fields ?? [], [], 'This schema', 0);
+        return result;
+    }
+
+    public condThenRefVal: Record<number, string | null> = {};
+    public condElseRefVal: Record<number, string | null> = {};
+
+    public getCrossTargetPSelectGroups(): Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> {
+        const schema = this.currentContextSchema;
+        if (!schema?.fields) { return []; }
+        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
+        const result: Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> = [];
+
+        const nestLabel = (name: string, depth: number) =>
+            depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
+
+        const traverse = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
+            const items: Array<{ pathStr: string; label: string }> = [];
+            for (const f of fields) {
+                if (f.readOnly || (f.isRef && f.type)) { continue; }
+                items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
+            }
+            if (items.length) {
+                result.push({ label: nestLabel(groupName, depth), items });
+            }
+            for (const f of fields) {
+                if (f.readOnly || !f.isRef || !f.type) { continue; }
+                const ref = schemaByIri.get(f.type);
+                const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                if (refFields.length) {
+                    traverse(refFields, [...pathParts, f.name], ref?.name || f.name, depth + 1);
+                }
+            }
+        };
+
+        for (const f of schema.fields) {
+            if (f.readOnly || !f.isRef || !f.type) { continue; }
+            const ref = schemaByIri.get(f.type);
+            const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+            if (refFields.length) {
+                traverse(refFields, [f.name], ref?.name || f.name, 1);
+            }
+        }
+
+        return result;
+    }
+
+    public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
+        if (!pathStr) { return; }
+        this.addThenTarget(cond, pathStr);
+        this.condThenRefVal[ci] = null;
+    }
+
+    public onCondElseRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
+        if (!pathStr) { return; }
+        this.addElseTarget(cond, pathStr);
+        this.condElseRefVal[ci] = null;
     }
 
     public addThenTarget(cond: SchemaCondition, pathStr: string): void {
@@ -1549,6 +1728,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             property: '',
             customType: ft.customType || '',
             isUpdatable: false,
+            hidden: false,
+            autocalculate: false,
+            expression: '',
         };
         if (ft.key === 'enum') {
             field.enum = [];

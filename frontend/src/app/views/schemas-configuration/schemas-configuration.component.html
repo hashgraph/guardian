@@ -818,18 +818,64 @@
                             </div>
                         }
 
+                        @if (properties.length) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Property</label>
+                                <p-select
+                                    class="guardian-dropdown sc-rp-select"
+                                    panelStyleClass="guardian-dropdown-panel"
+                                    [options]="properties"
+                                    [showClear]="true"
+                                    [filter]="true"
+                                    filterBy="title"
+                                    optionLabel="title"
+                                    optionValue="title"
+                                    appendTo="body"
+                                    placeholder="Select a property"
+                                    [(ngModel)]="$any(selectedField).property"
+                                    (ngModelChange)="markDirty()">
+                                </p-select>
+                            </div>
+                        }
+
                         <div class="sc-rp-divider"></div>
-                        <div class="sc-rp-label">Behaviour</div>
-                        <div class="sc-check-list">
-                            <div class="sc-check-item" (click)="toggleBehaviour('required')">
-                                <div class="sc-check-box" [class.active]="selectedField.required">
-                                    <i class="pi pi-check"></i>
+                        <div class="sc-rp-label">Required / Visibility</div>
+                        <div class="sc-radio-list">
+                            @for (opt of requiredModeOptions; track opt.value) {
+                                <div class="sc-radio-item" (click)="setFieldRequiredMode(opt.value)">
+                                    <div class="sc-radio-dot" [class.active]="getFieldRequiredMode(selectedField) === opt.value"></div>
+                                    <span>{{ opt.label }}</span>
                                 </div>
-                                <div class="sc-check-desc">
-                                    <strong>Required</strong>
-                                    <span>Submission blocked until filled</span>
+                            }
+                        </div>
+                        @if (getFieldRequiredMode(selectedField) === 'autocalculate') {
+                            <div class="sc-rp-group sc-rp-group--expr">
+                                <label class="sc-rp-label">
+                                    Expression
+                                    @if (!$any(selectedField).expression) {
+                                        <span class="sc-rp-hint sc-rp-hint--warn">required</span>
+                                    }
+                                </label>
+                                <div class="sc-expr-row">
+                                    <input
+                                        class="sc-rp-input sc-rp-input--mono sc-expr-preview"
+                                        type="text"
+                                        readonly
+                                        [value]="$any(selectedField).expression || ''"
+                                        placeholder="No expression set" />
+                                    <button class="sc-btn sc-btn-expr" (click)="openExpressionEditor()"
+                                        [class.sc-btn-expr--warn]="!$any(selectedField).expression">
+                                        <i class="pi pi-pencil"></i>
+                                        Edit
+                                    </button>
                                 </div>
                             </div>
+                        }
+
+                        <div class="sc-rp-divider"></div>
+                        <div class="sc-rp-label">Other</div>
+                        <div class="sc-check-list">
                             <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
                                 <div class="sc-check-box" [class.active]="selectedField.isArray">
                                     <i class="pi pi-check"></i>
@@ -910,36 +956,32 @@
                         @for (row of getIfRows(cond); track $index; let ri = $index) {
                             <div class="sc-cond-rule-row">
                                 <span class="sc-cond-rule-num">{{ ri + 1 }}.</span>
-                                <select class="sc-cond-field-sel"
-                                    (change)="setIfRowField(cond, ri, $any($event.target).value)">
-                                    @for (group of getConditionFieldGroups(); track group.groupLabel) {
-                                        @if (group.isRoot) {
-                                            @for (opt of group.fields; track opt.pathStr) {
-                                                <option [value]="opt.pathStr"
-                                                    [selected]="getIfRowFieldPath(row) === opt.pathStr">
-                                                    {{ opt.label }}
-                                                </option>
-                                            }
-                                        } @else {
-                                            <optgroup [label]="group.groupLabel">
-                                                @for (opt of group.fields; track opt.pathStr) {
-                                                    <option [value]="opt.pathStr"
-                                                        [selected]="getIfRowFieldPath(row) === opt.pathStr">
-                                                        {{ opt.label }}
-                                                    </option>
-                                                }
-                                            </optgroup>
-                                        }
-                                    }
-                                </select>
+                                <p-select
+                                    class="sc-cond-field-sel guardian-dropdown"
+                                    panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
+                                    [options]="getConditionFieldPSelectGroups()"
+                                    [group]="true"
+                                    optionLabel="label"
+                                    optionValue="pathStr"
+                                    [filter]="true"
+                                    filterBy="label"
+                                    [resetFilterOnHide]="true"
+                                    appendTo="body"
+                                    placeholder="Select field…"
+                                    [ngModel]="getIfRowFieldPath(row)"
+                                    (onChange)="setIfRowField(cond, ri, $event.value)">
+                                </p-select>
                                 <span class="sc-cond-op-eq">=</span>
                                 @if (isIfRowEnum(row)) {
-                                    <select class="sc-cond-val-sel"
-                                        (change)="setIfRowValue(cond, ri, $any($event.target).value)">
-                                        @for (opt of getIfRowOptions(row); track opt) {
-                                            <option [value]="opt" [selected]="getIfRowValue(row) === opt">{{ opt }}</option>
-                                        }
-                                    </select>
+                                    <p-select
+                                        class="sc-cond-val-sel guardian-dropdown"
+                                        panelStyleClass="guardian-dropdown-panel width-300"
+                                        [options]="getIfRowOptions(row)"
+                                        appendTo="body"
+                                        placeholder="Select value…"
+                                        [ngModel]="getIfRowValue(row)"
+                                        (onChange)="setIfRowValue(cond, ri, $event.value)">
+                                    </p-select>
                                 } @else {
                                     <input class="sc-cond-val-inp" type="text" placeholder="value"
                                         [value]="getIfRowValue(row)"
@@ -969,16 +1011,31 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.thenFields || []); track f.name) {
-                                        <div class="sc-cond-te-item"
-                                            [class.sc-cond-te-item--active]="selectedField === f"
+                                        <div class="sc-field-card sc-cond-field-card"
+                                            [class.active]="selectedField === f"
                                             title="Click to configure field"
                                             (click)="selectField(f)">
-                                            <i class="pi pi-pencil"></i>
-                                            <span class="sc-cond-te-label">{{ f.title || f.name }}</span>
-                                            <span class="sc-cond-te-badge sc-cond-te-badge--new">new</span>
-                                            <button class="sc-cond-te-del" (click)="removeThenField(cond, f); $event.stopPropagation()">
-                                                <i class="pi pi-times"></i>
-                                            </button>
+                                            <div class="sc-field-type-icon">
+                                                <i class="pi {{ getFieldIcon(f) }}"></i>
+                                            </div>
+                                            <div class="sc-field-info">
+                                                <span class="sc-field-key">{{ f.description || f.title || f.name }}</span>
+                                                <span class="sc-field-desc">{{ f.name }}</span>
+                                                <div class="sc-field-meta-row">
+                                                    <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(f) }}</span>
+                                                    @if (f.required) {
+                                                        <span class="sc-badge sc-badge--req">Required</span>
+                                                    }
+                                                    @if (f.isArray) {
+                                                        <span class="sc-badge sc-badge--arr">Array</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="sc-field-card-actions">
+                                                <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeThenField(cond, f); $event.stopPropagation()">
+                                                    <i class="pi pi-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     }
                                     @for (t of (cond.thenTargets || []); track t.fieldPath.join('.')) {
@@ -996,14 +1053,22 @@
                                         <button class="sc-cond-te-add-btn" (click)="addThenField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
-                                        <select class="sc-cond-te-ref-sel"
-                                            [disabled]="!getCrossTargetPaths().length"
-                                            (change)="addThenTarget(cond, $any($event.target).value); $any($event.target).value = ''">
-                                            <option value="">{{ getCrossTargetPaths().length ? '🔗 Ref field' : '(no sub-schema fields)' }}</option>
-                                            @for (item of getCrossTargetPaths(); track item.pathStr) {
-                                                <option [value]="item.pathStr">{{ item.label }}</option>
-                                            }
-                                        </select>
+                                        <p-select
+                                            class="sc-cond-te-ref-sel guardian-dropdown"
+                                            panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
+                                            [options]="getCrossTargetPSelectGroups()"
+                                            [group]="true"
+                                            optionLabel="label"
+                                            optionValue="pathStr"
+                                            [filter]="true"
+                                            filterBy="label"
+                                            [resetFilterOnHide]="true"
+                                            appendTo="body"
+                                            [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
+                                            [disabled]="!getCrossTargetPSelectGroups().length"
+                                            [(ngModel)]="condThenRefVal[ci]"
+                                            (onChange)="onCondThenRefChange(cond, ci, $event.value)">
+                                        </p-select>
                                     </div>
                                 </div>
                             </div>
@@ -1015,16 +1080,31 @@
                                 </div>
                                 <div class="sc-cond-te-body">
                                     @for (f of (cond.elseFields || []); track f.name) {
-                                        <div class="sc-cond-te-item"
-                                            [class.sc-cond-te-item--active]="selectedField === f"
+                                        <div class="sc-field-card sc-cond-field-card"
+                                            [class.active]="selectedField === f"
                                             title="Click to configure field"
                                             (click)="selectField(f)">
-                                            <i class="pi pi-pencil"></i>
-                                            <span class="sc-cond-te-label">{{ f.title || f.name }}</span>
-                                            <span class="sc-cond-te-badge sc-cond-te-badge--new">new</span>
-                                            <button class="sc-cond-te-del" (click)="removeElseField(cond, f); $event.stopPropagation()">
-                                                <i class="pi pi-times"></i>
-                                            </button>
+                                            <div class="sc-field-type-icon">
+                                                <i class="pi {{ getFieldIcon(f) }}"></i>
+                                            </div>
+                                            <div class="sc-field-info">
+                                                <span class="sc-field-key">{{ f.description || f.title || f.name }}</span>
+                                                <span class="sc-field-desc">{{ f.name }}</span>
+                                                <div class="sc-field-meta-row">
+                                                    <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(f) }}</span>
+                                                    @if (f.required) {
+                                                        <span class="sc-badge sc-badge--req">Required</span>
+                                                    }
+                                                    @if (f.isArray) {
+                                                        <span class="sc-badge sc-badge--arr">Array</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <div class="sc-field-card-actions">
+                                                <button class="sc-icon-btn sc-icon-btn--danger" title="Remove" (click)="removeElseField(cond, f); $event.stopPropagation()">
+                                                    <i class="pi pi-trash"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     }
                                     @for (t of (cond.elseTargets || []); track t.fieldPath.join('.')) {
@@ -1042,14 +1122,22 @@
                                         <button class="sc-cond-te-add-btn" (click)="addElseField(cond)">
                                             <i class="pi pi-plus"></i>New field
                                         </button>
-                                        <select class="sc-cond-te-ref-sel"
-                                            [disabled]="!getCrossTargetPaths().length"
-                                            (change)="addElseTarget(cond, $any($event.target).value); $any($event.target).value = ''">
-                                            <option value="">{{ getCrossTargetPaths().length ? '🔗 Ref field' : '(no sub-schema fields)' }}</option>
-                                            @for (item of getCrossTargetPaths(); track item.pathStr) {
-                                                <option [value]="item.pathStr">{{ item.label }}</option>
-                                            }
-                                        </select>
+                                        <p-select
+                                            class="sc-cond-te-ref-sel guardian-dropdown"
+                                            panelStyleClass="guardian-dropdown-panel width-825 sc-cond-panel"
+                                            [options]="getCrossTargetPSelectGroups()"
+                                            [group]="true"
+                                            optionLabel="label"
+                                            optionValue="pathStr"
+                                            [filter]="true"
+                                            filterBy="label"
+                                            [resetFilterOnHide]="true"
+                                            appendTo="body"
+                                            [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
+                                            [disabled]="!getCrossTargetPSelectGroups().length"
+                                            [(ngModel)]="condElseRefVal[ci]"
+                                            (onChange)="onCondElseRefChange(cond, ci, $event.value)">
+                                        </p-select>
                                     </div>
                                 </div>
                             </div>
