@@ -11,6 +11,13 @@ export class ListenerService extends NatsService {
     public replySubject = 'listeners-queue-reply-' + GenerateUUIDv4();
 
     private readonly delay: number = 10 * 1000;
+    /**
+     * Delay between mirror node calls. The public mirror node allows ~50 req/s per
+     * source IP and that budget is shared with every other process behind the same
+     * IP (worker-service, indexer, ...), so the listener paces itself well below it.
+     */
+    private readonly callDelay: number =
+        parseInt(process.env.LISTENER_CALL_DELAY_MS, 10) || Math.ceil(1000 / 40);
     private readonly map: Map<string, Listener>;
 
     constructor(
@@ -111,7 +118,11 @@ export class ListenerService extends NatsService {
     public async scheduler(): Promise<void> {
         while (true) {
             for (const listener of this.map.values()) {
-                await listener.search();
+                const polled = await listener.search();
+                if (polled) {
+                    //only pace real mirror node calls - a listener in backoff costs nothing
+                    await new Promise(resolve => setTimeout(resolve, this.callDelay));
+                }
             }
             await new Promise(resolve => setTimeout(resolve, this.delay));
         }
