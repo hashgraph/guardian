@@ -15,20 +15,17 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
         bv."registryDid",
         COUNT(*) FILTER (WHERE bv."viewType" = 'METHODOLOGY') AS policy_count,
         COUNT(*) FILTER (WHERE bv."viewType" = 'PROJECT')     AS project_count,
-        -- Issuance count must match the credits page: only tokens that have
-        -- at least one MintToken VC (i.e., actual minting activity), not
-        -- bare token announcements with zero supply. Without this guard the
-        -- registry card shows ~3× more "issuances" than the credits list.
-        COUNT(*) FILTER (
-            WHERE bv."viewType" = 'CREDIT'
-              AND EXISTS (
-                  SELECT 1 FROM message m_mint
-                  WHERE m_mint.type = 'VC-Document'
-                    AND m_mint.documents IS NOT NULL
-                    AND m_mint.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
-                    AND m_mint.documents->'credentialSubject'->0->>'tokenId' = bv."businessData"->>'tokenId'
-              )
-        ) AS issuance_count,
+        -- Issuance count = number of mint events per token (matches the
+        -- project/methodology tables), not the number of distinct tokens minted.
+        COALESCE(SUM(
+            CASE WHEN bv."viewType" = 'CREDIT' THEN (
+                SELECT COUNT(*) FROM message m_mint
+                WHERE m_mint.type = 'VC-Document'
+                  AND m_mint.documents IS NOT NULL
+                  AND m_mint.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
+                  AND m_mint.documents->'credentialSubject'->0->>'tokenId' = bv."businessData"->>'tokenId'
+            ) ELSE 0 END
+        ), 0) AS issuance_count,
         0::bigint AS user_count,
         MAX(bv."lastUpdate") AS last_update,
         -- Decode-status counts: grouped per registry across all METHODOLOGY rows.
