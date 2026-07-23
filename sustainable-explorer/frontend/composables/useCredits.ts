@@ -5,6 +5,22 @@ export type CreditWithDisplay = CreditDto & {
     methodologyDisplay: string | null;
 };
 
+/**
+ * Format a project label for display. If the project mapper hasn't found a
+ * human-readable name (so `displayName` ended up being the cs.id), shorten
+ * the urn into something readable while still being unique enough to tell
+ * adjacent projects apart. Returns null when no project is linked.
+ */
+export function displayProject(link: { project: string | null; projectId: string | null }): string | null {
+    const name = link.project;
+    if (!name) return null;
+    if (name === link.projectId && /^urn:uuid:/i.test(name)) {
+        const short = name.slice('urn:uuid:'.length, 'urn:uuid:'.length + 8);
+        return `Project ${short}`;
+    }
+    return name;
+}
+
 export function useCredits(
     projectKey?: Ref<string | undefined>,
     methodologyId?: Ref<string | undefined>,
@@ -31,22 +47,6 @@ export function useCredits(
         sortDir: ref(null),
         filters,
     });
-
-    /**
-     * Format a project label for display. If the project mapper hasn't found a
-     * human-readable name (so `displayName` ended up being the cs.id), shorten
-     * the urn into something readable while still being unique enough to tell
-     * adjacent projects apart. Returns null when no project is linked.
-     */
-    function displayProject(dto: CreditDto): string | null {
-        const name = dto.project;
-        if (!name) return null;
-        if (name === dto.projectId && /^urn:uuid:/i.test(name)) {
-            const short = name.slice('urn:uuid:'.length, 'urn:uuid:'.length + 8);
-            return `Project ${short}`;
-        }
-        return name;
-    }
 
     const credits = computed<CreditWithDisplay[]>(() =>
         (data.value?.data ?? []).map(dto => ({

@@ -11,6 +11,7 @@ import {
 } from 'lucide-vue-next';
 import { formatCredits, formatDate, formatTransactionType } from '~/lib/format';
 import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
+import { displayProject } from '~/composables/useCredits';
 
 interface MintEvent {
     consensusTimestamp: string;
@@ -83,15 +84,16 @@ const connectedProjectId = computed(() => (route.query.projectId as string) || n
 // Resolved project for the Overview — falls back to credit.projectId for deep-links.
 const connectedProject = computed<CreditProjectLink | null>(() => {
     const id = connectedProjectId.value;
+    let raw: CreditProjectLink | null = null;
     if (id) {
         const match = projects.value.find(p => p.projectId === id);
-        if (match) return match;
-        return { projectId: id, project: null };
+        raw = match ?? { projectId: id, project: null };
+    } else if (credit.value?.projectId) {
+        raw = { projectId: credit.value.projectId, project: credit.value.project };
     }
-    if (credit.value?.projectId) {
-        return { projectId: credit.value.projectId, project: credit.value.project };
-    }
-    return null;
+    if (!raw) return null;
+    // Match the shortened "Project <id8>" fallback used by the issuances table (useCredits.ts).
+    return { ...raw, project: displayProject(raw) };
 });
 
 // ─── Tabs ─────────────────────────────────────────────────────────────────────
@@ -162,7 +164,7 @@ const paginatedMintEvents = computed(() => {
 watch(connectedProjectId, () => { mintEventsPage.value = 1; });
 
 const lastMintDate = computed(() => {
-    const dates = mintEvents.value.map(e => e.date).filter((d): d is string => !!d).sort();
+    const dates = mintEventsForProject.value.map(e => e.date).filter((d): d is string => !!d).sort();
     return dates.at(-1) ?? credit.value?.mintDate ?? null;
 });
 
