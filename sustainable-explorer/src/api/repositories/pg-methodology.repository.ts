@@ -7,6 +7,7 @@ import {
     MethodologyRow,
     MethodologyStatsRow,
     IssuanceRow,
+    IssuanceEventRow,
     MethodologyExportFilters,
     MethodologyExportRow,
 } from './methodology.repository';
@@ -308,18 +309,23 @@ export class PgMethodologyRepository extends MethodologyRepository {
         // through PROJECT rows whose instanceTopicId matches this methodology's relatedTopicId — keeps supply
         // figures consistent with the project detail view and the credits list page.
         let issuances: IssuanceRow[] = [];
+        let issuanceEvents: IssuanceEventRow[] = [];
         if (instanceTopicId) {
             const mintRows: Array<{
                 token_id: string | null;
                 amount: number | null;
                 mint_date: Date | null;
                 documents: Record<string, any> | null;
+                mint_ts: string;
+                link_method: string | null;
             }> = await this.dataSource.query(
                 `SELECT
                     pml.token_id,
                     pml.amount,
                     pml.mint_date,
-                    m.documents
+                    m.documents,
+                    pml.mint_consensus_timestamp AS mint_ts,
+                    pml.link_method
                  FROM project_mint_link pml
                  JOIN business_view proj
                      ON proj."projectKey" = pml.project_key
@@ -368,6 +374,24 @@ export class PgMethodologyRepository extends MethodologyRepository {
                         rawVc: data.rawVc,
                     };
                 });
+
+                // Per-mint-event issuance history — one entry per MintToken VC row, ordered oldest-first.
+                // Mirrors PgProjectRepository.findById's identical construction so the project detail
+                // page and this methodology detail page show the same event-level grain.
+                issuanceEvents = mintRows.map(r => {
+                    const meta = r.token_id ? metaMap.get(r.token_id) : undefined;
+                    return {
+                        mintConsensusTimestamp: r.mint_ts,
+                        tokenId: r.token_id ?? null,
+                        name: meta?.name ?? null,
+                        symbol: meta?.symbol ?? null,
+                        type: meta?.type ?? null,
+                        amount: r.amount != null ? Number(r.amount) : null,
+                        mintDate: r.mint_date ? r.mint_date.toISOString().split('T')[0] : null,
+                        linkMethod: r.link_method ?? null,
+                        rawVc: r.documents ?? null,
+                    };
+                });
             }
         }
 
@@ -409,7 +433,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
 
         const totalActive = totalIssued - totalRetired;
 
-        return PgMethodologyRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive });
+        return PgMethodologyRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, issuanceEvents);
     }
 
     /** Full filtered, `relatedTopicId`-deduped methodologies dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
@@ -540,6 +564,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
         row: RawRow,
         issuances?: IssuanceRow[],
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
+        issuanceEvents?: IssuanceEventRow[],
     ): MethodologyRow {
         // findById passes lifecycle explicitly; findAll supplies it via the LIFECYCLE_JOIN lateral columns on the raw row.
         const resolvedLifecycle = lifecycle ?? (row.total_issued != null
@@ -604,6 +629,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
             updatedAt: row.updatedAt,
             stats,
             issuances,
+            issuanceEvents: issuanceEvents ?? [],
             totalIssued: resolvedLifecycle?.totalIssued,
             totalRetired: resolvedLifecycle?.totalRetired,
             totalActive: resolvedLifecycle?.totalActive,

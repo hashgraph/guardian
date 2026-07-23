@@ -24,6 +24,7 @@ export interface CreditDto {
     registry: string | null;
     registryDid: string | null;
     mintDate: string | null;
+    mintConsensusTimestamp: string | null;
 }
 
 export interface CreditsMeta {

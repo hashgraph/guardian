@@ -54,6 +54,19 @@ const badgeCount = computed(() =>
     events.value.length > 0 ? filteredEvents.value.length : linkedCredits.value.length,
 );
 
+const currentPage = ref(1);
+const pageSize = ref(10);
+const totalPages = computed(() => Math.max(1, Math.ceil(badgeCount.value / pageSize.value)));
+const paginatedEvents = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    return filteredEvents.value.slice(start, start + pageSize.value);
+});
+const paginatedCredits = computed(() => {
+    const start = (currentPage.value - 1) * pageSize.value;
+    return linkedCredits.value.slice(start, start + pageSize.value);
+});
+watch([() => props.project.id, filteredEvents, linkedCredits], () => { currentPage.value = 1; });
+
 function eventTypeLabel(type: string | null): 'Fungible' | 'Non-Fungible' {
     return type === 'NON_FUNGIBLE_UNIQUE' ? 'Non-Fungible' : 'Fungible';
 }
@@ -82,26 +95,6 @@ function makeEventCredit(e: {
     };
 }
 
-// Per-token totals from events (group by tokenId). Only worth showing when at
-// least one token was minted more than once — otherwise the strip just repeats
-// each row's amount.
-const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
-    if (!events.value.length) return [];
-    const map = new Map<string, { symbol: string; total: number; count: number }>();
-    for (const e of events.value) {
-        const key = e.tokenId ?? 'unknown';
-        const sym = e.symbol ?? e.tokenId ?? '—';
-        const existing = map.get(key);
-        if (existing) {
-            existing.total += e.amount ?? 0;
-            existing.count += 1;
-        } else {
-            map.set(key, { symbol: sym, total: e.amount ?? 0, count: 1 });
-        }
-    }
-    if (![...map.values()].some(t => t.count > 1)) return [];
-    return Array.from(map.values()).map(({ symbol, total }) => ({ symbol, total }));
-});
 </script>
 
 <template>
@@ -144,7 +137,7 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-for="e in filteredEvents" :key="e.mintConsensusTimestamp" class="hover:bg-muted/30 transition-colors">
+                    <tr v-for="e in paginatedEvents" :key="e.mintConsensusTimestamp" class="hover:bg-muted/30 transition-colors">
                         <td class="py-3 px-5 text-muted-foreground tabular-nums">
                             {{ e.mintDate ? formatDate(e.mintDate) : '—' }}
                         </td>
@@ -181,15 +174,13 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                 </tbody>
             </table>
 
-            <!-- Per-token totals strip -->
-            <div v-if="tokenTotals.length > 0" class="border-t px-5 py-2.5 flex flex-wrap gap-x-5 gap-y-1">
-                <span
-                    v-for="t in tokenTotals"
-                    :key="t.symbol"
-                    class="text-xs text-muted-foreground"
-                >
-                    {{ t.symbol }} &middot; total {{ formatNumber(t.total) }}
-                </span>
+            <div class="border-t px-5 pb-3">
+                <Pagination
+                    v-model:current-page="currentPage"
+                    v-model:page-size="pageSize"
+                    :total-pages="totalPages"
+                    :total-items="filteredEvents.length"
+                />
             </div>
         </template>
 
@@ -209,7 +200,7 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                     </tr>
                 </thead>
                 <tbody class="divide-y">
-                    <tr v-for="c in linkedCredits" :key="c.id" class="hover:bg-muted/30 transition-colors">
+                    <tr v-for="c in paginatedCredits" :key="c.id" class="hover:bg-muted/30 transition-colors">
                         <td class="py-3 px-5">
                             <div class="font-medium text-foreground">{{ c.name }}</div>
                             <div class="text-[11px] text-muted-foreground">{{ c.symbol }}</div>
@@ -236,6 +227,14 @@ const tokenTotals = computed<{ symbol: string; total: number }[]>(() => {
                     </tr>
                 </tbody>
             </table>
+            <div class="border-t px-5 pb-3">
+                <Pagination
+                    v-model:current-page="currentPage"
+                    v-model:page-size="pageSize"
+                    :total-pages="totalPages"
+                    :total-items="linkedCredits.length"
+                />
+            </div>
         </template>
 
         <!-- Empty state -->

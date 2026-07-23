@@ -483,7 +483,7 @@ const FIELD_LABELS: Record<ResolvedFieldKey, string> = {
   vintageRaw: 'Vintage / Start Date',
   creditingPeriodStart: 'Crediting Period Start',
   creditingPeriodEnd: 'Crediting Period End',
-  sdgOrCobenefits: 'SDGs / Co-benefits',
+  sdgOrCobenefits: 'SDG / Co-benefits',
   geo: 'Project Location',
 };
 
@@ -857,10 +857,28 @@ const changedCount = computed(
   () => compareRows.value.filter((r) => r.changed).length,
 );
 
-// Linked Issuances — sourced from methodology.issuances returned by the API
-const linkedCredits = computed(() => {
+// Linked Issuances — one row per mint event (methodology.issuanceEvents), so the
+// row count matches the "Issuances" stat shown on the Methodologies table exactly,
+// mirroring the project detail page's "Linked Issuances" table. Falls back to the
+// per-token aggregate (methodology.issuances) for older data that predates the
+// per-mint-event history.
+const issuanceRows = computed(() => {
+  const events = methodology.value?.issuanceEvents ?? [];
+  if (events.length > 0) {
+    return events.map((e) => ({
+      key: e.mintConsensusTimestamp,
+      tokenId: e.tokenId ?? '',
+      name: e.name ?? e.tokenId ?? '',
+      symbol: e.symbol ?? '',
+      type: e.type === 'FUNGIBLE_COMMON' ? 'Fungible' : 'Non-Fungible',
+      supply: e.amount ?? 0,
+      mintDate: e.mintDate ?? '',
+      rawVc: e.rawVc ?? null,
+    }));
+  }
   if (!methodology.value?.issuances?.length) return [];
   return methodology.value.issuances.map((i) => ({
+    key: i.tokenId,
     tokenId: i.tokenId,
     name: i.name ?? '',
     symbol: i.symbol ?? '',
@@ -871,13 +889,28 @@ const linkedCredits = computed(() => {
   }));
 });
 
+const issuancesPage = ref(1);
+const issuancesPageSize = ref(10);
+const issuancesTotalPages = computed(() =>
+  Math.max(1, Math.ceil(issuanceRows.value.length / issuancesPageSize.value)),
+);
+const paginatedIssuanceRows = computed(() => {
+  const start = (issuancesPage.value - 1) * issuancesPageSize.value;
+  return issuanceRows.value.slice(start, start + issuancesPageSize.value);
+});
+watch(issuanceRows, () => { issuancesPage.value = 1; });
+
 const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
 const vcViewerData = ref<Record<string, any> | null>(null);
 
-async function viewIssuanceVc(c: { tokenId: string; name: string }) {
+async function viewIssuanceVc(c: { tokenId: string; name: string; rawVc?: Record<string, any> | null }) {
   vcViewerTitle.value = c.name || c.tokenId;
   vcViewerOpen.value = true;
+  if (c.rawVc) {
+    vcViewerData.value = c.rawVc;
+    return;
+  }
   vcViewerData.value = null;
   const apiBaseURL = (useRuntimeConfig().public.apiBaseUrl as string) || '';
   try {
@@ -2489,9 +2522,9 @@ function getResolvedField(fieldKey: string) {
               <Coins class="h-4 w-4 text-primary" />
               Linked Issuances
             </h2>
-            <span class="text-xs text-muted-foreground">{{ linkedCredits.length }} issuance(s)</span>
+            <span class="text-xs text-muted-foreground">{{ issuanceRows.length }} issuance(s)</span>
           </div>
-          <div v-if="linkedCredits.length > 0">
+          <div v-if="issuanceRows.length > 0">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b bg-muted/20">
@@ -2507,8 +2540,8 @@ function getResolvedField(fieldKey: string) {
               </thead>
               <tbody class="divide-y">
                 <tr
-                  v-for="c in linkedCredits"
-                  :key="c.tokenId"
+                  v-for="c in paginatedIssuanceRows"
+                  :key="c.key"
                   class="hover:bg-muted/30 transition-colors"
                 >
                   <td class="py-3 px-5">
@@ -2544,6 +2577,14 @@ function getResolvedField(fieldKey: string) {
                 </tr>
               </tbody>
             </table>
+            <div class="px-5 pb-3 border-t">
+              <Pagination
+                v-model:current-page="issuancesPage"
+                v-model:page-size="issuancesPageSize"
+                :total-pages="issuancesTotalPages"
+                :total-items="issuanceRows.length"
+              />
+            </div>
           </div>
           <div v-else class="px-5 py-8 text-center text-sm text-muted-foreground">
             No issuances have been recorded for this methodology yet.
@@ -2564,7 +2605,7 @@ function getResolvedField(fieldKey: string) {
           <div class="grid grid-cols-3 gap-px bg-border">
             <div class="bg-card px-5 py-4 text-center">
               <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalIssued) }}</div>
-              <div class="text-[11px] text-muted-foreground">Total Issued</div>
+              <div class="text-[11px] text-muted-foreground">Total Minted Credits</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
               <div class="text-lg font-semibold text-stat-rose tabular-nums">{{ formatNumber(lifecycleSummary.totalRetired) }}</div>
