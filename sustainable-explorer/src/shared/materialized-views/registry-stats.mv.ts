@@ -11,24 +11,22 @@ export const MV_REGISTRY_STATS_NAME = 'mv_registry_stats';
 
 export const MV_REGISTRY_STATS_CREATE_SQL = `
     CREATE MATERIALIZED VIEW IF NOT EXISTS ${MV_REGISTRY_STATS_NAME} AS
+    WITH registry_issuance AS (
+        -- Mint events per registry, matching mv_project_stats / mv_methodology_stats.
+        SELECT proj."registryDid", COUNT(*) AS issuance_count
+        FROM project_mint_link pml
+        JOIN business_view proj
+            ON proj."projectKey" = pml.project_key
+           AND proj."viewType" = 'PROJECT'
+        WHERE pml.token_id IS NOT NULL
+          AND proj."registryDid" IS NOT NULL
+        GROUP BY proj."registryDid"
+    )
     SELECT
         bv."registryDid",
         COUNT(*) FILTER (WHERE bv."viewType" = 'METHODOLOGY') AS policy_count,
         COUNT(*) FILTER (WHERE bv."viewType" = 'PROJECT')     AS project_count,
-        -- Issuance count must match the credits page: only tokens that have
-        -- at least one MintToken VC (i.e., actual minting activity), not
-        -- bare token announcements with zero supply. Without this guard the
-        -- registry card shows ~3× more "issuances" than the credits list.
-        COUNT(*) FILTER (
-            WHERE bv."viewType" = 'CREDIT'
-              AND EXISTS (
-                  SELECT 1 FROM message m_mint
-                  WHERE m_mint.type = 'VC-Document'
-                    AND m_mint.documents IS NOT NULL
-                    AND m_mint.documents->'credentialSubject'->0->>'type' LIKE 'MintToken%'
-                    AND m_mint.documents->'credentialSubject'->0->>'tokenId' = bv."businessData"->>'tokenId'
-              )
-        ) AS issuance_count,
+        COALESCE(MAX(ri.issuance_count), 0)                   AS issuance_count,
         0::bigint AS user_count,
         MAX(bv."lastUpdate") AS last_update,
         -- Decode-status counts: grouped per registry across all METHODOLOGY rows.
@@ -52,6 +50,7 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
               AND p."decodeStatus" IS NULL
         ) AS methodology_decode_unknown_count
     FROM business_view bv
+    LEFT JOIN registry_issuance ri ON ri."registryDid" = bv."registryDid"
     -- LATERAL join with LIMIT 1 so a topic with multiple policy versions
     -- contributes a single row per methodology. Without this the plain join
     -- multiplied each METHODOLOGY by its policy-version count, inflating
