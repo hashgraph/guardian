@@ -447,7 +447,7 @@
         "mtco2AnnualEst": "MtCO2 anual est.",
         "sector": "Sector",
         "registry": "Registro",
-        "totalIssuancesLabel": "Emisiones totales",
+        "totalIssuancesLabel": "Total de créditos emitidos",
         "sectorTypes": {
             "renewableEnergy": "Energía Renovable",
             "forestry": "Silvicultura",
