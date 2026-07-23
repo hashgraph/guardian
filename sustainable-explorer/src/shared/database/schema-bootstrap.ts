@@ -178,6 +178,14 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE "viewType" = 'PROJECT'
     `);
 
+    // Expression index on CREDIT rows' businessData->>'tokenId', backing the
+    // credits list's token->registry LATERAL lookup in O(log n).
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_credit_token_id
+        ON business_view ((("businessData"->>'tokenId')))
+        WHERE "viewType" = 'CREDIT'
+    `);
+
     await dataSource.query(`
         CREATE TABLE IF NOT EXISTS guardian_event_log (
             id           BIGSERIAL    PRIMARY KEY,
