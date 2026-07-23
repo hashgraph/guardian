@@ -683,9 +683,9 @@ async function downloadProjects() {
                       class="text-foreground hover:text-primary hover:underline transition-colors"
                       @click.stop
                     >
-                      {{ p.issuanceCount }}
+                      {{ formatCredits(p.issuanceCount) }}
                     </AppLink>
-                    <span v-else class="text-muted-foreground/60">{{ p.issuanceCount ?? 0 }}</span>
+                    <span v-else class="text-muted-foreground/60">{{ formatCredits(p.issuanceCount ?? 0) }}</span>
                   </td>
                   
                   <td class="py-3.5 px-4 align-middle whitespace-nowrap">

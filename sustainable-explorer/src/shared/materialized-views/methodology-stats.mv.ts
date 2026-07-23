@@ -38,7 +38,7 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
               AND p."businessData"->>'instanceTopicId' = mb."relatedTopicId"
         ), 0)::bigint AS instance_project_count,
         COALESCE((
-            SELECT COUNT(DISTINCT pml.token_id)
+            SELECT COUNT(*)
             FROM project_mint_link pml
             JOIN business_view proj
                 ON proj."projectKey" = pml.project_key
@@ -50,7 +50,7 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
             WHERE pml.token_id IS NOT NULL
         ), 0)::bigint AS issuance_count,
         COALESCE((
-            SELECT COUNT(DISTINCT pml.token_id)
+            SELECT COUNT(*)
             FROM project_mint_link pml
             JOIN business_view proj
                 ON proj."projectKey" = pml.project_key

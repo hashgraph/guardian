@@ -590,12 +590,12 @@ async function downloadMethodologies() {
                 </td>
                 <td class="py-3 px-4 text-right tabular-nums font-medium">
                   <AppLink
-                    v-if="r.sourceTimestamp && r.stats.instanceIssuanceCount > 0"
-                    :to="`/credits?methodologyId=${encodeURIComponent(r.sourceTimestamp)}`"
+                    v-if="r.topicId && r.stats.instanceIssuanceCount > 0"
+                    :to="`/credits?methodologyId=${encodeURIComponent(r.topicId)}`"
                     :title="r.stats.issuanceCount !== r.stats.instanceIssuanceCount
                       ? `${r.stats.issuanceCount} total across all versions`
                       : undefined"
-                    class="text-primary hover:underline transition-colors"
+                    class="text-foreground hover:text-primary hover:underline transition-colors"
                     @click.stop
                   >
                     {{ formatCredits(r.stats.instanceIssuanceCount) }}

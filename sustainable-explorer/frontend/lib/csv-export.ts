@@ -38,7 +38,7 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
     const header = [
         'Network', 'Name', 'Description', 'Country', 'Latitude', 'Longitude',
         'Methodology', 'Registry Name', 'Developer', 'Credits', 'Status', 'Vintage',
-        'SDGs', 'Co-benefits', 'Category', 'Sector', 'Sectoral Scope', 'Created At',
+        'SDG', 'Co-benefits', 'Category', 'Sector', 'Sectoral Scope', 'Created At',
         'Crediting Period Start', 'Crediting Period End', 'Issuance Count',
         'Total Issued', 'Total Retired', 'Total Active',
         'Lifecycle Stage', 'Expected Issuance Year',

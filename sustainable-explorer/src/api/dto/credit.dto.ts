@@ -79,6 +79,9 @@ export class CreditResponseDto {
     @ApiProperty({ nullable: true, description: 'ISO date derived from the HCS consensus timestamp' })
     mintDate: string | null;
 
+    @ApiProperty({ nullable: true, description: 'Consensus timestamp of the underlying MintToken VC. Set only for rows scoped to one project/methodology (one row per mint event); null for the network-wide token-aggregated view.' })
+    mintConsensusTimestamp: string | null;
+
     static fromRow(row: CreditRow, _network: string): CreditResponseDto {
         return {
             tokenId: row.tokenId,
@@ -93,6 +96,7 @@ export class CreditResponseDto {
             registry: row.registry,
             registryDid: row.registryDid,
             mintDate: row.mintDate,
+            mintConsensusTimestamp: row.mintConsensusTimestamp,
         };
     }
 }
