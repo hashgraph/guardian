@@ -148,7 +148,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 };
             }
             countryMap[code].projects++;
-            countryMap[code].credits += p.credits;
+            countryMap[code].credits += p.totalIssued ?? 0;
             countryMap[code].methodologies.add(p.methodologyId);
         }
 
