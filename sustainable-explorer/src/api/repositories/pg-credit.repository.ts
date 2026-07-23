@@ -70,6 +70,14 @@ const MINT_FROM = `
            ON pml.mint_consensus_timestamp = m."consensusTimestamp"
     LEFT JOIN token_cache tc
            ON tc."tokenId" = ${TOKEN_ID_EXPR}
+    LEFT JOIN LATERAL (
+        SELECT bv_c."registryDid" AS registry_did
+        FROM business_view bv_c
+        WHERE bv_c."viewType" = 'CREDIT'
+          AND bv_c."businessData"->>'tokenId' = ${TOKEN_ID_EXPR}
+        ORDER BY bv_c."createdAt" DESC NULLS LAST
+        LIMIT 1
+    ) cred ON true
 `;
 
 /**
@@ -128,21 +136,22 @@ const METHODOLOGY_JOIN = `
 `;
 
 /**
- * LATERAL: resolve registry display name from the project's registryDid.
- * Returns NULL when no project was resolved (unattributed mints).
+ * LATERAL: resolve registry display name from the project's registryDid,
+ * falling back to the token's own registryDid (cred) for mints not yet
+ * attributed to a project, so unlinked mints still show their registry.
  */
 const REGISTRY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT bv_reg."displayName" AS registry_name
         FROM business_view bv_reg
         WHERE bv_reg."viewType"    = 'REGISTRY'
-          AND bv_reg."registryDid" = proj.registry_did
+          AND bv_reg."registryDid" = COALESCE(proj.registry_did, cred.registry_did)
         ORDER BY bv_reg."createdAt" DESC NULLS LAST
         LIMIT 1
     ) reg ON true
 `;
 
-/** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology/registry fields. One row per mint event (message row) — matches `findAllForExport()` and the project detail page's "Linked Issuances" grain, so the Issuances count/list is consistent everywhere, filtered or not. */
+/** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology fields (registry still resolves via the token's own CREDIT row). One row per mint event (message row) — matches `findAllForExport()` and the project detail page's "Linked Issuances" grain, so the Issuances count/list is consistent everywhere, filtered or not. */
 export class PgCreditRepository extends CreditRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
@@ -236,7 +245,7 @@ export class PgCreditRepository extends CreditRepository {
                 COALESCE(pml.amount::numeric,
                     (m.documents->'credentialSubject'->0->>'amount')::numeric
                 )                                                                               AS total_supply,
-                proj.registry_did                                                               AS "registryDid",
+                COALESCE(proj.registry_did, cred.registry_did)                                  AS "registryDid",
                 reg.registry_name,
                 COALESCE(pml.mint_date,
                     to_timestamp(m."consensusTimestamp"::numeric)

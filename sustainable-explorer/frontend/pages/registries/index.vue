@@ -472,7 +472,17 @@ function viewRegistry(r: RegistryDto) {
                                 </td>
                                 <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.projectCount }}</td>
                                 <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.userCount }}</td>
-                                <td class="py-3 px-4 text-right tabular-nums font-medium">{{ r.stats.issuanceCount }}</td>
+                                <td class="py-3 px-4 text-right tabular-nums font-medium">
+                                    <AppLink
+                                        v-if="r.stats.issuanceCount > 0 && r.did"
+                                        :to="`/credits?registryDid=${encodeURIComponent(r.did)}`"
+                                        class="text-foreground hover:text-primary hover:underline transition-colors"
+                                        @click.stop
+                                    >
+                                        {{ r.stats.issuanceCount }}
+                                    </AppLink>
+                                    <span v-else class="text-muted-foreground">{{ r.stats.issuanceCount }}</span>
+                                </td>
                                 <td class="py-3 px-4">
                                     <div v-if="tagsAsList(r.tags).length" class="flex flex-wrap gap-1">
                                         <span

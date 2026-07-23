@@ -14,6 +14,7 @@ import { FieldSchema } from '../query-builder';
  *   proj — LATERAL: resolved project from business_view PROJECT
  *   meth — LATERAL: resolved methodology from business_view METHODOLOGY
  *   reg  — LATERAL: resolved registry from business_view REGISTRY
+ *   cred — LATERAL: token's own registryDid from business_view CREDIT (fallback for unlinked mints)
  *
  * Aggregate fields (supply, mintDate) use SELECT output aliases so ORDER BY
  * can reference them by name in a grouped query. They carry no filter operator
@@ -58,7 +59,7 @@ export const CREDIT_FIELD_SCHEMA: FieldSchema = {
         sortable: true,
     },
     registryDid: {
-        sql: 'proj.registry_did',
+        sql: 'COALESCE(proj.registry_did, cred.registry_did)',
         filter: 'eq',
         sortable: true,
     },
