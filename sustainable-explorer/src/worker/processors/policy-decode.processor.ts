@@ -3,7 +3,7 @@ import { Inject, Logger } from '@nestjs/common';
 import { Job, Queue } from 'bullmq';
 import { DataSource } from 'typeorm';
 import JSZip from 'jszip';
-import { QUEUE_NAMES } from '@shared/config/bullmq.config';
+import { QUEUE_NAMES, envInt } from '@shared/config/bullmq.config';
 import { IpfsService } from '../services/ipfs.service';
 import { PolicyMappingPipelineService } from '../mapping/policy-pipeline.service';
 import { POLICY_ZIP_STORAGE, PolicyZipStorage } from '../services/storage/policy-zip-storage.interface';
@@ -18,7 +18,11 @@ export interface PolicyDecodeJobData {
 
 const MAX_ATTEMPTS = 5;
 
-@Processor(QUEUE_NAMES.POLICY_DECODE)
+@Processor(QUEUE_NAMES.POLICY_DECODE, {
+    lockDuration: envInt('POLICY_DECODE_LOCK_DURATION', 600000),
+    stalledInterval: envInt('POLICY_DECODE_STALLED_INTERVAL', 60000),
+    maxStalledCount: envInt('POLICY_DECODE_MAX_STALLED_COUNT', 2),
+})
 export class PolicyDecodeProcessor extends WorkerHost {
     private readonly logger = new Logger(PolicyDecodeProcessor.name);
 
@@ -34,6 +38,15 @@ export class PolicyDecodeProcessor extends WorkerHost {
 
     async process(job: Job<PolicyDecodeJobData>): Promise<void> {
         const { cid, policyTopicId, instanceTopicId } = job.data;
+
+        if (!cid || !policyTopicId) {
+            const message =
+                `PolicyDecodeProcessor received invalid job data (jobId=${job.id}): ` +
+                `cid=${cid ? 'present' : 'MISSING'}, policyTopicId=${policyTopicId ? 'present' : 'MISSING'}. ` +
+                `Refusing to proceed — this would otherwise hit the "policyTopicId" NOT NULL constraint on policy.`;
+            this.logger.error(message);
+            throw new Error(message);
+        }
 
         try {
             await this.runDecode(cid, policyTopicId, instanceTopicId ?? null);

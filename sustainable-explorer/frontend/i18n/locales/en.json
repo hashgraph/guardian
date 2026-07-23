@@ -689,6 +689,8 @@
             "supplyDifferenceTooltip": "The Supply Amount and Minted Amount for this issuance are currently different.",
             "tokenSupply": "Token Supply",
             "tokenSupplyTooltip": "Total number of tokens that are currently in circulation.",
+            "tokenSupplyLiveTooltip": "Live total supply, fetched directly from the Hedera Mirror Node.",
+            "live": "Live",
             "totalMinted": "Total Minted",
             "totalMintedAll": "Total Minted (All)",
             "totalMintedAllTooltip": "Total number of tokens minted across all projects to this token.",
