@@ -37,7 +37,7 @@ While the stack is running this:
 1. runs `pg_dumpall` inside the `se-postgres` container,
 2. gzips the dump into `snapshot/postgres-init/01-restore.sql.gz`,
 3. mirrors `data/policy-zips/` into `snapshot/policy-zips/`,
-4. wraps both into `sustainable-explorer-snapshot-<timestamp>.tar.gz`.
+4. wraps both into `sustainability-atlas-snapshot-<timestamp>.tar.gz`.
 
 Ship that tarball.
 
@@ -46,7 +46,7 @@ Ship that tarball.
 On the target host:
 
 ```
-scripts/import-snapshot.sh sustainable-explorer-snapshot-<timestamp>.tar.gz
+scripts/import-snapshot.sh sustainability-atlas-snapshot-<timestamp>.tar.gz
 docker compose up -d
 ```
 

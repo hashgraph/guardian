@@ -1,7 +1,7 @@
 {
-    "name": "@guardian/sustainable-explorer",
+    "name": "@guardian/sustainability-atlas",
     "version": "1.0.0",
-    "description": "Sustainable Explorer - Indexing and exploration service for Guardian environmental assets",
+    "description": "Sustainability Atlas - Indexing and exploration service for Guardian environmental assets",
     "private": true,
     "license": "Apache-2.0",
     "scripts": {
