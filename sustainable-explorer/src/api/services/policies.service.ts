@@ -64,8 +64,8 @@ export class PoliciesService {
                  "mappingSource" = 'auto',
                  error           = NULL,
                  "updatedAt"     = now()
-             WHERE "policyTopicId" = $1`,
-            [topicId],
+             WHERE "sourceCid" = $1`,
+            [sourceCid],
         );
 
         // Recover the message timestamp so the processor can locate the source message.

@@ -64,7 +64,7 @@ export interface QueueDefinition {
     concurrency: number;
 }
 
-function envInt(name: string, defaultValue: number): number {
+export function envInt(name: string, defaultValue: number): number {
     return parseInt(process.env[name] || String(defaultValue), 10);
 }
 
