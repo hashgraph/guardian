@@ -139,7 +139,7 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
             const name = code === p.countryCode ? p.country : (CODE_TO_COUNTRY[code] || p.country || code);
             if (!countryMap[code]) countryMap[code] = { code, name, projects: 0, credits: 0 };
             countryMap[code].projects++;
-            countryMap[code].credits += p.credits;
+            countryMap[code].credits += (p.projectKey != null ? amountByKey.value.get(p.projectKey) : undefined) ?? 0;
         }
         return Object.values(countryMap).map(c => ({
             country: c.name,

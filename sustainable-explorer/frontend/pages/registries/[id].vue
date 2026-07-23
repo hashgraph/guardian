@@ -175,7 +175,7 @@ const mapCountries = computed(() => {
         if (code === 'UNK' || !p.country) continue;
         if (!counts[code]) counts[code] = { projects: 0, credits: 0, name: p.country };
         counts[code].projects++;
-        counts[code].credits += p.credits ?? 0;
+        counts[code].credits += p.totalIssued ?? 0;
     }
     return Object.entries(counts).map(([code, d]) => ({
         countryCode: code,
