@@ -62,7 +62,7 @@ async function bootstrap() {
         });
     }
 
-    logger.log('Sustainable Explorer guardian-sync is running');
+    logger.log('Sustainability Atlas guardian-sync is running');
     logger.log(`Hedera network: ${process.env.HEDERA_NET || 'testnet'}`);
 }
 

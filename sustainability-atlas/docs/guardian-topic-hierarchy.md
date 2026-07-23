@@ -70,7 +70,7 @@ Name:           ISO14064_Forest_Conservation_1740416020956
 CID:            bafybei... (ZIP archive with policy.json, schemas, tokens)
 ```
 
-This `Instance-Policy` message is the **canonical methodology** — the one we display in the Sustainable Explorer UI. The attached CID points to a ZIP containing the full policy definition, JSON schemas for VCs, and token definitions.
+This `Instance-Policy` message is the **canonical methodology** — the one we display in the Sustainability Atlas UI. The attached CID points to a ZIP containing the full policy definition, JSON schemas for VCs, and token definitions.
 
 ### Step 5: Guardian Creates an Instance Policy Topic
 

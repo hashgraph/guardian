@@ -1,4 +1,4 @@
-# Sustainable Explorer
+# Sustainability Atlas
 
 A standalone application that indexes Hedera Guardian blockchain data into PostgreSQL and presents it through a sustainability-focused business lens — Projects, Credits, Methodologies, Organizations.
 
@@ -11,7 +11,7 @@ A standalone application that indexes Hedera Guardian blockchain data into Postg
     IPFS Gateways
               │
     ┌─────────┼──────────────────────────────────────────────┐
-    │  SUSTAINABLE EXPLORER                                  │
+    │  SUSTAINABILITY ATLAS                                  │
     │         ▼                                              │
     │  ┌────────────────────────────┐                        │
     │  │  Worker (BullMQ)           │                        │
@@ -53,7 +53,7 @@ A standalone application that indexes Hedera Guardian blockchain data into Postg
 ### 1. Start infrastructure (Postgres + Redict only)
 
 ```bash
-cd sustainable-explorer
+cd sustainability-atlas
 cp .env.example .env
 yarn infra:up
 ```
@@ -127,7 +127,7 @@ See [ARCHITECTURE.md](ARCHITECTURE.md) for full details on deduplication, leader
 ## Project Structure
 
 ```
-sustainable-explorer/
+sustainability-atlas/
 ├── src/
 │   ├── shared/                     Shared configuration & entities
 │   │   ├── config/                 Environment, DB, Redict, BullMQ config

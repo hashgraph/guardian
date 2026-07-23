@@ -1,7 +1,7 @@
 # Policy Decode Refactor — Implementation Plan
 
 Single source of truth for the upcoming refactor of the policy decode subsystem
-in `sustainable-explorer`. Supersedes the ad-hoc decisions currently spread
+in `sustainability-atlas`. Supersedes the ad-hoc decisions currently spread
 across `policy_decode_status` / `policy_schema` tables and
 `policy-decode.processor.ts`.
 

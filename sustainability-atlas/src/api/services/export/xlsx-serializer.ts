@@ -30,7 +30,7 @@ export class XlsxSerializer implements Serializer {
             useStyles: true,
             useSharedStrings: false,
         });
-        workbook.creator = 'Sustainable Explorer';
+        workbook.creator = 'Sustainability Atlas';
         workbook.created = new Date();
 
         const worksheet = workbook.addWorksheet('Export');

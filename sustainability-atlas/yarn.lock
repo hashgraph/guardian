@@ -541,9 +541,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@guardian/sustainable-explorer@workspace:.":
+"@guardian/sustainability-atlas@workspace:.":
   version: 0.0.0-use.local
-  resolution: "@guardian/sustainable-explorer@workspace:."
+  resolution: "@guardian/sustainability-atlas@workspace:."
   dependencies:
     "@nestjs/bullmq": "npm:^11.0.0"
     "@nestjs/cli": "npm:^11.0.0"
