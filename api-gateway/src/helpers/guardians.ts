@@ -144,6 +144,37 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Query VC documents committed by a policy (read-only, dynamic filter).
+     *
+     * @param policyId   - MongoDB ObjectId of the published policy
+     * @param schemaName - schema.name as returned by GET /schema
+     * @param filters    - optional field-level filter map { field: { op, value } }
+     * @param page       - 1-based page number
+     * @param pageSize   - items per page (1-200)
+     * @param sortField  - optional sort field; prefix '-' for descending
+     * @param policyOwner - caller's Standard Registry tenant DID, used to restrict access to the caller's own policies
+     */
+    public async getPolicyDataDocuments(
+        policyId: string,
+        schemaName: string,
+        filters: Record<string, { op: string; value: unknown }> | undefined,
+        page: number,
+        pageSize: number,
+        sortField: string | undefined,
+        policyOwner: string,
+    ): Promise<{ items: unknown[]; total: number }> {
+        return await this.sendMessage(MessageAPI.GET_POLICY_DATA_DOCUMENTS, {
+            policyId,
+            schemaName,
+            filters,
+            page,
+            pageSize,
+            sortField,
+            policyOwner,
+        });
+    }
+
+    /**
      * Return tokens
      *
      * @param {Object} [params] - filters
