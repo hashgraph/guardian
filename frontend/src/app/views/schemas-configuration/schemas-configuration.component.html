@@ -201,7 +201,7 @@
         <!-- ═══════════════════════════════════════════════════════ CANVAS -->
         <div class="sc-canvas">
 
-            <div class="sc-canvas-body">
+            <div class="sc-canvas-body" [class.sc-canvas-body--drilling]="isDrilling">
 
                 @if (schemaLoading && !selectedSchema) {
 
@@ -295,7 +295,6 @@
                                 </button>
                                 <button class="sc-ctp-btn"
                                     [class.active]="activeCanvasTab === 'conditions'"
-                                    [class.sc-ctp-btn--conds]="activeCanvasTab === 'conditions'"
                                     (click)="activeCanvasTab = 'conditions'">
                                     <i class="pi pi-code-branch"></i>Conditions
                                     @if (schemaConditionCount) {
@@ -351,86 +350,7 @@
                                 </div>
                             }
 
-                            <div class="sc-section-block">
-                                <div class="sc-section-header">
-                                    <span class="sc-section-name">Fields</span>
-                                    <div class="sc-section-line"></div>
-                                </div>
-
-                                <div class="sc-fields-list">
-                                    @if (schemaLoading) {
-                                        <div class="sc-fields-empty">
-                                            <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
-                                        </div>
-                                    } @else if (selectedSchema.fields && selectedSchema.fields.length) {
-                                        @for (field of canvasFields; track $index; let i = $index) {
-                                            <div
-                                                class="sc-field-card"
-                                                [class.active]="selectedField === field"
-                                                [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
-                                                [class.sc-field-card--invalid]="fieldHasErrors(field)"
-                                                [class.sc-field-card--dragging]="isDragActive && reorderField === field"
-                                                [class.sc-field-card--drag-target]="reorderOverIndex === i"
-                                                [class.sc-field-card--drag-top]="sidebarDropIndex === i && sidebarDropPos === 'top'"
-                                                [class.sc-field-card--drag-bot]="sidebarDropIndex === i && sidebarDropPos === 'bot'"
-                                                (mousedown)="onCardMouseDown($event, field, selectedSchema!.fields)"
-                                                (click)="selectField(field)">
-                                                <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
-                                                <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
-                                                    <i class="pi {{ getFieldIcon(field) }}"></i>
-                                                </div>
-                                                <div class="sc-field-info">
-                                                    <span class="sc-field-key">{{ field.description || field.title || field.name }}</span>
-                                                    <span class="sc-field-desc">{{ field.name }}</span>
-                                                    <div class="sc-field-meta-row">
-                                                        @if (getFieldCurrentType(field) === 'sub-schema') {
-                                                            <span class="sc-badge sc-badge--ref-name">{{ getRefSchemaName(field) || 'Sub-schema' }}</span>
-                                                        } @else {
-                                                            <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
-                                                        }
-                                                        @if (field.required) {
-                                                            <span class="sc-badge sc-badge--req">Required</span>
-                                                        } @else {
-                                                            <span class="sc-badge sc-badge--opt">Optional</span>
-                                                        }
-                                                        @if (field.isArray) {
-                                                            <span class="sc-badge sc-badge--arr">Array</span>
-                                                        }
-                                                        @if (isFieldConditional(field)) {
-                                                            <span class="sc-badge sc-badge--cond">
-                                                                <i class="pi pi-code"></i>
-                                                                Condition
-                                                            </span>
-                                                        }
-                                                    </div>
-                                                </div>
-                                                <div class="sc-field-card-actions">
-                                                    @if (field.isRef) {
-                                                        <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
-                                                            <i class="pi pi-arrow-right"></i>Enter
-                                                        </button>
-                                                    }
-                                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field" (click)="deleteField(field, $event)">
-                                                        <i class="pi pi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        }
-                                    } @else {
-                                        <div class="sc-fields-empty">
-                                            <i class="pi pi-inbox"></i>
-                                            <span>No fields defined yet</span>
-                                        </div>
-                                    }
-                                </div>
-                            </div>
-
-                            <div class="sc-drop-zone"
-                                 [class.sc-drop-zone--reorder]="reorderAtEnd"
-                                 (click)="addField(defaultFieldType)">
-                                <i class="pi pi-plus"></i>
-                                Click to add a string field, or drag a type from the sidebar
-                            </div>
+                            <ng-container *ngTemplateOutlet="fieldCardsTpl"></ng-container>
 
                         </div>
                         } <!-- /fields tab -->
@@ -548,15 +468,16 @@
                                     (click)="activeDrillTab = 'fields'">
                                     <i class="pi pi-list"></i>Fields
                                 </button>
-                                <button class="sc-ctp-btn"
-                                    [class.active]="activeDrillTab === 'conditions'"
-                                    [class.sc-ctp-btn--conds]="activeDrillTab === 'conditions'"
-                                    (click)="activeDrillTab = 'conditions'">
-                                    <i class="pi pi-code-branch"></i>Conditions
-                                    @if (schemaConditionCount) {
-                                        <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
-                                    }
-                                </button>
+                                @if (drilledSchema) {
+                                    <button class="sc-ctp-btn"
+                                        [class.active]="activeDrillTab === 'conditions'"
+                                        (click)="activeDrillTab = 'conditions'">
+                                        <i class="pi pi-code-branch"></i>Conditions
+                                        @if (schemaConditionCount) {
+                                            <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
+                                        }
+                                    </button>
+                                }
                             </div>
                         </div>
 
@@ -567,73 +488,7 @@
                              (dragleave)="onCanvasDragLeave($event)"
                              (dragover)="onCanvasDragOver($event)"
                              (drop)="onCanvasDrop($event)">
-                            @if (drillCurrentFields.length) {
-                                @for (field of canvasFields; track $index; let i = $index) {
-                                    <div
-                                        class="sc-drill-card"
-                                        [class.active]="selectedField === field"
-                                        [class.sc-drill-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
-                                        [class.sc-drill-card--invalid]="fieldHasErrors(field)"
-                                        [class.sc-drill-card--dragging]="isDragActive && reorderField === field"
-                                        [class.sc-drill-card--drag-target]="reorderOverIndex === i"
-                                        [class.sc-drill-card--drag-top]="sidebarDropIndex === i && sidebarDropPos === 'top'"
-                                        [class.sc-drill-card--drag-bot]="sidebarDropIndex === i && sidebarDropPos === 'bot'"
-                                        (mousedown)="onCardMouseDown($event, field, drillCurrentFields)"
-                                        (click)="selectField(field)">
-                                        <span class="sc-drag-handle sc-drag-handle--sm"><i class="pi pi-bars"></i></span>
-                                        <div class="sc-drill-card-icon" [class.sc-drill-card-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
-                                            <i class="pi {{ getFieldIcon(field) }}"></i>
-                                        </div>
-                                        <div class="sc-drill-card-info">
-                                            <span class="sc-drill-card-name">{{ field.description || field.title || field.name }}</span>
-                                            @if (field.description || field.title) {
-                                                <span class="sc-drill-card-key">{{ field.name }}</span>
-                                            }
-                                            <div class="sc-drill-card-meta">
-                                                @if (getFieldCurrentType(field) === 'sub-schema') {
-                                                    <span class="sc-drill-badge sc-drill-badge--ref-name">{{ getRefSchemaName(field) || 'Sub-schema' }}</span>
-                                                } @else {
-                                                    <span class="sc-drill-badge sc-drill-badge--type">{{ getFieldTypeBadge(field) }}</span>
-                                                }
-                                                @if (field.required) {
-                                                    <span class="sc-drill-badge sc-drill-badge--req">Required</span>
-                                                } @else {
-                                                    <span class="sc-drill-badge sc-drill-badge--opt">Optional</span>
-                                                }
-                                                @if (field.isArray) {
-                                                    <span class="sc-drill-badge sc-drill-badge--arr">Array</span>
-                                                }
-                                                @if (isFieldConditional(field)) {
-                                                    <span class="sc-drill-badge sc-drill-badge--cond">
-                                                        <i class="pi pi-code"></i>Condition
-                                                    </span>
-                                                }
-                                            </div>
-                                        </div>
-                                        <div class="sc-drill-card-actions">
-                                            @if (getFieldCurrentType(field) === 'sub-schema') {
-                                                <button class="sc-drill-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
-                                                    <i class="pi pi-arrow-right"></i>
-                                                </button>
-                                            }
-                                            <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field" (click)="deleteDrillField(field, $event)">
-                                                <i class="pi pi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                }
-                            } @else {
-                                <div class="sc-fields-empty">
-                                    <i class="pi pi-inbox"></i>
-                                    <span>No fields in this sub-schema</span>
-                                </div>
-                            }
-                            <div class="sc-drop-zone"
-                                 [class.sc-drop-zone--reorder]="reorderAtEnd"
-                                 (click)="addDrillField(defaultFieldType)">
-                                <i class="pi pi-plus"></i>
-                                Click to add a string field
-                            </div>
+                            <ng-container *ngTemplateOutlet="fieldCardsTpl"></ng-container>
                         </div>
                         } <!-- /drill fields tab -->
 
@@ -738,17 +593,36 @@
 
                         @if (selectedFieldIsEnum) {
                             <div class="sc-rp-divider"></div>
-                            <div class="sc-rp-label">
-                                Enum values
-                                <span class="sc-rp-hint">one per line</span>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Enum name</label>
+                                <input
+                                    class="sc-rp-input"
+                                    type="text"
+                                    placeholder="e.g. StatusEnum"
+                                    [(ngModel)]="$any(selectedField).enumName"
+                                    (ngModelChange)="markDirty()" />
                             </div>
-                            <textarea
-                                class="sc-rp-textarea"
-                                rows="6"
-                                placeholder="Value 1&#10;Value 2&#10;Value 3"
-                                [value]="getEnumText()"
-                                (blur)="onEnumChange($any($event.target).value)">
-                            </textarea>
+                            <div class="sc-rp-group">
+                                <div class="sc-enum-header">
+                                    <label class="sc-rp-label">Enum values</label>
+                                    <button class="sc-btn sc-btn--sm" (click)="openEnumEditor()">
+                                        <i class="pi pi-list-check"></i>
+                                        Edit values
+                                    </button>
+                                </div>
+                                @if (selectedFieldEnumChips.length) {
+                                    <div class="sc-enum-chips">
+                                        @for (chip of selectedFieldEnumChips; track chip) {
+                                            <span class="sc-enum-chip">{{ chip }}</span>
+                                        }
+                                        @if (selectedFieldEnumOverflow > 0) {
+                                            <span class="sc-enum-chip sc-enum-chip--more">+{{ selectedFieldEnumOverflow }}</span>
+                                        }
+                                    </div>
+                                } @else {
+                                    <span class="sc-rp-hint">No values yet — click Edit values</span>
+                                }
+                            </div>
                         }
 
                         @if (selectedFieldIsGeoJson) {
@@ -779,6 +653,20 @@
                                     <div class="sc-check-desc">
                                         <strong>Bold</strong>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Alignment</label>
+                                <div class="sc-align-group">
+                                    <button class="sc-align-btn" [class.active]="$any(selectedField).textAlign === 'left' || !$any(selectedField).textAlign" (click)="setTextAlign('left')" title="Left">
+                                        <i class="pi pi-align-left"></i>
+                                    </button>
+                                    <button class="sc-align-btn" [class.active]="$any(selectedField).textAlign === 'center'" (click)="setTextAlign('center')" title="Center">
+                                        <i class="pi pi-align-center"></i>
+                                    </button>
+                                    <button class="sc-align-btn" [class.active]="$any(selectedField).textAlign === 'right'" (click)="setTextAlign('right')" title="Right">
+                                        <i class="pi pi-align-right"></i>
+                                    </button>
                                 </div>
                             </div>
                             <div class="sc-rp-group">
@@ -815,6 +703,44 @@
                                     placeholder="e.g. tCO₂e, ha, m³"
                                     [(ngModel)]="selectedField.unit"
                                     (ngModelChange)="markDirty()" />
+                            </div>
+                        }
+
+                        @if (getFieldCurrentType(selectedField) === 'sub-schema') {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">
+                                    <i class="pi pi-sitemap" style="font-size:11px;color:#534ab7;margin-right:4px"></i>
+                                    Referenced schema
+                                </label>
+                                <p-select
+                                    class="guardian-dropdown sc-rp-select"
+                                    panelStyleClass="guardian-dropdown-panel"
+                                    [options]="availableRefSchemas"
+                                    [filter]="true"
+                                    filterBy="name"
+                                    optionLabel="name"
+                                    optionValue="iri"
+                                    [showClear]="false"
+                                    appendTo="body"
+                                    placeholder="Select schema…"
+                                    [ngModel]="selectedSubSchemaIri"
+                                    (onChange)="onSubSchemaRefChange($event.value)">
+                                    <ng-template pTemplate="selectedItem" let-s>
+                                        <div class="sc-ref-sel-item">
+                                            <i class="pi pi-file" style="color:#534ab7;font-size:12px"></i>
+                                            <span>{{ s.name }}</span>
+                                            @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
+                                        </div>
+                                    </ng-template>
+                                    <ng-template pTemplate="item" let-s>
+                                        <div class="sc-ref-sel-item">
+                                            <i class="pi pi-file" style="color:#534ab7;font-size:12px"></i>
+                                            <span>{{ s.name }}</span>
+                                            @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
+                                        </div>
+                                    </ng-template>
+                                </p-select>
                             </div>
                         }
 
@@ -876,15 +802,17 @@
                         <div class="sc-rp-divider"></div>
                         <div class="sc-rp-label">Other</div>
                         <div class="sc-check-list">
-                            <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
-                                <div class="sc-check-box" [class.active]="selectedField.isArray">
-                                    <i class="pi pi-check"></i>
+                            @if (selectedFieldCanBeArray) {
+                                <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
+                                    <div class="sc-check-box" [class.active]="selectedField.isArray">
+                                        <i class="pi pi-check"></i>
+                                    </div>
+                                    <div class="sc-check-desc">
+                                        <strong>Allow multiple answers</strong>
+                                        <span>Renders as a list</span>
+                                    </div>
                                 </div>
-                                <div class="sc-check-desc">
-                                    <strong>Allow multiple answers</strong>
-                                    <span>Renders as a list</span>
-                                </div>
-                            </div>
+                            }
                             @if (selectedFieldCanBeUpdatable) {
                                 <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
                                     <div class="sc-check-box" [class.active]="selectedField.isUpdatable">
@@ -896,15 +824,6 @@
                                     </div>
                                 </div>
                             }
-                            <div class="sc-check-item" (click)="toggleBehaviour('readOnly')">
-                                <div class="sc-check-box" [class.active]="selectedField.readOnly">
-                                    <i class="pi pi-check"></i>
-                                </div>
-                                <div class="sc-check-desc">
-                                    <strong>Read-only</strong>
-                                    <span>Displayed but not editable</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -916,6 +835,113 @@
     </div>
 
     <!-- ── Shared conditions canvas template ── -->
+    <!-- ── Shared field card list (root canvas + drill canvas) ── -->
+    <ng-template #fieldCardsTpl>
+        <div class="sc-section-block">
+            @if (contextSchemaParents.length) {
+            <div class="sc-section-usage">
+                This schema is used in {{ contextSchemaParents.length }} {{ contextSchemaParents.length === 1 ? 'schema' : 'schemas' }}:
+                <div class="sc-schema-tag-block">
+                    @for (schema of contextSchemaParents; track (schema._id || schema.id || schema.uuid)) {
+                        <span class="sc-schema-tag" (click)="switchSchema(schema)">{{ schema.name }}</span>
+                    }
+                </div>
+                <span>Any field changes will apply everywhere this schema is used.</span>
+            </div>
+            }
+            <div class="sc-section-header">
+                <span class="sc-section-name">Fields</span>
+                <div class="sc-section-line"></div>
+            </div>
+            <div class="sc-fields-list">
+                @if (!isDrilling && schemaLoading) {
+                    <div class="sc-fields-empty">
+                        <p-progressSpinner [style]="{ width: '32px', height: '32px' }"></p-progressSpinner>
+                    </div>
+                } @else if (canvasFields.length) {
+                    @for (field of canvasFields; track $index; let i = $index) {
+                        <div
+                            class="sc-field-card"
+                            [class.active]="selectedField === field"
+                            [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
+                            [class.sc-field-card--invalid]="fieldHasErrors(field)"
+                            [class.sc-field-card--dragging]="isDragActive && reorderField === field"
+                            [class.sc-field-card--drag-target]="reorderOverIndex === i"
+                            [class.sc-field-card--drag-top]="sidebarDropIndex === i && sidebarDropPos === 'top'"
+                            [class.sc-field-card--drag-bot]="sidebarDropIndex === i && sidebarDropPos === 'bot'"
+                            (mousedown)="onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? []))"
+                            (click)="selectField(field)">
+                            <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
+                            <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
+                                <i class="pi {{ getFieldIcon(field) }}"></i>
+                            </div>
+                            <div class="sc-field-info">
+                                <span class="sc-field-key">{{ field.description || field.title || field.name }}</span>
+                                @if (field.description || field.title) {
+                                    <span class="sc-field-desc">{{ field.name }}</span>
+                                }
+                                <div class="sc-field-meta-row">
+                                    @if (getFieldCurrentType(field) === 'sub-schema') {
+                                        <span class="sc-badge sc-badge--ref-name">{{ getRefSchemaName(field) || 'Sub-schema' }}</span>
+                                    } @else {
+                                        <span class="sc-badge sc-badge--type">{{ getFieldTypeBadge(field) }}</span>
+                                    }
+                                    @if (field.required) {
+                                        <span class="sc-badge sc-badge--req">Required</span>
+                                    } @else {
+                                        <span class="sc-badge sc-badge--opt">Optional</span>
+                                    }
+                                    @if (field.isArray) {
+                                        <span class="sc-badge sc-badge--arr">Array</span>
+                                    }
+                                    @if (field.hidden) {
+                                        <span class="sc-badge sc-badge--hidden">Hidden</span>
+                                    }
+                                    @if (field.autocalculate) {
+                                        <span class="sc-badge sc-badge--auto">Auto Calculate</span>
+                                    }
+                                    @if (field.isUpdatable) {
+                                        <span class="sc-badge sc-badge--upd">Updatable</span>
+                                    }
+                                    @if (isFieldConditional(field)) {
+                                        <span class="sc-badge sc-badge--cond">
+                                            <i class="pi pi-code"></i>Condition
+                                        </span>
+                                    }
+                                </div>
+                            </div>
+                            <div class="sc-field-card-actions">
+                                @if (field.isRef) {
+                                    <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
+                                        <i class="pi pi-arrow-right"></i>Enter
+                                    </button>
+                                }
+                                <button class="sc-icon-btn" title="Duplicate field" (click)="duplicateField(field, $event)">
+                                    <i class="pi pi-copy"></i>
+                                </button>
+                                <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field"
+                                    (click)="isDrilling ? deleteDrillField(field, $event) : deleteField(field, $event)">
+                                    <i class="pi pi-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                } @else {
+                    <div class="sc-fields-empty">
+                        <i class="pi pi-inbox"></i>
+                        <span>{{ isDrilling ? 'No fields in this sub-schema' : 'No fields defined yet' }}</span>
+                    </div>
+                }
+            </div>
+        </div>
+        <div class="sc-drop-zone"
+             [class.sc-drop-zone--reorder]="reorderAtEnd"
+             (click)="isDrilling ? addDrillField(defaultFieldType) : addField(defaultFieldType)">
+            <i class="pi pi-plus"></i>
+            Click to add a string field, or drag a type from the sidebar
+        </div>
+    </ng-template>
+
     <ng-template #conditionsCanvas>
         <div class="sc-cond-canvas">
             <div class="sc-cond-scope-note">
@@ -972,21 +998,23 @@
                                     (onChange)="setIfRowField(cond, ri, $event.value)">
                                 </p-select>
                                 <span class="sc-cond-op-eq">=</span>
-                                @if (isIfRowEnum(row)) {
-                                    <p-select
-                                        class="sc-cond-val-sel guardian-dropdown"
-                                        panelStyleClass="guardian-dropdown-panel width-300"
-                                        [options]="getIfRowOptions(row)"
-                                        appendTo="body"
-                                        placeholder="Select value…"
-                                        [ngModel]="getIfRowValue(row)"
-                                        (onChange)="setIfRowValue(cond, ri, $event.value)">
-                                    </p-select>
-                                } @else {
-                                    <input class="sc-cond-val-inp" type="text" placeholder="value"
-                                        [value]="getIfRowValue(row)"
-                                        (change)="setIfRowValue(cond, ri, $any($event.target).value)" />
-                                }
+                                <div class="sc-cond-val-wrap">
+                                    @if (isIfRowEnum(row)) {
+                                        <p-select
+                                            class="sc-cond-val-sel guardian-dropdown"
+                                            panelStyleClass="guardian-dropdown-panel width-300"
+                                            [options]="getIfRowOptions(row)"
+                                            appendTo="body"
+                                            placeholder="Select value…"
+                                            [ngModel]="getIfRowValue(row)"
+                                            (onChange)="setIfRowValue(cond, ri, $event.value)">
+                                        </p-select>
+                                    } @else {
+                                        <input class="sc-cond-val-inp" type="text" placeholder="value"
+                                            [value]="getIfRowValue(row)"
+                                            (change)="setIfRowValue(cond, ri, $any($event.target).value)" />
+                                    }
+                                </div>
                                 <button class="sc-cond-row-del"
                                     [disabled]="getIfRows(cond).length <= 1"
                                     (click)="removeIfRow(cond, ri)">

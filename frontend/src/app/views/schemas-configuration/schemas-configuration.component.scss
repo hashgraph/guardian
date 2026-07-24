@@ -51,7 +51,7 @@
     flex-shrink: 0;
     transition: all 0.15s;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 
     &:hover {
         background: var(--surface-ground, #f8f8f7);
@@ -64,6 +64,7 @@
     text-decoration: none;
     font-weight: 500;
     transition: color 0.15s;
+    cursor: pointer;
 
     &:hover {
         color: var(--text-color, #2c2c2a);
@@ -96,7 +97,7 @@
 }
 
 .sc-nav-tab {
-    font-size: 12px;
+    font-size: 14px;
     padding: 5px 14px;
     border-radius: 6px;
     border: none;
@@ -128,7 +129,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: #dc2626;
     background: #fee2e2;
@@ -151,7 +152,7 @@
     transition: all 0.2s;
     white-space: nowrap;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 
     &.saved {
         background: #eaf3de;
@@ -174,7 +175,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     font-family: inherit;
     padding: 6px 14px;
@@ -207,7 +208,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 12px;
+    font-size: 14px;
     padding: 6px 14px;
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -340,14 +341,14 @@
 .sc-search-icon {
     position: absolute;
     left: 8px;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--text-color-secondary, #888780);
     pointer-events: none;
 }
 
 .sc-search-input {
     width: 100%;
-    font-size: 12px;
+    font-size: 14px;
     padding: 5px 9px 5px 28px;
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -377,7 +378,7 @@
     gap: 8px;
     padding: 32px 12px;
     color: var(--text-color-secondary, #888780);
-    font-size: 12px;
+    font-size: 14px;
 
     i {
         font-size: 28px;
@@ -461,7 +462,7 @@
 }
 
 .sc-schema-name {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-color, #2c2c2a);
     white-space: nowrap;
@@ -504,7 +505,7 @@
     background: var(--surface-ground, #f8f8f7);
     margin-bottom: 4px;
     cursor: grab;
-    font-size: 12px;
+    font-size: 14px;
     color: var(--text-color, #2c2c2a);
     transition: all 0.15s;
     user-select: none;
@@ -574,6 +575,8 @@
     overflow-y: auto;
     background: var(--surface-ground, #f8f8f7);
     position: relative;
+
+    &--drilling { overflow-y: hidden; }
 }
 
 .sc-canvas-loading {
@@ -699,7 +702,7 @@
     text-transform: uppercase;
     letter-spacing: 0.05em;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 }
 
 .sc-schema-props-iri {
@@ -827,6 +830,42 @@
 /* ── Section block ── */
 .sc-section-block {
     margin-bottom: 8px;
+}
+
+.sc-section-usage {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--text-color, #000);
+    line-height: 1.5;
+    font-weight: 500;
+
+    span {
+        font-size: 12px;
+        color: var(--color-grey-6, #495057);
+        line-height: 1.5;
+        font-weight: 500;
+    }
+}
+
+.sc-schema-tag-block {
+    display: flex;
+    margin: 4px 0;
+    align-items: center;
+    gap: 4px;
+}
+
+.sc-schema-tag {
+    font-size: 12px;
+    background: var(--guardian-failure-background, #FFEAEA);
+    color: var(--text-color, #000);
+    border-radius: 3px;
+    padding: 1px 6px;
+    font-weight: 500;
+    cursor: pointer;
 }
 
 .sc-section-header {
@@ -988,7 +1027,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: #534ab7;
     background: none;
@@ -999,7 +1038,7 @@
     font-family: inherit;
     transition: background 0.12s;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
     &:hover { background: rgba(83, 74, 183, 0.1); }
 
     &--root { color: var(--text-color-secondary, #888780); }
@@ -1114,7 +1153,7 @@
     justify-content: center;
     flex-shrink: 0;
 
-    i { font-size: 12px; color: var(--text-color-secondary, #888780); }
+    i { font-size: 14px; color: var(--text-color-secondary, #888780); }
 
     &--ref {
         background: #eeedfe;
@@ -1128,7 +1167,7 @@
 }
 
 .sc-drill-card-name {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-color, #2c2c2a);
     white-space: nowrap;
@@ -1242,6 +1281,9 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    &--hidden { background: #f1efe8; border-color: rgba(0,0,0,0.1); color: #6b6b6b; }
+    &--auto { background: #ecdca2; border-color: rgba(35,35,125,0.1); color: #47a5ca; }
+    &--upd    { background: #e6f6ee; border-color: rgba(26,122,69,0.2); color: #1a7a45; }
 }
 
 .sc-drill-back-bar {
@@ -1255,7 +1297,7 @@
 }
 
 .sc-drill-info {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--text-color-secondary, #888780);
 }
 
@@ -1349,6 +1391,9 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
+    &--hidden { background: #f1efe8; color: #6b6b6b; }
+    &--auto { background: #cae0f8; color: #005e88; }
+    &--upd { background: #e6f6ee; color: #1a7a45; }
 }
 
 .sc-field-card-actions {
@@ -1403,7 +1448,7 @@
     padding: 14px;
     text-align: center;
     color: var(--text-color-secondary, #888780);
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 8px;
     cursor: pointer;
     transition: all 0.15s;
@@ -1442,7 +1487,7 @@
     padding: 8px 16px;
     background: #fff;
     border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-    font-size: 12px;
+    font-size: 14px;
     color: var(--text-color-secondary, #888780);
     flex-shrink: 0;
     position: sticky;
@@ -1451,7 +1496,7 @@
 }
 
 .sc-view-pill {
-    font-size: 12px;
+    font-size: 14px;
     padding: 4px 12px;
     border-radius: 20px;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -1585,7 +1630,7 @@
     justify-content: center;
     gap: 5px;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 
     &.active {
         background: #fff;
@@ -1644,7 +1689,7 @@
     color: #dc2626;
     line-height: 1.4;
 
-    i { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+    i { font-size: 14px; flex-shrink: 0; margin-top: 1px; }
 }
 
 .sc-rp-group {
@@ -1660,7 +1705,7 @@
 }
 
 .sc-rp-input {
-    font-size: 12px;
+    font-size: 14px;
     padding: 6px 10px;
     border-radius: 8px;
     border: 1px solid rgba(0, 0, 0, 0.15);
@@ -1762,8 +1807,9 @@
     gap: 1px;
 
     strong {
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 500;
+        line-height: 18px;
         color: var(--text-color, #2c2c2a);
     }
 
@@ -1771,6 +1817,100 @@
         font-size: 11px;
         color: var(--text-color-secondary, #888780);
     }
+}
+
+/* ── Sub-schema ref picker in right panel ── */
+.sc-rp-ref-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 4px;
+    background: var(--surface-ground, #f8f8f7);
+}
+
+.sc-rp-ref-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.12s;
+    background: #fff;
+    flex-shrink: 0;
+
+    &:hover {
+        border-color: #c8c6f0;
+        background: #eeedfe;
+    }
+
+    &.active {
+        border-color: #534ab7;
+        background: #eeedfe;
+    }
+}
+
+.sc-rp-ref-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: #eeedfe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+        font-size: 14px;
+        color: #534ab7;
+    }
+}
+
+.sc-rp-ref-info {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.sc-rp-ref-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color, #2c2c2a);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sc-rp-ref-ver {
+    font-size: 10px;
+    color: var(--text-color-secondary, #888780);
+    flex-shrink: 0;
+}
+
+.sc-rp-ref-check {
+    font-size: 11px;
+    color: #534ab7;
+    flex-shrink: 0;
+}
+
+.sc-rp-ref-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    padding: 14px;
+    font-size: 11px;
+    color: var(--text-color-secondary, #888780);
+
+    i { font-size: 18px; color: rgba(0, 0, 0, 0.12); }
 }
 
 /* ── Enum options editor ── */
@@ -1841,7 +1981,7 @@
     flex-shrink: 0;
     transition: all 0.15s;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 
     &:hover {
         background: var(--primary-color, #1d9e75);
@@ -1923,7 +2063,7 @@
     gap: 8px;
 
     .sc-system-chevron {
-        font-size: 12px;
+        font-size: 14px;
         color: #6b7280;
         flex-shrink: 0;
     }
@@ -1992,7 +2132,7 @@
     border-radius: 8px;
     border: 1px dashed rgba(0, 0, 0, 0.12);
     color: var(--text-color-secondary, #888780);
-    font-size: 12px;
+    font-size: 14px;
 
     i { font-size: 16px; opacity: 0.5; }
 }
@@ -2021,7 +2161,7 @@
     align-items: center;
     gap: 5px;
 
-    i { font-size: 12px; color: var(--text-color-secondary, #888780); }
+    i { font-size: 14px; color: var(--text-color-secondary, #888780); }
 }
 
 .sc-cond-remove {
@@ -2035,7 +2175,7 @@
     transition: color 0.12s, background 0.12s;
 
     &:hover { color: #ef4444; background: #fee2e2; }
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 }
 
 .sc-cond-section {
@@ -2090,7 +2230,7 @@
 }
 
 .sc-cond-eq {
-    font-size: 12px;
+    font-size: 14px;
     color: var(--text-color-secondary, #888780);
     flex-shrink: 0;
     font-weight: 500;
@@ -2248,7 +2388,7 @@
         cursor: not-allowed;
     }
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 }
 
 // ── Center canvas: Fields / Conditions tab bar ───────────────────────────────
@@ -2292,7 +2432,7 @@
     transition: all 0.15s;
     white-space: nowrap;
 
-    i { font-size: 12px; }
+    i { font-size: 14px; }
 
     &:not(.active):hover { color: var(--guardian-font-color); }
 
@@ -2300,11 +2440,6 @@
         background: var(--guardian-background);
         color: var(--guardian-font-color);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-    }
-
-    &.active.sc-ctp-btn--conds {
-        background: var(--guardian-primary-background);
-        color: var(--color-primary);
     }
 }
 
@@ -2423,7 +2558,7 @@
 }
 
 .sc-cond-when-label {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -2478,9 +2613,14 @@
     &:focus { border-color: var(--color-primary); }
 }
 
-.sc-cond-val-sel {
+.sc-cond-val-wrap {
     width: 180px;
     flex-shrink: 0;
+    min-width: 0;
+}
+
+.sc-cond-val-sel {
+    width: 100%;
 }
 
 .sc-cond-row-del {
@@ -2728,7 +2868,7 @@
     margin: -4px;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     color: var(--text-color, #2c2c2a);
     transition: background 0.12s;
@@ -2789,7 +2929,7 @@
     border: 1.5px solid var(--surface-border, #ccc);
     border-radius: 6px;
     background: #fff;
-    font-size: 12px;
+    font-size: 14px;
     cursor: pointer;
     white-space: nowrap;
     color: var(--text-color, #2c2c2a);
@@ -2815,3 +2955,99 @@
     width: 100%;
 }
 
+
+// ── Enum section (new) ───────────────────────────────────────────────────────
+.sc-enum-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+
+    .sc-rp-label { margin: 0; }
+}
+
+.sc-btn--sm {
+    padding: 4px 10px;
+    font-size: 11px;
+    height: 28px;
+
+    i { font-size: 11px; }
+}
+
+.sc-enum-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 4px;
+}
+
+.sc-enum-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 500;
+    background: #eeedfe;
+    color: #534ab7;
+    border: 1px solid #c8c6f0;
+    max-width: 120px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &--more {
+        background: var(--surface-ground, #f1efe8);
+        color: var(--text-color-secondary, #888780);
+        border-color: var(--surface-border, #ccc);
+    }
+}
+
+// ── HelpText alignment buttons ───────────────────────────────────────────────
+.sc-align-group {
+    display: flex;
+    gap: 4px;
+}
+
+.sc-align-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    border: 1px solid var(--surface-border, #ccc);
+    background: var(--surface-card, #fff);
+    color: var(--text-color-secondary, #888780);
+    cursor: pointer;
+    transition: all 0.12s;
+    flex-shrink: 0;
+
+    i { font-size: 13px; }
+
+    &:hover {
+        border-color: #534ab7;
+        color: #534ab7;
+        background: #eeedfe;
+    }
+
+    &.active {
+        border-color: #534ab7;
+        background: #534ab7;
+        color: #fff;
+    }
+}
+
+// ── Sub-schema ref dropdown selected/option item ─────────────────────────────
+.sc-ref-sel-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+}
+
+.sc-ref-sel-ver {
+    font-size: 10px;
+    color: var(--text-color-secondary, #888780);
+    margin-left: auto;
+}

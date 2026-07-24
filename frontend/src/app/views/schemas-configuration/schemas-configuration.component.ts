@@ -10,6 +10,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
 import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
+import { EnumEditorDialog } from 'src/app/modules/schema-engine/enum-editor-dialog/enum-editor-dialog.component';
 import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
 
 export interface FieldType {
@@ -129,6 +130,26 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.drilledSchema ?? this.selectedSchema;
     }
 
+    public contextSchemaParents: Schema[] = [];
+    private _parentLoadId: string | null = null;
+
+    public loadParentSchemas(): void {
+        const s = this.currentContextSchema;
+        const id: string | null = (s as any)?._id || s?.id || null;
+        if (!id || id === this._parentLoadId) { return; }
+        this._parentLoadId = id;
+        this.contextSchemaParents = [];
+        this.schemaService.getSchemaParents(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (parents) => {
+                    if (this._parentLoadId !== id) { return; }
+                    this.contextSchemaParents = (parents || []).map(p => new Schema(p));
+                },
+                error: () => { if (this._parentLoadId === id) { this.contextSchemaParents = []; } },
+            });
+    }
+
     public readonly entityOptions: { label: string; value: SchemaEntity }[] = [
         { label: 'Default',                        value: SchemaEntity.NONE },
         { label: 'Verifiable Credential',          value: SchemaEntity.VC   },
@@ -151,9 +172,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { key: 'url',           label: 'URL',         icon: 'pi-link',                group: 'Simple Types',    schemaType: 'string', format: 'url' },
         { key: 'uri',           label: 'URI',         icon: 'pi-external-link',       group: 'Simple Types',    schemaType: 'string', format: 'uri' },
         { key: 'email',         label: 'Email',       icon: 'pi-envelope',            group: 'Simple Types',    schemaType: 'string', format: 'email' },
-        // tslint:disable-next-line:no-invalid-template-strings
         { key: 'image',         label: 'Image',       icon: 'pi-image',               group: 'Simple Types',    schemaType: 'string', pattern: '^ipfs:\/\/.+' },
-        // tslint:disable-next-line:no-invalid-template-strings
         { key: 'file',          label: 'File',        icon: 'pi-upload',              group: 'Simple Types',    schemaType: 'string', pattern: '^ipfs:\/\/.+', customType: 'file' },
         { key: 'enum',          label: 'Enum',        icon: 'pi-list',                group: 'Simple Types',    schemaType: 'string', customType: 'enum' },
         { key: 'helptext',      label: 'Help Text',   icon: 'pi-info-circle',         group: 'Simple Types',    schemaType: 'null' },
@@ -165,6 +184,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { key: 'hederaAccount', label: 'Account',     icon: 'pi-id-card',             group: 'Hedera',           schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
         { key: 'sub-schema',    label: 'Sub-schema',  icon: 'pi-sitemap',             group: 'Schema',           isRef: true, accent: true },
     ];
+
+    private static readonly NON_UPDATABLE_TYPES = new Set(['helptext', 'prefix', 'postfix', 'sub-schema']);
+    private static readonly NON_ARRAY_TYPES = new Set(['boolean', 'helptext']);
+
+    public readonly geoJsonOptions = ['Point', 'Polygon', 'LineString', 'MultiPoint', 'MultiPolygon', 'MultiLineString'];
 
     public get fieldTypeGroups(): { group: string; types: FieldType[] }[] {
         const groups: { group: string; types: FieldType[] }[] = [];
@@ -190,7 +214,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { label: 'None',          value: 'none'          },
         { label: 'Hidden',        value: 'hidden'        },
         { label: 'Required',      value: 'required'      },
-        { label: 'Auto calculate', value: 'autocalculate' },
+        { label: 'Auto Calculate', value: 'autocalculate' },
     ];
 
     constructor(
@@ -265,6 +289,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
             this.upsertInSidebar(schema);
             this.rebuildPreview();
+            this.loadParentSchemas();
         });
 
         this.route.queryParamMap.pipe(
@@ -362,11 +387,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get currentSchemaErrorCount(): number {
         // Counts errors across all dirty schemas, not just the visible one.
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        const selUuid = (this.selectedSchema as any)?.uuid;
         let count = 0;
         for (const dirtyId of this.dirtySchemaIds) {
-            const schema = (selId && dirtyId === selId && this.selectedSchema)
-                ? this.selectedSchema
-                : this.schemas.find(s => (s.id || (s as any)._id) === dirtyId) ?? null;
+            let schema: Schema | null = null;
+            if (selId && dirtyId === selId && this.selectedSchema) {
+                schema = this.selectedSchema;
+            } else if (selUuid && dirtyId === `new:${selUuid}` && this.selectedSchema) {
+                schema = this.selectedSchema;
+            } else {
+                schema = this.schemas.find(s => (s.id || (s as any)._id) === dirtyId) ?? null;
+            }
             if (schema) {
                 const fields = schema.fields ?? [];
                 count += fields.filter(f => this.getFieldErrors(f, fields).length > 0).length;
@@ -382,10 +413,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private get allDirtySchemasValid(): boolean {
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
+        const selUuid = (this.selectedSchema as any)?.uuid;
         for (const dirtyId of this.dirtySchemaIds) {
-            const schema = (selId && dirtyId === selId && this.selectedSchema)
-                ? this.selectedSchema
-                : this.schemas.find(s => (s.id || (s as any)._id) === dirtyId) ?? null;
+            let schema: Schema | null = null;
+            if (selId && dirtyId === selId && this.selectedSchema) {
+                schema = this.selectedSchema;
+            } else if (selUuid && dirtyId === `new:${selUuid}` && this.selectedSchema) {
+                schema = this.selectedSchema;
+            } else {
+                schema = this.schemas.find(s => (s.id || (s as any)._id) === dirtyId) ?? null;
+            }
             if (schema && !this.schemaIsValid(schema)) { return false; }
         }
         return true;
@@ -399,12 +436,19 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.selectedSchema = schema;
                 this.drillStack = [];
                 this.activeCanvasTab = 'fields';
+                this.schemaPropsCollapsed = false;
             }
+            return;
+        }
+        if (id === this.selectedSchemaId) {
+            this.drillBack();
             return;
         }
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
+        this.drillStack = [];
         this.activeCanvasTab = 'fields';
+        this.schemaPropsCollapsed = false;
         void this.router.navigate(['/schema-configuration'], {
             queryParams: {
                 schemaId: id,
@@ -428,7 +472,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             const contextIri = this.currentDrilledSchemaIri;
             const subSchema = contextIri ? this.schemas.find(s => s.iri === contextIri) : null;
             const subId = subSchema?.id || (subSchema as any)?._id;
-            if (subId) { this.dirtySchemaIds.add(subId); }
+            const subUuid = (subSchema as any)?.uuid;
+            if (subId) {
+                this.dirtySchemaIds.add(subId);
+            } else if (subUuid) {
+                this.dirtySchemaIds.add(`new:${subUuid}`);
+            }
         }
         const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (rootId) {
@@ -459,10 +508,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         if (!toSave.length && !toCreate.length) { return; }
         this.isSaving = true;
+        // Sync any in-flight drill edits to the schema object in case this.schemas was refreshed
+        // after enterSubSchema stored its fields reference in drillStack.
+        if (this.isDrilling && this.currentDrilledSchemaIri) {
+            const drillS = this.schemas.find(s => s.iri === this.currentDrilledSchemaIri);
+            if (drillS && drillS.fields !== this.drillCurrentFields) {
+                drillS.fields = this.drillCurrentFields;
+            }
+        }
         const allSchemas = [...toCreate, ...toSave];
         // Phase 1: rebuild document from fields (system fields appended, then stripped back).
         allSchemas.forEach(s => {
-            const userFields = s.fields;
+            const userFields = Array.isArray(s.fields) ? s.fields : [];
             const defaultFields = DefaultFieldDictionary.getDefaultFields(s.entity as SchemaEntity);
             s.update([...userFields, ...defaultFields], s.conditions);
             s.fields = userFields;
@@ -545,6 +602,30 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
             this.markDirty();
         }
+    }
+
+    public duplicateField(field: SchemaField, event: Event): void {
+        event.stopPropagation();
+        const targetFields = this.isDrilling ? this.drillCurrentFields : this.selectedSchema?.fields;
+        if (!targetFields) { return; }
+        const existingNames = new Set(targetFields.map(f => f.name));
+        let baseName = field.name.replace(/_\d+$/, '');
+        let idx = 2;
+        while (existingNames.has(`${baseName}_${idx}`)) { idx++; }
+        const f = field as any;
+        const clone: any = { ...f, name: `${baseName}_${idx}` };
+        // Deep-copy array properties to avoid shared mutations between original and clone.
+        if (Array.isArray(f.enum)) { clone.enum = [...f.enum]; }
+        if (Array.isArray(f.fields)) { clone.fields = [...f.fields]; }
+        if (Array.isArray(f.availableOptions)) { clone.availableOptions = [...f.availableOptions]; }
+        const srcIdx = targetFields.indexOf(field);
+        if (srcIdx !== -1) {
+            targetFields.splice(srcIdx + 1, 0, clone as SchemaField);
+        } else {
+            targetFields.push(clone as SchemaField);
+        }
+        this.selectedField = clone as SchemaField;
+        this.markDirty();
     }
 
     public selectField(field: SchemaField): void {
@@ -647,15 +728,71 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.selectedField ? this.getFieldCurrentType(this.selectedField) === 'geo' : false;
     }
 
-    // Types that cannot be updatable (same rule as old editor: only simple types can be)
-    private static readonly NON_UPDATABLE_TYPES = new Set(['prefix', 'postfix', 'hederaAccount', 'geo', 'sentinel', 'sub-schema']);
+    public get selectedFieldCanBeArray(): boolean {
+        if (!this.selectedField) { return false; }
+        const type = this.getFieldCurrentType(this.selectedField);
+        return !this.selectedField.autocalculate && !SchemasConfigurationComponent.NON_ARRAY_TYPES.has(type);
+    }
+
+    public get selectedFieldEnumChips(): string[] {
+        const vals: string[] = (this.selectedField as any)?.enum ?? [];
+        return Array.isArray(vals) ? vals.slice(0, 5) : [];
+    }
+
+    public get selectedFieldEnumOverflow(): number {
+        const vals: string[] = (this.selectedField as any)?.enum ?? [];
+        return Array.isArray(vals) ? Math.max(0, vals.length - 5) : 0;
+    }
+
+    public openEnumEditor(): void {
+        if (!this.selectedField) { return; }
+        const currentValues: string[] = Array.isArray((this.selectedField as any).enum)
+            ? (this.selectedField as any).enum
+            : [];
+        const dialogRef = this.dialogService.open(EnumEditorDialog, {
+            showHeader: false,
+            width: '540px',
+            styleClass: 'guardian-dialog',
+            data: {
+                enumValue: currentValues,
+                errorHandler: () => {},
+            },
+        });
+        if (!dialogRef) { return; }
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe(res => {
+            if (!res || !this.selectedField) { return; }
+            if (res.enumValue !== undefined) {
+                const values: string[] = String(res.enumValue)
+                    .split('\n')
+                    .map((v: string) => v.trim())
+                    .filter((v: string) => v.length > 0);
+                (this.selectedField as any).enum = [...new Set(values)];
+                this.markDirty();
+            }
+        });
+    }
+
+    public setTextAlign(align: 'left' | 'center' | 'right'): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any).textAlign = align;
+        this.markDirty();
+    }
+
+    public onSubSchemaRefChange(iri: string): void {
+        const schema = this.schemas.find(s => s.iri === iri);
+        if (schema) { this.changeSubSchemaRef(schema); }
+    }
+
+    public get selectedSubSchemaIri(): string {
+        return (this.selectedField as any)?.type || '';
+    }
 
     public get selectedFieldCanBeUpdatable(): boolean {
         if (!this.selectedField) { return false; }
-        return !SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(this.getFieldCurrentType(this.selectedField));
+        const type = this.getFieldCurrentType(this.selectedField);
+        return !SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(type);
     }
 
-    public readonly geoJsonOptions = ['Point', 'Polygon', 'LineString', 'MultiPoint', 'MultiPolygon', 'MultiLineString'];
 
     public isGeoJsonTypeSelected(type: string): boolean {
         const opts = (this.selectedField as any)?.availableOptions;
@@ -716,6 +853,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public changeFieldType(ft: FieldType): void {
         if (!this.selectedField) { return; }
+        // Sub-schema fields are added by dragging from the Schemas tab; clicking the
+        // tile on an existing sub-schema field is a no-op to avoid corruption.
+        if (ft.key === 'sub-schema') { return; }
         const f = this.selectedField as any;
         f.isRef = ft.isRef || false;
         f.type = ft.schemaType || 'string';
@@ -729,6 +869,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    public changeSubSchemaRef(schema: Schema): void {
+        if (!this.selectedField || !this.selectedField.isRef) { return; }
+        const oldIri = (this.selectedField as any).type;
+        const f = this.selectedField as any;
+        f.type = schema.iri || '';
+        f.fields = schema.fields ? [...schema.fields] : [];
+        // If the changed field's old IRI appears in the drill stack, those entries are stale — close.
+        if (oldIri && this.drillStack.some(e => e.schemaIri === oldIri)) {
+            this.drillStack = [];
+        }
+        this.markDirty();
+    }
+
+    public get availableRefSchemas(): Schema[] {
+        return this.schemas.filter(s => this.canDragSchema(s));
+    }
+
 
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
@@ -736,28 +893,42 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
         // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
         const subSchema = this.schemas.find(s => s.iri === field.type);
+        // If the sidebar schema has no fields but the withDefs-parsed root resolved them via
+        // $defs, initialise the sidebar schema's fields from the clone so that drillCurrentFields
+        // and subSchema.fields remain the same reference and saveAll can find the edits.
+        if (subSchema && !subSchema.fields?.length && field.fields?.length) {
+            subSchema.fields = [...field.fields];
+        }
         const fields = subSchema?.fields ?? field.fields ?? [];
         this.drillStack = [
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
         ];
+        this._parentLoadId = null;
+        this.loadParentSchemas();
     }
 
     public drillTo(index: number): void {
         this.drillStack = this.drillStack.slice(0, index + 1);
         this.selectedField = null;
+        this._parentLoadId = null;
+        this.loadParentSchemas();
     }
 
     public drillBack(): void {
         this.drillStack = this.drillStack.slice(0, -1);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
+        this._parentLoadId = null;
+        this.loadParentSchemas();
     }
 
     public drillClose(): void {
         this.drillStack = [];
         this.selectedField = null;
         this.activeDrillTab = 'fields';
+        this._parentLoadId = null;
+        this.loadParentSchemas();
     }
 
     public addDrillField(ft: FieldType): void {
@@ -1067,7 +1238,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             pattern: '',
             unit: '',
             unitSystem: '',
-            property: '',
+            property: null,
             customType: '',
             isUpdatable: false,
             hidden: false,
@@ -1103,7 +1274,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             pattern: '',
             unit: '',
             unitSystem: '',
-            property: '',
+            property: null,
             customType: '',
             isUpdatable: false,
             hidden: false,
@@ -1725,7 +1896,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             pattern: ft.pattern || '',
             unit: '',
             unitSystem: ft.unitSystem || '',
-            property: '',
+            property: null,
             customType: ft.customType || '',
             isUpdatable: false,
             hidden: false,
