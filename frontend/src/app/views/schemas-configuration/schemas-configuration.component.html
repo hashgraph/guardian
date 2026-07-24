@@ -1071,7 +1071,9 @@
                                             <i class="pi pi-eye"></i>
                                             <span class="sc-cond-te-label sc-cond-te-label--path"
                                                 [title]="t.fieldPath.join('.')">{{ t.fieldPath.join(' › ') }}</span>
-                                            <span class="sc-cond-te-badge sc-cond-te-badge--show">show</span>
+                                            <span class="sc-cond-te-badge sc-cond-te-badge--show sc-cond-te-badge--nav"
+                                                title="Open schema"
+                                                (click)="openTargetSchema(t)">open</span>
                                             <button class="sc-cond-te-del" (click)="removeThenTarget(cond, t)">
                                                 <i class="pi pi-times"></i>
                                             </button>
@@ -1140,7 +1142,9 @@
                                             <i class="pi pi-eye-slash"></i>
                                             <span class="sc-cond-te-label sc-cond-te-label--path"
                                                 [title]="t.fieldPath.join('.')">{{ t.fieldPath.join(' › ') }}</span>
-                                            <span class="sc-cond-te-badge sc-cond-te-badge--hide">hide</span>
+                                            <span class="sc-cond-te-badge sc-cond-te-badge--hide sc-cond-te-badge--nav"
+                                                title="Open schema"
+                                                (click)="openTargetSchema(t)">open</span>
                                             <button class="sc-cond-te-del" (click)="removeElseTarget(cond, t)">
                                                 <i class="pi pi-times"></i>
                                             </button>

@@ -54,6 +54,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemasLoading: boolean = false;
     public schemaSearch: string = '';
     public readonly schemaSearch$ = new Subject<string>();
+    private readonly _cancelLoadSchemas$ = new Subject<void>();
     public schemasPage: number = 0;
     public schemasPageSize: number = 50;
     public schemasTotal: number = 0;
@@ -461,8 +462,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public goBack(): void {
         const queryParams: Record<string, string> = {};
-        if (this.type) { queryParams['type'] = this.type; }
-        if (this.topic) { queryParams['topic'] = this.topic; }
+        if (this.type) { queryParams.type = this.type; }
+        if (this.topic) { queryParams.topic = this.topic; }
         void this.router.navigate(['/schemas'], { queryParams });
     }
 
@@ -553,14 +554,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
         if (toNewVersion.length > 0) {
             const s = toNewVersion[0];
-            this.schemaService.newVersion(s.category ?? this.getCategory(), s as unknown as ISchema)
-                .pipe(takeUntil(this.destroy$))
-                .subscribe(result => {
-                    this.isSaving = false;
-                    void this.router.navigate(['task', result.taskId], {
-                        queryParams: { last: btoa(location.href) },
+            const triggerNewVersion = () => {
+                this.schemaService.newVersion(s.category ?? this.getCategory(), s as unknown as ISchema)
+                    .pipe(takeUntil(this.destroy$))
+                    .subscribe({
+                        next: result => {
+                            this.isSaving = false;
+                            void this.router.navigate(['task', result.taskId], {
+                                queryParams: { last: btoa(location.href) },
+                            });
+                        },
+                        error: () => { this.isSaving = false; },
                     });
-                }, () => { this.isSaving = false; });
+            };
+            if (createObs.length) {
+                forkJoin(createObs).pipe(takeUntil(this.destroy$)).subscribe({
+                    next: triggerNewVersion,
+                    error: () => { this.isSaving = false; },
+                });
+            } else {
+                triggerNewVersion();
+            }
             return;
         }
 
@@ -609,7 +623,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const targetFields = this.isDrilling ? this.drillCurrentFields : this.selectedSchema?.fields;
         if (!targetFields) { return; }
         const existingNames = new Set(targetFields.map(f => f.name));
-        let baseName = field.name.replace(/_\d+$/, '');
+        const baseName = field.name.replace(/_\d+$/, '');
         let idx = 2;
         while (existingNames.has(`${baseName}_${idx}`)) { idx++; }
         const f = field as any;
@@ -793,7 +807,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(type);
     }
 
-
     public isGeoJsonTypeSelected(type: string): boolean {
         const opts = (this.selectedField as any)?.availableOptions;
         return Array.isArray(opts) ? opts.includes(type) : false;
@@ -885,7 +898,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public get availableRefSchemas(): Schema[] {
         return this.schemas.filter(s => this.canDragSchema(s));
     }
-
 
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
@@ -1361,16 +1373,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return all.filter(f => !owned.has(f.name));
     }
 
-    public getConditionFieldGroups(): Array<{
+    public getConditionFieldGroups(): {
         groupLabel: string;
         isRoot: boolean;
-        fields: Array<{ pathStr: string; label: string }>;
-    }> {
+        fields: { pathStr: string; label: string }[];
+    }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
         const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
-        const rootGroup = { groupLabel: '', isRoot: true, fields: [] as Array<{ pathStr: string; label: string }> };
-        const nested: Array<{ groupLabel: string; isRoot: false; fields: Array<{ pathStr: string; label: string }> }> = [];
+        const rootGroup = { groupLabel: '', isRoot: true, fields: [] as { pathStr: string; label: string }[] };
+        const nested: { groupLabel: string; isRoot: false; fields: { pathStr: string; label: string }[] }[] = [];
 
         for (const f of schema.fields ?? []) {
             if (f.readOnly) { continue; }
@@ -1378,7 +1390,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 const ref = schemaByIri.get(f.type);
                 const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
                 if (refFields.length) {
-                    const group = { groupLabel: f.title || f.name, isRoot: false as const, fields: [] as Array<{ pathStr: string; label: string }> };
+                    const group = { groupLabel: f.title || f.name, isRoot: false as const, fields: [] as { pathStr: string; label: string }[] };
                     this._collectLeafConditionFields(refFields, [f.name], schemaByIri, group.fields);
                     if (group.fields.length) { nested.push(group); }
                 }
@@ -1387,7 +1399,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             }
         }
 
-        const result: Array<{ groupLabel: string; isRoot: boolean; fields: Array<{ pathStr: string; label: string }> }> = [];
+        const result: { groupLabel: string; isRoot: boolean; fields: { pathStr: string; label: string }[] }[] = [];
         if (rootGroup.fields.length) { result.push(rootGroup); }
         result.push(...nested);
         return result;
@@ -1397,7 +1409,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         fields: SchemaField[],
         pathParts: string[],
         schemaByIri: Map<string, Schema>,
-        out: Array<{ pathStr: string; label: string }>
+        out: { pathStr: string; label: string }[]
     ): void {
         for (const f of fields) {
             if (f.readOnly) { continue; }
@@ -1575,8 +1587,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const newField = this.buildNewField(this.defaultFieldType, schema.fields);
-        schema.fields = [...(schema.fields ?? []), newField];
-        cond.thenFields = [...(cond.thenFields ?? []), newField];
+        (schema.fields ??= []).push(newField);
+        (cond.thenFields ??= []).push(newField);
         this.markDirty();
     }
 
@@ -1584,15 +1596,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const schema = this.currentContextSchema;
         if (!schema) { return; }
         const newField = this.buildNewField(this.defaultFieldType, schema.fields);
-        schema.fields = [...(schema.fields ?? []), newField];
-        cond.elseFields = [...(cond.elseFields ?? []), newField];
+        (schema.fields ??= []).push(newField);
+        (cond.elseFields ??= []).push(newField);
         this.markDirty();
     }
 
     public removeThenField(cond: SchemaCondition, field: SchemaField): void {
         cond.thenFields = (cond.thenFields || []).filter(f => f !== field);
         const schema = this.currentContextSchema;
-        if (schema) { schema.fields = schema.fields.filter(f => f !== field); }
+        if (schema) {
+            const idx = schema.fields.indexOf(field);
+            if (idx !== -1) { schema.fields.splice(idx, 1); }
+        }
         if (this.selectedField === field) { this.selectedField = null; }
         this.markDirty();
     }
@@ -1600,7 +1615,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public removeElseField(cond: SchemaCondition, field: SchemaField): void {
         cond.elseFields = (cond.elseFields || []).filter(f => f !== field);
         const schema = this.currentContextSchema;
-        if (schema) { schema.fields = schema.fields.filter(f => f !== field); }
+        if (schema) {
+            const idx = schema.fields.indexOf(field);
+            if (idx !== -1) { schema.fields.splice(idx, 1); }
+        }
         if (this.selectedField === field) { this.selectedField = null; }
         this.markDirty();
     }
@@ -1623,11 +1641,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return field;
     }
 
-    public getCrossTargetPaths(): Array<{ pathStr: string; label: string }> {
+    public getCrossTargetPaths(): { pathStr: string; label: string }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
         const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
-        const result: Array<{ pathStr: string; label: string }> = [];
+        const result: { pathStr: string; label: string }[] = [];
 
         const traverse = (fields: SchemaField[], pathParts: string[], labelParts: string[]) => {
             for (const f of fields) {
@@ -1658,17 +1676,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
-    public getConditionFieldPSelectGroups(): Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> {
+    public getConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
         const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
-        const result: Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> = [];
+        const result: { label: string; items: { pathStr: string; label: string }[] }[] = [];
 
         const nestLabel = (name: string, depth: number) =>
             depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
 
         const addGroups = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
-            const items: Array<{ pathStr: string; label: string }> = [];
+            const items: { pathStr: string; label: string }[] = [];
             for (const f of fields) {
                 if (f.readOnly || (f.isRef && f.type)) { continue; }
                 items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
@@ -1694,17 +1712,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public condThenRefVal: Record<number, string | null> = {};
     public condElseRefVal: Record<number, string | null> = {};
 
-    public getCrossTargetPSelectGroups(): Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> {
+    public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
         const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
-        const result: Array<{ label: string; items: Array<{ pathStr: string; label: string }> }> = [];
+        const result: { label: string; items: { pathStr: string; label: string }[] }[] = [];
 
         const nestLabel = (name: string, depth: number) =>
             depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
 
         const traverse = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
-            const items: Array<{ pathStr: string; label: string }> = [];
+            const items: { pathStr: string; label: string }[] = [];
             for (const f of fields) {
                 if (f.readOnly || (f.isRef && f.type)) { continue; }
                 items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
@@ -1776,6 +1794,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    public openTargetSchema(target: SchemaConditionTarget): void {
+        const refFieldName = target.fieldPath[0];
+        if (!refFieldName) { return; }
+        const refField = this.currentContextSchema?.fields.find(f => f.name === refFieldName);
+        if (!refField?.type) { return; }
+        const schema = this.schemas.find(s => s.iri === refField.type);
+        if (schema) { this.switchSchema(schema); }
+    }
+
     // ── Top-level condition management ────────────────────────────────────────
 
     public addNewCondition(): void {
@@ -1794,6 +1821,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public removeConditionAt(index: number): void {
         const schema = this.currentContextSchema;
         if (!schema) { return; }
+        // H1: rekey index-keyed dropdown state before the conditions array shrinks
+        const rekey = (rec: Record<number, string | null>) => {
+            const out: Record<number, string | null> = {};
+            for (const [k, v] of Object.entries(rec)) {
+                const ki = Number(k);
+                if (ki < index) { out[ki] = v; }
+                else if (ki > index) { out[ki - 1] = v; }
+            }
+            return out;
+        };
+        this.condThenRefVal = rekey(this.condThenRefVal);
+        this.condElseRefVal = rekey(this.condElseRefVal);
         const cond = schema.conditions?.[index];
         if (cond) {
             const toRemove = new Set([
@@ -1801,7 +1840,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 ...(cond.elseFields ?? []).map(f => f.name),
             ]);
             if (toRemove.size) {
-                schema.fields = schema.fields.filter(f => !toRemove.has(f.name));
+                // H2: splice in-place to preserve drillStack reference
+                for (let i = schema.fields.length - 1; i >= 0; i--) {
+                    if (toRemove.has(schema.fields[i].name)) { schema.fields.splice(i, 1); }
+                }
                 if (toRemove.has(this.selectedField?.name ?? '')) { this.selectedField = null; }
             }
         }
@@ -1834,6 +1876,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.schemasLoading = true;
         }
         const search = this.schemaSearch.trim() || undefined;
+        this._cancelLoadSchemas$.next();
         this.schemaService.getSchemasByPage({
             category: this.getCategory(),
             topicId,
@@ -1841,7 +1884,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             pageSize: this.schemasPageSize,
             search,
         })
-            .pipe(takeUntil(this.destroy$))
+            .pipe(takeUntil(this._cancelLoadSchemas$), takeUntil(this.destroy$))
             .subscribe({
                 next: (response: HttpResponse<ISchema[]>) => {
                     const total = Number(response.headers?.get('X-Total-Count') || 0);
@@ -2003,6 +2046,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 visited.add(field.type);
                 const ref = schemaByIri.get(field.type);
                 if (ref) {
+                    if (!ref.document) { continue; }
                     const doc = { ...ref.document };
                     delete doc.$defs;
                     result[field.type] = doc;

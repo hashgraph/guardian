@@ -2756,6 +2756,7 @@
     &--new  { background: var(--guardian-primary-background); color: var(--color-primary); }
     &--show { background: var(--guardian-primary-background); color: var(--color-primary); }
     &--hide { background: var(--guardian-failure-background); color: var(--color-accent-red-1); }
+    &--nav  { cursor: pointer; user-select: none; &:hover { filter: brightness(0.85); } }
 }
 
 .sc-cond-te-del {
