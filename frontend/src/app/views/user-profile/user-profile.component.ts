@@ -26,6 +26,11 @@ import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dialog.component';
 import moment from 'moment';
+import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
+import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
+import { DocWidgetService } from '../../services/doc-widget.service';
+import { FirstStepsService } from '../../services/first-steps.service';
+import { formatBalance, getUserInitials } from '../../utils';
 
 
 enum OperationMode {
@@ -173,7 +178,11 @@ export class UserProfileComponent implements OnInit {
         private router: Router,
         private dialogService: DialogService,
         private headerProps: HeaderPropsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private docWidgetService: DocWidgetService,
+        private appThemeService: AppThemeService,
+        private menuLayoutService: MenuLayoutService,
+        private firstStepsService: FirstStepsService
     ) {
         this.balances = new Map<string, string>();
         this.standardRegistryForm = new UntypedFormControl('', [Validators.required]);
@@ -1267,7 +1276,10 @@ export class UserProfileComponent implements OnInit {
 
     refreshOtpStatus() {
         this.auth.getOtpStatus().subscribe((result) => {
-            this.is2faEnabled = result.enabled;
+            const enabled = result.enabled;
+            this.is2faEnabled = !enabled;
+            this.cdRef.detectChanges();
+            this.is2faEnabled = enabled;
         });
     }
 
@@ -1304,5 +1316,70 @@ export class UserProfileComponent implements OnInit {
                 });
             }
         })
+    }
+    public readonly getUserInitials = getUserInitials;
+
+    formatBalance(balance: string | null | undefined): string {
+        return formatBalance(balance);
+    }
+
+    formatRole(role: string | undefined): string {
+        if (!role) { return ''; }
+        return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    }
+
+    get appThemes(): AppThemeOption[] {
+        return this.appThemeService.themes;
+    }
+
+    get selectedTheme(): AppTheme {
+        return this.appThemeService.getCurrentTheme();
+    }
+
+    get menuLayouts(): MenuLayoutOption[] {
+        return this.menuLayoutService.layouts;
+    }
+
+    get selectedMenuLayout(): MenuLayout {
+        return this.menuLayoutService.layout;
+    }
+
+    get docWidgetEnabled(): boolean {
+        return this.docWidgetService.isEnabled();
+    }
+
+    get docWidgetAvailable(): boolean {
+        return this.docWidgetService.available;
+    }
+
+    get firstStepsEnabled(): boolean {
+        return this.firstStepsService.isEnabled();
+    }
+
+    onThemeChange(theme: AppTheme): void {
+        this.appThemeService.setTheme(theme);
+    }
+
+    onMenuLayoutChange(layout: MenuLayout): void {
+        this.menuLayoutService.setLayout(layout);
+    }
+
+    onDocWidgetToggle(checked: boolean): void {
+        this.docWidgetService.setEnabled(checked);
+    }
+
+    onFirstStepsToggle(checked: boolean): void {
+        this.firstStepsService.setEnabled(checked);
+    }
+
+    onToggle2fa(checked: boolean): void {
+        checked ? this.generate2fa() : this.deactivate2fa();
+    }
+
+    copyToClipboard(value: string | null | undefined): void {
+        if (!value) { return; }
+        navigator.clipboard.writeText(value).then(() => {
+            this.toastService.success('Copied to clipboard');
+        }).catch((error) => console.error(error));
     }
 }

@@ -1,4 +1,4 @@
-<div class="content user-profile">
+<div class="content user-profile" [class.guardian-page]="isConfirmed">
     <div *ngIf="(loading || subLoading) && !taskId" class="loading">
         <div class="preloader-image preloader-image-l-size"></div>
     </div>
@@ -12,9 +12,7 @@
 
     <ng-container *ngIf="isConfirmed; else elseTemplate">
         <div *ngIf="profile" class="profile">
-            <div class="header">
-                <h1>Profile</h1>
-            </div>
+            <div class="guardian-user-page-header">Profile</div>
 
             <div class="tabs-nav">
                 <p-tabs [(value)]="tabIndex" (valueChange)="onChangeTab($event)" class="guardian-header-tabs">
@@ -42,108 +40,141 @@
             </div>
 
             <ng-container *ngIf="tab === 'general'">
-                <div *ngIf="tab === 'general'" class="user-info-container">
-                    <div class="item-header">Account</div>
-                    <div class="item">
-                        <span>User Name</span>
-                        <span class="value-text">{{ profile!.username }}</span>
-                    </div>
-                    <div class="item">
-                        <span>Password</span>
-                        <div (click)="changePassword(profile)" class="view-document-button">
-                            <span>Change Password</span>
-                        </div>
+                <div class="profile-grid">
+                    <div class="profile-info-column">
+                        <p-card styleClass="profile-card">
+                            <div class="profile-card-inner">
+                                <div class="profile-account-header">
+                                    <div class="profile-avatar-initials">{{ getUserInitials(profile.username) }}</div>
+                                    <div class="profile-account-identity">
+                                        <div class="profile-account-name">{{ profile.username }}</div>
+                                        <div class="profile-account-role">{{ formatRole(profile.role) }}</div>
+                                    </div>
+                                </div>
+                                <div class="profile-row">
+                                    <span class="profile-label">Balance</span>
+                                    <span class="profile-value">{{ formatBalance(balance) }}</span>
+                                </div>
+                            </div>
+                        </p-card>
+
+                        <p-card styleClass="profile-card">
+                            <div class="profile-card-inner">
+                                <div class="profile-card-title">
+                                    <i class="pi pi-globe profile-card-title-icon"></i>
+                                    Hedera network
+                                </div>
+                                <div class="profile-row">
+                                    <span class="profile-label">Account ID</span>
+                                    <div class="profile-value-actions">
+                                        <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">{{ profile.hederaAccountId }}</hedera-explorer>
+                                        <p-button icon="pi pi-copy" [text]="true" size="small" styleClass="profile-copy-btn" (onClick)="copyToClipboard(profile.hederaAccountId)" pTooltip="Copy Account ID" tooltipPosition="top"></p-button>
+                                    </div>
+                                </div>
+                                <div *ngIf="profile.topicId" class="profile-row">
+                                    <span class="profile-label">User Topic</span>
+                                    <div class="profile-value-actions">
+                                        <hedera-explorer [params]="profile.topicId" type="topics">{{ profile.topicId }}</hedera-explorer>
+                                        <p-button icon="pi pi-copy" [text]="true" size="small" styleClass="profile-copy-btn" (onClick)="copyToClipboard(profile.topicId)" pTooltip="Copy User Topic" tooltipPosition="top"></p-button>
+                                    </div>
+                                </div>
+                            </div>
+                        </p-card>
+
+                        <p-card styleClass="profile-card">
+                            <div class="profile-card-inner">
+                                <div class="profile-card-title">
+                                    <i class="pi pi-id-card profile-card-title-icon"></i>
+                                    Identity
+                                </div>
+                                <div class="profile-row">
+                                    <span class="profile-label">Standard Registry</span>
+                                    <span class="profile-value profile-value--truncate">{{ profile.parent }}</span>
+                                </div>
+                                <div class="profile-row">
+                                    <span class="profile-label">DID</span>
+                                    <div class="profile-value-actions">
+                                        <span class="profile-value profile-value--truncate">{{ profile.did }}</span>
+                                        <p-button icon="pi pi-copy" [text]="true" size="small" styleClass="profile-copy-btn" (onClick)="copyToClipboard(profile.did)" pTooltip="Copy DID" tooltipPosition="top"></p-button>
+                                    </div>
+                                </div>
+                                <div class="profile-row">
+                                    <span class="profile-label">DID Document</span>
+                                    <div (click)="openDIDDocument(didDocument, 'DID Document')" class="view-document-button">
+                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
+                                        <span>View</span>
+                                    </div>
+                                </div>
+                                <div *ngIf="vcDocument" class="profile-row">
+                                    <span class="profile-label">VC Document</span>
+                                    <div (click)="openVCDocument(vcDocument, 'VC Document')" class="view-document-button">
+                                        <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color"></svg-icon>
+                                        <span>View</span>
+                                    </div>
+                                </div>
+                                <div class="profile-row">
+                                    <span class="profile-label">Profile</span>
+                                    <p-button (onClick)="download()" label="Download" icon="pi pi-download" severity="secondary" size="small"></p-button>
+                                </div>
+                            </div>
+                        </p-card>
                     </div>
 
-                    <div class="item-header">Security Settings</div>
-                    <div class="item">
-                        <span>Two-factor authentication</span>
-                        <div class="view-document-button otp-status active" *ngIf="is2faEnabled">
-                            <span>Active</span>
-                        </div>
-                        <div class="view-document-button otp-status disabled" *ngIf="!is2faEnabled">
-                            <span>Disabled</span>
-                        </div>
-                    </div>
-                    <div class="item"><span></span>
-                        <span>When you sign in, you'll be asked to use the security code provided
-                            by your Authenticator
-                            App.</span>
-                    </div>
-                    <div class="item"><span></span>
-                        <div *ngIf="!is2faEnabled" (click)="generate2fa()" class="view-document-button">
-                            <i class="pi pi-cog"></i>
-                            <span>Set up</span>
-                        </div>
-                        <div *ngIf="is2faEnabled" (click)="deactivate2fa()" class="view-document-button">
-                            <span>Deactivate</span>
-                        </div>
-                    </div>
-                    
-                    <div class="item-header">Hedera</div>
-                    <div class="item">
-                        <span>Hedera Account ID</span>
-                        <div>
-                            <hedera-explorer [params]="profile.hederaAccountId || ''" type="accounts">
-                                {{ profile.hederaAccountId }}
-                            </hedera-explorer>
-                        </div>
-                    </div>
-                    <div *ngIf="profile.topicId" class="item">
-                        <span>User Topic</span>
-                        <div>
-                            <hedera-explorer [params]="profile.topicId" type="topics">
-                                {{ profile.topicId }}
-                            </hedera-explorer>
-                        </div>
-                    </div>
-                    <div class="item">
-                        <span>Balance</span>
-                        <span class="value-text">{{ balance }}</span>
-                    </div>
-
-
-                    <div class="item-header">Documents</div>
-                    <div class="item">
-                        <span>Standard Registry</span>
-                        <span class="value-text">{{ profile.parent }}</span>
-                    </div>
-                    <div class="item">
-                        <span>DID</span>
-                        <span class="value-text">{{ profile.did }}</span>
-                    </div>
-                    <div class="item">
-                        <span>DID Document</span>
-                        <div
-                            (click)="openDIDDocument(didDocument, 'DID Document')"
-                            class="view-document-button"
-                        >
-                            <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
-                            </svg-icon>
-                            <span>View document</span>
-                        </div>
-                    </div>
-                    <div *ngIf="vcDocument" class="item">
-                        <span>VC Document</span>
-                        <div
-                            (click)="openVCDocument(vcDocument, 'VC Document')"
-                            class="view-document-button"
-                        >
-                            <svg-icon class="svg-icon-16" src="/assets/images/icons/16/file.svg" svgClass="primary-color">
-                            </svg-icon>
-                            <span>View document</span>
-                        </div>
-                    </div>
-
-                    <div *ngIf="profile" class="item">
-                        <div class="download-button">
-                            <p-button
-                                (click)="download()"
-                                label="Download profile"
-                                icon="pi pi-download"
-                            >
-                            </p-button>
-                        </div>
+                    <div class="profile-config-column">
+                        <p-card styleClass="profile-card">
+                            <div class="profile-card-inner">
+                                <div class="profile-card-title">
+                                    <i class="pi pi-cog profile-card-title-icon"></i>
+                                    Configuration
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-row-label">
+                                        <span class="config-row-title">Documentation</span>
+                                        <span class="config-row-desc">Show the in-app docs widget</span>
+                                    </div>
+                                    <span class="profile-toggle-wrapper" [pTooltip]="docWidgetAvailable ? '' : 'Documentation is only available over HTTPS'" tooltipPosition="left">
+                                        <p-toggleswitch [ngModel]="docWidgetEnabled" (onChange)="onDocWidgetToggle($event.checked)" [disabled]="!docWidgetAvailable"></p-toggleswitch>
+                                    </span>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-row-label">
+                                        <span class="config-row-title">First Steps</span>
+                                        <span class="config-row-desc">Show the First Steps tutorial toggle in the side menu</span>
+                                    </div>
+                                    <p-toggleswitch [ngModel]="firstStepsEnabled" (onChange)="onFirstStepsToggle($event.checked)"></p-toggleswitch>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-row-label">
+                                        <span class="config-row-title">Two-factor authentication</span>
+                                        <span class="config-row-desc">Require an authenticator code at sign-in</span>
+                                    </div>
+                                    <p-toggleswitch [ngModel]="is2faEnabled" (onChange)="onToggle2fa($event.checked)"></p-toggleswitch>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-row-label">
+                                        <span class="config-row-title">Password</span>
+                                        <span class="config-row-desc">Update your account password</span>
+                                    </div>
+                                    <p-button label="Change" severity="secondary" size="small" (onClick)="changePassword(profile)"></p-button>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-row-label">
+                                        <span class="config-row-title">Theme</span>
+                                        <span class="config-row-desc">Appearance for this device</span>
+                                    </div>
+                                    <p-selectbutton [options]="appThemes" [ngModel]="selectedTheme" (onChange)="onThemeChange($event.value)" optionLabel="label" optionValue="value" styleClass="guardian-select-button profile-theme-select">
+                                        <ng-template let-item pTemplate="item"><i [class]="item.icon"></i><span>{{ item.label }}</span></ng-template>
+                                    </p-selectbutton>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-row-label">
+                                        <span class="config-row-title">Menu layout</span>
+                                        <span class="config-row-desc">Navigation as a side rail or a top bar</span>
+                                    </div>
+                                    <p-selectbutton [options]="menuLayouts" [ngModel]="selectedMenuLayout" (onChange)="onMenuLayoutChange($event.value)" optionLabel="label" optionValue="value" styleClass="guardian-select-button profile-theme-select"></p-selectbutton>
+                                </div>
+                            </div>
+                        </p-card>
                     </div>
                 </div>
             </ng-container>

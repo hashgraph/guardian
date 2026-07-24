@@ -26,6 +26,7 @@ import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-th
 import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
 import { DocWidgetService } from '../../services/doc-widget.service';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
+import { FirstStepsService } from '../../services/first-steps.service';
 import { SettingsService } from '../../services/settings.service';
 import { formatBalance, getUserInitials } from '../../utils';
 
@@ -139,6 +140,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
         private settingsService: SettingsService,
         private appThemeService: AppThemeService,
         private menuLayoutService: MenuLayoutService,
+        private firstStepsService: FirstStepsService,
     ) {
         this.profile = null;
         this.balance = null;
@@ -970,6 +972,14 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     onNextGenUiToggle(checked: boolean): void {
         this.featureFlagsService.setNextGenUiEnabled(checked);
+    }
+
+    get firstStepsEnabled(): boolean {
+        return this.firstStepsService.isEnabled();
+    }
+
+    onFirstStepsToggle(checked: boolean): void {
+        this.firstStepsService.setEnabled(checked);
     }
 
     onToggle2fa(checked: boolean): void {

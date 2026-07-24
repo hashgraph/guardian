@@ -1,0 +1,404 @@
+:host ::ng-deep .p-drawer.first-steps-drawer {
+    width: var(--first-steps-panel-width);
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}
+
+.first-steps-panel {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 24px 20px;
+    box-sizing: border-box;
+    background: var(--color-grey-white, #ffffff);
+    border-left: 1px solid var(--color-grey-3, #e1e7ef);
+    box-shadow: -8px 0 24px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+}
+
+.first-steps-resize {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    cursor: ew-resize;
+    z-index: 2;
+    transition: background 0.15s ease-in-out;
+
+    &:hover {
+        background: var(--color-grey-3, #e1e7ef);
+    }
+}
+
+.first-steps-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 16px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--color-grey-3, #e1e7ef);
+}
+
+.first-steps-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.first-steps-footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 0 0;
+    margin-top: 16px;
+    border-top: 1px solid var(--color-grey-3, #e1e7ef);
+}
+
+.first-steps-footer-text {
+    color: var(--color-grey-6, #495057);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+.first-steps-dismiss {
+    height: 40px;
+    padding: 8px 24px;
+}
+
+.first-steps-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--guardian-font-color, #23252e);
+}
+
+.first-steps-subtitle {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--color-grey-5, #848fa9);
+}
+
+/* Close (hide) control — hides the drawer without disabling the feature. */
+.first-steps-close {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--color-grey-5, #848fa9);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.15s ease-in-out, color 0.15s ease-in-out;
+
+    &:hover {
+        background: var(--color-grey-2, #eff3f7);
+        color: var(--guardian-font-color, #23252e);
+    }
+}
+
+/*
+ * Rendered GitHub-Flavored Markdown (produced by `marked`, injected via
+ * [innerHTML]). Wrapped in ::ng-deep because Angular view encapsulation does not
+ * tag dynamically inserted innerHTML content, so plain scoped rules would not
+ * reach these elements. Simple, documentation-style typography.
+ */
+:host ::ng-deep .first-steps-content {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--color-grey-6, #495057);
+    word-wrap: break-word;
+
+    > :first-child {
+        margin-top: 0;
+    }
+
+    /*
+     * The authored page repeats its title as a leading <h1>, but the drawer
+     * already shows its own "First Steps" header — hide the duplicate in the
+     * panel only (GitBook still shows it). Any non-leading <h1> keeps a size
+     * below the panel header.
+     */
+    > h1:first-child {
+        display: none;
+    }
+
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: var(--guardian-font-color, #23252e);
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    h1 {
+        font-size: 18px;
+        margin: 4px 0 14px;
+    }
+
+    h2 {
+        font-size: 16px;
+        margin: 24px 0 8px;
+        padding-bottom: 5px;
+        border-bottom: 1px solid var(--color-grey-3, #e1e7ef);
+    }
+
+    h3 {
+        font-size: 14px;
+        font-weight: 600;
+        margin: 18px 0 6px;
+    }
+
+    h4,
+    h5,
+    h6 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 14px 0 6px;
+    }
+
+    p {
+        margin: 0 0 12px;
+    }
+
+    ul,
+    ol {
+        margin: 0 0 12px;
+        padding-left: 22px;
+    }
+
+    li {
+        margin: 4px 0;
+    }
+
+    li > ul,
+    li > ol {
+        margin: 4px 0;
+    }
+
+    a {
+        color: var(--color-primary, #4169e2);
+        text-decoration: none;
+
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    .fs-link--external::after {
+        content: '\2197';
+        margin-left: 2px;
+        font-size: 11px;
+    }
+
+    strong {
+        color: var(--guardian-font-color, #23252e);
+    }
+
+    em {
+        font-style: italic;
+    }
+
+    del {
+        color: var(--color-grey-5, #848fa9);
+    }
+
+    blockquote {
+        margin: 0 0 14px;
+        padding: 10px 14px;
+        border-left: 3px solid var(--color-primary, #4169e2);
+        border-radius: 0 6px 6px 0;
+        background: var(--color-grey-2, #eff3f7);
+        color: var(--color-grey-6, #495057);
+
+        p {
+            margin: 0;
+        }
+    }
+
+    code {
+        font-family: monospace;
+        font-size: 12.5px;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: var(--color-grey-2, #eff3f7);
+    }
+
+    pre {
+        margin: 0 0 12px;
+        padding: 12px 14px;
+        border-radius: 8px;
+        overflow-x: auto;
+        background: var(--color-grey-2, #eff3f7);
+
+        code {
+            padding: 0;
+            background: transparent;
+        }
+    }
+
+    table {
+        width: 100%;
+        margin: 0 0 14px;
+        border-collapse: collapse;
+        font-size: 13px;
+    }
+
+    th,
+    td {
+        padding: 7px 10px;
+        border: 1px solid var(--color-grey-3, #e1e7ef);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    th {
+        background: var(--color-grey-2, #eff3f7);
+        color: var(--guardian-font-color, #23252e);
+        font-weight: 600;
+    }
+
+    img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    hr {
+        margin: 18px 0;
+        border: none;
+        border-top: 1px solid var(--color-grey-3, #e1e7ef);
+    }
+
+    /* GitBook blocks (rendered by the marked extensions) */
+    .fs-block-hint {
+        margin: 0 0 14px;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border-left: 3px solid var(--color-primary, #4169e2);
+        background: var(--color-grey-2, #eff3f7);
+
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .fs-block-hint--warning {
+        border-left-color: #e0a800;
+    }
+
+    .fs-block-hint--danger {
+        border-left-color: #d9534f;
+    }
+
+    .fs-block-hint--success {
+        border-left-color: #2e7d32;
+    }
+
+    .fs-block-stepper {
+        list-style: none;
+        margin: 0 0 14px;
+        padding: 0;
+    }
+
+    .fs-block-step {
+        display: flex;
+        gap: 12px;
+        padding-bottom: 12px;
+    }
+
+    .fs-block-step-num {
+        flex: 0 0 auto;
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--guardian-on-primary-color, #ffffff);
+        background: var(--color-primary, #4169e2);
+    }
+
+    .fs-block-step-body {
+        flex: 1 1 auto;
+        min-width: 0;
+
+        > :first-child {
+            margin-top: 0;
+        }
+    }
+
+    .fs-block-tabs {
+        margin: 0 0 14px;
+    }
+
+    .fs-block-tab {
+        margin-bottom: 8px;
+    }
+
+    .fs-block-tab-title {
+        font-weight: 600;
+        color: var(--guardian-font-color, #23252e);
+        margin-bottom: 4px;
+    }
+
+    .fs-block-code-title {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--color-grey-5, #848fa9);
+        margin-bottom: 4px;
+    }
+
+    .fs-block-content-ref {
+        margin: 0 0 14px;
+        padding: 10px 14px;
+        border: 1px solid var(--color-grey-3, #e1e7ef);
+        border-radius: 8px;
+
+        > :last-child {
+            margin-bottom: 0;
+        }
+    }
+
+    .fs-block-details {
+        margin: 0 0 14px;
+
+        summary {
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--guardian-font-color, #23252e);
+        }
+
+        .fs-block-details-body {
+            margin-top: 8px;
+
+            > :last-child {
+                margin-bottom: 0;
+            }
+        }
+    }
+}
+
+.first-steps-error {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-grey-5, #848fa9);
+}
