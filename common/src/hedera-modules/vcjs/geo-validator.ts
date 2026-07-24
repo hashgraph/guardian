@@ -132,7 +132,7 @@ function validateScope(
             }
         }
 
-        if (!field.isRef || !field.fields?.length || value == null) {
+        if (!field.isRef || !field.fields?.length || value === null || value === undefined) {
             continue;
         }
         if (field.isArray && Array.isArray(value)) {
