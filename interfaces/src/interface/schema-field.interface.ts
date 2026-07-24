@@ -68,6 +68,7 @@ export interface SchemaField {
      * Custom Type
      */
     customType: string;
+    dependency?: { on: string; kind: string };
     /**
      * Fields
      */
