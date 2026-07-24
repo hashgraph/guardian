@@ -140,7 +140,7 @@ export class SchemaFormRootComponent implements OnInit {
 
     public onChange($event: Schema | null) {
         if (this.model?.controls) {
-            this.navFields = [...(this.model.controls || [])];
+            this.navFields = [...this.model.controls];
         }
         this.change.emit($event);
     }
