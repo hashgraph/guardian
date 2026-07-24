@@ -1,6 +1,6 @@
 <div class="schema-nav">
   <div class="schema-nav-tree">
-    @for (node of navTree; track node) {
+    @for (node of navTree; track node.accordionId) {
       <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: node, level: 0 }"></ng-container>
     }
   </div>
@@ -31,7 +31,7 @@
 
     @if (node.children?.length && isExpanded(node.accordionId)) {
       <div class="nav-children">
-        @for (c of node.children; track c) {
+        @for (c of node.children; track c.accordionId) {
           <ng-container [ngTemplateOutlet]="nodeTpl" [ngTemplateOutletContext]="{ $implicit: c, level: level + 1 }"></ng-container>
         }
       </div>
