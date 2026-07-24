@@ -47,6 +47,7 @@ import {
     updateSchemaDefs,
     updateToolConfig
 } from '../helpers/import-helpers/index.js'
+import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -144,6 +145,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (checkForCircularDependency(row)) {
                     throw new Error(`There is circular dependency in schema: ${row.iri}`);
                 }
+                validateSchemaDependencies(item);
                 row.name = item.name;
                 row.description = item.description;
                 row.entity = item.entity;
