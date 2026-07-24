@@ -272,14 +272,14 @@ export class NewHeaderComponent implements OnInit, OnDestroy, AfterViewChecked {
         }
     }
 
-    /** Open the group whose child matches the current route (and close the others). */
+    /** Open the group whose child matches the current route, leaving other groups as-is. */
     private syncActiveGroups() {
         if (!this.menuItems) {
             return;
         }
         for (const item of this.menuItems) {
-            if (item.childItems) {
-                item.active = this.hasActiveChild(item);
+            if (item.childItems && this.hasActiveChild(item)) {
+                item.active = true;
             }
         }
     }

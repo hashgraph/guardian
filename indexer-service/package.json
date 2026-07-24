@@ -3,9 +3,9 @@
     "dependencies": {
         "@indexer/common": "workspace:*",
         "@indexer/interfaces": "workspace:*",
-        "@mikro-orm/core": "6.6.15",
-        "@mikro-orm/migrations-mongodb": "6.6.15",
-        "@mikro-orm/mongodb": "6.6.15",
+        "@mikro-orm/core": "6.6.16",
+        "@mikro-orm/migrations-mongodb": "6.6.16",
+        "@mikro-orm/mongodb": "6.6.16",
         "@nestjs/common": "^11.1.24",
         "@nestjs/core": "^11.1.24",
         "@nestjs/microservices": "^11.1.24",
@@ -26,7 +26,7 @@
     "description": "",
     "devDependencies": {
         "@types/glob": "^8.1.0",
-        "@types/node": "24.13.2",
+        "@types/node": "24.13.3",
         "chai": "4.5.0",
         "mocha": "10.8.2",
         "mocha-junit-reporter": "2.2.1",

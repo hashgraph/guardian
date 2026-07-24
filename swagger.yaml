@@ -21986,7 +21986,7 @@ paths:
                           verificationMethod: >-
                             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599#did-root-key
                           proofPurpose: assertionMethod
-                          jws: ...
+                          jws: '...'
                       owner: >-
                         did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                       group: null
