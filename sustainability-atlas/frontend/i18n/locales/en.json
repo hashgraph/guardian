@@ -1,0 +1,1968 @@
+{
+    "banner": {
+        "guest": "You're viewing as a guest —",
+        "signInHere": "sign in from here",
+        "unverified": "Please verify your email address ({email}) to secure your account.",
+        "resend": "Resend verification",
+        "resendIn": "Resend in {s}s"
+    },
+    "auth": {
+        "signIn": "Sign In",
+        "signOut": "Sign Out",
+        "viewProfile": "Account Settings",
+        "apiKeys": "API Keys",
+        "userManagement": "User Management",
+        "roleAdmin": "Administrator",
+        "roleUser": "Registered User",
+        "welcomeBack": "Welcome back",
+        "createAccount": "Create account",
+        "signInSubtitle": "Sign in to access your personalised features",
+        "signUpSubtitle": "Join Sustainability Atlas to monitor carbon markets",
+        "email": "Email address",
+        "password": "Password",
+        "confirmPassword": "Confirm password",
+        "firstName": "First name",
+        "lastName": "Last name",
+        "organisation": "Organisation",
+        "country": "Country",
+        "passwordHint": "Password must be at least 12 characters.",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?",
+        "backToSignIn": "Back to sign in",
+        "forgotPassword": "Forgot password?",
+        "forgotTitle": "Reset your password",
+        "forgotSubtitle": "Enter your email and we'll send you a reset link",
+        "sendResetLink": "Send reset link",
+        "username": "Username",
+        "errorGeneric": "Something went wrong. Please try again.",
+        "errorPasswordMismatch": "Passwords do not match.",
+        "firstNameRequired": "First name is required.",
+        "lastNameRequired": "Last name is required.",
+        "emailRequired": "Email is required.",
+        "emailInvalid": "Enter a valid email address (e.g. name{'@'}example.com).",
+        "passwordRequired": "Password is required.",
+        "passwordWeak": "Password does not meet the requirements below.",
+        "confirmRequired": "Please confirm your password.",
+        "passwordsMatch": "Passwords match.",
+        "showPassword": "Show password",
+        "hidePassword": "Hide password",
+        "required": "required",
+        "pwRuleLength": "At least {n} characters",
+        "pwRuleUpper": "One uppercase letter",
+        "pwRuleLower": "One lowercase letter",
+        "pwRuleNumber": "One number",
+        "pwRuleSpecial": "One special character"
+    },
+    "forcePassword": {
+        "title": "Set a new password",
+        "subtitle": "Your account requires a password change before you continue.",
+        "current": "Current password",
+        "new": "New password",
+        "submit": "Update password",
+        "currentRequired": "Please enter your current password."
+    },
+    "verify": {
+        "verifying": "Verifying your email…",
+        "verified": "Email verified",
+        "failed": "Verification failed",
+        "failedHelp": "This link is single-use and expires in 24 hours — it may already be used or expired. Sign in and use the “Resend verification” option in the banner to get a fresh link."
+    },
+    "reset": {
+        "title": "Set a new password",
+        "subtitle": "Choose a new password for your account.",
+        "newPassword": "New password",
+        "submit": "Reset password",
+        "missingToken": "This reset link is missing its token.",
+        "doneTitle": "Password reset",
+        "doneSubtitle": "Your password has been updated. Please sign in with your new password."
+    },
+    "userMgmt": {
+        "title": "User Management",
+        "subtitle": "Manage users, roles and access",
+        "createButton": "Create User",
+        "createTitle": "Create User",
+        "createSubtitle": "Add a new Registered user or administrator",
+        "role": "Role",
+        "roleUserDesc": "Personalised features and API keys",
+        "roleAdminDesc": "Full access including User Management",
+        "initialPassword": "Initial password",
+        "passwordNote": "The user will be asked to change it on first login.",
+        "cancel": "Cancel",
+        "total": "Total",
+        "active": "Active",
+        "inactive": "Inactive",
+        "searchPlaceholder": "Search users…",
+        "searchButton": "Search",
+        "colName": "Name",
+        "colFirstName": "First Name",
+        "colLastName": "Last Name",
+        "colUsername": "Username",
+        "colOrganisation": "Organization Name",
+        "colJobTitle": "Job Title",
+        "colCountry": "Country",
+        "roleAdmin": "Admin",
+        "roleUser": "User",
+        "colStatus": "Status",
+        "colVerified": "Email",
+        "colCreated": "Created",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "colActions": "Actions",
+        "you": "You",
+        "empty": "No users found.",
+        "makeAdmin": "Make Admin",
+        "makeUser": "Make User",
+        "activate": "Activate",
+        "deactivate": "Deactivate",
+        "createdToast": "User created",
+        "activatedToast": "User activated",
+        "deactivatedToast": "User deactivated",
+        "roleChangedToast": "Role updated",
+        "validation": {
+            "firstNameRequired": "First name is required.",
+            "lastNameRequired": "Last name is required.",
+            "emailRequired": "Email is required.",
+            "emailInvalid": "Enter a valid email address.",
+            "passwordRequired": "Initial password is required.",
+            "passwordTooShort": "Password must be at least 12 characters.",
+            "countryRequired": "Country is required."
+        },
+        "tabUsers": "Users",
+        "tabRequests": "Rate Limit Requests",
+        "quota": {
+            "button": "Limit",
+            "title": "Adjust rate limit",
+            "subtitle": "Set the per-hour API request limit for {email}.",
+            "limitLabel": "New limit (requests / hour)",
+            "currentHint": "Current limit: {current} req/hr",
+            "roleDefault": "role default",
+            "justificationLabel": "Justification (required)",
+            "justificationRequired": "A justification is required.",
+            "savedToast": "Rate limit updated",
+            "cancel": "Cancel",
+            "save": "Save limit"
+        }
+    },
+    "rateLimit": {
+        "title": "API Rate Limit",
+        "perHour": "req/hr",
+        "roleDefault": "Default for your role: {n} req/hr",
+        "pending": "Increase request pending",
+        "requestIncrease": "Request Increase",
+        "adminQuota": "Administrator quota",
+        "requestedQuota": "Requested quota (req/hr)",
+        "maxNote": "Maximum {max} requests/hour.",
+        "justification": "Justification",
+        "justificationPlaceholder": "Explain why you need a higher limit…",
+        "justificationShort": "Please provide a justification (at least 10 characters).",
+        "submit": "Submit Request",
+        "history": "Request history",
+        "viewAll": "View all ({n})",
+        "noHistory": "No requests yet.",
+        "adminNote": "You hold the administrator quota and review other users' increase requests.",
+        "reviewRequests": "Review requests",
+        "disabledBadge": "Off",
+        "disabledTooltip": "Rate limiting is currently disabled.",
+        "invalidQuota": "Enter a valid quota.",
+        "exceedsMax": "Requested quota cannot exceed {max} req/hr.",
+        "submittedToast": "Rate-limit request submitted",
+        "noRequests": "No rate limit requests. All user requests will appear here for your review.",
+        "current": "Current",
+        "requested": "Requested",
+        "submitted": "Submitted",
+        "resolvedToast": "Request resolved",
+        "approvedQuota": "Approved quota (req/hr)",
+        "notePlaceholder": "Optional note to the requester",
+        "adjustHint": "The new quota applies immediately to the user's keys. It may be lower than requested.",
+        "applyAdjustment": "Approve with Adjustment",
+        "approve": "Approve",
+        "adjust": "Adjust",
+        "decline": "Decline",
+        "status": {
+            "pending": "Pending",
+            "approved": "Approved",
+            "adjusted": "Adjusted",
+            "declined": "Declined"
+        }
+    },
+    "apiKeys": {
+        "active": "active",
+        "generate": "Generate Key",
+        "intro": "Manage programmatic access keys for data integrations. Keys are shown in full only once when created — store them securely.",
+        "limitReached": "You've reached the maximum of 3 active keys. Revoke an existing key before generating a new one.",
+        "createdTitle": "Key generated successfully",
+        "createdOnce": "Copy it now — this is the only time you'll see the full key.",
+        "copy": "Copy",
+        "copied": "Copied",
+        "copyFailed": "Could not copy to clipboard",
+        "savedDone": "I've saved my key — done",
+        "keyName": "Key name",
+        "namePlaceholder": "e.g. dev or prod-pipeline",
+        "nameRequired": "Please enter a name for the key.",
+        "revokedToast": "API key revoked",
+        "empty": "No API keys yet. Generate one to start consuming platform data programmatically.",
+        "colName": "Name / Key",
+        "colCreated": "Created",
+        "colLastUsed": "Last Used",
+        "colStatus": "Status",
+        "colAction": "Action",
+        "revoked": "Revoked",
+        "revoke": "Revoke",
+        "disabledBadge": "Not required",
+        "disabledTooltip": "Data access is currently public."
+    },
+    "account": {
+        "title": "Account Settings",
+        "subtitle": "Manage your profile, security and API access",
+        "profile": "Profile",
+        "apiKeys": "API Keys",
+        "apiKeysComingSoon": "Programmatic API key management will be available here soon.",
+        "signOutHint": "You'll need to sign in again to access personalised features.",
+        "edit": "Edit",
+        "save": "Save changes",
+        "cancel": "Cancel",
+        "savedToast": "Profile updated",
+        "security": "Security",
+        "securityHint": "Change the password you use to sign in.",
+        "changePassword": "Change password",
+        "passwordChangedToast": "Password updated",
+        "emailImmutable": "Your email address can't be changed.",
+        "fields": {
+            "name": "Name",
+            "firstName": "First name",
+            "lastName": "Last name",
+            "email": "Email Address",
+            "organisation": "Organisation",
+            "jobTitle": "Job Title",
+            "country": "Country",
+            "memberSince": "Member Since"
+        },
+        "activity": {
+            "title": "Recent activity",
+            "allTypes": "All activity",
+            "colActivity": "Activity",
+            "colStatus": "Status",
+            "colIp": "IP address",
+            "colWhen": "When",
+            "empty": "No activity yet.",
+            "page": "Page {page} of {pages}",
+            "prev": "Previous",
+            "next": "Next"
+        }
+    },
+    "country": {
+        "placeholder": "Select a country",
+        "searchPlaceholder": "Search countries…",
+        "required": "Please select a country."
+    },
+    "feedback": {
+        "button": "Feedback",
+        "title": "Send us feedback",
+        "close": "Close",
+        "page": "Page",
+        "descriptionLabel": "Description",
+        "placeholder": "Tell us what's working, what's broken, or what you'd like to see...",
+        "emailLabel": "Email",
+        "emailPlaceholder": "you{'@'}example.com",
+        "emailHint": "We'll only use it to notify you when this is resolved.",
+        "emailInvalid": "Please enter a valid email address.",
+        "attachScreenshot": "Capture screen",
+        "removeScreenshot": "Remove screenshot",
+        "optional": "optional",
+        "cancel": "Cancel",
+        "submit": "Send",
+        "success": "Thanks for your feedback!",
+        "error": "Failed to send feedback. Please try again.",
+        "screenshotError": "Could not capture a screenshot.",
+        "descriptionRequired": "Please enter a description."
+    },
+    "common": {
+        "search": "Search",
+        "searchEllipsis": "Search...",
+        "clearAll": "Clear all",
+        "clear": "Clear",
+        "clearSelection": "Clear selection",
+        "undo": "Undo",
+        "loading": "Loading...",
+        "noResults": "No results",
+        "retry": "Retry",
+        "viewAll": "View all",
+        "viewDetails": "View details",
+        "showingRange": "Showing {start}–{end} of {total}",
+        "rowsPerPage": "Rows per page:",
+        "page": "Page",
+        "active": "active",
+        "activeCount": "({count} active)",
+        "yes": "Yes",
+        "no": "No",
+        "all": "All",
+        "from": "From",
+        "to": "To",
+        "dateRangeApply": "Apply",
+        "dateRangeClear": "Clear dates",
+        "dateFrom": "From date",
+        "dateTo": "To date",
+        "yearFrom": "From year",
+        "yearTo": "To year",
+        "allYears": "All years",
+        "numMin": "Min",
+        "numMax": "Max",
+        "clearRange": "Clear range",
+        "enabled": "Enabled",
+        "noOptions": "No options",
+        "notFound": "Not Found",
+        "copy": "Copy",
+        "copied": "Copied",
+        "download": "Download",
+        "close": "Close",
+        "viewOnExplorer": "View on Explorer",
+        "viewOnHashScan": "View on HashScan",
+        "viewOnIndexer": "View on Indexer",
+        "viewRawData": "View Raw Data",
+        "rawData": "Raw Data",
+        "lines": "lines",
+        "mdash": "—",
+        "total": "total",
+        "field": "field",
+        "fields": "fields",
+        "changed": "changed"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "portfolio": "Portfolio",
+        "projects": "Projects",
+        "issuances": "Issuances",
+        "methodologies": "Methodologies",
+        "registries": "Registries",
+        "developers": "Developers",
+        "sdgs": "SDG",
+        "analytics": "Analytics",
+        "reports": "Reports",
+        "glossary": "Glossary",
+        "syncStatus": "Sync Status",
+        "dataSyncedUpTo": "Data synced up to",
+        "sustainable": "Sustainability",
+        "explorer": "Atlas"
+    },
+    "topbar": {
+        "searchPlaceholder": "Search projects, credits, registries...",
+        "network": "Network",
+        "language": "Language",
+        "itemType": {
+            "project": "Project",
+            "issuance": "Issuance",
+            "methodology": "Methodology",
+            "registry": "Registry"
+        },
+        "token": "Token",
+        "policies": "policies",
+        "projectsLabel": "projects",
+        "toggleSidebar": "Toggle sidebar"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "subtitle": "Overview of the Hedera Guardian sustainability network",
+        "filterTooltip": "Filter all dashboard data by project developer and/or registry. All cards, charts, map, and tables update to show only matching projects.",
+        "allDevelopers": "Developers",
+        "allRegistries": "Registries",
+        "stats": {
+            "registries": "Registries",
+            "registriesSub": "Standard Registries",
+            "registriesTooltip": "Number of unique Standard Registries with data (Methodologies, projects, users, or issuances) matching the current filters. The change indicator shows how many new registries joined compared to the previous year.",
+            "methodologies": "Methodologies",
+            "methodologiesSub": "Published policies",
+            "methodologiesTooltip": "Total number of unique published policy methodologies across all matching registries. The change indicator shows how many new methodologies were published compared to the previous year.",
+            "projects": "Projects",
+            "projectsSub": "Active verified projects",
+            "projectsTooltip": "Count of sustainability projects registered and verified on the Guardian network matching the current filters. The change indicator shows the net increase in projects compared to the previous year.",
+            "totalIssuances": "Total Minted Credits",
+            "totalIssuancesSub": "Issued on-chain",
+            "totalIssuancesTooltip": "Total number of minted credits issued across all matching projects.",
+            "totalRetired": "Total Retired",
+            "totalRetiredSub": "Permanently retired",
+            "totalRetiredTooltip": "Sum of all issuances permanently retired (burned) for offsetting purposes across matching projects."
+        },
+        "projectDistribution": "Project Distribution",
+        "projectDistributionTooltip": "Countries are colored by project count. Darker green = more projects. Click a country to see detailed breakdown. Small dots show individual project locations.",
+        "projectDistributionSub": "Geographic spread of verified projects",
+        "viewAllProjects": "View all projects",
+        "map": "Map",
+        "table": "Table",
+        "noCountries": "No countries match the selected filters",
+        "country": "Country",
+        "projectsCol": "Projects",
+        "issuancesCol": "Minted Credits",
+        "methodologiesCol": "Methodologies",
+        "sectorRegistryBreakdown": "Sector & Registry Breakdown",
+        "sectorRegistryBreakdownTooltip": "Distribution of projects and minted credits by sector and registry. Toggle between project count and issuance volume. Reflects current developer/registry filters.",
+        "sectorRegistryBreakdownSub": "Distribution of projects and minted credits by sector and registry",
+        "bySector": "By Sector",
+        "byRegistry": "By Registry",
+        "otherCategory": "Other",
+        "projectsToggle": "Projects",
+        "issuancesToggle": "Minted Credits",
+        "topRegistries": "Top Registries",
+        "topRegistriesTooltip": "Ranked by project count. Policies = unique methodologies published. Minted Credits = total issued on-chain by this registry.",
+        "topRegistriesSub": "Most active by policy and project count",
+        "name": "Name",
+        "policies": "Policies",
+        "noRegistries": "No registries match the selected filters",
+        "issuanceTrend": "Minted Credits Trend",
+        "issuanceTrendTooltip": "Issuance volume over time derived from project creation dates.",
+        "volumeMillions": "Volume (credits)",
+        "monthly": "Monthly",
+        "quarterly": "Quarterly",
+        "yearly": "Yearly",
+        "months": "months",
+        "quarters": "quarters",
+        "years": "years",
+        "noIssuanceData": "No issuance data matches the selected filters",
+        "analytics": "Analytics",
+        "retirementTrend": "Retirement Trend",
+        "retirementTrendTooltip": "Retirement volume over time. Shows issuances permanently retired (burned) for offsetting.",
+        "noRetirementData": "No retirement data matches the selected filters",
+        "vintageDistribution": "Vintage Distribution",
+        "vintageDistributionTooltip": "Distribution of issuances by vintage year. Shows which years have the most credits issued across matching projects.",
+        "vintageDistributionSub": "Minted credits by vintage year",
+        "vintages": "vintages",
+        "projectsSuffix": "projects",
+        "noVintageData": "No vintage data matches the selected filters",
+        "networkActivity": "Network Activity",
+        "networkActivityTooltip": "Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications.",
+        "networkActivitySub": "Recent changes across the Guardian network",
+        "noActivity": "No recent activity matches the selected filters",
+        "activity": {
+            "newProjectRegistered": "New project registered",
+            "registryIndexed": "Registry indexed",
+            "justNow": "just now",
+            "minuteAgo": "{n} minute ago",
+            "minutesAgo": "{n} minutes ago",
+            "hourAgo": "{n} hour ago",
+            "hoursAgo": "{n} hours ago",
+            "dayAgo": "{n} day ago",
+            "daysAgo": "{n} days ago"
+        },
+        "activeProjects": "Active Projects",
+        "mtco2TotalReduction": "MtCO2 Total Reduction",
+        "mtco2AnnualEst": "MtCO2 Annual Est.",
+        "sector": "Sector",
+        "registry": "Registry",
+        "totalIssuancesLabel": "Total Minted Credits",
+        "sectorTypes": {
+            "renewableEnergy": "Renewable Energy",
+            "forestry": "Forestry",
+            "blueCarbon": "Blue Carbon",
+            "energyEfficiency": "Energy Efficiency",
+            "agriculture": "Agriculture",
+            "water": "Water",
+            "waste": "Waste",
+            "energy": "Energy",
+            "industrialProcess": "Industrial Process",
+            "landUseForestry": "Land Use & Forestry",
+            "fugitiveEmissions": "Fugitive Emissions",
+            "transport": "Transport",
+            "natureBasedSolutions": "Nature Based Solutions",
+            "others": "Others",
+            "undefined": "Undefined"
+        }
+    },
+    "projects": {
+        "title": "Projects",
+        "subtitle": "Verified sustainability projects on the Guardian network",
+        "searchPlaceholder": "Search projects...",
+        "quickFilters": "Quick filters:",
+        "downloadData": "Download Data",
+        "filteredByRegistry": "Showing projects for registry",
+        "unknownRegistry": "this registry",
+        "clearRegistryFilter": "Clear filter",
+        "projectsFound": "{count} projects found",
+        "totalIssuances": "Total issuances:",
+        "countries": "Countries:",
+        "registries": "Registries:",
+        "noMatch": "No projects match your filters",
+        "sectoralScope": "Sectoral Scope: {scope}",
+        "sdgsTooltip": "UN Sustainable Development Goals this project contributes to. Hover over each icon for the full goal name.",
+        "sectorTooltip": "Includes Sectoral Scope as additional detail",
+        "stageTooltip": "Where the project sits in the credit lifecycle: Registered → Validated → MRV Submitted → Verified → Issued.",
+        "expectedIssuanceYearTooltip": "The year credits are first expected to be issued — applies to pre-issuance projects. Shows \"TBD\" when no forecast is available yet, and \"—\" for projects that have already issued.",
+        "columns": {
+            "project": "Project",
+            "country": "Country",
+            "registry": "Registry",
+            "methodology": "Methodology",
+            "sector": "Sector",
+            "issuances": "Issuances",
+            "transferred": "Transferred",
+            "retired": "Retired",
+            "status": "Status",
+            "lifecycleStage": "Stage",
+            "projectedVolume": "Proj. Volume",
+            "expectedIssuanceYear": "Exp. Year",
+            "sdgs": "SDG",
+            "rawData": "Raw Data"
+        },
+        "filters": {
+            "status": "Status",
+            "registry": "Registry",
+            "country": "Country",
+            "vintage": "Vintage",
+            "sector": "Sector",
+            "sectoralScope": "Sectoral Scope",
+            "developer": "Developer",
+            "sdgs": "SDG",
+            "lifecycleStage": "Stage",
+            "expectedIssuanceYear": "Expected Issuance Year",
+            "pipeline": "Issuance Status"
+        },
+        "pipelineFilter": {
+            "pipeline": "Pre-Issuance",
+            "issued": "Issued"
+        },
+        "presets": {
+            "goldStandard": "Gold Standard",
+            "sdg13": "SDG 13: Climate Action",
+            "vintage2022": "Vintage 2022",
+            "issuingEnergy": "Issuing Energy",
+            "glycolRecycling": "Glycol Recycling",
+            "pipeline": "Pre-Issuance"
+        },
+        "lifecycleStages": {
+            "Registered": "Registered",
+            "Validation": "Validated",
+            "Monitoring": "MRV Submitted",
+            "Verified": "Verified",
+            "Issued": "Issued"
+        },
+        "milestones": {
+            "title": "Milestone Tracker",
+            "subtitle": "Registration → Validation → MRV Submission → Verification → Issuance",
+            "registration": "Registration",
+            "validation": "Validation",
+            "mrvSubmission": "MRV Submission",
+            "verification": "Verification",
+            "issuance": "Issuance",
+            "expected": "expected",
+            "tbd": "TBD"
+        },
+        "tbd": "TBD",
+        "notEstimated": "No Estimations Available",
+        "projectedEstimate": {
+            "title": "Projected Issuance",
+            "subtitle": "Forecast volume & expected issuance year"
+        },
+        "notFound": "Project not found",
+        "details": {
+            "projectDetails": "Project Details",
+            "projectName": "Project Name",
+            "country": "Country",
+            "status": "Status",
+            "methodology": "Methodology",
+            "registry": "Registry",
+            "developer": "Developer",
+            "sector": "Sector",
+            "vintage": "Vintage",
+            "created": "Created",
+            "creditingPeriod": "Crediting Period"
+        },
+        "detail": {
+            "linkedVcs": {
+                "title": "Linked Raw Data",
+                "subtitle": "Raw data documents that contributed to this project, grouped by schema. Empty schemas indicate fields that couldn't be extracted.",
+                "empty": "No raw data linked from this schema",
+                "notTracked": "No linked raw data available — re-parse the methodology to populate.",
+                "viewJson": "View JSON",
+                "projectSchemaBadge": "Project schema",
+                "columns": {
+                    "timestamp": "Timestamp",
+                    "topicId": "Topic ID",
+                    "csId": "cs.id"
+                }
+            },
+            "actions": {
+                "reextract": "Re-extract",
+                "reextractSuccess": "Re-extracting from {count} VC(s) — refresh in a few seconds",
+                "reextractEmpty": "Nothing to re-extract — no linked VCs on this project yet",
+                "reextractError": "Failed to re-extract",
+                "refreshIpfs": "Refresh IPFS",
+                "refreshIpfsTooltip": "Force re-fetch IPFS for every VC in this project's topic and reparse. Use when fields are missing because part of the VC chain never came down from IPFS.",
+                "refreshIpfsSuccess": "Queued {refreshed} IPFS fetch(es) and {reparse} reparse(s) — refresh in a few seconds",
+                "refreshIpfsEmpty": "Nothing to refresh — all VCs in this project's topic are already fetched and indexed",
+                "refreshIpfsError": "Failed to refresh IPFS"
+            },
+            "issuances": {
+                "yearFilter": "Year"
+            }
+        },
+        "compare": {
+            "title": "Compare Projects",
+            "subtitle": "Side-by-side comparison of up to 4 projects",
+            "attribute": "Attribute",
+            "notFound": "Project not found",
+            "needTwo": "Select at least 2 projects to compare.",
+            "credits": "Est. Credits",
+            "totalIssued": "Total Issued",
+            "totalRetired": "Total Retired",
+            "totalActive": "Total Active",
+            "creditingPeriodEnd": "Crediting Period End",
+            "selectToCompare": "Compare",
+            "comparing": "{count} selected",
+            "compareButton": "Compare",
+            "clearAll": "Clear all",
+            "maxSelected": "Max 4 projects",
+            "addToCompare": "Add to comparison",
+            "removeFromCompare": "Remove from comparison",
+            "diff": "diff",
+            "diffLegend": "Highlighted rows differ between projects"
+        }
+    },
+    "credits": {
+        "title": "Issuances",
+        "subtitle": "Tokens issued on Hedera",
+        "searchPlaceholder": "Search issuances...",
+        "quickFilters": "Quick filters:",
+        "downloadData": "Download Data",
+        "presets": {
+            "fungible": "Fungible tokens",
+            "nonFungible": "Non-Fungible (NFTs)",
+            "minted2024": "Minted 2024",
+            "minted2025": "Minted 2025"
+        },
+        "issuancesFound": "{count} issuances found",
+        "totalSupply": "Total supply:",
+        "registries": "Registries:",
+        "projects": "Projects:",
+        "noMatch": "No issuances match your filters",
+        "filteredByProject": "Showing issuances for",
+        "unknownProject": "this project",
+        "clearProjectFilter": "Clear filter",
+        "filteredByMethodology": "Showing issuances for",
+        "unknownMethodology": "this methodology",
+        "clearMethodologyFilter": "Clear filter",
+        "filteredByRegistry": "Showing issuances for registry",
+        "unknownRegistry": "this registry",
+        "clearRegistryFilter": "Clear filter",
+        "supplyTooltip": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials.",
+        "columns": {
+            "token": "Token",
+            "symbol": "Symbol",
+            "type": "Type",
+            "supply": "Mint Amount",
+            "mintDate": "Mint Date",
+            "project": "Project",
+            "methodology": "Methodology",
+            "registry": "Registry",
+            "rawData": "Raw Data"
+        },
+        "filters": {
+            "tokenType": "Token Type",
+            "registry": "Registry",
+            "supply": "Mint Amount",
+            "mintDate": "Mint Date",
+            "hideUnlinked": "Hide issuances with no project link"
+        },
+        "tooltips": {
+            "hideUnlinked": "Hides tokens that have not yet been matched to a project. Uncheck to see all indexed tokens including those still awaiting project attribution.",
+            "mintDate": "Mint Date",
+            "mintAmount": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials."
+        },
+        "detail": {
+            "notFound": "Token not found",
+            "notFoundDesc": "Token {tokenId} was not found on {network}.",
+            "overview": "Overview",
+            "tokenId": "Token ID",
+            "connectedProject": "Project",
+            "lastMintDate": "Last Mint Date",
+            "tabs": {
+                "details": "Details",
+                "mintEvents": "Transactions",
+                "linkage": "Linkage",
+                "advanced": "Advanced"
+            },
+            "advanced": {
+                "title": "Advanced",
+                "tokenPolicy": "Token Policy Id",
+                "mintTokenId": "Token ID",
+                "tokenCreatedDate": "Token Created Date",
+                "issueDid": "Issue DID"
+            },
+            "tokenInformation": "Token Information",
+            "supplyDifferenceTooltip": "The Supply Amount and Minted Amount for this issuance are currently different.",
+            "tokenSupply": "Token Supply",
+            "tokenSupplyTooltip": "Total number of tokens that are currently in circulation.",
+            "tokenSupplyLiveTooltip": "Live total supply, fetched directly from the Hedera Mirror Node.",
+            "live": "Live",
+            "totalMinted": "Total Minted",
+            "totalMintedAll": "Total Minted (All)",
+            "totalMintedAllTooltip": "Total number of tokens minted across all projects to this token.",
+            "totalMintedProject": "Total Minted (Project)",
+            "totalMintedProjectTooltip": "Total number of tokens minted specifically to this project.",
+            "relatedIssuances": "Related Token Issuances",
+            "relatedIssuancesSubtitle": "Other issuances for this token ID",
+            "loading": "Loading…",
+            "noRelatedIssuances": "No issuances found for this token ID.",
+            "mintEvents": "Transactions",
+            "mintEventsSubtitle": "Guardian VC transaction records attributed to this project.",
+            "mintEventsSubtitleAll": "Guardian VC transaction records for this token across all projects.",
+            "noMintEvents": "No mint events found for this issuance.",
+            "mintEventDate": "Date",
+            "mintEventAmount": "Amount",
+            "mintEventType": "Token Type",
+            "project": "Projects",
+            "noProject": "No project linked",
+            "methodology": "Methodology",
+            "methodologySubtitle": "Retrieved via token → project relationship",
+            "noMethodology": "No methodology linked",
+            "registry": "Registry",
+            "registrySubtitle": "Retrieved via token → project → methodology chain",
+            "noRegistry": "No registry linked"
+        }
+    },
+    "savedSearch": {
+        "dialogTitle": "Save Search",
+        "dialogSubtitle": "Save your current filters to reapply them later",
+        "nameLabel": "Name",
+        "namePlaceholder": "e.g. Gold Standard Kenya",
+        "summaryTitle": "Active Filters",
+        "saveButton": "Save Search",
+        "empty": "No quick filters available",
+        "cancel": "Cancel",
+        "ok": "OK",
+        "duplicateName": "A saved search with this name already exists",
+        "duplicateCriteria": "This exact set of filters is already saved as \"{name}\"",
+        "saveError": "Could not save search — please try again",
+        "limitReachedTooltip": "You've reached the maximum of {max} saved searches"
+    },
+    "methodologies": {
+        "title": "Methodologies",
+        "subtitle": "Published policy workflows for sustainability verification",
+        "searchPlaceholder": "Search methodologies...",
+        "noMatch": "No methodologies match your filters",
+        "downloadData": "Download Data",
+        "filteredByRegistry": "Showing methodologies for registry",
+        "unknownRegistry": "this registry",
+        "clearRegistryFilter": "Clear filter",
+        "columns": {
+            "methodology": "Methodology",
+            "name": "Name",
+            "registry": "Registry",
+            "category": "Category",
+            "projects": "Projects",
+            "issuance": "Issuance",
+            "issuances": "Issuances",
+            "schemaCount": "Schema Count",
+            "schemas": "Schemas",
+            "description": "Description",
+            "id": "ID",
+            "status": "Status",
+            "type": "Type",
+            "version": "Version",
+            "decoded": "Decoded"
+        },
+        "filters": {
+            "registry": "Registry",
+            "registryId": "Registry ID",
+            "registryAll": "All Registries",
+            "registryDid": "Registry DID",
+            "registryName": "Registry Name",
+            "registryNamePlaceholder": "Search by registry name",
+            "category": "Category",
+            "name": "Name",
+            "namePlaceholder": "Search by name",
+            "id": "ID",
+            "description": "Description",
+            "decoded": "Decode Status",
+            "decodedAll": "All"
+        },
+        "stats": {
+            "total": "Total Methodologies",
+            "active": "Published",
+            "draft": "Draft / Other"
+        },
+        "errors": {
+            "loadFailed": "Failed to load methodologies."
+        },
+        "tooltips": {
+            "copyId": "Copy ID"
+        },
+        "detail": {
+            "breadcrumb": "Methodologies",
+            "backLink": "Back to Methodologies",
+            "notFound": "Methodology not found",
+            "notFoundDesc": "No methodology with ID {id} on {network}.",
+            "viewOnHashScan": "View on HashScan",
+            "tabs": {
+                "overview": "Overview",
+                "decoded": "Decoded Mapping",
+                "versionHistory": "Version History",
+                "linkedProjects": "Linked Projects",
+                "hederaPolicy": "Hedera Policy",
+                "analytics": "Analytics",
+                "actions": "Actions"
+            },
+            "decoded": {
+                "title": "Decoded Mapping",
+                "statusLabel": "Decode Status",
+                "lastAttempt": "Last attempt",
+                "attempts": "attempt(s)",
+                "errorCallout": "Decode error",
+                "noSchema": "No project schema confirmed yet. The decoder hasn't found a schema with both a GeoJSON field and a name field.",
+                "decodeNotComplete": "Decode hasn't completed yet.",
+                "fieldsTableTitle": "Project Fields → Schema Fields",
+                "allFieldsTitle": "All schema fields",
+                "allFieldsCollapsed": "Show all schema fields ({count})",
+                "allFieldsExpanded": "Hide schema fields",
+                "columns": {
+                    "projectField": "Project Field",
+                    "schemaField": "Schema Field",
+                    "fieldKey": "Field Key",
+                    "title": "Title",
+                    "description": "Description",
+                    "usedAs": "Used As",
+                    "type": "Type"
+                },
+                "noGeoTitle": "No project schema confirmed",
+                "noGeoBody": "None of the imported schemas had enough matching fields to be classified as a project registration schema. The schemas were imported but no fields could be reliably mapped to project attributes.",
+                "availableSchemasTitle": "Imported schemas",
+                "untitledSchema": "(unnamed schema)",
+                "hasGeo": "Has GeoJSON",
+                "noGeo": "No GeoJSON",
+                "noFields": "(no top-level fields)",
+                "fieldLabels": {
+                    "name": "Title",
+                    "description": "Description",
+                    "geo": "Geo / Location",
+                    "country": "Country",
+                    "developer": "Developer",
+                    "sector": "Sector",
+                    "category": "Category",
+                    "scale": "Scale",
+                    "creditingPeriod": "Crediting Period",
+                    "creditingPeriodStart": "Crediting Period Start",
+                    "creditingPeriodEnd": "Crediting Period End",
+                    "vintageRaw": "Vintage Date",
+                    "sdgOrCobenefits": "SDG / Co-benefits"
+                },
+                "fetchError": "Failed to load decoded mapping.",
+                "unresolved": "—",
+                "auditHistory": {
+                    "title": "Manual mapping history",
+                    "user": "User",
+                    "fieldsChanged": "Fields Changed",
+                    "when": "When",
+                    "empty": "No manual edits yet"
+                },
+                "actions": {
+                    "title": "Mapping actions",
+                    "rerunDecoder": "Re-run decoder",
+                    "reparseProjects": "Re-parse projects",
+                    "editMapping": "Edit mapping",
+                    "save": "Save",
+                    "cancel": "Cancel",
+                    "unmapped": "— None —",
+                    "rerunSuccess": "Decoder re-queued — refresh in a few seconds",
+                    "rerunError": "Failed to re-queue decoder",
+                    "reparseSuccess": "Re-queued {count} project(s) for re-parsing",
+                    "reparseEmpty": "Nothing to re-parse — decode first or no cached VCs",
+                    "reparseError": "Failed to re-queue project re-parse",
+                    "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
+                    "saveSuccess": "Mapping updated",
+                    "saveNoChanges": "No changes to save",
+                    "saveError": "Failed to save mapping",
+                    "arrayIndexPlaceholder": "Index",
+                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record."
+                }
+            },
+            "summary": {
+                "registry": "Registry",
+                "version": "Version",
+                "schemas": "Schemas",
+                "status": "Status"
+            },
+            "overview": {
+                "description": "Description",
+                "noDescription": "No description available.",
+                "keyFacts": "Key Facts",
+                "publishedAt": "Published At",
+                "network": "Network",
+                "emissionReductionApproach": "Emission Reduction Approach",
+                "applicableSectoralScopes": "Applicable Sectoral Scopes"
+            },
+            "versions": {
+                "title": "Version History",
+                "columns": {
+                    "version": "Version",
+                    "instancePolicyTopic": "Instance Policy Topic",
+                    "published": "Published",
+                    "schemas": "Schemas",
+                    "status": "Status"
+                },
+                "currentBadge": "Current",
+                "noVersions": "No versions found."
+            },
+            "linkedProjects": {
+                "title": "Linked Projects",
+                "noTopicId": "No policy topic ID available for this methodology.",
+                "columns": {
+                    "project": "Project",
+                    "country": "Country",
+                    "registry": "Registry",
+                    "issuances": "Issuances",
+                    "mintedAmount": "Minted Amount",
+                    "projectedVolume": "Projected Volume",
+                    "expectedIssuanceYear": "Expected Issuance Year",
+                    "status": "Status",
+                    "stage": "Stage"
+                },
+                "stageFilter": {
+                    "label": "Stage",
+                    "all": "All"
+                },
+                "noProjects": "No projects found under this policy."
+            },
+            "policy": {
+                "title": "On-Chain Policy",
+                "verifiedOnHedera": "Verified on Hedera",
+                "governedBy": "This methodology is governed by an on-chain Guardian policy.",
+                "instancePolicyTopic": "Instance Policy Topic",
+                "publishedAt": "Published At",
+                "registryDid": "Registry DID",
+                "network": "Network",
+                "downloadPolicy": "Download policy package (.zip)",
+                "downloadPending": "Preparing download… (fetching from IPFS may take a moment)",
+                "downloadNotReady": "The policy package isn't ready yet — the policy hasn't been fully decoded. Please try again later.",
+                "downloadError": "Couldn't download the policy package. Please try again.",
+                "downloadAuthRequired": "Please sign in to download the policy package.",
+                "downloadRateLimited": "You've hit the download rate limit. Please wait a moment and try again."
+            },
+            "analytics": {
+                "schemaCount": "Schema Count",
+                "schemaCountSub": "Data forms in this policy",
+                "projects": "Projects",
+                "projectsSub": "Registered under this methodology",
+                "issuances": "Total Minted Credits",
+                "issuancesSub": "Credits issued",
+                "trends": "Trends",
+                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
+            },
+            "dashboard": {
+                "title": "Methodology Dashboard",
+                "stats": "{projects} projects · {issuances} issuances"
+            },
+            "charts": {
+                "geographicDistribution": "Geographic Distribution",
+                "geographicDistributionSub": "Project distribution by country",
+                "noGeographicData": "No geographic data available",
+                "geographicCountry": "country",
+                "geographicCountries": "countries",
+                "issuanceTrend": "Minted Credits Trend",
+                "issuanceTrendSub": "Volume ({unit}) by year",
+                "noIssuanceData": "No issuance data available",
+                "issuanceTrendYear": "year",
+                "issuanceTrendYears": "years",
+                "issuanceTrendTotal": "{total}{unit} total",
+                "vintageDistribution": "Vintage Distribution",
+                "vintageDistributionSub": "Credits by vintage year",
+                "noVintageData": "No vintage data available",
+                "vintageYear": "vintage",
+                "vintageYears": "vintages",
+                "vintageProject": "project",
+                "vintageProjects": "projects"
+            },
+            "actions": {
+                "aboutTitle": "About this Methodology",
+                "instancePolicyTopicLabel": "Instance Policy Topic:",
+                "compareVersions": "Compare Versions",
+                "compareVersionsDesc": "Select another version to compare side-by-side against this one.",
+                "noOtherVersions": "No other versions available for this methodology.",
+                "selectVersionPlaceholder": "— Select a version to compare —",
+                "comparison": "Comparison",
+                "noDifferences": "No differences",
+                "compareColumns": {
+                    "field": "Field",
+                    "current": "Current",
+                    "compare": "Compare"
+                },
+                "compareRows": {
+                    "version": "Version",
+                    "status": "Status",
+                    "published": "Published",
+                    "description": "Description",
+                    "sectoralScopes": "Sectoral Scopes",
+                    "emissionReductionApproach": "Emission Reduction Approach",
+                    "schemaCount": "Schema Count",
+                    "issuances": "Issuances"
+                }
+            }
+        },
+        "decodeStatus": {
+            "success": "Decoded",
+            "failed": "Failed",
+            "pending": "Decoding",
+            "unknown": "Not decoded"
+        },
+        "mappingSource": {
+            "auto": "Auto-Decoded",
+            "manual": "Manually Edited"
+        }
+    },
+    "registries": {
+        "title": "Registries",
+        "subtitle": "Standard Registries operating on the Guardian network",
+        "searchPlaceholder": "Search registries...",
+        "noMatch": "No registries match your filters",
+        "downloadData": "Download Data",
+        "columns": {
+            "name": "Name",
+            "id": "ID",
+            "geography": "Geography",
+            "website": "Website",
+            "law": "Law",
+            "methodologies": "Methodologies",
+            "projects": "Projects",
+            "users": "Users",
+            "issuances": "Issuances",
+            "tags": "Tags",
+            "created": "Created"
+        },
+        "filters": {
+            "name": "Name",
+            "namePlaceholder": "Search by name",
+            "id": "ID",
+            "idPlaceholder": "0.0.xxxx",
+            "tags": "Tags",
+            "geography": "Geography",
+            "law": "Law",
+            "registryDid": "Registry DID",
+            "hideEmpty": "Hide registries with no methodologies, projects, users, or issuances",
+            "createdDate": "Created Date"
+        },
+        "errors": {
+            "loadFailed": "Failed to load registries."
+        },
+        "tooltips": {
+            "viewMethodologies": "View methodologies for this registry",
+            "hideEmpty": "On by default. Hides registries with 0 methodologies, 0 projects, 0 users, and 0 issuances — the same set counted in the dashboard 'Registries' stat card. Uncheck to see every indexed registry, including announcement-only ones with no on-chain activity yet."
+        },
+        "detail": {
+            "breadcrumb": "Registries",
+            "notFound": "Registry not found",
+            "notFoundDesc": "The registry with ID {id} could not be found on {network}.",
+            "backLink": "Back to Registries",
+            "viewRawData": "View Raw Data",
+            "copyDid": "Copy DID",
+            "stats": {
+                "methodologies": "Methodologies",
+                "projects": "Projects",
+                "issuances": "Issuances"
+            },
+            "info": {
+                "title": "Registry Details",
+                "geography": "Geography",
+                "law": "Law / Jurisdiction",
+                "website": "Website",
+                "language": "Language",
+                "tags": "Tags",
+                "created": "Created",
+                "network": "Network"
+            },
+            "hedera": {
+                "title": "Hedera On-Chain",
+                "sourceTopic": "Source Topic ID",
+                "registryTopic": "Registry Topic ID",
+                "did": "Registry DID",
+                "network": "Network",
+                "viewOnHashScan": "View on HashScan"
+            },
+            "map": {
+                "title": "Project Locations",
+                "subtitle": "Geographic distribution of projects in this registry",
+                "noProjects": "No Geographic Data Available"
+            },
+            "topMethodologies": {
+                "title": "Top Methodologies",
+                "subtitle": "Ranked by project count",
+                "projects": "Projects",
+                "issuances": "Issuances",
+                "noData": "No methodologies found for this registry"
+            },
+            "charts": {
+                "methodologiesTitle": "Methodologies by Projects",
+                "sectorsTitle": "Projects by Sector",
+                "noMethodologies": "No methodology data available",
+                "noSectors": "No sector data available",
+                "projectsLabel": "projects",
+                "others": "Others"
+            }
+        }
+    },
+    "developers": {
+        "title": "Project Developers",
+        "subtitle": "Organizations developing and managing carbon offset projects",
+        "searchPlaceholder": "Search developers...",
+        "noMatch": "No developers match your filters",
+        "issuedTooltip": "Total issuances across all projects by this developer.",
+        "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",
+        "viewProjects": "View projects by {name}",
+        "columns": {
+            "developer": "Developer",
+            "hq": "HQ",
+            "countries": "Countries",
+            "projects": "Projects",
+            "issued": "Issued",
+            "retired": "Retired",
+            "categories": "Categories",
+            "registries": "Registries",
+            "status": "Status"
+        },
+        "filters": {
+            "status": "Status"
+        }
+    },
+    "sdgs": {
+        "title": "Sustainable Development Goals",
+        "subtitle": "Project contributions mapped to the UN SDG",
+        "searchPlaceholder": "Search SDG...",
+        "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDG.",
+        "viewProjects": "View projects tagged with {name}",
+        "columns": {
+            "sdg": "SDG",
+            "goal": "Goal",
+            "projects": "Projects",
+            "issuances": "Issuances",
+            "developers": "Developers",
+            "countries": "Countries",
+            "topMethodology": "Top Methodology",
+            "coverage": "Coverage"
+        }
+    },
+    "analytics": {
+        "title": "Analytics",
+        "subtitle": "Network-wide sustainability metrics and trends",
+        "metrics": {
+            "totalIssuance": "Total Issuance",
+            "activeProjects": "Active Projects",
+            "retirements": "Retirements",
+            "avgProjectSize": "Avg. Project Size"
+        },
+        "issuancesByMethodology": "Issuances by Methodology",
+        "issuancesByMethodologySub": "Distribution of issuances across methodology types"
+    },
+    "status": {
+        "title": "Sync Status",
+        "subtitle": "Data pipeline and worker queue metrics",
+        "dataSyncedUpTo": "Data Synced Up To",
+        "topicsIndexed": "Topics Indexed",
+        "topicsDiscovered": "discovered",
+        "messagesProcessed": "Messages Processed",
+        "pendingInQueue": "pending in queue",
+        "queueStatus": "Queue Status",
+        "queueStatusSub": "BullMQ worker queues",
+        "connectionLive": "Live",
+        "connectionPolling": "Polling",
+        "lastUpdated": "Last updated",
+        "totalWaiting": "Total Waiting",
+        "totalFailed": "Total Failed",
+        "columns": {
+            "queue": "Queue",
+            "waiting": "Waiting",
+            "active": "Active",
+            "completed": "Completed",
+            "failed": "Failed",
+            "delayed": "Delayed",
+            "concurrency": "Concurrency",
+            "status": "Status",
+            "actions": "Actions"
+        },
+        "queueStatuses": {
+            "active": "Active",
+            "idle": "Idle",
+            "paused": "Paused"
+        },
+        "actions": {
+            "pause": "Pause",
+            "resume": "Resume",
+            "viewFailures": "View failures",
+            "retryAll": "Retry all"
+        },
+        "failedDrawer": {
+            "title": "Failed jobs",
+            "byReason": "By reason",
+            "allFailed": "All failed",
+            "retryJob": "Retry",
+            "forceRetry": "Override retry limit (force)",
+            "budgetExhausted": "Retry budget exhausted",
+            "attempts": "Attempts",
+            "manualRetries": "Manual retries"
+        },
+        "syncHealth": {
+            "title": "Sync Health",
+            "lastSynced": "Last Synced",
+            "lag": "Lag",
+            "topics": "Topics",
+            "tokens": "Tokens"
+        },
+        "activity": {
+            "title": "Recent Activity",
+            "events": "events",
+            "filterAll": "All",
+            "filterFailures": "Failures only",
+            "empty": "No recent events — waiting for queue activity...",
+            "emptyFailures": "No failures recorded in this session"
+        },
+        "retryAll": {
+            "confirm": "Retry all failed jobs?",
+            "force": "Override retry limit (force)",
+            "result": "Retried {retried} jobs, skipped {skipped}"
+        }
+    },
+    "vcViewer": {
+        "rawDataOnBlockchain": "Raw Data on the blockchain",
+        "searchInJson": "Search in JSON...",
+        "matchCount": "{current} of {total}",
+        "noMatches": "0 results",
+        "prevMatch": "Previous match",
+        "nextMatch": "Next match"
+    },
+    "relationshipDiagram": {
+        "registry": "Registry",
+        "policy": "Policy",
+        "schema": "Schema",
+        "role": "Role",
+        "rawData": "Raw Data",
+        "vp": "VP",
+        "token": "Token",
+        "viewRawData": "View Raw Data",
+        "viewOnExplorer": "View on Explorer"
+    },
+    "tooltips": {
+        "copyDid": "Copy DID",
+        "copyId": "Copy ID",
+        "viewRawData": "Raw Data on the blockchain"
+    },
+    "notifications": {
+        "title": "Notifications",
+        "markAllRead": "Mark all as read",
+        "empty": "You're all caught up — no notifications yet.",
+        "loading": "Loading notifications…",
+        "loadMore": "Load more",
+        "loadingMore": "Loading…",
+        "clearAll": "Clear all",
+        "clearAllConfirm": "Click again to confirm",
+        "clearedToast": "Notifications cleared",
+        "clearError": "Could not clear notifications — please try again",
+        "markAllReadError": "Could not mark all as read — please try again",
+        "loadMoreError": "Could not load more notifications — please try again",
+        "toast": {
+            "newArrival": "You have a new notification"
+        },
+        "types": {
+            "issuance": "Issuance",
+            "retirement": "Retirement",
+            "transfer": "Transfer"
+        },
+        "description": {
+            "issuance": "New issuance of {amount} credits",
+            "issuanceNoAmount": "New issuance",
+            "retirement": "{amount} credits retired",
+            "retirementNoAmount": "Credits retired",
+            "transfer": "{amount} credits transferred",
+            "transferNoAmount": "Credits transferred"
+        },
+        "tabs": {
+            "all": "All",
+            "unread": "Unread"
+        },
+        "detail": {
+            "project": "Project",
+            "registry": "Registry",
+            "methodology": "Methodology",
+            "volume": "Volume"
+        }
+    },
+    "portfolio": {
+        "title": "My Portfolio",
+        "subtitle": "{count} watchlist items · widgets reflect your watchlist selection",
+        "addCustomChart": "Add Custom Chart",
+        "widgetLibrary": "Widget Library",
+        "manageWatchlist": "Manage Watchlist",
+        "clearWatchlist": "Clear watchlist",
+        "watchlist": "Watchlist",
+        "watchlistTypeLabels": {
+            "project": "Projects",
+            "projectSingular": "Project"
+        },
+        "empty": {
+            "title": "Your portfolio is empty",
+            "description": "Add projects to your watchlist to see personalized stats and charts.",
+            "cta": "Manage Watchlist"
+        },
+        "watchedProjects": {
+            "title": "Watched Projects",
+            "subtitle": "Projects from your watchlist",
+            "issued": "Issued",
+            "retired": "Retired",
+            "transferred": "Transferred",
+            "methodology": "Methodology",
+            "creditingPeriod": "Crediting Period",
+            "sdgsLabel": "{n} SDG",
+            "open": "Open",
+            "scrollLeft": "Scroll left",
+            "scrollRight": "Scroll right",
+            "pageOf": "{current} of {total}"
+        },
+        "removeWidget": "Remove widget",
+        "editWidget": "Edit",
+        "noData": "No data available",
+        "sdgGoalsCount": "{n} goals",
+        "lastFive": "Last 5",
+        "chartLimitReached": "Chart limit reached ({max}/{max})",
+        "syncedLabel": "Synced —",
+        "syncedSub": "{network} · {projects} projects indexed",
+        "kpi": {
+            "totalIssued": {
+                "label": "Total Minted Credits",
+                "sub": "Issued on-chain ({network})",
+                "footer": "On-chain verified"
+            },
+            "activeSupply": {
+                "label": "Active Supply",
+                "sub": "Issued − retired",
+                "footer": "Retirement rate: 0%"
+            },
+            "totalRetired": {
+                "label": "Total Credits Retired",
+                "sub": "Permanently retired",
+                "footer": "No retirements yet"
+            },
+            "activeProjects": {
+                "label": "Active Projects",
+                "sub": "Verified on {network}",
+                "footer": "{n} in watchlist"
+            }
+        },
+        "sections": {
+            "issuanceTrend": "Minted Credits Trend",
+            "vintageDist": "Vintage Distribution",
+            "breakdowns": "Project Breakdowns",
+            "issuanceBreakdowns": "Issuance Breakdowns",
+            "projectsBySector": "Projects by Sector",
+            "bySector": "by Sector",
+            "projectsByRegistry": "Projects by Registry",
+            "byRegistry": "by Registry",
+            "sdgCoverage": "SDG Coverage",
+            "projectMap": "Project Distribution",
+            "topCountries": "Top 10 Host Countries by Credits",
+            "topCountriesSub": "Countries ranked by total credits issued",
+            "topRegistries": "Top Registries",
+            "recentIssuances": "Recent Issuances",
+            "topSdgs": "Top 10 SDG by Project Count",
+            "networkActivity": "Network Activity",
+            "retirementTrend": "Retirement Trend",
+            "syncStatus": "Last Sync Timestamp",
+            "customCharts": "Custom Charts"
+        },
+        "widgetGroups": {
+            "kpis": "KPI Cards",
+            "trends": "Trend Charts",
+            "breakdowns": "Breakdowns",
+            "tables": "Tables & Lists",
+            "system": "System"
+        },
+        "widgetDesc": {
+            "issuanceTrend": "Credit issuance over time with period toggle",
+            "retirementTrend": "Credit retirement volume over time",
+            "vintageDist": "Credits grouped by vintage year",
+            "projectsSector": "Donut chart of projects or credits by sector",
+            "projectsByRegistry": "Donut chart of projects or credits by registry",
+            "sdgRadar": "Coverage bars across all 17 SDG goals",
+            "projectMap": "World map of watchlisted project locations",
+            "topCountries": "Host countries ranked by total credits",
+            "topRegistries": "Most active registries by policy and project count",
+            "recentIssuances": "The 5 most recently minted tokens",
+            "sdgTopList": "Top SDG ranked by project count",
+            "networkActivity": "Recent changes across the Guardian network",
+            "syncStatus": "Last successful data sync from Hedera Guardian"
+        },
+        "modal": {
+            "watchlist": {
+                "title": "Manage Watchlist",
+                "subtitle": "Add or remove projects to track",
+                "filters": {
+                    "country": "Country",
+                    "methodology": "Methodology",
+                    "registry": "Registry",
+                    "sdgs": "SDG"
+                },
+                "add": "Add",
+                "remove": "Remove",
+                "update": "Update Watchlist",
+                "cancel": "Cancel",
+                "addAll": "Add all projects to watchlist",
+                "addAllSuccess": "{count} projects added",
+                "showSelectedOnly": "Show selected only",
+                "footer": "{count} items total · duplicates are prevented"
+            },
+            "widgets": {
+                "title": "Widget Library",
+                "subtitle": "Toggle widgets on or off — active widgets appear on your portfolio dashboard",
+                "apply": "Apply Changes"
+            },
+            "chartBuilder": {
+                "title": "Add Custom Chart",
+                "editTitle": "Edit Custom Chart",
+                "subtitle": "{used}/{max} custom charts used — choose type and data source",
+                "editSubtitle": "Update the chart type, data source, or title",
+                "chartTitle": "Chart Title",
+                "titlePlaceholder": "e.g. Credits by Sector",
+                "chartType": "Chart Type",
+                "xAxis": "X-Axis (Categories)",
+                "yAxis": "Y-Axis (Metric)",
+                "types": {
+                    "line": "Line",
+                    "column": "Vertical Bar",
+                    "bar": "Horizontal Bar",
+                    "pie": "Pie",
+                    "donut": "Donut",
+                    "radar": "Radar"
+                },
+                "axes": {
+                    "month": "Time — Month",
+                    "vintage": "Vintage Year",
+                    "sector": "Sector",
+                    "country": "Country",
+                    "registry": "Registry",
+                    "sdg": "SDG Goal",
+                    "credits": "Credits Issued",
+                    "projects": "Project Count",
+                    "retirements": "Retirement Volume"
+                },
+                "note": "Charts reflect your active watchlist. Up to {max} custom charts total.",
+                "duplicateName": "A chart with this name already exists.",
+                "duplicateConfig": "You already have a chart with this configuration: \"{name}\" ({config}).",
+                "add": "Add Chart",
+                "update": "Update Chart"
+            }
+        }
+    },
+    "reports": {
+        "breadcrumb": "Reports",
+        "title": "Reports & Export",
+        "subtitle": "Export ESG datasets, generate impact summaries, and access disclosure guidance",
+        "exportImpactSummary": "Export Impact Summary",
+        "stats": {
+            "exportsThisMonth": {
+                "label": "Exports This Month",
+                "sub": "Your exports this calendar month"
+            },
+            "esgFieldsAvailable": {
+                "label": "ESG Fields Available",
+                "sub": "{required} required, {optional} optional"
+            },
+            "lastExport": {
+                "label": "Last Export",
+                "sub": "",
+                "none": "No exports yet"
+            }
+        },
+        "tabs": {
+            "exportData": "Export Data",
+            "impactSummary": "Impact Summary",
+            "disclosureGuidance": "Disclosure Guidance"
+        },
+        "placeholders": {
+            "exportData": "Export configuration and field selection are coming soon.",
+            "impactSummary": "The Impact Summary generator is coming soon.",
+            "disclosureGuidance": "Disclosure guidance and framework references are coming soon."
+        },
+        "recentExports": {
+            "title": "Recent Exports",
+            "colFilename": "Filename",
+            "colFormat": "Format",
+            "colRecords": "Records",
+            "colExportedBy": "Exported By",
+            "colDate": "Date",
+            "empty": "You haven't exported anything yet."
+        },
+        "formats": {
+            "csv": "CSV",
+            "xlsx": "Excel",
+            "pdf": "PDF"
+        },
+        "impactSummary": {
+            "config": {
+                "title": "Configure Summary",
+                "subtitle": "Choose an output format and generate a compiled impact summary.",
+                "outputFormat": "Output Format",
+                "generate": "Generate Impact Summary",
+                "generating": "Generating…"
+            },
+            "metrics": {
+                "creditsIssued": "Total Credits Issued",
+                "retired": "Total Retired",
+                "inferred": "inferred",
+                "activeProjects": "Active Projects",
+                "activeCountries": "Countries"
+            },
+            "preview": {
+                "badge": "Impact Summary",
+                "title": "Portfolio Impact Overview",
+                "network": "Network: {network}",
+                "empty": "No impact data is available for this network yet.",
+                "sdgTitle": "SDG Contributions",
+                "geoTitle": "Geographic Distribution",
+                "verified": "Data verified on Hedera {network}",
+                "generatedAt": "Generated {date}"
+            }
+        },
+        "disclosure": {
+            "frameworksTitle": "Framework Alignment",
+            "frameworksSubtitle": "Exports and summaries align with widely used disclosure and accounting frameworks.",
+            "frameworks": {
+                "ghgProtocol": { "name": "GHG Protocol", "desc": "Corporate accounting and reporting standard for greenhouse gas emissions." },
+                "cdp": { "name": "CDP", "desc": "Global environmental disclosure system for climate, water and forests." },
+                "tcfd": { "name": "TCFD", "desc": "Climate-related financial disclosure recommendations." },
+                "gri": { "name": "GRI", "desc": "Global Reporting Initiative sustainability reporting standards." },
+                "iso14064": { "name": "ISO 14064", "desc": "Standard for quantification and reporting of GHG emissions and removals." }
+            },
+            "entriesTitle": "Definitions & Calculation Guidance",
+            "searchPlaceholder": "Search guidance…",
+            "noResults": "No guidance matches your search.",
+            "tags": { "term": "Term", "verification": "Verification", "policy": "Policy" },
+            "entries": {
+                "emissionsReduced": {
+                    "title": "Emissions Reduced",
+                    "body": "The quantity of greenhouse gas emissions avoided or removed, expressed in tonnes of CO₂ equivalent (tCO₂e), as reported by the issuing project.",
+                    "formula": "emissions_reduced (tCO₂e) = Σ verified emission reductions per issuance"
+                },
+                "vintageYear": {
+                    "title": "Vintage Year",
+                    "body": "The calendar year in which the underlying emission reduction or removal activity occurred. For credits, the reporting year is the calendar year of the on-chain minting activity."
+                },
+                "mitigationType": {
+                    "title": "Mitigation Type",
+                    "body": "The class of climate action (e.g. avoidance or removal) derived from the methodology's emission-reduction approach."
+                },
+                "howToVerify": {
+                    "title": "How to Verify",
+                    "body": "Every exported record includes traceability references. Use the verification URL to open the corresponding transaction, token or topic on the Hedera network explorer (HashScan) for independent confirmation."
+                },
+                "preApprovedSources": {
+                    "title": "Pre-approved Import Sources",
+                    "body": "External data may only be imported from pre-approved sources that support automated verification. Records from sources without a verification mechanism are not admitted."
+                }
+            },
+            "verificationStatus": {
+                "title": "Verification Status",
+                "body": "All records are anchored on the Hedera network and independently verifiable on-chain.",
+                "hashscanLink": "View on HashScan"
+            },
+            "assurance": {
+                "title": "Assurance & Independent Verification",
+                "body": "Figures are compiled from on-chain data and issuer disclosures. Retirement figures are inferred from token-deletion activity, not a dedicated retirement ledger, and should be treated accordingly.",
+                "blockItemProof": "Block Item Proofs for independent cryptographic validation of distributed-ledger records are planned for Q3 2026."
+            }
+        },
+        "datasets": {
+            "credits": "Issuances",
+            "projects": "Projects",
+            "methodologies": "Methodologies",
+            "registries": "Registries"
+        },
+        "scope": {
+            "datasetLabel": "Dataset",
+            "registry": "Registry",
+            "registryPlaceholder": "Registry name…",
+            "project": "Project",
+            "projectPlaceholder": "Project name…",
+            "vintage": "Vintage",
+            "vintagePlaceholder": "e.g. 2022",
+            "dateRange": "Date Range",
+            "recordsMatching": "{count} records matching scope",
+            "selected": "Applied",
+            "remove": "Remove filter"
+        },
+        "fieldPicker": {
+            "title": "ESG Reporting Fields",
+            "selectAll": "Select all",
+            "deselectAll": "Deselect all",
+            "esgPill": "ESG",
+            "traceabilityPill": "Traceability"
+        },
+        "fieldGroups": {
+            "projectIdentifiers": "Project Identifiers",
+            "registryIdentifiers": "Identifiers",
+            "esgClimateData": "ESG Climate Data",
+            "traceabilityReferences": "Traceability References"
+        },
+        "fields": {
+            "projectName": {
+                "label": "Project Name"
+            },
+            "registry": {
+                "label": "Registry"
+            },
+            "developer": {
+                "label": "Developer"
+            },
+            "country": {
+                "label": "Country"
+            },
+            "emissionsReduced": {
+                "label": "Emissions Reduced",
+                "description": "tCO₂e sequestered or avoided"
+            },
+            "reportingYear": {
+                "label": "Reporting Year",
+                "description": "Calendar year of activity"
+            },
+            "mitigationType": {
+                "label": "Mitigation Type",
+                "description": "Avoidance, removal, or reduction"
+            },
+            "standard": {
+                "label": "Standard / Methodology",
+                "description": "Governing standard applied"
+            },
+            "vintage": {
+                "label": "Vintage",
+                "description": "Year the credit was generated"
+            },
+            "transactionId": {
+                "label": "Transaction ID",
+                "description": "Hedera on-chain transaction reference",
+                "tooltip": "Used to verify the credit on HashScan blockchain explorer"
+            },
+            "registryRecordId": {
+                "label": "Registry Record ID",
+                "description": "Source registry identifier",
+                "tooltip": "Links directly to the record on the issuing registry"
+            },
+            "verificationUrl": {
+                "label": "Verification URL",
+                "description": "Direct link to independent verification",
+                "tooltip": "Redirects to HashScan or registry for independent validation"
+            },
+            "sourceSystemId": {
+                "label": "Source System ID",
+                "description": "External system of record identifier",
+                "tooltip": "Identifier in the originating system outside Guardian"
+            },
+            "version": {
+                "label": "Version"
+            },
+            "geography": {
+                "label": "Geography"
+            },
+            "law": {
+                "label": "Jurisdiction / Law"
+            },
+            "name": {
+                "label": "Name"
+            },
+            "did": {
+                "label": "DID"
+            },
+            "projectCount": {
+                "label": "Project Count"
+            },
+            "tokenName": {
+                "label": "Token Name"
+            },
+            "tokenSymbol": {
+                "label": "Token Symbol"
+            },
+            "tokenType": {
+                "label": "Token Type"
+            },
+            "mintAmount": {
+                "label": "Mint Amount"
+            },
+            "sdg": {
+                "label": "SDG"
+            },
+            "methodologyCount": {
+                "label": "Methodology Count"
+            },
+            "numberOfIssuances": {
+                "label": "Number of Issuances"
+            },
+            "ipfsDocumentRef": {
+                "label": "IPFS Document Reference",
+                "description": "Content identifier (CID) of a linked IPFS document",
+                "tooltip": "Resolves via any public IPFS gateway (e.g. ipfs.io/ipfs/{cid})"
+            }
+        },
+        "formatPicker": {
+            "title": "Export Format"
+        },
+        "preview": {
+            "title": "Export Preview",
+            "moreChips": "+{count} more",
+            "exportButton": "Export Selected Data",
+            "exporting": "Exporting…",
+            "noFieldsSelected": "Select at least one field to export.",
+            "successToast": "Export downloaded successfully."
+        }
+    },
+    "glossary": {
+        "emissionsReduced": "tCO₂e sequestered or avoided by the project.",
+        "reportingYear": "Calendar year the underlying activity or credit generation occurred.",
+        "mitigationType": "Whether the credit represents emissions avoidance, removal, or reduction.",
+        "standard": "The governing standard or methodology applied to the credit.",
+        "vintage": "The year the credit was generated.",
+        "transactionId": "Hedera on-chain transaction reference — used to verify the credit on HashScan blockchain explorer.",
+        "registryRecordId": "Source registry identifier — links directly to the record on the issuing registry.",
+        "verificationUrl": "Direct link to independent verification — redirects to HashScan or the registry for independent validation.",
+        "sourceSystemId": "Identifier in the originating system outside Guardian."
+    },
+    "glossaryPage": {
+        "title": "Glossary",
+        "subtitle": "Plain-language definitions for the carbon-market and Hedera terms used across the Atlas",
+        "searchPlaceholder": "Search terms...",
+        "resultCount": "{count} terms",
+        "resultCountInCategory": "{count} terms in {category}",
+        "noResults": "No terms match \"{query}\"",
+        "relatedLabel": "Related:",
+        "whereShownTitle": "Where this shows up",
+        "whereShownSubtitle": "Info icons next to field labels open a quick definition inline — no need to leave the page",
+        "categories": {
+            "all": "All Terms",
+            "carbon": "Carbon Markets",
+            "chain": "Blockchain & Hedera",
+            "sdg": "SDG",
+            "platform": "Platform & Data"
+        },
+        "demo": {
+            "registries": "Registries",
+            "methodologies": "Methodologies",
+            "issuances": "Total Issuances"
+        },
+        "terms": {
+            "issuance": {
+                "term": "Issuance",
+                "short": "The creation of new carbon credits on-chain once a project's emissions reduction is verified.",
+                "long": "Each issuance mints a batch of credits (fungible tokens or NFTs) tied to a specific project, methodology and vintage year. Issued credits start in active supply until they are transferred or retired."
+            },
+            "retirement": {
+                "term": "Retirement",
+                "short": "Permanently removing a credit from circulation once it's used to offset an emission.",
+                "long": "A retired credit can never be resold or reused — retiring it is the step that claims the environmental benefit. Retirement rate compares retired credits to total issued."
+            },
+            "vintage": {
+                "term": "Vintage",
+                "short": "The calendar year in which the emission reduction or removal represented by a credit actually occurred.",
+                "long": "Vintage is separate from issuance date — a credit can be issued years after its vintage year, once verification catches up. Buyers often prefer newer vintages."
+            },
+            "registry": {
+                "term": "Registry",
+                "short": "An independent body that verifies projects and administers official credit issuance under its standard.",
+                "long": "Registries such as Gold Standard, Verra, TolamEarth and others define rules, verify methodology compliance, and record credit ownership."
+            },
+            "methodology": {
+                "term": "Methodology",
+                "short": "The technical protocol a project follows to calculate and prove its emissions reduction or removal.",
+                "long": "A methodology defines baselines, monitoring requirements and calculation formulas. Registries publish and approve methodologies; Guardian policies encode them as workflows."
+            },
+            "sectoral-scope": {
+                "term": "Sectoral Scope",
+                "short": "The broad activity category a project belongs to (e.g. Energy, Land Use & Forestry).",
+                "long": "Sectoral scope groups projects by the kind of intervention they make, used for portfolio breakdowns and comparability across registries."
+            },
+            "crediting-period": {
+                "term": "Crediting Period",
+                "short": "The span of time during which a project is eligible to generate and issue credits.",
+                "long": "Set at project registration (e.g. Jan 2022 – Dec 2031), it bounds how many vintages a project can claim before it must renew or re-verify."
+            },
+            "tco2e": {
+                "term": "tCO2e",
+                "short": "Tonne of CO2-equivalent — the standard unit one carbon credit represents.",
+                "long": "tCO2e normalizes different greenhouse gases (methane, N2O, etc.) into an equivalent amount of CO2 by warming impact, so credits from different project types compare 1:1."
+            },
+            "active-supply": {
+                "term": "Active Supply",
+                "short": "Credits currently in circulation — issued minus retired.",
+                "long": "Active supply is the pool of live, tradeable credits; it shrinks only when credits are retired, not when they're merely transferred between holders."
+            },
+            "mint-amount": {
+                "term": "Mint Amount",
+                "short": "The quantity of credits created in a single mint transaction.",
+                "long": "Recorded per issuance event — summing mint amounts across a token's history gives its total minted supply."
+            },
+            "total-credits": {
+                "term": "Total Credits",
+                "short": "The cumulative number of credits a project has generated across all its issuances.",
+                "long": "Shown on a project page as a running total; it grows with each new mint regardless of what happens to those credits afterward."
+            },
+            "transfer": {
+                "term": "Transfer",
+                "short": "Moving ownership of active credits from one holder to another without retiring them.",
+                "long": "Transfers do not remove credits from active supply — only retirement does. The Atlas tracks transfer volume separately from issuance and retirement."
+            },
+            "standard": {
+                "term": "Standard",
+                "short": "The rulebook a registry enforces — its methodology approval, verification and issuance requirements.",
+                "long": "Gold Standard, VCS (Verra) and similar are standards; a registry administers projects under one (or more) standard."
+            },
+            "category": {
+                "term": "Category",
+                "short": "A finer classification under sectoral scope describing the specific intervention type.",
+                "long": "Where sectoral scope might say 'Energy', category narrows it further — e.g. clean cookstoves vs. renewable power generation."
+            },
+            "developer": {
+                "term": "Developer",
+                "short": "The organization that designs, implements and owns a sustainability project.",
+                "long": "Developers submit projects to a registry, run day-to-day operations, and receive the credits an issuance generates."
+            },
+            "credit-lifecycle": {
+                "term": "Credit Lifecycle",
+                "short": "The full path a credit takes: issuance, transfers, and eventual retirement.",
+                "long": "Project pages visualize this as a bar split between active and retired credits, so you can see how much of what was issued has actually been used."
+            },
+            "guardian": {
+                "term": "Hedera Guardian",
+                "short": "The open-source platform that runs verification policies and issues sustainability credits on Hedera.",
+                "long": "Guardian encodes a methodology as a step-by-step policy workflow, and anchors every document and decision as a verifiable credential on the Hedera public ledger — the system this Atlas reads its data from."
+            },
+            "policy": {
+                "term": "Policy",
+                "short": "A Guardian workflow that encodes one methodology's rules as an auditable, on-chain process.",
+                "long": "A policy defines the roles (project owner, verifier, registry), the documents each must submit, and the actions — like minting a token — triggered when requirements are met."
+            },
+            "onchain": {
+                "term": "On-Chain",
+                "short": "Recorded directly on the Hedera public ledger, rather than in a private database.",
+                "long": "On-chain data is independently verifiable by anyone — the Atlas links out to Hedera's explorer (HashScan) so you can confirm an issuance, transfer or retirement yourself."
+            },
+            "topic-id": {
+                "term": "Topic ID",
+                "short": "The address of a Hedera Consensus Service topic — a stream where messages are recorded in order.",
+                "long": "Every policy instance and project has topic IDs (format 0.0.xxxxx); Guardian writes each verification step there, creating an immutable, timestamped audit trail."
+            },
+            "mainnet": {
+                "term": "Mainnet",
+                "short": "Hedera's live public network, where real, financially-binding transactions happen.",
+                "long": "As opposed to a testnet (used for trials with no real value), Mainnet data reflects actual issued and retired credits — the network selector confirms which one you're viewing."
+            },
+            "testnet": {
+                "term": "Testnet",
+                "short": "A free, non-production Hedera network used for testing — nothing on it carries real value.",
+                "long": "Developers trial policies, tokens and integrations on Testnet before going live; the Atlas keeps Testnet and Mainnet data fully separate so test activity never mixes with real credits."
+            },
+            "did": {
+                "term": "DID",
+                "short": "Decentralized Identifier — a portable, blockchain-anchored ID for a project, organization or registry.",
+                "long": "A DID (e.g. did:hedera:mainnet:...) lets an entity prove its identity and credentials without relying on a single centralized authority."
+            },
+            "vc": {
+                "term": "Verifiable Credential (VC)",
+                "short": "A tamper-evident digital document proving a claim — like \"this project's emissions were reduced by X tons.\"",
+                "long": "VCs are the building block of Guardian policies: each document submission, review, and mint action produces a VC anchored on Hedera, forming a project's full trust chain."
+            },
+            "nft": {
+                "term": "Non-Fungible Token (NFT)",
+                "short": "A unique token representing one specific, non-interchangeable credit batch or certificate.",
+                "long": "Some registries issue credits as NFTs so each serial number stays individually traceable, rather than pooled into one fungible balance."
+            },
+            "fungible": {
+                "term": "Fungible Token",
+                "short": "An interchangeable unit of credit — any one is equal in value to another.",
+                "long": "Most carbon credits are fungible: 1 tCO2e from a batch is treated the same as any other, making them easy to trade and pool."
+            },
+            "token-supply": {
+                "term": "Token Supply",
+                "short": "The total number of units of a token that currently exist on Hedera.",
+                "long": "For fungible credit tokens this is the live balance across all holders; it can differ slightly from total minted if some units were burned."
+            },
+            "total-minted": {
+                "term": "Total Minted",
+                "short": "The all-time sum of every mint transaction for a token.",
+                "long": "Total minted (all) includes activity outside any single tracked project, while total minted (project) scopes it to one project — the two can diverge."
+            },
+            "instance-topic-id": {
+                "term": "Instance Topic ID",
+                "short": "The Hedera topic recording one specific project's policy execution.",
+                "long": "Each project instance writes its own sequence of verification steps to this topic, distinct from the shared policy definition's topic."
+            },
+            "policy-topic-id": {
+                "term": "Policy Topic ID",
+                "short": "The Hedera topic recording the shared policy workflow definition a project runs on.",
+                "long": "Multiple projects can run under the same published policy and share its policy topic ID, while each keeps its own instance topic."
+            },
+            "root-vc": {
+                "term": "Root VC",
+                "short": "The originating verifiable credential a project's entire trust chain branches from.",
+                "long": "Every later document, review and mint action in the pipeline traces back to the root VC, anchoring the whole history to one starting point."
+            },
+            "hashscan": {
+                "term": "HashScan",
+                "short": "Hedera's public block explorer.",
+                "long": "Use HashScan to independently confirm any on-chain transaction, token or topic referenced by the Atlas — it's the source of truth behind every 'View on Explorer' link."
+            },
+            "ipfs": {
+                "term": "IPFS",
+                "short": "InterPlanetary File System — decentralized storage for larger documents referenced by a credential.",
+                "long": "Guardian stores bulky files (like full monitoring reports) on IPFS and references them from a credential, keeping the on-chain record itself lightweight."
+            },
+            "schema": {
+                "term": "Schema",
+                "short": "The structured data format a document must follow within a policy.",
+                "long": "A schema defines what fields a form like 'Project Data' or 'Serial Data' has — Guardian validates submissions against it before they can proceed."
+            },
+            "sdg": {
+                "term": "SDG",
+                "short": "Sustainable Development Goal — one of the UN's 17 global targets for social and environmental progress by 2030.",
+                "long": "Projects tag which SDG they contribute to (e.g. SDG 13: Climate Action); the Atlas aggregates this into SDG Coverage charts across the whole portfolio."
+            },
+            "watchlist": {
+                "term": "Watchlist",
+                "short": "A saved shortlist of projects, credits or registries a signed-in user tracks.",
+                "long": "Dashboard widgets can be filtered to show data for just the watchlist, turning the general Atlas into a personalized portfolio view."
+            },
+            "custom-chart": {
+                "term": "Custom Chart",
+                "short": "A user-added chart built from any tracked metric.",
+                "long": "Custom charts sit alongside the default widgets on a personalized dashboard, pulling from the same underlying data."
+            },
+            "widget-library": {
+                "term": "Widget Library",
+                "short": "The catalog of chart and KPI widgets available to add to a dashboard.",
+                "long": "Users pick from pre-built widgets (trend charts, breakdowns, tables) rather than building visualizations from scratch."
+            },
+            "raw-data": {
+                "term": "Raw Data",
+                "short": "The original, unprocessed documents and credentials behind a displayed figure.",
+                "long": "Every computed number in the Atlas links back to the raw verifiable credentials it was derived from, for full transparency and audit."
+            },
+            "mock-data": {
+                "term": "Mock Data",
+                "short": "Placeholder figures shown where a live data source isn't wired up yet.",
+                "long": "Clearly labeled so they're never mistaken for real values — common on fields like Transferred/Retired counts still being integrated per registry."
+            },
+            "guest-view": {
+                "term": "Guest View",
+                "short": "Browsing the Atlas without signing in.",
+                "long": "Guests get full read-only access to public network data; signing in unlocks personalization features like a Watchlist or custom dashboard."
+            },
+            "sync-status": {
+                "term": "Sync Status",
+                "short": "How current the Atlas's data is relative to the live Hedera network.",
+                "long": "Shown as a last-synced timestamp in the sidebar and on the dedicated Sync Status page, so you know how fresh any figure on screen is."
+            },
+            "quick-filter": {
+                "term": "Quick Filter",
+                "short": "A one-click preset filter, like 'Vintage 2022' or 'Gold Standard.'",
+                "long": "Quick filters sit above a table as shortcuts layered on top of the full manual filter controls, for the most common narrowing criteria."
+            },
+            "system-user": {
+                "term": "System User",
+                "short": "A signed-in account with standard access to personalized features like a Watchlist or custom dashboard.",
+                "long": "System Users see the same public network data as guests, plus the ability to save watchlists, build custom charts, and persist their own dashboard layout."
+            },
+            "system-administrator": {
+                "term": "System Administrator",
+                "short": "An elevated account that manages the Atlas instance itself, not just personal data.",
+                "long": "Administrators handle things individual users can't — registry indexing, sync configuration, and managing other accounts — on top of everything a System User can do."
+            }
+        }
+    }
+}
