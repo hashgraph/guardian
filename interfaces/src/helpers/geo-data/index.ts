@@ -13,7 +13,9 @@ function stateValue(
     name: string,
     shortCode?: string
 ): string {
-    return shortCode ? `${countryCode}-${shortCode}` : name;
+    return shortCode && shortCode !== 'undefined'
+        ? `${countryCode}-${shortCode}`
+        : name;
 }
 
 export function isGeoCustomType(customType: string): boolean {

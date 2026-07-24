@@ -497,6 +497,7 @@ export class SchemaFormComponent implements OnInit {
                 item.type === 'string' ||
                 item.type === 'number' ||
                 item.type === 'integer' ||
+                item.customType === 'geo' ||
                 item.customType === 'sentinel'
             ) && (
                 item.format !== 'date' &&

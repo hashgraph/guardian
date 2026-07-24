@@ -1761,7 +1761,7 @@ export class SchemaConfigurationComponent implements OnInit {
                 return 'Circular geographic dependencies are not allowed.';
             }
             visited.add(current);
-            const next = current.controlDependency.value;
+            const next: unknown = current.controlDependency.value;
             current = next instanceof FieldControl ? next : null;
         }
         return null;

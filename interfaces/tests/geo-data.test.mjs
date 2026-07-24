@@ -43,6 +43,19 @@ describe('geo-data', () => {
         assert.deepEqual(getCountriesOfState('US-CA'), ['US']);
     });
 
+    it('uses the region name when the library short code is undefined', () => {
+        const states = getStatesOfCountry('CK');
+        const state = states.find((item) => item.name === 'Aitutaki');
+
+        assert.ok(state);
+        assert.equal(state.value, 'Aitutaki');
+        assert.ok(!states.some((item) =>
+            item.value.endsWith('-undefined')
+        ));
+        assert.deepEqual(getCountriesOfState('Aitutaki'), ['CK']);
+        assert.deepEqual(getCountriesOfState('CK-undefined'), []);
+    });
+
     it('returns all matches for a state value without choosing the first', () => {
         const groups = new Map();
         for (const country of getAllCountries()) {
