@@ -28,9 +28,11 @@ export class SchemaFormNavigationComponent {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes.schemaFields) {
-            this.expanded.clear();
-            this.rebuildNavTree();
-            this.openFirstNavItem();
+          this.rebuildNavTree();
+          if (changes.schemaFields.firstChange) {
+             this.expanded.clear();
+             this.openFirstNavItem();
+          }
         }
     }
 
