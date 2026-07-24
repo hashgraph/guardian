@@ -15,7 +15,7 @@ import {
     UntypedFormGroup,
     Validators,
 } from '@angular/forms';
-import { SchemaField, UnitSystem } from '@guardian/interfaces';
+import { isGeoCustomType, relationAncestors, SchemaField, UnitSystem } from '@guardian/interfaces';
 import { ToastService } from 'src/app/services/toast.service';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
@@ -40,6 +40,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
     @Input('form') form!: UntypedFormGroup;
     @Input('field') field!: FieldControl;
+    @Input() fields: FieldControl[] = [];
     @Input() fieldsForm?: AbstractControl | null;
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
@@ -63,6 +64,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public loading: boolean = false;
     public keywords: string[] = [];
     public isString: boolean = false;
+    public geoLocation = false;
+    public geoAncestorTypes: string[] = [];
     public fieldType: UntypedFormControl;
     public property: UntypedFormControl;
     public groupedFieldTypes: any[] = this.createFieldTypes();
@@ -393,6 +396,26 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.remove.emit(field);
     }
 
+    public get geoDependencyOptions(): FieldControl[] {
+        return (this.fields || []).filter((candidate) => {
+            if (candidate === this.field) {
+                return false;
+            }
+            const type = this.schemaTypeMap?.[candidate.controlType.value]?.customType;
+            return this.geoAncestorTypes.includes(type);
+        });
+    }
+
+    public geoDependencyLabel(field: FieldControl | string | null): string {
+        if (!field) {
+            return '';
+        }
+        if (typeof field === 'string') {
+            return field;
+        }
+        return field.controlTitle.value || field.controlKey.value;
+    }
+
     onTypeChange(event: any) {
         const typeName = event.value;
         const item = this.types.find((e) => e.value == typeName);
@@ -402,6 +425,11 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.helpText = (item && item.name === 'Help Text') || false;
         this.enum = ((item && item.name) || typeName) === 'Enum';
         this.geoJson = ((item && item.name) || typeName) === 'GeoJSON';
+        const geoType = this.schemaTypeMap?.[typeName]?.customType;
+        this.geoLocation = isGeoCustomType(geoType);
+        this.geoAncestorTypes = this.geoLocation
+            ? relationAncestors('geo', geoType)
+            : [];
         if (!item) {
             this.field.isUpdatable.setValue(false);
             this.field.isUpdatable.disable()

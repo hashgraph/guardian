@@ -16,6 +16,7 @@ export class FieldControl {
     public hidden: UntypedFormControl;
     public controlDescription: UntypedFormControl;
     public controlType: UntypedFormControl;
+    public controlDependency: UntypedFormControl;
     public property: UntypedFormControl;
     public controlRequired: UntypedFormControl;
     public controlArray: UntypedFormControl;
@@ -62,6 +63,7 @@ export class FieldControl {
             this.controlTitle = new UntypedFormControl(field.title, Validators.required);
             this.controlDescription = new UntypedFormControl(field.description, Validators.required);
             this.controlType = new UntypedFormControl(type, Validators.required);
+            this.controlDependency = new UntypedFormControl(field.dependency?.on || null);
             this.controlRequired = new UntypedFormControl(field.required);
             this.controlArray = new UntypedFormControl(field.isArray);
             this.controlUnit = new UntypedFormControl(field.unit);
@@ -101,6 +103,7 @@ export class FieldControl {
             this.controlTitle = new UntypedFormControl(name || this.name, Validators.required);
             this.controlDescription = new UntypedFormControl('', Validators.required);
             this.controlType = new UntypedFormControl(type, Validators.required);
+            this.controlDependency = new UntypedFormControl(null);
             this.controlRequired = new UntypedFormControl(false);
             this.controlArray = new UntypedFormControl(false);
             this.controlUnit = new UntypedFormControl('');
@@ -218,6 +221,7 @@ export class FieldControl {
             controlTitle: this.controlTitle,
             controlDescription: this.controlDescription,
             fieldType: this.controlType,
+            controlDependency: this.controlDependency,
             fieldRequired: this.controlRequired,
             fieldArray: this.controlArray,
             fieldUnit: this.controlUnit,
@@ -248,6 +252,7 @@ export class FieldControl {
             const title = group.controlTitle;
             const description = group.controlDescription;
             const typeIndex = group.fieldType;
+            const dependency = group.controlDependency;
             const required = group.fieldRequired;
             const isArray = group.fieldArray;
             const unit = group.fieldUnit;
@@ -274,6 +279,7 @@ export class FieldControl {
                 title,
                 description,
                 typeIndex,
+                dependency,
                 required,
                 isArray,
                 unit,
