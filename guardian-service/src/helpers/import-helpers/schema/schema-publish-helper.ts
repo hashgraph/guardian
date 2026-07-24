@@ -16,6 +16,7 @@ import { checkForCircularDependency } from '../common/load-helper.js';
 import { incrementSchemaVersion, updateSchemaDefs, updateSchemaDocument } from './schema-helper.js';
 import { publishSchemaTags } from '../tag/tag-publish-helper.js';
 import { SchemaImportExportHelper } from './schema-import-helper.js';
+import { validateSchemaDependencies } from './schema-dependency-validator.js';
 
 function checkSchemaProps(item: SchemaCollection, document: ISchemaDocument) {
     const names = Object.keys(document.properties);
@@ -173,6 +174,7 @@ export async function publishSchema(
     if (checkForCircularDependency(item)) {
         throw new Error(`There is circular dependency in schema: ${item.iri}`);
     }
+    validateSchemaDependencies(item);
 
     item.context = generateSchemaContext(item);
 
@@ -391,6 +393,7 @@ export async function publishSchemasPackage(options: {
         if (checkForCircularDependency(item)) {
             throw new Error(`There is circular dependency in schema: ${item.iri}`);
         }
+        validateSchemaDependencies(item);
     }
 
     for (const item of draftSchemas) {

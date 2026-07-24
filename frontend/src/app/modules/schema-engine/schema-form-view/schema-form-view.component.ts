@@ -1,5 +1,15 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
-import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
+import {
+    getAllContinents,
+    getAllCountries,
+    getCountriesOfState,
+    getStatesOfCountry,
+    isGeoCustomType,
+    Schema,
+    SchemaField,
+    SchemaRuleValidateResult,
+    UnitSystem
+} from '@guardian/interfaces';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { FormulasViewDialog } from '../../formulas/dialogs/formulas-view-dialog/formulas-view-dialog.component';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -383,6 +393,28 @@ export class SchemaFormViewComponent implements OnInit {
         }
         return item.pattern === '^((https):\/\/)?ipfs.io\/ipfs\/.+'
             || item.pattern === '^ipfs:\/\/.+';
+    }
+
+    public displayValue(item: IFieldControl): any {
+        if (!isGeoCustomType(item.customType || '') || !item.value) {
+            return item.value;
+        }
+        if (item.customType === 'continent') {
+            return getAllContinents()
+                .find((entry) => entry.value === item.value)?.name || item.value;
+        }
+        if (item.customType === 'country') {
+            return getAllCountries()
+                .find((entry) => entry.value === item.value)?.name || item.value;
+        }
+        for (const country of getCountriesOfState(item.value)) {
+            const state = getStatesOfCountry(country)
+                .find((entry) => entry.value === item.value);
+            if (state) {
+                return state.name;
+            }
+        }
+        return item.value;
     }
 
     public isInput(item: IFieldControl): boolean {

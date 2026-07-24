@@ -32,6 +32,7 @@ import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { updateSchemaDefs } from './schema-helper.js';
+import { validateSchemaDependencies } from './schema-dependency-validator.js';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
@@ -371,9 +372,25 @@ export class SchemaImport {
             if (checkForCircularDependency(file)) {
                 throw new Error(`There is circular dependency in schema: ${file.iri}`);
             }
+            let dependencyError: string | null = null;
+            try {
+                validateSchemaDependencies(file);
+            } catch (validationError) {
+                dependencyError = validationError instanceof Error
+                    ? validationError.message
+                    : String(validationError);
+            }
 
             const schemaObject = DatabaseServer.createSchema(file);
             const errors = SchemaHelper.checkErrors(file as Schema);
+            if (dependencyError) {
+                errors.push({
+                    target: {
+                        type: 'schema'
+                    },
+                    message: dependencyError
+                });
+            }
             SchemaHelper.updateIRI(schemaObject);
 
             schemaObject.errors = errors;
@@ -397,8 +414,10 @@ export class SchemaImport {
                 row.description = schemaObject.description;
                 row.entity = schemaObject.entity;
                 row.document = schemaObject.document;
-                row.status = SchemaStatus.DRAFT;
-                row.errors = [];
+                row.status = dependencyError
+                    ? SchemaStatus.ERROR
+                    : SchemaStatus.DRAFT;
+                row.errors = dependencyError ? errors : [];
                 SchemaHelper.setVersion(row, null, row.version);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);

@@ -36,6 +36,7 @@ export interface IFieldJson {
     isArray: boolean;
     isUpdatable: boolean;
     property: string;
+    dependency?: { on: string; kind: string };
 
     private?: boolean;
 
@@ -310,6 +311,9 @@ export class SchemaToJson {
         const privateValue = SchemaToJson.getPrivate(field);
         if (privateValue !== null) {
             fieldJson.private = privateValue;
+        }
+        if (field.dependency) {
+            fieldJson.dependency = field.dependency;
         }
 
         const enumValue = SchemaToJson.getEnum(field);
@@ -1069,6 +1073,12 @@ export class JsonToSchema {
             unit: JsonToSchema.fromUnit(value, context.add('unit')) as any,
             unitSystem: JsonToSchema.fromUnitType(value, context.add('unitSystem')) as any,
             customType: JsonToSchema.fromCustomType(value, context.add('customType')) as any,
+            dependency: value.dependency
+                ? {
+                    on: JsonToSchema.fromRequiredString(value.dependency.on, context.add('dependency.on')),
+                    kind: JsonToSchema.fromRequiredString(value.dependency.kind, context.add('dependency.kind'))
+                }
+                : undefined,
             isArray: JsonToSchema.fromBoolean(value.isArray, context.add('isArray')) || false,
             isUpdatable: JsonToSchema.fromBoolean(value.isUpdatable, context.add('isUpdatable')) || false,
             isRef: JsonToSchema.fromIsRef(value, all, context),

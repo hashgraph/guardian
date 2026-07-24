@@ -106,6 +106,24 @@
                             "
                       ></table-field>
                     }
+                    @if (isGeoLocation(item)) {
+                      <div
+                        class="form-field-input guardian-input-container form-field-enum"
+                        [attr.readonly-field]="isEditMode && !item.isUpdatable"
+                        >
+                        <p-select
+                          class="guardian-dropdown"
+                          [formControl]="item.control"
+                          [options]="getGeoOptions(item)"
+                          optionLabel="label"
+                          optionValue="value"
+                          [showClear]="!item.required"
+                          appendTo="body"
+                          placeholder="Not selected"
+                          panelStyleClass="guardian-dropdown-panel"
+                        ></p-select>
+                      </div>
+                    }
                     @if (isInput(item)) {
                       <div
                         class="form-field-input guardian-input-container"

@@ -2,6 +2,8 @@
     "author": "Hashgraph <guardian@hashgraph.com>",
     "description": "",
     "dependencies": {
+        "countries-list": "3.4.1",
+        "country-region-data": "4.1.0",
         "reflect-metadata": "0.2.2"
     },
     "devDependencies": {

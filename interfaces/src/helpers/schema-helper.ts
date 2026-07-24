@@ -94,6 +94,7 @@ export class SchemaHelper {
             autocalculate,
             expression,
             isUpdatable,
+            dependency,
             enumName,
         } = SchemaHelper.parseFieldComment(field.comment);
         field.suggest = suggest;
@@ -131,6 +132,7 @@ export class SchemaHelper {
         field.availableOptions = availableOptions;
         field.property = property ? String(property) : null;
         field.customType = customType ? String(customType) : null;
+        field.dependency = dependency && dependency.on ? dependency : null;
         field.isPrivate = isPrivate;
         field.required = required;
         field.hidden = !!hidden;
@@ -889,6 +891,9 @@ export class SchemaHelper {
         }
         if (field.isUpdatable) {
             comment.isUpdatable = field.isUpdatable;
+        }
+        if (field.dependency && field.dependency.on) {
+            comment.dependency = field.dependency;
         }
         if (field.enumName) {
             comment.enumName = field.enumName;
