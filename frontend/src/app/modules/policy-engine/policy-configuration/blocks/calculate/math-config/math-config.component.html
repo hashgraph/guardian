@@ -1,14 +1,12 @@
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Expression</td>
       <td class="propRowCell">
-        <button
-          (click)="editExpression($event)"
-          class="guardian-button guardian-button-secondary common-properties-button">
-          <div class="guardian-button-label">Expression</div>
-        </button>
+        <input class="prop-input code-preview" type="text" [(ngModel)]="properties.expression" [readonly]="true"
+          (click)="editExpression($event)">
       </td>
     </tr>
   </table>

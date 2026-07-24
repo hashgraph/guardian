@@ -31,6 +31,8 @@ export class HttpRequestConfigComponent implements OnInit {
 
     properties!: any;
 
+    private headersGroupInitialized = false;
+
     public httpMethodsOptions = [
         {label: 'GET', value: 'GET'},
         {label: 'POST', value: 'POST'},
@@ -58,6 +60,10 @@ export class HttpRequestConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.headers = this.properties.headers || [];
+        if (!this.headersGroupInitialized) {
+            this.propHidden.conditionsGroup = this.properties.headers.length === 0;
+            this.headersGroupInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -72,10 +78,14 @@ export class HttpRequestConfigComponent implements OnInit {
             actor: '',
             included: false,
         })
+        this.propHidden.conditionsGroup = false;
     }
 
     onRemoveHeader(i: number) {
         this.properties.headers.splice(i, 1);
+        if (this.properties.headers.length === 0) {
+            this.propHidden.conditionsGroup = true;
+        }
     }
 
     editBody($event: MouseEvent) {

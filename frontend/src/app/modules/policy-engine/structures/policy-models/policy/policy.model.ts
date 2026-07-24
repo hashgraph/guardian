@@ -422,6 +422,16 @@ export class PolicyTemplate {
         this.emitUpdate();
     }
 
+    public moveStep(role: string, from: number, to: number) {
+        for (const nav of this._policyNavigation) {
+            if (nav.role === role && from !== to && nav.steps[from]) {
+                const [step] = nav.steps.splice(from, 1);
+                nav.steps.splice(to, 0, step);
+                this.emitUpdate();
+            }
+        }
+    }
+
     public removeStep(role: string, step: PolicyNavigationStepModel) {
         for (const nav of this._policyNavigation) {
             let index = -1;

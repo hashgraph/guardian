@@ -37,8 +37,7 @@ import { OverflowTitleDirective } from './directives/overflow-title.directive';
         SearchPolicyDialog,
         CompareDocumentComponent,
         CompareToolComponent,
-        CompareRecordComponent,
-        OverflowTitleDirective
+        CompareRecordComponent
     ],
     imports: [
         CommonModule,
@@ -54,7 +53,8 @@ import { OverflowTitleDirective } from './directives/overflow-title.directive';
         InputTextModule,
         AngularSvgIconModule,
         InputNumberModule,
-        TooltipModule
+        TooltipModule,
+        OverflowTitleDirective
     ],
     exports: [
         CompareComponent,

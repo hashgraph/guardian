@@ -1,11 +1,12 @@
 <!-- UI Prop -->
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Expression</td>
       <td class="propRowCell">
-        <input class="prop-input" type="text" [(ngModel)]="properties.expression" [readonly]="true"
+        <input class="prop-input code-preview" type="text" [(ngModel)]="properties.expression" [readonly]="true"
           (click)="editExpression($event)">
       </td>
     </tr>

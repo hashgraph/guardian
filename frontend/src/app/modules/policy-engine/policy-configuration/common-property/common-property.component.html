@@ -1,12 +1,13 @@
 @if (property.type === 'Group' && visible(property.visible)) {
-  <tr class="propHeader" [attr.collapse]="collapse">
-    <td class="propRowCol cellCollapse" (click)="onHide()" [attr.collapse]="groupCollapse">
-      <i class="pi pi-caret-down"></i>
-    </td>
-    <td class="propHeaderCell cellName" [title]="property.title">
-      @if (property.required) {
-        <span class="required-fields">*</span>
-        } {{ property.label }}
+  <tr class="propHeader" [attr.collapse]="collapse" (click)="onHide()">
+    <td class="propRowCol"></td>
+    <td class="propHeaderCell cellName" [attr.collapse]="groupCollapse" [title]="property.title">
+      <i class="pi pi-chevron-down chevron-icon"></i>
+      <span>
+        @if (property.required) {
+          <span class="required-fields">*</span>
+          } {{ property.label }}
+        </span>
       </td>
       <td class="propHeaderCell"></td>
     </tr>
@@ -22,37 +23,36 @@
   }
 
   @if (property.type === 'Array' && visible(property.visible)) {
-    <tr class="propHeader" [attr.collapse]="collapse">
-      <td class="propRowCol cellCollapse" (click)="onHide()" [attr.collapse]="groupCollapse">
-        <i class="pi pi-caret-down"></i>
-      </td>
-      <td class="propHeaderCell cellName" [title]="property.title">
-        @if (property.required) {
-          <span class="required-fields">*</span>
-          } {{ property.label }}
+    <tr class="propHeader" [attr.collapse]="collapse" (click)="onHide()">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName" [attr.collapse]="groupCollapse" [title]="property.title">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>
+          @if (property.required) {
+            <span class="required-fields">*</span>
+            } {{ property.label }}
+          </span>
         </td>
         <td class="propHeaderCell">
-          <div class="propAdd" (click)="addItems()">
+          <div class="propAdd" (click)="$event.stopPropagation(); addItems()">
             <i class="pi pi-plus"></i>
             <span>Add {{ property.items.label }}</span>
           </div>
         </td>
       </tr>
       @for (item of value; track item; let i = $index) {
-        <tr class="propRow" [attr.collapse]="collapse || groupCollapse">
-          <td class="propRowCol cellCollapse" (click)="onHideItem(i)"
-            [attr.collapse]="groupCollapse || itemCollapse[i]">
-            <i class="pi pi-caret-down"></i>
-          </td>
-          <td class="propRowCell cellName">
-            {{ property.items.label }} {{ i }}
+        <tr class="propRow array-item-row" [attr.collapse]="collapse || groupCollapse" (click)="onHideItem(i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="groupCollapse || itemCollapse[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>{{ property.items.label }} {{ i }}</span>
           </td>
           <td class="propRowCell">
             <span class="not-editable-text">
               {{ getArrayItemText(property.items, item) }}
             </span>
-            <span class="remove-prop" [attr.readonly]="readonly" (click)="removeItems(i)">
-              <i class="pi pi-times"></i>
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeItems(i)">
+              <i class="pi pi-trash"></i>
             </span>
           </td>
         </tr>
@@ -93,7 +93,7 @@
             </td>
             <td class="propRowCell">
               <input
-                class="prop-input"
+                class="prop-input code-preview"
                 [(ngModel)]="value"
                 [readonly]="true"
                 (click)="editCode($event)"
@@ -112,8 +112,11 @@
                 } {{ property.label }}
               </td>
               <td class="propRowCell">
-                <input class="prop-input prop-checkbox" type="checkbox" [(ngModel)]="value" [readonly]="readonly"
-                  (change)="onSave()">
+                <p-toggleswitch
+                  [(ngModel)]="value"
+                  [disabled]="readonly"
+                  (onChange)="onSave()">
+                </p-toggleswitch>
                 @if (property.text) {
                   <span class="prop-text">{{ property.text }}</span>
                 }
@@ -140,7 +143,7 @@
                         [disabled]="readonly"
                         placeholder="Select a role"
                         (onChange)="onSave()"
-                        [appendTo]="'body'"
+                        [appendTo]="'body'" panelStyleClass="pc-select-panel"
                         >
                       </p-select>
                     }
@@ -153,7 +156,7 @@
                         [disabled]="readonly"
                         placeholder="Select an option"
                         (onChange)="onSave()"
-                        [appendTo]="'body'"
+                        [appendTo]="'body'" panelStyleClass="pc-select-panel"
                         >
                       </p-select>
                     }
@@ -181,8 +184,12 @@
                             optionValue="value"
                             [disabled]="readonly"
                             placeholder="Select schemas"
+                            [filter]="true"
+                            filterBy="displayName"
+                            filterPlaceholder="Search schema"
+                            [resetFilterOnHide]="true"
                             (onChange)="onSave()"
-                            [appendTo]="'body'"
+                            [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                             <ng-template let-schema pTemplate="item">
                               <div
@@ -207,10 +214,12 @@
                             [disabled]="readonly"
                             placeholder="Select blocks"
                             (onChange)="onSave()"
-                            [appendTo]="'body'"
+                            [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                             <ng-template pTemplate="selectedItems" let-selectedItems>
-                              <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              @if (selectedItems?.length) {
+                                <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              }
                             </ng-template>
                             <ng-template pTemplate="item" let-item>
                               <div class="select-block-name">
@@ -231,10 +240,12 @@
                             [disabled]="readonly"
                             placeholder="Select children blocks"
                             (onChange)="onSave()"
-                            [appendTo]="'body'"
+                            [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                             <ng-template pTemplate="selectedItems" let-selectedItems>
-                              <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              @if (selectedItems?.length) {
+                                <span class="select-custom">{{ getSelectedItemsDisplay(selectedItems) }}</span>
+                              }
                             </ng-template>
                             <ng-template pTemplate="item" let-item>
                               <div class="select-block-name">
@@ -255,7 +266,7 @@
                             optionLabel="name"
                             optionValue="value"
                             placeholder="Select Roles"
-                            [appendTo]="'body'"
+                            [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                           </p-multiSelect>
                         }
@@ -268,7 +279,7 @@
                             optionLabel="label"
                             optionValue="value"
                             placeholder="Select Items"
-                            [appendTo]="'body'"
+                            [appendTo]="'body'" panelStyleClass="pc-select-panel"
                             >
                           </p-multiSelect>
                         }

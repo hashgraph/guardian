@@ -1,6 +1,7 @@
 <!-- UI Prop -->
 @if (properties) {
   <table class="properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
       <td class="propRowCol"></td>
       <td class="propRowCell cellName">Output Schema</td>
@@ -19,6 +20,7 @@
         <td class="propRowCell cellName">Document Signer</td>
         <td class="propRowCell remove-cell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="properties.documentSigner"
             [disabled]="readonly"
             (onChange)="onSave()"
@@ -35,6 +37,7 @@
       <td class="propRowCell cellName">Id Type</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.idType"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -50,6 +53,7 @@
       <td class="propRowCell cellName">Script Language</td>
       <td class="propRowCell">
         <p-select
+          panelStyleClass="pc-select-panel"
           [(ngModel)]="properties.selectedScriptLanguage"
           [disabled]="readonly"
           (onChange)="onSave()"
@@ -65,7 +69,7 @@
       <td class="propRowCell cellName">Expression</td>
       <td class="propRowCell">
         <input
-          class="prop-input"
+          class="prop-input code-preview"
           type="text"
           [(ngModel)]="properties.expression"
           [readonly]="true"

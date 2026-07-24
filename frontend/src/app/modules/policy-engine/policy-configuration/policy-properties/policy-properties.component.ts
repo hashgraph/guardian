@@ -1,6 +1,6 @@
 import {ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {IPolicyCategory, PolicyGroup, PolicyNavigationModel, PolicyNavigationStepModel, PolicyRole, PolicyTemplate, PolicyToken, PolicyTopic, SchemaVariables} from '../../structures';
-import {IContract, PolicyCategoryType} from '@guardian/interfaces';
+import {IContract, PolicyCategoryType, PolicyStatus} from '@guardian/interfaces';
 
 /**
  * Settings for policy.
@@ -37,9 +37,12 @@ export class PolicyPropertiesComponent implements OnInit {
     topics: PolicyTopic[] = [];
     tokens: PolicyToken[] = [];
     roles: any[] = [];
+    creatorRoleOptions: PolicyRole[] = [];
     navigationRoles: any[] = [];
     navigation: PolicyNavigationModel[] = [];
-    projectSchema: string;
+    projectSchema?: string;
+
+    public copiedField: string = '';
 
     policySchemas: SchemaVariables[] | undefined = [];
 
@@ -122,7 +125,9 @@ export class PolicyPropertiesComponent implements OnInit {
     ngOnChanges(changes: SimpleChanges) {
         this.roles = this.policy.policyRoles;
         this.navigationRoles = [
-            ...this.policy.policyRoles.map(item => item.name),
+            ...this.policy.policyRoles
+                .map(item => item.name)
+                .filter((name): name is string => typeof name === 'string' && name.trim().length > 0),
             'NO_ROLE',
             'OWNER'
         ];
@@ -130,12 +135,20 @@ export class PolicyPropertiesComponent implements OnInit {
         this.policyGroups = this.policy.policyGroups;
         this.topics = this.policy.policyTopics;
         this.tokens = this.policy.policyTokens;
-        this.projectSchema = this.policy.projectSchema;
 
         this.migrationActivityTypeSelected = [];
         this.subTypeSelected = [];
 
-        this.policySchemas = this.policy.blockVariables?.schemas;
+        this.policySchemas = this.policy.blockVariables?.schemas.map(schema =>
+            schema.name.length || schema.value.length
+                ? schema
+                : new SchemaVariables('None', '')
+        );
+        this.projectSchema = this.policy.projectSchema &&
+            this.policySchemas?.some(schema => schema.value === this.policy.projectSchema)
+            ? this.policy.projectSchema
+            : undefined;
+        this.updateCreatorRoleOptions();
 
         this.policyCategories?.forEach((cat) => {
             if (cat.type === PolicyCategoryType.SECTORAL_SCOPE) {
@@ -198,6 +211,7 @@ export class PolicyPropertiesComponent implements OnInit {
 
     addRoles() {
         this.policy.createRole('');
+        this.propHidden.rolesGroup = false;
         setTimeout(() => {
             if (this.body) {
                 this.body.nativeElement.scrollTop = 10000;
@@ -207,17 +221,26 @@ export class PolicyPropertiesComponent implements OnInit {
 
     onEditRole(role: PolicyRole) {
         role.emitUpdate();
+        this.updateCreatorRoleOptions();
     }
 
     onRemoveRole(role: PolicyRole) {
-        this.policy.removeRole(role)
+        this.policy.removeRole(role);
+        this.updateCreatorRoleOptions();
+        if (!this.policy.policyRoles.length) {
+            this.propHidden.rolesGroup = true;
+        }
     }
 
     addStep(role: string, index?: number) {
+        if (this.readonly) {
+            return;
+        }
         if (index == null) {
             index = this.navigation.find((nav: PolicyNavigationModel) => nav.role === role)?.steps.length || 0
         }
         this.policy.createStep(role, index);
+        this.propHidden.navigationRoles[role] = false;
         setTimeout(() => {
             if (this.body) {
                 this.body.nativeElement.scrollTop = 10000;
@@ -229,8 +252,96 @@ export class PolicyPropertiesComponent implements OnInit {
         step.emitUpdate();
     }
 
+    stepDragRole: string | null = null;
+    stepDragIndex: number | null = null;
+    stepDropIndex: number | null = null;
+    stepDropAfter: boolean = false;
+
+    onStepDragStart(event: DragEvent, role: string, index: number) {
+        if (this.readonly) {
+            event.preventDefault();
+            return;
+        }
+        this.stepDragRole = role;
+        this.stepDragIndex = index;
+        if (event.dataTransfer) {
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', String(index));
+            const row = (event.target as HTMLElement).closest('tr');
+            if (row) {
+                event.dataTransfer.setDragImage(row, 0, row.clientHeight / 2);
+            }
+        }
+    }
+
+    onStepDragOver(event: DragEvent, role: string, index: number) {
+        if (this.stepDragRole !== role || this.stepDragIndex === null) {
+            return;
+        }
+        event.preventDefault();
+        if (event.dataTransfer) {
+            event.dataTransfer.dropEffect = 'move';
+        }
+        if (index === this.stepDragIndex) {
+            this.stepDropIndex = null;
+            return;
+        }
+        this.stepDropIndex = index;
+        this.stepDropAfter = this.stepDragIndex < index;
+    }
+
+    onStepDragLeave(event: DragEvent, role: string, index: number) {
+        const next = event.relatedTarget as HTMLElement | null;
+        if (next && next.closest && next.closest('tr.stepRow, tr.propRow')) {
+            return;
+        }
+        if (this.stepDragRole === role && this.stepDropIndex === index) {
+            this.stepDropIndex = null;
+        }
+    }
+
+    onStepDrop(event: DragEvent, role: string, index: number) {
+        if (this.stepDragRole !== role || this.stepDragIndex === null) {
+            return;
+        }
+        event.preventDefault();
+        const from = this.stepDragIndex;
+        if (index !== from) {
+            this.moveStep(role, from, index);
+        }
+        this.onStepDragEnd();
+    }
+
+    onStepDragEnd() {
+        this.stepDragRole = null;
+        this.stepDragIndex = null;
+        this.stepDropIndex = null;
+        this.stepDropAfter = false;
+    }
+
+    private moveStep(role: string, from: number, to: number) {
+        const nav = this.navigation.find((item: PolicyNavigationModel) => item.role === role);
+        if (!nav || !nav.steps[from]) {
+            return;
+        }
+        const flags = nav.steps.map((item, i) => this.propHidden.navigationSteps[role + i]);
+        const [movedFlag] = flags.splice(from, 1);
+        flags.splice(to, 0, movedFlag);
+        this.policy.moveStep(role, from, to);
+        nav.steps.forEach((item, i) => {
+            this.propHidden.navigationSteps[role + i] = flags[i];
+        });
+    }
+
     onRemoveStep(role: string, step: PolicyNavigationStepModel) {
-        this.policy.removeStep(role, step)
+        if (this.readonly) {
+            return;
+        }
+        this.policy.removeStep(role, step);
+        const navigation = this.policy.policyNavigation.find((nav: PolicyNavigationModel) => nav.role === role);
+        if (!navigation?.steps.length) {
+            this.propHidden.navigationRoles[role] = true;
+        }
     }
 
     addTopic() {
@@ -287,5 +398,64 @@ export class PolicyPropertiesComponent implements OnInit {
                 value: contract.contractId
             }))
         ];
+    }
+
+    getCreatorRoleSelection(group: PolicyGroup): string | undefined {
+        return this.creatorRoleOptions.some(role => role.name === group.creator)
+            ? group.creator
+            : undefined;
+    }
+
+    private updateCreatorRoleOptions(): void {
+        this.creatorRoleOptions = this.policy.policyRoles.filter(role => role.name.trim().length > 0);
+    }
+
+    public copyValue(field: string, value: string | undefined, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) {
+            return;
+        }
+        navigator.clipboard.writeText(value);
+        this.copiedField = field;
+        setTimeout(() => {
+            if (this.copiedField === field) {
+                this.copiedField = '';
+            }
+        }, 1500);
+    }
+
+    public statusVariant(status: string | undefined): string {
+        switch (status) {
+            case PolicyStatus.DRY_RUN:
+                return 'dryrun';
+            case PolicyStatus.PUBLISH:
+                return 'published';
+            case PolicyStatus.DRAFT:
+            case PolicyStatus.PUBLISH_ERROR:
+                return 'draft';
+            default:
+                return 'demo';
+        }
+    }
+
+    public statusLabel(status: string | undefined): string {
+        switch (status) {
+            case PolicyStatus.DRAFT:
+                return 'Draft';
+            case PolicyStatus.DRY_RUN:
+                return 'Dry Run';
+            case PolicyStatus.PUBLISH:
+                return 'Published';
+            case PolicyStatus.PUBLISH_ERROR:
+                return 'Publish Error';
+            case PolicyStatus.DEMO:
+                return 'Demo';
+            case PolicyStatus.DISCONTINUED:
+                return 'Discontinued';
+            case PolicyStatus.VIEW:
+                return 'View';
+            default:
+                return status || '';
+        }
     }
 }

@@ -1,0 +1,1127 @@
+:host {
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+}
+
+.psd-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    background: color-mix(in srgb, #000 32%, transparent);
+}
+
+.psd-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 41;
+    width: min(760px, 92vw);
+    background: var(--guardian-background, #fff);
+    border-left: 1px solid var(--guardian-border-color, #E1E7EF);
+    box-shadow: -8px 0 24px var(--guardian-shadow, #00000014);
+    transform: translateX(100%);
+    transition: transform 0.22s ease;
+    display: flex;
+    flex-direction: column;
+
+    &.open {
+        transform: translateX(0);
+    }
+}
+
+.psd {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.psd-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0 16px;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--guardian-font-color, #23252E);
+
+    i {
+        font-size: 18px;
+        color: var(--color-primary, #4169E2);
+    }
+
+    .psd-close {
+        margin-left: auto;
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: var(--guardian-font-color, #23252E);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &:hover {
+            background: var(--guardian-hover, #F0F3FC);
+        }
+    }
+}
+
+.psd-body {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    gap: 16px;
+}
+
+.psd-nav {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    border-right: 1px solid var(--guardian-border-color, #E1E7EF);
+    padding-right: 12px;
+    overflow: auto;
+}
+
+.psd-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--guardian-font-color, #23252E);
+    transition: background 0.12s ease, color 0.12s ease;
+
+    i {
+        font-size: 16px;
+        color: var(--guardian-disabled-color, #848FA9);
+        width: 20px;
+        text-align: center;
+    }
+
+    &:hover {
+        background: var(--guardian-hover, #F0F3FC);
+    }
+
+    &[selected="true"] {
+        background: var(--guardian-primary-background, #e1e7fa);
+        color: var(--color-primary, #4169E2);
+
+        i {
+            color: var(--color-primary, #4169E2);
+        }
+    }
+}
+
+.psd-content {
+    flex: 1;
+    min-width: 0;
+    overflow: auto;
+    position: relative;
+}
+
+.psd-content::ng-deep {
+    policy-properties,
+    module-properties {
+        display: block;
+        width: 100%;
+    }
+
+    .properties {
+        --col-name-width: 192px;
+        --pc-row-height: 32px;
+        --pc-control-height: 28px;
+        --pc-row-font-size: 13px;
+    }
+
+    .properties .propRow {
+        height: var(--pc-row-height);
+    }
+
+    .properties .propRow:has(textarea) {
+        height: calc(var(--pc-control-height) + 2px);
+    }
+
+    .properties .propHeader {
+        height: 40px;
+    }
+
+    .properties .propHeader > .propRowCol {
+        cursor: default;
+    }
+
+    .properties .propHeader > .propHeaderCell {
+        height: 40px;
+        vertical-align: middle !important;
+        padding-top: 5px !important;
+        padding-bottom: 5px !important;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName {
+        display: table-cell !important;
+        vertical-align: middle !important;
+        height: 40px;
+        padding: 5px 4px 5px 0 !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .grid-setting[readonly="true"] .properties .propHeader > .propHeaderCell.cellName {
+        pointer-events: auto;
+        cursor: pointer;
+        color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
+    }
+
+    .grid-setting[readonly="true"] {
+        filter: none;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderContent {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderTitle {
+        flex: 1 1 auto;
+        min-width: 0;
+        line-height: 24px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions {
+        display: flex;
+        align-items: center;
+        flex: 0 1 auto;
+        min-width: 0;
+        gap: 6px;
+        margin-left: 8px;
+        text-transform: none;
+        letter-spacing: normal;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions > span {
+        min-width: 0;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions .remove-prop,
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions .remove-step {
+        position: static;
+        transform: none;
+        flex: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .propHeaderActions .propAdd {
+        flex: none;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName .chevron-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        vertical-align: middle;
+        width: 14px;
+        height: 24px;
+        margin-right: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 11px;
+        line-height: 1;
+        background: transparent !important;
+        box-shadow: none;
+        transition: transform 0.12s ease;
+    }
+
+    .properties .propHeader > .propHeaderCell.cellName[collapse="true"] .chevron-icon {
+        transform: rotate(-90deg);
+    }
+
+    .properties .propRow .cellName {
+        padding-top: 0;
+        padding-right: 12px;
+        line-height: 16px;
+        vertical-align: middle;
+        white-space: normal;
+    }
+
+    .properties .propRow:has(textarea) .cellName {
+        padding-top: 0;
+        vertical-align: middle;
+    }
+
+    .properties .propRowCell:not(.cellName) {
+        height: var(--pc-row-height);
+        padding: 2px 4px;
+        vertical-align: middle;
+    }
+
+    .properties .propRowCell > input.prop-input,
+    .properties .propRowCell > p-select,
+    .properties .propRowCell > p-multiselect,
+    .properties .propRowCell > .readonly-prop {
+        width: 100%;
+        height: var(--pc-control-height);
+        min-height: var(--pc-control-height);
+        box-sizing: border-box;
+        border: 1px solid var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        background: var(--guardian-background, #fff);
+        color: var(--guardian-font-color, #23252E);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        font-weight: 400;
+        line-height: 18px;
+        vertical-align: middle;
+    }
+
+    .properties .propRowCell > input.prop-input,
+    .properties .propRowCell > .readonly-prop {
+        padding: 3px 8px;
+    }
+
+    .properties .propRowCell > p-select,
+    .properties .propRowCell > p-multiselect {
+        display: flex !important;
+        align-items: center;
+    }
+
+    .properties p-multiselect .p-multiselect-label-container {
+        display: flex;
+        align-items: center;
+        height: 100%;
+        min-width: 0;
+    }
+
+    .properties .propRowCell > .readonly-prop {
+        position: static;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .properties .propRowCell > .readonly-prop--copy {
+        border: none;
+        background: transparent;
+        cursor: default;
+    }
+
+    .grid-setting[readonly="true"] .properties .propRowCell > .readonly-prop--copy {
+        color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
+    }
+
+    .properties .propRowCell > .readonly-prop--copy .pi {
+        pointer-events: auto;
+        cursor: pointer;
+        color: var(--pc-active-icon-color, var(--color-primary, #4169E2));
+    }
+
+    .properties .propRowCell > input.prop-input[readonly] {
+        border-color: var(--pc-control-border-color) !important;
+        background: var(--guardian-grey-background, #F9FAFC) !important;
+        color: var(--guardian-font-color-secondary, #848FA9);
+    }
+
+    .properties p-select .p-select-label,
+    .properties p-multiselect .p-multiselect-label {
+        align-items: center;
+        box-sizing: border-box;
+        display: flex;
+        height: 100%;
+        padding: 3px 8px;
+        line-height: 18px;
+    }
+
+    .properties p-select .p-select-dropdown,
+    .properties p-multiselect .p-multiselect-dropdown {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .properties .propRow:has(textarea) .propRowCell:not(.cellName) {
+        height: calc(var(--pc-control-height) + 2px);
+        padding-top: 1px;
+        padding-bottom: 1px;
+        vertical-align: middle;
+    }
+
+    .properties .propRow:has(textarea) + .propRow .propRowCell {
+        padding-top: 1px;
+    }
+
+    .properties .topic-description-row {
+        height: calc(var(--pc-row-height) + 1px);
+    }
+
+    .properties .topic-description-row .propRowCell {
+        padding-bottom: 3px;
+    }
+
+    .properties .propRow:has(+ .propHeader) {
+        height: calc(var(--pc-row-height) + 6px);
+    }
+
+    .properties .propRow:has(+ .propHeader) .propRowCell {
+        padding-bottom: 6px;
+    }
+
+    .properties .propRowCell > textarea {
+        display: block;
+        height: calc(var(--pc-control-height) * 5);
+        min-height: calc(var(--pc-control-height) * 5);
+        border-color: var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        background: var(--guardian-background, #fff);
+        color: var(--guardian-font-color, #23252E);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        line-height: 18px;
+        padding: 3px 8px;
+        resize: vertical;
+    }
+
+    .properties .propRowCell > .prop-description-readonly {
+        display: block;
+        width: 100%;
+        min-height: var(--pc-control-height);
+        box-sizing: border-box;
+        border: 1px solid var(--pc-control-border-color);
+        border-radius: var(--pc-control-border-radius);
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+        line-height: 18px;
+        padding: 4px 8px;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .properties .propRowCell > select-block {
+        display: block;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .properties .propRowCell > select-block p-select,
+    .properties .propRowCell > select-block .p-select {
+        width: 100% !important;
+        height: var(--pc-control-height);
+        min-height: var(--pc-control-height);
+        box-sizing: border-box;
+        border-radius: var(--pc-control-border-radius);
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+    }
+
+    .properties .propRowCell > select-block .p-select-label {
+        display: flex;
+        align-items: center;
+        box-sizing: border-box;
+        height: 100%;
+        padding: 3px 8px;
+        line-height: 18px;
+        font-family: var(--pc-row-font-family);
+        font-size: var(--pc-row-font-size);
+    }
+
+    .properties .propRowCell > select-block .custom {
+        position: static;
+        display: block;
+        min-width: 0;
+        height: auto;
+        line-height: 18px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .properties .navigation {
+        display: contents;
+    }
+
+    .properties:has(.navigation) {
+        --col-name-width: 146px;
+    }
+
+    .properties:has(.navigation) colgroup .col-toggle {
+        width: 54px;
+    }
+
+    .properties .navigation > .navigation-role-header > .propHeaderCell.cellName {
+        padding-left: 18px !important;
+    }
+
+    .properties .navigation .subRow .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .navigation > .propHeader:not(.stepRow) > .propRowCol,
+    .properties .navigation > .propHeader:not(.stepRow) > .propHeaderCell {
+        border-top: 1px solid var(--pc-border-color);
+    }
+
+    .properties .navigation .propAdd {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        width: auto;
+        min-width: 0;
+        height: 24px;
+        padding: 0;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .properties .navigation .propAdd i,
+    .properties .navigation .propAdd svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .navigation .stepRow {
+        height: 30px;
+    }
+
+    .properties .navigation .stepRow:hover {
+        background: transparent !important;
+    }
+
+    .properties .navigation .stepRow:hover > .propRowCol {
+        background: transparent !important;
+    }
+
+    .properties .navigation .stepRow:hover > .propHeaderCell {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
+    }
+
+    .properties .navigation .stepRow .chevron-icon {
+        background: transparent !important;
+        box-shadow: none;
+    }
+
+    .properties .navigation .stepRow:hover > .propHeaderCell.cellName .chevron-icon {
+        background: transparent !important;
+        box-shadow: none;
+    }
+
+    .properties .navigation .stepRow > .propHeaderCell.cellName {
+        flex-wrap: nowrap;
+        min-width: 0;
+        padding-left: 16px !important;
+        overflow: hidden;
+    }
+
+    .properties .navigation .stepRow > .step-handle-cell {
+        position: relative;
+        left: 0 !important;
+        top: 0 !important;
+        width: 54px;
+        min-width: 54px;
+        padding: 0 !important;
+        box-sizing: border-box;
+        vertical-align: middle;
+    }
+
+    .properties .navigation .step-drag-handle {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: auto;
+        box-sizing: border-box;
+        border-radius: 4px;
+        color: var(--guardian-disabled-color, #848FA9);
+        cursor: grab;
+        user-select: none;
+        transition: color 120ms ease, background 120ms ease, box-shadow 120ms ease;
+    }
+
+    .properties .navigation .step-drag-handle::before {
+        content: "";
+        width: 8px;
+        height: 18px;
+        background-image: radial-gradient(circle at 1.5px 1.5px, currentColor 1.25px, transparent 1.35px);
+        background-size: 4px 7px;
+    }
+
+    .properties .navigation .step-drag-handle:hover {
+        color: var(--guardian-primary-color);
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent);
+        box-shadow: none;
+    }
+
+    .properties .navigation .step-drag-handle:active,
+    .properties .navigation .step-drag-handle.step-drag-active {
+        color: var(--guardian-disabled-color, #848FA9);
+        background: transparent;
+        box-shadow: none;
+        cursor: grabbing;
+    }
+
+    .properties .navigation .stepRow:has(.step-drag-handle:hover) > .propHeaderCell,
+    .properties .navigation .stepRow:has(.step-drag-handle:active) > .propHeaderCell,
+    .properties .navigation .stepRow:has(.step-drag-handle.step-drag-active) > .propHeaderCell {
+        background: transparent !important;
+    }
+
+    .properties .navigation .stepRow.step-drop-target > td,
+    .properties .navigation .propRow.step-drop-target > td {
+        background: color-mix(in srgb, var(--guardian-primary-color) 8%, var(--guardian-background, #FFFFFF)) !important;
+    }
+
+    .properties .navigation .remove-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px !important;
+        height: 24px;
+        border-radius: 6px;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        line-height: 1;
+        vertical-align: middle;
+    }
+
+    .properties .navigation .remove-step:hover {
+        color: var(--pc-del-color);
+        background: color-mix(in srgb, var(--pc-del-color) 10%, transparent);
+    }
+
+    .properties .navigation .remove-step i,
+    .properties .navigation .remove-step svg {
+        font-size: 14px;
+    }
+
+    .properties .navigation .propRow.subRow {
+        height: var(--pc-row-height);
+    }
+
+    .properties .navigation .propRow.subRow .propRowCell.cellName {
+        padding-left: 16px !important;
+        padding-top: 0;
+        vertical-align: middle;
+    }
+
+    .properties .navigation .propRow.subRow .propRowCell:not(.cellName) {
+        vertical-align: middle;
+    }
+
+    .properties .navigation-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .navigation-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .navigation-add-cell .navigation-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .grid-setting[readonly="true"] .properties:has(.navigation) {
+        --col-name-width: 192px;
+    }
+
+    .grid-setting[readonly="true"] .properties:has(.navigation) colgroup .col-toggle,
+    .grid-setting[readonly="true"] .properties .navigation .stepRow > .step-handle-cell {
+        width: 18px;
+        min-width: 18px;
+    }
+
+    .grid-setting[readonly="true"] .properties .navigation > .navigation-role-header > .propHeaderCell.cellName {
+        padding-left: 0 !important;
+    }
+
+    .grid-setting[readonly="true"] .properties .navigation .stepRow > .step-handle-cell {
+        left: auto !important;
+        top: auto !important;
+    }
+
+    .grid-setting[readonly="true"] .properties .navigation .remove-step {
+        display: none;
+        pointer-events: none;
+    }
+
+    .grid-setting[readonly="true"] .properties .navigation .propAdd {
+        pointer-events: none;
+        color: var(--pc-readonly-text-color, var(--guardian-disabled-color, #848FA9));
+        filter: grayscale(1);
+        cursor: default;
+    }
+
+    .properties .roles-header .propAdd {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        width: auto;
+        min-width: 0;
+        height: 24px;
+        padding: 0;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .properties .roles-header .propAdd i,
+    .properties .roles-header .propAdd svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .role-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .role-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .role-row .propRowCell.cellName {
+        padding-left: 0 !important;
+        padding-top: 0;
+        vertical-align: middle;
+    }
+
+    .properties .role-row .propRowCell.remove-cell {
+        height: var(--pc-row-height);
+        padding: 2px 34px 2px 4px;
+        vertical-align: middle;
+    }
+
+    .properties .roles-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .roles-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .roles-add-cell .roles-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .roles-add-cell .roles-add i,
+    .properties .roles-add-cell .roles-add svg,
+    .properties .navigation-add-cell .navigation-add i,
+    .properties .navigation-add-cell .navigation-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .role-row .remove-prop {
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+    }
+
+    .properties .groups-header:hover {
+        background: transparent !important;
+    }
+
+    .properties .groups-header:hover > .propRowCol,
+    .properties .groups-header:hover > .propHeaderCell {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
+    }
+
+    .properties .groups-header .group-name {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 30px;
+    }
+
+    .properties .group-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .group-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .group-row .propRowCell.cellName {
+        padding-left: 0 !important;
+        padding-top: 0;
+        vertical-align: middle;
+    }
+
+    .properties .group-row .propRowCell:not(.cellName) {
+        vertical-align: middle;
+    }
+
+    .properties .group-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .group-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .group-add-cell .groups-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .group-add-cell .groups-add i,
+    .properties .group-add-cell .groups-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .group-add-cell .groups-add span {
+        white-space: nowrap;
+    }
+
+    .properties .topics-header:hover {
+        background: transparent !important;
+    }
+
+    .properties .topics-header:hover > .propRowCol,
+    .properties .topics-header:hover > .propHeaderCell {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
+    }
+
+    .properties .topics-header .topic-name {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 30px;
+    }
+
+    .properties:has(.topic-add-row) {
+        --col-name-width: 192px;
+    }
+
+    .properties .topic-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .topic-row .propRowCell:has(p-toggleswitch) {
+        text-align: right;
+    }
+
+    .properties .topic-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .topic-row .propRowCell.cellName {
+        padding-left: 0 !important;
+        padding-top: 0;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .properties .topic-row .propRowCell:not(.cellName) {
+        vertical-align: middle;
+    }
+
+    .properties .topic-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .topic-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .topic-add-cell .topics-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .topic-add-cell .topics-add i,
+    .properties .topic-add-cell .topics-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .topic-add-cell .topics-add span {
+        white-space: nowrap;
+    }
+
+    .properties .tokens-header:hover {
+        background: transparent !important;
+    }
+
+    .properties .tokens-header:hover > .propRowCol,
+    .properties .tokens-header:hover > .propHeaderCell {
+        background: color-mix(in srgb, var(--guardian-primary-color) 5%, transparent) !important;
+    }
+
+    .properties .tokens-header .token-name,
+    .properties .navigation .step-level {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 30px;
+    }
+
+    .properties:has(.token-add-row) {
+        --col-name-width: 192px;
+    }
+
+    .properties .token-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .token-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .token-row .propRowCell.cellName {
+        padding-left: 0 !important;
+        padding-top: 0;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .properties .token-row .propRowCell:not(.cellName) {
+        vertical-align: middle;
+    }
+
+    .properties .token-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .token-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .token-add-cell .tokens-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .token-add-cell .tokens-add i,
+    .properties .token-add-cell .tokens-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .token-add-cell .tokens-add span {
+        white-space: nowrap;
+    }
+
+    // Tool / Module sections (Description, Inputs, Outputs, Variables).
+    // Same model as the Tokens block above: the section header carries the item
+    // name as a secondary right-aligned label next to the delete action, nested
+    // rows drop the legacy tree connector and take the section indent, and the
+    // add action sits right aligned in its own row.
+    .properties .modules-header .module-name {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: var(--guardian-font-color-secondary, #848FA9);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 30px;
+    }
+
+    .properties .module-row {
+        height: var(--pc-row-height);
+    }
+
+    .properties .module-row .cellName::before {
+        content: none !important;
+        display: none !important;
+    }
+
+    .properties .module-row .propRowCell.cellName {
+        padding-left: 0 !important;
+        padding-top: 0;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .properties .module-row .propRowCell:not(.cellName) {
+        vertical-align: middle;
+    }
+
+    .properties .module-add-row {
+        height: calc(var(--pc-row-height) + 10px);
+    }
+
+    .properties .module-add-cell {
+        height: calc(var(--pc-row-height) + 10px);
+        padding: 4px 4px 14px !important;
+        text-align: right;
+        vertical-align: top;
+    }
+
+    .properties .module-add-cell .modules-add {
+        display: inline-flex;
+        align-items: center;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        margin-left: auto;
+        height: 24px;
+        padding: 0;
+        border: none;
+        color: var(--guardian-primary-color);
+        font-size: 12px;
+        font-weight: 500;
+        line-height: 16px;
+        white-space: nowrap;
+    }
+
+    .properties .module-add-cell .modules-add i,
+    .properties .module-add-cell .modules-add svg {
+        position: static;
+        margin: 0;
+        font-size: 12px;
+        line-height: 1;
+    }
+
+    .properties .module-add-cell .modules-add span {
+        white-space: nowrap;
+    }
+}

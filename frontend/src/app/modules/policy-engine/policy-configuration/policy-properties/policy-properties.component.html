@@ -2,27 +2,39 @@
   <div class="table">
     <div class="table-body" #body>
       <table class="properties">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
         @if (type == 'Main') {
-          <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'metaData')"
-              [attr.collapse]="propHidden.metaData">
-              <i class="pi pi-caret-down"></i>
+          <tr class="propHeader" (click)="onHide(propHidden, 'metaData')">
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName main-section-cell" colspan="2" [attr.collapse]="propHidden.metaData">
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Policy</span>
+              </div>
             </td>
-            <td class="propHeaderCell cellName">Policy</td>
-            <td class="propHeaderCell"></td>
           </tr>
           <tr class="propRow" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">ID</td>
             <td class="propRowCell">
-              <span class="readonly-prop">{{ policy.id }}</span>
+              <span class="readonly-prop readonly-prop--copy">
+                {{ policy.id }}
+                @if (policy.id) {
+                  <i class="pi" title="Copy policy ID"
+                    [ngClass]="copiedField === 'id' ? 'pi-check' : 'pi-copy'"
+                    (click)="copyValue('id', policy.id, $event)"></i>
+                }
+              </span>
             </td>
           </tr>
           <tr class="propRow" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Status</td>
             <td class="propRowCell">
-              <span class="readonly-prop">{{ policy.status }}</span>
+              <span class="prop-status-badge"
+                [ngClass]="'prop-status-badge--' + statusVariant(policy.status)">
+                {{ statusLabel(policy.status) }}
+              </span>
             </td>
           </tr>
           <tr class="propRow" [attr.collapse]="propHidden.metaData">
@@ -53,7 +65,7 @@
               <input class="prop-input" [ngModel]="policy.version" readonly>
             </td>
           </tr>
-          <tr class="propRow" [attr.collapse]="propHidden.metaData">
+          <tr class="propRow topic-description-row" [attr.collapse]="propHidden.metaData">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Topic Description</td>
             <td class="propRowCell">
@@ -65,7 +77,11 @@
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Description</td>
             <td class="propRowCell">
-              <textarea [(ngModel)]="policy.description" [readonly]="readonly"></textarea>
+              @if (readonly) {
+                <div class="prop-description-readonly">{{ policy.description }}</div>
+              } @else {
+                <textarea [(ngModel)]="policy.description" [readonly]="readonly"></textarea>
+              }
             </td>
           </tr>
           <tr [attr.collapse]="propHidden.metaData" class="propRow">
@@ -73,31 +89,41 @@
             <td class="propRowCell cellName">Project Schema</td>
             <td class="propRowCell">
               <p-select
+                panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="projectSchema"
                 [options]="policySchemas"
                 optionLabel="name"
                 optionValue="value"
-                [disabled]="!policySchemas"
+                [disabled]="!policySchemas?.length"
                 placeholder="Select a schema"
+                [filter]="true"
+                filterBy="name"
+                filterPlaceholder="Search schema"
+                [resetFilterOnHide]="true"
                 (onChange)="setProjectSchema($event.value)"
                 [appendTo]="'body'"
                 >
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
-          <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'categorization')"
-              [attr.collapse]="propHidden.categorization">
-              <i class="pi ppi-caret-down"></i>
+          <tr class="propHeader" (click)="onHide(propHidden, 'categorization')">
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName main-section-cell" colspan="2" [attr.collapse]="propHidden.categorization">
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Categorization</span>
+              </div>
             </td>
-            <td class="propHeaderCell cellName">Categorization</td>
-            <td class="propHeaderCell"></td>
           </tr>
           <tr [attr.collapse]="propHidden.categorization" class="propRow">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Sectoral scope</td>
             <td class="propRowCell">
               <p-select
+                panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="sectoralScopeSelected"
                 [options]="allCategories.sectoralScopeOptions"
                 optionLabel="name"
@@ -116,6 +142,9 @@
                     <span>Select a sectoral scope</span>
                   }
                 </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -124,6 +153,7 @@
             <td class="propRowCell cellName">Project Scale</td>
             <td class="propRowCell">
               <p-select
+                panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="projectScaleSelected"
                 [options]="allCategories?.projectScaleOptions"
                 optionLabel="name"
@@ -142,6 +172,9 @@
                     <span>Select a project scale</span>
                   }
                 </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -150,6 +183,7 @@
             <td class="propRowCell cellName">Applied Technology Type</td>
             <td class="propRowCell">
               <p-select
+                panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="appliedTechnologyTypeSelected"
                 [options]="allCategories?.appliedTechnologyTypeOptions"
                 optionLabel="name"
@@ -167,6 +201,9 @@
                     <span>Select a technology type</span>
                   }
                 </ng-template>
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-select>
             </td>
           </tr>
@@ -175,6 +212,7 @@
             <td class="propRowCell cellName">Mitigation Activity Type</td>
             <td class="propRowCell">
               <p-multiSelect
+                panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="migrationActivityTypeSelected"
                 [options]="allCategories?.migrationActivityTypeOptions"
                 optionLabel="name"
@@ -183,6 +221,9 @@
                 [appendTo]="'body'"
                 (onChange)="onCategoriesChanged()"
                 >
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-multiSelect>
             </td>
           </tr>
@@ -191,6 +232,7 @@
             <td class="propRowCell cellName">Sub Type</td>
             <td class="propRowCell">
               <p-multiSelect
+                panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="subTypeSelected"
                 [options]="allCategories?.subTypeOptions"
                 optionLabel="name"
@@ -199,6 +241,9 @@
                 [appendTo]="'body'"
                 (onChange)="onCategoriesChanged()"
                 >
+                <ng-template pTemplate="item" let-option>
+                  <span class="drawer-option-label">{{ option.name }}</span>
+                </ng-template>
               </p-multiSelect>
             </td>
           </tr>
@@ -206,23 +251,26 @@
 
         @if (type == 'Role') {
           <!-- Roles  -->
-          <tr class="propHeader">
-            <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'rolesGroup')"
+          <tr class="propHeader roles-header">
+            <td class="propRowCol"></td>
+            <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden, 'rolesGroup')"
               [attr.collapse]="propHidden.rolesGroup">
-              @if (policy.policyRoles && policy.policyRoles.length) {
-                <i class="pi pi-caret-down"></i>
-              }
-            </td>
-            <td class="propHeaderCell cellName">Roles</td>
-            <td class="propHeaderCell">
-              <div class="propAdd" (click)="addRoles()">
-                <i class="pi pi-plus toolbar-icons"></i>
-                <span>Add Role</span>
+              <div class="propHeaderContent">
+                <i class="pi pi-chevron-down chevron-icon"></i>
+                <span class="propHeaderTitle">Roles</span>
+                @if (!roles || !roles.length) {
+                  <div class="propHeaderActions">
+                    <div class="propAdd" (click)="addRoles(); $event.stopPropagation()">
+                      <i class="pi pi-plus toolbar-icons"></i>
+                      <span>Add Role</span>
+                    </div>
+                  </div>
+                }
               </div>
             </td>
           </tr>
           @for (item of roles; track item; let i = $index) {
-            <tr class="propRow subRow" [attr.collapse]="propHidden.rolesGroup">
+            <tr class="propRow subRow role-row" [attr.collapse]="propHidden.rolesGroup">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Role {{ i }}</td>
               <td class="propRowCell remove-cell">
@@ -234,100 +282,149 @@
               </td>
             </tr>
           }
+          @if (roles && roles.length) {
+            <tr class="propRow roles-add-row" [attr.collapse]="propHidden.rolesGroup">
+              <td class="propRowCol"></td>
+              <td class="propRowCell roles-add-cell" colspan="2">
+                <div class="propAdd roles-add" (click)="addRoles()">
+                  <i class="pi pi-plus"></i>
+                  <span>Add Role</span>
+                </div>
+              </td>
+            </tr>
+          }
         }
         @if (type == 'Navigation') {
           <!-- Navigation  -->
           @for (role of navigationRoles; track role; let i = $index) {
             <ng-container class="213">
               <div class="navigation">
-                <tr class="propHeader">
-                  <td (click)="onHide(propHidden.navigationRoles, role)"
-                    [attr.collapse]="propHidden.navigationRoles[role]"
-                    class="propRowCol cellCollapse">
-                    @if (policy.policyRoles && policy.policyRoles.length) {
-                      <i
-                      class="pi pi-caret-down"></i>
-                    }
-                  </td>
-                  <td class="propHeaderCell cellName">{{ role }}</td>
-                  <td class="propHeaderCell">
-                    @if (true) {
-                      <div (click)="addStep(role)" class="propAdd">
-                        <i class="pi pi-plus toolbar-icons"></i>
-                        <span>Add Step</span>
-                      </div>
-                    }
-                  </td>
-                </tr>
                 @for (nav of navigation; track nav) {
                   @if (nav.role === role) {
-                    @for (step of nav.steps; track step; let s = $index) {
-                      @if (!propHidden.navigationRoles[role]) {
-                        <tr class="propHeader subRow stepRow">
-                          <td (click)="onHide(propHidden.navigationSteps, role + s)"
-                            [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                            class="propRowCol cellCollapse">
-                            @if (policy.policyRoles && policy.policyRoles.length) {
-                              <i
-                              class="pi pi-caret-down"></i>
-                            }
+                    <tr class="propHeader navigation-role-header">
+                      @if (readonly) {
+                        <td class="propRowCol"></td>
+                      }
+                      <td (click)="onHide(propHidden.navigationRoles, role)"
+                        [attr.collapse]="propHidden.navigationRoles[role]"
+                        class="propHeaderCell cellName" [attr.colspan]="readonly ? 2 : 3">
+                        <div class="propHeaderContent">
+                          <i class="pi pi-chevron-down chevron-icon"></i>
+                          <span class="propHeaderTitle">{{ role }}</span>
+                          @if (!nav.steps || !nav.steps.length) {
+                            <div class="propHeaderActions">
+                              <div (click)="addStep(role); $event.stopPropagation()" class="propAdd">
+                                <i class="pi pi-plus toolbar-icons"></i>
+                                <span>Add Step</span>
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </td>
+                    </tr>
+                    @if (nav.steps && nav.steps.length) {
+                      @for (step of nav.steps; track step; let s = $index) {
+                        @if (!propHidden.navigationRoles[role]) {
+                          <tr class="propHeader subRow stepRow"
+                            (click)="onHide(propHidden.navigationSteps, role + s)"
+                            [class.step-drop-before]="stepDragRole === role && stepDropIndex === s && !stepDropAfter"
+                            [class.step-drop-after]="stepDragRole === role && stepDropIndex === s && stepDropAfter"
+                            [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                            (dragover)="onStepDragOver($event, role, s)"
+                            (dragleave)="onStepDragLeave($event, role, s)"
+                            (drop)="onStepDrop($event, role, s)">
+                            <td class="propRowCol step-handle-cell"
+                              [attr.rowspan]="(propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s])
+                                ? 1 : (readonly ? 4 : 5)">
+                              @if (!readonly) {
+                                <div class="step-drag-handle" draggable="true" title="Drag to reorder"
+                                  [class.step-drag-active]="stepDragRole === role && stepDragIndex === s"
+                                  (dragstart)="onStepDragStart($event, role, s)"
+                                  (dragend)="onStepDragEnd()"
+                                  (click)="$event.stopPropagation()"></div>
+                              }
+                            </td>
+                            <td [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                              class="propHeaderCell cellName" colspan="2">
+                              <div class="propHeaderContent">
+                                <i class="pi pi-chevron-down chevron-icon"></i>
+                                <span class="propHeaderTitle" [appOverflowTitle]="step.name || ('Step #' + (s + 1))">{{ step.name || ('Step #' + (s + 1)) }}</span>
+                                <div class="propHeaderActions">
+                                  @if (propHidden.navigationSteps[role + s]) {
+                                    <span class="step-level">Level: {{ step.level }}</span>
+                                  }
+                                  <span (click)="$event.stopPropagation(); onRemoveStep(role, step)" [attr.readonly]="readonly"
+                                    class="remove-step">
+                                    <i class="pi pi-trash"></i>
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
+                          <td class="propRowCell cellName">Name</td>
+                          <td class="propRowCell">
+                            <input (input)="onEditStep(step)" [(ngModel)]="step.name"
+                              [readonly]="readonly"
+                              class="prop-input">
                           </td>
-                          <td class="propHeaderCell cellName">{{ step.name || ('Step #' + (s + 1)) }}</td>
-                          <td class="propHeaderCell cellName">
-                            <span (click)="onRemoveStep(role, step)" [attr.readonly]="readonly"
-                              class="remove-step">
-                              <i class="pi pi-trash"></i>
-                            </span>
+                        </tr>
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
+                          <td class="propRowCell cellName">Block</td>
+                          <td class="propRowCell">
+                            <select-block
+                              (change)="onEditStep(step)"
+                              [(value)]="step.block"
+                              [blocks]="policy.allBlocks"
+                              [readonly]="readonly"
+                              [root]="policy"
+                              panelStyleClass="pc-select-panel pc-drawer-panel"
+                              type="object"
+                            ></select-block>
+                          </td>
+                        </tr>
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
+                          <td class="propRowCell cellName">Level</td>
+                          <td class="propRowCell">
+                            <input (input)="onEditStep(step)" [(ngModel)]="step.level"
+                              [readonly]="readonly"
+                              class="prop-input" type="number">
+                          </td>
+                        </tr>
+                        <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
+                          class="propRow subRow navigation-add-row"
+                          [class.step-drop-after]="stepDragRole === role && stepDropIndex === s && stepDropAfter"
+                          [class.step-drop-target]="stepDragRole === role && stepDropIndex === s && stepDragIndex !== s"
+                          (dragover)="onStepDragOver($event, role, s)"
+                          (dragleave)="onStepDragLeave($event, role, s)"
+                          (drop)="onStepDrop($event, role, s)">
+                          @if (readonly) {
+                            <td class="propRowCol"></td>
+                          }
+                          <td class="propRowCell navigation-add-cell" colspan="2">
+                            <div (click)="addStep(role, s + 1)" class="propAdd navigation-add">
+                              <i class="pi pi-plus"></i>
+                              <span>Add Step</span>
+                            </div>
                           </td>
                         </tr>
                       }
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Name</td>
-                        <td class="propRowCell">
-                          <input (input)="onEditStep(step)" [(ngModel)]="step.name"
-                            [readonly]="readonly"
-                            class="prop-input">
-                        </td>
-                      </tr>
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Block</td>
-                        <td class="propRowCell">
-                          <select-block
-                            (change)="onEditStep(step)"
-                            [(value)]="step.block"
-                            [blocks]="policy.allBlocks"
-                            [readonly]="readonly"
-                            [root]="policy"
-                            type="object"
-                          ></select-block>
-                        </td>
-                      </tr>
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">Level</td>
-                        <td class="propRowCell">
-                          <input (input)="onEditStep(step)" [(ngModel)]="step.level"
-                            [readonly]="readonly"
-                            class="prop-input" type="number">
-                        </td>
-                      </tr>
-                      <tr [attr.collapse]="propHidden.navigationRoles[role] || propHidden.navigationSteps[role + s]"
-                        class="propRow subRow">
-                        <td class="propRowCol"></td>
-                        <td class="propRowCell cellName">
-                          <div (click)="addStep(role, s + 1)" class="propAdd">
-                            <i class="pi pi-plus"></i>
-                            <span>Add Step</span>
-                          </div>
-                        </td>
-                        <td class="propRowCell">
-                        </td>
-                      </tr>
                     }
                   }
                 }
@@ -337,20 +434,24 @@
         }
         @if (type == 'Groups') {
           @for (item of policyGroups; track item; let i = $index) {
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.groupsGroup, i)"
+            <tr class="propHeader groups-header">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden.groupsGroup, i)"
                 [attr.collapse]="propHidden.groupsGroup[i]">
-                <i class="pi pi-caret-down"></i>
-              </td>
-              <td class="propHeaderCell cellName">Group</td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveGroup(item)">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Group</span>
+                  <div class="propHeaderActions">
+                    <span class="group-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveGroup(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Name</td>
               <td class="propRowCell">
@@ -358,27 +459,30 @@
                   (input)="onEditGroup(item)">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Creator role</td>
               <td class="propRowCell">
                 <p-select
-                  [(ngModel)]="item.creator"
-                  [options]="policy && policy.policyRoles"
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
+                  [ngModel]="getCreatorRoleSelection(item)"
+                  (ngModelChange)="item.creator = $event; onEditGroup(item)"
+                  [options]="creatorRoleOptions"
                   optionLabel="name"
                   optionValue="name"
                   [disabled]="readonly"
-                  (onChange)="onEditGroup(item)"
+                  placeholder="Select a creator role"
                   [appendTo]="'body'"
                   >
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Members roles</td>
               <td class="propRowCell">
                 <p-multiSelect
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   [(ngModel)]="item.members"
                   [options]="policy && policy.policyRoles"
                   optionLabel="name"
@@ -387,14 +491,18 @@
                   (onChange)="onEditGroup(item)"
                   [appendTo]="'body'"
                   >
+                  <ng-template pTemplate="item" let-option>
+                    <span class="drawer-option-label">{{ option.name }}</span>
+                  </ng-template>
                 </p-multiSelect>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Relationship Type</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   [(ngModel)]="item.groupRelationshipType"
                   [options]="groupRelationshipTypeOptions"
                   optionLabel="label"
@@ -407,11 +515,12 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.groupsGroup[i]">
+            <tr class="propRow subRow group-row" [attr.collapse]="propHidden.groupsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Access Type</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   [(ngModel)]="item.groupAccessType"
                   [options]="groupAccessTypeOptions"
                   optionLabel="label"
@@ -425,53 +534,56 @@
               </td>
             </tr>
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow group-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell group-add-cell" colspan="2">
+              <div class="propAdd groups-add" (click)="addGroup()">
+                <i class="pi pi-plus"></i>
+                <span>Add Group</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addGroup()">
-              <i class="pi pi-plus"></i>
-              <span>Add Group</span>
-            </div>
-          </div>
         }
         @if (type == 'Topics') {
           <!-- Topics  -->
           @for (item of topics; track item; let i = $index) {
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.topicsGroup, i)"
+            <tr class="propHeader topics-header">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden.topicsGroup, i)"
                 [attr.collapse]="propHidden.topicsGroup[i]">
-                <i class="pi pi-caret-down"></i>
-              </td>
-              <td class="propHeaderCell cellName">Topic</td>
-              <td class="propHeaderCell">
-                <div>{{ item.name }}</div>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveTopic(item)">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Topic</span>
+                  <div class="propHeaderActions">
+                    <span class="topic-name">{{ item.name }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveTopic(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Name</td>
               <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="item.name" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Description</td>
               <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="item.description" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Type</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   [(ngModel)]="item.type"
                   [options]="groupDocumentOptions"
                   optionLabel="label"
@@ -483,19 +595,22 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Static</td>
               <td class="propRowCell">
-                <input class="prop-input" type="checkbox" [(ngModel)]="item.static"
-                  [readonly]="readonly">
+                <p-toggleswitch
+                  [(ngModel)]="item.static"
+                  [disabled]="readonly">
+                </p-toggleswitch>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Memo Parameters Object</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   [(ngModel)]="item.memoObj"
                   [options]="memoObjOptions"
                   optionLabel="label"
@@ -507,7 +622,7 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.topicsGroup[i]">
+            <tr class="propRow subRow topic-row" [attr.collapse]="propHidden.topicsGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Memo</td>
               <td class="propRowCell">
@@ -515,42 +630,44 @@
               </td>
             </tr>
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow topic-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell topic-add-cell" colspan="2">
+              <div class="propAdd topics-add" (click)="addTopic()">
+                <i class="pi pi-plus"></i>
+                <span>Add Topic</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addTopic()">
-              <i class="pi pi-plus"></i>
-              <span>Add Topic</span>
-            </div>
-          </div>
         }
         @if (type == 'Tokens') {
           <!-- Tokens  -->
           @for (item of tokens; track item; let i = $index) {
-            <tr class="propHeader">
-              <td class="propRowCol cellCollapse" (click)="onHide(propHidden.tokensGroup, i)"
+            <tr class="propHeader tokens-header">
+              <td class="propRowCol"></td>
+              <td class="propHeaderCell cellName" colspan="2" (click)="onHide(propHidden.tokensGroup, i)"
                 [attr.collapse]="propHidden.tokensGroup[i]">
-                <i class="pi pi-caret-down"></i>
-              </td>
-              <td class="propHeaderCell cellName">Token</td>
-              <td class="propHeaderCell">
-                <div>{{ item.templateTokenTag }}</div>
-                <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveToken(item)">
-                  <i class="pi pi-trash"></i>
-                </span>
+                <div class="propHeaderContent">
+                  <i class="pi pi-chevron-down chevron-icon"></i>
+                  <span class="propHeaderTitle">Token</span>
+                  <div class="propHeaderActions">
+                    <span class="token-name">{{ item.templateTokenTag }}</span>
+                    <span class="remove-prop" [attr.readonly]="readonly"
+                      (click)="onRemoveToken(item); $event.stopPropagation()">
+                      <i class="pi pi-trash"></i>
+                    </span>
+                  </div>
+                </div>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Template Token Tag</td>
               <td class="propRowCell">
                 <input class="prop-input" [(ngModel)]="item.templateTokenTag" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Token Name</td>
               <td class="propRowCell">
@@ -558,7 +675,7 @@
                   [(ngModel)]="item.tokenName" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Token Symbol</td>
               <td class="propRowCell">
@@ -566,11 +683,12 @@
                   [(ngModel)]="item.tokenSymbol" [readonly]="readonly">
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Token Type</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   placeholder="To be specified by user"
                   [(ngModel)]="item.tokenType"
                   [options]="tokenTypeOptions"
@@ -584,7 +702,7 @@
               </td>
             </tr>
             @if (item.tokenType==='fungible') {
-              <tr class="propRow subRow"
+              <tr class="propRow subRow token-row"
                 [attr.collapse]="propHidden.tokensGroup[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Decimals</td>
@@ -594,11 +712,12 @@
                 </td>
               </tr>
             }
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable Admin</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   placeholder="To be specified by user"
                   [(ngModel)]="item.enableAdmin"
                   [options]="enableAdminOptions"
@@ -610,11 +729,12 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable Freeze</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   placeholder="To be specified by user"
                   [(ngModel)]="item.enableFreeze"
                   [options]="enableFreezeOptions"
@@ -626,11 +746,12 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable KYC</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   placeholder="To be specified by user"
                   [(ngModel)]="item.enableKYC"
                   [options]="enableKYCOptions"
@@ -642,11 +763,12 @@
                 </p-select>
               </td>
             </tr>
-            <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+            <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
               <td class="propRowCol"></td>
               <td class="propRowCell cellName">Enable Wipe</td>
               <td class="propRowCell">
                 <p-select
+                  panelStyleClass="pc-select-panel pc-drawer-panel"
                   placeholder="To be specified by user"
                   [(ngModel)]="item.enableWipe"
                   [options]="enableWipeOptions"
@@ -660,11 +782,12 @@
               </td>
             </tr>
             @if (item.enableWipe) {
-              <tr class="propRow subRow" [attr.collapse]="propHidden.tokensGroup[i]">
+              <tr class="propRow subRow token-row" [attr.collapse]="propHidden.tokensGroup[i]">
                 <td class="propRowCol"></td>
                 <td class="propRowCell cellName">Wipe Contract</td>
                 <td class="propRowCell">
                   <p-select
+                    panelStyleClass="pc-select-panel pc-drawer-panel"
                     placeholder="To be specified by user"
                     [(ngModel)]="item.wipeContractId"
                     [options]="getWipeContractOptions()"
@@ -678,17 +801,15 @@
               </tr>
             }
           }
-          <tr class="propRow propRowBottom">
+          <tr class="propRow token-add-row">
             <td class="propRowCol"></td>
-            <td class="propRowCell cellName"></td>
-            <td class="propRowCell"></td>
+            <td class="propRowCell token-add-cell" colspan="2">
+              <div class="propAdd tokens-add" (click)="addToken()">
+                <i class="pi pi-plus"></i>
+                <span>Add Token</span>
+              </div>
+            </td>
           </tr>
-          <div class="propBottom">
-            <div class="propAdd" (click)="addToken()">
-              <i class="pi pi-plus"></i>
-              <span>Add Token</span>
-            </div>
-          </div>
         }
       </table>
     </div>

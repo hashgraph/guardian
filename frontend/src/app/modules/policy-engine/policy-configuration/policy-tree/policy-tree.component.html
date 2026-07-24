@@ -93,9 +93,20 @@
                   <div class="block-item-icon">
                     <i [ngClass]="'pi pi-' + item.icon" class="theme-text"></i>
                   </div>
-                  <div class="block-item-name" theme-text>
-                    {{ item.node.localTag }}
+                  <div class="block-item-text">
+                    <div class="block-item-name" theme-text>
+                      {{ item.node.localTag }}
+                    </div>
+                    <div class="block-item-type">{{ item.node.blockType }}</div>
                   </div>
+                  @if (item.hasEvents) {
+                    <div class="block-event-mark"
+                      pTooltip="Has event connections"
+                      tooltipPosition="top"
+                      tooltipStyleClass="guardian-tooltip">
+                      <i class="pi pi-bolt"></i>
+                    </div>
+                  }
                   @if (isBlockSelected(item)) {
                     <div class="block-selected-mark">
                       <svg-icon
@@ -132,6 +143,12 @@
                     <button (click)="onVisibleMoreActions($event)" mat-icon-button class="action-button more-action-button">
                       <i class="pi pi-ellipsis-h"></i>
                     </button>
+                    @if (!readonly) {
+                      <button (click)="onAddChild($event)" mat-icon-button class="action-button add-child-action"
+                        title="Add block inside">
+                        <i class="pi pi-plus"></i>
+                      </button>
+                    }
                     <button (click)="onSearch($event)" mat-icon-button class="action-button">
                       <i class="pi pi-search"></i>
                     </button>

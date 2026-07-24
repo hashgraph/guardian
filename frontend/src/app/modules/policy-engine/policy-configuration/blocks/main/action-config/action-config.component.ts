@@ -79,6 +79,14 @@ export class ActionConfigComponent implements OnInit {
             user: UserType.OWNER,
             type: 'text',
         })
+        this.propHidden.optionsGroup = false;
+    }
+
+    onRemoveOption(i: number) {
+        this.properties.uiMetaData.options.splice(i, 1);
+        if (!this.properties.uiMetaData.options.length) {
+            this.propHidden.optionsGroup = true;
+        }
     }
 
     addFilters() {

@@ -3,10 +3,14 @@
     [disabled]="disabled"
     [options]="schemas"
     class="schema-select {{bodyStyleClass}}"
-    [panelStyleClass]="panelStyleClass"
+    [panelStyleClass]="panelStyleClass || 'pc-select-panel'"
     placeholder="Select a schema"
     optionLabel="displayName"
     optionValue="value"
+    [filter]="true"
+    filterBy="displayName"
+    filterPlaceholder="Search schema"
+    [resetFilterOnHide]="true"
     appendTo="body"
     (ngModelChange)="onChange()"
 >
@@ -14,7 +18,7 @@
         <div
             pTooltip="{{ item.tooltip }}"
             tooltipPosition="top"
-            class="schema-variable"
+            class="schema-variable drawer-option-label"
             [attr.status]="item.status"
         >
             {{ item.displayName }}

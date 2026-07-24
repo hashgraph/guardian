@@ -1,100 +1,101 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'options')"
-        [attr.collapse]="propHidden.options">
-        <i class="pi pi-caret-down"></i>
+  <table class="properties http-request-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
+    <tr class="propHeader" (click)="onHide(propHidden, 'options')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName http-request-section-header" [attr.collapse]="propHidden.options">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Options</span>
       </td>
-      <td class="propHeaderCell cellName">Options</td>
       <td class="propHeaderCell"></td>
     </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.options">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">URL</td>
-      <td class="propRowCell">
-        <input class="prop-input" [(ngModel)]="properties.url" [readonly]="readonly" (blur)="onSave()">
-      </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.options">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Method</td>
-      <td class="propRowCell">
-        <p-select [(ngModel)]="properties.method"
-          [options]="httpMethodsOptions"
-          [disabled]="readonly"
-          (onChange)="onSave()"
-          [appendTo]="'body'"
-          placeholder="Select HTTP Method"
-          optionLabel="label"
-          optionValue="value">
-        </p-select>
-      </td>
-    </tr>
-    <tr class="propRow" [attr.collapse]="propHidden.options">
-      <td class="propRowCol"></td>
-      <td class="propRowCell cellName">Body</td>
-      <td class="propRowCell">
-        <input class="prop-input" type="text" [(ngModel)]="properties.messageBody" [readonly]="true"
-          (click)="editBody($event)" (blur)="onSave()">
-      </td>
-    </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'conditionsGroup')"
-        [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
-        <i class="pi pi-caret-down"></i>
-      </td>
-      <td class="propHeaderCell cellName">Headers</td>
-      <td class="propHeaderCell">
-        <div class="propAdd" (click)="addHeader()">
-          <i class="pi pi-plus"></i>
-          <span>Add header</span>
-        </div>
-      </td>
-    </tr>
-    @for (header of properties.headers; track header; let i = $index) {
-      <tr class="propRow" [attr.collapse]="propHidden.options || propHidden.conditionsGroup">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.conditions, i)"
-          [attr.collapse]="propHidden.conditions[i]">
-          <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propRowCell cellName">Header {{ i }}</td>
+    @if (!propHidden.options) {
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">URL</td>
         <td class="propRowCell">
-          <span class="remove-prop" [attr.readonly]="readonly" (click)="onRemoveHeader(i)">
-            <i class="pi pi-trash"></i>
-          </span>
+          <input class="prop-input" [(ngModel)]="properties.url" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow"
-        [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
+      <tr class="propRow">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Header name</td>
+        <td class="propRowCell cellName">Method</td>
         <td class="propRowCell">
-          <input class="prop-input" [(ngModel)]="header.name" [readonly]="readonly" (blur)="onSave()">
-        </td>
-      </tr>
-      <tr class="propRow subRow"
-        [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Header value</td>
-        <td class="propRowCell">
-          <input class="prop-input" [(ngModel)]="header.value" [readonly]="readonly" (blur)="onSave()">
-        </td>
-      </tr>
-      <tr class="propRow subRow"
-        [attr.collapse]="propHidden.options || propHidden.conditionsGroup || propHidden.conditions[i]">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Include value</td>
-        <td class="propRowCell">
-          <p-checkbox [(ngModel)]="header.included"
-            binary="true"
+          <p-select [(ngModel)]="properties.method"
+            panelStyleClass="pc-select-panel"
+            [options]="httpMethodsOptions"
             [disabled]="readonly"
-            (onChange)="onIncludeChange(header)"
-            inputId="includeValueInExport">
-          </p-checkbox>
-          <label class="p-checkbox-label" for="includeValueInExport">Include value in exported policy</label>
+            (onChange)="onSave()"
+            [appendTo]="'body'"
+            placeholder="Select HTTP Method"
+            optionLabel="label"
+            optionValue="value">
+          </p-select>
         </td>
       </tr>
+      <tr class="propRow">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Body</td>
+        <td class="propRowCell">
+          <input class="prop-input" type="text" [(ngModel)]="properties.messageBody" [readonly]="true"
+            (click)="editBody($event)" (blur)="onSave()">
+        </td>
+      </tr>
+      <tr class="propHeader" (click)="onHide(propHidden, 'conditionsGroup')">
+        <td class="propRowCol"></td>
+        <td class="propHeaderCell cellName http-request-section-header" [attr.collapse]="propHidden.conditionsGroup">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>Headers</span>
+        </td>
+        <td class="propHeaderCell">
+          <div class="propAdd" (click)="$event.stopPropagation(); addHeader(); $event.stopPropagation()">
+            <i class="pi pi-plus"></i>
+            <span>Add header</span>
+          </div>
+        </td>
+      </tr>
+      @for (header of properties.headers; track header; let i = $index) {
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup" (click)="onHide(propHidden.conditions, i)">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" [attr.collapse]="propHidden.conditions[i]">
+            <i class="pi pi-chevron-down chevron-icon"></i>
+            <span>Header {{ i }}</span>
+          </td>
+          <td class="propRowCell">
+            <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); onRemoveHeader(i)">
+              <i class="pi pi-trash"></i>
+            </span>
+          </td>
+        </tr>
+        <tr class="propRow" lvl="1"
+          [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Header name</td>
+          <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="header.name" [readonly]="readonly" (blur)="onSave()">
+          </td>
+        </tr>
+        <tr class="propRow" lvl="1"
+          [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName">Header value</td>
+          <td class="propRowCell">
+            <input class="prop-input" [(ngModel)]="header.value" [readonly]="readonly" (blur)="onSave()">
+          </td>
+        </tr>
+        <tr class="propRow" lvl="1"
+          [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+          <td class="propRowCol"></td>
+          <td class="propRowCell cellName" title="Include value in exported policy">Include value</td>
+          <td class="propRowCell">
+            <p-toggleswitch [(ngModel)]="header.included"
+              [disabled]="readonly"
+              (onChange)="onIncludeChange(header)">
+            </p-toggleswitch>
+          </td>
+        </tr>
+      }
     }
   </table>
 }

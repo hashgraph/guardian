@@ -450,34 +450,12 @@ body {
     z-index: 9999 !important;
 }
 
-::ng-deep p-selectitem li {
-    min-height: 38px !important;
-}
-
-::ng-deep .grid-setting td.propRowCell {
-    height: 39px !important;
-}
-
 ::ng-deep .propRowCell .pi-trash {
     margin: 4px 4px
 }
 
-::ng-deep .propRowCell .readonly-prop {
-    min-height: 36px;
-    padding-top: 12px;
-}
-
-::ng-deep td.propRowCell.cellName,
-::ng-deep .propRow .propRowCell {
-    align-content: center;
-}
-
 ::ng-deep p-progressspinner svg circle {
     stroke: var(--button-primary-color) !important;
-}
-
-::ng-deep p-select .p-select-label-empty {
-    min-height: 36px;
 }
 
 ::ng-deep .p-tabs .p-tab.p-tab-active,
