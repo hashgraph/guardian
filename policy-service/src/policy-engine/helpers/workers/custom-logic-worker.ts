@@ -68,8 +68,13 @@ function execute(): void {
     try {
         vm.runInContext(execFunc, context, { timeout: 30000 });
     } catch (error) {
-        parentPort.postMessage({ type: 'debug', message: `Sandbox error: ${error.message}` });
-        parentPort.postMessage({ type: 'done', result: null, final: true });
+        // A thrown script is a failure, not a successful empty result. Emit an 'error'
+        // sentinel so the block surfaces it (ref.error + BlockErrorFn + ErrorEvent),
+        // instead of the previous silent `done(null, final: true)` which fired no event
+        // and left the workflow step parked on this non-UI block with no diagnostics.
+        const message = (error as Error)?.message ?? String(error);
+        parentPort.postMessage({ type: 'debug', message: `Sandbox error: ${message}` });
+        parentPort.postMessage({ type: 'error', error: `Custom logic error: ${message}` });
     }
 }
 
