@@ -1,11 +1,23 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
-import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
-import { Subject, takeUntil } from 'rxjs';
+import {
+    isGeoCustomType,
+    Schema,
+    SchemaField,
+    SchemaRuleValidateResult,
+    UnitSystem
+} from '@guardian/interfaces';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
+import {
+    GeoOption,
+    GeoResolverField,
+    GeoType,
+    resolveGeoDependencies
+} from './geo-dependency-resolver';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -108,6 +120,8 @@ export class SchemaFormComponent implements OnInit {
     public currentIndex: number = 0;
     public buttonsConfig: IButton[] = [];
     public editButtonConfig: IButton;
+    private geoSubscriptions = new Subscription();
+    private geoOptions = new Map<string, GeoOption[]>();
     private controlsIndex: Map<string, { ancestors: IFieldControl<any>[], field: IFieldControl<any>, listItem?: any }> = new Map();
 
     constructor(
@@ -124,11 +138,12 @@ export class SchemaFormComponent implements OnInit {
                 this.updateRemoteFiles(item);
             }
         }
+        this.setupGeoDependencies();
         this.updatePages();
-        try { 
-            this.buildControlsIndex(); 
+        try {
+            this.buildControlsIndex();
         } catch (e) {
-             console.error('[schema-form] buildControlsIndex failed', e); 
+             console.error('[schema-form] buildControlsIndex failed', e);
         }
         if (changes.rules && this.rules) {
             for (const value of Object.values(this.rules)) {
@@ -183,6 +198,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.geoSubscriptions.unsubscribe();
         this.destroy.emit();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
@@ -371,13 +387,116 @@ export class SchemaFormComponent implements OnInit {
         return this.rules?.[item.fullPath]?.status;
     }
 
+    public isGeoLocation(item: IFieldControl<any>): boolean {
+        return isGeoCustomType(item.customType || '');
+    }
+
+    public getGeoOptions(item: IFieldControl<any>): GeoOption[] {
+        return this.geoOptions.get(item.id) || [];
+    }
+
+    private setupGeoDependencies(): void {
+        this.geoSubscriptions.unsubscribe();
+        this.geoSubscriptions = new Subscription();
+        this.geoOptions.clear();
+        this.setupGeoGroups(this.formModel?.controls || []);
+    }
+
+    private setupGeoGroups(fields: IFieldControl<any>[]): void {
+        const geoFields = fields.filter((field) =>
+            !field.isArray && this.isGeoLocation(field)
+        );
+        const fieldsByName = new Map(
+            geoFields.map((field) => [field.name, field])
+        );
+        const related = new Map(
+            geoFields.map((field) => [field, new Set<IFieldControl<any>>()])
+        );
+
+        for (const field of geoFields) {
+            if (field.dependency?.kind !== 'geo') {
+                continue;
+            }
+            const parent = fieldsByName.get(field.dependency.on);
+            if (parent) {
+                related.get(field)?.add(parent);
+                related.get(parent)?.add(field);
+            }
+        }
+
+        const visited = new Set<IFieldControl<any>>();
+        for (const field of geoFields) {
+            if (visited.has(field)) {
+                continue;
+            }
+            const group: IFieldControl<any>[] = [];
+            const pending = [field];
+            visited.add(field);
+            while (pending.length) {
+                const current = pending.pop();
+                if (!current) {
+                    continue;
+                }
+                group.push(current);
+                for (const candidate of related.get(current) || []) {
+                    if (!visited.has(candidate)) {
+                        visited.add(candidate);
+                        pending.push(candidate);
+                    }
+                }
+            }
+            this.setupGeoGroup(group);
+        }
+
+        for (const field of fields) {
+            const nested = field.model?.controls;
+            if (Array.isArray(nested)) {
+                this.setupGeoGroups(nested);
+            }
+        }
+    }
+
+    private setupGeoGroup(fields: IFieldControl<any>[]): void {
+        const recompute = (changed: IFieldControl<any> | null) => {
+            const input: GeoResolverField[] = fields.map((field) => ({
+                name: field.name,
+                type: field.customType as GeoType,
+                value: field.control.value,
+                dependency: field.dependency
+            }));
+            const result = resolveGeoDependencies(input, changed?.name || null);
+            for (const field of fields) {
+                const value = result.values[field.name];
+                if (field.control.value !== value) {
+                    field.control.setValue(value, { emitEvent: false });
+                }
+                this.geoOptions.set(field.id, result.options[field.name]);
+                const errors = { ...(field.control.errors || {}) };
+                delete errors[field.id];
+                const error = result.errors[field.name];
+                if (error) {
+                    errors[field.id] = error;
+                }
+                field.control.setErrors(Object.keys(errors).length ? errors : null);
+            }
+            this.formModel.form.updateValueAndValidity({ emitEvent: false });
+            this.changeDetectorRef.markForCheck();
+        };
+
+        recompute(null);
+        for (const field of fields) {
+            this.geoSubscriptions.add(
+                field.control.valueChanges.subscribe(() => recompute(field))
+            );
+        }
+    }
+
     public isInput(item: IFieldControl<any>): boolean {
         return (
             (
                 item.type === 'string' ||
                 item.type === 'number' ||
                 item.type === 'integer' ||
-                item.customType === 'geo' ||
                 item.customType === 'sentinel'
             ) && (
                 item.format !== 'date' &&
@@ -385,6 +504,7 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
             && item.customType !== 'table'
+            && !this.isGeoLocation(item)
         );
     }
 
