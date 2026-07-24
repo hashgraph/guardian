@@ -1637,6 +1637,8 @@ __metadata:
   dependencies:
     "@types/glob": "npm:^8.1.0"
     "@types/node": "npm:24.13.3"
+    countries-list: "npm:3.4.1"
+    country-region-data: "npm:4.1.0"
     reflect-metadata: "npm:0.2.2"
     tslint: "npm:^6.1.3"
     typescript: "npm:^5.8.3"
@@ -6837,6 +6839,20 @@ __metadata:
     object-assign: "npm:^4"
     vary: "npm:^1"
   checksum: 10c0/ab2bc57b8af8ef8476682a59647f7c55c1a7d406b559ac06119aa1c5f70b96d35036864d197b24cf86e228e4547231088f1f94ca05061dbb14d89cc0bc9d4cab
+  languageName: node
+  linkType: hard
+
+"countries-list@npm:3.4.1":
+  version: 3.4.1
+  resolution: "countries-list@npm:3.4.1"
+  checksum: 10c0/6268028acfab31541538cfa442ca1b1994aeb8981eedf1f469c34a7dba41d6a746aefa11f9382f0d7fcc2189df9494ec3e0b4210fc524545f5bfc994b79f6e48
+  languageName: node
+  linkType: hard
+
+"country-region-data@npm:4.1.0":
+  version: 4.1.0
+  resolution: "country-region-data@npm:4.1.0"
+  checksum: 10c0/1c20dc6015ddc620de6f7a2b2410c063bb910e049cb9323961fb8fba29100def463dfc8e2ea1bfeb57a15231da44fec0757a02763a097a7b7269d53546a5a0ad
   languageName: node
   linkType: hard
 
