@@ -522,6 +522,33 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Transfer tokens FROM an Organization's Hedera wallet, gated by the caller's org-role
+     * permission TOKEN_TRANSFER (org-owner bypass).
+     * @param orgId
+     * @param tokenId
+     * @param body
+     * @param owner
+     */
+    public async transferOrgToken(
+        orgId: string,
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.TRANSFER_ORG_TOKEN, {
+            orgId,
+            tokenId,
+            body,
+            owner,
+        });
+    }
+
+    /**
      * Transfer token
      * @param tokenId
      * @param body

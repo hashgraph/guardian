@@ -74,6 +74,11 @@ export enum MessageAPI {
      * only: signing uses the SR's TOKEN_KYC_KEY, so this is a token-owner action.
      */
     GRANT_ORG_KYC_TOKEN = 'GRANT_ORG_KYC_TOKEN',
+    /**
+     * Transfer tokens FROM an Organization's Hedera wallet, signed with the org key.
+     * Gated by the caller's org-role permission TOKEN_TRANSFER, org-owner bypass.
+     */
+    TRANSFER_ORG_TOKEN = 'TRANSFER_ORG_TOKEN',
     GET_ASSOCIATED_TOKENS = 'GET_ASSOCIATED_TOKENS',
     GET_INFO_TOKEN = 'GET_INFO_TOKEN',
     GET_RELAYER_ACCOUNT_INFO = 'GET_RELAYER_ACCOUNT_INFO',

@@ -40,6 +40,7 @@ import {
     PolicyOrgAssignmentDTO,
     PublishOrganizationDTO,
     TokenInfoDTO,
+    TransferTokenDTO,
     UpdateMemberRoleDTO,
     UpdateOrgRoleDTO,
     UpdateOrganizationDTO,
@@ -67,6 +68,23 @@ function coerceBool(value: unknown): boolean | undefined {
     }
     return undefined;
 }
+
+/**
+ * Transfer-specific input errors raised by guardian-service's org transfer core. They are
+ * client mistakes, not server faults, so they map to 400 rather than falling through to
+ * InternalException. None of these fragments can be produced by the associate / dissociate /
+ * KYC routes that share `mapOrgTokenAccessError`.
+ */
+const ORG_TOKEN_BAD_REQUEST_MESSAGES: string[] = [
+    'cannot transfer a draft token',
+    'cannot transfer tokens to the sender account',
+    'amount is required for fungible token transfers',
+    'either serialnumbers or amount is required',
+    'serial numbers must be positive integers',
+    'insufficient nft serials',
+    'sync nft transfer is limited',
+    'unsupported token type',
+];
 
 /**
  * Organization REST surface.
@@ -854,13 +872,53 @@ export class OrganizationApi {
     }
 
     /**
-     * Maps `associateOrgToken` / `grantKycOrgToken` error messages to their appropriate HTTP
-     * status: membership / permission failures are 403, 'Organization not found' /
-     * 'Token not found' are 404, an organization without a Hedera account (not yet published)
-     * is 422, everything else falls through to the controller's standard InternalException
-     * handling.
+     * Transfer tokens from the organization's Hedera wallet to a target account.
+     * Gated by the org-role permission TOKEN_TRANSFER; the organization's owner always bypasses
+     * the check. The organization's account is both the payer and the sender, so it must hold
+     * HBAR for fees and be associated (and KYC-granted, for KYC-enabled tokens) with the token.
+     */
+    @Post('/:id/tokens/:tokenId/transfer')
+    @Auth(Permissions.TOKENS_TOKEN_EXECUTE)
+    @ApiOperation({
+        summary: 'Transfers tokens from the organization\'s Hedera wallet to a target account.',
+        description: 'Transfers fungible or non-fungible tokens FROM the organization\'s Hedera account to the specified target account, signed with the organization\'s key. Requires the caller to be an active member of the organization whose OrgRole carries TOKEN_TRANSFER, or the organization\'s owner (always allowed). For FT specify amount; for NFT specify serialNumbers, or amount to pick that many of the highest-numbered owned serials (max 10 per request).'
+    })
+    @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
+    @ApiParam({ name: 'tokenId', type: String, required: true, description: 'Token identifier', example: Examples.DB_ID_2 })
+    @ApiBody({ type: TransferTokenDTO })
+    @ApiOkResponse({ description: 'Successful operation.' })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @HttpCode(HttpStatus.OK)
+    async transferOrgToken(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Param('tokenId') tokenId: string,
+        @Body() body: TransferTokenDTO
+    ): Promise<any> {
+        try {
+            if (!user.did) {
+                throw new HttpException('User is not registered.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
+            const owner = new EntityOwner(user);
+            return await (new Guardians()).transferOrgToken(id, tokenId, body, owner);
+        } catch (error) {
+            await this.mapOrgTokenAccessError(error, user.id);
+        }
+    }
+
+    /**
+     * Maps `associateOrgToken` / `grantKycOrgToken` / `transferOrgToken` error messages to their
+     * appropriate HTTP status: an `HttpException` thrown by the handler itself (e.g. the
+     * unregistered-user guard above) passes through untouched; membership / permission failures
+     * are 403; 'Organization not found' / 'Token not found' are 404; an organization without a
+     * Hedera account (not yet published) is 422; transfer-specific input errors are 400
+     * (`ORG_TOKEN_BAD_REQUEST_MESSAGES`); everything else falls through to the controller's
+     * standard InternalException handling.
      */
     private async mapOrgTokenAccessError(error: any, userId: string): Promise<void> {
+        if (error instanceof HttpException) {
+            throw error;
+        }
         const message: string = String(error?.message || '').toLowerCase();
         if (message.includes('not an active member') ||
             message.includes('insufficient organization permissions') ||
@@ -875,6 +933,10 @@ export class OrganizationApi {
         if (message.includes('not linked to an hedera account')) {
             await this.logger.error(error, ['API_GATEWAY'], userId);
             throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        if (ORG_TOKEN_BAD_REQUEST_MESSAGES.some((fragment) => message.includes(fragment))) {
+            await this.logger.error(error, ['API_GATEWAY'], userId);
+            throw new HttpException(error.message, HttpStatus.BAD_REQUEST);
         }
         await InternalException(error, this.logger, userId);
     }
