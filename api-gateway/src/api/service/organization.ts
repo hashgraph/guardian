@@ -797,19 +797,84 @@ export class OrganizationApi {
     }
 
     /**
-     * Maps `associateOrgToken` error messages to their appropriate HTTP status: membership /
-     * permission failures are 403, 'Organization not found' / 'Token not found' are 404,
-     * everything else falls through to the controller's standard InternalException handling.
+     * Grant KYC for a token to the organization's Hedera wallet.
+     * SR org-owner only: KYC is signed with the SR's token KYC key, so it is a
+     * token-owner action rather than an org-wallet action (no org-role permission).
+     */
+    @Put('/:id/tokens/:tokenId/grant-kyc')
+    @Auth(Permissions.TOKENS_TOKEN_MANAGE)
+    @ApiOperation({
+        summary: 'Grant KYC for a token to the organization\'s Hedera wallet.',
+        description: 'Sets the KYC flag for the organization\'s Hedera account on the provided token. Requires the caller to be the organization\'s owner (Standard Registry) and the owner of the token\'s KYC key.'
+    })
+    @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
+    @ApiParam({ name: 'tokenId', type: String, required: true, description: 'Token identifier', example: Examples.DB_ID_2 })
+    @ApiOkResponse({ description: 'Successful operation.', type: TokenInfoDTO })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @HttpCode(HttpStatus.OK)
+    async grantKycOrgToken(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Param('tokenId') tokenId: string,
+    ): Promise<TokenInfoDTO> {
+        try {
+            const owner = new EntityOwner(user);
+            return await (new Guardians()).grantKycOrgToken(id, tokenId, true, owner);
+        } catch (error) {
+            await this.mapOrgTokenAccessError(error, user.id);
+        }
+    }
+
+    /**
+     * Revoke KYC for a token from the organization's Hedera wallet.
+     * SR org-owner only (see grant-kyc).
+     */
+    @Put('/:id/tokens/:tokenId/revoke-kyc')
+    @Auth(Permissions.TOKENS_TOKEN_MANAGE)
+    @ApiOperation({
+        summary: 'Revoke KYC for a token from the organization\'s Hedera wallet.',
+        description: 'Unsets the KYC flag for the organization\'s Hedera account on the provided token. Requires the caller to be the organization\'s owner (Standard Registry) and the owner of the token\'s KYC key.'
+    })
+    @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
+    @ApiParam({ name: 'tokenId', type: String, required: true, description: 'Token identifier', example: Examples.DB_ID_2 })
+    @ApiOkResponse({ description: 'Successful operation.', type: TokenInfoDTO })
+    @ApiInternalServerErrorResponse({ description: 'Internal server error.', type: InternalServerErrorDTO })
+    @HttpCode(HttpStatus.OK)
+    async revokeKycOrgToken(
+        @AuthUser() user: IAuthUser,
+        @Param('id') id: string,
+        @Param('tokenId') tokenId: string,
+    ): Promise<TokenInfoDTO> {
+        try {
+            const owner = new EntityOwner(user);
+            return await (new Guardians()).grantKycOrgToken(id, tokenId, false, owner);
+        } catch (error) {
+            await this.mapOrgTokenAccessError(error, user.id);
+        }
+    }
+
+    /**
+     * Maps `associateOrgToken` / `grantKycOrgToken` error messages to their appropriate HTTP
+     * status: membership / permission failures are 403, 'Organization not found' /
+     * 'Token not found' are 404, an organization without a Hedera account (not yet published)
+     * is 422, everything else falls through to the controller's standard InternalException
+     * handling.
      */
     private async mapOrgTokenAccessError(error: any, userId: string): Promise<void> {
         const message: string = String(error?.message || '').toLowerCase();
-        if (message.includes('not an active member') || message.includes('insufficient organization permissions')) {
+        if (message.includes('not an active member') ||
+            message.includes('insufficient organization permissions') ||
+            message.includes('insufficient permissions to manage kyc')) {
             await this.logger.error(error, ['API_GATEWAY'], userId);
             throw new HttpException(error.message, HttpStatus.FORBIDDEN);
         }
         if (message.includes('organization not found') || message.includes('token not found')) {
             await this.logger.error(error, ['API_GATEWAY'], userId);
             throw new HttpException(error.message, HttpStatus.NOT_FOUND);
+        }
+        if (message.includes('not linked to an hedera account')) {
+            await this.logger.error(error, ['API_GATEWAY'], userId);
+            throw new HttpException(error.message, HttpStatus.UNPROCESSABLE_ENTITY);
         }
         await InternalException(error, this.logger, userId);
     }

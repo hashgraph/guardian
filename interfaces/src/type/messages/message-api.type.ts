@@ -69,6 +69,11 @@ export enum MessageAPI {
      * caller's org-role permissions (TOKEN_ASSOCIATE/TOKEN_DISSOCIATE), org-owner bypass.
      */
     ASSOCIATE_ORG_TOKEN = 'ASSOCIATE_ORG_TOKEN',
+    /**
+     * Grant/revoke KYC for a token on an Organization's Hedera wallet. SR org-owner
+     * only: signing uses the SR's TOKEN_KYC_KEY, so this is a token-owner action.
+     */
+    GRANT_ORG_KYC_TOKEN = 'GRANT_ORG_KYC_TOKEN',
     GET_ASSOCIATED_TOKENS = 'GET_ASSOCIATED_TOKENS',
     GET_INFO_TOKEN = 'GET_INFO_TOKEN',
     GET_RELAYER_ACCOUNT_INFO = 'GET_RELAYER_ACCOUNT_INFO',

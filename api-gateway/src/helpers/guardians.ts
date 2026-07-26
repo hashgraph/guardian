@@ -500,6 +500,28 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Grant/revoke KYC for a token on an Organization's Hedera wallet.
+     * SR org-owner only (the KYC signature is the SR's TOKEN_KYC_KEY).
+     * @param orgId
+     * @param tokenId
+     * @param grant
+     * @param owner
+     */
+    public async grantKycOrgToken(
+        orgId: string,
+        tokenId: string,
+        grant: boolean,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GRANT_ORG_KYC_TOKEN, {
+            orgId,
+            tokenId,
+            grant,
+            owner,
+        });
+    }
+
+    /**
      * Transfer token
      * @param tokenId
      * @param body

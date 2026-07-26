@@ -606,6 +606,9 @@ async function associateOrgToken(
     if (permissionError) {
         throw new Error(permissionError);
     }
+    if (!org.hederaAccountId) {
+        throw new Error('Organization is not linked to an Hedera Account');
+    }
 
     return dispatchAssociateWorker(tokenId, associate, dataBaseServer, notifier, async () => {
         const key = await new Wallet().getKey(org.walletToken, KeyType.KEY, org.did);
@@ -614,21 +617,25 @@ async function associateOrgToken(
 }
 
 /**
- * Grant/revoke KYC
+ * Shared grant/revoke-KYC worker dispatch used by both the user (`grantKycToken`) and
+ * organization (`grantKycOrgToken`) cores so the notifier-step discipline, KYC-key
+ * resolution, worker payload shape, and confirmation lookup stay in one place
+ * (mirrors `dispatchAssociateWorker`).
  * @param tokenId
- * @param username
- * @param owner
  * @param grant
+ * @param owner - the caller; supplies the payer root account and the KYC key owner
  * @param dataBaseServer
  * @param notifier
+ * @param resolveTargetAccount - resolves the Hedera account id receiving the KYC flag and
+ * the user id to attribute the worker payload to. Runs inside the RESOLVE_ACCOUNT step.
  */
-async function grantKycToken(
-    tokenId: any,
-    username: string,
-    owner: IOwner,
+async function dispatchGrantKycWorker(
+    tokenId: string,
     grant: boolean,
+    owner: IOwner,
     dataBaseServer: DatabaseServer,
-    notifier: INotificationStep
+    notifier: INotificationStep,
+    resolveTargetAccount: () => Promise<{ accountId: string, payloadUserId: string }>
 ): Promise<any> {
     // <-- Steps
     const STEP_FIND_TOKEN = 'Find token data';
@@ -650,14 +657,7 @@ async function grantKycToken(
 
     notifier.startStep(STEP_RESOLVE_ACCOUNT);
     const users = new Users();
-    const user = await users.getUser(username, owner.id);
-    if (!user) {
-        throw new Error('User not found');
-    }
-    if (!user.hederaAccountId) {
-        throw new Error('User is not linked to an Hedera Account');
-    }
-
+    const { accountId, payloadUserId } = await resolveTargetAccount();
     const root = await users.getHederaAccount(owner.creator, owner.id);
     notifier.completeStep(STEP_RESOLVE_ACCOUNT);
 
@@ -674,17 +674,17 @@ async function grantKycToken(
         data: {
             hederaAccountId: root.hederaAccountId,
             hederaAccountKey: root.hederaAccountKey,
-            userHederaAccountId: user.hederaAccountId,
+            userHederaAccountId: accountId,
             token,
             kycKey,
             grant,
-            payload: { userId: user.id }
+            payload: { userId: payloadUserId }
         }
     }, {
         priority: 20,
         attempts: 0,
-        userId: user.id.toString(),
-        interception: user.id.toString(),
+        userId: payloadUserId.toString(),
+        interception: payloadUserId.toString(),
         registerCallback: true
     });
 
@@ -695,14 +695,14 @@ async function grantKycToken(
         data: {
             userID: root.hederaAccountId,
             userKey: root.hederaAccountKey,
-            hederaAccountId: user.hederaAccountId,
-            payload: { userId: user.id }
+            hederaAccountId: accountId,
+            payload: { userId: payloadUserId }
         }
     }, {
         priority: 20,
         attempts: 0,
-        userId: user.id.toString(),
-        interception: user.id.toString(),
+        userId: payloadUserId.toString(),
+        interception: payloadUserId.toString(),
         registerCallback: true
     });
 
@@ -711,6 +711,75 @@ async function grantKycToken(
 
     notifier.complete();
     return result;
+}
+
+/**
+ * Grant/revoke KYC
+ * @param tokenId
+ * @param username
+ * @param owner
+ * @param grant
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function grantKycToken(
+    tokenId: any,
+    username: string,
+    owner: IOwner,
+    grant: boolean,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<any> {
+    const users = new Users();
+    return dispatchGrantKycWorker(tokenId, grant, owner, dataBaseServer, notifier, async () => {
+        const user = await users.getUser(username, owner.id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        if (!user.hederaAccountId) {
+            throw new Error('User is not linked to an Hedera Account');
+        }
+        return { accountId: user.hederaAccountId, payloadUserId: user.id };
+    });
+}
+
+/**
+ * Grant/revoke KYC for a token on an Organization's Hedera wallet.
+ * SR org-owner only: the KYC signature comes from the SR's TOKEN_KYC_KEY (vault),
+ * so this is a token-owner action — org-role permissions do not apply here.
+ * The ownership check runs before any notifier step, so a rejected caller never
+ * triggers a Hedera-side effect (fail closed).
+ * @param orgId
+ * @param tokenId
+ * @param grant
+ * @param owner - the calling user, must be the organization's owner (SR)
+ * @param dataBaseServer
+ * @param notifier
+ */
+async function grantKycOrgToken(
+    orgId: string,
+    tokenId: string,
+    grant: boolean,
+    owner: IOwner,
+    dataBaseServer: DatabaseServer,
+    notifier: INotificationStep
+): Promise<any> {
+    const users = new Users();
+
+    const org = await users.getOrgHederaInfo(orgId, owner.id);
+    if (!org) {
+        throw new Error('Organization not found');
+    }
+    if (org.owner !== owner.creator) {
+        throw new Error('Insufficient permissions to manage KYC for this organization');
+    }
+    if (!org.hederaAccountId) {
+        throw new Error('Organization is not linked to an Hedera Account');
+    }
+
+    return dispatchGrantKycWorker(tokenId, grant, owner, dataBaseServer, notifier, async () => {
+        return { accountId: org.hederaAccountId, payloadUserId: owner.id };
+    });
 }
 
 /**
@@ -1117,6 +1186,23 @@ export async function tokenAPI(dataBaseServer: DatabaseServer, logger: PinoLogge
             try {
                 const { orgId, tokenId, associate, owner } = msg;
                 const result = await associateOrgToken(orgId, tokenId, associate, owner, dataBaseServer, NewNotifier.empty());
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error, 400);
+            }
+        })
+
+    ApiResponse(MessageAPI.GRANT_ORG_KYC_TOKEN,
+        async (msg: {
+            orgId: string,
+            tokenId: string,
+            grant: boolean,
+            owner: IOwner
+        }) => {
+            try {
+                const { orgId, tokenId, grant, owner } = msg;
+                const result = await grantKycOrgToken(orgId, tokenId, grant, owner, dataBaseServer, NewNotifier.empty());
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
