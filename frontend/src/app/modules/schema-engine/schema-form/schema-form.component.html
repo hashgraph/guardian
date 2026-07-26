@@ -118,9 +118,15 @@
                           optionLabel="label"
                           optionValue="value"
                           [showClear]="!item.required"
+                          [filter]="true"
+                          filterBy="label"
+                          [resetFilterOnHide]="true"
+                          [virtualScroll]="getGeoOptions(item).length > 50"
+                          [virtualScrollItemSize]="40"
+                          scrollHeight="400px"
                           appendTo="body"
                           placeholder="Not selected"
-                          panelStyleClass="guardian-dropdown-panel"
+                          panelStyleClass="guardian-dropdown-panel guardian-geo-dropdown-panel"
                         ></p-select>
                       </div>
                     }

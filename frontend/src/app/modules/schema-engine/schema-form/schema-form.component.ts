@@ -447,13 +447,6 @@ export class SchemaFormComponent implements OnInit {
             }
             this.setupGeoGroup(group);
         }
-
-        for (const field of fields) {
-            const nested = field.model?.controls;
-            if (Array.isArray(nested)) {
-                this.setupGeoGroups(nested);
-            }
-        }
     }
 
     private setupGeoGroup(fields: IFieldControl<any>[]): void {

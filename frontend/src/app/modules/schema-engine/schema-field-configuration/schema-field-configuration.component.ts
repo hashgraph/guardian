@@ -413,7 +413,9 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         if (typeof field === 'string') {
             return field;
         }
-        return field.controlTitle.value || field.controlKey.value;
+        return field.controlDescription.value
+            || field.controlTitle.value
+            || field.controlKey.value;
     }
 
     onTypeChange(event: any) {

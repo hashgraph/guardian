@@ -199,7 +199,7 @@ export function resolveGeoDependencies(
         }
     }
 
-    let populated = true;
+    let populated = !!(changed && changedValue);
     while (populated) {
         populated = false;
         for (const descendant of fields) {

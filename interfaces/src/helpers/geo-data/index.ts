@@ -51,8 +51,9 @@ export function getContinentOfCountry(country: string): string | null {
 }
 
 export function getCountriesOfContinent(continent: string): string[] {
-    return Object.keys(countries)
-        .filter((country) => getContinentOfCountry(country) === continent);
+    return Object.entries(countries)
+        .filter(([, country]) => country.continent === continent)
+        .map(([countryCode]) => countryCode);
 }
 
 export function getStatesOfCountry(country: string): GeoState[] {
