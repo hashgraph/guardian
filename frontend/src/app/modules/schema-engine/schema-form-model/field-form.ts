@@ -1,5 +1,5 @@
 import { UntypedFormGroup, UntypedFormControl, UntypedFormArray, ValidatorFn, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
-import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4 } from '@guardian/interfaces';
+import { Schema, SchemaCondition, SchemaConditionTarget, SchemaField, SchemaRuleValidateResult, GenerateUUIDv4, isGeoCustomType } from '@guardian/interfaces';
 import { fullFormats } from 'ajv-formats/dist/formats';
 import moment from 'moment';
 import { Subject, takeUntil } from 'rxjs';
@@ -636,9 +636,11 @@ export class FieldForm {
 
     private createControl(item: IFieldControl<any>, preset: any): UntypedFormControl | UntypedFormGroup | UntypedFormArray {
         const validators = this.getValidators(item);
-        const value = (preset === null || preset === undefined) ? undefined : preset;
+        const value = (preset === null || preset === undefined)
+            ? (isGeoCustomType(item.customType || '') ? null : undefined)
+            : preset;
         const control = new UntypedFormControl(value, validators);
-        if (value !== undefined) {
+        if (value !== undefined && value !== null) {
             control.markAsDirty();
         }
         return control;

@@ -1067,7 +1067,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public canDrawTable(item: IFieldControl<any>): boolean {
-        const customTypes = ['geo', 'table', 'sentinel'];
+        const customTypes = ['geo', 'table', 'sentinel', 'country', 'continent', 'state'];
 
         if (!item.isArray || !item.isRef || item.hidden) {
             return false;
