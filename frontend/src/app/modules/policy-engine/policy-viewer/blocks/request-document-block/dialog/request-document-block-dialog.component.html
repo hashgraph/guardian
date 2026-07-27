@@ -268,6 +268,13 @@
       </button>
     </div>
   }
+    <div class="action-buttons-spacer"></div>
+  @if (lastSavedAt) {
+    <div class="last-autosave">
+      {{ minutesAgo$ | async }}
+    </div>
+  }
+  @if (!loading) {
     <request-draft-file-actions
       [schema]="schema"
       [policyId]="policyId"
@@ -275,10 +282,6 @@
       [dataForm]="dataForm"
       (draftImported)="onDraftImported($event)">
     </request-draft-file-actions>
-  @if (lastSavedAt) {
-    <div class="last-autosave">
-      {{ minutesAgo$ | async }}
-    </div>
   }
   </div>
 </div>
