@@ -274,6 +274,7 @@
       {{ minutesAgo$ | async }}
     </div>
   }
+  @if (!loading) {
     <request-draft-file-actions
       [schema]="schema"
       [policyId]="policyId"
@@ -281,5 +282,6 @@
       [dataForm]="dataForm"
       (draftImported)="onDraftImported($event)">
     </request-draft-file-actions>
+  }
   </div>
 </div>
