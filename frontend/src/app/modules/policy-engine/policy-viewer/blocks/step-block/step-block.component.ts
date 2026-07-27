@@ -4,6 +4,17 @@ import { Subscription } from 'rxjs';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { IBlock } from '../../../structures';
+
+/**
+ * Payload returned by `getBlockData` for a step block: the child blocks of the
+ * step and which one of them is currently active.
+ */
+export interface IStepBlockData {
+    blocks?: IBlock<any>[];
+    index: number;
+    readonly?: boolean;
+}
 
 /**
  * Component for display block of 'interfaceStepBlock' types.
@@ -25,7 +36,7 @@ export class StepBlockComponent implements OnInit {
     // transition briefly reports no block; anything shorter than this is a gap
     // between two steps, not a real "not your turn" state.
     private static readonly EMPTY_COMMIT_DELAY_MS = 600;
-    private emptyTimer: any;
+    private emptyTimer?: ReturnType<typeof setTimeout>;
 
     get loading(): boolean {
         // Only spin until the first response has been processed. Previously this
@@ -58,12 +69,11 @@ export class StepBlockComponent implements OnInit {
     @Input('id') id!: string;
     @Input('policyId') policyId!: string;
     @Input('policyStatus') policyStatus!: string;
-    @Input('static') static!: any;
-    @Input('dryRun') dryRun!: any;
+    @Input('static') static!: IStepBlockData | null;
+    @Input('dryRun') dryRun!: boolean;
     @Input('savepointIds') savepointIds?: string[] | null = null;
 
-    blocks: any;
-    activeBlockId: any;
+    blocks: IBlock<any>[] | null = null;
     isActive = false;
     readonly: boolean = false;
     loaded: boolean = false;
@@ -99,26 +109,26 @@ export class StepBlockComponent implements OnInit {
         }
     }
 
-    loadData() {
+    loadData(): void {
         if (this.static) {
             this._onSuccess(this.static);
         } else {
             // Cancel any request still in flight so only the latest reload applies.
             this.dataSub?.unsubscribe();
             this.dataSub = this.policyEngineService
-                .getBlockData(this.id, this.policyId, this.savepointIds)
+                .getBlockData<IStepBlockData | null>(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
 
-    retry() {
+    retry(): void {
         clearTimeout(this.emptyTimer);
         this.loaded = false;
         this.hasError = false;
         this.loadData();
     }
 
-    private _onSuccess(data: any) {
+    private _onSuccess(data: IStepBlockData | null): void {
         this.hasError = false;
         this.setData(data);
     }
@@ -141,7 +151,7 @@ export class StepBlockComponent implements OnInit {
         }
     }
 
-    setData(data: any) {
+    setData(data: IStepBlockData | null): void {
         clearTimeout(this.emptyTimer);
         if (data) {
             this.readonly = !!data.readonly;

@@ -1,4 +1,9 @@
-import { StepBlockComponent } from './step-block.component';
+import { HttpErrorResponse } from '@angular/common/http';
+import { PolicyEngineService } from 'src/app/services/policy-engine.service';
+import { PolicyHelper } from 'src/app/services/policy-helper.service';
+import { WebSocketService } from 'src/app/services/web-socket.service';
+import { IBlock } from '../../../structures';
+import { IStepBlockData, StepBlockComponent } from './step-block.component';
 
 /**
  * A step transition makes the API briefly report that the current block is gone
@@ -7,23 +12,66 @@ import { StepBlockComponent } from './step-block.component';
  * you right now" message for a moment before it disappeared again. The component
  * now waits out that gap, so only a state that outlives it reaches the user.
  */
-describe('StepBlockComponent - empty result during a step transition', () => {
-    const DELAY: number = (StepBlockComponent as any).EMPTY_COMMIT_DELAY_MS;
 
-    let component: any;
+/** The surface these tests drive, including members that are private on the component. */
+interface ITestableStepBlock {
+    blocks: IBlock<any>[] | null;
+    isActive: boolean;
+    loaded: boolean;
+    hasError: boolean;
+    readonly loading: boolean;
+    readonly activeBlock: IBlock<any> | boolean;
+    readonly unavailable: boolean;
+    readonly errored: boolean;
+    setData(data: IStepBlockData | null): void;
+    loadData(): void;
+    retry(): void;
+    ngOnDestroy(): void;
+    _onError(error: Pick<HttpErrorResponse, 'status' | 'error'>): void;
+}
 
-    function blockData(tag: string) {
-        return { blocks: [{ id: tag }], index: 0, readonly: false };
-    }
+const DELAY: number = (StepBlockComponent as any).EMPTY_COMMIT_DELAY_MS;
 
-    /** Never emits, so a reload leaves the component in its current state. */
-    const idleService: any = {
-        getBlockData: () => ({ subscribe: () => ({ unsubscribe: () => {} }) })
+/** Never emits, so a reload leaves the component in its current state. */
+const idleService = {
+    getBlockData: () => ({ subscribe: () => ({ unsubscribe: () => undefined }) })
+} as unknown as PolicyEngineService;
+
+function block(tag: string): IBlock<any> {
+    return {
+        id: tag,
+        tag,
+        blockType: 'interfaceStepBlock',
+        defaultActive: true,
+        permissions: [],
+        stateMutation: {},
+        onlyOwnDocuments: false,
+        uiMetaData: {},
+        children: []
     };
+}
+
+function blockData(tag: string): IStepBlockData {
+    return { blocks: [block(tag)], index: 0, readonly: false };
+}
+
+function createComponent(
+    policyEngineService: PolicyEngineService = idleService
+): ITestableStepBlock {
+    const component = new StepBlockComponent(
+        policyEngineService,
+        {} as WebSocketService,
+        {} as PolicyHelper
+    );
+    return component as unknown as ITestableStepBlock;
+}
+
+describe('StepBlockComponent - empty result during a step transition', () => {
+    let component: ITestableStepBlock;
 
     beforeEach(() => {
         jasmine.clock().install();
-        component = new StepBlockComponent(idleService, null as any, null as any);
+        component = createComponent();
         // start from a healthy, rendered step
         component.setData(blockData('current'));
     });
@@ -33,7 +81,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
     });
 
     it('starts out rendering the current step', () => {
-        expect(component.activeBlock).toEqual({ id: 'current' });
+        expect(component.activeBlock).toEqual(block('current'));
         expect(component.unavailable).toBe(false);
         expect(component.errored).toBe(false);
         expect(component.loading).toBe(false);
@@ -45,14 +93,14 @@ describe('StepBlockComponent - empty result during a step transition', () => {
         jasmine.clock().tick(DELAY - 1);
 
         expect(component.unavailable).toBe(false);
-        expect(component.activeBlock).toEqual({ id: 'current' });
+        expect(component.activeBlock).toEqual(block('current'));
     });
 
     it('never shows the message when the next block arrives within the gap', () => {
         const seen: boolean[] = [];
 
         component.setData(null);
-        for (let t = 0; t < DELAY - 100; t += 50) {
+        for (let elapsed = 0; elapsed < DELAY - 100; elapsed += 50) {
             jasmine.clock().tick(50);
             seen.push(component.unavailable);
         }
@@ -63,7 +111,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
 
         // this is the regression: the message must never have been rendered at all
         expect(seen.some(Boolean)).toBe(false);
-        expect(component.activeBlock).toEqual({ id: 'next' });
+        expect(component.activeBlock).toEqual(block('next'));
     });
 
     it('shows the message once the empty state outlives the gap', () => {
@@ -78,7 +126,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
     });
 
     it('keeps the spinner up during the gap on a first load', () => {
-        const fresh: any = new StepBlockComponent(idleService, null as any, null as any);
+        const fresh = createComponent();
 
         fresh.setData(null);
         expect(fresh.loading).toBe(true);
@@ -108,7 +156,7 @@ describe('StepBlockComponent - empty result during a step transition', () => {
         jasmine.clock().tick(DELAY * 5);
 
         expect(component.unavailable).toBe(false);
-        expect(component.activeBlock).toEqual({ id: 'current' });
+        expect(component.activeBlock).toEqual(block('current'));
     });
 
     it('drops a pending empty state when the user retries', () => {
@@ -119,19 +167,17 @@ describe('StepBlockComponent - empty result during a step transition', () => {
         jasmine.clock().tick(DELAY * 5);
 
         expect(component.unavailable).toBe(false);
-        expect(component.activeBlock).toEqual({ id: 'current' });
+        expect(component.activeBlock).toEqual(block('current'));
     });
 });
 
 describe('StepBlockComponent - "Block Unavailable" vs a real failure', () => {
-    const DELAY: number = (StepBlockComponent as any).EMPTY_COMMIT_DELAY_MS;
-
-    let component: any;
+    let component: ITestableStepBlock;
 
     beforeEach(() => {
         jasmine.clock().install();
-        component = new StepBlockComponent(null as any, null as any, null as any);
-        component.setData({ blocks: [{ id: 'current' }], index: 0, readonly: false });
+        component = createComponent();
+        component.setData(blockData('current'));
     });
 
     afterEach(() => {
@@ -178,18 +224,18 @@ describe('StepBlockComponent - "Block Unavailable" vs a real failure', () => {
 
 describe('StepBlockComponent - overlapping reloads', () => {
     it('cancels an in-flight request when a newer reload starts', () => {
-        const subscriptions: any[] = [];
-        const policyEngineService: any = {
+        const subscriptions: Array<{ unsubscribe: jasmine.Spy }> = [];
+        const policyEngineService = {
             getBlockData: () => ({
                 subscribe: () => {
-                    const sub = { unsubscribe: jasmine.createSpy('unsubscribe') };
-                    subscriptions.push(sub);
-                    return sub;
+                    const subscription = { unsubscribe: jasmine.createSpy('unsubscribe') };
+                    subscriptions.push(subscription);
+                    return subscription;
                 }
             })
-        };
+        } as unknown as PolicyEngineService;
 
-        const component: any = new StepBlockComponent(policyEngineService, null as any, null as any);
+        const component = createComponent(policyEngineService);
 
         component.loadData();
         component.loadData();
