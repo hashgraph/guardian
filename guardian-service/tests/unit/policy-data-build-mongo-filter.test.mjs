@@ -101,29 +101,26 @@ describe('buildMongoFilter', () => {
     });
 
     describe('field whitelist & path normalisation', () => {
-        it('accepts a whitelisted system field', () => {
-            const q = buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('owner', 'eq', 'did:x'));
-            assert.deepEqual(q.owner, { $eq: 'did:x' });
-        });
-
-        it('accepts an option.* field', () => {
-            const q = buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('option.status', 'eq', 'APPROVED'));
-            assert.deepEqual(q['option.status'], { $eq: 'APPROVED' });
-        });
-
-        it('accepts a document.* field', () => {
-            const q = buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('document.credentialSubject.field', 'eq', 'v'));
-            assert.deepEqual(q['document.credentialSubject.field'], { $eq: 'v' });
-        });
-
-        it('normalises bracket array notation to dot notation', () => {
-            const q = buildMongoFilter(
-                POLICY_ID, SCHEMA_IRI,
-                f('document.credentialSubject[0].field3', 'eq', 'v')
-            );
-            assert.ok('document.credentialSubject.0.field3' in q);
-            assert.ok(!('document.credentialSubject[0].field3' in q));
-        });
+        const acceptCases = [
+            ['accepts a whitelisted system field',
+                f('owner', 'eq', 'did:x'),
+                (q) => assert.deepEqual(q.owner, { $eq: 'did:x' })],
+            ['accepts an option.* field',
+                f('option.status', 'eq', 'APPROVED'),
+                (q) => assert.deepEqual(q['option.status'], { $eq: 'APPROVED' })],
+            ['accepts a document.* field',
+                f('document.credentialSubject.field', 'eq', 'v'),
+                (q) => assert.deepEqual(q['document.credentialSubject.field'], { $eq: 'v' })],
+            ['normalises bracket array notation to dot notation',
+                f('document.credentialSubject[0].field3', 'eq', 'v'),
+                (q) => {
+                    assert.ok('document.credentialSubject.0.field3' in q);
+                    assert.ok(!('document.credentialSubject[0].field3' in q));
+                }],
+        ];
+        for (const [name, input, check] of acceptCases) {
+            it(name, () => check(buildMongoFilter(POLICY_ID, SCHEMA_IRI, input)));
+        }
 
         it('rejects an unknown field', () => {
             assert.throws(
@@ -134,44 +131,27 @@ describe('buildMongoFilter', () => {
     });
 
     describe('rejection paths', () => {
-        it('rejects an unknown operator', () => {
-            assert.throws(
-                () => buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('hederaStatus', 'like', 'x')),
-                /Unknown operator/
-            );
-        });
+        const rejectCases = [
+            ['rejects an unknown operator',
+                f('hederaStatus', 'like', 'x'), /Unknown operator/],
+            ['rejects a malformed entry missing "op"',
+                { hederaStatus: { value: 'x' } }, /must have shape/],
+            ['rejects a malformed entry missing "value"',
+                { hederaStatus: { op: 'eq' } }, /must have shape/],
+            ['rejects eq/ne with a non-scalar, non-null value',
+                f('hederaStatus', 'eq', { nested: true }), /requires a string, number, boolean, or null/],
+            ['rejects a range operator with a non-scalar value',
+                f('createDate', 'gt', { a: 1 }), /requires a string, number, or boolean/],
+        ];
+        for (const [name, input, expected] of rejectCases) {
+            it(name, () => {
+                assert.throws(() => buildMongoFilter(POLICY_ID, SCHEMA_IRI, input), expected);
+            });
+        }
 
-        it('rejects a malformed entry missing "op"', () => {
-            assert.throws(
-                () => buildMongoFilter(POLICY_ID, SCHEMA_IRI, { hederaStatus: { value: 'x' } }),
-                /must have shape/
-            );
-        });
-
-        it('rejects a malformed entry missing "value"', () => {
-            assert.throws(
-                () => buildMongoFilter(POLICY_ID, SCHEMA_IRI, { hederaStatus: { op: 'eq' } }),
-                /must have shape/
-            );
-        });
-
-        it('rejects eq/ne with a non-scalar, non-null value', () => {
-            assert.throws(
-                () => buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('hederaStatus', 'eq', { nested: true })),
-                /requires a string, number, boolean, or null/
-            );
-        });
-
-        it('allows eq with an explicit null value', () => {
+        it('allows eq with an explicit null value (positive control)', () => {
             const q = buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('hederaStatus', 'eq', null));
             assert.deepEqual(q.hederaStatus, { $eq: null });
-        });
-
-        it('rejects a range operator with a non-scalar value', () => {
-            assert.throws(
-                () => buildMongoFilter(POLICY_ID, SCHEMA_IRI, f('createDate', 'gt', { a: 1 })),
-                /requires a string, number, or boolean/
-            );
         });
     });
 });

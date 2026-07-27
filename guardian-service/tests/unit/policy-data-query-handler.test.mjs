@@ -59,33 +59,54 @@ describe('handlePolicyDataQuery', () => {
         else delete DatabaseServer.getSchemas;
     });
 
-    it('returns 404 when the policy is not found', async () => {
-        const r = await handlePolicyDataQuery(makeDb(null), makeMsg(), silentLogger);
-        assert.ok(r instanceof MessageError);
-        assert.equal(r.code, 404);
-        assert.match(r.error, /not found/);
-    });
-
-    it('returns 403 when the caller tenant does not own the policy', async () => {
-        const db = makeDb(makePolicy({ owner: 'did:sr:OTHER' }));
-        const r = await handlePolicyDataQuery(db, makeMsg({ policyOwner: SR_OWNER }), silentLogger);
-        assert.equal(r.code, 403);
-        assert.match(r.error, /Insufficient permissions/);
-    });
-
-    it('returns 403 when the policy is not published', async () => {
-        const db = makeDb(makePolicy({ status: PolicyStatus.DRAFT }));
-        const r = await handlePolicyDataQuery(db, makeMsg(), silentLogger);
-        assert.equal(r.code, 403);
-        assert.match(r.error, /not published/);
-    });
-
-    it('returns 404 when no schema matches the name under the policy topic', async () => {
-        DatabaseServer.getSchemas = async () => [];
-        const r = await handlePolicyDataQuery(makeDb(makePolicy()), makeMsg(), silentLogger);
-        assert.equal(r.code, 404);
-        assert.match(r.error, /Schema with name/);
-    });
+    const errorCases = [
+        {
+            name: 'returns 404 when the policy is not found',
+            db: () => makeDb(null),
+            msg: () => makeMsg(),
+            code: 404, error: /not found/,
+        },
+        {
+            name: 'returns 403 when the caller tenant does not own the policy',
+            db: () => makeDb(makePolicy({ owner: 'did:sr:OTHER' })),
+            msg: () => makeMsg({ policyOwner: SR_OWNER }),
+            code: 403, error: /Insufficient permissions/,
+        },
+        {
+            name: 'returns 403 when the policy is not published',
+            db: () => makeDb(makePolicy({ status: PolicyStatus.DRAFT })),
+            msg: () => makeMsg(),
+            code: 403, error: /not published/,
+        },
+        {
+            name: 'returns 404 when no schema matches the name under the policy topic',
+            db: () => makeDb(makePolicy()),
+            msg: () => makeMsg(),
+            getSchemas: async () => [],
+            code: 404, error: /Schema with name/,
+        },
+        {
+            name: 'returns 400 for an invalid filter operator',
+            db: () => makeDb(makePolicy()),
+            msg: () => makeMsg({ filters: { hederaStatus: { op: 'bogus', value: 'x' } } }),
+            code: 400, error: /Unknown operator/,
+        },
+        {
+            name: 'returns 400 for an unknown sort field',
+            db: () => makeDb(makePolicy()),
+            msg: () => makeMsg({ sortField: 'notAField' }),
+            code: 400, error: /Unknown sort field/,
+        },
+    ];
+    for (const tc of errorCases) {
+        it(tc.name, async () => {
+            if (tc.getSchemas) { DatabaseServer.getSchemas = tc.getSchemas; }
+            const r = await handlePolicyDataQuery(tc.db(), tc.msg(), silentLogger);
+            assert.ok(r instanceof MessageError);
+            assert.equal(r.code, tc.code);
+            assert.match(r.error, tc.error);
+        });
+    }
 
     it('bypasses the tenant check for a cross-organization auditor (falsy policyOwner)', async () => {
         // Policy owned by a different SR, but the auditor is not tenant-scoped.
@@ -93,21 +114,6 @@ describe('handlePolicyDataQuery', () => {
         const r = await handlePolicyDataQuery(db, makeMsg({ policyOwner: null }), silentLogger);
         assert.ok(r instanceof MessageResponse);
         assert.equal(r.code, 200);
-    });
-
-    it('returns 400 for an invalid filter operator', async () => {
-        const db = makeDb(makePolicy());
-        const msg = makeMsg({ filters: { hederaStatus: { op: 'bogus', value: 'x' } } });
-        const r = await handlePolicyDataQuery(db, msg, silentLogger);
-        assert.equal(r.code, 400);
-        assert.match(r.error, /Unknown operator/);
-    });
-
-    it('returns 400 for an unknown sort field', async () => {
-        const db = makeDb(makePolicy());
-        const r = await handlePolicyDataQuery(db, makeMsg({ sortField: 'notAField' }), silentLogger);
-        assert.equal(r.code, 400);
-        assert.match(r.error, /Unknown sort field/);
     });
 
     it('returns items, total and resolved pagination on the happy path', async () => {
