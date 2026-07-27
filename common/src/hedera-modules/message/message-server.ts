@@ -7,6 +7,7 @@ import { MessageMemo } from '../memo-mappings/message-memo.js';
 import { DatabaseServer } from '../../database-modules/index.js';
 import { TopicConfig } from '../topic.js';
 import { Message } from './message.js';
+import { MessageIpfsError } from './message-load.error.js';
 import { MessageType } from './message-type.js';
 import { MessageAction } from './message-action.js';
 import { VCMessage } from './vc-message.js';
@@ -836,11 +837,20 @@ export class MessageServer {
             } else {
                 let message = await MessageServer.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
-                    message = await MessageServer.loadIPFS(message, options.encryptKey, options);
+                    try {
+                        message = await MessageServer.loadIPFS(message, options.encryptKey, options);
+                    } catch (ipfsError) {
+                        // Distinguish unreachable IPFS from a missing message.
+                        new PinoLogger().error(ipfsError, ['GUARDIAN_SERVICE'], options?.userId);
+                        throw new MessageIpfsError(messageId);
+                    }
                 }
                 return message;
             }
         } catch (error) {
+            if (error instanceof MessageIpfsError) {
+                throw error;
+            }
             new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
             return null;
         }
@@ -870,11 +880,20 @@ export class MessageServer {
             } else {
                 let message = await this.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
-                    message = await this.loadIPFS(message, options);
+                    try {
+                        message = await this.loadIPFS(message, options);
+                    } catch (ipfsError) {
+                        // Distinguish unreachable IPFS from a missing message.
+                        new PinoLogger().error(ipfsError, ['GUARDIAN_SERVICE'], options?.userId);
+                        throw new MessageIpfsError(messageId);
+                    }
                 }
                 return message as T;
             }
         } catch (error) {
+            if (error instanceof MessageIpfsError) {
+                throw error;
+            }
             new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
             return null;
         }

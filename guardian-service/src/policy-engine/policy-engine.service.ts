@@ -2074,7 +2074,8 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    return new MessageError(error);
+                    // Forward error.code (422 for MessageIpfsError) instead of a generic 500.
+                    return new MessageError(error, error?.code);
                 }
             });
 
@@ -2156,7 +2157,8 @@ export class PolicyEngineService {
                         }
                     } catch (error) {
                         await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                        notifier.fail(error);
+                        // Forward error.code (422 for MessageIpfsError) instead of a generic 500.
+                        notifier.fail(error, error?.code);
                     }
                 });
                 return new MessageResponse(task);

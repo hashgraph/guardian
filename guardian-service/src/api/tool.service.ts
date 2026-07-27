@@ -1121,7 +1121,8 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (422 for MessageIpfsError) instead of a generic 500.
+                return new MessageError(error, error?.code);
             }
         });
 
@@ -1188,7 +1189,8 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     });
                 }
             }, async (error) => {
-                notifier.fail(error);
+                // Forward error.code (422 for MessageIpfsError) instead of a generic 500.
+                notifier.fail(error, (error as any)?.code);
             });
             return new MessageResponse(task);
         });

@@ -5,6 +5,7 @@ export { VCMessage } from './vc-message.js';
 export { MessageType } from './message-type.js';
 export { MessageAction } from './message-action.js';
 export { MessageServer } from './message-server.js';
+export { MessageIpfsError } from './message-load.error.js';
 export { PolicyMessage } from './policy-message.js';
 export { UrlType } from './url.interface.js';
 export { TopicMessage } from './topic-message.js';
