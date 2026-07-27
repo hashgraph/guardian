@@ -238,19 +238,19 @@ export class PolicyDataApi {
                 });
             }
 
-            const page = Math.max(1, parseInt(rawPage, 10) || 1);
-            const pageSize = Math.min(POLICY_DATA_MAX_PAGE_SIZE, Math.max(1, parseInt(rawPageSize, 10) || POLICY_DATA_DEFAULT_PAGE_SIZE));
+            const page = parseInt(rawPage, 10);
+            const pageSize = parseInt(rawPageSize, 10);
 
             const guardians = new Guardians();
             const owner = new EntityOwner(user);
-            let result: { items: unknown[]; total: number };
+            let result: { items: unknown[]; total: number; page: number; pageSize: number };
             try {
                 result = await guardians.getPolicyDataDocuments(
                     policyId.trim(),
                     schemaName.trim(),
                     filters,
-                    page,
-                    pageSize,
+                    Number.isNaN(page) ? undefined : page,
+                    Number.isNaN(pageSize) ? undefined : pageSize,
                     sort || undefined,
                     owner.owner,
                 );
@@ -263,12 +263,12 @@ export class PolicyDataApi {
                 throw svcError;
             }
 
-            const { items, total } = result;
-            const totalPages = Math.max(1, Math.ceil(total / pageSize));
+            const { items, total, page: resolvedPage, pageSize: resolvedPageSize } = result;
+            const totalPages = Math.max(1, Math.ceil(total / resolvedPageSize));
 
             const body: PolicyDataQueryResponseDTO = {
                 data: items as object[],
-                pagination: { page, pageSize, total, totalPages },
+                pagination: { page: resolvedPage, pageSize: resolvedPageSize, total, totalPages },
                 query: {
                     policyId: policyId.trim(),
                     schemaName: schemaName.trim(),

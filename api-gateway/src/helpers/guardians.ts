@@ -158,11 +158,11 @@ export class Guardians extends NatsService {
         policyId: string,
         schemaName: string,
         filters: Record<string, { op: string; value: unknown }> | undefined,
-        page: number,
-        pageSize: number,
+        page: number | undefined,
+        pageSize: number | undefined,
         sortField: string | undefined,
         policyOwner: string,
-    ): Promise<{ items: unknown[]; total: number }> {
+    ): Promise<{ items: unknown[]; total: number; page: number; pageSize: number }> {
         return await this.sendMessage(MessageAPI.GET_POLICY_DATA_DOCUMENTS, {
             policyId,
             schemaName,

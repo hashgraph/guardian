@@ -19,7 +19,7 @@ export class PolicyDataQueryInfoDTO {
     @ApiProperty({ type: String, example: Examples.DB_ID })
     policyId: string;
 
-    @ApiProperty({ type: String, example: '#MySchema' })
+    @ApiProperty({ type: String, example: 'MRV Data' })
     schemaName: string;
 
     @ApiPropertyOptional({

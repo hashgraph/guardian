@@ -56,7 +56,7 @@ interface FilterEntry {
  * Rejects any field not on the whitelist and any operator not in OPERATOR_MAP.
  * Throws a descriptive Error.
  */
-function buildMongoFilter(
+export function buildMongoFilter(
     policyId: string,
     schemaIri: string,
     rawFilters: Record<string, FilterEntry> | undefined,
@@ -160,102 +160,118 @@ function buildMongoFilter(
  *   policyOwner: string   — caller's Standard Registry tenant DID; enforces the tenant-ownership boundary for tenant-scoped roles (falsy for cross-organization roles like AUDITOR, which aren't tenant-restricted)
  * }
  */
+interface PolicyDataQueryMessage {
+    policyId: string;
+    schemaName: string;
+    filters?: Record<string, FilterEntry>;
+    page: number;
+    pageSize: number;
+    sortField?: string;
+    policyOwner: string;
+}
+
+/**
+ * Resolve, validate and execute a policy-data query.
+ * This service is the single source of truth
+ * for the bounds — and the resolved values are returned so callers don't re-derive them.
+ */
+export async function handlePolicyDataQuery(
+    dataBaseServer: DatabaseServer,
+    msg: PolicyDataQueryMessage,
+    logger: PinoLogger,
+): Promise<MessageResponse<{ items: unknown[]; total: number; page: number; pageSize: number }> | MessageError<unknown>> {
+    try {
+        if (!msg) {
+            return new MessageError('Invalid parameters.');
+        }
+
+        const { policyId, schemaName, filters, page, pageSize, sortField, policyOwner } = msg;
+
+        const policy = await dataBaseServer.getPolicy(policyId);
+        if (!policy) {
+            return new MessageError(`Policy "${policyId}" not found.`, 404);
+        }
+        // AUDITOR has no single tenant (EntityOwner leaves owner null for it) — a falsy policyOwner means the caller is a cross-organization auditor, not scoped to one tenant.
+        if (policyOwner && policy.owner !== policyOwner) {
+            return new MessageError(`Insufficient permissions to access the policy "${policyId}".`, 403);
+        }
+        if (policy.status !== PolicyStatus.PUBLISH) {
+            return new MessageError(
+                `Policy "${policyId}" is not published. Only published policy data is queryable.`,
+                403
+            );
+        }
+
+        // Fetch all matching schemas (bounded by version count for one name/topic);
+        // if multiple versions of the same schema name exist under the topic, the latest version is used.
+        const schemas = await DatabaseServer.getSchemas(
+            { name: schemaName, topicId: policy.topicId }
+        );
+        if (!schemas || schemas.length === 0) {
+            return new MessageError(
+                `Schema with name "${schemaName}" not found under policy topic "${policy.topicId}".`,
+                404
+            );
+        }
+        const schema = schemas.reduce((latest, candidate) =>
+            ModelHelper.versionCompare(candidate.version || '', latest.version || '') > 0 ? candidate : latest
+        );
+        const schemaIri = schema.iri;
+
+        let mongoFilter: Record<string, unknown>;
+        try {
+            mongoFilter = buildMongoFilter(policyId, schemaIri, filters);
+        } catch (validationError: any) {
+            return new MessageError(validationError.message, 400);
+        }
+
+        const sortDescending = !!sortField?.startsWith('-');
+        const normalisedSortField = sortField
+            ? normalisePath(sortDescending ? sortField.slice(1) : sortField)
+            : undefined;
+        if (normalisedSortField && !VC_DOCUMENT_SYSTEM_FIELDS.has(normalisedSortField)) {
+            return new MessageError(
+                `Unknown sort field: "${sortField}". Allowed fields: ${[...VC_DOCUMENT_SYSTEM_FIELDS].join(', ')}.`,
+                400
+            );
+        }
+
+        const _page = Math.max(1, page || 1);
+        const _pageSize = Math.min(POLICY_DATA_MAX_PAGE_SIZE, Math.max(1, pageSize || POLICY_DATA_DEFAULT_PAGE_SIZE));
+        const offset = (_page - 1) * _pageSize;
+
+        const sortOptions: Record<string, 'ASC' | 'DESC'> = {};
+        if (normalisedSortField) {
+            sortOptions[normalisedSortField] = sortDescending ? 'DESC' : 'ASC';
+        } else {
+            sortOptions['createDate'] = 'DESC';
+        }
+
+        const queryOptions: any = {
+            orderBy: sortOptions,
+            limit: _pageSize,
+            offset,
+        };
+
+        const [items, total] = await dataBaseServer.findAndCount(
+            VcDocument,
+            mongoFilter,
+            queryOptions
+        );
+
+        return new MessageResponse({ items, total, page: _page, pageSize: _pageSize });
+    } catch (error) {
+        await logger.error(error, ['GUARDIAN_SERVICE']);
+        return new MessageError(error);
+    }
+}
+
 export async function policyDataAPI(
     dataBaseServer: DatabaseServer,
     logger: PinoLogger,
 ): Promise<void> {
-    ApiResponse(MessageAPI.GET_POLICY_DATA_DOCUMENTS, async (msg: {
-        policyId: string;
-        schemaName: string;
-        filters?: Record<string, FilterEntry>;
-        page: number;
-        pageSize: number;
-        sortField?: string;
-        policyOwner: string;
-    }) => {
-        try {
-            if (!msg) {
-                return new MessageError('Invalid parameters.');
-            }
-
-            const { policyId, schemaName, filters, page, pageSize, sortField, policyOwner } = msg;
-
-            const policy = await dataBaseServer.getPolicy(policyId);
-            if (!policy) {
-                return new MessageError(`Policy "${policyId}" not found.`, 404);
-            }
-            // AUDITOR has no single tenant (EntityOwner leaves owner null for it) — a falsy policyOwner means the caller is a cross-organization auditor, not scoped to one tenant.
-            if (policyOwner && policy.owner !== policyOwner) {
-                return new MessageError(`Insufficient permissions to access the policy "${policyId}".`, 403);
-            }
-            if (policy.status !== PolicyStatus.PUBLISH) {
-                return new MessageError(
-                    `Policy "${policyId}" is not published. Only published policy data is queryable.`,
-                    403
-                );
-            }
-
-            // Fetch all matching schemas (bounded by version count for one name/topic);
-            // if multiple versions of the same schema name exist under the topic, the latest version is used.
-            const schemas = await DatabaseServer.getSchemas(
-                { name: schemaName, topicId: policy.topicId }
-            );
-            if (!schemas || schemas.length === 0) {
-                return new MessageError(
-                    `Schema with name "${schemaName}" not found under policy topic "${policy.topicId}".`,
-                    404
-                );
-            }
-            const schema = schemas.reduce((latest, candidate) =>
-                ModelHelper.versionCompare(candidate.version || '', latest.version || '') > 0 ? candidate : latest
-            );
-            const schemaIri = schema.iri;
-
-            let mongoFilter: Record<string, unknown>;
-            try {
-                mongoFilter = buildMongoFilter(policyId, schemaIri, filters);
-            } catch (validationError: any) {
-                return new MessageError(validationError.message, 400);
-            }
-
-            const sortDescending = !!sortField?.startsWith('-');
-            const normalisedSortField = sortField
-                ? normalisePath(sortDescending ? sortField.slice(1) : sortField)
-                : undefined;
-            if (normalisedSortField && !VC_DOCUMENT_SYSTEM_FIELDS.has(normalisedSortField)) {
-                return new MessageError(
-                    `Unknown sort field: "${sortField}". Allowed fields: ${[...VC_DOCUMENT_SYSTEM_FIELDS].join(', ')}.`,
-                    400
-                );
-            }
-
-            const _page = Math.max(1, page || 1);
-            const _pageSize = Math.min(POLICY_DATA_MAX_PAGE_SIZE, Math.max(1, pageSize || POLICY_DATA_DEFAULT_PAGE_SIZE));
-            const offset = (_page - 1) * _pageSize;
-
-            const sortOptions: Record<string, 'ASC' | 'DESC'> = {};
-            if (normalisedSortField) {
-                sortOptions[normalisedSortField] = sortDescending ? 'DESC' : 'ASC';
-            } else {
-                sortOptions['createDate'] = 'DESC';
-            }
-
-            const queryOptions: any = {
-                orderBy: sortOptions,
-                limit: _pageSize,
-                offset,
-            };
-
-            const [items, total] = await dataBaseServer.findAndCount(
-                VcDocument,
-                mongoFilter,
-                queryOptions
-            );
-
-            return new MessageResponse({ items, total });
-        } catch (error) {
-            await logger.error(error, ['GUARDIAN_SERVICE']);
-            return new MessageError(error);
-        }
-    });
+    ApiResponse(
+        MessageAPI.GET_POLICY_DATA_DOCUMENTS,
+        (msg: PolicyDataQueryMessage) => handlePolicyDataQuery(dataBaseServer, msg, logger)
+    );
 }
