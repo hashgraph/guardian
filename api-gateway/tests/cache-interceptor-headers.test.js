@@ -81,7 +81,7 @@ describe('CacheInterceptor header preservation (fastify)', () => {
         const sent = [];
         const req = { headers: {}, url: '/dl', locals: Buffer.from('zipbytes') };
         const res = {
-            getHeader: (k) => hdr[k],
+            getHeader: (k) => hdr[k.toLowerCase()],
             header: (k, v) => { applied[k] = v; },
             send: (x) => { sent.push(x); return 'SENT'; },
         };
