@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
@@ -14,7 +14,7 @@ import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-
     styleUrls: ['./schema-form-root.component.scss'],
     standalone: false
 })
-export class SchemaFormRootComponent implements OnInit {
+export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
@@ -27,6 +27,8 @@ export class SchemaFormRootComponent implements OnInit {
     private readonly MIN_WIDTH_PERCENT = 0;
     private readonly MAX_WIDTH_PERCENT = 75;
     private rafId: number | null = null;
+    private navScrollParent: HTMLElement | null = null;
+    private navResizeObserver: ResizeObserver | null = null;
 
     @ViewChild('childForm') private childForm?: SchemaFormComponent;
     @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
@@ -82,6 +84,48 @@ export class SchemaFormRootComponent implements OnInit {
     ngOnInit(): void {
     }
 
+    ngAfterViewInit(): void {
+        // Inside a dialog the navigation panel is sticky within a scrollable
+        // body whose height depends on the dialog size and the banners shown
+        // above the form. Sync its height to that container so it fills the
+        // available space instead of relying on a fixed viewport calculation.
+        if (this.comesFromDialog) {
+            setTimeout(() => this.setupNavHeightSync(), 0);
+        }
+    }
+
+    private setupNavHeightSync(): void {
+        if (!this.navContainerRef) {
+            return;
+        }
+        this.navScrollParent = this.getScrollParent(this.navContainerRef.nativeElement);
+        if (!this.navScrollParent) {
+            return;
+        }
+        this.navResizeObserver = new ResizeObserver(() => this.updateNavHeight());
+        this.navResizeObserver.observe(this.navScrollParent);
+        this.updateNavHeight();
+    }
+
+    private updateNavHeight(): void {
+        if (!this.navContainerRef || !this.navScrollParent) {
+            return;
+        }
+        this.navContainerRef.nativeElement.style.maxHeight = `${this.navScrollParent.clientHeight}px`;
+    }
+
+    private getScrollParent(element: HTMLElement): HTMLElement | null {
+        let node: HTMLElement | null = element.parentElement;
+        while (node) {
+            const overflowY = getComputedStyle(node).overflowY;
+            if (overflowY === 'auto' || overflowY === 'scroll') {
+                return node;
+            }
+            node = node.parentElement;
+        }
+        return null;
+    }
+
     ngOnChanges(changes: SimpleChanges) {
         this.loading = true;
         if (
@@ -109,6 +153,11 @@ export class SchemaFormRootComponent implements OnInit {
         }
         document.removeEventListener('mousemove', this.onResizeMove);
         document.removeEventListener('mouseup', this.onResizeEnd);
+
+        if (this.navResizeObserver) {
+            this.navResizeObserver.disconnect();
+            this.navResizeObserver = null;
+        }
 
         if (this.rafId) {
             cancelAnimationFrame(this.rafId);
