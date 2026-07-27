@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { FeatureFlagsService } from '../../services/feature-flags.service';
 import { SettingsService } from '../../services/settings.service';
+import { AuthService } from '../../services/auth.service';
+import { IUser, UserPermissions } from '@guardian/interfaces';
 
 const FEEDBACK_MAILTO_TEMPLATE =
     'mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request%20-%20{ORIGIN}' +
@@ -19,7 +21,19 @@ export class NextGenBannerComponent {
     constructor(
         private featureFlagsService: FeatureFlagsService,
         private settingsService: SettingsService,
+        private auth: AuthService,
     ) {
+        // Set the active role, then load the version only when the banner is enabled.
+        this.auth.sessions().subscribe((user: IUser | null) => {
+            const permissions = new UserPermissions(user);
+            this.featureFlagsService.setRole(user ? permissions.role : null);
+            if (this.enabled) {
+                this.loadVersion();
+            }
+        });
+    }
+
+    private loadVersion(): void {
         this.settingsService.getAbout().subscribe((about) => {
             this.guardianVersion = about?.version || '';
         });

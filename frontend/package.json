@@ -31,6 +31,7 @@
     "js-yaml": "^4.1.0",
     "leader-line": "^1.0.7",
     "mark.js": "^8.11.1",
+    "marked": "^12.0.2",
     "mathjs": "^15.2.0",
     "mathlive": "^0.103.0",
     "moment": "2.30.1",

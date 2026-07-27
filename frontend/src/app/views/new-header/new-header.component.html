@@ -104,6 +104,18 @@
 </ng-template>
 
 <ng-template #footerActions>
+  @if (firstSteps.isAvailable() && firstSteps.isEnabled()) {
+    <div
+      (click)="firstSteps.toggle()"
+      [class.current]="firstSteps.isOpen()"
+      class="item cursor-pointer"
+      >
+      <i class="pi pi-book item-icon"></i>
+      <div [class.hidden-logotype]="menuCollapsed && layout === 'vertical'" class="span-icon">
+        <span>Get set up</span>
+      </div>
+    </div>
+  }
   <div
     [class.current]="activeLink.startsWith('/notifications')"
     [pTooltip]="(menuCollapsed && layout === 'vertical') ? 'Notifications' : ''"
