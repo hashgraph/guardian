@@ -25572,6 +25572,7 @@ paths:
               - TOOL
               - STATISTIC
               - LABEL
+              - TEMPLATE
             type: string
         - name: policyId
           required: false
@@ -25878,6 +25879,7 @@ paths:
               - TOOL
               - STATISTIC
               - LABEL
+              - TEMPLATE
             type: string
       responses:
         '200':
@@ -54172,6 +54174,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
         documentURL:
           type: string
@@ -55923,6 +55926,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
       required:
         - id
@@ -55972,6 +55976,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
       required:
         - id
