@@ -5689,7 +5689,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.13.6, axios@npm:^1.15.0, axios@npm:^1.16.1, axios@npm:^1.6.0, axios@npm:^1.6.5":
+"axios@npm:^1.13.6, axios@npm:^1.16.0, axios@npm:^1.16.1, axios@npm:^1.6.0, axios@npm:^1.6.5":
   version: 1.18.1
   resolution: "axios@npm:1.18.1"
   dependencies:
@@ -8387,17 +8387,17 @@ __metadata:
   linkType: hard
 
 "fireblocks-sdk@npm:^5.39.0":
-  version: 5.39.0
-  resolution: "fireblocks-sdk@npm:5.39.0"
+  version: 5.39.1
+  resolution: "fireblocks-sdk@npm:5.39.1"
   dependencies:
     "@notabene/pii-sdk": "npm:^1.17.1"
-    axios: "npm:^1.15.0"
+    axios: "npm:^1.16.0"
     jsonwebtoken: "npm:^9.0.2"
     platform: "npm:^1.3.6"
     qs: "npm:^6.11.0"
     query-string: "npm:^7.1.3"
     uuid: "npm:^8.3.2"
-  checksum: 10c0/c1431762b9f868345653f3d19124e1f611eb362d3d3ff5102e8f5970cedc733d58a1e400a3e5d0480b4e4ea5fc719a37868cead0e386aae536bb239823781e3d
+  checksum: 10c0/d7068be592633729bba269346289557c486ab0de22cb01269333ad8a45cb1c93aba1d3c11ae5985ec42fee9cc8d45d4a4fa11c477fd445c0122cdcc2b96cf8cc
   languageName: node
   linkType: hard
 
