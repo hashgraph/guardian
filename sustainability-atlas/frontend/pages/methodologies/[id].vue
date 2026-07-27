@@ -2231,6 +2231,7 @@ function getResolvedField(fieldKey: string) {
                 v-if="linkedProjectsAvailableYears.length > 0"
                 v-model="linkedProjectsYearFilter"
                 :options="linkedProjectsYearOptions"
+                highlight-active
                 class="w-32"
               />
               <span class="text-xs text-muted-foreground">
@@ -2268,6 +2269,7 @@ function getResolvedField(fieldKey: string) {
                 <SingleSelect
                   v-model="linkedProjectsStageFilter"
                   :options="linkedProjectsStageOptions"
+                  highlight-active
                   class="w-36"
                 />
               </div>

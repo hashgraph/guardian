@@ -115,6 +115,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
                     v-if="availableYears.length > 0"
                     v-model="yearFilter"
                     :options="yearOptions"
+                    highlight-active
                     class="w-32"
                 />
                 <span class="text-xs text-muted-foreground">{{ badgeCount }} issuance(s)</span>

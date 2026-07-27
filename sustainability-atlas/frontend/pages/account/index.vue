@@ -397,6 +397,7 @@ const memberSince = computed(() =>
                     <SingleSelect
                         :model-value="actFilter"
                         :options="actFilterOptions"
+                        highlight-active
                         class="w-44"
                         @update:model-value="handleActFilterChange"
                     />

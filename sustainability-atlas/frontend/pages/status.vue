@@ -1128,6 +1128,7 @@ function formatTs(ts: number): string {
                             <SingleSelect
                                 v-model="topicStatusFilter"
                                 :options="topicStatusOptions"
+                                highlight-active
                                 class="w-36"
                             />
                             <button
@@ -1248,6 +1249,7 @@ function formatTs(ts: number): string {
                             <SingleSelect
                                 v-model="tokenTypeFilter"
                                 :options="tokenTypeOptions"
+                                highlight-active
                                 class="w-36"
                             />
                             <button
@@ -1397,6 +1399,7 @@ function formatTs(ts: number): string {
                             <SingleSelect
                                 v-model="guardianEventSubject"
                                 :options="guardianEventOptions"
+                                highlight-active
                                 class="w-44"
                             />
                         </div>
@@ -1514,12 +1517,14 @@ function formatTs(ts: number): string {
                         <SingleSelect
                             v-model="ipfsMessageTypeFilter"
                             :options="ipfsMessageTypeOptions"
+                            highlight-active
                             class="w-44"
                         />
                         <!-- Status filter -->
                         <SingleSelect
                             v-model="ipfsStatusFilter"
                             :options="ipfsStatusOptions"
+                            highlight-active
                             class="w-36"
                         />
                         <!-- Error category filter — only relevant when showing failed items -->
@@ -1527,6 +1532,7 @@ function formatTs(ts: number): string {
                             v-if="ipfsStatusFilter === 'failed' || ipfsStatusFilter === ''"
                             v-model="ipfsErrorCategoryFilter"
                             :options="ipfsErrorCategoryOptions"
+                            highlight-active
                             class="w-36"
                         />
                         <button
