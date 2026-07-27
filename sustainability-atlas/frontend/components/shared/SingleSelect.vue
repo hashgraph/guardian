@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { onClickOutside, useElementBounding } from '@vueuse/core';
 import { ChevronDown } from 'lucide-vue-next';
 
@@ -32,7 +32,20 @@ const rootRef = ref<HTMLElement | null>(null);
 
 onClickOutside(rootRef, () => { open.value = false; });
 
-const { top, left, width, height } = useElementBounding(rootRef);
+const { top, left, width, height, update } = useElementBounding(rootRef);
+
+function toggleOpen() {
+    open.value = !open.value;
+    if (open.value) {
+        update();
+    }
+}
+
+watch(open, (isOpen) => {
+    if (isOpen) {
+        update();
+    }
+});
 
 const popoverStyle = computed(() => {
     const topPos = top.value + height.value + 4;
@@ -67,7 +80,7 @@ function select(value: string) {
             :aria-expanded="open"
             class="inline-flex h-8 w-full items-center justify-between gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted focus:outline-none"
             :class="isActive ? 'border-primary/30 bg-primary/5 text-primary' : 'border-input text-muted-foreground bg-background'"
-            @click="open = !open"
+            @click="toggleOpen"
         >
             <span class="truncate text-left">{{ selectedLabel }}</span>
             <ChevronDown class="h-3 w-3 shrink-0 opacity-50" />
