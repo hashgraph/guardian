@@ -365,7 +365,7 @@ const filteredStats = computed(() => {
              opacity only, no width/height animation, so there's no CLS.
              Stat values use tabular-nums to avoid horizontal jitter when the
              filter switches and numbers change. -->
-        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 px-6 pb-6">
+        <div data-tour="dashboard-stats" class="grid grid-cols-2 lg:grid-cols-5 gap-4 px-6 pb-6">
             <template v-if="pending">
                 <Skeleton v-for="n in 5" :key="n" class="h-24 rounded-xl" />
             </template>

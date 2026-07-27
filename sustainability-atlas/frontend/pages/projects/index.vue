@@ -465,7 +465,7 @@ async function downloadProjects() {
       </FilterBar>
 
       <!-- Preset Templates -->
-      <div class="flex items-center gap-2 mt-3 flex-wrap">
+      <div data-tour="projects-quick-filters" class="flex items-center gap-2 mt-3 flex-wrap">
         <span class="flex items-center gap-1 text-[11px] font-medium text-muted-foreground">
           <Sparkles class="h-3 w-3" /> {{ $t("projects.quickFilters") }}
         </span>
@@ -518,7 +518,7 @@ async function downloadProjects() {
     </div>
 
     <div class="px-4 sm:px-6 pb-8">
-      <div class="rounded-xl border bg-card shadow-sm overflow-hidden">
+      <div data-tour="projects-table" class="rounded-xl border bg-card shadow-sm overflow-hidden">
         <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse text-sm table-auto min-w-[1200px]">
             <thead class="bg-muted/40 border-b">

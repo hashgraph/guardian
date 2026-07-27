@@ -106,6 +106,7 @@ async function submit() {
         <button
             v-if="!open"
             type="button"
+            data-tour="feedback-button"
             class="fixed bottom-5 right-5 z-[1100] inline-flex items-center gap-2 rounded-full bg-primary px-4 py-3 text-sm font-medium text-primary-foreground shadow-lg hover:bg-primary/90 transition-colors"
             :title="t('feedback.button')"
             @click="openForm"

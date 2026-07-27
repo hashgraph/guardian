@@ -369,6 +369,11 @@ const memberSince = computed(() =>
                 <ApiKeysManager />
             </div>
 
+            <!-- ── Product tour (full width) ──────────────────────────────────── -->
+            <div class="lg:col-span-3">
+                <ProductTourCard />
+            </div>
+
             <!-- ── Activity log (full width) ──────────────────────────────────── -->
             <section class="rounded-lg border bg-card p-6 lg:col-span-3">
                 <div class="mb-4 flex flex-wrap items-center justify-between gap-3">

@@ -1956,5 +1956,77 @@
                 "long": "Los administradores gestionan cosas que los usuarios individuales no pueden — indexación de registros, configuración de sincronización y gestión de otras cuentas — además de todo lo que puede hacer un Usuario del sistema."
             }
         }
+    },
+    "tour": {
+        "helpMenu": "Ayuda",
+        "helpAria": "Ayuda y recorrido guiado",
+        "launch": "Hacer el recorrido guiado",
+        "glossaryLink": "Glosario de términos",
+        "restartTitle": "Recorrido guiado",
+        "restartDescription": "Un recorrido de un minuto por el Atlas. Puedes repetirlo cuando quieras; también está disponible en el botón de ayuda de la barra superior.",
+        "restartButton": "Repetir el recorrido",
+        "next": "Siguiente",
+        "back": "Atrás",
+        "skip": "Omitir recorrido",
+        "finish": "Listo",
+        "progress": "Paso {current} de {total}",
+        "steps": {
+            "welcome": {
+                "title": "Te damos la bienvenida a Sustainability Atlas",
+                "body": "Este breve recorrido te muestra lo esencial en aproximadamente un minuto. Puedes omitirlo ahora y volver a iniciarlo cuando quieras desde el botón de Ayuda en la barra superior."
+            },
+            "nav": {
+                "title": "Todo empieza en la barra lateral",
+                "body": "Desde aquí puedes moverte entre Proyectos, Emisiones, Metodologías, Registros y el resto de las secciones. Quienes inician sesión ven dos entradas adicionales al final: Portafolio e Informes."
+            },
+            "search": {
+                "title": "Busca en todo el Atlas a la vez",
+                "body": "Escribe al menos dos caracteres para encontrar proyectos, metodologías, registros y créditos emitidos al mismo tiempo. Usa las flechas del teclado para recorrer los resultados y Enter para abrir uno."
+            },
+            "preferences": {
+                "title": "Elige tu idioma y tu red",
+                "body": "Consulta el Atlas en inglés o en español y cambia entre la red principal (mainnet) y la de pruebas (testnet) de Hedera. La red que elijas modifica todas las cifras en pantalla, así que revísala aquí si los números no son los esperados."
+            },
+            "dashboardStats": {
+                "title": "Tu resumen de un vistazo",
+                "body": "Estas tarjetas suman los registros, las metodologías, los proyectos y los créditos de carbono indexados actualmente. Haz clic en cualquiera de ellas para abrir la lista completa correspondiente."
+            },
+            "filters": {
+                "title": "Acota los datos",
+                "body": "La barra de filtros funciona igual en todas las páginas de listado. Combina tantos filtros como necesites — estado, país, registro, año de cosecha, ODS — y el número de resultados se actualiza sobre la marcha."
+            },
+            "table": {
+                "title": "Abre un registro o compara varios",
+                "body": "Haz clic en cualquier fila para abrir la ficha completa del proyecto. Marca las casillas de la primera columna para poner hasta cuatro proyectos uno junto a otro y pulsa Comparar."
+            },
+            "savedFilters": {
+                "title": "Guarda lo que más usas y exporta el resto",
+                "body": "Inicia sesión para guardar una combinación de filtros como filtro rápido y volver a aplicarla con un clic. Descargar datos exporta en un archivo CSV exactamente lo que muestra la tabla."
+            },
+            "portfolio": {
+                "title": "Crea tu propio panel",
+                "body": "El Portafolio es tu espacio privado. Añade a una lista de seguimiento los proyectos que te interesan y activa o desactiva cada widget. Todo lo que cambies se guarda en tu cuenta."
+            },
+            "notifications": {
+                "title": "Mantente al día de los cambios",
+                "body": "La campana te avisa cuando ocurre algo en un proyecto de tu lista de seguimiento. El indicador cuenta todo lo que aún no has leído."
+            },
+            "account": {
+                "title": "Tu cuenta y su configuración",
+                "body": "Desde aquí puedes gestionar tu perfil, cambiar tu contraseña, crear claves de API y revisar la actividad reciente de tu cuenta."
+            },
+            "signIn": {
+                "title": "Inicia sesión para aprovecharlo más",
+                "body": "Todo lo que has visto hasta ahora es público. Al crear una cuenta obtienes un Portafolio personal, filtros guardados, exportación de datos y notificaciones."
+            },
+            "feedback": {
+                "title": "Cuéntanos si algo no cuadra",
+                "body": "¿Has visto una cifra que parece incorrecta o una página que no se comporta como esperabas? Usa el botón de comentarios de la esquina. Puedes adjuntar una captura de lo que estás viendo y dejar tu correo si quieres que te respondamos."
+            },
+            "help": {
+                "title": "Eso es todo: la ayuda está aquí",
+                "body": "Puedes volver a iniciar este recorrido cuando quieras desde el botón de Ayuda, y abrir el Glosario desde ese mismo menú si algún término no te resulta familiar. Disfruta explorando el Atlas."
+            }
+        }
     }
 }

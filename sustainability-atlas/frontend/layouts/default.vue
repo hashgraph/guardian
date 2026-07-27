@@ -14,6 +14,7 @@ import { Toaster } from 'vue-sonner';
         </div>
         <FeedbackWidget />
         <AuthModals />
+        <ProductTour />
         <ForcePasswordChangeModal />
         <Toaster position="bottom-right" rich-colors />
     </div>

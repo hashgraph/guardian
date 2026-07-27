@@ -1,0 +1,137 @@
+# 10 — Reports and exports
+
+**Requires a signed-in account.**
+
+This chapter covers the Reports page: building a configured export of a dataset, generating an impact
+summary, and the disclosure guidance that explains how the figures should be interpreted. It ends
+with a short comparison against the **Download Data** buttons found on the list pages, because
+choosing between the two is the main question people have.
+
+## Before the tabs
+
+Three cards sit at the top of the page:
+
+- **Exports This Month** — how many exports you have run this calendar month.
+- **ESG Fields Available** — how many reporting fields you can choose from, split into required and
+  optional.
+- **Last Export** — when you last exported anything, or *No exports yet*.
+
+Below them, three tabs: **Export Data**, **Impact Summary** and **Disclosure Guidance**.
+
+## Export Data
+
+This tab builds an export in four steps, top to bottom. Each step narrows or shapes what the next one
+sees, so working downwards is the intended order.
+
+### 1. Choose a dataset and scope
+
+Pick the **Dataset** — **Issuances**, **Projects**, **Methodologies** or **Registries** — then apply
+whatever scope filters you need: **Registry**, **Project**, **Vintage** and a **Date Range**. The
+registry and project fields accept a partial name and suggest matches as you type.
+
+Each applied filter shows as **Applied** with a **Remove filter** control, and a running count tells
+you how many **records match scope**. That count is the number of rows your file will contain — watch
+it as you add filters, because it is the fastest way to notice that you have narrowed too far.
+
+### 2. Choose fields
+
+The **ESG Reporting Fields** picker lists every field available for the chosen dataset, arranged in
+groups:
+
+- **Project Identifiers** and **Identifiers** — names and reference values: project name, registry,
+  developer, country.
+- **ESG Climate Data** — the substantive figures: **Emissions Reduced** (tCO₂e sequestered or
+  avoided), **Reporting Year**, **Mitigation Type** (avoidance, removal or reduction), **Standard /
+  Methodology**, and **Vintage**.
+- **Traceability References** — the fields that let a third party check your figures independently:
+  **Transaction ID** (the Hedera on-chain reference), **Registry Record ID**, **Verification URL**
+  and **Source System ID**.
+
+Fields carry an **ESG** or **Traceability** pill so you can see at a glance which category a column
+belongs to, and hovering a traceability field explains exactly what it enables. **Select all** and
+**Deselect all** are there for when you want everything or want to start from nothing.
+
+If your export is going into a disclosure or an audit, include the traceability group. It is the
+difference between a number somebody has to trust and a number they can verify.
+
+### 3. Choose a format
+
+**CSV**, **Excel** or **PDF**. CSV and Excel are for further analysis; PDF is for circulating a fixed
+document.
+
+### 4. Check the preview and export
+
+The preview shows the shape of the file — the columns you selected against the records in scope —
+before you commit to generating it. Use it to catch an empty scope or a missing column while it is
+still cheap to fix.
+
+### Recent Exports
+
+Below the builder, a **Recent Exports** table lists what has already been produced: **Filename**,
+**Format**, **Records**, **Exported By** and **Date**. If you have not exported anything yet, it says
+so.
+
+## Impact Summary
+
+Where Export Data produces raw rows, Impact Summary produces a compiled narrative document.
+
+**Configure Summary** asks for an **Output Format**, then **Generate Impact Summary** builds it. The
+preview that appears is titled *Portfolio Impact Overview* and covers:
+
+- **Total Credits Issued** and **Total Retired** — where a retirement figure has been derived rather
+  than read directly from a record, it is labelled *inferred*, so you always know which is which;
+- **Active Projects** and **Countries**;
+- **SDG Contributions** and **Geographic Distribution** sections;
+- a footer confirming the network the data was verified on and when the summary was generated.
+
+If the selected network has no impact data yet, the preview says so instead of rendering an empty
+document.
+
+## Disclosure Guidance
+
+This tab does not generate anything. It explains what the numbers mean and how they line up with the
+frameworks you are likely to be reporting into.
+
+**Framework Alignment** lists the standards the exports and summaries are designed to fit: **GHG
+Protocol**, **CDP**, **TCFD**, **GRI** and **ISO 14064**, each with a one-line description of what it
+covers.
+
+**Definitions & Calculation Guidance** is a searchable set of entries, each tagged as a *Term*, a
+*Verification* note or a *Policy* note. They cover, among others:
+
+- **Emissions Reduced** — what the quantity means, with the formula used to arrive at it;
+- **Vintage Year** — the calendar year of the underlying reduction, as distinct from the issuance
+  year;
+- **Mitigation Type** — how avoidance and removal are distinguished;
+- **How to Verify** — how to use the traceability references in an export to check a record
+  independently;
+- **Pre-approved Import Sources** — the constraint on where external data may come from.
+
+Two closing sections explain **Verification Status** — that records are anchored on Hedera and can be
+checked on HashScan — and **Assurance & Independent Verification**, which is honest about what the
+figures are: compiled from on-chain data and issuer disclosures, with block item proofs available for
+independent cryptographic validation.
+
+If you are being asked "where did this number come from", this tab is the answer to give.
+
+## Reports exports vs. Download Data
+
+Both produce files. They are for different jobs.
+
+| | **Download Data** (list pages) | **Reports → Export Data** |
+|---|---|---|
+| Where it lives | The quick-filter row on Projects, Issuances, Methodologies and Registries. | The Reports page. |
+| What it exports | Exactly the current filtered, sorted view of that table. | A dataset you choose, scoped by registry, project, vintage and date range. |
+| Which columns | The table's own columns. You do not choose. | You choose, from the full ESG field catalogue including traceability references. |
+| Formats | CSV. | CSV, Excel or PDF. |
+| Preview | None — the file downloads immediately. | Yes, before you generate. |
+| History | None. | Listed in Recent Exports. |
+| Best for | "I want this table, now." | "I need a defensible file for a disclosure or an audit." |
+
+The rule of thumb: if you are looking at the right rows on screen and just want them in a spreadsheet,
+use **Download Data**. If somebody else is going to read the file and ask questions about it, build it
+here.
+
+---
+
+Next: [11 — Account and security](11-account-and-security.md) · Back to [index](README.md)

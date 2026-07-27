@@ -1964,5 +1964,77 @@
                 "long": "Administrators handle things individual users can't — registry indexing, sync configuration, and managing other accounts — on top of everything a System User can do."
             }
         }
+    },
+    "tour": {
+        "helpMenu": "Help",
+        "helpAria": "Help and product tour",
+        "launch": "Take the product tour",
+        "glossaryLink": "Glossary of terms",
+        "restartTitle": "Product tour",
+        "restartDescription": "A one-minute guided walk through the Atlas. Replay it any time — you can also start it from the help button in the top bar.",
+        "restartButton": "Replay the tour",
+        "next": "Next",
+        "back": "Back",
+        "skip": "Skip tour",
+        "finish": "Done",
+        "progress": "Step {current} of {total}",
+        "steps": {
+            "welcome": {
+                "title": "Welcome to Sustainability Atlas",
+                "body": "This short tour shows you around in about a minute. You can skip it now and start it again whenever you like from the Help button in the top bar."
+            },
+            "nav": {
+                "title": "Everything starts in the sidebar",
+                "body": "Move between Projects, Issuances, Methodologies, Registries and the rest from here. Signed-in users get two extra entries at the bottom: Portfolio and Reports."
+            },
+            "search": {
+                "title": "Search the whole Atlas at once",
+                "body": "Type at least two characters to find projects, methodologies, registries and issued credits together. Use the arrow keys to move through the results and Enter to open one."
+            },
+            "preferences": {
+                "title": "Pick your language and network",
+                "body": "Read the Atlas in English or Spanish, and switch between the Hedera mainnet and testnet. The network you choose changes every figure on screen, so check it here if the numbers look unexpected."
+            },
+            "dashboardStats": {
+                "title": "Your at-a-glance summary",
+                "body": "These cards total up the registries, methodologies, projects and carbon credits currently indexed. Click any card to open the full list behind it."
+            },
+            "filters": {
+                "title": "Narrow the data down",
+                "body": "The filter bar works the same way on every list page. Combine as many filters as you need — status, country, registry, vintage, SDGs — and the result count updates as you go."
+            },
+            "table": {
+                "title": "Open a record, or compare several",
+                "body": "Click any row to open the full project record. Tick the boxes in the first column to line up to four projects side by side, then press Compare."
+            },
+            "savedFilters": {
+                "title": "Save what you use often, export the rest",
+                "body": "Sign in to store a filter combination as a quick filter you can reapply in one click. Download Data exports exactly what the table is showing as a CSV file."
+            },
+            "portfolio": {
+                "title": "Build your own dashboard",
+                "body": "Portfolio is your private space. Add the projects you care about to a watchlist and switch individual widgets on or off. Everything you change is saved to your account."
+            },
+            "notifications": {
+                "title": "Stay on top of changes",
+                "body": "The bell tells you when something happens to a project on your watchlist. The badge counts anything you have not read yet."
+            },
+            "account": {
+                "title": "Your account and settings",
+                "body": "Manage your profile, change your password, create API keys and review your recent account activity from here."
+            },
+            "signIn": {
+                "title": "Sign in to get more out of it",
+                "body": "Everything you have seen so far is public. Creating an account adds a personal Portfolio, saved filters, data exports and notifications."
+            },
+            "feedback": {
+                "title": "Tell us when something is off",
+                "body": "Spotted a figure that looks wrong, or a page that does not behave? Use the feedback button in the corner. You can attach a screenshot of what you are looking at, and leave your email if you would like a reply."
+            },
+            "help": {
+                "title": "That is it — help lives here",
+                "body": "Start this tour again any time from the Help button, and open the Glossary from the same menu if a term is unfamiliar. Enjoy exploring the Atlas."
+            }
+        }
     }
 }

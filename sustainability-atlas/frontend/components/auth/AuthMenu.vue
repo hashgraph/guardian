@@ -42,6 +42,7 @@ async function onLogout() {
     <!-- Guest: Sign In button -->
     <button
         v-if="!isAuthenticated"
+        data-tour="auth-menu"
         class="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         @click="openSignIn()"
     >
@@ -50,7 +51,7 @@ async function onLogout() {
     </button>
 
     <!-- Authenticated: user dropdown -->
-    <div v-else ref="menuRef" class="relative flex items-center">
+    <div v-else ref="menuRef" data-tour="auth-menu" class="relative flex items-center">
         <button
             class="inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
             :class="open ? 'bg-muted text-foreground' : 'text-muted-foreground'"

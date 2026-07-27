@@ -61,7 +61,7 @@ function onLoadMore() {
 </script>
 
 <template>
-    <div v-if="isAuthenticated" class="relative flex items-center">
+    <div v-if="isAuthenticated" data-tour="notification-bell" class="relative flex items-center">
         <button
             class="relative inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted"
             :class="open ? 'bg-muted text-foreground' : ''"

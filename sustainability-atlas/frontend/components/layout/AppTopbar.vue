@@ -362,7 +362,7 @@ function onSearchKeydown(e: KeyboardEvent) {
 
         <!-- Center: search with autocomplete -->
         <div class="flex-1 flex justify-center">
-            <div ref="searchRef" class="relative w-full max-w-md">
+            <div ref="searchRef" data-tour="global-search" class="relative w-full max-w-md">
                 <Search class="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
                 <input
                     v-model="searchQuery"
@@ -418,7 +418,7 @@ function onSearchKeydown(e: KeyboardEvent) {
         </div>
 
         <!-- Right: language selector -->
-        <div ref="languageRef" class="relative flex items-center">
+        <div ref="languageRef" data-tour="language-selector" class="relative flex items-center">
             <button
                 class="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
                 :class="languageDropdownOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'"
@@ -463,7 +463,7 @@ function onSearchKeydown(e: KeyboardEvent) {
         </div>
 
         <!-- Right: network selector -->
-        <div ref="networkRef" class="relative flex items-center">
+        <div ref="networkRef" data-tour="network-selector" class="relative flex items-center">
             <button
                 class="inline-flex items-center gap-2 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors hover:bg-muted"
                 :class="networkDropdownOpen ? 'bg-muted text-foreground' : 'text-muted-foreground'"
@@ -512,6 +512,9 @@ function onSearchKeydown(e: KeyboardEvent) {
                 </div>
             </Transition>
         </div>
+
+        <!-- Right: help / product tour -->
+        <HelpMenu />
 
         <!-- Right: watchlist notifications bell (self-gates on auth, renders nothing for guests) -->
         <NotificationBell />

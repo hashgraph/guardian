@@ -4,6 +4,8 @@ import type { SignUpPayload } from '~/composables/useAuth';
 
 const { modal, closeModal, openSignIn, openSignUp, login, signup, forgotPassword, passwordPolicy, fetchPasswordPolicy } = useAuth();
 const { t } = useI18n();
+// place to offer the first-login guided tour.
+const { maybeAutoStart } = useProductTour();
 
 // Load the server's password policy once so the live rules match what the API enforces.
 onMounted(() => { void fetchPasswordPolicy(); });
@@ -180,6 +182,7 @@ async function onSignIn() {
     try {
         await login(email.value.trim(), password.value);
         close();
+        maybeAutoStart();
     } catch (err) {
         error.value = apiError(err);
     } finally {

@@ -244,7 +244,7 @@ if (import.meta.client) {
 </script>
 
 <template>
-    <div class="space-y-2">
+    <div data-tour="filter-bar" class="space-y-2">
     <div class="flex flex-wrap items-center gap-2">
         <!-- Text search -->
         <div v-if="!hideSearch" class="relative">

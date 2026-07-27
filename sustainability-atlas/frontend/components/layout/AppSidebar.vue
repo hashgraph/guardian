@@ -100,11 +100,12 @@ const authedItems = computed(() => [
              feedback without animating layout properties. Title-attribute
              tooltip activates only when collapsed so icon-only items remain
              discoverable. -->
-        <nav class="flex-1 space-y-0.5 px-2 pt-1 overflow-y-auto overflow-x-hidden">
+        <nav data-tour="sidebar-nav" class="flex-1 space-y-0.5 px-2 pt-1 overflow-y-auto overflow-x-hidden">
             <AppLink
                 v-for="item in navItems"
                 :key="item.to"
                 :to="item.to"
+                :data-tour="'nav-' + (item.to === '/' ? 'dashboard' : item.to.slice(1))"
                 :title="collapsed ? item.label : undefined"
                 class="group relative flex items-center gap-3 rounded-lg px-3 py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:scale-y-0 before:rounded-r-full before:bg-primary before:transition-transform before:duration-200 before:ease-out"
                 active-class="!bg-primary/8 !text-primary !font-semibold before:!scale-y-100"
@@ -134,6 +135,7 @@ const authedItems = computed(() => [
                     v-for="item in authedItems"
                     :key="item.to"
                     :to="item.to"
+                    :data-tour="'nav-' + (item.to === '/' ? 'dashboard' : item.to.slice(1))"
                     :title="collapsed ? item.label : undefined"
                     class="group relative flex items-center gap-3 rounded-lg px-3 py-[7px] text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-muted/70 hover:text-foreground before:absolute before:left-0 before:top-1/2 before:h-5 before:w-[3px] before:-translate-y-1/2 before:scale-y-0 before:rounded-r-full before:bg-primary before:transition-transform before:duration-200 before:ease-out"
                     active-class="!bg-primary/8 !text-primary !font-semibold before:!scale-y-100"
