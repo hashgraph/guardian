@@ -14,6 +14,7 @@ import {
     IRetireRequest,
     ISchema,
     ISchemaDeletionPreview,
+    ISchemaTemplate,
     IToken,
     ITokenInfo,
     IUser,
@@ -2374,6 +2375,61 @@ export class Guardians extends NatsService {
         owner: IOwner
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.UPDATE_TOOL, { id, tool, owner });
+    }
+
+    /**
+     * Create schema template
+     * @param template
+     * @param owner
+     * @returns template
+     */
+    public async createSchemaTemplate(template: ISchemaTemplate, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_TEMPLATE, { template, owner });
+    }
+
+    /**
+     * Return schema templates
+     * @param filters
+     * @param owner
+     * @returns schema templates
+     */
+    public async getSchemaTemplates(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<ISchemaTemplate>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TEMPLATES, { filters, owner });
+    }
+
+    /**
+     * Return schema template by id
+     * @param id
+     * @param owner
+     * @returns schema template
+     */
+    public async getSchemaTemplateById(id: string, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TEMPLATE, { id, owner });
+    }
+
+    /**
+     * Update schema template
+     * @param id
+     * @param template
+     * @param owner
+     * @returns template
+     */
+    public async updateSchemaTemplate(
+        id: string,
+        template: ISchemaTemplate,
+        owner: IOwner
+    ): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.UPDATE_SCHEMA_TEMPLATE, { id, template, owner });
+    }
+
+    /**
+     * Delete schema template
+     * @param id
+     * @param owner
+     * @returns operation success
+     */
+    public async deleteSchemaTemplate(id: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA_TEMPLATE, { id, owner });
     }
 
     /**
