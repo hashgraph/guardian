@@ -16,6 +16,16 @@ import { HttpErrorResponse } from '@angular/common/http';
 })
 export class StepBlockComponent implements OnInit {
     private socket: Subscription | null;
+    // In-flight block request. A step transition emits a burst of websocket
+    // updates, each triggering a reload; we keep only the latest so a stale
+    // intermediate response can't overwrite the UI and flash the "unavailable"
+    // message before the real block arrives.
+    private dataSub: Subscription | null = null;
+    // How long an "empty" result must persist before it is applied. A step
+    // transition briefly reports no block; anything shorter than this is a gap
+    // between two steps, not a real "not your turn" state.
+    private static readonly EMPTY_COMMIT_DELAY_MS = 600;
+    private emptyTimer: any;
 
     get loading(): boolean {
         // Only spin until the first response has been processed. Previously this
@@ -79,6 +89,8 @@ export class StepBlockComponent implements OnInit {
         if (this.socket) {
             this.socket.unsubscribe();
         }
+        this.dataSub?.unsubscribe();
+        clearTimeout(this.emptyTimer);
     }
 
     onUpdate(blocks: string[]): void {
@@ -91,13 +103,16 @@ export class StepBlockComponent implements OnInit {
         if (this.static) {
             this._onSuccess(this.static);
         } else {
-            this.policyEngineService
+            // Cancel any request still in flight so only the latest reload applies.
+            this.dataSub?.unsubscribe();
+            this.dataSub = this.policyEngineService
                 .getBlockData(this.id, this.policyId, this.savepointIds)
                 .subscribe(this._onSuccess.bind(this), this._onError.bind(this));
         }
     }
 
     retry() {
+        clearTimeout(this.emptyTimer);
         this.loaded = false;
         this.hasError = false;
         this.loadData();
@@ -110,12 +125,15 @@ export class StepBlockComponent implements OnInit {
 
     private _onError(e: HttpErrorResponse) {
         console.error(e.error);
-        // 503 means the block is no longer available to the user (the workflow
-        // advanced past it, or a role/state gate closed it) - clear to the
-        // "not your turn" unavailable state. Any other status is a genuine
-        // failure: stop the spinner but show a distinct error state so a real
-        // outage isn't disguised as a normal workflow message.
-        if (e.status === 503) {
+        // "Block Unavailable" means the block is no longer available to the user (the
+        // workflow advanced past it, or a role/state gate closed it) - clear to the
+        // "not your turn" unavailable state. policy-service raises it as 503, but the
+        // api-gateway remaps block-data errors to 422, so handle both. Any other
+        // status is a genuine failure: stop the spinner but show a distinct error
+        // state so a real outage isn't disguised as a normal workflow message.
+        const blockUnavailable = e.status === 503 ||
+            (e.status === 422 && e.error?.message === 'Block Unavailable');
+        if (blockUnavailable) {
             this._onSuccess(null);
         } else {
             this.hasError = true;
@@ -124,18 +142,27 @@ export class StepBlockComponent implements OnInit {
     }
 
     setData(data: any) {
+        clearTimeout(this.emptyTimer);
         if (data) {
             this.readonly = !!data.readonly;
             this.isActive = true;
             this.blocks = data.blocks || [];
             this.index = data.index;
+            // A response has been processed - stop the spinner.
+            this.loaded = true;
         } else {
-            this.blocks = null;
-            this.index = 0;
-            this.isActive = false;
+            // Mid-transition the API briefly reports no block before the follow-up
+            // websocket update delivers the next one. Apply the empty state only if
+            // it outlives that gap, otherwise the "not available" message flashes up
+            // for a moment and then disappears once the real block arrives. A newer
+            // response cancels the pending commit via the clearTimeout above.
+            this.emptyTimer = setTimeout(() => {
+                this.blocks = null;
+                this.index = 0;
+                this.isActive = false;
+                // No active block to render - `unavailable` now shows the message.
+                this.loaded = true;
+            }, StepBlockComponent.EMPTY_COMMIT_DELAY_MS);
         }
-        // A response has been processed - stop the spinner. If there is no active
-        // block to render, `unavailable` takes over and shows a friendly message.
-        this.loaded = true;
     }
 }
