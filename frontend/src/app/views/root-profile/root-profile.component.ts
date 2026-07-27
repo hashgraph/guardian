@@ -868,11 +868,7 @@ export class RootProfileComponent implements OnInit, OnDestroy {
 
     refreshOtpStatus() {
         this.auth.getOtpStatus().subscribe((result) => {
-            const enabled = result.enabled;
-            // Force p-toggleswitch to re-sync even when the value didn't change
-            this.is2faEnabled = !enabled;
-            this.cdRef.detectChanges();
-            this.is2faEnabled = enabled;
+            this.is2faEnabled = result.enabled;
         });
     }
 

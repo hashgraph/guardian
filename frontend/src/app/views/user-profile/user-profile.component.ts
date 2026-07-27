@@ -1276,10 +1276,7 @@ export class UserProfileComponent implements OnInit {
 
     refreshOtpStatus() {
         this.auth.getOtpStatus().subscribe((result) => {
-            const enabled = result.enabled;
-            this.is2faEnabled = !enabled;
-            this.cdRef.detectChanges();
-            this.is2faEnabled = enabled;
+            this.is2faEnabled = result.enabled;
         });
     }
 

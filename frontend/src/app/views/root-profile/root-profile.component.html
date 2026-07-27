@@ -221,7 +221,7 @@
                 <span class="config-row-desc">Require an authenticator code at sign-in</span>
               </div>
               <p-toggleswitch
-                [ngModel]="is2faEnabled"
+                [(ngModel)]="is2faEnabled"
                 (onChange)="onToggle2fa($event.checked)">
               </p-toggleswitch>
             </div>

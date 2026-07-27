@@ -53,11 +53,10 @@ export class FirstStepsService {
     }
 
     public setOpen(value: boolean): void {
-        if (this.role === null || value === this.open$.value) {
-            return;
+        if (this.role !== null && value !== this.open$.value) {
+            this.open$.next(value);
+            this.persistOpen();
         }
-        this.open$.next(value);
-        this.persistOpen();
         this.applyPanelClass();
     }
 
