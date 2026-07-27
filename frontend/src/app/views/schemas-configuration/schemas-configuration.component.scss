@@ -1561,7 +1561,7 @@
 
 /* ── Right panel (field properties) ── */
 .sc-right-panel {
-    width: 280px;
+    width: 340px;
     background: #fff;
     border-left: 1px solid rgba(0, 0, 0, 0.1);
     display: flex;
@@ -3051,4 +3051,139 @@
     font-size: 10px;
     color: var(--text-color-secondary, #888780);
     margin-left: auto;
+}
+
+// ── Values section (Default / Suggested / Test value) ────────────────────────
+.sc-fv-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+.sc-fv-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.sc-fv-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text-color, #2c2c2a);
+}
+
+.sc-fv-label-text {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    i {
+        font-size: 12px;
+        color: var(--text-color-secondary, #888780);
+    }
+}
+
+.sc-fv-clear {
+    font-size: 10px;
+    color: var(--text-color-secondary, #888780);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    font-family: inherit;
+    line-height: 1;
+
+    &:hover {
+        color: #c0392b;
+    }
+}
+
+.sc-fv-input {
+    width: 100%;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: var(--surface-ground, #f8f8f7);
+    font-size: 12px;
+    color: var(--text-color, #2c2c2a);
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
+
+    &:focus {
+        border-color: var(--primary-color, #1d9e75);
+        background: #fff;
+    }
+
+    &[type='date'],
+    &[type='time'],
+    &[type='datetime-local'] {
+        padding-right: 6px;
+    }
+}
+
+.sc-fv-select {
+    width: 100%;
+    padding: 5px 9px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: var(--surface-ground, #f8f8f7);
+    font-size: 12px;
+    color: var(--text-color, #2c2c2a);
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+
+    &:focus {
+        border-color: var(--primary-color, #1d9e75);
+    }
+}
+
+.sc-fv-yesno {
+    display: flex;
+    gap: 5px;
+}
+
+.sc-fv-yesno-btn {
+    flex: 1;
+    padding: 5px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    background: var(--surface-ground, #f8f8f7);
+    font-size: 12px;
+    color: var(--text-color-secondary, #5f5e5a);
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s;
+
+    &.active {
+        background: var(--primary-color, #1d9e75);
+        border-color: var(--primary-color, #1d9e75);
+        color: #fff;
+        font-weight: 500;
+    }
+}
+
+// ── Ref-field values form: hide nav panel, expand content to full width ───────
+.sc-fv-ref-form {
+    margin-top: 4px;
+
+    ::ng-deep .schema-form-view-nav,
+    ::ng-deep .resize-handler {
+        display: none !important;
+    }
+
+    ::ng-deep .schema-form-content {
+        flex: 0 0 100% !important;
+        min-width: 0 !important;
+        width: 100% !important;
+    }
+
+    ::ng-deep .schema-form-root {
+        min-height: 0;
+    }
 }

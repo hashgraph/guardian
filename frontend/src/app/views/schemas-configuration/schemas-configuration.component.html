@@ -799,32 +799,132 @@
                             </div>
                         }
 
-                        <div class="sc-rp-divider"></div>
-                        <div class="sc-rp-label">Other</div>
-                        <div class="sc-check-list">
-                            @if (selectedFieldCanBeArray) {
-                                <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
-                                    <div class="sc-check-box" [class.active]="selectedField.isArray">
-                                        <i class="pi pi-check"></i>
+                        @if (selectedFieldCanBeArray || selectedFieldCanBeUpdatable) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Other</div>
+                            <div class="sc-check-list">
+                                @if (selectedFieldCanBeArray) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
+                                        <div class="sc-check-box" [class.active]="selectedField.isArray">
+                                            <i class="pi pi-check"></i>
+                                        </div>
+                                        <div class="sc-check-desc">
+                                            <strong>Allow multiple answers</strong>
+                                            <span>Renders as a list</span>
+                                        </div>
                                     </div>
-                                    <div class="sc-check-desc">
-                                        <strong>Allow multiple answers</strong>
-                                        <span>Renders as a list</span>
+                                }
+                                @if (selectedFieldCanBeUpdatable) {
+                                    <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
+                                        <div class="sc-check-box" [class.active]="selectedField.isUpdatable">
+                                            <i class="pi pi-check"></i>
+                                        </div>
+                                        <div class="sc-check-desc">
+                                            <strong>Updatable field</strong>
+                                            <span>Value can be updated after submission</span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        @if (selectedFieldShowValues) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-label">Values</div>
+                            @if (selectedField!.isRef) {
+                                <!-- Ref fields (sub-schema, GeoJSON, SentinelHUB): delegate to schema-form-root
+                                     so "+ Add [description]" and nested-document editing work identically to
+                                     the old editor. Wrapper class hides the nav panel via CSS overrides. -->
+                                <div class="sc-fv-ref-form">
+                                    <app-schema-form-root
+                                        [fields]="refPresetFormFields!"
+                                        [preset]="refPresetValues"
+                                        [showButtons]="false"
+                                        [likeDryRun]="true"
+                                        (form)="onRefPresetFormChange($event)"
+                                    ></app-schema-form-root>
+                                </div>
+                            } @else {
+                                <!-- Simple scalar fields: native inputs matching v8 design -->
+                                <div class="sc-fv-list">
+                                    <!-- Default value -->
+                                    <div class="sc-fv-item">
+                                        <div class="sc-fv-label">
+                                            <span class="sc-fv-label-text"><i class="pi pi-map-marker"></i>Default</span>
+                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('default')">✕</button>
+                                        </div>
+                                        @if (getFieldValueInputType(selectedField!) === 'boolean') {
+                                            <div class="sc-fv-yesno">
+                                                <button class="sc-fv-yesno-btn" [class.active]="$any(selectedField).default === true"  (click)="setFieldBooleanValue('default', $any(selectedField).default === true ? null : true)">Yes</button>
+                                                <button class="sc-fv-yesno-btn" [class.active]="$any(selectedField).default === false" (click)="setFieldBooleanValue('default', $any(selectedField).default === false ? null : false)">No</button>
+                                            </div>
+                                        } @else if (getFieldValueInputType(selectedField!) === 'enum') {
+                                            <select class="sc-fv-select" [ngModel]="$any(selectedField).default" (ngModelChange)="setFieldPresetValue('default', $event)">
+                                                <option value="">— none —</option>
+                                                @for (opt of (selectedField!.enum || []); track opt) {
+                                                    <option [value]="opt">{{ opt }}</option>
+                                                }
+                                            </select>
+                                        } @else {
+                                            <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
+                                                [ngModel]="$any(selectedField).default"
+                                                (ngModelChange)="setFieldPresetValue('default', $event)"
+                                                placeholder="Enter value…" />
+                                        }
+                                    </div>
+                                    <!-- Suggested value -->
+                                    <div class="sc-fv-item">
+                                        <div class="sc-fv-label">
+                                            <span class="sc-fv-label-text"><i class="pi pi-lightbulb"></i>Suggested</span>
+                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldValue('suggest')">✕</button>
+                                        </div>
+                                        @if (getFieldValueInputType(selectedField!) === 'boolean') {
+                                            <div class="sc-fv-yesno">
+                                                <button class="sc-fv-yesno-btn" [class.active]="$any(selectedField).suggest === true"  (click)="setFieldBooleanValue('suggest', $any(selectedField).suggest === true ? null : true)">Yes</button>
+                                                <button class="sc-fv-yesno-btn" [class.active]="$any(selectedField).suggest === false" (click)="setFieldBooleanValue('suggest', $any(selectedField).suggest === false ? null : false)">No</button>
+                                            </div>
+                                        } @else if (getFieldValueInputType(selectedField!) === 'enum') {
+                                            <select class="sc-fv-select" [ngModel]="$any(selectedField).suggest" (ngModelChange)="setFieldPresetValue('suggest', $event)">
+                                                <option value="">— none —</option>
+                                                @for (opt of (selectedField!.enum || []); track opt) {
+                                                    <option [value]="opt">{{ opt }}</option>
+                                                }
+                                            </select>
+                                        } @else {
+                                            <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
+                                                [ngModel]="$any(selectedField).suggest"
+                                                (ngModelChange)="setFieldPresetValue('suggest', $event)"
+                                                placeholder="Enter value…" />
+                                        }
+                                    </div>
+                                    <!-- Test value -->
+                                    <div class="sc-fv-item">
+                                        <div class="sc-fv-label">
+                                            <span class="sc-fv-label-text"><i class="pi pi-wrench"></i>Test value</span>
+                                            <button class="sc-fv-clear" title="Clear" (click)="clearFieldTestValue()">✕</button>
+                                        </div>
+                                        @if (getFieldValueInputType(selectedField!) === 'boolean') {
+                                            <div class="sc-fv-yesno">
+                                                <button class="sc-fv-yesno-btn" [class.active]="getFieldTestValue() === true"  (click)="setFieldTestBooleanValue(getFieldTestValue() === true ? null : true)">Yes</button>
+                                                <button class="sc-fv-yesno-btn" [class.active]="getFieldTestValue() === false" (click)="setFieldTestBooleanValue(getFieldTestValue() === false ? null : false)">No</button>
+                                            </div>
+                                        } @else if (getFieldValueInputType(selectedField!) === 'enum') {
+                                            <select class="sc-fv-select" [ngModel]="getFieldTestValue()" (ngModelChange)="setFieldTestValue($event)">
+                                                <option value="">— none —</option>
+                                                @for (opt of (selectedField!.enum || []); track opt) {
+                                                    <option [value]="opt">{{ opt }}</option>
+                                                }
+                                            </select>
+                                        } @else {
+                                            <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
+                                                [ngModel]="getFieldTestValue()"
+                                                (ngModelChange)="setFieldTestValue($event)"
+                                                placeholder="Enter value…" />
+                                        }
                                     </div>
                                 </div>
                             }
-                            @if (selectedFieldCanBeUpdatable) {
-                                <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
-                                    <div class="sc-check-box" [class.active]="selectedField.isUpdatable">
-                                        <i class="pi pi-check"></i>
-                                    </div>
-                                    <div class="sc-check-desc">
-                                        <strong>Updatable field</strong>
-                                        <span>Value can be updated after submission</span>
-                                    </div>
-                                </div>
-                            }
-                        </div>
+                        }
                     </div>
 
                 </aside>

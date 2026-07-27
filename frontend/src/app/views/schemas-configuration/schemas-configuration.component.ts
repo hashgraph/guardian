@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
-import { EMPTY, Subject, forkJoin } from 'rxjs';
+import { EMPTY, Subject, Subscription, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, ISchema, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -61,7 +61,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemasLoadingMore: boolean = false;
 
     public selectedSchema: Schema | null = null;
-    public selectedField: SchemaField | null = null;
+    private _selectedField: SchemaField | null = null;
+    public get selectedField(): SchemaField | null { return this._selectedField; }
+    public set selectedField(field: SchemaField | null) {
+        this._selectedField = field;
+        this._rebuildRefPreset();
+    }
+
+    public refPresetFormFields: SchemaField[] | null = null;
+    public refPresetValues: any = null;
+    private _refPresetFormSub: Subscription | null = null;
+
     public previewPill: 'submitter' | 'readonly' = 'submitter';
     public previewPreset: any = null;
     public previewReadonlyFields: any = null;
@@ -657,6 +667,100 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = this.selectedField === field ? null : field;
     }
 
+    private static readonly HIDE_VALUES_TYPES = new Set(['helptext', 'file', 'table']);
+
+    public get selectedFieldShowValues(): boolean {
+        if (!this.selectedField) { return false; }
+        return !SchemasConfigurationComponent.HIDE_VALUES_TYPES.has(this.getFieldCurrentType(this.selectedField));
+    }
+
+    private _rebuildRefPreset(): void {
+        this._refPresetFormSub?.unsubscribe();
+        this._refPresetFormSub = null;
+        const f = this._selectedField;
+        if (!f?.isRef) {
+            this.refPresetFormFields = null;
+            this.refPresetValues = null;
+            return;
+        }
+        this.refPresetFormFields = [
+            { ...f, name: 'default', description: 'Default Value', required: false, hidden: false, default: null, suggest: null, examples: undefined },
+            { ...f, name: 'suggest', description: 'Suggested Value', required: false, hidden: false, default: null, suggest: null, examples: undefined },
+            { ...f, name: 'example', description: 'Test Value',      required: false, hidden: false, default: null, suggest: null, examples: undefined },
+        ] as SchemaField[];
+        this.refPresetValues = {
+            default: f.default ?? null,
+            suggest: f.suggest ?? null,
+            example: Array.isArray(f.examples) ? (f.examples[0] ?? null) : null,
+        };
+    }
+
+    public onRefPresetFormChange(formGroup: any): void {
+        this._refPresetFormSub?.unsubscribe();
+        this._refPresetFormSub = formGroup.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value: any) => {
+                if (!this._selectedField) { return; }
+                const f = this._selectedField as any;
+                f.default = value.default ?? null;
+                f.suggest = value.suggest ?? null;
+                const ex = value.example;
+                f.examples = (ex !== null && ex !== undefined) ? [ex] : undefined;
+                this.markDirty();
+            });
+    }
+
+    public getFieldValueInputType(field: SchemaField): string {
+        const key = this.getFieldCurrentType(field);
+        if (key === 'boolean') { return 'boolean'; }
+        if (key === 'enum') { return 'enum'; }
+        if (key === 'number' || key === 'integer' || key === 'prefix' || key === 'postfix') { return 'number'; }
+        if (key === 'date') { return 'date'; }
+        if (key === 'time') { return 'time'; }
+        if (key === 'dateTime') { return 'datetime-local'; }
+        return 'text';
+    }
+
+    public getFieldTestValue(): any {
+        return Array.isArray(this.selectedField?.examples) ? (this.selectedField!.examples[0] ?? null) : null;
+    }
+
+    public setFieldTestValue(val: any): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any).examples = (val !== null && val !== undefined && val !== '') ? [val] : undefined;
+        this.markDirty();
+    }
+
+    public setFieldBooleanValue(key: 'default' | 'suggest', val: boolean | null): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any)[key] = val;
+        this.markDirty();
+    }
+
+    public setFieldTestBooleanValue(val: boolean | null): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any).examples = val !== null ? [val] : undefined;
+        this.markDirty();
+    }
+
+    public setFieldPresetValue(key: 'default' | 'suggest', val: any): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any)[key] = (val === '' || val === undefined) ? null : val;
+        this.markDirty();
+    }
+
+    public clearFieldValue(key: 'default' | 'suggest'): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any)[key] = null;
+        this.markDirty();
+    }
+
+    public clearFieldTestValue(): void {
+        if (!this.selectedField) { return; }
+        (this.selectedField as any).examples = undefined;
+        this.markDirty();
+    }
+
     public toggleBehaviour(key: 'isArray' | 'isUpdatable' | 'readOnly'): void {
         if (!this.selectedField) { return; }
         (this.selectedField as any)[key] = !(this.selectedField as any)[key];
@@ -890,6 +994,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         delete f.enum;
         if (ft.key === 'enum') { f.enum = []; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
+        this._rebuildRefPreset();
         this.markDirty();
     }
 
