@@ -94,7 +94,8 @@ keys if you see one.
 
 ## Product tour
 
-The last card on the page is **Product tour**, with a **Replay the tour** button. It restarts the
+Below API Keys, just above the activity log, is the **Product tour** card with a **Replay the tour**
+button. It restarts the
 guided tour described in chapter 01, from step one, taking you back to the Dashboard first.
 
 This is the second of the two ways to restart the tour; the other is the **?** button in the top bar,

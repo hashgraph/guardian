@@ -66,7 +66,7 @@ project record.
 **Add Custom Chart** lets you build something the library does not offer.
 
 You choose a **Chart Title**, a **Chart Type** (line, vertical bar, horizontal bar, pie, donut or
-radar), an **X-Axis** to group by and a **Y-Axis** to measure.
+radar), an **X-Axis (Categories)** to group by and a **Y-Axis (Metric)** to measure.
 
 - X-axis options: Time — Month, Vintage Year, Sector, Country, Registry, SDG Goal.
 - Y-axis options: Credits Issued, Project Count, Retirement Volume.

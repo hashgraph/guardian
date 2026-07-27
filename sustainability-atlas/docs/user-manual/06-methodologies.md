@@ -28,7 +28,7 @@ Above the table, three summary figures show the total number of methodologies, h
 
 Search by name, and combine the filters for **Registry**, **Category**, **Name**, **ID**,
 **Description** and **Decode Status**. The registry filter can be driven by registry name or by its
-identifier. **Download Data** exports the current view as CSV for signed-in users.
+identifier. **Download Data** exports the current view as CSV, with or without an account.
 
 Arriving from a registry record shows a *Showing methodologies for registry …* banner with a **Clear
 filter** link.

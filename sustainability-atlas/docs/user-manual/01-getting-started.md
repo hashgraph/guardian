@@ -15,16 +15,16 @@ methodology, registry, developer and SDG in the catalogue, use every filter, sor
 compare projects side by side, read the analytics views, look terms up in the glossary and check how
 current the data is on the Sync Status page.
 
-What a guest cannot do is anything that has to be remembered for *you*: there is no Portfolio, no
-saved quick filters, no CSV downloads, no report exports and no notifications. Those all arrive with
-an account.
+Downloading a table as CSV with **Download Data** is open to guests too. What a guest cannot do is
+anything that has to be remembered for *you*: there is no Portfolio, no saved quick filters, no
+Reports page and no notifications. Those all arrive with an account.
 
 ## The guided tour
 
 The first time you sign in, a short guided tour starts by itself. It walks you round the interface in
 about a minute: the sidebar, global search, the language and network selectors, the dashboard
 figures, then over to the Projects page for filters, the table and quick filters, and finally your
-personal features and where to find help.
+personal features, how to report a problem, and where to find help.
 
 While the tour is running:
 

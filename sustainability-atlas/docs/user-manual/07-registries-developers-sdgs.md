@@ -36,7 +36,7 @@ issuances** is **on by default**. The network contains registry records that hav
 yet published anything, and including them makes the list much longer without making it more useful.
 Uncheck it when you specifically want to see who has signed up but not yet started.
 
-**Download Data** exports the current view as CSV for signed-in users. The **ID** column has a copy
+**Download Data** exports the current view as CSV, with or without an account. The **ID** column has a copy
 control so you can lift a topic id without selecting text by hand — useful when you need it for the
 Sync Status page (chapter 12).
 

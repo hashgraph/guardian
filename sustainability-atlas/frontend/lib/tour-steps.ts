@@ -39,8 +39,10 @@ export interface TourStep {
 
 /**
  * Order: orientation -> global tools -> the flagship data page -> personal
- * features -> where to get help. `account` and `signIn` are mutually exclusive,
- * so a signed-in user sees 12 steps and a guest sees 10.
+ * features -> how to report a problem -> where to get help. `account` and
+ * `signIn` are mutually exclusive, and `feedback` only appears where the
+ * feedback widget is configured, so the run is 13 steps for a signed-in user
+ * and 11 for a guest — 12 and 10 respectively without the feedback widget.
  */
 export const TOUR_STEPS: TourStep[] = [
     { id: 'welcome',        target: null,                                    route: '/',         placement: 'bottom' },

@@ -1,5 +1,10 @@
 frontend/.nuxt/**/*
 frontend/.output/**/*
+# Yarn install state. The repo-root .gitignore's `.yarn/*` contains a slash, so
+# it anchors to the repo root and misses these nested copies (~1.6 MB of build
+# state that a `git add -A` would otherwise pick up).
+.yarn/
+frontend/.yarn/
 *.sql
 *.sql.gz
 data/policy-zips/**/*

@@ -33,7 +33,7 @@ send the full address and say which network it points at.
 Almost always synchronisation lag. The Atlas copies records from the ledger continuously, but a
 record published a few minutes ago may not have been picked up yet.
 
-Check **Data synced up to** in the top bar — that timestamp tells you how current the data is. If
+Check **Data synced up to** at the foot of the sidebar — that timestamp tells you how current the data is. If
 the record you are looking for was published after it, it has not arrived yet. The
 [Sync Status page](12-sync-status.md) shows what the pipeline is working through and whether it is
 running behind.
@@ -51,13 +51,13 @@ there is simply nothing in the issuance history to show.
 This is normal and is not a data error. Chapter 04 explains how to tell a pipeline project from an
 issuing one.
 
-### Why does the projected volume say "Not estimated"?
+### Why does the projected volume say "No Estimations Available"?
 
 Because the source documents contain no forecast. The Atlas reports what registries and developers
 have actually published; where a project's paperwork includes no estimate of future volume, the
 Atlas says so rather than calculating a guess of its own.
 
-"Not estimated" means the number does not exist upstream, not that it failed to load.
+"No Estimations Available" means the number does not exist upstream, not that it failed to load.
 
 ### Total minted does not match the current supply
 
@@ -78,7 +78,7 @@ retirement history.
 
 Check your spam or junk folder first — automated verification mail is a frequent false positive.
 
-If it is genuinely not there, use the **Resend** button on the verification screen. Resending is
+If it is genuinely not there, use **Resend verification** on the banner shown at the top of the page. Resending is
 throttled: if you press it repeatedly you will be asked to wait before another message can be sent.
 That delay is deliberate and waiting it out is the only fix.
 
@@ -98,8 +98,9 @@ rules.
 
 Three possible reasons, in order of likelihood:
 
-1. **It needs an account.** Portfolio, Reports, saved quick filters, exports, notifications and API
-   keys all require you to be signed in. Sign in and they become available.
+1. **It needs an account.** Portfolio, Reports, saved quick filters, notifications and API keys all
+   require you to be signed in. Sign in and they become available. Note that **Download Data** is
+   *not* one of these — CSV export works without an account.
 2. **It needs administrator rights.** User Management, and the maintenance actions on projects,
    methodologies and the sync pipeline, are restricted to administrators. If you do not see **User
    Management** in your account menu, you do not have those rights — see chapter 13.

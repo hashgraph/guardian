@@ -88,10 +88,21 @@ function measure() {
     rect.value = unionRect(currentEls, step.padding ?? 8);
 }
 
+/**
+ * Identifies the in-flight resolve. resolveStep() awaits navigation, element
+ * polling (up to 2.5s) and a scroll settle, so pressing Next mid-flight leaves
+ * two runs racing over the same `currentEls`. Without this guard a slow earlier
+ * run can wake up after a newer one started and measure its own element against
+ * the newer step — spotlight on one control, copy describing another. Each run
+ * abandons itself as soon as it is no longer the latest.
+ */
+let runId = 0;
+
 /** Resolve the step: navigate if needed, wait for the target, scroll it in, measure. */
 async function resolveStep() {
     const step = currentStep.value;
     if (!step) return;
+    const myRun = ++runId;
     ready.value = false;
     currentEls = [];
     rect.value = null;
@@ -102,6 +113,7 @@ async function resolveStep() {
     if (step.route && route.path !== step.route) {
         try { await router.push(step.route); } catch { /* redirected by middleware — fine */ }
         await nextTick();
+        if (myRun !== runId) return;
     }
 
     // 2. No target => centred card (welcome step).
@@ -111,6 +123,7 @@ async function resolveStep() {
     const selectors = Array.isArray(step.target) ? step.target : [step.target];
     const found = (await Promise.all(selectors.map((s) => waitForEl(s))))
         .filter((el): el is HTMLElement => !!el);
+    if (myRun !== runId) return;
 
     // Graceful degradation: never auto-skip. A cascade of auto-skips would end
     // the tour silently with no explanation.
@@ -121,11 +134,20 @@ async function resolveStep() {
     // scrollIntoView with smooth behaviour is asynchronous; measuring immediately
     // yields a stale rect and the spotlight lands off-target.
     await new Promise((r) => setTimeout(r, 380));
+    if (myRun !== runId) return;
     measure();
     ready.value = true;
 }
 
 watch([active, index], ([on]) => { if (on) resolveStep(); }, { immediate: true });
+
+// The click blocker cannot intercept the browser back button. Without this the
+// target unmounts, `currentEls` holds detached nodes, and the next re-measure
+// collapses the spotlight to a dot. Re-resolving recovers (or falls back to the
+// centred card). Safe against the router.push inside resolveStep: by the time
+// this fires the route already matches, so no second navigation happens, and
+// the runId guard retires the superseded run.
+watch(() => route.fullPath, () => { if (active.value) resolveStep(); });
 
 // Keep the spotlight glued to its element.
 function onViewportChange() { if (active.value) measure(); }
@@ -176,6 +198,7 @@ const popoverStyle = computed(() => {
             top: '50%',
             left: '50%',
             width: `${POPOVER_W}px`,
+            maxHeight: `${vh - 24}px`,
             transform: 'translate(-50%, -50%)',
         };
     }

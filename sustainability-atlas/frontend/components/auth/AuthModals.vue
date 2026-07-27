@@ -4,6 +4,7 @@ import type { SignUpPayload } from '~/composables/useAuth';
 
 const { modal, closeModal, openSignIn, openSignUp, login, signup, forgotPassword, passwordPolicy, fetchPasswordPolicy } = useAuth();
 const { t } = useI18n();
+// Sign-in resolves here and nowhere else, so this is the only reliable
 // place to offer the first-login guided tour.
 const { maybeAutoStart } = useProductTour();
 

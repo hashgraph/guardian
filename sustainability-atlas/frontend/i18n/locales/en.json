@@ -1968,8 +1968,8 @@
     "tour": {
         "helpMenu": "Help",
         "helpAria": "Help and product tour",
-        "launch": "Take the product tour",
-        "glossaryLink": "Glossary of terms",
+        "launch": "Take the Product Tour",
+        "glossaryLink": "Glossary of Terms",
         "restartTitle": "Product tour",
         "restartDescription": "A one-minute guided walk through the Atlas. Replay it any time — you can also start it from the help button in the top bar.",
         "restartButton": "Replay the tour",

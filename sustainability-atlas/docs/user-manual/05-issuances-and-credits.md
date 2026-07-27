@@ -51,8 +51,9 @@ you know exists but cannot find in the filtered view.
 The **Quick filters:** row offers presets such as *Fungible tokens*, *Non-Fungible (NFTs)*, *Minted
 2024* and *Minted 2025*.
 
-**Requires a signed-in account.** Saving your own quick filters and the **Download Data** CSV export
-work identically to the Projects page — the CSV contains exactly the current filtered, sorted view.
+The **Download Data** CSV export works identically to the Projects page and is open to everyone —
+the CSV contains exactly the current filtered, sorted view. **Saving** your own quick filters
+requires a signed-in account.
 See chapter 04 for the details and chapter 10 for the richer Reports exports.
 
 ## Scoping banners

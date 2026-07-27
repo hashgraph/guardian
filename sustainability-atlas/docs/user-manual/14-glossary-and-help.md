@@ -16,7 +16,7 @@ Type in the search box to filter the list as you type; the count above it update
 terms match. If nothing matches, the page says so and names the text you searched for, so you can see
 whether you have a typo.
 
-Four category filters narrow the list by subject:
+Five buttons filter the list by subject — **All Terms** plus four categories:
 
 | Category | Covers |
 |---|---|

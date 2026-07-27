@@ -71,8 +71,8 @@ control explains that you have hit the limit, and you will need to remove one be
 
 ## Download Data
 
-**Requires a signed-in account.** The **Download Data** button at the right of the quick-filter row
-exports the table as a CSV file.
+The **Download Data** button at the right of the quick-filter row exports the table as a CSV file.
+No account is needed — anyone can download what they can see.
 
 What you get is exactly what is on screen: the current filters, the current search text and the
 current sort order, applied to the whole result set rather than just the visible page. Change a
@@ -81,9 +81,9 @@ of fields and formats, use the Reports page instead — chapter 10 compares the 
 
 ## Comparing projects
 
-The first column of the table holds a checkbox on every row. Tick two or more and a floating bar
-appears at the bottom of the screen showing how many you have selected, with **Compare** and **Clear
-all** buttons.
+The first column of the table holds a checkbox on every row. Tick any one and a floating bar appears
+at the bottom of the screen showing how many you have selected, with **Compare** and **Clear all**
+buttons. **Compare** stays greyed out until you have ticked at least two.
 
 You can compare a **minimum of two and a maximum of four** projects. Ticking a fifth is refused with
 a "Max 4 projects" message rather than silently dropping one.

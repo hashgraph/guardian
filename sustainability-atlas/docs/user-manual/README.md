@@ -20,8 +20,8 @@ there are written for engineers, not end users.
 
 | Level | What you get |
 |---|---|
-| **Guest** (not signed in) | Full read-only access to every public page: the dashboard, projects, issuances, methodologies, registries, developers, SDGs, analytics, the glossary and the sync status page. You can filter, sort, compare projects and open any record. You can also take the guided tour. |
-| **Signed-in user** | Everything a guest gets, plus a personal Portfolio with a watchlist and configurable widgets, saved quick filters, CSV and report exports, watchlist notifications, API keys and a request-limit allowance. |
+| **Guest** (not signed in) | Full read-only access to every public page: the dashboard, projects, issuances, methodologies, registries, developers, SDGs, analytics, the glossary and the sync status page. You can filter, sort, compare projects, open any record and download any table as CSV with **Download Data**. You can also take the guided tour. |
+| **Signed-in user** | Everything a guest gets, plus a personal Portfolio with a watchlist and configurable widgets, saved quick filters, the Reports page, watchlist notifications, API keys and a request-limit allowance. |
 | **Administrator** | Everything a signed-in user gets, plus User Management, per-user request quotas, and maintenance actions on projects, methodologies and the sync pipeline. |
 
 If a control looks greyed out or a whole section is missing, it is almost always because you are at a
