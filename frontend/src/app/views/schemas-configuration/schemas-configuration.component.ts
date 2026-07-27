@@ -73,6 +73,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
+    private _subSchemasByIri = new Map<string, Schema>();
 
     public isDragOverCanvas: boolean = false;
     private _dragEnterCount: number = 0;
@@ -263,6 +264,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         return {
                             schema,
                             subSchemas: (data.subSchemas || []).map((s: any) => new Schema(withDefs(s))),
+                            // Raw sub-schemas (no withDefs) preserve the API's hierarchical $defs
+                            // so updateRefs/uniqueRefs can correctly recurse into nested sub-schemas.
+                            rawSubSchemas: (data.subSchemas || []).map((s: any) => new Schema(s)),
                         };
                     }),
                     catchError(() => {
@@ -272,7 +276,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 );
             }),
             takeUntil(this.destroy$)
-        ).subscribe(({ schema, subSchemas }) => {
+        ).subscribe(({ schema, subSchemas, rawSubSchemas }) => {
             if (!schema) {
                 this.schemaLoading = false;
                 return;
@@ -284,6 +288,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             if (!this.topic && schema.topicId) {
                 this.topic = schema.topicId;
             }
+            // Raw sub-schemas preserve the API's hierarchical $defs; filtered to exclude
+            // the current schema so it never appears in its own $defs (mirrors old editor).
+            this._subSchemasByIri = new Map(
+                (rawSubSchemas as Schema[])
+                    .filter((s: Schema) => s.iri && s.iri !== schema.iri)
+                    .map((s: Schema) => [s.iri, s] as [string, Schema])
+            );
             this.mergeSchemaNames(subSchemas);
             if (!this.schemasFetched && this.topic) {
                 this.loadSchemas(this.topic);
@@ -525,7 +536,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             s.update([...userFields, ...defaultFields], s.conditions);
             s.fields = userFields;
         });
-        // Phase 2: rebuild $defs via field-level BFS (avoids withDefs() self-reference bloat).
+        // Phase 2: rebuild $defs via BFS through fields — avoids circular deps from $defs recursion.
         allSchemas.forEach(s => { if (s.document) { s.document.$defs = this._buildRefs(s); } });
         const createObs = toCreate.map(s =>
             this.schemaService.create(s.category ?? this.getCategory(), s as unknown as ISchema, this.topic).pipe(
@@ -1251,7 +1262,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             unit: '',
             unitSystem: '',
             property: null,
-            customType: '',
+            customType: 'subSchema',
+            availableOptions: [],
             isUpdatable: false,
             hidden: false,
             autocalculate: false,
@@ -1287,7 +1299,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             unit: '',
             unitSystem: '',
             property: null,
-            customType: '',
+            customType: 'subSchema',
+            availableOptions: [],
             isUpdatable: false,
             hidden: false,
             autocalculate: false,
@@ -1949,6 +1962,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (ft.key === 'enum') {
             field.enum = [];
         }
+        if (ft.key === 'geo' || ft.key === 'sentinel') {
+            field.availableOptions = [];
+        }
         return field as SchemaField;
     }
 
@@ -2035,24 +2051,18 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
+    // Build $defs the same way as the old editor (SchemaHelper.findRefs + uniqueRefs),
+    // then post-process to strip nested $defs from every entry and exclude the root schema
+    // so it never appears in its own $defs (prevents circular dependency errors).
     private _buildRefs(schema: Schema): Record<string, any> {
+        const subSchemasList = [...this._subSchemasByIri.values()];
+        const rawDefs = SchemaHelper.findRefs(schema, subSchemasList);
         const result: Record<string, any> = {};
-        const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
-        const queue = [...(schema.fields || [])];
-        const visited = new Set<string>();
-        while (queue.length) {
-            const field = queue.shift()!;
-            if (field.isRef && field.type && !visited.has(field.type)) {
-                visited.add(field.type);
-                const ref = schemaByIri.get(field.type);
-                if (ref) {
-                    if (!ref.document) { continue; }
-                    const doc = { ...ref.document };
-                    delete doc.$defs;
-                    result[field.type] = doc;
-                    queue.push(...(ref.fields || []));
-                }
-            }
+        for (const [iri, doc] of Object.entries(rawDefs)) {
+            if (iri === schema.iri) { continue; }   // never put root schema in its own $defs
+            const clean = { ...(doc as any) };
+            delete clean.$defs;                     // strip nested $defs from each entry
+            result[iri] = clean;
         }
         return result;
     }
