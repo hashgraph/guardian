@@ -16707,7 +16707,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.21.0, ws@npm:^8.16.0, ws@npm:^8.5.0":
+"ws@npm:8.21.0":
   version: 8.21.0
   resolution: "ws@npm:8.21.0"
   peerDependencies:
@@ -16722,7 +16722,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.21.1":
+"ws@npm:8.21.1, ws@npm:^8.16.0, ws@npm:^8.5.0":
   version: 8.21.1
   resolution: "ws@npm:8.21.1"
   peerDependencies:
