@@ -40,6 +40,7 @@ import {
     Record,
     RetirePool,
     Schema as SchemaCollection,
+    SchemaTemplate,
     SchemaRule,
     SplitDocuments,
     SuggestionsConfig,
@@ -1948,6 +1949,81 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static createSchema(item: Partial<SchemaCollection>): SchemaCollection {
         return new DataBaseHelper(SchemaCollection).create(item);
+    }
+
+    /**
+     * Create a schema template object.
+     * @param item template
+     */
+    public static createSchemaTemplate(item: Partial<SchemaTemplate>): SchemaTemplate {
+        return new DataBaseHelper(SchemaTemplate).create(item);
+    }
+
+    /**
+     * Save schema template.
+     * @param item template
+     */
+    public static async saveSchemaTemplate(item: Partial<SchemaTemplate>): Promise<SchemaTemplate> {
+        const template = new DataBaseHelper(SchemaTemplate).create(item);
+        return await new DataBaseHelper(SchemaTemplate).save(template);
+    }
+
+    /**
+     * Get schema templates.
+     * @param filters filters
+     * @param options options
+     */
+    public static async getSchemaTemplates(
+        filters?: FilterQuery<SchemaTemplate>,
+        options?: unknown
+    ): Promise<SchemaTemplate[]> {
+        return await new DataBaseHelper(SchemaTemplate).find(filters, options);
+    }
+
+    /**
+     * Get schema templates and count.
+     * @param filters filters
+     * @param options options
+     */
+    public static async getSchemaTemplatesAndCount(
+        filters?: FilterObject<SchemaTemplate>,
+        options?: FindOptions<object>
+    ): Promise<[SchemaTemplate[], number]> {
+        return await new DataBaseHelper(SchemaTemplate).findAndCount(filters, options);
+    }
+
+    /**
+     * Get schema template by id.
+     * @param id template id
+     */
+    public static async getSchemaTemplateById(id: string): Promise<SchemaTemplate | null> {
+        return await new DataBaseHelper(SchemaTemplate).findOne(id);
+    }
+
+    /**
+     * Get schema template.
+     * @param filters filters
+     */
+    public static async getSchemaTemplate(
+        filters: FilterQuery<SchemaTemplate>
+    ): Promise<SchemaTemplate | null> {
+        return await new DataBaseHelper(SchemaTemplate).findOne(filters);
+    }
+
+    /**
+     * Update schema template.
+     * @param item template
+     */
+    public static async updateSchemaTemplate(item: SchemaTemplate): Promise<SchemaTemplate> {
+        return await new DataBaseHelper(SchemaTemplate).update(item);
+    }
+
+    /**
+     * Delete schema template.
+     * @param item template
+     */
+    public static async removeSchemaTemplate(item: SchemaTemplate): Promise<void> {
+        return await new DataBaseHelper(SchemaTemplate).remove(item);
     }
 
     /**
