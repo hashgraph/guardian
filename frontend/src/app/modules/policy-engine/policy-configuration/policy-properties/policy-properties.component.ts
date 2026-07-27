@@ -415,13 +415,16 @@ export class PolicyPropertiesComponent implements OnInit {
         if (!value) {
             return;
         }
-        navigator.clipboard.writeText(value);
-        this.copiedField = field;
-        setTimeout(() => {
-            if (this.copiedField === field) {
-                this.copiedField = '';
-            }
-        }, 1500);
+        navigator.clipboard.writeText(value).then(() => {
+            this.copiedField = field;
+            setTimeout(() => {
+                if (this.copiedField === field) {
+                    this.copiedField = '';
+                }
+            }, 1500);
+        }).catch(() => {
+            this.copiedField = '';
+        });
     }
 
     public statusVariant(status: string | undefined): string {
