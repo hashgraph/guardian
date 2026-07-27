@@ -8,7 +8,7 @@ manual answers which kind of question.
 
 The Glossary page holds plain-language definitions for the carbon-market and Hedera terminology used
 throughout the Atlas. Reach it from the sidebar, or from the **?** button in the top bar via
-**Glossary of terms**.
+**Glossary of Terms**.
 
 ### Finding a term
 
@@ -49,7 +49,7 @@ when you want to read around a subject rather than look one word up.
 ## The help menu and the guided tour
 
 The **?** button in the top bar is present on every page, for everyone, signed in or not. It offers
-two things: **Take the product tour** and **Glossary of terms**.
+two things: **Take the Product Tour** and **Glossary of Terms**.
 
 The guided tour is described in full in chapter 01. In brief: it is a one-minute walk through the
 interface, it starts by itself the first time you sign in, and after that it is always a deliberate

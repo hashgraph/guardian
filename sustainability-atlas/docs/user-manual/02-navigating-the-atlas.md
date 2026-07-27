@@ -119,8 +119,8 @@ Signed out, the same corner shows a **Sign In** button that opens the sign-in di
 The **?** button sits between the network selector and the notification bell, on every page, for
 everyone. It offers two things:
 
-- **Take the product tour** — starts (or restarts) the guided tour described in chapter 01;
-- **Glossary of terms** — jumps to the glossary described in chapter 14.
+- **Take the Product Tour** — starts (or restarts) the guided tour described in chapter 01;
+- **Glossary of Terms** — jumps to the glossary described in chapter 14.
 
 ## Feedback
 

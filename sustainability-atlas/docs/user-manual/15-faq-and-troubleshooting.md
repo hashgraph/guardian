@@ -129,7 +129,7 @@ to it yet on that combination.
 Once you have seen it, the tour does not launch itself a second time — that is deliberate, so it
 does not interrupt you on every sign-in.
 
-To run it again, use the **Help** button (**?**) in the top bar and choose **Take the product tour**,
+To run it again, use the **Help** button (**?**) in the top bar and choose **Take the Product Tour**,
 or go to Account Settings and use the product tour card there. It can be restarted as many times as
 you like.
 
