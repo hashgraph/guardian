@@ -133,7 +133,7 @@ const routes: Routes = [
     { path: 'register', component: RegisterComponent },
     { path: 'task/:id', component: AsyncProgressComponent },
     { path: 'notifications', component: NotificationsComponent },
-    { 
+    {
         path: 'worker-tasks',
         component: WorkerTasksComponent,
         canActivate: [PermissionsGuard],
@@ -641,6 +641,34 @@ const routes: Routes = [
     },
     {
         path: 'schema-rule/:ruleId',
+        component: SchemaRuleConfigurationComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
+        }
+    },
+    {
+        path: 'schema-templates',
+        component: SchemaRulesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.SCHEMAS_RULE_READ
+            ]
+        }
+    },
+    {
+        path: 'schema-templates/:templateId',
         component: SchemaRuleConfigurationComponent,
         canActivate: [PermissionsGuard],
         data: {
