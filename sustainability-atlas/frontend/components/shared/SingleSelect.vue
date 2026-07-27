@@ -35,7 +35,7 @@ function select(value: string) {
         <button
             type="button"
             :aria-expanded="open"
-            class="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors"
+            class="flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-xs text-foreground focus:outline-none transition-colors"
             @click="open = !open"
         >
             <span class="truncate">{{ selectedLabel }}</span>

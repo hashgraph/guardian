@@ -40,6 +40,7 @@ import type {
 import type { DecodedMethodologyResponse, MappingAuditEntry, PaginatedMappingAudit } from "~/composables/api/useDecodedMethodologyApi";
 import { mapApiProject } from "~/composables/useProjects";
 import { meetsDashboardThreshold } from "~/lib/methodology-threshold";
+import type { SingleSelectOption } from '~/components/shared/SingleSelect.vue';
 import { naturalCompare } from '~/lib/utils';
 
 const { t } = useI18n();
@@ -575,6 +576,24 @@ function cancelEditMode() {
   formState.value = {} as Record<ResolvedFieldKey, string>;
   formIndexState.value = {} as Record<ResolvedFieldKey, string>;
 }
+
+const linkedProjectsYearOptions = computed<SingleSelectOption[]>(() => [
+  { value: 'all', label: t('common.allYears') },
+  ...linkedProjectsAvailableYears.value.map(y => ({ value: String(y), label: String(y) })),
+]);
+
+const linkedProjectsStageOptions = computed<SingleSelectOption[]>(() => [
+  { value: 'all', label: t('methodologies.detail.linkedProjects.stageFilter.all') },
+  ...LIFECYCLE_STAGES.map(stage => ({ value: stage, label: t(`projects.lifecycleStages.${stage}`) })),
+]);
+
+const compareVersionOptions = computed<SingleSelectOption[]>(() => [
+  { value: '', label: t('methodologies.detail.actions.selectVersionPlaceholder') },
+  ...otherVersions.value.map(v => ({
+    value: v.topicId || '',
+    label: `${v.version ?? v.topicId} · ${fmtDate(v.sourceTimestamp)} · ${v.status ?? '—'}`,
+  })),
+]);
 
 // Compute the initial (original) form state so we can diff to find changes.
 const originalFormState = computed<Record<ResolvedFieldKey, string>>(() => {
@@ -2208,16 +2227,12 @@ function getResolvedField(fieldKey: string) {
               {{ $t('methodologies.detail.linkedProjects.title') }}
             </h2>
             <div v-if="!linkedProjectsPending && policyTopicId" class="flex items-center gap-2">
-              <select
+              <SingleSelect
                 v-if="linkedProjectsAvailableYears.length > 0"
                 v-model="linkedProjectsYearFilter"
-                :title="$t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear')"
-                :aria-label="$t('methodologies.detail.linkedProjects.columns.expectedIssuanceYear')"
-                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-              >
-                <option value="all">{{ $t('common.allYears') }}</option>
-                <option v-for="y in linkedProjectsAvailableYears" :key="y" :value="y">{{ y }}</option>
-              </select>
+                :options="linkedProjectsYearOptions"
+                class="w-32"
+              />
               <span class="text-xs text-muted-foreground">
                 {{ linkedProjectsFiltered.length }} project{{ linkedProjectsFiltered.length !== 1 ? 's' : '' }}
               </span>
@@ -2250,15 +2265,11 @@ function getResolvedField(fieldKey: string) {
             <div class="px-5 py-3 border-b bg-muted/10 flex flex-wrap items-center gap-3">
               <div class="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <span>{{ $t('methodologies.detail.linkedProjects.stageFilter.label') }}</span>
-                <select
+                <SingleSelect
                   v-model="linkedProjectsStageFilter"
-                  class="rounded-md border bg-card px-2 py-1 text-xs"
-                >
-                  <option value="all">{{ $t('methodologies.detail.linkedProjects.stageFilter.all') }}</option>
-                  <option v-for="stage in LIFECYCLE_STAGES" :key="stage" :value="stage">
-                    {{ $t(`projects.lifecycleStages.${stage}`) }}
-                  </option>
-                </select>
+                  :options="linkedProjectsStageOptions"
+                  class="w-36"
+                />
               </div>
             </div>
 
@@ -2695,20 +2706,13 @@ function getResolvedField(fieldKey: string) {
                 <div v-if="otherVersions.length === 0" class="text-sm text-muted-foreground italic">
                   {{ $t('methodologies.detail.actions.noOtherVersions') }}
                 </div>
-                <select
+                <SingleSelect
                   v-else
-                  v-model="compareTopicId"
-                  class="w-full rounded-lg border bg-card px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
-                >
-                  <option :value="null">{{ $t('methodologies.detail.actions.selectVersionPlaceholder') }}</option>
-                  <option
-                    v-for="v in otherVersions"
-                    :key="v.topicId ?? v.id"
-                    :value="v.topicId"
-                  >
-                    {{ v.version ?? v.topicId }} · {{ fmtDate(v.sourceTimestamp) }} · {{ v.status ?? "—" }}
-                  </option>
-                </select>
+                  :model-value="compareTopicId ?? ''"
+                  :options="compareVersionOptions"
+                  class="w-full"
+                  @update:model-value="(val) => compareTopicId = val || null"
+                />
               </div>
 
               <!-- Comparison table -->
