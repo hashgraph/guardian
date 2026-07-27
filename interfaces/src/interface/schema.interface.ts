@@ -104,6 +104,10 @@ export interface ISchema {
      */
     category?: SchemaCategory;
     /**
+     * Template id
+     */
+    templateId?: string;
+    /**
      * Is system schema
      */
     system?: boolean;

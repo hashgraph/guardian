@@ -164,6 +164,15 @@ export class Schema extends BaseEntity implements ISchema {
     category?: SchemaCategory;
 
     /**
+     * Template id.
+     */
+    @Property({
+        nullable: true,
+        index: true
+    })
+    templateId?: string;
+
+    /**
      * Schema code version
      */
     @Property({ nullable: true })
