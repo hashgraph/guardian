@@ -49939,6 +49939,166 @@ paths:
       summary: Delete SR policy credential.
       tags:
         - credentials
+  /policy-data/query:
+    get:
+      description: >-
+        Returns a paginated list of Verifiable Credential documents committed by
+        a published Guardian policy. Intentionally restricted to audit/manage
+        roles for cross-policy access; there is no per-participant filtering.
+      operationId: PolicyDataApi_queryPolicyData
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          description: MongoDB ObjectId of the published policy.
+          schema:
+            example: 645f1e2d3a4b5c6d7e8f9012
+            type: string
+        - name: schemaName
+          required: true
+          in: query
+          description: Schema name as returned by GET /schema (e.g. "MRV Data").
+          schema:
+            example: MRV Data
+            type: string
+        - name: filters
+          required: false
+          in: query
+          description: >-
+            JSON-encoded filter map. Each key is a whitelisted system field or
+            an `option.*` field. Each value is `{ "op": "<operator>", "value":
+            <any> }`. Supported operators: `eq`, `ne`, `in`, `nin`, `gt`, `gte`,
+            `lt`, `lte`, `contains` (case-insensitive partial string match). For
+            `in`/`nin`, value must be an array. For `contains`, value must be a
+            string. System field whitelist: owner, assignedTo, assignedToGroup,
+            group, hederaStatus, signature, type, draft, edited, disconnected,
+            policyId, schema, tag, messageId, topicId, hash, createDate,
+            updateDate, option.*. Example:
+            `{"hederaStatus":{"op":"eq","value":"ISSUE"}}`
+          schema:
+            example: >-
+              {"hederaStatus":{"op":"eq","value":"ISSUE"},"option.status":{"op":"ne","value":"REJECTED"}}
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: '1-based page number (default: 1).'
+          schema:
+            example: 1
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: 'Items per page (default: 20, max: 200).'
+          schema:
+            example: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          description: >-
+            Field to sort by. Prefix with `-` for descending order (default:
+            `-createDate`). Example: `createDate`, `-updateDate`, `owner`.
+          schema:
+            example: -createDate
+            type: string
+      responses:
+        '200':
+          description: Query executed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataQueryResponseDTO'
+              example:
+                data:
+                  - id: 645f1e2d3a4b5c6d7e8f9012
+                    policyId: 645f1e2d3a4b5c6d7e8f1234
+                    schema: '#MRVData'
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                    hederaStatus: ISSUE
+                    tag: mrv_data_block
+                    createDate: '2026-01-15T10:30:00.000Z'
+                    updateDate: '2026-01-15T10:30:00.000Z'
+                    option:
+                      status: APPROVED
+                    document:
+                      id: urn:uuid:example
+                      type:
+                        - VerifiableCredential
+                pagination:
+                  page: 1
+                  pageSize: 20
+                  total: 42
+                  totalPages: 3
+                query:
+                  policyId: 645f1e2d3a4b5c6d7e8f1234
+                  schemaName: MRV Data
+                  appliedFilters:
+                    hederaStatus:
+                      op: eq
+                      value: ISSUE
+        '400':
+          description: >-
+            Invalid query parameters (unknown filter field, invalid operator,
+            bad JSON).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorDTO'
+              example:
+                statusCode: 400
+                message: >-
+                  Unknown filter field: "fooBar". Consult the system field
+                  whitelist in the API docs.
+        '401':
+          description: |-
+            Unauthorized request.
+
+            Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: |-
+            Forbidden.
+
+            Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Policy or schema not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Policy "abc" not found.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Query policy-committed VC documents.
+      tags:
+        - policy-data
 info:
   title: Guardian
   description: >-
@@ -58634,6 +58794,62 @@ components:
         - taskId
         - type
         - updateDate
+    PolicyDataPaginationDTO:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        pageSize:
+          type: number
+          example: 20
+        total:
+          type: number
+          example: 1234
+        totalPages:
+          type: number
+          example: 62
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+    PolicyDataQueryInfoDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        schemaName:
+          type: string
+          example: MRV Data
+        appliedFilters:
+          type: object
+          additionalProperties: true
+          example:
+            hederaStatus:
+              op: eq
+              value: ISSUE
+      required:
+        - policyId
+        - schemaName
+    PolicyDataQueryResponseDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Committed VC documents matching the query.
+        pagination:
+          $ref: '#/components/schemas/PolicyDataPaginationDTO'
+        query:
+          $ref: '#/components/schemas/PolicyDataQueryInfoDTO'
+      required:
+        - data
+        - pagination
+        - query
     CredentialSubjectDTO:
       type: object
       properties:
