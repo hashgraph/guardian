@@ -1,0 +1,71 @@
+// Shared chrome for the collapsible schema navigation panel.
+// Used by schema-form-root and document-view so both dialogs share one
+// collapse/expand mechanism.
+
+.nav-collapse-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    min-height: 32px;
+    // Left padding matches the tree row start (schema-nav 8px + nav-node 6px)
+    // so the title aligns with the section rows below it.
+    padding: 0 14px;
+    background: var(--guardian-background, #fff);
+    border-bottom: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+}
+
+.nav-collapse-title {
+    flex: 1 1 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--guardian-disabled-color, #848fa9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.nav-collapse-btn {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--guardian-disabled-color, #848fa9);
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &:hover {
+        background: rgba(65, 105, 226, 0.08);
+        color: var(--primary-color);
+    }
+
+    i {
+        font-size: 12px;
+    }
+}
+
+.nav-collapse-rail {
+    flex: 0 0 auto;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    padding: 4px 8px 0 0;
+    // Thin separator line between the collapsed rail and the form.
+    border-right: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+
+    .nav-collapse-btn {
+        position: sticky;
+        top: 0;
+    }
+}

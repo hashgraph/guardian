@@ -1,6 +1,29 @@
 <div class="schema-form-root" #contentContainer>
+  @if (model && hasNavigation && navCollapsed) {
+    <div class="nav-collapse-rail">
+      <button
+        class="nav-collapse-btn"
+        type="button"
+        title="Expand panel"
+        aria-label="Expand panel"
+        (click)="toggleNav()">
+        <i class="pi pi-chevron-right"></i>
+      </button>
+    </div>
+  }
   @if (model) {
-    <div class="schema-form-view-nav" [hidden]="!hasNavigation" #navContainer>
+    <div class="schema-form-view-nav" [hidden]="!hasNavigation || navCollapsed" #navContainer>
+      <div class="nav-collapse-header">
+        <span class="nav-collapse-title">Sections</span>
+        <button
+          class="nav-collapse-btn"
+          type="button"
+          title="Collapse panel"
+          aria-label="Collapse panel"
+          (click)="toggleNav()">
+          <i class="pi pi-chevron-left"></i>
+        </button>
+      </div>
       <app-schema-form-navigation
         #schemaNav
         [schemaFields]="navFields"
@@ -10,7 +33,7 @@
       </app-schema-form-navigation>
     </div>
   }
-  @if (model && hasNavigation) {
+  @if (model && hasNavigation && !navCollapsed) {
     <div
       class="resize-handler"
       (mousedown)="onResizeStart($event)"
