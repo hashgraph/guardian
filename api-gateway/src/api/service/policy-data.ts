@@ -1,5 +1,9 @@
 import { IAuthUser, PinoLogger } from '@guardian/common';
-import { Permissions } from '@guardian/interfaces';
+import {
+    Permissions,
+    POLICY_DATA_MAX_PAGE_SIZE,
+    POLICY_DATA_DEFAULT_PAGE_SIZE,
+} from '@guardian/interfaces';
 import {
     Controller,
     Get,
@@ -28,10 +32,6 @@ import {
     PolicyDataQueryResponseDTO,
     UnauthorizedErrorDTO,
 } from '#middlewares';
-import {
-    POLICY_DATA_MAX_PAGE_SIZE,
-    POLICY_DATA_DEFAULT_PAGE_SIZE,
-} from '@guardian/interfaces';
 import { AuthUser, Auth } from '#auth';
 import { EntityOwner, Guardians, InternalException } from '#helpers';
 
