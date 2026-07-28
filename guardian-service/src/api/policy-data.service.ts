@@ -244,7 +244,7 @@ export async function handlePolicyDataQuery(
         if (normalisedSortField) {
             sortOptions[normalisedSortField] = sortDescending ? 'DESC' : 'ASC';
         } else {
-            sortOptions['createDate'] = 'DESC';
+            sortOptions.createDate = 'DESC';
         }
 
         const queryOptions: any = {
