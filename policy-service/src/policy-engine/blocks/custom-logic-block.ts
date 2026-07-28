@@ -468,6 +468,13 @@ export class CustomLogicBlock {
                         reject(error);
                     });
                     worker.on('message', async (data) => {
+                        // A thrown script posts an 'error' sentinel; reject so runAction's catch
+                        // surfaces it (BlockErrorFn + log) instead of silently parking the step.
+                        if (data?.error) {
+                            cleanup();
+                            reject(new Error(data.error));
+                            return;
+                        }
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);
