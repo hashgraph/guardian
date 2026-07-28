@@ -4,6 +4,11 @@ import { ISchemaTemplate } from '@guardian/interfaces';
 import { Observable } from 'rxjs';
 import { API_BASE_URL } from './api';
 
+interface TaskResponse {
+    taskId: string;
+    expectation: number;
+}
+
 export interface SchemaTemplateGridItem extends ISchemaTemplate {
     schemasCount?: number;
 }
@@ -15,10 +20,15 @@ export class SchemaTemplatesService {
     constructor(private readonly http: HttpClient) {
     }
 
-    public page(pageIndex: number = 0, pageSize: number = 20): Observable<HttpResponse<SchemaTemplateGridItem[]>> {
+    public page(
+        pageIndex: number = 0,
+        pageSize: number = 20,
+        search?: string
+    ): Observable<HttpResponse<SchemaTemplateGridItem[]>> {
         const params = new HttpParams()
             .set('pageIndex', String(pageIndex))
-            .set('pageSize', String(pageSize));
+            .set('pageSize', String(pageSize))
+            .set('search', search || '');
         return this.http.get<SchemaTemplateGridItem[]>(this.url, {
             observe: 'response',
             params
@@ -33,11 +43,19 @@ export class SchemaTemplatesService {
         return this.http.post<SchemaTemplateGridItem>(`${this.url}/`, template);
     }
 
+    public pushCreate(template: Partial<ISchemaTemplate>): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/push`, template);
+    }
+
     public update(id: string, template: Partial<ISchemaTemplate>): Observable<SchemaTemplateGridItem> {
         return this.http.put<SchemaTemplateGridItem>(`${this.url}/${id}`, template);
     }
 
     public delete(id: string): Observable<boolean> {
         return this.http.delete<boolean>(`${this.url}/${id}`);
+    }
+
+    public pushDelete(id: string): Observable<TaskResponse> {
+        return this.http.delete<TaskResponse>(`${this.url}/push/${id}`);
     }
 }

@@ -81,6 +81,8 @@ export class TaskManager {
         [TaskAction.DELETE_POLICIES, 3],
         [TaskAction.CLONE_POLICY, 5],
         [TaskAction.CREATE_TOOL, 8],
+        [TaskAction.CREATE_SCHEMA_TEMPLATE, 3],
+        [TaskAction.DELETE_SCHEMA_TEMPLATE, 3],
         [TaskAction.IMPORT_TOOL_FILE, 9],
         [TaskAction.IMPORT_TOOL_MESSAGE, 11],
         [TaskAction.MIGRATE_DATA, 4],

@@ -179,6 +179,20 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case 'Create schema template': {
+                const templateId = result?.id || result?._id || result;
+                setTimeout(() => {
+                    this.router.navigate(['schema-configuration'], {
+                        queryParams: {
+                            type: 'template',
+                            topic: result?.topicId,
+                            templateId
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
                 if (this.redir) {
@@ -341,6 +355,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
+            case 'Delete schema template':
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
             // @ts-ignore
             case TaskAction.CREATE_SCHEMA:
                 localStorage.removeItem('restoreSchemaData');
@@ -428,6 +453,14 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 setTimeout(() => {
                     this.router.navigate(['schemas'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case 'Create schema template':
+            case 'Delete schema template':
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
                         replaceUrl: true,
                     });
                 }, 500);

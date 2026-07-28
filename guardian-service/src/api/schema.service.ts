@@ -1223,7 +1223,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     nameMaps.set(topicId, 'Current');
                 }
 
-                let parents: any[];
+                let parents: any[] = [];
                 const options = {
                     fields: [
                         'name',
@@ -1235,8 +1235,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     parents = await DatabaseServer.getPolicies({ owner: owner.owner, topicId }, options);
                 } else if (category === SchemaCategory.TOOL) {
                     parents = await DatabaseServer.getTools({ owner: owner.owner, topicId }, options);
-                } else if (category === SchemaCategory.TEMPLATE) {
-                    parents = [];
                 }
                 if (Array.isArray(parents)) {
                     for (const parent of parents) {

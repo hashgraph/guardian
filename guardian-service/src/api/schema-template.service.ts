@@ -79,6 +79,8 @@ async function createSchemaTemplate(
     delete payload.owner;
     delete payload.creator;
     delete payload.messageId;
+    delete payload.version;
+    delete payload.previousVersion;
 
     payload.creator = owner.creator;
     payload.owner = owner.owner;
@@ -121,6 +123,10 @@ async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
         result.push(item);
     }
     return result;
+}
+
+function escapeRegExp(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
@@ -174,12 +180,29 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                     options.limit = 100;
                 }
 
-                const [items, count] = await DatabaseServer.getSchemaTemplatesAndCount({
+                const search = String(filters?.search || '').trim();
+                const visibilityFilter: any = {
                     $or: [
                         { owner: owner.owner },
                         { status: ModuleStatus.PUBLISHED }
                     ]
-                } as FilterObject<SchemaTemplate>, options);
+                };
+                const templateFilter: any = search
+                    ? {
+                        $and: [
+                            visibilityFilter,
+                            {
+                                name: {
+                                    $re: new RegExp(escapeRegExp(search), 'i')
+                                }
+                            }
+                        ]
+                    }
+                    : visibilityFilter;
+
+                const [items, count] = await DatabaseServer.getSchemaTemplatesAndCount({
+                    ...templateFilter
+                }, options);
 
                 return new MessageResponse({
                     items: await addSchemaCounts(items),

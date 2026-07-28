@@ -1,10 +1,10 @@
-import { IAuthUser, PinoLogger } from '@guardian/common';
+import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { ISchemaTemplate, Permissions } from '@guardian/interfaces';
-import { ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ISchemaTemplate, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
+import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
-import { EntityOwner, Guardians, InternalException } from '#helpers';
-import { InternalServerErrorDTO, pageHeader } from '#middlewares';
+import { EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
+import { InternalServerErrorDTO, pageHeader, TaskDTO } from '#middlewares';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.';
 
@@ -61,6 +61,63 @@ export class SchemaTemplatesApi {
     }
 
     /**
+     * Create schema template async.
+     */
+    @Post('/push')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates a new schema template asynchronously.',
+        description: 'Creates a new schema template and a dedicated template topic asynchronously.' + ONLY_SR,
+    })
+    @ApiBody({
+        description: 'Schema template metadata and configuration.',
+        schema: {
+            type: 'object',
+            properties: {
+                name: { type: 'string' },
+                description: { type: 'string' },
+                config: { type: 'object' }
+            }
+        }
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async createSchemaTemplateAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: ISchemaTemplate
+    ): Promise<TaskDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.CREATE_SCHEMA_TEMPLATE, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                taskManager.addStatus(task.taskId, 'Create schema template and topic', StatusType.PROCESSING);
+                const result = await guardians.createSchemaTemplate(body, owner);
+                taskManager.addStatus(task.taskId, 'Create schema template and topic', StatusType.COMPLETED);
+                taskManager.addResult(task.taskId, result);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Get schema templates page.
      */
     @Get('/')
@@ -84,6 +141,11 @@ export class SchemaTemplatesApi {
         required: false,
         example: 20
     })
+    @ApiQuery({
+        name: 'search',
+        type: String,
+        required: false
+    })
     @ApiOkResponse({
         description: 'Schema templates page.',
         headers: pageHeader,
@@ -102,13 +164,15 @@ export class SchemaTemplatesApi {
         @AuthUser() user: IAuthUser,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
-        @Query('pageSize') pageSize?: number
+        @Query('pageSize') pageSize?: number,
+        @Query('search') search?: string
     ): Promise<ISchemaTemplate[]> {
         try {
             const guardians = new Guardians();
             const { items, count } = await guardians.getSchemaTemplates({
                 pageIndex,
-                pageSize
+                pageSize,
+                search
             }, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
@@ -233,6 +297,57 @@ export class SchemaTemplatesApi {
         try {
             const guardians = new Guardians();
             return await guardians.deleteSchemaTemplate(templateId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Delete schema template async.
+     */
+    @Delete('/push/:templateId')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_DELETE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Deletes schema template asynchronously.',
+        description: 'Deletes draft schema template and its draft schemas asynchronously.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async deleteSchemaTemplateAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string
+    ): Promise<TaskDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DELETE_SCHEMA_TEMPLATE, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                taskManager.addStatus(task.taskId, 'Delete schema template and schemas', StatusType.PROCESSING);
+                const result = await guardians.deleteSchemaTemplate(templateId, owner);
+                taskManager.addStatus(task.taskId, 'Delete schema template and schemas', StatusType.COMPLETED);
+                taskManager.addResult(task.taskId, result);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

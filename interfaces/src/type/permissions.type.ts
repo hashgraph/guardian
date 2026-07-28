@@ -1022,14 +1022,14 @@ export const PermissionsArray: {
         //TEMPLATES
         {
             name: Permissions.TEMPLATES_TEMPLATE_READ,
-            category: PermissionCategories.TEMPLATES,
+            category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.TEMPLATE,
             action: PermissionActions.READ,
             disabled: false
         },
         {
             name: Permissions.TEMPLATES_TEMPLATE_CREATE,
-            category: PermissionCategories.TEMPLATES,
+            category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.TEMPLATE,
             action: PermissionActions.CREATE,
             disabled: false,
@@ -1039,7 +1039,7 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TEMPLATES_TEMPLATE_UPDATE,
-            category: PermissionCategories.TEMPLATES,
+            category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.TEMPLATE,
             action: PermissionActions.UPDATE,
             disabled: false,
@@ -1050,7 +1050,7 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TEMPLATES_TEMPLATE_DELETE,
-            category: PermissionCategories.TEMPLATES,
+            category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.TEMPLATE,
             action: PermissionActions.DELETE,
             disabled: false,
@@ -1060,7 +1060,7 @@ export const PermissionsArray: {
         },
         {
             name: Permissions.TEMPLATES_TEMPLATE_REVIEW,
-            category: PermissionCategories.TEMPLATES,
+            category: PermissionCategories.SCHEMAS,
             entity: PermissionEntities.TEMPLATE,
             action: PermissionActions.REVIEW,
             disabled: false,

@@ -30,6 +30,8 @@ export enum TaskAction {
     ONBOARD_USER = 'Onboard user',
     GET_USER_TOPICS = 'Get user topics',
     CREATE_TOOL = 'Create tool',
+    CREATE_SCHEMA_TEMPLATE = 'Create schema template',
+    DELETE_SCHEMA_TEMPLATE = 'Delete schema template',
     PUBLISH_TOOL = 'Publish tool',
     IMPORT_TOOL_FILE = 'Import tool file',
     IMPORT_TOOL_MESSAGE = 'Import tool message',
