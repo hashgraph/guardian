@@ -177,7 +177,7 @@
               #validationBtn
               >
               <i class="pi pi-check-circle"></i>
-              <span>{{ validationCount > 0 ? 'Issues' : 'Valid' }}</span>
+              <span>{{ validationLabel }}</span>
               @if (validationCount > 0) {
                 <div class="error-count">{{ validationCount }}</div>
               }
@@ -199,7 +199,7 @@
             <div (click)="validationModule()" [attr.errors-count]="errorsCount"
               [attr.readonly]="!isTree" class="top-toolbar-btn all-status validation" title="Validation Module">
               <i class="pi pi-check-circle"></i>
-              <span>{{ errorsCount > 0 ? 'Issues' : 'Valid' }}</span>
+              <span>{{ validationLabel }}</span>
               @if (errorsCount>0) {
                 <div class="error-count">{{ errorsCount }}</div>
               }
@@ -221,7 +221,7 @@
             <div (click)="validationTool()" [attr.errors-count]="errorsCount"
               [attr.readonly]="!isTree" class="top-toolbar-btn all-status validation" title="Validation Tool">
               <i class="pi pi-check-circle"></i>
-              <span>{{ errorsCount > 0 ? 'Issues' : 'Valid' }}</span>
+              <span>{{ validationLabel }}</span>
               @if (errorsCount>0) {
                 <div class="error-count">{{ errorsCount }}</div>
               }

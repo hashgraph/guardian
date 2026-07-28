@@ -276,6 +276,19 @@ export class PolicyConfigurationComponent implements OnInit {
         return 0;
     }
 
+    public get validationLabel(): string {
+        if (this.rootType === 'Policy') {
+            if (this.validationLevel === 'ok') {
+                return 'Validate';
+            }
+            return this.validationCount > 0 ? 'Issues' : 'Valid';
+        }
+        if (this.errorsCount < 0) {
+            return 'Validate';
+        }
+        return this.errorsCount > 0 ? 'Issues' : 'Valid';
+    }
+
     public get hasActiveRules(): boolean {
         const rules = this.ignoreRules ?? [];
         const defaultRules = this.getDefaultIgnoreRules();
