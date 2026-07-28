@@ -12,20 +12,7 @@ import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
 import { EnumEditorDialog } from 'src/app/modules/schema-engine/enum-editor-dialog/enum-editor-dialog.component';
 import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
-
-export interface FieldType {
-    key: string;
-    label: string;
-    icon: string;
-    group: string;
-    schemaType?: string;
-    format?: string;
-    pattern?: string;
-    isRef?: boolean;
-    customType?: string;
-    unitSystem?: string;
-    accent?: boolean;
-}
+import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -87,7 +74,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public isDragOverCanvas: boolean = false;
     private _dragEnterCount: number = 0;
-    private _dragFieldType: FieldType | null = null;
+    private _dragFieldType: FieldTypeUI | null = null;
     private _dragSchema: Schema | null = null;
 
     public reorderField: SchemaField | null = null;
@@ -172,38 +159,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
     }
 
-    public readonly fieldTypes: FieldType[] = [
-        { key: 'number',        label: 'Number',      icon: 'pi-hashtag',             group: 'Simple Types',    schemaType: 'number' },
-        { key: 'integer',       label: 'Integer',     icon: 'pi-sort-numeric-up-alt', group: 'Simple Types',    schemaType: 'integer' },
-        { key: 'string',        label: 'String',      icon: 'pi-pencil',              group: 'Simple Types',    schemaType: 'string' },
-        { key: 'boolean',       label: 'Boolean',     icon: 'pi-check-square',        group: 'Simple Types',    schemaType: 'boolean' },
-        { key: 'date',          label: 'Date',        icon: 'pi-calendar',            group: 'Simple Types',    schemaType: 'string', format: 'date' },
-        { key: 'time',          label: 'Time',        icon: 'pi-clock',               group: 'Simple Types',    schemaType: 'string', format: 'time' },
-        { key: 'dateTime',      label: 'DateTime',    icon: 'pi-calendar',            group: 'Simple Types',    schemaType: 'string', format: 'date-time' },
-        { key: 'duration',      label: 'Duration',    icon: 'pi-hourglass',           group: 'Simple Types',    schemaType: 'string', format: 'duration' },
-        { key: 'url',           label: 'URL',         icon: 'pi-link',                group: 'Simple Types',    schemaType: 'string', format: 'url' },
-        { key: 'uri',           label: 'URI',         icon: 'pi-external-link',       group: 'Simple Types',    schemaType: 'string', format: 'uri' },
-        { key: 'email',         label: 'Email',       icon: 'pi-envelope',            group: 'Simple Types',    schemaType: 'string', format: 'email' },
-        { key: 'image',         label: 'Image',       icon: 'pi-image',               group: 'Simple Types',    schemaType: 'string', pattern: '^ipfs:\/\/.+' },
-        { key: 'file',          label: 'File',        icon: 'pi-upload',              group: 'Simple Types',    schemaType: 'string', pattern: '^ipfs:\/\/.+', customType: 'file' },
-        { key: 'enum',          label: 'Enum',        icon: 'pi-list',                group: 'Simple Types',    schemaType: 'string', customType: 'enum' },
-        { key: 'helptext',      label: 'Help Text',   icon: 'pi-info-circle',         group: 'Simple Types',    schemaType: 'null' },
-        { key: 'geo',           label: 'GeoJSON',     icon: 'pi-map-marker',          group: 'Simple Types',    schemaType: '#GeoJSON',     isRef: true, customType: 'geo' },
-        { key: 'sentinel',      label: 'SentinelHUB', icon: 'pi-globe',               group: 'Simple Types',    schemaType: '#SentinelHUB', isRef: true, customType: 'sentinel' },
-        { key: 'table',         label: 'Table',       icon: 'pi-table',               group: 'Simple Types',    schemaType: 'string', customType: 'table' },
-        { key: 'prefix',        label: 'Prefix',      icon: 'pi-hashtag',             group: 'Units of Measure', schemaType: 'number', unitSystem: 'prefix' },
-        { key: 'postfix',       label: 'Postfix',     icon: 'pi-hashtag',             group: 'Units of Measure', schemaType: 'number', unitSystem: 'postfix' },
-        { key: 'hederaAccount', label: 'Account',     icon: 'pi-id-card',             group: 'Hedera',           schemaType: 'string', pattern: '^\\d+\\.\\d+\\.\\d+$', customType: 'hederaAccount' },
-        { key: 'sub-schema',    label: 'Sub-schema',  icon: 'pi-sitemap',             group: 'Schema',           isRef: true, accent: true },
-    ];
+    public readonly fieldTypes: FieldTypeUI[] = FIELD_TYPES_UI;
 
     private static readonly NON_UPDATABLE_TYPES = new Set(['helptext', 'prefix', 'postfix', 'sub-schema']);
     private static readonly NON_ARRAY_TYPES = new Set(['boolean', 'helptext']);
 
     public readonly geoJsonOptions = ['Point', 'Polygon', 'LineString', 'MultiPoint', 'MultiPolygon', 'MultiLineString'];
 
-    public get fieldTypeGroups(): { group: string; types: FieldType[] }[] {
-        const groups: { group: string; types: FieldType[] }[] = [];
+    public get fieldTypeGroups(): { group: string; types: FieldTypeUI[] }[] {
+        const groups: { group: string; types: FieldTypeUI[] }[] = [];
         for (const ft of this.fieldTypes) {
             let g = groups.find(grp => grp.group === ft.group);
             if (!g) { g = { group: ft.group, types: [] }; groups.push(g); }
@@ -212,7 +176,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return groups;
     }
 
-    public get defaultFieldType(): FieldType {
+    public get defaultFieldType(): FieldTypeUI {
         return this.fieldTypes.find(ft => ft.key === 'string')!;
     }
 
@@ -612,7 +576,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
-    public addField(ft: FieldType): void {
+    public addField(ft: FieldTypeUI): void {
         if (!this.selectedSchema) { return; }
         if (this.isDrilling) { this.addDrillField(ft); return; }
         const newField = this.buildNewField(ft);
@@ -979,7 +943,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return ft?.key || 'string';
     }
 
-    public changeFieldType(ft: FieldType): void {
+    public changeFieldType(ft: FieldTypeUI): void {
         if (!this.selectedField) { return; }
         // Sub-schema fields are added by dragging from the Schemas tab; clicking the
         // tile on an existing sub-schema field is a no-op to avoid corruption.
@@ -994,6 +958,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         delete f.enum;
         if (ft.key === 'enum') { f.enum = []; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
+        f.default = null;
+        f.suggest = null;
+        f.examples = undefined;
         this._rebuildRefPreset();
         this.markDirty();
     }
@@ -1059,7 +1026,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.loadParentSchemas();
     }
 
-    public addDrillField(ft: FieldType): void {
+    public addDrillField(ft: FieldTypeUI): void {
         const newField = this.buildNewField(ft, this.drillCurrentFields);
         if (this.sidebarDropIndex !== -1) {
             const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
@@ -1081,7 +1048,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
     }
 
-    public onFieldTypeDragStart(event: DragEvent, ft: FieldType): void {
+    public onFieldTypeDragStart(event: DragEvent, ft: FieldTypeUI): void {
         this._dragFieldType = ft;
         this._dragSchema = null;
         event.dataTransfer!.effectAllowed = 'copy';
@@ -2040,7 +2007,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             });
     }
 
-    private buildNewField(ft: FieldType, contextFields?: SchemaField[]): SchemaField {
+    private buildNewField(ft: FieldTypeUI, contextFields?: SchemaField[]): SchemaField {
         const existingNames = new Set((contextFields ?? this.selectedSchema?.fields ?? []).map(f => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }

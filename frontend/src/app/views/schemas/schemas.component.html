@@ -112,13 +112,6 @@
           <p-button
             (click)="onNewInEditor()"
             class="toolbar-btn-primary"
-            [pTooltip]="'Create a schema in the new editor'"
-            tooltipPosition="bottom">
-              <svg-icon src="/assets/images/icons/auto_awesome.svg" svgClass="color-white"></svg-icon>
-          </p-button>
-          <p-button
-            (click)="onCreateSchemas()"
-            class="toolbar-btn-primary"
             [pTooltip]="'Create a Schema'"
             tooltipPosition="bottom">
             <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
@@ -502,21 +495,10 @@
                     }
                     <td class="row-cell-text" style="min-width: 145px; width: 145px; max-width: 145px;">
                       <div class="operations-row-container">
-                        <div style="margin-right: 8px;">
-                          <div
-                            (click)="onOpenInEditor(rowData)"
-                            class="btn-settings"
-                            pTooltip="Open in Editor"
-                            tooltipStyleClass="guardian-tooltip"
-                            tooltipPosition="top"
-                            >
-                            <i class="pi pi-sparkles" style="font-size:15px;color:var(--primary-color,#1d9e75)"></i>
-                          </div>
-                        </div>
                         <div style="margin-right: 12px;">
                           @if (ifCanEdit(rowData)) {
                             <div
-                              (click)="onEditSchema(rowData)"
+                              (click)="onOpenInEditor(rowData)"
                               class="btn-settings"
                               pTooltip="Edit"
                               tooltipStyleClass="guardian-tooltip"
@@ -798,16 +780,6 @@
           tooltipPosition="bottom">
         </p-button>
       }
-
-      <p-button
-        (click)="onOpenInEditor(element)"
-        label="Open in Editor"
-        icon="pi pi-sparkles"
-        class="schema-menu-btn"
-        [outlined]="true"
-        [pTooltip]="'Open in the new schema editor'"
-        tooltipPosition="bottom">
-      </p-button>
 
       @if (ifCanEdit(element)) {
         <p-button
