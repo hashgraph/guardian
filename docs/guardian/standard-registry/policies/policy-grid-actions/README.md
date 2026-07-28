@@ -7,8 +7,18 @@ reverse-engineering the internal policy block structure or touching any ephemera
 ## Concept
 
 A Guardian policy organises its UI into **grid containers** (`interfaceDocumentsSourceBlock`).
-Each grid contains **rows** (VC documents) and **action controls** (Approve/Reject selectors,
-button blocks) bound to individual columns.
+Each grid contains **rows** (VC documents) and **action controls** bound to individual columns.
+Three kinds of controls are supported:
+
+- **Selector / button actions** (Approve/Reject-style) — apply a fixed field mutation, body is `{}`.
+- **Dropdown actions** — assign a value chosen from a live list (e.g. assigning a VVB to a
+  project), body is `{ "value": "..." }`.
+- **Request-VC-document actions** — submit a form that mints a brand-new signed VC referencing
+  the row (e.g. "Submit Final Amount"), body is `{ "document": { ... } }`.
+
+The exact body shape for a given action is always described by its `inputSchema`, returned by
+[List Actions](policy-grid-actions-apis/list-actions.md) — check it rather than assuming an empty
+body works.
 
 The Grid Actions API exposes three stable abstractions:
 
@@ -129,6 +139,7 @@ Re-fetch the record — `option.status` is now `"Approved"`:
 
 | HTTP status | Meaning |
 |-------------|---------|
+| 400 | Execute Action call is missing a body field the action requires (`value` for dropdown, `document` for request-VC-document) |
 | 401 | Missing or invalid JWT |
 | 403 | Caller lacks required permission (`POLICIES_POLICY_EXECUTE` / `POLICIES_POLICY_MANAGE`) |
 | 404 | `gridId`, `actionId`, or `recordId` not found |

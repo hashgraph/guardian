@@ -49,6 +49,42 @@ Requires a valid Guardian JWT bearer token. The caller must hold at least one of
     "requiredRoles": ["Standard Registry"],
     "appliesTo": "row",
     "inputSchema": { "type": "object", "properties": {} }
+  },
+  {
+    "actionId": "assign_vvb",
+    "label": "VVB",
+    "requiredRoles": ["PROJECT_DEVELOPER"],
+    "appliesTo": "row",
+    "inputSchema": {
+      "type": "object",
+      "required": ["value"],
+      "properties": {
+        "value": {
+          "description": "Value to set on field \"assignedTo\"",
+          "enum": ["did:hedera:testnet:xxxxxx...VVB1", "did:hedera:testnet:yyyyyy...VVB2"],
+          "options": [
+            { "name": "Xeno VVB", "value": "did:hedera:testnet:xxxxxx...VVB1" },
+            { "name": "Acme VVB", "value": "did:hedera:testnet:yyyyyy...VVB2" }
+          ]
+        }
+      }
+    }
+  },
+  {
+    "actionId": "final_mint_button",
+    "label": "Submit Final Amount",
+    "requiredRoles": ["ANY_ROLE"],
+    "appliesTo": "row",
+    "inputSchema": {
+      "type": "object",
+      "required": ["document"],
+      "properties": {
+        "document": {
+          "type": "object",
+          "description": "Credential subject conforming to schema #c9efd555-0f02-4301-9b0b-792ec7edda90&1.0.0"
+        }
+      }
+    }
   }
 ]
 ```
@@ -59,7 +95,17 @@ Requires a valid Guardian JWT bearer token. The caller must hold at least one of
 | `label` | string | Human-readable action label |
 | `requiredRoles` | array | Policy roles that may execute this action |
 | `appliesTo` | string | Always `"row"` — actions target individual records |
-| `inputSchema` | object | JSON Schema for the action's request body (currently always `{}`) |
+| `inputSchema` | object | JSON Schema describing the action's request body. Shape depends on the underlying block type: |
+
+**`inputSchema` by action type:**
+
+| Underlying block | Body shape | Notes |
+|---|---|---|
+| Selector / button (e.g. Approve, Reject) | `{}` (empty) | `inputSchema.properties` is empty — no body needed |
+| Dropdown (e.g. assigning an entity to a record) | `{ "value": "<choice>" }` | `inputSchema.properties.value.enum` lists the currently valid values, resolved live (e.g. from registered entities); `.options` pairs each value with a human-readable `name` |
+| Request-VC-document (e.g. submitting a form that mints a new VC) | `{ "document": { ... } }` | `inputSchema.properties.document.description` names the schema IRI the submitted fields must conform to |
+
+See [Execute Action](execute-action.md) for full request/response examples of each shape.
 
 ### Error Responses
 

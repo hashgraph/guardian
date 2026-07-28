@@ -33,11 +33,47 @@ policy role.
 
 ### Request Body
 
-For standard selector and button actions an empty object is sufficient. The server resolves the
-document internally and applies the configured field mutation:
+The required body shape depends on the action's `inputSchema`, returned by
+[List Actions](list-actions.md). Check that response first — do not assume an empty body works.
+
+#### Selector / button actions (e.g. Approve, Reject)
+
+An empty object is sufficient. The server resolves the document internally and applies the
+configured field mutation:
 
 ```json
 {}
+```
+
+#### Dropdown actions (e.g. assigning an entity to a record)
+
+Send the chosen `value` — it must be one of the values listed in the action's
+`inputSchema.properties.value.enum` (from List Actions). The server writes it onto the field
+named in that action's description (e.g. `assignedTo`) and triggers the block's event chain:
+
+```json
+{ "value": "did:hedera:testnet:xxxxxx...VVB1" }
+```
+
+Omitting `value` returns `400 Bad Request`:
+```json
+{ "statusCode": 400, "message": "This action requires a \"value\" body field with the selected option value" }
+```
+
+#### Request-VC-document actions (e.g. submitting a form that mints a new VC)
+
+Send the caller-editable fields under `document`, matching the schema named in the action's
+`inputSchema.properties.document.description`. Read-only fields (`@context`, `type`, `policyId`,
+`ref`, etc.) are populated server-side — do not include them. This creates a brand-new signed VC
+referencing the current record; it is **not idempotent**.
+
+```json
+{ "document": { "finalMintAmount": 1500 } }
+```
+
+Omitting `document` returns `400 Bad Request`:
+```json
+{ "statusCode": 400, "message": "This action requires a \"document\" body with the form fields to submit" }
 ```
 
 ---
@@ -57,6 +93,7 @@ chain. Re-fetch [Get Records](get-records.md) to observe the updated field value
 
 | Status | Description |
 |--------|-------------|
+| `400 Bad Request` | Required body field missing for this action's type (`value` for dropdown, `document` for request-VC-document) |
 | `401 Unauthorized` | JWT token missing or invalid |
 | `403 Forbidden` | Insufficient permissions, or caller's role does not satisfy the action's `requiredRoles` |
 | `404 Not Found` | `gridId`, `actionId`, or `recordId` not found |

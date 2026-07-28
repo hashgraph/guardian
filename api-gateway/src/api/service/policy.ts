@@ -8609,9 +8609,15 @@ export class PolicyApi {
             'option value without exposing any internal block UUID.\n\n' +
             '**Typical flow:**\n' +
             '1. `GET /grids` — discover `gridId` values\n' +
-            '2. `GET /grids/{gridId}/actions` — discover `actionId` values\n' +
+            '2. `GET /grids/{gridId}/actions` — discover `actionId` values and required body shape\n' +
             '3. `GET /grids/{gridId}/records` — get `_id` of the target record\n' +
-            '4. `POST /grids/{gridId}/records/{_id}/actions/{actionId}` with body `{}` — execute\n\n' +
+            '4. `POST /grids/{gridId}/records/{_id}/actions/{actionId}` — execute\n\n' +
+            '**Request body depends on the action\'s `inputSchema` (from step 2):**\n' +
+            '- Selector/button actions (e.g. Approve/Reject): body is `{}`.\n' +
+            '- Dropdown actions (e.g. assigning an entity to a record): body is ' +
+            '`{ "value": "<one of inputSchema.properties.value.enum>" }`.\n' +
+            '- Request-VC-document actions (e.g. submitting a form that mints a new VC): body is ' +
+            '`{ "document": { ...fields matching the action\'s schema... } }`.\n\n' +
             '**Response body:** `{}` — the action triggers an internal workflow event; ' +
             'the 200 status code is the success signal.',
     })
@@ -8645,17 +8651,25 @@ export class PolicyApi {
     })
     @ApiBody({
         description:
-            'Action-specific payload. For standard selector/button actions ' +
-            'an empty object `{}` is sufficient. Validated server-side against ' +
-            'the action\'s inputSchema.',
+            'Action-specific payload, shaped by the action\'s `inputSchema` ' +
+            '(see List Actions). Validated server-side.',
         schema: { type: 'object' },
         examples: {
             'Standard action (empty body)': { value: {} },
+            'Dropdown action': { value: { value: 'did:hedera:testnet:z...vvbDid' } },
+            'Request-VC-document action': { value: { document: { finalMintAmount: 1500 } } },
         },
     })
     @ApiOkResponse({
         description: 'Action executed successfully. Returns the block execution result.',
         schema: { type: 'object' },
+    })
+    @ApiBadRequestResponse({
+        description:
+            'Action requires a body field that was not supplied (e.g. `value` for a dropdown ' +
+            'action, or `document` for a request-VC-document action).',
+        type: BadRequestErrorDTO,
+        example: { statusCode: 400, message: 'This action requires a "value" body field with the selected option value' },
     })
     @ApiNotFoundResponse({
         description: 'Grid, action, or record not found.',
