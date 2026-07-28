@@ -19,6 +19,7 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public model: FieldForm | null;
     public loading: boolean = true;
     public hasNavigation = true;
+    public navCollapsed = false;
     public navFields: IFieldControl<any>[] = [];
 
     private startX: number = 0;
@@ -217,6 +218,11 @@ export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public preset(data: any) {
         this.presetDocument = data;
         this.buildFields();
+        this.changeDetectorRef.detectChanges();
+    }
+
+    public toggleNav(): void {
+        this.navCollapsed = !this.navCollapsed;
         this.changeDetectorRef.detectChanges();
     }
 

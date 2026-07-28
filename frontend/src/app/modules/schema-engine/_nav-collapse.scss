@@ -1,0 +1,67 @@
+// Shared chrome for the collapsible schema navigation panel.
+// Used by schema-form-root and document-view so both dialogs share one
+// collapse/expand mechanism.
+
+.nav-collapse-header {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    height: 32px;
+    min-height: 32px;
+    padding: 0 4px 0 8px;
+    background: var(--guardian-background, #fff);
+    border-bottom: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+}
+
+.nav-collapse-title {
+    flex: 1 1 auto;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--guardian-disabled-color, #848fa9);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.nav-collapse-btn {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    cursor: pointer;
+    color: var(--guardian-disabled-color, #848fa9);
+    transition: background 0.2s ease, color 0.2s ease;
+
+    &:hover {
+        background: rgba(65, 105, 226, 0.08);
+        color: var(--primary-color);
+    }
+
+    i {
+        font-size: 12px;
+    }
+}
+
+.nav-collapse-rail {
+    flex: 0 0 auto;
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: center;
+    padding-top: 4px;
+    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+    border-radius: 6px;
+    background: var(--guardian-background, #fff);
+}

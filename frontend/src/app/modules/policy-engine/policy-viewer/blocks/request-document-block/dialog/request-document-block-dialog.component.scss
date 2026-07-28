@@ -11,6 +11,34 @@
 
 .dialog-header {
     padding: 32px 32px 24px 32px !important;
+    align-items: center;
+    gap: 12px;
+
+    // Let the title flow so the compact header actions and icons align to
+    // the right without overlapping it.
+    .header-container {
+        position: static;
+        right: auto;
+        top: auto;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .header-action {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 14px;
+        white-space: nowrap;
+
+        .svg-icon {
+            display: inline-flex;
+            width: 16px;
+            height: 16px;
+        }
+    }
 
     .header-item {
         padding: 6px 12px;
@@ -155,37 +183,6 @@ form {
         .dialog-button[visible="true"] {
             display: block !important;
         }
-    }
-}
-
-.restore-data {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-color);
-    background: var(--guardian-grey-background, #F9FAFC);
-    border: 1px solid var(--guardian-border-color);
-    height: 52px;
-    min-height: 52px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    margin-right: 32px;
-
-    svg-icon {
-        height: 30px;
-        padding: 2px;
-        width: 36px;
-    }
-
-    b {
-        height: 30px;
-        line-height: 30px;
-        padding-right: 16px;
-    }
-
-    button {
-        height: 30px;
-        padding: 0px 30px 0px 12px;
     }
 }
 
