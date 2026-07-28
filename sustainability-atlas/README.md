@@ -4,7 +4,7 @@ A standalone application that indexes Hedera Guardian blockchain data into Postg
 
 ## Architecture
 
-```
+```text
     Data Sources (public, no auth)
     ──────────────────────────────
     Hedera Mirror Node REST API
@@ -122,11 +122,11 @@ WORKER_QUEUES=mirror-node-tokens,maintenance-*
 
 Glob patterns are supported. If `WORKER_QUEUES` is empty, all queues are processed (single-instance mode).
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for full details on deduplication, leader election, watermark resumption, and business data mapping.
+See [ARCHITECTURE.md](docs/architecture/README.md) for full details on deduplication, leader election, watermark resumption, and business data mapping.
 
 ## Project Structure
 
-```
+```text
 sustainability-atlas/
 ├── src/
 │   ├── shared/                     Shared configuration & entities
@@ -139,7 +139,7 @@ sustainability-atlas/
 ├── frontend/                       Nuxt 3 application
 ├── docker-compose.yml              PostgreSQL + Redict + Worker
 ├── Dockerfile                      Multi-stage build
-├── ARCHITECTURE.md                 Data pipeline deep-dive
+├── docs/architecture/README.md     Data pipeline deep-dive
 └── .env.example                    Environment variable template
 ```
 
@@ -149,39 +149,52 @@ sustainability-atlas/
 Set `IPFS_GATEWAYS=https://gateway1.io/ipfs/,https://gateway2.io/ipfs/` (comma-separated). Per-gateway timeout: `IPFS_FETCH_TIMEOUT` (default: 180000 ms). All gateways are tried in order before a job fails.
 
 ### IPFS failure persistence
-Permanent failures (404, invalid CID, 410 Gone) are immediately moved to the failed set without consuming remaining retries (`UnrecoverableError`). Transient failures (network timeouts, 5xx errors) retry per the BullMQ `attempts` config (5x for IPFS). All failures are persisted to the `ipfs_fetch_failure` table with error category, attempt count, and last error text. On subsequent successful fetch the failure record is removed and an `ipfs-fetch-recovered` event is published.
+
+| Failure type | Examples | Retry behaviour |
+|---|---|---|
+| Permanent | 404, invalid CID, 410 Gone | Immediately moved to the failed set without consuming remaining retries (`UnrecoverableError`) |
+| Transient | Network timeouts, 5xx errors | Retry per the BullMQ `attempts` config (5x for IPFS) |
+
+All failures are persisted to the `ipfs_fetch_failure` table with error category, attempt count, and last error text. On subsequent successful fetch the failure record is removed and an `ipfs-fetch-recovered` event is published.
 
 ### Manual retry budget
 Via the API, failed jobs can be manually retried. The `manualRetryCount` column in `ipfs_fetch_failure` tracks how many times a CID has been manually re-queued, allowing the API layer to enforce retry budgets (e.g. max 3 manual retries before requiring `{ force: true }`).
 
 ### In-process autoscaler
 `QueueAutoscalerService` adjusts BullMQ worker concurrency at runtime without restarting the process. Concurrency bounds are:
-- Minimum: startup baseline from `getQueueConfigs()` (env-var controlled, e.g. `WORKER_IPFS_CONCURRENCY=3`)
-- Maximum: `WORKER_<QUEUE>_MAX_CONCURRENCY` env var, or `max(baseline * 4, baseline + 4)` if unset
+
+| Bound | Value |
+|---|---|
+| Minimum | Startup baseline from `getQueueConfigs()` (env-var controlled, e.g. `WORKER_IPFS_CONCURRENCY=3`) |
+| Maximum | `WORKER_<QUEUE>_MAX_CONCURRENCY` env var, or `max(baseline * 4, baseline + 4)` if unset |
 
 Example env var names (replace hyphens with underscores, uppercase):
 - `WORKER_IPFS_FILES_MAX_CONCURRENCY`
 - `WORKER_MIRROR_NODE_TOPICS_MAX_CONCURRENCY`
 
 Scaling rules (checked every 30s, leader-elected per network):
-- Scale up: `waiting > 100` → `concurrency += 2` (immediate)
-- Scale down: `waiting < 10` and `active < 50% concurrency` for 2 consecutive cycles → `concurrency -= 1`
 
-**For production load, scale horizontally** (more worker containers with `WORKER_QUEUES` partitioning). In-process scaling is a smoothing layer only.
+| Rule | Condition | Action |
+|---|---|---|
+| Scale up | `waiting > 100` | `concurrency += 2` (immediate) |
+| Scale down | `waiting < 10` and `active < 50% concurrency` for 2 consecutive cycles | `concurrency -= 1` |
+
+> **NOTE:** For production load, scale horizontally (more worker containers with `WORKER_QUEUES` partitioning). In-process scaling is a smoothing layer only.
 
 ### Nginx / reverse proxy (SSE)
 Add `proxy_buffering off;` to the nginx location block serving `/api/v1/*/queues/events` to prevent SSE buffering.
 
 ## Documentation
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** — Data pipeline architecture, deduplication, leader election, horizontal scaling, business data mapping
-- **[.env.example](.env.example)** — All environment variables with descriptions
+- [ARCHITECTURE.md](docs/architecture/README.md) — Data pipeline architecture, deduplication, leader election, horizontal scaling, business data mapping
+- [.env.example](.env.example) — All environment variables with descriptions
 
 
 ## DB and IPFS Snapshot
-https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDqwQbsnJiEToYRg_FDsW7wAQhprkY5LieaImuQFXGQH_8?e=NW53Jw
-wget --content-disposition --trust-server-names \
-"https://xeptagoncom-my.sharepoint.com/:u:/g/personal/palinda_xeptagon_com/IQDqwQbsnJiEToYRg_FDsW7wAQhprkY5LieaImuQFXGQH_8?e=NW53Jw&download=1"
+
+A pre-built database and IPFS snapshot can be restored instead of re-indexing from Hedera, which
+takes considerably longer. See [snapshot/README.md](snapshot/README.md) for the export and import
+scripts and the `docker-compose` bind-mount they use.
 
 ## License
 

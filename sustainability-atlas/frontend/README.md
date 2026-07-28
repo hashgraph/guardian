@@ -29,7 +29,7 @@ App runs at http://localhost:3000
 
 ## Project Structure
 
-```
+```text
 frontend/
 ├── app.vue                     Root component
 ├── nuxt.config.ts              Nuxt config (Tailwind, proxy, SSR)
@@ -38,32 +38,42 @@ frontend/
 │
 ├── components/
 │   ├── ui/                     shadcn-vue primitives (auto-imported, no prefix)
-│   │   ├── Button.vue          CVA variants: default/destructive/outline/secondary/ghost/link
-│   │   ├── Card.vue            Container card
-│   │   ├── CardHeader.vue      Card header section
-│   │   ├── CardTitle.vue       Card title text
-│   │   ├── CardDescription.vue Card subtitle text
-│   │   ├── CardContent.vue     Card body section
-│   │   ├── Badge.vue           CVA variants: default/secondary/outline/destructive
-│   │   ├── Skeleton.vue        Animated loading placeholder
-│   │   └── Input.vue           Styled input with v-model
-│   └── layout/
-│       └── AppSidebar.vue      Collapsible sidebar with Lucide icons
+│   │                           Badge, Button, Card*, Checkbox, DropdownMenu*,
+│   │                           Input, Select, Skeleton, Tabs
+│   ├── layout/                 App shell: sidebar, topbar, help menu, product tour
+│   ├── auth/                   Sign-in / sign-up / password modals
+│   ├── shared/                 Cross-page widgets (filter bar, feedback widget)
+│   ├── account/                Account-settings cards
+│   ├── admin/                  Admin-only controls
+│   ├── portfolio/              Watchlist and widget library
+│   ├── project/                Project-record tabs and panels
+│   ├── reports/                Report builder and export controls
+│   └── saved-search/           Saved quick-filter controls
 │
 ├── layouts/
 │   └── default.vue             Sidebar + main content area
 │
 ├── pages/                      File-based routing
 │   ├── index.vue               Dashboard
-│   ├── projects/index.vue      Projects list
-│   ├── credits/index.vue       Credits list
-│   ├── methodologies/index.vue Methodologies list
-│   ├── organizations/index.vue Organizations list
-│   ├── analytics/index.vue     Analytics overview
-│   ├── search.vue              Full-text search
-│   └── status.vue              Sync status dashboard
+│   ├── projects/               List, [id] record, compare
+│   ├── credits/                List and [id] record
+│   ├── methodologies/          List and [id] record
+│   ├── registries/             List and [id] record
+│   ├── developers/             Developer catalogue
+│   ├── analytics/              Stakeholder analytics views
+│   ├── portfolio/              Personal dashboard (auth)
+│   ├── reports/                Exports and disclosure guidance (auth)
+│   ├── account/                Account settings (auth)
+│   ├── admin/users/            User management (admin)
+│   ├── sdgs.vue                SDG catalogue
+│   ├── glossary.vue            Glossary of terms
+│   ├── status.vue              Sync status dashboard
+│   ├── verify-email.vue        Email verification landing
+│   └── reset-password.vue      Password reset landing
 │
-├── composables/                TanStack Query hooks (add as needed)
+├── composables/                TanStack Query hooks and shared state
+├── middleware/                 auth, admin, network route guards
+├── i18n/locales/               en.json / es.json
 ├── plugins/
 │   └── tanstack-query.ts       TanStack Query setup with SSR hydration
 └── types/                      TypeScript interfaces
@@ -127,7 +137,7 @@ In development, `/api/v1/**` requests are proxied to the backend at `http://loca
 
 Nuxt uses file-based routing. To add a new page:
 
-```
+```text
 pages/
   projects/
     index.vue         → /projects

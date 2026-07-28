@@ -6,7 +6,7 @@ Hedera network from scratch.
 
 ## What a snapshot contains
 
-```
+```text
 snapshot/
   postgres-init/
     01-restore.sql.gz     # full `pg_dumpall` of every per-network database
@@ -28,7 +28,7 @@ only fetch from IPFS for missing CIDs.
 
 ## Producing a snapshot
 
-```
+```text
 scripts/export-snapshot.sh
 ```
 
@@ -45,7 +45,7 @@ Ship that tarball.
 
 On the target host:
 
-```
+```text
 scripts/import-snapshot.sh sustainability-atlas-snapshot-<timestamp>.tar.gz
 docker compose up -d
 ```

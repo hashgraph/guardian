@@ -24,7 +24,7 @@ This traces the real mainnet lifecycle of DOVU's "ISO14064 Forest Conservation" 
 
 DOVU announces itself on the **seed topic** (`0.0.1368856`):
 
-```
+```text
 Message type:   Standard Registry
 Action:         Init
 Topic:          0.0.1368856 (seed)
@@ -38,7 +38,7 @@ This creates the registry's identity. The DID embeds the **user topic** `0.0.835
 
 DOVU creates a policy on its **user topic**:
 
-```
+```text
 Message type:   Policy
 Action:         create-policy
 Topic:          0.0.8355607 (user topic)
@@ -51,7 +51,7 @@ This is just a draft — the policy is being designed, not live yet.
 
 Two paired `Topic` messages establish the parent-child link:
 
-```
+```text
 Topic create-topic on 0.0.8355634 → parentId: 0.0.8355607   (POLICY_TOPIC)
 Topic create-topic on 0.0.8355607 → childId:  0.0.8355634   (POLICY_TOPIC)
 ```
@@ -62,7 +62,7 @@ Topic create-topic on 0.0.8355607 → childId:  0.0.8355634   (POLICY_TOPIC)
 
 The draft goes live:
 
-```
+```text
 Message type:   Instance-Policy
 Action:         publish-policy
 Topic:          0.0.8356045 (policy topic)
@@ -74,7 +74,7 @@ This `Instance-Policy` message is the **canonical methodology** — the one we d
 
 ### Step 5: Guardian Creates an Instance Policy Topic
 
-```
+```text
 Topic create-topic on 0.0.8356056 → parentId: 0.0.8356045   (INSTANCE_POLICY_TOPIC)
 Topic create-topic on 0.0.8356045 → childId:  0.0.8356056   (INSTANCE_POLICY_TOPIC)
 ```
@@ -85,7 +85,7 @@ Topic create-topic on 0.0.8356045 → childId:  0.0.8356056   (INSTANCE_POLICY_T
 
 When someone registers a project under this policy, Guardian creates a **dynamic topic**:
 
-```
+```text
 Topic create-topic on 0.0.8356180 → parentId: 0.0.8356056   (DYNAMIC_TOPIC, name="Project")
 Topic create-topic on 0.0.8356056 → childId:  0.0.8356180   (DYNAMIC_TOPIC, name="Project")
 ```
@@ -96,7 +96,7 @@ Topic create-topic on 0.0.8356056 → childId:  0.0.8356180   (DYNAMIC_TOPIC, na
 
 Verifiable Credentials (site data, MRV reports, issuance claims) are published on the instance policy topic or on dynamic project topics:
 
-```
+```text
 VC-Document on 0.0.8356056   ← 23 VCs directly on the instance topic
 VC-Document on 0.0.8356180   ← VCs on the project's dynamic topic
 ```
@@ -105,7 +105,7 @@ These carry the actual sustainability data: project descriptions, carbon removal
 
 ## The Full Tree
 
-```
+```text
 0.0.1368856  SEED TOPIC (global Guardian entry point)
 │
 ├── Standard Registry "DOVU" registers (Init)

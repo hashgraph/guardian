@@ -4,7 +4,7 @@ This document describes how the Sustainability Atlas worker ingests data from th
 
 ## High-Level Topology
 
-```
+```text
                  ┌──────────────────────────────────────────┐
                  │              FRONTEND (Nuxt 3)           │
                  │  ┌──────────────────────────────────┐    │
@@ -55,7 +55,7 @@ This document describes how the Sustainability Atlas worker ingests data from th
 
 ## Pipeline Overview
 
-```
+```text
 Hedera Mirror Node REST API          IPFS Gateways
 (public, no auth)                    (public, multi-gateway fallback)
          │                                    │
@@ -163,7 +163,7 @@ BullMQ's `jobId` parameter prevents duplicate work across all workers. Every job
 
 When multiple worker instances start simultaneously, they all read from the same `topic_cache` table and try to enqueue the same jobs. BullMQ checks the `jobId` in Redict — if a job with that ID already exists (pending, active, or recently completed), the duplicate is silently ignored.
 
-```
+```text
 Worker-1: enqueue topic-0.0.12345-init  →  OK (first)
 Worker-2: enqueue topic-0.0.12345-init  →  ignored (already exists)
 Worker-3: enqueue topic-0.0.12345-init  →  ignored (already exists)
@@ -208,7 +208,7 @@ Repeating maintenance jobs (MV refresh every 60s, business view build every 5min
 
 ### Mechanism
 
-```
+```text
 SET se:scheduler:leader {instance_id} EX 30 NX
 ```
 
@@ -218,7 +218,7 @@ SET se:scheduler:leader {instance_id} EX 30 NX
 
 ### Lifecycle
 
-```
+```text
 ┌─ Startup ──────────────────────────────────────────────────┐
 │                                                            │
 │  Worker-1: SET NX → OK           (becomes leader)          │
@@ -362,7 +362,7 @@ The system tracks sync progress so it can resume after restarts without reproces
 
 ### topic_cache
 
-```
+```text
 topicId: 0.0.12345
 messages: 847          ← last processed sequence number
 hasNext: true          ← more messages available
@@ -373,7 +373,7 @@ On restart: enqueues `{topicId: '0.0.12345', fromSequenceNumber: 847}` → resum
 
 ### token_cache
 
-```
+```text
 tokenId: 0.0.48291
 serialNumber: 300      ← last processed NFT serial
 hasNext: true          ← more serials available
@@ -385,7 +385,7 @@ On restart: enqueues `{tokenId: '0.0.48291', fromSerial: 300}` → resumes from 
 
 Both topic and token processors use self-enqueuing pagination:
 
-```
+```text
 Processor fetches 100 items (Mirror Node page limit)
   ├─ If < 100 items: done, set hasNext = false
   └─ If = 100 items: more data exists
@@ -425,7 +425,7 @@ The system supports multiple Hedera networks simultaneously (mainnet, testnet, p
 
 Each network gets its own database:
 
-```
+```text
 {GUARDIAN_ENV}_{network}_{DB_DATABASE}
 ```
 
@@ -480,7 +480,7 @@ At startup:
 
 Instead of a `?network=` query parameter, the network is part of the URL path:
 
-```
+```text
 GET  /api/v1/mainnet/registries
 GET  /api/v1/testnet/registries
 GET  /api/v1/mainnet/registries/did:hedera:mainnet:...
@@ -525,7 +525,7 @@ Per-network databases won because they provide perfect isolation with minimal ad
 
 ### Request flow
 
-```
+```text
  HTTP Request
  GET /api/v1/mainnet/registries?search=DOVU&page=1
         │
@@ -572,7 +572,7 @@ Per-network databases won because they provide perfect isolation with minimal ad
 
 All PostgreSQL-specific features live in a concrete repository implementation. Services depend only on the abstract class:
 
-```
+```text
 src/api/repositories/
 ├── registry.repository.ts      ← abstract class (interface)
 └── pg-registry.repository.ts   ← PostgreSQL implementation
@@ -712,7 +712,7 @@ const baseURL = import.meta.server
 
 ### Network selection flow
 
-```
+```text
 ┌──────────────────────────────────────────┐
 │ Topbar network selector                  │
 │   useNetwork() → ref('mainnet' | ...)    │
