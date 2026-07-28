@@ -98,7 +98,6 @@ import { ComparePolicyDialog } from './dialogs/compare-policy-dialog/compare-pol
 import { NewModuleDialog } from './dialogs/new-module-dialog/new-module-dialog.component';
 import { PolicyWizardDialogComponent } from './dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
 import { NewPolicyDialog } from './dialogs/new-policy-dialog/new-policy-dialog.component';
-import { NewThemeDialog } from './dialogs/new-theme-dialog/new-theme-dialog.component';
 import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
@@ -281,7 +280,6 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         NewModuleDialog,
         TagsManagerBlockComponent,
         NewPolicyDialog,
-        NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
