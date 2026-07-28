@@ -744,7 +744,7 @@
                   }
                   @for (item of openModulePath; track item) {
                     <i class="pi pi-chevron-right canvas-breadcrumb-sep"></i>
-                    <span class="canvas-breadcrumb-item" [class.active]="openFolder===item"
+                    <span class="canvas-breadcrumb-item" [class.active]="isOpenFolder(item)"
                       (click)="onOpenModule(item)">
                       @if (item.isTool) {
                         <svg-icon svgClass="tool-icon" src="/assets/images/icons/handyman.svg"></svg-icon>

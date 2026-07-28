@@ -166,6 +166,9 @@ export class PolicyConfigurationComponent implements OnInit {
     private _destroy$ = new Subject<void>();
     private indexedDb: IndexedDbRegistryService;
 
+    public openToolBlock: PolicyFolder | undefined;
+    private toolFolders: Map<string, ToolTemplate> = new Map<string, ToolTemplate>();
+
     public ignoreRules: IgnoreRule[] = [];
     public artifactsCollapsed: boolean = false;
 
@@ -347,17 +350,17 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public get openModulePath(): PolicyBlock[] {
-        const openPath = this.getModulePath(this.openFolder);
+        const openPath = this.getModulePath(this.openToolBlock || this.openFolder);
         const selectedPath = this.getModulePath(this.currentBlock);
         return selectedPath.length > openPath.length ? selectedPath : openPath;
     }
 
-    public get rootReadonly(): boolean {
-        return !!this.rootTemplate?.readonly;
+    public isOpenFolder(item: any): boolean {
+        return this.openFolder === item || this.openToolBlock === item;
     }
 
-    private isToolFolder(folder: any): boolean {
-        return !!folder?.isTool;
+    public get rootReadonly(): boolean {
+        return !!this.rootTemplate?.readonly;
     }
 
     private getToolFolder(block: any): PolicyFolder | undefined {
@@ -409,6 +412,8 @@ export class PolicyConfigurationComponent implements OnInit {
         this.errorsCount = -1;
         this.errorsMap = {};
         this.currentView = 'blocks';
+        this.toolFolders.clear();
+        this.openToolBlock = undefined;
         this.policyId = this.route.snapshot.queryParams.policyId;
         this.moduleId = this.route.snapshot.queryParams.moduleId;
         this.toolId = this.route.snapshot.queryParams.toolId;
@@ -891,6 +896,7 @@ export class PolicyConfigurationComponent implements OnInit {
             this.openFolder =
                 this.rootTemplate.getModule(this.openFolder) ||
                 this.rootTemplate.getRootModule();
+            this.openToolBlock = undefined;
 
             this.currentBlock = this.openFolder.root;
             this.updateMenuStatus();
@@ -1221,7 +1227,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private saveCodeConfig() {
-        if (!['json', 'yaml'].includes(this.currentView)) {
+        if (!['json', 'yaml'].includes(this.currentView) || this.readonly) {
             return true;
         }
         this.errors = [];
@@ -1901,24 +1907,78 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     public onOpenModule(module: any) {
-        if (module === this.openFolder || !this.saveCodeConfig()) {
+        if (module === this.openFolder || module === this.openToolBlock || !this.saveCodeConfig()) {
             return;
         }
-        const item = this.rootTemplate.getModule(module) || this.getToolFolder(module);
+        const item = this.rootTemplate.getModule(module);
         if (item) {
-            this.openType = 'Sub';
-            this.openFolder = item;
-            this.setReadonly(this.rootTemplate.readonly || this.isToolFolder(item));
-            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
-            if (this.currentView === 'json') {
-                this.code = this.objectToJson(this.openFolder.getJSON());
-            }
-            if (this.currentView === 'yaml') {
-                this.code = this.objectToYaml(this.openFolder.getJSON());
-            }
-            this.changeDetector.detectChanges();
+            this.openSubFolder(item, undefined);
+            return;
+        }
+        const toolBlock = this.getToolFolder(module);
+        if (toolBlock) {
+            this.openToolBlockFolder(toolBlock);
+            return;
         }
         this.updateMenuStatus();
+    }
+
+    private openSubFolder(folder: PolicyFolder, toolBlock: PolicyFolder | undefined): void {
+        this.openType = 'Sub';
+        this.openFolder = folder;
+        this.openToolBlock = toolBlock;
+        this.setReadonly(this.rootTemplate.readonly || !!toolBlock);
+        this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
+        if (this.currentView === 'json') {
+            this.code = this.objectToJson(this.openFolder.getJSON());
+        }
+        if (this.currentView === 'yaml') {
+            this.code = this.objectToYaml(this.openFolder.getJSON());
+        }
+        this.changeDetector.detectChanges();
+        this.updateMenuStatus();
+    }
+
+    private openToolBlockFolder(toolBlock: any): void {
+        const messageId: string = toolBlock.messageId;
+        const cached = messageId ? this.toolFolders.get(messageId) : undefined;
+        if (cached) {
+            this.openSubFolder(cached.getRootModule(), toolBlock);
+            return;
+        }
+        const menuItem = messageId ? this.tools.find(messageId) : undefined;
+        if (!menuItem || !menuItem.id) {
+            this.toastService.error(
+                'The configuration of this tool is not available.',
+                'Cannot open tool.'
+            );
+            return;
+        }
+        this.loading = true;
+        forkJoin([
+            this.toolsService.getById(menuItem.id),
+            this.schemaService.getSchemas(menuItem.topicId)
+        ])
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(([tool, schemas]) => {
+                const template = new ToolTemplate(tool);
+                this.loading = false;
+                if (!template.valid) {
+                    this.toastService.error(
+                        'The configuration of this tool is not available.',
+                        'Cannot open tool.'
+                    );
+                    return;
+                }
+                template.setTokens(this.tokens);
+                template.setSchemas(SchemaHelper.map(schemas) || []);
+                template.setTools(this.tools.items);
+                this.toolFolders.set(messageId, template);
+                this.openSubFolder(template.getRootModule(), toolBlock);
+            }, ({ message }) => {
+                this.loading = false;
+                console.error(message);
+            });
     }
 
     public onConvertToModule() {
@@ -1943,6 +2003,7 @@ export class PolicyConfigurationComponent implements OnInit {
         }
         this.rootTemplate = root;
         this.openFolder = root?.getRootModule();
+        this.openToolBlock = undefined;
         this.openType = 'Root';
         this.setReadonly(root.readonly);
         if (this.currentView === 'json') {
