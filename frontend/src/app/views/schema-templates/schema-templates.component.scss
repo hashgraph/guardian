@@ -1,0 +1,103 @@
+.schema-template-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+
+.schema-template-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.schema-template-status {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.schema-template-status-green {
+    color: #1b5e20;
+    background: #e8f5e9;
+}
+
+.schema-template-status-red {
+    color: #b71c1c;
+    background: #ffebee;
+}
+
+.schema-template-status-blue {
+    color: #0d47a1;
+    background: #e3f2fd;
+}
+
+.schema-template-status-grey {
+    color: #424242;
+    background: #f5f5f5;
+}
+
+.schema-template-link {
+    padding: 0;
+    color: var(--primary-color);
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+}
+
+.schema-template-link:disabled {
+    color: var(--guardian-disabled-color, #999);
+    cursor: default;
+}
+
+.schema-template-empty {
+    padding: 32px;
+    color: var(--guardian-grid-color);
+    text-align: center;
+}
+
+.schema-template-form {
+    display: grid;
+    gap: 16px;
+}
+
+.schema-template-form label {
+    display: grid;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.schema-template-form input,
+.schema-template-form textarea {
+    width: 100%;
+}
+
+.col-name {
+    min-width: 180px;
+    max-width: 240px;
+}
+
+.col-description {
+    min-width: 220px;
+    max-width: 320px;
+}
+
+.col-version,
+.col-status,
+.col-schemas {
+    min-width: 120px;
+}
+
+.col-topic {
+    min-width: 180px;
+}
+
+.col-actions {
+    min-width: 170px;
+    width: 170px;
+}

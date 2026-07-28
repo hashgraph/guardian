@@ -1,0 +1,171 @@
+@if (loading) {
+  <div class="loading">
+    <div class="preloader-image preloader-image-l-size"></div>
+  </div>
+} @else {
+  <div class="guardian-page">
+    <div class="guardian-user-page-header">Schema Templates</div>
+
+    @if (!isConfirmed) {
+      <div class="not-exist">
+        Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+      </div>
+    }
+
+    @if (isConfirmed) {
+      <div class="actions-container">
+        <div></div>
+        <div class="schema-template-actions">
+          @if (canCreate) {
+            <p-button
+              (click)="openCreateDialog()"
+              class="toolbar-btn-primary"
+              label="Create New"
+              [pTooltip]="'Create New'"
+              tooltipPosition="bottom">
+              <svg-icon src="/assets/images/icons/add.svg" svgClass="color-white"></svg-icon>
+            </p-button>
+          }
+        </div>
+      </div>
+
+      @if (templates.length > 0) {
+        <div class="guardian-grid-container">
+          <p-table
+            [value]="templates"
+            [paginator]="true"
+            [rows]="pageSize"
+            [totalRecords]="total"
+            [lazy]="true"
+            (onPage)="onPage($event)"
+            class="guardian-grid-table"
+            [scrollable]="true">
+            <ng-template pTemplate="header">
+              <tr class="guardian-grid-header">
+                <th class="header-cell-text col-name">Name</th>
+                <th class="header-cell-text col-description">Description</th>
+                <th class="header-cell-text col-version">Version</th>
+                <th class="header-cell-text col-status">Status</th>
+                <th class="header-cell-text col-schemas">Schemas</th>
+                <th class="header-cell-text col-topic">Hedera Topic Id</th>
+                <th class="header-cell-text col-actions">Operations</th>
+              </tr>
+            </ng-template>
+            <ng-template let-template pTemplate="body">
+              <tr class="guardian-grid-row">
+                <td class="row-cell-text col-name" pTooltip="{{ template.name }}" tooltipPosition="top">
+                  <span class="text-truncate">{{ template.name || '-' }}</span>
+                </td>
+                <td class="row-cell-text col-description" pTooltip="{{ template.description }}" tooltipPosition="top">
+                  <span class="text-truncate">{{ template.description || '-' }}</span>
+                </td>
+                <td class="row-cell-text col-version">
+                  {{ template.version || '-' }}
+                </td>
+                <td class="row-cell-text col-status">
+                  <div class="schema-template-status schema-template-status-{{ getStatusColor(template.status) }}">
+                    {{ getStatusLabel(template.status) }}
+                  </div>
+                </td>
+                <td class="row-cell-text col-schemas">
+                  <button
+                    type="button"
+                    class="schema-template-link"
+                    (click)="openSchemas(template)"
+                    [disabled]="!template.topicId">
+                    {{ template.schemasCount || 0 }} schemas
+                  </button>
+                </td>
+                <td class="row-cell-text col-topic">
+                  @if (template.topicId) {
+                    <hedera-explorer [params]="template.topicId" type="topics">
+                      {{ template.topicId }}
+                    </hedera-explorer>
+                  } @else {
+                    -
+                  }
+                </td>
+                <td class="row-cell-text col-actions">
+                  <div class="schema-template-row-actions">
+                    <p-button
+                      (click)="openSchemas(template)"
+                      [pTooltip]="'Open Schemas'"
+                      class="toolbar-btn-primary"
+                      tooltipPosition="bottom">
+                      <svg-icon src="/assets/images/icons/edit.svg" svgClass="color-white"></svg-icon>
+                    </p-button>
+                    @if (canEdit(template)) {
+                      <p-button
+                        (click)="openEditDialog(template)"
+                        [pTooltip]="'Edit'"
+                        class="toolbar-btn-secondary"
+                        [outlined]="true"
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/edit.svg" svgClass="primary-color"></svg-icon>
+                      </p-button>
+                    }
+                    @if (canDelete(template)) {
+                      <p-button
+                        (click)="deleteTemplate(template)"
+                        [pTooltip]="'Delete'"
+                        class="toolbar-btn-secondary"
+                        [outlined]="true"
+                        tooltipPosition="bottom">
+                        <svg-icon src="/assets/images/icons/delete.svg" svgClass="primary-color"></svg-icon>
+                      </p-button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      } @else {
+        <div class="schema-template-empty">
+          No schema templates
+        </div>
+      }
+    }
+
+    <p-dialog
+      [(visible)]="showTemplateDialog"
+      [modal]="true"
+      [draggable]="false"
+      [resizable]="false"
+      [style]="{ width: '520px' }"
+      styleClass="guardian-dialog"
+      [header]="form.id ? 'Edit Schema Template' : 'Create Schema Template'">
+      <div class="schema-template-form">
+        <label>
+          <span>Name</span>
+          <input [(ngModel)]="form.name" pInputText type="text" />
+        </label>
+        <label>
+          <span>Description</span>
+          <textarea [(ngModel)]="form.description" pTextarea rows="4"></textarea>
+        </label>
+        <label>
+          <span>Version</span>
+          <input [(ngModel)]="form.version" pInputText type="text" />
+        </label>
+      </div>
+      <ng-template pTemplate="footer">
+        <button
+          type="button"
+          class="button secondary"
+          (click)="showTemplateDialog = false"
+          pButton
+          label="Cancel">
+        </button>
+        <button
+          type="button"
+          class="button"
+          (click)="saveTemplate()"
+          [disabled]="saving || !form.name.trim()"
+          pButton
+          label="Save">
+        </button>
+      </ng-template>
+    </p-dialog>
+  </div>
+}
