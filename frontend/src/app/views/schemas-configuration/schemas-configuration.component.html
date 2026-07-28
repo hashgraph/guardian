@@ -2,10 +2,18 @@
 
     <header class="sc-topnav">
         <nav class="sc-breadcrumb">
-            <button class="sc-back-crumb" (click)="goBack()" title="Back to schemas">
+            <button class="sc-back-crumb" (click)="goBack()" [title]="breadcrumbRootTitle">
                 <i class="pi pi-arrow-left"></i>
             </button>
-            <a class="sc-crumb-link" (click)="goBack()">Schemas</a>
+            <a class="sc-crumb-link" (click)="goToBreadcrumbRoot()">{{ breadcrumbRootLabel }}</a>
+            @if (isTemplateMode) {
+                <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
+                @if (isTemplateBreadcrumbLink) {
+                    <a class="sc-crumb-link" (click)="goToTemplateConfiguration()">{{ breadcrumbTemplateLabel }}</a>
+                } @else {
+                    <span class="sc-crumb-current">{{ breadcrumbTemplateLabel }}</span>
+                }
+            }
             @if (selectedSchema) {
                 <i class="pi pi-chevron-right sc-breadcrumb-sep"></i>
                 <span class="sc-crumb-current">{{ selectedSchema.name }}</span>
@@ -15,6 +23,7 @@
         <div class="sc-spacer"></div>
 
         @if (selectedSchema) {
+            @if (!isTemplateConfigMode) {
             <div class="sc-nav-tabs">
                 <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
                     Builder
@@ -23,6 +32,7 @@
                     Preview
                 </button>
             </div>
+            }
 
             <div class="sc-nav-actions">
                 @if (currentSchemaErrorCount > 0) {
@@ -49,14 +59,15 @@
                     }
                 </span>
                 <button class="sc-btn-save-all"
-                        [class.dirty]="hasUnsavedChanges && currentSchemaErrorCount === 0"
-                        [class.invalid]="hasUnsavedChanges && currentSchemaErrorCount > 0"
+                        [class.dirty]="hasUnsavedChanges && (isTemplateConfigMode || currentSchemaErrorCount === 0)"
+                        [class.invalid]="hasUnsavedChanges && !isTemplateConfigMode && currentSchemaErrorCount > 0"
                         [class.clean]="!hasUnsavedChanges"
-                        [disabled]="!hasUnsavedChanges || isSaving || currentSchemaErrorCount > 0"
+                        [disabled]="!hasUnsavedChanges || isSaving || (!isTemplateConfigMode && currentSchemaErrorCount > 0)"
                         (click)="saveAll()">
                     <i class="pi pi-save"></i>
                     Save all
                 </button>
+                @if (!isTemplateConfigMode) {
                 <button class="sc-btn"
                     [disabled]="!selectedSchemaId"
                     (click)="onExport()">
@@ -69,6 +80,7 @@
                     <i class="pi pi-send"></i>
                     Publish
                 </button>
+                }
             </div>
         }
     </header>
@@ -79,12 +91,14 @@
         <aside class="sc-sidebar">
 
             <div class="sc-sidebar-tabs">
+                @if (!isTemplateConfigMode) {
                 <button
                     class="sc-sidebar-tab"
                     [class.active]="activeSideTab === 'fields'"
                     (click)="activeSideTab = 'fields'">
                     Fields
                 </button>
+                }
                 <button
                     class="sc-sidebar-tab"
                     [class.active]="activeSideTab === 'schemas'"
@@ -96,7 +110,7 @@
                 </button>
             </div>
 
-            @if (activeSideTab === 'fields') {
+            @if (activeSideTab === 'fields' && !isTemplateConfigMode) {
                 <div class="sc-sidebar-pane">
                     <p class="sc-sidebar-label">
                         @if (selectedSchema) {
@@ -179,10 +193,21 @@
                                             </span>
                                         </div>
                                     </div>
+                                    @if (isTemplateSchemaCustomFieldsLocked(schema)) {
+                                        <span class="st-schema-lock" pTooltip="Custom fields are locked" tooltipPosition="right">
+                                            <i class="pi pi-lock"></i>
+                                        </span>
+                                    }
                                     @if (hoveredSchemaId === (schema.id || schema._id)) {
+                                        @if (isTemplateConfigMode) {
+                                            <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" pTooltip="Edit" tooltipPosition="right">
+                                                <i class="pi pi-pencil"></i>
+                                            </button>
+                                        } @else {
                                         <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right">
                                             <i class="pi pi-trash"></i>
                                         </button>
+                                        }
                                     }
                                 </div>
                             }
@@ -242,8 +267,13 @@
                         <div class="sc-schema-props">
                             <div class="sc-schema-props-header">
                                 <div class="sc-schema-props-title">
-                                    <i class="pi pi-file-edit"></i>Schema properties
-                                    @if (selectedSchema.iri) {
+                                    <i class="pi pi-file-edit"></i>
+                                    @if (isTemplateConfigMode) {
+                                        Schema template settings
+                                    } @else {
+                                        Schema properties
+                                    }
+                                    @if (!isTemplateConfigMode && selectedSchema.iri) {
                                         <span class="sc-schema-props-iri">({{ selectedSchema.iri }})</span>
                                         <i class="pi sc-schema-props-iri-copy"
                                            [class.pi-check]="copiedIri"
@@ -252,12 +282,25 @@
                                            (click)="copyIri(selectedSchema.iri, $event)"></i>
                                     }
                                 </div>
-                                <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
-                                    <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
-                                    {{ schemaPropsCollapsed ? 'Show' : 'Hide' }}
+                                <button class="sc-schema-props-toggle" (click)="isTemplateConfigMode ? saveTemplateConfig() : schemaPropsCollapsed = !schemaPropsCollapsed">
+                                    @if (isTemplateConfigMode) {
+                                        <i class="pi" [class.pi-save]="!templateConfigSaving" [class.pi-spinner]="templateConfigSaving" [class.pi-spin]="templateConfigSaving"></i>
+                                        Save
+                                    } @else {
+                                        <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
+                                        {{ schemaPropsCollapsed ? 'Show' : 'Hide' }}
+                                    }
                                 </button>
                             </div>
-                            @if (!schemaPropsCollapsed) {
+                            @if (isTemplateConfigMode) {
+                                <button class="st-toggle-row st-toggle-row--inline" (click)="toggleCanAddCustomFieldsToSelectedSchema()">
+                                    <span>
+                                        <strong>Can add custom fields</strong>
+                                        <small>Allows adding fields outside the template standard when applied.</small>
+                                    </span>
+                                    <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
+                                </button>
+                            } @else if (!schemaPropsCollapsed) {
                                 <div class="sc-schema-props-row sc-schema-props-row--main">
                                     <div class="sc-schema-props-field">
                                         <label class="sc-schema-props-label">Schema name</label>
@@ -290,7 +333,8 @@
                             }
                         </div>
 
-                        <!-- ── Canvas tab bar: Fields / Conditions ── -->
+                        <!-- ── Canvas tab bar ── -->
+                        @if (!isTemplateConfigMode) {
                         <div class="sc-canvas-tab-bar">
                             <div class="sc-canvas-tab-pill">
                                 <button class="sc-ctp-btn"
@@ -308,6 +352,7 @@
                                 </button>
                             </div>
                         </div>
+                        }
 
                         @if (activeCanvasTab === 'fields') {
                         <div class="sc-editor-body"
@@ -360,7 +405,7 @@
                         </div>
                         } <!-- /fields tab -->
 
-                        @if (activeCanvasTab === 'conditions') {
+                        @if (activeCanvasTab === 'conditions' && !isTemplateConfigMode) {
                             <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
                         }
                     </div>
@@ -522,7 +567,32 @@
             </div>
 
             <!-- ── Right panel (field properties) ──────────────────────── -->
-            @if (selectedField) {
+            @if (selectedField && isTemplateConfigMode) {
+                <aside class="sc-right-panel">
+                    <div class="sc-rp-header">
+                        <div class="sc-rp-title">
+                            <i class="pi pi-sliders-h"></i>
+                            Field template settings
+                        </div>
+                        <span class="sc-rp-badge">{{ getFieldTypeBadge(selectedField) }}</span>
+                    </div>
+
+                    <div class="sc-rp-pane" style="display:flex">
+                        <div class="st-field-context">
+                            <span>Selected field</span>
+                            <strong>{{ selectedField.title || selectedField.description || selectedField.name }}</strong>
+                        </div>
+                        <button class="st-toggle-row" (click)="toggleCanEditSelectedFieldInTemplate()">
+                            <span>
+                                <strong>Can edit selected field</strong>
+                                <small>Allows editing this field when the template is applied.</small>
+                            </span>
+                            <span class="st-toggle" [class.active]="canEditSelectedFieldInTemplate"></span>
+                        </button>
+                    </div>
+                </aside>
+            }
+            @if (selectedField && !isTemplateConfigMode) {
                 <aside class="sc-right-panel">
                     <div class="sc-rp-header">
                         <div class="sc-rp-title">
@@ -1024,11 +1094,11 @@
                             [class.active]="selectedField === field"
                             [class.sc-field-card--ref]="getFieldCurrentType(field) === 'sub-schema'"
                             [class.sc-field-card--invalid]="fieldHasErrors(field)"
-                            [class.sc-field-card--dragging]="isDragActive && reorderField === field"
-                            [class.sc-field-card--drag-target]="reorderOverIndex === i"
-                            [class.sc-field-card--drag-top]="sidebarDropIndex === i && sidebarDropPos === 'top'"
-                            [class.sc-field-card--drag-bot]="sidebarDropIndex === i && sidebarDropPos === 'bot'"
-                            (mousedown)="onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? []))"
+                            [class.sc-field-card--dragging]="!isTemplateConfigMode && isDragActive && reorderField === field"
+                            [class.sc-field-card--drag-target]="!isTemplateConfigMode && reorderOverIndex === i"
+                            [class.sc-field-card--drag-top]="!isTemplateConfigMode && sidebarDropIndex === i && sidebarDropPos === 'top'"
+                            [class.sc-field-card--drag-bot]="!isTemplateConfigMode && sidebarDropIndex === i && sidebarDropPos === 'bot'"
+                            (mousedown)="!isTemplateConfigMode ? onCardMouseDown($event, field, isDrilling ? drillCurrentFields : (selectedSchema?.fields ?? [])) : null"
                             (click)="selectField(field)">
                             <span class="sc-drag-handle"><i class="pi pi-bars"></i></span>
                             <div class="sc-field-type-icon" [class.sc-field-type-icon--ref]="getFieldCurrentType(field) === 'sub-schema'">
@@ -1069,6 +1139,12 @@
                                     }
                                 </div>
                             </div>
+                            @if (isTemplateFieldLocked(field)) {
+                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
+                                    <i class="pi pi-lock"></i>
+                                </span>
+                            }
+                            @if (!isTemplateConfigMode) {
                             <div class="sc-field-card-actions">
                                 @if (field.isRef) {
                                     <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
@@ -1083,6 +1159,7 @@
                                     <i class="pi pi-trash"></i>
                                 </button>
                             </div>
+                            }
                         </div>
                     }
                 } @else {
@@ -1093,12 +1170,14 @@
                 }
             </div>
         </div>
+        @if (!isTemplateConfigMode) {
         <div class="sc-drop-zone"
              [class.sc-drop-zone--reorder]="reorderAtEnd"
              (click)="isDrilling ? addDrillField(defaultFieldType) : addField(defaultFieldType)">
             <i class="pi pi-plus"></i>
             Click to add a string field, or drag a type from the sidebar
         </div>
+        }
     </ng-template>
 
     <ng-template #conditionsCanvas>

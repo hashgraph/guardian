@@ -2,15 +2,10 @@ import { ModuleStatus } from '../type/module-status.type.js';
 
 export interface ISchemaTemplateFieldConfig {
     locked?: boolean;
-    typeLocked?: boolean;
-    requiredLocked?: boolean;
-    visibilityLocked?: boolean;
 }
 
 export interface ISchemaTemplateSchemaConfig {
-    locked?: boolean;
-    deleteLocked?: boolean;
-    editLocked?: boolean;
+    customFieldsLocked?: boolean;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
 }
 

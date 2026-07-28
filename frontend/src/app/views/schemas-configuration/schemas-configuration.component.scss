@@ -96,6 +96,131 @@
     flex: 1;
 }
 
+.st-toggle-row {
+    width: 100%;
+    border: 0;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 0;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+
+    &--inline {
+        border-top: 0;
+        padding: 8px 0 0;
+    }
+
+    strong {
+        display: block;
+        color: var(--text-color, #2c2c2a);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 18px;
+    }
+
+    small {
+        display: block;
+        color: var(--text-color-secondary, #888780);
+        font-size: 12px;
+        line-height: 16px;
+        margin-top: 2px;
+    }
+}
+
+.st-toggle {
+    width: 36px;
+    height: 20px;
+    border-radius: 999px;
+    background: #d9dee8;
+    flex-shrink: 0;
+    position: relative;
+    transition: background 0.15s;
+
+    &::after {
+        content: '';
+        position: absolute;
+        width: 16px;
+        height: 16px;
+        top: 2px;
+        left: 2px;
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+        transition: transform 0.15s;
+    }
+
+    &.active {
+        background: var(--color-primary, #0031ff);
+
+        &::after {
+            transform: translateX(16px);
+        }
+    }
+}
+
+.st-field-context {
+    border-radius: 8px;
+    background: var(--surface-ground, #f8f8f7);
+    padding: 10px 12px;
+    margin-bottom: 2px;
+
+    span {
+        display: block;
+        color: var(--text-color-secondary, #888780);
+        font-size: 11px;
+        line-height: 14px;
+    }
+
+    strong {
+        display: block;
+        color: var(--text-color, #2c2c2a);
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 18px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.st-field-lock {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    background: var(--surface-ground, #f1efe8);
+    color: var(--text-color-secondary, #888780);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    i {
+        font-size: 13px;
+    }
+}
+
+.st-schema-lock {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    background: var(--surface-ground, #f1efe8);
+    color: var(--text-color-secondary, #888780);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-left: 6px;
+
+    i {
+        font-size: 12px;
+    }
+}
+
 .sc-nav-tabs {
     display: flex;
     gap: 2px;

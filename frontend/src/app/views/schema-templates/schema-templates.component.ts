@@ -77,12 +77,7 @@ export class SchemaTemplatesComponent implements OnInit {
         if (!this.canEdit(template)) {
             return;
         }
-        this.form = {
-            id: template.id,
-            name: template.name || '',
-            description: template.description || ''
-        };
-        this.showTemplateDialog = true;
+        this.openTemplateConfiguration(template);
     }
 
     public exportTemplate(template: SchemaTemplateGridItem): void {
@@ -174,7 +169,11 @@ export class SchemaTemplatesComponent implements OnInit {
         if (!template.topicId) {
             return;
         }
-        void this.router.navigate(['/schema-configuration'], {
+        this.openTemplateConfiguration(template);
+    }
+
+    private openTemplateConfiguration(template: SchemaTemplateGridItem): void {
+        void this.router.navigate(['/schema-template-configuration'], {
             queryParams: {
                 type: 'template',
                 topic: template.topicId,

@@ -182,7 +182,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case 'Create schema template': {
                 const templateId = result?.id || result?._id || result;
                 setTimeout(() => {
-                    this.router.navigate(['schema-configuration'], {
+                    this.router.navigate(['schema-template-configuration'], {
                         queryParams: {
                             type: 'template',
                             topic: result?.topicId,
