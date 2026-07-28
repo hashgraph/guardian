@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -119,7 +119,7 @@ export class ImportEntityDialog implements OnInit {
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private schemaRulesService: SchemaRulesService,
         private policyStatisticsService: PolicyStatisticsService,
@@ -289,7 +289,7 @@ export class ImportEntityDialog implements OnInit {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }

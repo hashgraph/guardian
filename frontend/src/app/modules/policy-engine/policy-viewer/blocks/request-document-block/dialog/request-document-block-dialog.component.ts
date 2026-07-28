@@ -10,7 +10,6 @@ import { interval, Subject, Subscription } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { DocumentValidators } from '@guardian/interfaces';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DocumentAutosaveStorage } from 'src/app/modules/policy-engine/structures';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
@@ -103,7 +102,7 @@ export class RequestDocumentBlockDialog {
 
     public isLargeSize: boolean = true;
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLDivElement>;
-        
+
     constructor(
         public dialogRef: DynamicDialogRef,
         public config: DynamicDialogConfig,
@@ -112,7 +111,6 @@ export class RequestDocumentBlockDialog {
         private schemaRulesService: SchemaRulesService,
         private relayerAccountsService: RelayerAccountsService,
         private fb: UntypedFormBuilder,
-        private toastr: ToastrService,
         private changeDetectorRef: ChangeDetectorRef,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
@@ -402,6 +400,11 @@ export class RequestDocumentBlockDialog {
         if (!this.loading) {
             data.onStep(true);
         }
+    }
+
+    public onDraftImported(doc: any): void {
+        this.parent.preset(doc);
+        this.dataSaved = false;
     }
 
     public getButtonName(item: any) {

@@ -16,7 +16,7 @@ import {
     Validators,
 } from '@angular/forms';
 import { SchemaField, UnitSystem } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
@@ -103,7 +103,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         public dialog: DialogService,
         private dialogService: DialogService,
         private ipfs: IPFSService,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private cdr: ChangeDetectorRef,
     ) {
         this.fieldType = new UntypedFormControl();
@@ -152,6 +152,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     ...value,
                 });
             });
+    }
+
+    private clearFieldPresetControls(): void {
+        this.field.controlDefault.setValue(null, { emitEvent: false });
+        this.field.controlSuggest.setValue(null, { emitEvent: false });
+        this.field.controlExample.setValue(null, { emitEvent: false });
     }
 
     ngOnInit(): void {
@@ -206,6 +212,10 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     JSON.stringify(oldField?.controlEnum) !==
                     JSON.stringify(newField?.controlEnum)
                 ) {
+                    if (oldField?.fieldType !== newField?.fieldType) {
+                        this.clearFieldPresetControls();
+                    }
+
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
                             JSON.stringify(oldField?.controlEnum)
@@ -459,12 +469,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private errorHandler(errorMessage: string, errorHeader: string): void {
-        this.toastr.error(errorMessage, errorHeader, {
-            timeOut: 30000,
-            closeButton: true,
-            positionClass: 'toast-bottom-right',
-            enableHtml: true,
-        });
+        this.toastService.error(errorMessage, errorHeader, { sticky: true });
     }
 
     onEditExpression() {

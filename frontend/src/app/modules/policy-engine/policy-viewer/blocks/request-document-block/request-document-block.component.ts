@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -14,7 +14,6 @@ import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
@@ -147,7 +146,6 @@ export class RequestDocumentBlockComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
@@ -477,6 +475,10 @@ export class RequestDocumentBlockComponent
         if (!this.loading) {
             this.onStep(true);
         }
+    }
+
+    public onDraftImported(doc: any): void {
+        this.preset(doc);
     }
 
     public onEvidenceDrop($event: DragEvent) {

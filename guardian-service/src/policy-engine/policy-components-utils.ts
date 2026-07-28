@@ -59,7 +59,7 @@ export class PolicyComponentsUtils {
             result.userGroup = null;
 
             if (PolicyHelper.isDryRunMode(policy)) {
-                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                const activeUser = await DatabaseServer.getVirtualUser(policyId, user.id);
                 if (activeUser && did !== activeUser.did) {
                     did = activeUser.did;
                     permissions = [];
@@ -126,7 +126,7 @@ export class PolicyComponentsUtils {
         let permissions = user.permissions || [];
         if (did) {
             if (PolicyHelper.isDryRunMode(policy)) {
-                const activeUser = await DatabaseServer.getVirtualUser(policyId);
+                const activeUser = await DatabaseServer.getVirtualUser(policyId, user.id);
                 if (activeUser && did !== activeUser.did) {
                     did = activeUser.did;
                     permissions = [];

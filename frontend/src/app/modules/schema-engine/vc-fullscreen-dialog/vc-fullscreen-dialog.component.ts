@@ -34,7 +34,7 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 import { ApproveUpdateVcDocumentDialogComponent } from '../../policy-engine/dialogs/approve-update-vc-document-dialog/approve-update-vc-document-dialog.component';
 import { TablePersistenceService } from 'src/app/services/table-persistence.service';
 import { prepareVcData } from '../../common/models/prepare-vc-data';
@@ -121,7 +121,7 @@ export class VCFullscreenDialog {
         private ref: ChangeDetectorRef,
         private fb: UntypedFormBuilder,
         private policyEngineService: PolicyEngineService,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private dialog: DialogService,
         private tablePersist: TablePersistenceService
     ) {
@@ -566,15 +566,9 @@ export class VCFullscreenDialog {
                 .subscribe((status) => {
                     if (status.ok) {
                         this.onEditMode(true);
-                        this.toastr.success(
+                        this.toastService.success(
                             `The document has been updated successfully.`,
-                            'Success',
-                            {
-                                timeOut: 3000,
-                                closeButton: true,
-                                positionClass: 'toast-bottom-right',
-                                enableHtml: true,
-                            }
+                            'Success'
                         );
                     }
                     this.loading = false;

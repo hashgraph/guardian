@@ -6,13 +6,15 @@ import { CommonModule } from '@angular/common';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeuix/themes';
 import Aura from '@primeuix/themes/aura';
-import { ToastrModule } from 'ngx-toastr';
+import { ToastModule } from 'primeng/toast';
+import { MessageService } from 'primeng/api';
 import { AppRoutingModule, PermissionsGuard } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
 import { CardModule } from 'primeng/card';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { DrawerModule } from 'primeng/drawer';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
@@ -55,6 +57,7 @@ import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootProfileComponent } from './views/root-profile/root-profile.component';
 import { NextGenBannerComponent } from './views/next-gen-banner/next-gen-banner.component';
+import { FirstStepsPanelComponent } from './views/first-steps-panel/first-steps-panel.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -152,6 +155,7 @@ import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accou
 import { TreeTableModule } from 'primeng/treetable';
 import { MenubarModule } from 'primeng/menubar';
 import { CredentialsPanelComponent } from './components/credentials/credentials-panel/credentials-panel.component';
+import { AppToastComponent } from './components/toast/app-toast.component';
 
 const GuardianPreset = definePreset(Aura, {
     semantic: {
@@ -206,6 +210,7 @@ const GuardianPreset = definePreset(Aura, {
         RegisterComponent,
         RootProfileComponent,
         NextGenBannerComponent,
+        FirstStepsPanelComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,
@@ -247,7 +252,8 @@ const GuardianPreset = definePreset(Aura, {
         OtpDialogComponent,
         OtpConfigDialogComponent,
         OtpDisableDialogComponent,
-        OtpCodesDialogComponent
+        OtpCodesDialogComponent,
+        AppToastComponent
     ],
     exports: [],
     bootstrap: [AppComponent],
@@ -263,7 +269,7 @@ const GuardianPreset = definePreset(Aura, {
         FormulasModule,
         TagEngineModule,
         CompareModule,
-        ToastrModule.forRoot(),
+        ToastModule,
         QRCodeComponent,
         ButtonModule,
         InputTextModule,
@@ -292,11 +298,13 @@ const GuardianPreset = definePreset(Aura, {
         CheckboxModule,
         CardModule,
         ToggleSwitchModule,
+        DrawerModule,
         AngularSvgIconModule.forRoot(),
         TreeTableModule,
         MenubarModule
     ],
     providers: [
+        MessageService,
         WebSocketService,
         AuthService,
         ProfileService,

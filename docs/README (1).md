@@ -1,148 +1,95 @@
----
-description: >-
-  This page describes first steps with the Guardian and digital environmental
-  assets for new users.
----
+# Getting Started
 
-# First steps with digital environmental assets (simplified)
+## **1. Introduction**
 
-{% hint style="warning" %}
-This page is under development and part of the **3.7 Getting Started Epic**&#x20;
+The Guardian is an open-source platform that streamlines the creation, management, and verification of digital environmental assets. It leverages a customizable Policy Workflow Engine and Web3 technology to ensure transparent and fraud-proof operations, making it a key tool for transforming sustainability practices & carbon markets.
 
-The purpose of this page is to create a friendly guide to help a new user take their first steps in the Hedera Guardian. This page is descriptive only and will introduce all users of high level concepts without relying upon custom setuup, roles, permissions, or test data.
-{% endhint %}
+Below are the universal software prerequisites, followed by network-specific items.
 
-## Dependencies
+## 2. Prerequisites
 
-This page has internal and external dependencies which are listed here.
+### 2.1 Universal software
 
-EXTERNAL LINKS
+1. [**Git**](https://git-scm.com/downloads) – source-control tooling
+2. [**Docker**](https://www.docker.com/) – one-command build & run (recommended)
+3. [**MongoDB v6**](https://www.mongodb.com/), [**Node.js v24.15+**](https://nodejs.org/en/download), and [**NATS 2.9.25**](https://nats.io/) – auto-provisioned when using Docker Compose
+4. [**IPFS storage**](https://docs.ipfs.tech/concepts/what-is-ipfs/) (choose one):
+   * [**Storacha account**](https://storacha.network/) – IPFS pinning service (formerly Web3.Storage)
+   * [**Filebase account**](https://filebase.com/) – S3-compatible IPFS pinning
+   * Local IPFS node (e.g., [**Kubo**](https://github.com/ipfs/kubo)) – auto-provisioned when using Docker Compose
+5. [**Valkey**](https://valkey.io) – in-memory cache & message broker (auto-provisioned by the Docker stack)
 
-* Hedera Developer Portal
-* Methodology Library (Github)
-* First Steps Policy (to be created)
+### 2.2 Hedera network
 
-INTERNAL LINKS
+|              | Testnet (default)                                                     | Mainnet (production)                                                           |
+| ------------ | --------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **Account**  | Create via [Hedera Developer Portal](https://portal.hedera.com/login) | Create via Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)) |
+| **Key type** | ED25519                                                               | ED25519                                                                        |
+| **Network**  | `testnet`                                                             | `mainnet`                                                                      |
 
-* Admin > Settings
-* Manage Policies
-
-INTERNAL ACTIONS
-
-* Import Policy
-* Publish Policy
+> **Fees**: Mainnet operations incur HBAR costs—fund your account before running Guardian.
 
 ***
 
-#### First Steps with Hedera Guardian {VERSION} and Digital Environmental Assets
+## 3. Preparing a Mainnet Account & Keys
 
-The Hedera Guardian is an open source platform for issuing, verifying, and managing digital environmental assets. Follow the First Steps below. If you are not an admin were invited by a which may depend upon the roles and permissions if you joined via an invitation. &#x20;
+1. Install a Hedera-enabled wallet (e.g., [HashPack](https://www.hashpack.app/)).
+2. Create a Mainnet account and note the **Account ID** (`0.0.x`).
+3. Export the **ED25519** key pair
+   * _HashPack path_: **Settings → Manage Accounts → Export Private Key** (DER format).
+4.  Update your `.env`
 
+    ```dotenv
+    HEDERA_NET=mainnet
+    HEDERA_OPERATOR_ID=0.0.123456
+    HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
+    ```
 
+## 4. Preparing a Testnet Account & Keys
 
-* #### Get set up • 0/5 steps
+1. Create a Testnet account via the [Hedera Developer Portal](https://portal.hedera.com/login).
+2. Record your **Account ID** (`0.0.x`).
+3. Download the **ED25519** private key (ignore **ECDSA**)
+   * Select **DER Encoded** — _do not_ choose _HEX Encoded_.
+4.  Update your `.env`
 
-{% stepper %}
-{% step %}
-### Create a Hedera testnet account
+    ```dotenv
+    HEDERA_NET=testnet
+    HEDERA_OPERATOR_ID=0.0.987654
+    HEDERA_OPERATOR_KEY=-----BEGIN PRIVATE KEY----- … -----END PRIVATE KEY-----
+    ```
 
-The Hedera Guardian operates on the Hedera network with a testnet or mainnet account. Setup the Guardian with a testnet account.
+## 5. Installation
 
-<details>
+1.  **Docker-Compose**
 
-<summary>Create a Hedera testnet account and add to the Guardian</summary>
+    ```bash
+    docker compose -f ./deploy/docker-compose.yml --profile all up -d
+    ```
 
-1. Visit the [Hedera Developer Portal](https://portal.hedera.com/login).
-2. Create a testnet account&#x20;
-3. Note the **Account ID** (`0.0.x`).
-4. Note the **ED25519 DER Encoded Private Key** (ignore **ECDSA**)
-5. Navigate to \[Admin > Settings | Open Link in new Tab]
-6. Copy **Account ID** (`0.0.x`) from the developer portal
-7. Paste into the Operator ID field&#x20;
-8. Copy **ED25519 DER Encoded Private Key** from the developer portal
-9. Paste into the Operator Key field
+    _(Detects Testnet/Mainnet from `.env`)_
+2. **Pre-built containers** — pull `hashgraph/guardian:latest` and supply `.env` as a secret.
+3. **Manual build** — clone repo, install Node deps, compile, start services.
 
-</details>
-{% endstep %}
+## **6. Troubleshooting**
 
-{% step %}
-### Import a policy
+* **Server not starting?** Ensure that Docker is running and all containers are up.
+* **Cannot access the admin dashboard?** Check if the correct ports (3000) are open and not blocked by your firewall.
+* **Issues with API calls?** Verify that your Hedera account ID and private key are correctly configured in the `.env` file.
+* For additional help, visit the [Hedera Guardian GitHub Issues](https://github.com/hashgraph/guardian/issues).
 
-Policy's are digital workflows at the heart of the Hedera Guardian. Import a sample policy from the methodology library.
+## **7. Additional Resources**
 
-<details>
+* [Hedera Guardian Documentation](https://guardian.hedera.com)
+* [Hedera Developer Portal](https://portal.hedera.com/login)
+* [Roadmap](community-and-contributing/roadmap.md)
+* [Youtube Channel](https://www.youtube.com/@envisionblockchain/featured)
 
-<summary>Import a policy from the methodology library</summary>
+## **8. Feedback and Support**
 
-1. Visit the \[Methodology Library | Open Link in new Tab]&#x20;
-2. Download the \[Hello World Policy | Direct Download Link Github] policy file
-3. Navigate to \[Manage Policies | Open Link in new Tab]
-4. Click the Import icon and select the `FirstSteps-HelloWorld.policy` file
+* Please send feedback, feature, and support requests to [guardian-feedback@hashgraph.com](mailto:guardian-feedback@hashgraph.com?subject=Re:%20Hedera%20Guardian%20Feedback%20or%20Request\&body=This%20is%20%5Bfeedback%20%7C%20support%20request%20%7C%20feature%20request%5D%0A%0A--%0A%0AAdd%20a%20summary%20here.)
+* You can also open issues and feature requests in the [GitHub repository](https://github.com/hashgraph/guardian/issues).
 
-</details>
-{% endstep %}
+## **9. Legal and Licensing**
 
-{% step %}
-### Publish a policy to testnet
-
-Publish a policy on testnet so that project proponents or stakeholders can submit data to the policy.
-
-<details>
-
-<summary>Publish your first policy to the Hedera testnet  </summary>
-
-1. Navigate to \[Manage Policies | Open Link in new Tab]&#x20;
-2. Click the dropdown in the status column and select publish.
-3. Set the Version to 1.0.0 and Availability to Public
-4. Click Publish
-
-</details>
-{% endstep %}
-
-{% step %}
-### Conclusion
-
-You have now published your first policy which users will be able to interact with. Next you will&#x20;
-{% endstep %}
-
-{% step %}
-### Submit data
-
-REQUIRES USER ACCOUNT TO SUBMIT DATA
-
-* SR Account
-* User
-
-<details>
-
-<summary>Project proponents submit data </summary>
-
-Visit a \[LINK: PROJECT] to view your policy running on testnet and submit data. This is how a project proponents would submit their project for verification and validation.&#x20;
-
-1. Log Out
-2. Sign up as regular user
-3. Generate Hedera Testnet Account
-4. Create New DID
-
-</details>
-{% endstep %}
-
-{% step %}
-### Inspect documents
-
-<details>
-
-<summary>Visit the Audit section to inspect documents</summary>
-
-Visit the \[LINK: AUDIT] interface to inspect the documents created after data was submitted for the policy. This is how auditors and VVBs would review projects submitted by project proponents.&#x20;
-
-</details>
-{% endstep %}
-{% endstepper %}
-
-### Go further
-
-* Digitizing Methodology Guide
-* [Subscribe to community calendar](https://lu.ma/guardian)
-* [Share your feedback or request support](https://tiny.cc/grd-feedback)
-* LINK Contributing
+* Hedera Guardian is open-source and licensed under the Apache 2.0 License. Please review the [LICENSE](https://github.com/hashgraph/guardian/blob/develop/LICENSE/README.md) file for more details.

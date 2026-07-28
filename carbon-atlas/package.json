@@ -32,7 +32,7 @@
     "leaflet.fullscreen": "^5.3.0",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^0.575.0",
-    "next": "16.1.6",
+    "next": "16.2.5",
     "next-themes": "^0.4.6",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",

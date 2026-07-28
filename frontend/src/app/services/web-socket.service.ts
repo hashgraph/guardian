@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Observable, Subject, Subscription } from 'rxjs';
 import { webSocket, WebSocketSubject, WebSocketSubjectConfig } from 'rxjs/webSocket';
 import { AuthService } from './auth.service';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from './toast.service';
 import { ApplicationStates, MessageAPI, NotifyAPI, UserRole } from '@guardian/interfaces';
 import { Router } from '@angular/router';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -28,6 +28,7 @@ interface MeecoApproveSubmissionResponse {
  */
 @Injectable()
 export class WebSocketService {
+    private static readonly RECONNECT_TOAST_KEY = 'ws-reconnect-sticky';
     private static HEARTBEAT_DELAY = 30 * 1000;
     private static RECONNECT_NOTIFY_AFTER_MS = 15 * 1000;
     private static SERVICES_STATUS_GRACE_MS = 5 * 1000;
@@ -38,7 +39,7 @@ export class WebSocketService {
     private heartbeatTimeout: any = null;
     private reconnectInterval: number = 5000;  /// pause between connections
     private reconnectAttempts: number = 10;  /// number of connection attempts
-    private reconnectingToastId: number | null = null;
+    private reconnectingToastShown: boolean = false;
     private reconnectNotifyTimeout: any = null;
     private servicesReady: Subject<boolean>;
     private profileSubject: Subject<{ type: string, data: any }>;
@@ -68,7 +69,7 @@ export class WebSocketService {
     public readonly meecoVerifyVP$: Observable<any> = this.meecoVerifyVPSubject.asObservable();
     public readonly meecoVerifyVPFailed$: Observable<any> = this.meecoVerifyVPFailedSubject.asObservable();
 
-    constructor(private dialogService: DialogService, private auth: AuthService, private toastr: ToastrService, private router: Router) {
+    constructor(private dialogService: DialogService, private auth: AuthService, private toastService: ToastService, private router: Router) {
         this.recordUpdateSubject = new Subject();
         this.testUpdateSubject = new Subject();
         this.blockUpdateSubject = new Subject();
@@ -140,7 +141,7 @@ export class WebSocketService {
     }
 
     private scheduleReconnectingNotice() {
-        if (this.reconnectNotifyTimeout !== null || this.reconnectingToastId !== null) {
+        if (this.reconnectNotifyTimeout !== null || this.reconnectingToastShown) {
             return;
         }
         this.reconnectNotifyTimeout = setTimeout(() => {
@@ -148,17 +149,8 @@ export class WebSocketService {
             if (this.socket) {
                 return;
             }
-            const toast = this.toastr.info(
-                'Trying to reconnect…',
-                'Connection lost',
-                {
-                    disableTimeOut: true,
-                    tapToDismiss: false,
-                    closeButton: false,
-                    positionClass: 'toast-bottom-right',
-                }
-            );
-            this.reconnectingToastId = toast ? toast.toastId : null;
+            this.toastService.sticky('info', 'Trying to reconnect…', 'Connection lost', WebSocketService.RECONNECT_TOAST_KEY);
+            this.reconnectingToastShown = true;
         }, WebSocketService.RECONNECT_NOTIFY_AFTER_MS);
     }
 
@@ -167,20 +159,17 @@ export class WebSocketService {
             clearTimeout(this.reconnectNotifyTimeout);
             this.reconnectNotifyTimeout = null;
         }
-        if (this.reconnectingToastId !== null) {
-            this.toastr.clear(this.reconnectingToastId);
-            this.reconnectingToastId = null;
+        if (this.reconnectingToastShown) {
+            this.toastService.clearKey(WebSocketService.RECONNECT_TOAST_KEY);
+            this.reconnectingToastShown = false;
         }
     }
 
     private openWebSocket() {
-        const wasNotified = this.reconnectingToastId !== null;
+        const wasNotified = this.reconnectingToastShown;
         this.clearReconnectingNotice();
         if (wasNotified) {
-            this.toastr.success('Connection restored', '', {
-                timeOut: 2000,
-                positionClass: 'toast-bottom-right',
-            });
+            this.toastService.success('Connection restored');
         }
         this.reconnectAttempts = 10;
     }
@@ -232,15 +221,7 @@ export class WebSocketService {
 
     private notifyReconnectFailed(): void {
         this.clearReconnectingNotice();
-        this.toastr.error(
-            'Unable to reconnect to the server. Please check your network connection and refresh the page.',
-            'Connection lost',
-            {
-                disableTimeOut: true,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-            }
-        );
+        this.toastService.sticky('error', 'Unable to reconnect to the server. Please check your network connection and refresh the page.', 'Connection lost', WebSocketService.RECONNECT_TOAST_KEY);
     }
 
     private _send(data: string): Promise<void> {
@@ -264,12 +245,7 @@ export class WebSocketService {
             }
         } catch (error: any) {
             console.error(error);
-            this.toastr.error(error.message, 'Web Socket', {
-                timeOut: 10000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
+            this.toastService.error(error.message, 'Web Socket');
         }
     }
 
@@ -314,13 +290,9 @@ export class WebSocketService {
                     break;
                 }
                 case MessageAPI.ERROR_EVENT: {
-                    if (!data.blockType.includes('401'))
-                        this.toastr.error(data.message, data.blockType, {
-                            timeOut: 10000,
-                            closeButton: true,
-                            positionClass: 'toast-bottom-right',
-                            enableHtml: true
-                        });
+                    if (!data.blockType.includes('401')) {
+                        this.toastService.error(data.message, data.blockType);
+                    }
                     break;
                 }
                 case MessageAPI.UPDATE_USER_INFO_EVENT: {
@@ -367,12 +339,7 @@ export class WebSocketService {
             }
         } catch (error: any) {
             console.error(error);
-            this.toastr.error(error.message, 'Web Socket', {
-                timeOut: 10000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
+            this.toastService.error(error.message, 'Web Socket');
         }
     }
 

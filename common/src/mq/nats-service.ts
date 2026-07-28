@@ -5,14 +5,16 @@ import { IMessageResponse } from '../models/index.js';
 import { ForbiddenException } from '@nestjs/common';
 import { JwtServicesValidator } from '../security/index.js';
 
-type CallbackFunction = (body: any, error?: string, code?: number) => void;
+type CallbackFunction = (body: any, error?: string, code?: number, data?: any) => void;
 
 class MessageError extends Error {
     public code: number;
+    public data?: any;
 
-    constructor(message: any, code?: number) {
+    constructor(message: any, code?: number, data?: any) {
         super(message);
         this.code = code;
+        this.data = data;
     }
 }
 
@@ -114,7 +116,7 @@ export abstract class NatsService {
                                 } catch (err) {
                                     throw err;
                                 }
-                            fn(message.body, message.error, message.code);
+                            fn(message.body, message.error, message.code, (message as any).data);
                             } catch (e: any) {
                                 console.error('Reply validation failed:', e.message);
                                 fn(null, e.message, 401);
@@ -210,9 +212,9 @@ export abstract class NatsService {
             const head = headers();
             head.append('messageId', messageId);
             if (isResponseCallback) {
-                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number) => {
+                this.responseCallbacksMap.set(messageId, (body: T, error?: string, code?: number, errorData?: any) => {
                     if (error) {
-                        reject(new MessageError(error, code));
+                        reject(new MessageError(error, code, errorData));
                     } else {
                         resolve(body);
                     }
@@ -258,6 +260,75 @@ export abstract class NatsService {
         });
 
         return Promise.race([messagePromise, timeoutPromise]);
+    }
+
+    /**
+     * Core NATS request over a dedicated inbox: a subject with no subscribers
+     * fails fast ("no responders") instead of waiting out the timeout. Throws
+     * Error{code:'NO_RESPONDERS'} (not delivered - safe to retry),
+     * Error{code:'REQUEST_TIMEOUT'} (maybe delivered - do NOT retry) or
+     * MessageError(code); otherwise returns the response body.
+     */
+    public async requestOrThrow<T>(
+        subject: string,
+        data?: unknown,
+        timeout: number = 1000,
+        extraHeaders?: Record<string, string>
+    ): Promise<T> {
+        const head = headers();
+        head.append('messageId', GenerateUUIDv4());
+        if (extraHeaders) {
+            for (const [key, value] of Object.entries(extraHeaders)) {
+                head.append(key, value);
+            }
+        }
+        const token = await JwtServicesValidator.sign(subject);
+        head.append('serviceToken', token);
+
+        let msg;
+        try {
+            msg = await this.connection.request(subject, await this.codec.encode(data), { timeout, headers: head });
+        } catch (error: any) {
+            // nats: NoResponders -> '503', Timeout -> 'TIMEOUT'
+            if (error?.code === '503' || /no responders/i.test(error?.message || '')) {
+                const e = new Error(`No responders for "${subject}"`);
+                (e as any).code = 'NO_RESPONDERS';
+                throw e;
+            }
+            if (error?.code === 'TIMEOUT' || /timeout/i.test(error?.message || '')) {
+                const e = new Error(`Timeout for "${subject}"`);
+                (e as any).code = 'REQUEST_TIMEOUT';
+                throw e;
+            }
+            throw error;
+        }
+
+        // Mirror the replySubject handler in init(): guard the decode so a
+        // failure (e.g. a directLink fetch that ECONNREFUSEs when the responder
+        // died mid-request) fails this request with a generic message instead of
+        // leaking internal exception text (the directLink URL).
+        let message: IMessageResponse<T>;
+        try {
+            message = (await this.codec.decode(msg.data)) as IMessageResponse<T>;
+        } catch (e: any) {
+            console.error('Reply decode failed:', e.message);
+            throw new MessageError('Failed to decode reply payload', 500);
+        }
+
+        // Verify the reply's serviceToken before trusting the body, so with
+        // QM_VERIFICATION enabled the reply-side auth check is not dropped.
+        const serviceToken = msg.headers?.get('serviceToken');
+        try {
+            await JwtServicesValidator.verify(serviceToken);
+        } catch (e: any) {
+            console.error('Reply validation failed:', e.message);
+            throw new MessageError(e.message, 401);
+        }
+
+        if (message && message.error) {
+            throw new MessageError(message.error, message.code, (message as any).data);
+        }
+        return message ? message.body : null;
     }
 
     /**

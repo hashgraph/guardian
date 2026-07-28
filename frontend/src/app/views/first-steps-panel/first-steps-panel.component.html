@@ -1,0 +1,41 @@
+<p-drawer
+  [visible]="open"
+  (visibleChange)="firstSteps.setOpen($event)"
+  position="right"
+  [modal]="false"
+  [dismissible]="false"
+  [showCloseIcon]="false"
+  styleClass="first-steps-drawer">
+  <ng-template pTemplate="headless">
+    <aside class="first-steps-panel">
+      <div class="first-steps-resize" (mousedown)="onResizeStart($event)" title="Drag to resize"></div>
+      <div class="first-steps-header">
+        <div class="first-steps-heading">
+          <h2 class="first-steps-title">First Steps</h2>
+          <p class="first-steps-subtitle">A quick tutorial to get you started with Guardian.</p>
+        </div>
+        <button type="button" class="first-steps-close" (click)="hide()" aria-label="Hide First Steps" title="Hide">
+          <i class="pi pi-times"></i>
+        </button>
+      </div>
+
+      <div class="first-steps-body">
+        @if (loadFailed) {
+          <p class="first-steps-error">
+            First Steps content couldn't be loaded. It is fetched from the Guardian repository on GitHub —
+            check your connection and try again.
+          </p>
+        } @else {
+          <div class="first-steps-content" (click)="onContentClick($event)" [innerHTML]="contentHtml"></div>
+        }
+      </div>
+
+      <footer class="first-steps-footer">
+        <span class="first-steps-footer-text">Done with this tutorial?</span>
+        <button type="button" class="first-steps-dismiss guardian-button guardian-button-primary" (click)="firstSteps.setEnabled(false)">
+          Dismiss
+        </button>
+      </footer>
+    </aside>
+  </ng-template>
+</p-drawer>

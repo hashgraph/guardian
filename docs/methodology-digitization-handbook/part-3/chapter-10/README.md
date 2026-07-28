@@ -2,7 +2,7 @@
 
 This chapter teaches you how to build monitoring report schemas that handle time-series data collection and calculation updates. You'll learn the exact field-by-field process used for VM0033's monitoring schema, building on the PDD foundation from Chapter 9.
 
-By the end of this chapter, you'll know how to create the [VM0033 Monitoring schema](../../_shared/artifacts/Monitoring-schema.xlsx) structure yourself, understanding temporal data management, annual parameter tracking, and calculation update mechanisms.
+By the end of this chapter, you'll know how to create the [VM0033 Monitoring schema](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/Monitoring-schema.xlsx) structure yourself, understanding temporal data management, annual parameter tracking, and calculation update mechanisms.
 
 ## Monitoring Schema Purpose and Structure
 
@@ -15,7 +15,7 @@ Monitoring schemas extend your PDD implementation to handle ongoing project oper
 
 Usually, there's always a section on methodology PDF(including VM0033) on data and parameters to be monitored. Typically, those fields are submitted as part of Monitoring report.
 
-![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (39).png>)
+![Subsection of Herbaceous Vegetation Stratum Data for Project in MR schema](<../../../.gitbook/assets/image (5).png>)
 
 ## Building the Primary Monitoring Schema
 
@@ -70,7 +70,7 @@ Yes | Number | | | Monitoring year | No | 7
 Yes | (New) MP Herbaceous Vegetat 1 | | | Measurements for each stratum | Yes |
 ```
 
-![Monitoring Period Inputs Sheet](<../../../.gitbook/assets/image-1 (2).png>)
+![Monitoring Period Inputs Sheet](<../../../.gitbook/assets/image-1 (1).png>)
 
 ## Implementing Stratum-Level Data Collection
 

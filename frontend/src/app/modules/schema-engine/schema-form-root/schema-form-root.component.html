@@ -1,9 +1,9 @@
 <div class="schema-form-root" #contentContainer>
-  @if (model && hasNavigation) {
-    <div class="schema-form-view-nav" #navContainer>
+  @if (model) {
+    <div class="schema-form-view-nav" [hidden]="!hasNavigation" #navContainer>
       <app-schema-form-navigation
         #schemaNav
-        [schemaFields]="model.controls"
+        [schemaFields]="navFields"
         (selectEvent)="onNavSelectEvent($event)"
         (hasItemsChangeEvent)="onNavHasItemsEvent($event)"
         >

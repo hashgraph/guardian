@@ -184,9 +184,10 @@ export class ToolsApi {
         example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getTools(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
@@ -198,6 +199,7 @@ export class ToolsApi {
                 pageIndex,
                 pageSize
             }, owner);
+            req.locals = items;
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);

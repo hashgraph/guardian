@@ -6,7 +6,7 @@ Chapter 14 covered individual workflow blocks. Chapter 15 dissects VM0033's comp
 
 VM0033 represents Guardian's most advanced and production-ready methodology implementation, featuring complex emission calculations, multi-role workflows, and state management across the complete credit certification process.
 
-![VM0033 Policy Editor Overview](<../../../.gitbook/assets/image (77).png>)
+![VM0033 Policy Editor Overview](<../../../.gitbook/assets/image (37).png>)
 
 ## VM0033 Architecture Overview
 
@@ -311,7 +311,7 @@ The approval buttons are defined in a separate `buttonBlock` that gets embedded 
   * Triggers event to `update_approve_document_status_2` block
   * Red styling (`btn-reject`)
 
-![Reject dialog showing reason input field](<../../../.gitbook/assets/image-5 (1).png>)
+![Reject dialog showing reason input field](../../../.gitbook/assets/image-5.png)
 
 #### 4. Status Update Processing
 

@@ -21,7 +21,7 @@ import { ExportPolicyDialog } from '../dialogs/export-policy-dialog/export-polic
 import { NewPolicyDialog } from '../dialogs/new-policy-dialog/new-policy-dialog.component';
 import { PreviewPolicyDialog } from '../dialogs/preview-policy-dialog/preview-policy-dialog.component';
 import { ReplaceSchemasDialogComponent } from '../dialogs/replace-schemas-dialog/replace-schemas-dialog.component';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { MultiPolicyDialogComponent } from '../dialogs/multi-policy-dialog/multi-policy-dialog.component';
 import { ComparePolicyDialog } from '../dialogs/compare-policy-dialog/compare-policy-dialog.component';
 import { TagsService } from 'src/app/services/tag.service';
@@ -52,7 +52,6 @@ import { Popover as OverlayPanel } from 'primeng/popover';
 import { takeUntil } from 'rxjs/operators';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
-import { ToastrService } from 'ngx-toastr';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
@@ -724,11 +723,10 @@ export class PoliciesComponent implements OnInit {
         private router: Router,
         private route: ActivatedRoute,
         private dialogService: DialogService,
-        private informService: InformService,
+        private toastService: ToastService,
         private schemaService: SchemaService,
         private wizardService: WizardService,
         private tokenService: TokenService,
-        private toastr: ToastrService,
         private contractSerivce: ContractService,
         private wsService: WebSocketService,
         @Inject(CONFIGURATION_ERRORS)
@@ -988,15 +986,17 @@ export class PoliciesComponent implements OnInit {
                                 for (let j = 0; j < block.errors.length; j++) {
                                     const error = block.errors[j];
                                     if (block.id) {
-                                        text.push(`<div>${block.id}: ${error}</div>`);
+                                        text.push(`${block.id}: ${error}`);
                                     } else {
-                                        text.push(`<div>${error}</div>`);
+                                        text.push(error);
                                     }
                                 }
                             }
-                            this.informService.errorMessage(
-                                text.join(''),
-                                'The policy is invalid'
+                            const msg = text.join('\n');
+                            this.toastService.error(
+                                msg,
+                                'The policy is invalid',
+                                { sticky: true, logMessage: msg }
                             );
                             this._configurationErrors.set(element.id, errors);
                             this.router.navigate(['policy-configuration'], {
@@ -1199,12 +1199,7 @@ export class PoliciesComponent implements OnInit {
             this.schemaService.deleteSchemasByTopicId(policy?.topicId).pipe(takeUntil(this._destroy$)).subscribe(
                 async (result) => {
                     this.loading = false;
-                    this.toastr.success(`All schemas of topic ${policy.topicId} was successfully deleted`, '', {
-                        timeOut: 3000,
-                        closeButton: true,
-                        positionClass: 'toast-bottom-right',
-                        enableHtml: true,
-                    });
+                    this.toastService.success(`All schemas of topic ${policy.topicId} was successfully deleted`);
                 },
                 (e) => {
                     this.loading = false;

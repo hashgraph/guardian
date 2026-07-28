@@ -1,10 +1,45 @@
-<div class="content" [hidden]="!isActive" [attr.readonly-block]="readonly">
+<div class="content" [hidden]="!isActive || unavailable || errored" [attr.readonly-block]="readonly">
   @if (activeBlock) {
     <div>
       <render-block [block]="activeBlock" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
     </div>
   }
 </div>
+
+@if (unavailable) {
+  <div class="step-message step-message--info">
+    <div class="step-message__icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6" />
+        <path d="M12 7.5v5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <circle cx="12" cy="16" r="1" fill="currentColor" />
+      </svg>
+    </div>
+    <div class="step-message__title">This step isn't available to you right now</div>
+    <div class="step-message__text">
+      The workflow has moved to a step handled by another participant or role. There's nothing
+      for you to do here at the moment - you'll be able to continue once it's your turn.
+    </div>
+  </div>
+}
+
+@if (errored) {
+  <div class="step-message step-message--error">
+    <div class="step-message__icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <path d="M12 3 2.5 20h19L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
+        <path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+        <circle cx="12" cy="17.5" r="1" fill="currentColor" />
+      </svg>
+    </div>
+    <div class="step-message__title">Couldn't load this step</div>
+    <div class="step-message__text">
+      Something went wrong while loading this step. Please try again, or reload the page if the
+      problem persists.
+    </div>
+    <button type="button" class="step-message__retry" (click)="retry()">Try again</button>
+  </div>
+}
 
 <ng-template #preloader>
   <div class="preloader-image"></div>

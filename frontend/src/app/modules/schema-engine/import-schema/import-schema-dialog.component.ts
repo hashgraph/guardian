@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { ImportType } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { MenuItem } from 'primeng/api';
@@ -41,7 +41,7 @@ export class ImportSchemaDialog {
         public config: DynamicDialogConfig,
         private fb: UntypedFormBuilder,
         private schemaService: SchemaService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService
     ) {
         if (this.config.data.timeStamp) {
@@ -94,7 +94,7 @@ export class ImportSchemaDialog {
     }
 
     onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }

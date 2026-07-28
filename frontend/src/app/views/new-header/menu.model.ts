@@ -52,7 +52,7 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
         ],
     },
     {
-        title: 'Tokens & Contracts',
+        title: 'Hedera',
         icon: 'icon-hbar',
         allowedUserRoles: [UserRole.STANDARD_REGISTRY],
         active: false,
@@ -65,14 +65,11 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 title: 'Retirement Contracts',
                 routerLink: '/contracts'
             },
+            {
+                title: 'Relayer Accounts',
+                routerLink: '/relayer-accounts'
+            },
         ],
-    },
-    {
-        title: 'Relayer Accounts',
-        icon: 'pi pi-wallet',
-        allowedUserRoles: [UserRole.STANDARD_REGISTRY],
-        active: false,
-        routerLink: '/relayer-accounts'
     },
     {
         title: 'Administration',
@@ -279,7 +276,7 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             }
         }
         menu.push({
-            title: 'Tokens & Contracts',
+            title: 'Hedera',
             icon: 'icon-hbar',
             allowedUserRoles: [UserRole.STANDARD_REGISTRY],
             active: false,

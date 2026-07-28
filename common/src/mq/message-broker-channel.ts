@@ -147,7 +147,7 @@ export class MessageBrokerChannel {
                     try {
                         responseMessage = await handleFunc(payload);
                     } catch (error) {
-                        responseMessage = new MessageError(error, error.code);
+                        responseMessage = new MessageError(error, error.code, error.data);
                     }
 
                     const head = headers();

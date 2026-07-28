@@ -8,7 +8,7 @@ These templates ensure consistent structure, formatting, and quality across all 
 
 ## Available Templates
 
-### [Chapter Section Template](chapter-section-template.md)
+### [Chapter Section Template](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/templates/chapter-section-template.md)
 
 Standard structure for individual chapter sections with:
 
@@ -18,7 +18,7 @@ Standard structure for individual chapter sections with:
 * Guardian documentation reference patterns
 * Testing and validation sections
 
-### [Chapter Summary Template](chapter-summary-template.md)
+### [Chapter Summary Template](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/templates/chapter-summary-template.md)
 
 Standard structure for chapter summaries with:
 

@@ -19,8 +19,16 @@
     left: var(--header-width-expand);
     height: calc(100vh - var(--header-height));
     overflow: auto;
-    transition: left 0.125s ease-in-out, max-height 0.25s ease-in-out;
+    transition: left 0.125s ease-in-out, right 0.125s ease-in-out, max-height 0.25s ease-in-out;
     background: var(--guardian-grey-background, #f9fafc);
+}
+
+:root.first-steps-open .content {
+    right: var(--first-steps-panel-width, 380px);
+}
+
+:root.first-steps-resizing .content {
+    transition: none;
 }
 
 body {
@@ -85,20 +93,6 @@ body {
         right: 0;
         top: 0;
         bottom: 0;
-    }
-}
-
-::ng-deep .toast-container .ngx-toastr {
-    min-width: 320px;
-    border-radius: 8px;
-    box-shadow: unset;
-    padding: 16px 16px 20px 48px;
-    background-position: 16px 16px;
-    background-size: 24px;
-
-    &:hover {
-        border: 0;
-        box-shadow: unset;
     }
 }
 
@@ -309,10 +303,6 @@ body {
     ::ng-deep body .mat-form-field-wrapper {
         padding-bottom: 0;
         font-size: 1.75vh;
-    }
-
-    ::ng-deep .toast-container .ngx-toastr {
-        width: auto;
     }
 }
 

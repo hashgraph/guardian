@@ -25,8 +25,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
+                    timeout: 600000
                 }).then((response) => {
-                    cy.wait(3000)
                     cy.request({
                         method: METHOD.PUT,
                         url: API.ApiServer + "profiles/" + PPUser,
@@ -55,8 +55,8 @@ context("Policies", { tags: ['policies', 'secondPool', 'VM0033'] }, () => {
                     method: METHOD.GET,
                     url: API.ApiServer + API.RandomKey,
                     headers: { authorization },
+                    timeout: 600000
                 }).then((response) => {
-                    cy.wait(3000)
                     cy.request({
                         method: METHOD.PUT,
                         url: API.ApiServer + "profiles/" + VVBUser,

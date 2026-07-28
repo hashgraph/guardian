@@ -13,7 +13,11 @@
   @if (!isLoginPage) {
     <app-next-gen-banner></app-next-gen-banner>
   }
+  @if (!isLoginPage) {
+    <app-first-steps-panel></app-first-steps-panel>
+  }
   <div class="content" id="main-content">
     <router-outlet></router-outlet>
   </div>
+  <app-toast />
 </div>

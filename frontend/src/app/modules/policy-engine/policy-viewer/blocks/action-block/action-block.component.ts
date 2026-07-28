@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Input, OnInit } from '@angular/core';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from 'src/app/services/toast.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
@@ -46,7 +46,7 @@ export class ActionBlockComponent implements OnInit {
         private registeredService: RegisteredService,
         private wsService: WebSocketService,
         private policyHelper: PolicyHelper,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private dynamicMsalAuthService: DynamicMsalAuthService,
         private ipfsService: IPFSService,
     ) {
@@ -151,7 +151,7 @@ export class ActionBlockComponent implements OnInit {
                 return new code(config, this.policyEngineService, this.ipfsService, this.dryRun);
             }
             else{
-                return new code(config, this.policyEngineService, this.dynamicMsalAuthService, this.toastr);
+                return new code(config, this.policyEngineService, this.dynamicMsalAuthService, this.toastService);
             }
         }
         return null;
@@ -290,12 +290,8 @@ export class ActionBlockComponent implements OnInit {
         } catch (error) {
             this.buttonLoading = false;
             console.log(error);
-            this.toastr.error(error?.toString(), '', {
-                timeOut: 3000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true,
-            });
+            const errorText = error instanceof Error ? error.message : String(error);
+            this.toastService.error(errorText, '');
         }
     }
 }

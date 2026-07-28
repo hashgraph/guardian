@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnInit, }
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ToastrService } from 'ngx-toastr';
 import {DialogService} from 'primeng/dynamicdialog';
 import {VCViewerDialog} from 'src/app/modules/schema-engine/vc-dialog/vc-dialog.component';
 import { IntegrationDataTypes } from '@guardian/interfaces';
@@ -41,7 +40,6 @@ export class IntegrationButtonBlockComponent implements OnInit {
         private policyEngineService: PolicyEngineService,
         private wsService: WebSocketService,
         private cdref: ChangeDetectorRef,
-        private toastr: ToastrService,
         private dialogService: DialogService,
     ) {
     }

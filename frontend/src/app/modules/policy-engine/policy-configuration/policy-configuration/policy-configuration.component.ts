@@ -8,7 +8,7 @@ import { forkJoin, Observable, of, Subject } from 'rxjs';
 import { WizardMode, WizardService } from 'src/app/modules/policy-engine/services/wizard.service';
 import { AnalyticsService } from 'src/app/services/analytics.service';
 import { ContractService } from 'src/app/services/contract.service';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ProfileService } from 'src/app/services/profile.service';
@@ -223,7 +223,7 @@ export class PolicyConfigurationComponent implements OnInit {
         private dialog: DialogService,
         private dialogService: DialogService,
         private changeDetector: ChangeDetectorRef,
-        private informService: InformService,
+        private toastService: ToastService,
         private registeredService: RegisteredService,
         private themeService: ThemeService,
         private wizardService: WizardService,
@@ -1135,8 +1135,8 @@ export class PolicyConfigurationComponent implements OnInit {
 
     private errorMessage(errors: string[], type: string) {
         if (errors && errors.length) {
-            const text = errors.map((text) => `<div>${text}</div>`).join('');
-            this.informService.errorShortMessage(text, `The ${type} is invalid`);
+            const text = errors.join('\n');
+            this.toastService.error(text, `The ${type} is invalid`, { sticky: true });
         }
     }
 
@@ -1670,9 +1670,10 @@ export class PolicyConfigurationComponent implements OnInit {
         this.currentBlock = this.rootTemplate.getBlock(this.currentBlock);
         if (this.currentBlock) {
             if (this.currentBlock.search('module')) {
-                this.informService.errorShortMessage(
+                this.toastService.error(
                     `Block cannot be converted to module as we have a module in it.`,
-                    'Invalid operation.'
+                    'Invalid operation.',
+                    { sticky: true }
                 );
             } else {
                 this.rootTemplate.convertModule(this.currentBlock);

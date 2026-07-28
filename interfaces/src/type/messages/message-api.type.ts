@@ -318,6 +318,9 @@ export enum MessageAPI {
 
     TRANSFER_TOKEN = 'TRANSFER_TOKEN',
     TRANSFER_TOKEN_ASYNC = 'TRANSFER_TOKEN_ASYNC',
+
+    // Policy data query — read-only dynamic query for policy-committed documents
+    GET_POLICY_DATA_DOCUMENTS = 'GET_POLICY_DATA_DOCUMENTS',
 }
 
 /**
