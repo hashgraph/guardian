@@ -10,6 +10,8 @@ import { CommonComponentsModule } from '../common/common-components.module';
 import { TagEngineModule } from '../tag-engine/tag-engine.module';
 import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module';
 import { CompareModule } from '../analytics/analytics.module';
+import { OverflowTitleDirective } from '../analytics/directives/overflow-title.directive';
+import { OverflowPanelOptionsDirective } from './policy-configuration/policy-settings-drawer/overflow-panel-options.directive';
 import { AppRoutingModule } from 'src/app/app-routing.module';
 import { PaginatorModule } from 'primeng/paginator';
 //Configuration
@@ -20,6 +22,7 @@ import { PolicyConfigurationComponent } from './policy-configuration/policy-conf
 import { ContainerConfigComponent } from './policy-configuration/blocks/main/container-config/container-config.component';
 import { RequestConfigComponent } from './policy-configuration/blocks/documents/request-config/request-config.component';
 import { PolicyPropertiesComponent } from './policy-configuration/policy-properties/policy-properties.component';
+import { PolicySettingsDrawerComponent } from './policy-configuration/policy-settings-drawer/policy-settings-drawer.component';
 import { MintConfigComponent } from './policy-configuration/blocks/tokens/mint-config/mint-config.component';
 import { SendConfigComponent } from './policy-configuration/blocks/documents/send-config/send-config.component';
 import { ExternalDataConfigComponent } from './policy-configuration/blocks/documents/external-data-config/external-data-config.component';
@@ -49,7 +52,6 @@ import { CreateTokenConfigComponent } from './policy-configuration/blocks/tokens
 import { SwitchConfigComponent } from './policy-configuration/blocks/main/switch-config/switch-config.component';
 import { CommonPropertyComponent } from './policy-configuration/common-property/common-property.component';
 import { GroupManagerConfigComponent } from './policy-configuration/blocks/main/group-manager-config/group-manager-config.component';
-import { PolicySettingsComponent } from './policy-configuration/policy-settings/policy-settings.component';
 import { ButtonBlockAddonComponent } from './policy-viewer/blocks/button-block-addon/button-block-addon.component';
 import { DropdownBlockAddonComponent } from './policy-viewer/blocks/dropdown-block-addon/dropdown-block-addon.component';
 import { RequestAddonConfigComponent } from './policy-configuration/blocks/documents/request-addon-config/request-addon-config.component';
@@ -96,7 +98,6 @@ import { ComparePolicyDialog } from './dialogs/compare-policy-dialog/compare-pol
 import { NewModuleDialog } from './dialogs/new-module-dialog/new-module-dialog.component';
 import { PolicyWizardDialogComponent } from './dialogs/policy-wizard-dialog/policy-wizard-dialog.component';
 import { NewPolicyDialog } from './dialogs/new-policy-dialog/new-policy-dialog.component';
-import { NewThemeDialog } from './dialogs/new-theme-dialog/new-theme-dialog.component';
 import { ViewerDialog } from './dialogs/viewer-dialog/viewer-dialog.component';
 import { CompareModulesDialogComponent } from './dialogs/compare-modules-dialog/compare-modules-dialog.component';
 import { RecordControllerComponent } from './record/record-controller/record-controller.component';
@@ -146,6 +147,7 @@ import { PasswordModule } from 'primeng/password';
 import { DynamicMsalAuthService } from './services/dynamic-msal-auth.service';
 // Directives
 import { ResizingDirective } from './directives/resizing.directive';
+import { PropOverflowTooltipDirective } from './directives/prop-overflow-tooltip.directive';
 import { CONFIGURATION_ERRORS } from './injectors/configuration.errors.injector';
 // Dialogs
 import { DiscontinuePolicy } from './dialogs/discontinue-policy/discontinue-policy.component';
@@ -199,6 +201,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         ContainerConfigComponent,
         RequestConfigComponent,
         PolicyPropertiesComponent,
+        PolicySettingsDrawerComponent,
         MintConfigComponent,
         WipeConfigComponent,
         SendConfigComponent,
@@ -277,8 +280,6 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         NewModuleDialog,
         TagsManagerBlockComponent,
         NewPolicyDialog,
-        PolicySettingsComponent,
-        NewThemeDialog,
         ExternalTopicBlockComponent,
         PolicyWizardDialogComponent,
         MessagesReportBlockComponent,
@@ -294,6 +295,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         RecordResultsComponent,
         TestResultsComponent,
         ResizingDirective,
+        PropOverflowTooltipDirective,
         DiscontinuePolicy,
         MigrateData,
         JsonEditorDialogComponent,
@@ -368,6 +370,8 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         StepperModule,
         CheckboxModule,
         PaginatorModule,
+        OverflowTitleDirective,
+        OverflowPanelOptionsDirective,
         AngularSvgIconModule.forRoot(),
     ],
     exports: [],

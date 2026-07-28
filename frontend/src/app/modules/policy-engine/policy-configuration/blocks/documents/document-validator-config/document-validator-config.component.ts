@@ -32,6 +32,8 @@ export class DocumentValidatorConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    private conditionsGroupInitialized = false;
     schemas!: SchemaVariables[];
 
     documentTypeOptions = [
@@ -83,6 +85,10 @@ export class DocumentValidatorConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.conditions = this.properties.conditions || [];
+        if (!this.conditionsGroupInitialized) {
+            this.propHidden.conditionsGroup = this.properties.conditions.length === 0;
+            this.conditionsGroupInitialized = true;
+        }
         this.properties.sourceValidations = this.properties.sourceValidations || [];
         this.schemas = this.moduleVariables?.schemas || [];
     }
@@ -102,11 +108,19 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     // Same-doc conditions
     addCondition() {
-        this.properties.conditions.push({ value: '', field: '', type: 'equal' });
+        this.properties.conditions.push({
+            value: '',
+            field: '',
+            type: 'equal',
+        })
+        this.propHidden.conditionsGroup = false;
     }
 
     removeCondition(i: number) {
         this.properties.conditions.splice(i, 1);
+        if (this.properties.conditions.length === 0) {
+            this.propHidden.conditionsGroup = true;
+        }
         this.onSave();
     }
 

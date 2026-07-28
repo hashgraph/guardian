@@ -7,7 +7,7 @@ import { Directive, ElementRef, HostListener, Input } from '@angular/core';
  */
 @Directive({
     selector: '[appOverflowTitle]',
-    standalone: false
+    standalone: true
 })
 export class OverflowTitleDirective {
     @Input('appOverflowTitle') text: string | null | undefined = null;
@@ -33,7 +33,8 @@ export class OverflowTitleDirective {
 
         while (parent) {
             const parentRect = parent.getBoundingClientRect();
-            if (elementRect.right > parentRect.right || elementRect.left < parentRect.left) {
+            if (parentRect.width > 0 &&
+                (elementRect.right > parentRect.right + 1 || elementRect.left < parentRect.left - 1)) {
                 return true;
             }
             parent = parent.parentElement;

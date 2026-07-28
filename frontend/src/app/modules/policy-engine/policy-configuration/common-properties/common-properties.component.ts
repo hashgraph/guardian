@@ -30,6 +30,7 @@ export class CommonPropertiesComponent implements OnInit {
 
     @Output() onInit = new EventEmitter();
     @Output('onEditTags') onEditTags = new EventEmitter();
+    @Output('selectParent') selectParent = new EventEmitter<PolicyItem>();
 
     loading: boolean = true;
     propHidden: any = {
@@ -165,11 +166,25 @@ export class CommonPropertiesComponent implements OnInit {
 
     getOutputEvents(event: PolicyEvent): string[] {
         const about = this.getAbout(event.source);
-        if (about && about.output) {
+        if (about?.output?.length) {
             return [{ label: '', value: null }, ...about.output];
         } else {
             return [];
         }
+    }
+
+    getAboutItems(value: unknown): string[] {
+        if (Array.isArray(value)) {
+            return value.filter(Boolean).map(String);
+        }
+        return value ? [String(value)] : [];
+    }
+
+    getChildrenLabel(value: unknown): string {
+        if (!value || value === 'None') {
+            return 'No children';
+        }
+        return `${value} children`;
     }
 
     getInputEvents(event: PolicyEvent): string[] {
@@ -244,6 +259,9 @@ export class CommonPropertiesComponent implements OnInit {
         if (!block) {
             return;
         }
+        if (block === currentBlock && !this.canApplyPermissionsToChildren()) {
+            return;
+        }
         if (block.children) {
             block.children.forEach(child => this.onChildrenApply(child, currentBlock));
         }
@@ -253,6 +271,10 @@ export class CommonPropertiesComponent implements OnInit {
         if (block === currentBlock) {
             this.module.emitUpdate();
         }
+    }
+
+    canApplyPermissionsToChildren(): boolean {
+        return !this.readonly && !!this.block?.children?.length;
     }
 
     getPreparedInputEvents(item: PolicyEvent): { label: string, value: string }[] {

@@ -80,10 +80,14 @@ export class DocumentSourceComponent implements OnInit {
             tooltip: '',
             type: 'text',
         })
+        this.propHidden.fieldsGroup = false;
     }
 
     removeField(i: number) {
         this.properties.uiMetaData.fields.splice(i, 1);
+        if (!this.properties.uiMetaData.fields.length) {
+            this.propHidden.fieldsGroup = true;
+        }
     }
 
     load(block: PolicyBlock) {
@@ -98,6 +102,7 @@ export class DocumentSourceComponent implements OnInit {
         this.properties = block.properties;
         this.properties.uiMetaData = this.properties.uiMetaData || {};
         this.properties.uiMetaData.fields = this.properties.uiMetaData.fields || [];
+        this.propHidden.fieldsGroup = !this.properties.uiMetaData.fields.length;
     }
 
     onHide(item: any, prop: any) {

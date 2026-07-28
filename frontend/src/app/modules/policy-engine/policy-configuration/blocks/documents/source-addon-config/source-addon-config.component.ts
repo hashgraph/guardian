@@ -26,6 +26,8 @@ export class SourceAddonConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    private filtersGroupInitialized = false;
     schemas!: SchemaVariables[];
 
     public dataTypeOptions = [
@@ -72,6 +74,10 @@ export class SourceAddonConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.filters = this.properties.filters || [];
+        if (!this.filtersGroupInitialized) {
+            this.propHidden.filtersGroup = this.properties.filters.length === 0;
+            this.filtersGroupInitialized = true;
+        }
         this.schemas = this.moduleVariables?.schemas || [];
     }
 
@@ -85,10 +91,14 @@ export class SourceAddonConfigComponent implements OnInit {
             field: '',
             type: 'equal',
         })
+        this.propHidden.filtersGroup = false;
     }
 
     removeField(i: number) {
         this.properties.filters.splice(i, 1)
+        if (this.properties.filters.length === 0) {
+            this.propHidden.filtersGroup = true;
+        }
     }
 
     onSave() {
