@@ -11,7 +11,9 @@
     gap: 8px;
     height: 32px;
     min-height: 32px;
-    padding: 0 4px 0 8px;
+    // Left padding matches the tree row start (schema-nav 8px + nav-node 6px)
+    // so the title aligns with the section rows below it.
+    padding: 0 14px;
     background: var(--guardian-background, #fff);
     border-bottom: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
 }
@@ -55,13 +57,15 @@
 
 .nav-collapse-rail {
     flex: 0 0 auto;
-    align-self: flex-start;
-    position: sticky;
-    top: 0;
+    align-self: stretch;
     display: flex;
-    justify-content: center;
-    padding-top: 4px;
-    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
-    border-radius: 6px;
-    background: var(--guardian-background, #fff);
+    flex-direction: column;
+    padding: 4px 8px 0 0;
+    // Thin separator line between the collapsed rail and the form.
+    border-right: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+
+    .nav-collapse-btn {
+        position: sticky;
+        top: 0;
+    }
 }
