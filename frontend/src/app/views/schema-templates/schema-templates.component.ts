@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ISchemaTemplate, ModuleStatus, UserPermissions } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
+import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
@@ -8,7 +10,6 @@ interface TemplateForm {
     id?: string;
     name: string;
     description: string;
-    version: string;
 }
 
 @Component({
@@ -25,6 +26,7 @@ export class SchemaTemplatesComponent implements OnInit {
     public pageSize: number = 20;
     public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
+    public textSearch: string = '';
 
     public showTemplateDialog: boolean = false;
     public saving: boolean = false;
@@ -33,11 +35,14 @@ export class SchemaTemplatesComponent implements OnInit {
     constructor(
         private readonly profileService: ProfileService,
         private readonly templatesService: SchemaTemplatesService,
+        private readonly dialogService: DialogService,
+        private readonly route: ActivatedRoute,
         private readonly router: Router
     ) {
     }
 
     public ngOnInit(): void {
+        this.textSearch = this.route.snapshot.queryParams['search'] || '';
         this.loadProfile();
     }
 
@@ -49,6 +54,12 @@ export class SchemaTemplatesComponent implements OnInit {
         return this.isConfirmed &&
             this.user.TEMPLATES_TEMPLATE_UPDATE &&
             template.status !== ModuleStatus.PUBLISHED;
+    }
+
+    public canExport(template: SchemaTemplateGridItem): boolean {
+        return this.isConfirmed &&
+            this.user.TEMPLATES_TEMPLATE_READ &&
+            template.status === ModuleStatus.PUBLISHED;
     }
 
     public canDelete(template: SchemaTemplateGridItem): boolean {
@@ -63,13 +74,21 @@ export class SchemaTemplatesComponent implements OnInit {
     }
 
     public openEditDialog(template: SchemaTemplateGridItem): void {
+        if (!this.canEdit(template)) {
+            return;
+        }
         this.form = {
             id: template.id,
             name: template.name || '',
-            description: template.description || '',
-            version: template.version || ''
+            description: template.description || ''
         };
         this.showTemplateDialog = true;
+    }
+
+    public exportTemplate(template: SchemaTemplateGridItem): void {
+        if (!this.canExport(template)) {
+            return;
+        }
     }
 
     public saveTemplate(): void {
@@ -79,18 +98,31 @@ export class SchemaTemplatesComponent implements OnInit {
         this.saving = true;
         const payload: Partial<ISchemaTemplate> = {
             name: this.form.name.trim(),
-            description: this.form.description.trim(),
-            version: this.form.version.trim() || undefined
+            description: this.form.description.trim()
         };
-        const request = this.form.id
-            ? this.templatesService.update(this.form.id, payload)
-            : this.templatesService.create(payload);
+        if (this.form.id) {
+            this.templatesService.update(this.form.id, payload).subscribe({
+                next: () => {
+                    this.saving = false;
+                    this.showTemplateDialog = false;
+                    this.loadTemplates();
+                },
+                error: () => {
+                    this.saving = false;
+                }
+            });
+            return;
+        }
 
-        request.subscribe({
-            next: () => {
+        this.templatesService.pushCreate(payload).subscribe({
+            next: (result) => {
                 this.saving = false;
                 this.showTemplateDialog = false;
-                this.loadTemplates();
+                void this.router.navigate(['/task', result.taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
             },
             error: () => {
                 this.saving = false;
@@ -103,11 +135,38 @@ export class SchemaTemplatesComponent implements OnInit {
         if (!id || !this.canDelete(template)) {
             return;
         }
-        if (!confirm(`Delete schema template "${template.name}"?`)) {
-            return;
-        }
-        this.templatesService.delete(id).subscribe({
-            next: () => this.loadTemplates()
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete Schema Template',
+                text: `Are you sure want to delete schema template (${template.name})?`,
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        })!;
+        dialogRef.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.loading = true;
+                this.templatesService.pushDelete(id).subscribe({
+                    next: (task) => {
+                        void this.router.navigate(['/task', task.taskId], {
+                            queryParams: {
+                                last: btoa(location.href)
+                            }
+                        });
+                    },
+                    error: () => {
+                        this.loading = false;
+                    }
+                });
+            }
         });
     }
 
@@ -127,6 +186,27 @@ export class SchemaTemplatesComponent implements OnInit {
     public onPage(event: any): void {
         this.pageIndex = Math.floor((event.first || 0) / (event.rows || this.pageSize));
         this.pageSize = event.rows || this.pageSize;
+        this.loadTemplates();
+    }
+
+    public applyFilters(): void {
+        this.pageIndex = 0;
+        this.router.navigate(['/schema-templates'], {
+            queryParams: {
+                search: this.textSearch || null
+            }
+        });
+        this.loadTemplates();
+    }
+
+    public clearFilters(): void {
+        this.textSearch = '';
+        this.pageIndex = 0;
+        this.router.navigate(['/schema-templates'], {
+            queryParams: {
+                search: null
+            }
+        });
         this.loadTemplates();
     }
 
@@ -178,7 +258,7 @@ export class SchemaTemplatesComponent implements OnInit {
 
     private loadTemplates(): void {
         this.loading = true;
-        this.templatesService.page(this.pageIndex, this.pageSize).subscribe({
+        this.templatesService.page(this.pageIndex, this.pageSize, this.textSearch).subscribe({
             next: (response) => {
                 this.templates = response.body || [];
                 this.total = Number(response.headers.get('X-Total-Count') || this.templates.length);
@@ -195,8 +275,7 @@ export class SchemaTemplatesComponent implements OnInit {
     private getEmptyForm(): TemplateForm {
         return {
             name: '',
-            description: '',
-            version: ''
+            description: ''
         };
     }
 }
