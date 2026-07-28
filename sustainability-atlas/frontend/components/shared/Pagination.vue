@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next';
+import type { SingleSelectOption } from './SingleSelect.vue';
 
 const props = defineProps<{
     currentPage: number;
@@ -14,12 +15,17 @@ const emit = defineEmits<{
 }>();
 
 const pageSizeOptions = [10, 25, 50, 100];
+const pageSizeSelectOptions: SingleSelectOption[] = pageSizeOptions.map(size => ({
+    value: String(size),
+    label: String(size),
+}));
 
-function onPageSizeChange(event: Event) {
-    const target = event.target as HTMLSelectElement;
-    const newSize = Number(target.value);
-    emit('update:pageSize', newSize);
-    emit('update:currentPage', 1);
+function onSelectPageSize(val: string) {
+    const newSize = Number(val);
+    if (newSize !== props.pageSize) {
+        emit('update:pageSize', newSize);
+        emit('update:currentPage', 1);
+    }
 }
 
 const startItem = computed(() => (props.currentPage - 1) * props.pageSize + 1);
@@ -53,13 +59,12 @@ const visiblePages = computed(() => {
             </span>
             <label class="flex items-center gap-2 text-xs text-muted-foreground">
                 {{ $t('common.rowsPerPage') }}
-                <select
-                    :value="pageSize"
-                    class="h-7 rounded-md border bg-card px-2 text-xs text-foreground hover:bg-muted focus:outline-none focus:ring-1 focus:ring-ring"
-                    @change="onPageSizeChange"
-                >
-                    <option v-for="size in pageSizeOptions" :key="size" :value="size">{{ size }}</option>
-                </select>
+                <SingleSelect
+                    :model-value="String(pageSize)"
+                    :options="pageSizeSelectOptions"
+                    class="w-16"
+                    @update:model-value="onSelectPageSize"
+                />
             </label>
         </div>
 
