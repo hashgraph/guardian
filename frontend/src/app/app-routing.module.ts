@@ -63,6 +63,7 @@ import { PolicyRequestsComponent } from './modules/policy-engine/requests/reques
 import { PolicyRepositoryComponent } from './modules/policy-engine/policy-repository/policy-repository.component';
 import { RelayerAccountsComponent } from './views/relayer-accounts/relayer-accounts.component';
 import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
+import { SchemaTemplatesComponent } from './views/schema-templates/schema-templates.component';
 
 @Injectable({
     providedIn: 'root'
@@ -439,6 +440,20 @@ const routes: Routes = [
             ],
             permissions: [
                 Permissions.TOOLS_TOOL_READ
+            ]
+        }
+    },
+    {
+        path: 'schema-templates',
+        component: SchemaTemplatesComponent,
+        canActivate: [PermissionsGuard],
+        data: {
+            roles: [
+                UserRole.STANDARD_REGISTRY,
+                UserRole.USER
+            ],
+            permissions: [
+                Permissions.TEMPLATES_TEMPLATE_READ
             ]
         }
     },
