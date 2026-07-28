@@ -59,7 +59,7 @@ const recordCount = computed(() => countData.value?.meta?.total ?? 0);
             <span class="text-xs font-medium text-muted-foreground uppercase tracking-wider shrink-0">
                 {{ $t('reports.scope.datasetLabel') }}
             </span>
-            <Select
+            <SingleSelect
                 class="w-56"
                 :options="datasetOptions"
                 :model-value="dataset"

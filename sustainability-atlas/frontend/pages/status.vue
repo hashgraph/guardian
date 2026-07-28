@@ -13,6 +13,7 @@ import {
     Settings,
     X,
 } from 'lucide-vue-next';
+import type { SingleSelectOption } from '~/components/shared/SingleSelect.vue';
 import type {
     FailedJobDto,
     QueueStatusItemDto,
@@ -103,6 +104,56 @@ function clearTopicFilters() {
     topicStatusFilter.value = '';
     topicPage.value = 1;
 }
+
+// ─── Filter dropdown options ───────────────────────────────────────────────────
+const topicStatusOptions: SingleSelectOption[] = [
+    { value: '', label: 'All statuses' },
+    { value: 'SYNCED', label: 'Synced' },
+    { value: 'NEW', label: 'New' },
+    { value: 'DISABLED', label: 'Disabled' },
+];
+
+const tokenTypeOptions: SingleSelectOption[] = [
+    { value: '', label: 'All types' },
+    { value: 'FUNGIBLE_COMMON', label: 'Fungible' },
+    { value: 'NON_FUNGIBLE_UNIQUE', label: 'Non-Fungible' },
+];
+
+const guardianEventOptions: SingleSelectOption[] = [
+    { value: '', label: 'All events' },
+    { value: 'block_complete', label: 'block_complete' },
+    { value: 'token_minted', label: 'token_minted' },
+    { value: 'ipfs_added_file', label: 'ipfs_added_file' },
+    { value: 'block_event', label: 'block_event' },
+    { value: 'policy-event-policy-ready', label: 'policy-ready' },
+    { value: 'policy-engine-event-publish-policies', label: 'publish-policies' },
+];
+
+const ipfsMessageTypeOptions: SingleSelectOption[] = [
+    { value: '', label: 'All types' },
+    { value: 'VC-Document', label: 'VC-Document' },
+    { value: 'VP-Document', label: 'VP-Document' },
+    { value: 'Instance-Policy', label: 'Instance-Policy' },
+    { value: 'Standard Registry', label: 'Standard Registry' },
+    { value: 'Tag', label: 'Tag' },
+    { value: 'Token', label: 'Token' },
+    { value: 'Schema', label: 'Schema' },
+    { value: 'DID-Document', label: 'DID-Document' },
+];
+
+const ipfsStatusOptions: SingleSelectOption[] = [
+    { value: '', label: 'All statuses' },
+    { value: 'fetched', label: 'Fetched' },
+    { value: 'failed', label: 'Failed' },
+    { value: 'pending', label: 'Pending' },
+];
+
+const ipfsErrorCategoryOptions: SingleSelectOption[] = [
+    { value: '', label: 'All categories' },
+    { value: 'transient', label: 'Transient' },
+    { value: 'permanent', label: 'Permanent' },
+    { value: 'unknown', label: 'Unknown' },
+];
 
 // ─── Requeue topic (manual sync trigger) ─────────────────────────────────────
 
@@ -1074,15 +1125,12 @@ function formatTs(ts: number): string {
                                 placeholder="Search topic ID…"
                                 class="h-8 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
                             />
-                            <select
+                            <SingleSelect
                                 v-model="topicStatusFilter"
-                                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                            >
-                                <option value="">All statuses</option>
-                                <option value="SYNCED">Synced</option>
-                                <option value="NEW">New</option>
-                                <option value="DISABLED">Disabled</option>
-                            </select>
+                                :options="topicStatusOptions"
+                                highlight-active
+                                class="w-36"
+                            />
                             <button
                                 v-if="topicFiltersActive"
                                 class="inline-flex items-center gap-1 h-8 rounded-md px-3 text-sm border border-border hover:bg-muted transition-colors text-muted-foreground"
@@ -1198,14 +1246,12 @@ function formatTs(ts: number): string {
                                 placeholder="Search token ID…"
                                 class="h-8 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
                             />
-                            <select
+                            <SingleSelect
                                 v-model="tokenTypeFilter"
-                                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                            >
-                                <option value="">All types</option>
-                                <option value="FUNGIBLE_COMMON">Fungible</option>
-                                <option value="NON_FUNGIBLE_UNIQUE">Non-Fungible</option>
-                            </select>
+                                :options="tokenTypeOptions"
+                                highlight-active
+                                class="w-36"
+                            />
                             <button
                                 v-if="tokenFiltersActive"
                                 class="inline-flex items-center gap-1 h-8 rounded-md px-3 text-sm border border-border hover:bg-muted transition-colors text-muted-foreground"
@@ -1350,18 +1396,12 @@ function formatTs(ts: number): string {
                             </span>
                         </div>
                         <div class="flex items-center gap-2 flex-wrap mb-2">
-                            <select
+                            <SingleSelect
                                 v-model="guardianEventSubject"
-                                class="h-8 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                            >
-                                <option value="">All events</option>
-                                <option value="block_complete">block_complete</option>
-                                <option value="token_minted">token_minted</option>
-                                <option value="ipfs_added_file">ipfs_added_file</option>
-                                <option value="block_event">block_event</option>
-                                <option value="policy-event-policy-ready">policy-ready</option>
-                                <option value="policy-engine-event-publish-policies">publish-policies</option>
-                            </select>
+                                :options="guardianEventOptions"
+                                highlight-active
+                                class="w-44"
+                            />
                         </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
@@ -1474,41 +1514,27 @@ function formatTs(ts: number): string {
                             Include child topics
                         </label>
                         <!-- Message type filter -->
-                        <select
+                        <SingleSelect
                             v-model="ipfsMessageTypeFilter"
-                            class="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            <option value="">All types</option>
-                            <option value="VC-Document">VC-Document</option>
-                            <option value="VP-Document">VP-Document</option>
-                            <option value="Instance-Policy">Instance-Policy</option>
-                            <option value="Standard Registry">Standard Registry</option>
-                            <option value="Tag">Tag</option>
-                            <option value="Token">Token</option>
-                            <option value="Schema">Schema</option>
-                            <option value="DID-Document">DID-Document</option>
-                        </select>
+                            :options="ipfsMessageTypeOptions"
+                            highlight-active
+                            class="w-44"
+                        />
                         <!-- Status filter -->
-                        <select
+                        <SingleSelect
                             v-model="ipfsStatusFilter"
-                            class="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            <option value="">All statuses</option>
-                            <option value="fetched">Fetched</option>
-                            <option value="failed">Failed</option>
-                            <option value="pending">Pending</option>
-                        </select>
+                            :options="ipfsStatusOptions"
+                            highlight-active
+                            class="w-36"
+                        />
                         <!-- Error category filter — only relevant when showing failed items -->
-                        <select
+                        <SingleSelect
                             v-if="ipfsStatusFilter === 'failed' || ipfsStatusFilter === ''"
                             v-model="ipfsErrorCategoryFilter"
-                            class="h-9 rounded-md border border-input bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
-                        >
-                            <option value="">All categories</option>
-                            <option value="transient">Transient</option>
-                            <option value="permanent">Permanent</option>
-                            <option value="unknown">Unknown</option>
-                        </select>
+                            :options="ipfsErrorCategoryOptions"
+                            highlight-active
+                            class="w-36"
+                        />
                         <button
                             v-if="ipfsFiltersActive"
                             class="inline-flex items-center gap-1 h-9 rounded-md px-3 text-sm border border-border hover:bg-muted transition-colors text-muted-foreground"

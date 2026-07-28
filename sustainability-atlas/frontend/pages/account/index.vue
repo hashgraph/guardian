@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { LogOut, Pencil, KeyRound, Loader2, Building2, Briefcase, MapPin, CalendarDays, Activity, ChevronLeft, ChevronRight, X, Eye, EyeOff, Check, AlertCircle } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
+import type { SingleSelectOption } from '~/components/shared/SingleSelect.vue';
 import type { MyActivityResult } from '~/composables/useAuth';
 
 definePageMeta({ middleware: 'auth' });
@@ -199,6 +200,18 @@ function onActFilter() {
     loadActivity();
 }
 
+const actFilterOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('account.activity.allTypes') },
+    ...(activity.value?.actions ?? []).map(a => ({ value: a, label: actionLabel(a) })),
+]);
+
+function handleActFilterChange(val: string) {
+    if (actFilter.value !== val) {
+        actFilter.value = val;
+        onActFilter();
+    }
+}
+
 onMounted(() => {
     // Refresh the profile from the server so the page always reflects the latest
     // saved data (not a stale login-time snapshot).
@@ -381,14 +394,13 @@ const memberSince = computed(() =>
                         <Activity class="h-5 w-5 text-primary" />
                         <h2 class="text-base font-medium text-foreground">{{ $t('account.activity.title') }}</h2>
                     </div>
-                    <select
-                        v-model="actFilter"
-                        class="rounded-md border bg-background px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-                        @change="onActFilter()"
-                    >
-                        <option value="">{{ $t('account.activity.allTypes') }}</option>
-                        <option v-for="a in activity?.actions ?? []" :key="a" :value="a">{{ actionLabel(a) }}</option>
-                    </select>
+                    <SingleSelect
+                        :model-value="actFilter"
+                        :options="actFilterOptions"
+                        highlight-active
+                        class="w-44"
+                        @update:model-value="handleActFilterChange"
+                    />
                 </div>
 
                 <div class="overflow-x-auto rounded-lg border">
