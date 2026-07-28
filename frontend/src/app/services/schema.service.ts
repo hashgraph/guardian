@@ -127,6 +127,7 @@ export class SchemaService {
     public getSchemasByPage(options?: {
         category?: SchemaCategory,
         topicId?: string,
+        templateId?: string,
         search?: string,
         searchOptions?: string[],
         pageIndex?: number,

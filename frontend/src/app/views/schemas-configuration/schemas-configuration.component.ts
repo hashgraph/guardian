@@ -29,6 +29,7 @@ export interface DrillEntry {
 export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public type: string = '';
     public topic: string = '';
+    public templateId: string = '';
     public schemaLoading: boolean = false;
 
     public activeTab: 'builder' | 'preview' = 'builder';
@@ -284,6 +285,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         ).subscribe(params => {
             this.type = params.get('type') || '';
             this.topic = params.get('topic') || '';
+            this.templateId = params.get('templateId') || '';
             const schemaId = params.get('schemaId') || '';
             const mode = params.get('mode') || '';
             if (schemaId) {
@@ -480,12 +482,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 schemaId: id,
                 type: this.type || undefined,
                 topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
             },
             replaceUrl: false
         });
     }
 
     public goBack(): void {
+        if (this.type === 'template') {
+            void this.router.navigate(['/schema-templates']);
+            return;
+        }
         const queryParams: Record<string, string> = {};
         if (this.type) { queryParams.type = this.type; }
         if (this.topic) { queryParams.topic = this.topic; }
@@ -566,7 +573,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         if (this.selectedSchema === s) {
                             void this.router.navigate([], {
                                 relativeTo: this.route,
-                                queryParams: { schemaId: savedId, type: this.type || undefined, topic: this.topic || undefined },
+                                queryParams: {
+                                    schemaId: savedId,
+                                    type: this.type || undefined,
+                                    topic: this.topic || undefined,
+                                    templateId: this.templateId || undefined,
+                                },
                                 replaceUrl: true,
                             });
                         }
@@ -1563,6 +1575,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         schema.entity = SchemaEntity.NONE;
         schema.category = this.getCategory();
         schema.topicId = this.topic || '';
+        if (this.templateId) {
+            schema.templateId = this.templateId;
+        }
         schema.status = SchemaStatus.DRAFT;
         schema.fields = [];
         schema.conditions = [];
@@ -1578,7 +1593,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Clear schemaId from URL — queryParamMap skips the selectedSchema reset for in-memory entries.
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { type: this.type || undefined, topic: this.topic || undefined },
+            queryParams: {
+                type: this.type || undefined,
+                topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
+            },
             replaceUrl: true,
         });
     }
@@ -2126,6 +2145,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.schemaService.getSchemasByPage({
             category: this.getCategory(),
             topicId,
+            templateId: this.templateId || undefined,
             pageIndex: this.schemasPage,
             pageSize: this.schemasPageSize,
             search,
@@ -2207,6 +2227,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             case 'module':  return SchemaCategory.MODULE;
             case 'tag':     return SchemaCategory.TAG;
             case 'system':  return SchemaCategory.SYSTEM;
+            case 'template': return SchemaCategory.TEMPLATE;
             case 'policy':
             default:        return SchemaCategory.POLICY;
         }
@@ -2230,6 +2251,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         schemaId: nextId || undefined,
                         type: this.type || undefined,
                         topic: this.topic || undefined,
+                        templateId: this.templateId || undefined,
                     },
                     replaceUrl: true,
                 });
@@ -2268,6 +2290,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                     schemaId: nextId || undefined,
                                     type: this.type || undefined,
                                     topic: this.topic || undefined,
+                                    templateId: this.templateId || undefined,
                                 },
                             });
                             returnUrl = location.origin + this.router.serializeUrl(urlTree);

@@ -4,5 +4,6 @@ export enum SchemaType {
     Policy = 'policy',
     Tag = 'tag',
     Module = 'module',
-    Tool = 'tool'
+    Tool = 'tool',
+    Template = 'template'
 }

@@ -57,6 +57,25 @@ import { FilterObject } from '@mikro-orm/core';
 @Controller()
 export class SchemaService { }
 
+async function resolveTemplateSchemaContext(item: ISchema, owner: IOwner): Promise<void> {
+    if (item.category !== SchemaCategory.TEMPLATE) {
+        return;
+    }
+    if (!item.templateId) {
+        throw new Error('Schema template id is required.');
+    }
+    const template = await DatabaseServer.getSchemaTemplateById(item.templateId);
+    if (!template || template.owner !== owner.owner) {
+        throw new Error('Invalid schema template.');
+    }
+    if (template.status === ModuleStatus.PUBLISHED) {
+        throw new Error('Schema template published.');
+    }
+    if (!template.topicId || item.topicId !== template.topicId) {
+        throw new Error('Invalid schema template topic.');
+    }
+}
+
 /**
  * Connect to the message broker methods of working with schemas.
  */
@@ -75,6 +94,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { item, owner } = msg;
+                await resolveTemplateSchemaContext(item, owner);
                 await createSchemaAndArtifacts(item.category, item, owner, NewNotifier.empty());
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
@@ -93,6 +113,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             const { item, owner, task } = msg;
             const notifier = await NewNotifier.create(task);
             RunFunctionAsync(async () => {
+                await resolveTemplateSchemaContext(item, owner);
                 const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
@@ -903,6 +924,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     if (tool && tool.status === ModuleStatus.PUBLISHED) {
                         delete filter.owner;
                     }
+                } else if (options.templateId) {
+                    filter.category = SchemaCategory.TEMPLATE;
+                    const template = await DatabaseServer.getSchemaTemplateById(options.templateId);
+                    filter.topicId = template?.topicId;
                 }
                 if (options.topicId) {
                     if (options.topicId === 'not-binded') {
@@ -968,6 +993,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 policyId?: string,
                 moduleId?: string,
                 toolId?: string,
+                templateId?: string,
                 topicId?: string,
                 search?: string
                 searchOptions?: string[]
@@ -1017,6 +1043,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     if (tool && tool.status === ModuleStatus.PUBLISHED) {
                         delete filter.owner;
                     }
+                } else if (options.templateId) {
+                    filter.category = SchemaCategory.TEMPLATE;
+                    const template = await DatabaseServer.getSchemaTemplateById(options.templateId);
+                    filter.topicId = template?.topicId;
                 } else if (Array.isArray(options.category)) {
                     filter.category = { $in: options.category };
                 } else if (typeof options.category === 'string') {
@@ -1205,6 +1235,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     parents = await DatabaseServer.getPolicies({ owner: owner.owner, topicId }, options);
                 } else if (category === SchemaCategory.TOOL) {
                     parents = await DatabaseServer.getTools({ owner: owner.owner, topicId }, options);
+                } else if (category === SchemaCategory.TEMPLATE) {
+                    parents = [];
                 }
                 if (Array.isArray(parents)) {
                     for (const parent of parents) {
