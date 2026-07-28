@@ -746,7 +746,11 @@
                     <i class="pi pi-chevron-right canvas-breadcrumb-sep"></i>
                     <span class="canvas-breadcrumb-item" [class.active]="openFolder===item"
                       (click)="onOpenModule(item)">
-                      <svg-icon class="edit-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
+                      @if (item.isTool) {
+                        <svg-icon svgClass="tool-icon" src="/assets/images/icons/handyman.svg"></svg-icon>
+                      } @else {
+                        <svg-icon class="edit-color" src="/assets/images/icons/policy-module.svg"></svg-icon>
+                      }
                       <span>{{ item.localTag }}</span>
                     </span>
                   }
@@ -1022,7 +1026,7 @@
         [policy]="policyTemplate"
         [module]="openFolder"
         [moduleErrors]="openFolder ? errorsMap[openFolder.id] : undefined"
-        [readonly]="readonly"
+        [readonly]="rootReadonly"
         [allCategories]="allCategories"
         [policyCategories]="policyCategoriesMapped"
         [wipeContracts]="wipeContracts"></policy-settings-drawer>

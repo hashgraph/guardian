@@ -346,18 +346,37 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.policyTemplate.allModule;
     }
 
-    public get openModulePath(): PolicyModule[] {
+    public get openModulePath(): PolicyBlock[] {
         const openPath = this.getModulePath(this.openFolder);
         const selectedPath = this.getModulePath(this.currentBlock);
         return selectedPath.length > openPath.length ? selectedPath : openPath;
     }
 
-    private getModulePath(block: any): PolicyModule[] {
+    public get rootReadonly(): boolean {
+        return !!this.rootTemplate?.readonly;
+    }
+
+    private isToolFolder(folder: any): boolean {
+        return !!folder?.isTool;
+    }
+
+    private getToolFolder(block: any): PolicyFolder | undefined {
+        const tools: any[] = this.policyTemplate?.allTools || [];
+        return tools.find((tool: any) => tool === block || tool.id === block?.id);
+    }
+
+    private setReadonly(value: boolean): void {
+        this.readonly = value;
+        this.codeMirrorOptions.readOnly = value;
+    }
+
+    private getModulePath(block: any): PolicyBlock[] {
         const modules = this.allSubModule || [];
-        const path: PolicyModule[] = [];
+        const tools = this.policyTemplate?.allTools || [];
+        const path: PolicyBlock[] = [];
         let current: any = block;
         while (current) {
-            if (modules.indexOf(current) !== -1) {
+            if (modules.indexOf(current) !== -1 || tools.indexOf(current) !== -1) {
                 path.unshift(current);
             }
             current = current.parent;
@@ -721,8 +740,7 @@ export class PolicyConfigurationComponent implements OnInit {
     }
 
     private async finishedLoad(root: PolicyRoot): Promise<void> {
-        this.readonly = root.readonly;
-        this.codeMirrorOptions.readOnly = this.readonly;
+        this.setReadonly(root.readonly);
 
         await this.storage.load(root.id, {
             view: 'blocks',
@@ -1886,10 +1904,12 @@ export class PolicyConfigurationComponent implements OnInit {
         if (module === this.openFolder || !this.saveCodeConfig()) {
             return;
         }
-        const item = this.rootTemplate.getModule(module);
+        const item = this.rootTemplate.getModule(module) || this.getToolFolder(module);
         if (item) {
             this.openType = 'Sub';
             this.openFolder = item;
+            this.setReadonly(this.rootTemplate.readonly || this.isToolFolder(item));
+            this.onSelect({ block: this.openFolder.root, isMultiSelect: false });
             if (this.currentView === 'json') {
                 this.code = this.objectToJson(this.openFolder.getJSON());
             }
@@ -1924,6 +1944,7 @@ export class PolicyConfigurationComponent implements OnInit {
         this.rootTemplate = root;
         this.openFolder = root?.getRootModule();
         this.openType = 'Root';
+        this.setReadonly(root.readonly);
         if (this.currentView === 'json') {
             this.code = this.objectToJson(this.openFolder.getJSON());
         }
