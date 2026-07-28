@@ -65,6 +65,7 @@ function installPCUMock(tagMap, blockMap) {
 
 describe('GridActionResolver', function () {
     before(async function () {
+        this.timeout(300000);
         const resolverMod = await import('../../../dist/policy-engine/external/grid-action-resolver.js');
         GridActionResolver = resolverMod.GridActionResolver;
 
@@ -132,6 +133,15 @@ describe('GridActionResolver', function () {
             assert.deepEqual(desc.columnSchema, [
                 { name: 'col1', title: 'Column 1', type: 'text', bindActions: ['act1'] },
             ]);
+        });
+
+        it('includes singular bindBlock in columnSchema bindActions', function () {
+            const block = makeBlock();
+            block.options.uiMetaData.fields = [
+                { name: 'op', title: 'Operation', type: 'block', bindBlock: 'approve_btn' },
+            ];
+            const desc = GridActionResolver.buildGridDescriptor(block);
+            assert.deepEqual(desc.columnSchema[0].bindActions, ['approve_btn']);
         });
 
         it('builds filterSchema from filtersAddon children', function () {
@@ -284,6 +294,133 @@ describe('GridActionResolver', function () {
             assert.equal(result.actionType, 'button');
         });
 
+        it('resolves selector option bound via singular bindBlock', function () {
+            const gridBlock = makeBlock({ tag: 'my_grid' });
+            const actionBlock = makeActionBlock();
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'status', type: 'block', bindBlock: actionBlock.tag },
+            ];
+            const tagMap = new Map([
+                [gridBlock.tag, 'grid-uuid'],
+                [actionBlock.tag, 'action-uuid'],
+            ]);
+            const blockMap = new Map([
+                ['grid-uuid', gridBlock],
+                ['action-uuid', actionBlock],
+            ]);
+            installPCUMock(tagMap, blockMap);
+
+            const result = GridActionResolver.resolveAction('policy-1', 'my_grid', 'approve_action');
+            assert.isNotNull(result);
+            assert.equal(result.actionType, 'selector');
+            assert.equal(result.optionValue, 'Approved');
+        });
+
+        it('resolves individual buttons of a buttonBlock by button tag', function () {
+            const gridBlock = makeBlock({ tag: 'my_grid' });
+            const buttonBlock = {
+                blockType: 'buttonBlock',
+                tag: 'approve_btn_block',
+                uuid: 'btn-uuid',
+                options: {
+                    uiMetaData: {
+                        buttons: [
+                            { tag: 'Option_0', name: 'Approve', type: 'selector', field: 'option.status', value: 'Approved' },
+                            { tag: 'Option_1', name: 'Reject', type: 'selector', field: 'option.status', value: 'Rejected' },
+                        ],
+                    },
+                },
+                permissions: [],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'operation', type: 'block', bindBlock: 'approve_btn_block' },
+            ];
+            const tagMap = new Map([
+                ['my_grid', 'grid-uuid'],
+                ['approve_btn_block', 'btn-uuid'],
+            ]);
+            const blockMap = new Map([
+                ['grid-uuid', gridBlock],
+                ['btn-uuid', buttonBlock],
+            ]);
+            installPCUMock(tagMap, blockMap);
+
+            const result = GridActionResolver.resolveAction('policy-1', 'my_grid', 'Option_1');
+            assert.isNotNull(result);
+            assert.equal(result.actionType, 'button');
+            assert.equal(result.field, 'option.status');
+            assert.equal(result.optionValue, 'Rejected');
+            assert.equal(result.buttonTag, 'Option_1');
+        });
+
+        it('resolves a requestVcDocumentBlock as a request action', function () {
+            const gridBlock = makeBlock({ tag: 'my_grid' });
+            const requestBlock = {
+                blockType: 'requestVcDocumentBlock',
+                tag: 'final_mint_button',
+                uuid: 'req-uuid',
+                options: {
+                    schema: '#SubmitFinalAmount',
+                    uiMetaData: { type: 'dialog', title: 'Submit Final Token Amount', content: 'Submit Final Amount' },
+                },
+                permissions: ['ANY_ROLE'],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { name: '', type: 'block', bindBlock: 'final_mint_button' },
+            ];
+            const tagMap = new Map([
+                ['my_grid', 'grid-uuid'],
+                ['final_mint_button', 'req-uuid'],
+            ]);
+            const blockMap = new Map([
+                ['grid-uuid', gridBlock],
+                ['req-uuid', requestBlock],
+            ]);
+            installPCUMock(tagMap, blockMap);
+
+            const result = GridActionResolver.resolveAction('policy-1', 'my_grid', 'final_mint_button');
+            assert.isNotNull(result);
+            assert.equal(result.actionType, 'request');
+            assert.strictEqual(result.actionBlock, requestBlock);
+        });
+
+        it('resolves a dropdown interfaceActionBlock capturing its field', function () {
+            const gridBlock = makeBlock({ tag: 'my_grid' });
+            const dropdownBlock = {
+                blockType: 'interfaceActionBlock',
+                tag: 'assign_vvb',
+                uuid: 'dd-uuid',
+                options: {
+                    type: 'dropdown',
+                    field: 'assignedTo',
+                    name: 'document.credentialSubject.0.name',
+                    value: 'document.credentialSubject.0.id',
+                    uiMetaData: { content: 'VVB' },
+                },
+                permissions: ['PROJECT_DEVELOPER'],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'assignedTo', type: 'block', bindBlock: 'assign_vvb' },
+            ];
+            const tagMap = new Map([
+                ['my_grid', 'grid-uuid'],
+                ['assign_vvb', 'dd-uuid'],
+            ]);
+            const blockMap = new Map([
+                ['grid-uuid', gridBlock],
+                ['dd-uuid', dropdownBlock],
+            ]);
+            installPCUMock(tagMap, blockMap);
+
+            const result = GridActionResolver.resolveAction('policy-1', 'my_grid', 'assign_vvb');
+            assert.isNotNull(result);
+            assert.equal(result.actionType, 'dropdown');
+            assert.equal(result.field, 'assignedTo');
+        });
+
         it('returns null for unknown actionId', function () {
             const gridBlock = makeBlock({ tag: 'my_grid' });
             const actionBlock = makeActionBlock();
@@ -399,6 +536,196 @@ describe('GridActionResolver', function () {
             assert.equal(approve.appliesTo, 'row');
             assert.isArray(approve.requiredRoles);
             assert.isObject(approve.inputSchema);
+        });
+
+        it('returns actions bound via singular bindBlock', async function () {
+            const gridBlock = makeBlock({ tag: 'g_single' });
+            const actionBlock = makeActionBlock({ tag: 'approve_action' });
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'status', type: 'block', bindBlock: 'approve_action' },
+            ];
+            const tagMap = new Map([['g_single', 'gs-uuid'], ['approve_action', 'act-uuid']]);
+            const blockMap = new Map([['gs-uuid', gridBlock], ['act-uuid', actionBlock]]);
+            installPCUMock(tagMap, blockMap);
+
+            const actions = await GridActionResolver.getActions('policy-1', 'g_single', {});
+            const ids = actions.map((a) => a.actionId);
+            assert.include(ids, 'approve_action');
+            assert.include(ids, 'reject_action');
+        });
+
+        it('lists each button of a buttonBlock as a separate action', async function () {
+            const gridBlock = makeBlock({ tag: 'g_btns' });
+            const buttonBlock = {
+                blockType: 'buttonBlock',
+                tag: 'approve_btn_block',
+                uuid: 'bb-uuid',
+                options: {
+                    uiMetaData: {
+                        buttons: [
+                            { tag: 'Option_0', name: 'Approve', type: 'selector', field: 'option.status', value: 'Approved' },
+                            { tag: 'Option_1', name: 'Reject', type: 'selector', field: 'option.status', value: 'Rejected' },
+                        ],
+                    },
+                },
+                permissions: ['Standard Registry'],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'operation', type: 'block', bindBlock: 'approve_btn_block' },
+            ];
+            const tagMap = new Map([['g_btns', 'gb-uuid'], ['approve_btn_block', 'bb-uuid']]);
+            const blockMap = new Map([['gb-uuid', gridBlock], ['bb-uuid', buttonBlock]]);
+            installPCUMock(tagMap, blockMap);
+
+            const actions = await GridActionResolver.getActions('policy-1', 'g_btns', {});
+            assert.equal(actions.length, 2);
+            const labels = actions.map((a) => a.label);
+            assert.include(labels, 'Approve');
+            assert.include(labels, 'Reject');
+            const ids = actions.map((a) => a.actionId);
+            assert.include(ids, 'Option_0');
+            assert.include(ids, 'Option_1');
+        });
+
+        it('lists a requestVcDocumentBlock as an action labeled by uiMetaData content', async function () {
+            const gridBlock = makeBlock({ tag: 'g_req' });
+            const requestBlock = {
+                blockType: 'requestVcDocumentBlock',
+                tag: 'final_mint_button',
+                uuid: 'req-uuid',
+                options: {
+                    schema: '#SubmitFinalAmount',
+                    uiMetaData: { type: 'dialog', title: 'Submit Final Token Amount', content: 'Submit Final Amount' },
+                },
+                permissions: ['ANY_ROLE'],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { name: '', type: 'block', bindBlock: 'final_mint_button' },
+            ];
+            const tagMap = new Map([['g_req', 'gr-uuid'], ['final_mint_button', 'req-uuid']]);
+            const blockMap = new Map([['gr-uuid', gridBlock], ['req-uuid', requestBlock]]);
+            installPCUMock(tagMap, blockMap);
+
+            const actions = await GridActionResolver.getActions('policy-1', 'g_req', {});
+            assert.equal(actions.length, 1);
+            assert.equal(actions[0].actionId, 'final_mint_button');
+            assert.equal(actions[0].label, 'Submit Final Amount');
+            assert.include(actions[0].requiredRoles, 'ANY_ROLE');
+            assert.deepEqual(actions[0].inputSchema.required, ['document']);
+            assert.property(actions[0].inputSchema.properties, 'document');
+        });
+
+        it('lists both a buttonBlock button and a requestVcDocumentBlock (real-grid shape)', async function () {
+            // Mirrors registry_MRs: bb_issueToken (button "Reject") + final_mint_button (request "Submit Final Amount")
+            const gridBlock = makeBlock({ tag: 'registry_MRs' });
+            const buttonBlock = {
+                blockType: 'buttonBlock',
+                tag: 'bb_issueToken',
+                uuid: 'bb-uuid',
+                options: { uiMetaData: { buttons: [{ tag: 'btn_reject', name: 'Reject', type: 'selector' }] } },
+                permissions: ['OWNER'],
+                isAvailable: async () => true,
+            };
+            const requestBlock = {
+                blockType: 'requestVcDocumentBlock',
+                tag: 'final_mint_button',
+                uuid: 'req-uuid',
+                options: { schema: '#Final', uiMetaData: { type: 'dialog', content: 'Submit Final Amount' } },
+                permissions: ['ANY_ROLE'],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { title: 'Action1', name: '', type: 'block', bindBlock: 'bb_issueToken' },
+                { title: 'Action2', name: '', type: 'block', bindBlock: 'final_mint_button' },
+            ];
+            const tagMap = new Map([
+                ['registry_MRs', 'grid-uuid'],
+                ['bb_issueToken', 'bb-uuid'],
+                ['final_mint_button', 'req-uuid'],
+            ]);
+            const blockMap = new Map([
+                ['grid-uuid', gridBlock],
+                ['bb-uuid', buttonBlock],
+                ['req-uuid', requestBlock],
+            ]);
+            installPCUMock(tagMap, blockMap);
+
+            const actions = await GridActionResolver.getActions('policy-1', 'registry_MRs', {});
+            const labels = actions.map((a) => a.label);
+            assert.include(labels, 'Reject');
+            assert.include(labels, 'Submit Final Amount');
+        });
+
+        it('lists a dropdown interfaceActionBlock with resolvable options as an enum', async function () {
+            const gridBlock = makeBlock({ tag: 'g_dropdown' });
+            const dropdownBlock = {
+                blockType: 'interfaceActionBlock',
+                tag: 'assign_vvb',
+                uuid: 'dd-uuid',
+                options: {
+                    type: 'dropdown',
+                    field: 'assignedTo',
+                    name: 'document.credentialSubject.0.name',
+                    value: 'document.credentialSubject.0.id',
+                    uiMetaData: { content: 'VVB' },
+                },
+                permissions: ['PROJECT_DEVELOPER'],
+                isAvailable: async () => true,
+            };
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'assignedTo', type: 'block', bindBlock: 'assign_vvb' },
+            ];
+            const tagMap = new Map([['g_dropdown', 'gd-uuid'], ['assign_vvb', 'dd-uuid']]);
+            const blockMap = new Map([['gd-uuid', gridBlock], ['dd-uuid', dropdownBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.blockGetData = async () => ({
+                body: {
+                    options: [
+                        { name: 'Xeno VVB', value: 'did:hedera:xeno-vvb' },
+                        { name: 'Acme VVB', value: 'did:hedera:acme-vvb' },
+                    ],
+                },
+            });
+
+            const actions = await GridActionResolver.getActions('policy-1', 'g_dropdown', {});
+            assert.equal(actions.length, 1);
+            assert.equal(actions[0].actionId, 'assign_vvb');
+            assert.equal(actions[0].label, 'VVB');
+            assert.deepEqual(actions[0].inputSchema.required, ['value']);
+            assert.deepEqual(actions[0].inputSchema.properties.value.enum, [
+                'did:hedera:xeno-vvb',
+                'did:hedera:acme-vvb',
+            ]);
+        });
+
+        it('ignores empty-string bindBlock', async function () {
+            const gridBlock = makeBlock({ tag: 'g_empty' });
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'status', type: 'text', bindBlock: '' },
+            ];
+            const tagMap = new Map([['g_empty', 'ge-uuid']]);
+            const blockMap = new Map([['ge-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+
+            const actions = await GridActionResolver.getActions('policy-1', 'g_empty', {});
+            assert.equal(actions.length, 0);
+        });
+
+        it('deduplicates a tag present in both bindBlock and bindBlocks', async function () {
+            const gridBlock = makeBlock({ tag: 'g_dup' });
+            const actionBlock = makeActionBlock({ tag: 'approve_action' });
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'status', bindBlock: 'approve_action', bindBlocks: ['approve_action'] },
+            ];
+            const tagMap = new Map([['g_dup', 'gd-uuid'], ['approve_action', 'act-uuid']]);
+            const blockMap = new Map([['gd-uuid', gridBlock], ['act-uuid', actionBlock]]);
+            installPCUMock(tagMap, blockMap);
+
+            const actions = await GridActionResolver.getActions('policy-1', 'g_dup', {});
+            const approveCount = actions.filter((a) => a.actionId === 'approve_action').length;
+            assert.equal(approveCount, 1);
         });
 
         it('excludes actions whose block is not available', async function () {

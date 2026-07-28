@@ -43,6 +43,20 @@ function stableId(block: IPolicyBlock): string {
     return crypto.createHash('sha256').update(block.uuid ?? '').digest('hex').slice(0, 16);
 }
 
+/**
+ * Block types that render as a "fill a form and submit a new VC document" action
+ * (e.g. "Submit Final Amount"). They share the same `{ document, ref }` setData payload.
+ */
+const REQUEST_BLOCK_TYPES = new Set(['requestVcDocumentBlock', 'requestVcDocumentBlockAddon']);
+
+function collectBindTags(field: any): string[] {
+    const tags: string[] = Array.isArray(field?.bindBlocks) ? [...field.bindBlocks] : [];
+    if (field?.bindBlock && !tags.includes(field.bindBlock)) {
+        tags.push(field.bindBlock);
+    }
+    return tags;
+}
+
 function setNestedField(obj: any, fieldPath: string, value: any): any {
     const clone = JSON.parse(JSON.stringify(obj));
     const keys = fieldPath.split('.');
@@ -91,9 +105,10 @@ export class GridActionResolver {
 
     static resolveAction(policyId: string, gridId: string, actionId: string): {
         actionBlock: IPolicyBlock;
-        actionType: 'selector' | 'button' | 'dropdown';
+        actionType: 'selector' | 'button' | 'dropdown' | 'request';
         optionValue?: any;
         field?: string;
+        buttonTag?: string;
     } | null {
         const gridBlock = GridActionResolver.resolveGridBlock(policyId, gridId);
         if (!gridBlock) return null;
@@ -105,7 +120,7 @@ export class GridActionResolver {
         const visited = new Set<string>();
 
         for (const field of fields) {
-            for (const bindTag of (field.bindBlocks || [])) {
+            for (const bindTag of collectBindTags(field)) {
                 if (visited.has(bindTag) || !tagMap.has(bindTag)) continue;
                 visited.add(bindTag);
 
@@ -129,10 +144,28 @@ export class GridActionResolver {
                             }
                         }
                     } else if (stableId(actionBlock) === actionId) {
-                        return { actionBlock, actionType: 'dropdown' };
+                        return { actionBlock, actionType: 'dropdown', field: opts.field };
                     }
-                } else if (blockType === 'buttonBlock' && stableId(actionBlock) === actionId) {
-                    return { actionBlock, actionType: 'button' };
+                } else if (blockType === 'buttonBlock') {
+                    const buttons: any[] = opts.uiMetaData?.buttons || [];
+                    for (const btn of buttons) {
+                        if (btn.tag === actionId) {
+                            return {
+                                actionBlock,
+                                actionType: 'button',
+                                optionValue: btn.value,
+                                field: btn.field,
+                                buttonTag: btn.tag,
+                            };
+                        }
+                    }
+                    if (!buttons.length && stableId(actionBlock) === actionId) {
+                        return { actionBlock, actionType: 'button' };
+                    }
+                } else if (REQUEST_BLOCK_TYPES.has(blockType)) {
+                    if (stableId(actionBlock) === actionId) {
+                        return { actionBlock, actionType: 'request' };
+                    }
                 }
             }
         }
@@ -178,7 +211,7 @@ export class GridActionResolver {
                 title: co.uiMetaData?.title || co.field || stableId(child),
                 type: co.type || 'input',
                 field: co.field || '',
-                operators: co.queryType ? [co.queryType] : [],
+                operators: co.queryType ? [co.queryType] : ['eq'],
             });
         }
 
@@ -186,7 +219,7 @@ export class GridActionResolver {
             name: f.name || '',
             title: f.title || f.name || '',
             type: f.type || 'string',
-            bindActions: (f.bindBlocks || []) as string[],
+            bindActions: collectBindTags(f),
         }));
 
         return {
@@ -219,7 +252,7 @@ export class GridActionResolver {
         const actions: IExternalAction[] = [];
 
         for (const field of fields) {
-            for (const bindTag of (field.bindBlocks || [])) {
+            for (const bindTag of collectBindTags(field)) {
                 if (visited.has(bindTag) || !tagMap.has(bindTag)) continue;
                 visited.add(bindTag);
 
@@ -246,6 +279,47 @@ export class GridActionResolver {
                             });
                         }
                     } else if (opts.type === 'dropdown') {
+                        let options: Array<{ name: any; value: any }> = [];
+                        try {
+                            const dataResult = await PolicyComponentsUtils.blockGetData(
+                                actionBlock as IPolicyInterfaceBlock, user, {}
+                            );
+                            options = dataResult.body?.options || [];
+                        } catch (_e) {
+                            // best effort — action is still listed even if options can't be resolved
+                        }
+                        actions.push({
+                            actionId: stableId(actionBlock),
+                            label: opts.uiMetaData?.content || opts.uiMetaData?.title || stableId(actionBlock),
+                            requiredRoles,
+                            appliesTo: 'row',
+                            inputSchema: {
+                                type: 'object',
+                                required: ['value'],
+                                properties: {
+                                    value: {
+                                        description: `Value to set on field "${opts.field}"`,
+                                        enum: options.map((o) => o.value),
+                                        options,
+                                    },
+                                },
+                            },
+                        });
+                    }
+                    // 'download' is excluded — not a workflow action
+                } else if (blockType === 'buttonBlock') {
+                    const buttons: any[] = opts.uiMetaData?.buttons || [];
+                    if (buttons.length) {
+                        for (const btn of buttons) {
+                            actions.push({
+                                actionId: btn.tag,
+                                label: btn.name || btn.tag,
+                                requiredRoles,
+                                appliesTo: 'row',
+                                inputSchema: { type: 'object', properties: {} },
+                            });
+                        }
+                    } else {
                         actions.push({
                             actionId: stableId(actionBlock),
                             label: opts.uiMetaData?.title || stableId(actionBlock),
@@ -254,14 +328,25 @@ export class GridActionResolver {
                             inputSchema: { type: 'object', properties: {} },
                         });
                     }
-                    // 'download' is excluded — not a workflow action
-                } else if (blockType === 'buttonBlock') {
+                } else if (REQUEST_BLOCK_TYPES.has(blockType)) {
+                    const ui = opts.uiMetaData || {};
                     actions.push({
                         actionId: stableId(actionBlock),
-                        label: opts.uiMetaData?.title || stableId(actionBlock),
+                        label: ui.content || ui.title || stableId(actionBlock),
                         requiredRoles,
                         appliesTo: 'row',
-                        inputSchema: { type: 'object', properties: {} },
+                        inputSchema: {
+                            type: 'object',
+                            required: ['document'],
+                            properties: {
+                                document: {
+                                    type: 'object',
+                                    description: opts.schema
+                                        ? `Credential subject conforming to schema ${opts.schema}`
+                                        : 'Credential subject to submit',
+                                },
+                            },
+                        },
                     });
                 }
             }
@@ -317,7 +402,7 @@ export class GridActionResolver {
         if (!resolution) {
             throw Object.assign(new Error('Action not found'), { code: 404 });
         }
-        const { actionBlock, actionType, optionValue, field } = resolution;
+        const { actionBlock, actionType, optionValue, field, buttonTag } = resolution;
 
         // 3. Permission gate on action block
         const actionError = await PolicyComponentsUtils.isAvailableSetData(
@@ -342,8 +427,33 @@ export class GridActionResolver {
         let payload: any;
         if (actionType === 'selector' && field && optionValue !== undefined) {
             payload = setNestedField(document, field, optionValue);
+        } else if (actionType === 'dropdown') {
+            const value = (_body && typeof _body === 'object') ? _body.value : undefined;
+            if (value === undefined) {
+                throw Object.assign(
+                    new Error('This action requires a "value" body field with the selected option value'),
+                    { code: 400 },
+                );
+            }
+            payload = field ? setNestedField(document, field, value) : document;
         } else if (actionType === 'button') {
-            payload = { document, tag: actionId };
+            const doc = (field && optionValue !== undefined)
+                ? setNestedField(document, field, optionValue)
+                : document;
+            payload = { document: doc, tag: buttonTag ?? actionId };
+        } else if (actionType === 'request') {
+            // Request blocks submit a NEW VC (the form supplied in the body),
+            // referencing the grid record via `ref`.
+            const submitted = (_body && typeof _body === 'object' && _body.document !== undefined)
+                ? _body.document
+                : _body;
+            if (!submitted || typeof submitted !== 'object') {
+                throw Object.assign(
+                    new Error('This action requires a "document" body with the form fields to submit'),
+                    { code: 400 },
+                );
+            }
+            payload = { document: submitted, ref: document };
         } else {
             payload = document;
         }
