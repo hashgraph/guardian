@@ -189,17 +189,13 @@
                             filterPlaceholder="Search schema"
                             [resetFilterOnHide]="true"
                             (onChange)="onSave()"
-                            [appendTo]="'body'" panelStyleClass="pc-select-panel"
+                            [appendTo]="'body'" panelStyleClass="pc-select-panel pc-drawer-panel"
                             >
                             <ng-template let-schema pTemplate="item">
                               <div
-                                class="schema-variable"
+                                class="schema-variable drawer-option-label"
                                 [attr.status]="schema.status"
-                                [attr.disable]="schema.disable"
-                                pTooltip="{{ schema.tooltip }}"
-                                tooltipPosition="bottom"
-                                [tooltipOptions]="{ showDelay: 500 }"
-                                tooltipStyleClass="guardian-tooltip small-guardian-tooltip">
+                                [attr.disable]="schema.disable">
                                 {{ schema.displayName }}
                               </div>
                             </ng-template>

@@ -1346,6 +1346,13 @@
         white-space: nowrap;
     }
 
+    &.pc-drawer-panel .p-select-option > *,
+    &.pc-drawer-panel .p-multiselect-option > * {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
     &.pc-drawer-panel .p-select-option > span:last-child,
     &.pc-drawer-panel .p-multiselect-option > span:last-child,
     &.pc-drawer-panel .drawer-option-label {

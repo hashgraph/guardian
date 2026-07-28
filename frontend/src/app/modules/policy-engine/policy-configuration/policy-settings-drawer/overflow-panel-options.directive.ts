@@ -9,12 +9,12 @@ export class OverflowPanelOptionsDirective {
 
     @HostListener('document:mouseover', ['$event'])
     public onMouseOver(event: MouseEvent): void {
-        if (!this.host.nativeElement.classList.contains('open') || !(event.target instanceof Element)) {
+        if (!(event.target instanceof Element)) {
             return;
         }
 
         const option = event.target.closest<HTMLElement>(
-            '.pc-drawer-panel .p-select-option, .pc-drawer-panel .p-multiselect-option'
+            '.pc-select-panel .p-select-option, .pc-select-panel .p-multiselect-option'
         );
 
         if (!option) {

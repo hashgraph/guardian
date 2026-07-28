@@ -92,19 +92,23 @@
                 panelStyleClass="pc-select-panel pc-drawer-panel"
                 [(ngModel)]="projectSchema"
                 [options]="policySchemas"
-                optionLabel="name"
+                optionLabel="displayName"
                 optionValue="value"
                 [disabled]="!policySchemas?.length"
                 placeholder="Select a schema"
                 [filter]="true"
-                filterBy="name"
+                filterBy="displayName"
                 filterPlaceholder="Search schema"
                 [resetFilterOnHide]="true"
                 (onChange)="setProjectSchema($event.value)"
                 [appendTo]="'body'"
                 >
                 <ng-template pTemplate="item" let-option>
-                  <span class="drawer-option-label">{{ option.name }}</span>
+                  <span
+                    class="schema-variable drawer-option-label"
+                    [attr.status]="option.value ? option.status : null"
+                    [attr.disable]="option.disable"
+                  >{{ option.value ? option.displayName : option.name }}</span>
                 </ng-template>
               </p-select>
             </td>
