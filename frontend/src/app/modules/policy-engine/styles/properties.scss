@@ -1374,6 +1374,11 @@
     width: 0;
 }
 
+::ng-deep .pc-select-panel {
+    min-width: var(--pc-select-panel-min-width, 280px);
+    margin-left: min(0px, calc(100% - var(--pc-select-panel-min-width, 280px)));
+}
+
 ::ng-deep {
     .right-bottom-toolbar .properties .propHeader {
         height: 36px;

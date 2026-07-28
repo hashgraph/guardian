@@ -66,6 +66,17 @@
     --pc-radius: 10px;
     --pc-radius-sm: 8px;
     --pc-elevation: 0 1px 2px var(--guardian-shadow, #00000014), 0 1px 1px var(--guardian-shadow, #00000014);
+
+    /* Widest the right inspector can be dragged, and everything between that edge
+       and the value column: the 2px panel border, 24px tab-content padding, 12px
+       prop-container padding, 18px toggle column and 116px label column, plus the
+       scrollbar and the cell/control padding. Measured against the rendered field:
+       at a 496px inspector PrimeNG reports a 276px trigger, so the inset is 220px.
+       The dropdown panel is pinned to the value column's widest possible size, so
+       it never narrows with the field and never overhangs it either. */
+    --pc-inspector-max-width: 500px;
+    --pc-row-value-inset: 220px;
+    --pc-select-panel-min-width: calc(var(--pc-inspector-max-width) - var(--pc-row-value-inset));
 }
 
 .content {
@@ -340,7 +351,7 @@
     width: 408px;
     flex: 0 0 408px;
     min-width: 352px;
-    max-width: 500px;
+    max-width: var(--pc-inspector-max-width, 500px);
     position: relative;
     box-sizing: border-box;
     border: 1px solid var(--pc-main-grid-border);
