@@ -353,30 +353,22 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             // fields like `country` to a sub-schema field (e.g.,
             // "1.8 Project Location.projectSiteCountryarea") and still see
             // it as the resolved mapping in the editor.
-            //
-            // Each resolved value carries its `schemaIri` alongside the bare
-            // `fieldPath` — two different schemas can (and do) share the same
-            // fieldPath (e.g. both have a top-level "name" property), so the
-            // schemaIri is required downstream (DecodedMethodologyResponseDto)
-            // to look up the correct schema's title instead of colliding with
-            // the dominant project schema's own field of the same name.
-            const resolvedFields: Record<string, { fieldPath: string; schemaIri: string } | null> = {};
+            const resolvedFields: Record<string, string | null> = {};
             for (const [fieldKey, entries] of Object.entries(policyMapping)) {
                 if (!Array.isArray(entries)) continue;
-                let primary: { fieldPath: string; schemaIri: string } | null = null;
-                let fallback: { fieldPath: string; schemaIri: string } | null = null;
+                let primary: string | null = null;
+                let fallback: string | null = null;
                 for (const entry of entries) {
                     if (!entry || typeof entry !== 'object') continue;
                     const e = entry as Record<string, unknown>;
                     const schemaType = e['schemaType'];
                     if (schemaType === 'mintToken' || schemaType === 'standardRegistry') continue;
-                    if (typeof e['fieldPath'] !== 'string' || typeof e['schemaIri'] !== 'string') continue;
-                    const ref = { fieldPath: e['fieldPath'] as string, schemaIri: e['schemaIri'] as string };
-                    if (ref.schemaIri === projectSchemaId) {
-                        primary = ref;
+                    if (typeof e['fieldPath'] !== 'string') continue;
+                    if (e['schemaIri'] === projectSchemaId) {
+                        primary = e['fieldPath'] as string;
                         break;
                     }
-                    if (fallback === null) fallback = ref;
+                    if (fallback === null) fallback = e['fieldPath'] as string;
                 }
                 if (primary !== null) {
                     resolvedFields[fieldKey] = primary;

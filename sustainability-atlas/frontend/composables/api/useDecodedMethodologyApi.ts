@@ -17,7 +17,6 @@ export interface PaginatedMappingAudit {
 
 export interface ResolvedField {
     fieldKey: string;
-    schemaIri: string;
     title: string;
     description: string;
 }

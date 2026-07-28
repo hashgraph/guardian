@@ -546,14 +546,11 @@ function resolveFieldPathParts(key: ResolvedFieldKey): { base: string; index: st
     const iri = findOwningSchemaIri(baseKey, projectIri);
     return { base: `${iri}.${baseKey}`, index };
   }
-  const resolved = ps.resolvedFields as Record<string, { fieldKey: string; schemaIri: string } | null>;
+  const resolved = ps.resolvedFields as Record<string, { fieldKey: string } | null>;
   const rf = resolved[key];
   if (!rf) return { base: '', index: '' };
   const { base: baseKey, index } = splitArrayIndex(rf.fieldKey);
-  // Prefer the server-resolved schemaIri (correctly disambiguates fieldKeys
-  // shared across schemas, e.g. "name" on both a Project schema and an
-  // Entity schema) over the fieldKey-scan guess; fall back defensively.
-  const iri = rf.schemaIri || findOwningSchemaIri(baseKey, projectIri);
+  const iri = findOwningSchemaIri(baseKey, projectIri);
   return { base: `${iri}.${baseKey}`, index };
 }
 

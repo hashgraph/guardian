@@ -439,28 +439,24 @@ export class MappingReprocessService {
         actor: AuthenticatedUser,
     ): Promise<DecodedMethodologyResponseDto> {
         const ds = this.dataSources.getDataSource(network);
-        const resolved = await this.resolvePolicyVersion(network, methodologyId);
-        const { id: policyId, policyTopicId } = resolved;
+        const policyTopicId = await this.resolvePolicyTopicId(network, methodologyId);
 
-        const existingMapping = (resolved.policyMapping ?? {}) as Record<string, unknown[]>;
+        // ── Fetch existing policy row ────────────────────────────────────────────
+        const policyRows: PolicyRow[] = await ds.query(
+            `SELECT "policyTopicId", "sourceCid", "decodeStatus", "policyMapping"
+             FROM policy
+             WHERE "policyTopicId" = $1
+             LIMIT 1`,
+            [policyTopicId],
+        );
 
-        // Snapshot which schemas are already classified as "the project schema"
-        // BEFORE merging, so a manual field-level remap can't silently promote an
-        // unrelated schema into that classification below — that reclassification
-        // is what perturbs projectKey derivation (base-resolver.ts's
-        // projectSchemaUuids()) on the next reparse and can turn an UPDATE into an
-        // INSERT for the same logical project.
-        const existingProjectSchemaIris = new Set<string>();
-        for (const entries of Object.values(existingMapping)) {
-            if (!Array.isArray(entries)) continue;
-            for (const entry of entries) {
-                if (entry && typeof entry === 'object' &&
-                    (entry as Record<string, unknown>)['isProjectSchema'] === true &&
-                    typeof (entry as Record<string, unknown>)['schemaIri'] === 'string') {
-                    existingProjectSchemaIris.add((entry as Record<string, unknown>)['schemaIri'] as string);
-                }
-            }
+        if (policyRows.length === 0) {
+            throw new NotFoundException(
+                `No policy row for policy topic "${policyTopicId}" on ${network}.`,
+            );
         }
+
+        const existingMapping = (policyRows[0].policyMapping ?? {}) as Record<string, unknown[]>;
 
         // ── Validate field label keys ───────────────────────────────────────────
         const invalidLabels = Object.keys(body.fieldMap).filter(
@@ -473,11 +469,20 @@ export class MappingReprocessService {
             );
         }
 
-        // ── Known schema IRIs for THIS version's own row ─────────────────────────
+        // ── Load known schema IRIs for this policy (latest decoded row) ──────────
         // Needed up front because Guardian schema IRIs contain dots
         // (`#uuid&1.0.0`), so we can't split `schemaIri.fieldPath` with a naive
         // indexOf('.') — we match against the known IRI set longest-first.
-        const rawSchemaJson = (resolved.rawSchemaJson ?? {}) as Record<string, unknown>;
+        const rawRows: Array<{ rawSchemaJson: Record<string, unknown> | null }> = await ds.query(
+            `SELECT "rawSchemaJson"
+             FROM policy
+             WHERE "policyTopicId" = $1
+             ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
+                      "updatedAt" DESC NULLS LAST
+             LIMIT 1`,
+            [policyTopicId],
+        );
+        const rawSchemaJson = (rawRows[0]?.rawSchemaJson ?? {}) as Record<string, unknown>;
         const knownIris = Object.keys(rawSchemaJson).sort((a, b) => b.length - a.length);
 
         // ── Validate path format ─────────────────────────────────────────────────
@@ -544,11 +549,7 @@ export class MappingReprocessService {
                 fieldPath: parsed.fieldPath,
                 title: parsed.label,
                 description: '',
-                // Preserve the existing classification instead of always forcing
-                // true — this field-mapping editor picks a FIELD, it shouldn't
-                // silently reclassify which schema is "the project schema" for
-                // dedup-key resolution (see snapshot above).
-                isProjectSchema: existingProjectSchemaIris.has(parsed.schemaIri),
+                isProjectSchema: true,
                 score: 999,
             };
             const filtered = existing.filter(e => {
@@ -574,15 +575,15 @@ export class MappingReprocessService {
         // ── Persist updated policyMapping ────────────────────────────────────────
         await ds.query(
             `UPDATE policy
-         SET "policyMapping" = $2::jsonb,
-             "mappingSource" = 'manual',
-             "updatedAt"     = now()
-         WHERE id = $1`,
-            [policyId, JSON.stringify(mergedMapping)],
+             SET "policyMapping" = $2::jsonb,
+                 "mappingSource" = 'manual',
+                 "updatedAt"     = now()
+             WHERE "policyTopicId" = $1`,
+            [policyTopicId, JSON.stringify(mergedMapping)],
         );
 
         this.logger.log(
-            `Updated policyMapping for policyTopicId=${policyTopicId} (id=${policyId}) ` +
+            `Updated policyMapping for policyTopicId=${policyTopicId} ` +
             `(${Object.keys(body.fieldMap).length} key(s) merged).`,
         );
 
