@@ -346,6 +346,25 @@ export class PolicyConfigurationComponent implements OnInit {
         return this.policyTemplate.allModule;
     }
 
+    public get openModulePath(): PolicyModule[] {
+        const openPath = this.getModulePath(this.openFolder);
+        const selectedPath = this.getModulePath(this.currentBlock);
+        return selectedPath.length > openPath.length ? selectedPath : openPath;
+    }
+
+    private getModulePath(block: any): PolicyModule[] {
+        const modules = this.allSubModule || [];
+        const path: PolicyModule[] = [];
+        let current: any = block;
+        while (current) {
+            if (modules.indexOf(current) !== -1) {
+                path.unshift(current);
+            }
+            current = current.parent;
+        }
+        return path;
+    }
+
     public get policyDescription(): boolean {
         return this.openType === 'Root' && this.rootType === 'Policy';
     }

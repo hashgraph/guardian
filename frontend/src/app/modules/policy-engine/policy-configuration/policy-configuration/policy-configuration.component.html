@@ -665,16 +665,6 @@
                     Tool
                   </div>
                 }
-                @if (allSubModule) {
-                  @for (item of allSubModule; track item) {
-                    <div (click)="onOpenModule(item)"
-                      [attr.selected]="openFolder===item" class="tab-header tab-header-icon">
-                      <svg-icon class="module-root-icon edit-color"
-                      src="/assets/images/icons/policy-module.svg"></svg-icon>
-                      {{ item.localTag }}
-                    </div>
-                  }
-                }
                 <div [attr.active]="options.legendActive" class="theme-legends">
                   <div (click)="change('legendActive')" class="theme-legends-icon">
                     <i class="pi pi-palette"></i>
@@ -729,7 +719,7 @@
                   }
                 </div>
               </div>
-              @if (allSubModule && allSubModule.length) {
+              @if (openModulePath.length) {
                 <div class="canvas-breadcrumb">
                   @if (rootType === 'Policy') {
                     <span class="canvas-breadcrumb-item" [class.active]="openFolder===policyTemplate"
@@ -752,7 +742,7 @@
                       <span>Tool</span>
                     </span>
                   }
-                  @for (item of allSubModule; track item) {
+                  @for (item of openModulePath; track item) {
                     <i class="pi pi-chevron-right canvas-breadcrumb-sep"></i>
                     <span class="canvas-breadcrumb-item" [class.active]="openFolder===item"
                       (click)="onOpenModule(item)">
