@@ -17,7 +17,7 @@ import {
     Zap,
     Flame,
 } from 'lucide-vue-next';
-import { formatCredits, formatSmartCredits } from '~/lib/format';
+import { formatCredits, formatSmartCredits, formatNumber } from '~/lib/format';
 import {
     allocateDonutColors,
     DONUT_OTHER_COLOR,
@@ -266,7 +266,7 @@ const filteredStats = computed(() => {
     return [
         {
             label: t('dashboard.stats.registries'),
-            value: String(stats.value.registries),
+            value: formatNumber(stats.value.registries),
             change: '',
             trend: 'up',
             sub: t('dashboard.stats.registriesSub'),
@@ -278,7 +278,7 @@ const filteredStats = computed(() => {
         },
         {
             label: t('dashboard.stats.methodologies'),
-            value: String(stats.value.methodologies),
+            value: formatNumber(stats.value.methodologies),
             change: '',
             trend: 'up',
             sub: t('dashboard.stats.methodologiesSub'),
@@ -290,7 +290,7 @@ const filteredStats = computed(() => {
         },
         {
             label: t('dashboard.stats.projects'),
-            value: stats.value.projects.toLocaleString(),
+            value: formatNumber(stats.value.projects),
             change: '',
             trend: 'up',
             sub: t('dashboard.stats.projectsSub'),
