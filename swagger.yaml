@@ -25595,6 +25595,13 @@ paths:
           schema:
             example: 69aeb71ef8c5b278e3bab4e5
             type: string
+        - name: templateId
+          required: false
+          in: query
+          description: Schema template id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
         - name: topicId
           required: false
           in: query
@@ -26365,22 +26372,23 @@ paths:
   /schemas/list/sub:
     get:
       description: >-
-        Returns schemas for the specified policy or tool topic, including
-        related tool schemas discovered from that parent entity. Only users with
-        the Standard Registry role are allowed to make the request.
+        Returns schemas for the specified policy, tool, or template topic.
+        Policy topics include related tool schemas discovered from that parent
+        entity. Only users with the Standard Registry role are allowed to make
+        the request.
       operationId: SchemaApi_getSub
       parameters:
         - name: category
           required: false
           in: query
           description: >-
-            Determines which parent entity type is used to resolve related tool
-            topics. Does not directly filter the returned schemas by category.
-            Supported values: POLICY, TOOL.
+            Determines which parent entity type is used to resolve related
+            schemas. Supported values: POLICY, TOOL, TEMPLATE.
           schema:
             enum:
               - POLICY
               - TOOL
+              - TEMPLATE
             type: string
         - name: topicId
           required: false
@@ -26463,13 +26471,13 @@ paths:
           required: false
           in: query
           description: >-
-            Determines which parent entity type is used to resolve related tool
-            topics. Does not directly filter the returned schemas by category.
-            Supported values: POLICY, TOOL.
+            Determines which parent entity type is used to resolve related
+            schemas. Supported values: POLICY, TOOL, TEMPLATE.
           schema:
             enum:
               - POLICY
               - TOOL
+              - TEMPLATE
             type: string
         - name: topicId
           required: false
@@ -54176,6 +54184,10 @@ components:
             - LABEL
             - TEMPLATE
           example: POLICY
+        templateId:
+          type: string
+          nullable: true
+          example: 69aeb71ef8c5b278e3bab4e5
         documentURL:
           type: string
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
