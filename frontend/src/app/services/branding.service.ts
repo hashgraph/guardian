@@ -84,8 +84,7 @@ export class BrandingService {
                 this.brandingData = data || { ...DEFAULT_BRANDING };
                 return this.brandingData as BrandingPayload;
             })
-            .catch((error: any) => {
-                console.log(error)
+            .catch(() => {
                 this.brandingData = { ...DEFAULT_BRANDING };
                 return this.brandingData;
             })
@@ -105,8 +104,7 @@ export class BrandingService {
                 this.applyBranding(this.brandingData);
                 return data
             })
-            .catch((error: any) => {
-                console.log(error)
+            .catch(() => {
                 return this.brandingData;
             });
     }
