@@ -361,6 +361,10 @@ const GuardianPreset = definePreset(Aura, {
             provide: BLOCK_TYPE_TIPS,
             useValue: BLOCK_TYPE_TIPS_VALUE
         },
+        // Order matters: AuthInterceptor must run inside HandleErrorsService so
+        // it can refresh-and-retry a 401 before the error interceptor sees it.
+        // Reversing these would let HandleErrorsService log the user out before
+        // the refresh gets a chance, disabling refresh-on-401.
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

@@ -1,10 +1,10 @@
 import { HttpClient, HttpContext, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { ISession, IStandardRegistryResponse, IUser, UserCategory, UserRole } from '@guardian/interfaces';
-import { Observable, of, Subject, Subscription } from 'rxjs';
+import { Observable, of, Subject, Subscription, throwError } from 'rxjs';
 import { API_BASE_URL } from './api';
-import { SILENT_HTTP_ERRORS } from '../constants';
-import { map } from 'rxjs/operators';
+import { SILENT_HTTP_ERRORS, SKIP_AUTH_REFRESH } from '../constants';
+import { catchError, finalize, map, shareReplay, switchMap } from 'rxjs/operators';
 
 /**
  * Services for working from accounts.
@@ -50,7 +50,11 @@ export class AuthService {
         return this.http.post<any>(
             `${this.url}/access-token`,
             { refreshToken: this.getRefreshToken() },
-            { context: new HttpContext().set(SILENT_HTTP_ERRORS, true) }
+            {
+                context: new HttpContext()
+                    .set(SILENT_HTTP_ERRORS, true)
+                    .set(SKIP_AUTH_REFRESH, true)
+            }
         ).pipe(
             map(result => {
                 const { accessToken } = result;
@@ -147,17 +151,73 @@ export class AuthService {
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-        if (req.headers.has('Authorization')) {
-            return next.handle(req);
-        }
+    // Shared in-flight refresh, so several requests failing with 401 at once
+    // (e.g. after the access token lapses while the tab was asleep) trigger a
+    // single token refresh instead of one per request.
+    private refresh$: Observable<string> | null = null;
 
+    // AuthService depends on HttpClient, so injecting it directly would create
+    // a cyclic dependency with this interceptor; it is resolved lazily.
+    constructor(private injector: Injector) {
+    }
+
+    intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        return next.handle(this.addToken(req)).pipe(
+            catchError((error: any) => {
+                if (this.shouldAttemptRefresh(error, req)) {
+                    return this.refreshAndRetry(req, next);
+                }
+                return throwError(() => error);
+            })
+        );
+    }
+
+    private addToken(req: HttpRequest<any>): HttpRequest<any> {
+        if (req.headers.has('Authorization')) {
+            return req;
+        }
         const token = localStorage.getItem('accessToken');
         if (!token) {
-            return next.handle(req);
+            return req;
         }
-        return next.handle(req.clone({
+        return this.withBearer(req, token);
+    }
+
+    private withBearer(req: HttpRequest<any>, token: string): HttpRequest<any> {
+        return req.clone({
             headers: req.headers.set('Authorization', `Bearer ${token}`),
-        }));
+        });
+    }
+
+    /**
+     * Recover a 401 by refreshing the access token — but only when there are
+     * credentials to refresh with, and never for the refresh call itself (that
+     * would loop). Requests without a stored session fall through to the error
+     * interceptor unchanged.
+     */
+    private shouldAttemptRefresh(error: any, req: HttpRequest<any>): boolean {
+        return (
+            error?.status === 401 &&
+            !req.context.get(SKIP_AUTH_REFRESH) &&
+            !!localStorage.getItem('accessToken') &&
+            !!localStorage.getItem('refreshToken')
+        );
+    }
+
+    private refreshAndRetry(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+        return this.refreshToken().pipe(
+            switchMap((accessToken: string) => next.handle(this.withBearer(req, accessToken)))
+        );
+    }
+
+    private refreshToken(): Observable<string> {
+        if (!this.refresh$) {
+            const auth = this.injector.get(AuthService);
+            this.refresh$ = auth.updateAccessToken().pipe(
+                shareReplay(1),
+                finalize(() => { this.refresh$ = null; })
+            );
+        }
+        return this.refresh$;
     }
 }
