@@ -739,7 +739,7 @@
                             <div class="sc-rp-divider"></div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">
-                                    <i class="pi pi-sitemap" style="font-size:11px;color:#534ab7;margin-right:4px"></i>
+                                    <i class="pi pi-sitemap" style="font-size:11px;color:var(--color-primary, #4169E2);margin-right:4px"></i>
                                     Referenced schema
                                 </label>
                                 <p-select
@@ -757,14 +757,14 @@
                                     (onChange)="onSubSchemaRefChange($event.value)">
                                     <ng-template pTemplate="selectedItem" let-s>
                                         <div class="sc-ref-sel-item">
-                                            <i class="pi pi-file" style="color:#534ab7;font-size:12px"></i>
+                                            <i class="pi pi-file" style="color:var(--color-primary, #4169E2);font-size:12px"></i>
                                             <span>{{ s.name }}</span>
                                             @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
                                         </div>
                                     </ng-template>
                                     <ng-template pTemplate="item" let-s>
                                         <div class="sc-ref-sel-item">
-                                            <i class="pi pi-file" style="color:#534ab7;font-size:12px"></i>
+                                            <i class="pi pi-file" style="color:var(--color-primary, #4169E2);font-size:12px"></i>
                                             <span>{{ s.name }}</span>
                                             @if (s.version) { <span class="sc-ref-sel-ver">v{{ s.version }}</span> }
                                         </div>
