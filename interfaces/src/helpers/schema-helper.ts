@@ -1213,13 +1213,6 @@ export class SchemaHelper {
             return Object.keys(root).length ? root : undefined;
         };
 
-        const buildForbid = (sub?: SchemaField[]) => {
-            if (!sub?.length) { return undefined; }
-            const props: any = {};
-            for (const f of sub) { props[f.name] = false; }
-            return { properties: props };
-        };
-
         const serializeCondition = (cond: SchemaCondition) => {
             const ifNode = serializeIf(cond);
             if (!ifNode) {
@@ -1245,18 +1238,12 @@ export class SchemaHelper {
             };
 
             const thenObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
-                    buildCrossForbidden(cond.elseTargets)
-                ),
-                buildForbid(cond.elseFields?.filter(f => !cond.thenFields?.some(t => t.name === f.name)))
+                deepMergeSchemaObj(buildSub(cond.thenFields), buildCrossRequired(cond.thenTargets)),
+                buildCrossForbidden(cond.elseTargets)
             );
             const elseObj = deepMergeSchemaObj(
-                deepMergeSchemaObj(
-                    deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
-                    buildCrossForbidden(cond.thenTargets)
-                ),
-                buildForbid(cond.thenFields?.filter(f => !cond.elseFields?.some(t => t.name === f.name)))
+                deepMergeSchemaObj(buildSub(cond.elseFields), buildCrossRequired(cond.elseTargets)),
+                buildCrossForbidden(cond.thenTargets)
             );
 
             if (!thenObj && !elseObj) {
