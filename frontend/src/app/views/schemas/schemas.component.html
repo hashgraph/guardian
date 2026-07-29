@@ -110,7 +110,7 @@
       <div class="schema-actions-buttons-container">
         @if (canCreate) {
           <p-button
-            (click)="onCreateSchemas()"
+            (click)="onNewInEditor()"
             class="toolbar-btn-primary"
             [pTooltip]="'Create a Schema'"
             tooltipPosition="bottom">
@@ -493,12 +493,12 @@
                         </div>
                       </td>
                     }
-                    <td class="row-cell-text" style="min-width: 110px; width: 110px; max-width: 110px;">
+                    <td class="row-cell-text" style="min-width: 145px; width: 145px; max-width: 145px;">
                       <div class="operations-row-container">
                         <div style="margin-right: 12px;">
                           @if (ifCanEdit(rowData)) {
                             <div
-                              (click)="onEditSchema(rowData)"
+                              (click)="onOpenInEditor(rowData)"
                               class="btn-settings"
                               pTooltip="Edit"
                               tooltipStyleClass="guardian-tooltip"

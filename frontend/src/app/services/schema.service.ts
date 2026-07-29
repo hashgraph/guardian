@@ -112,6 +112,10 @@ export class SchemaService {
         return this.http.get<any>(`${this.url}`, { observe: 'response', headers: headersV2, params });
     }
 
+    public getSchemaById(id: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.singleSchemaUrl}/${id}`);
+    }
+
     public getSchemasByType(type: string): Observable<ISchema> {
         return this.http.get<ISchema>(`${this.url}/type/${type}`);
     }
