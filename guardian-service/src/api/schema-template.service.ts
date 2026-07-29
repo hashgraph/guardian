@@ -11,9 +11,9 @@ import {
     TopicHelper,
     Users
 } from '@guardian/common';
-import { IOwner, ISchemaTemplate, MessageAPI, ModuleStatus, SchemaCategory, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaTemplate, MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory, SchemaStatus, TopicType } from '@guardian/interfaces';
 import { ApiResponse } from './helpers/api-response.js';
-import { deleteSchema } from '../helpers/import-helpers/index.js';
+import { createSchemaAndArtifacts, deleteSchema, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
 async function createTemplateTopic(
     template: SchemaTemplate,
@@ -127,6 +127,161 @@ async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
 
 function escapeRegExp(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function walkSchemaProperties(document: any, visitor: (property: any) => void): void {
+    if (!document || typeof document !== 'object') {
+        return;
+    }
+    const properties = document.properties;
+    if (properties && typeof properties === 'object') {
+        for (const property of Object.values<any>(properties)) {
+            visitor(property);
+            const target = property?.type === 'array' ? property.items : property;
+            walkSchemaProperties(target, visitor);
+        }
+    }
+}
+
+async function ensureTemplateSchemaLineage(schema: Schema): Promise<void> {
+    let changed = false;
+    if (!schema.templateSchemaId) {
+        schema.templateSchemaId = GenerateUUIDv4();
+        changed = true;
+    }
+    walkSchemaProperties(schema.document, (property) => {
+        if (!property.templateFieldId) {
+            property.templateFieldId = GenerateUUIDv4();
+            changed = true;
+        }
+    });
+    if (changed) {
+        await DatabaseServer.updateSchema(schema.id, schema);
+    }
+}
+
+function preparePolicySchemaCopy(
+    source: Schema,
+    policyTopicId: string,
+    templateId: string
+): ISchema {
+    const copy: any = JSON.parse(JSON.stringify(source));
+    delete copy._id;
+    delete copy.id;
+    delete copy.uuid;
+    delete copy.hash;
+    delete copy.status;
+    delete copy.messageId;
+    delete copy.documentURL;
+    delete copy.documentFileId;
+    delete copy.contextURL;
+    delete copy.contextFileId;
+    delete copy.contentDocumentFileId;
+    delete copy.contentContextFileId;
+    delete copy.createDate;
+    delete copy.updateDate;
+    delete copy.topicCount;
+    delete copy.defs;
+    delete copy.errors;
+
+    copy.topicId = policyTopicId;
+    copy.category = SchemaCategory.POLICY;
+    copy.templateId = templateId;
+    copy.templateSchemaId = source.templateSchemaId;
+    copy.readonly = false;
+    copy.system = false;
+    return copy;
+}
+
+async function updateCopiedSchemaRefs(
+    copiedSchemas: Schema[],
+    iriMap: Map<string, string>
+): Promise<void> {
+    for (const schema of copiedSchemas) {
+        if (!schema.document) {
+            continue;
+        }
+        let document = JSON.stringify(schema.document);
+        for (const [oldIri, newIri] of iriMap.entries()) {
+            document = document.replaceAll(oldIri.substring(1), newIri.substring(1));
+        }
+        schema.document = JSON.parse(document);
+        await DatabaseServer.updateSchema(schema.id, schema);
+        await updateSchemaDefs(schema.iri);
+    }
+}
+
+async function applySchemaTemplate(
+    templateId: string,
+    policyId: string,
+    owner: IOwner
+): Promise<any> {
+    const template = await DatabaseServer.getSchemaTemplateById(templateId);
+    if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
+        throw new Error('Invalid schema template');
+    }
+    if (!template.topicId) {
+        throw new Error('Schema template has no topic');
+    }
+
+    const policy = await DatabaseServer.getPolicyById(policyId);
+    if (!policy || policy.owner !== owner.owner) {
+        throw new Error('Invalid policy');
+    }
+    if (policy.status !== PolicyStatus.DRAFT) {
+        throw new Error('Policy is not in draft status');
+    }
+    if (!policy.topicId) {
+        throw new Error('Policy has no topic');
+    }
+    if (policy.schemaTemplate?.templateId) {
+        throw new Error('Schema template already applied to policy');
+    }
+
+    const templateSchemas = await DatabaseServer.getSchemas({
+        topicId: template.topicId,
+        category: SchemaCategory.TEMPLATE
+    });
+    if (!templateSchemas.length) {
+        throw new Error('Schema template has no schemas');
+    }
+
+    for (const schema of templateSchemas as Schema[]) {
+        await ensureTemplateSchemaLineage(schema);
+    }
+
+    const schemaMap: Record<string, string> = {};
+    const iriMap = new Map<string, string>();
+    const copiedSchemas: Schema[] = [];
+
+    for (const schema of templateSchemas as Schema[]) {
+        const sourceIri = schema.iri;
+        const copy = preparePolicySchemaCopy(schema, policy.topicId, template.id);
+        const copied = await createSchemaAndArtifacts(
+            SchemaCategory.POLICY,
+            copy,
+            owner,
+            NewNotifier.empty()
+        );
+        schemaMap[schema.templateSchemaId] = copied.id;
+        if (sourceIri && copied.iri) {
+            iriMap.set(sourceIri, copied.iri);
+        }
+        copiedSchemas.push(copied);
+    }
+
+    await updateCopiedSchemaRefs(copiedSchemas, iriMap);
+
+    policy.schemaTemplate = {
+        templateId: template.id,
+        templateName: template.name,
+        templateVersion: template.version,
+        templateStatus: template.status,
+        templateMessageId: template.messageId,
+        appliedAt: new Date().toISOString(),
+        schemaMap
+    };
+    return await DatabaseServer.updatePolicy(policy);
 }
 
 /**
@@ -285,6 +440,22 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
 
                 await DatabaseServer.removeSchemaTemplate(template);
                 return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.APPLY_SCHEMA_TEMPLATE,
+        async (msg: {
+            templateId: string,
+            policyId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { templateId, policyId, owner } = msg;
+                const result = await applySchemaTemplate(templateId, policyId, owner);
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

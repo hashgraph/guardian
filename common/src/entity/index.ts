@@ -24,6 +24,7 @@ export * from './retire-pool.js';
 export * from './retire-request.js';
 export * from './schema.js';
 export * from './schema-template.js';
+export * from './schema-template-snapshot.js';
 export * from './settings.js';
 export * from './split-documents.js';
 export * from './suggestions-config.js';

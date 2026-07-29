@@ -19,6 +19,7 @@ import {
 } from '@guardian/common';
 import {
     IOwner,
+    GenerateUUIDv4,
     ISchema,
     IChildSchemaDeletionBlock,
     MessageAPI,
@@ -56,6 +57,88 @@ import { FilterObject } from '@mikro-orm/core';
 
 @Controller()
 export class SchemaService { }
+
+function walkSchemaProperties(document: any, visitor: (property: any, path: string[]) => void, path: string[] = []): void {
+    if (!document || typeof document !== 'object') {
+        return;
+    }
+    const properties = document.properties;
+    if (properties && typeof properties === 'object') {
+        for (const [name, property] of Object.entries<any>(properties)) {
+            const fieldPath = [...path, name];
+            visitor(property, fieldPath);
+            const target = property?.type === 'array' ? property.items : property;
+            walkSchemaProperties(target, visitor, fieldPath);
+        }
+    }
+}
+
+function collectTemplateFieldIds(document: any): {
+    byPath: Map<string, string>,
+    ids: Set<string>
+} {
+    const byPath = new Map<string, string>();
+    const ids = new Set<string>();
+    walkSchemaProperties(document, (property, path) => {
+        if (property?.templateFieldId) {
+            const id = String(property.templateFieldId);
+            byPath.set(path.join('.'), id);
+            ids.add(id);
+        }
+    });
+    return { byPath, ids };
+}
+
+function prepareTemplateFieldIds(document: any, previousDocument?: any): void {
+    const previous = collectTemplateFieldIds(previousDocument);
+    walkSchemaProperties(document, (property, path) => {
+        const incoming = property?.templateFieldId ? String(property.templateFieldId) : '';
+        const previousByPath = previous.byPath.get(path.join('.'));
+        if (incoming && previous.ids.has(incoming)) {
+            property.templateFieldId = incoming;
+        } else if (previousByPath) {
+            property.templateFieldId = previousByPath;
+        } else {
+            property.templateFieldId = GenerateUUIDv4();
+        }
+    });
+}
+
+function preserveTemplateFieldIds(document: any, previousDocument?: any): void {
+    const previous = collectTemplateFieldIds(previousDocument);
+    walkSchemaProperties(document, (property, path) => {
+        const incoming = property?.templateFieldId ? String(property.templateFieldId) : '';
+        const previousByPath = previous.byPath.get(path.join('.'));
+        if (incoming && previous.ids.has(incoming)) {
+            property.templateFieldId = incoming;
+        } else if (previousByPath) {
+            property.templateFieldId = previousByPath;
+        } else {
+            delete property.templateFieldId;
+        }
+    });
+}
+
+function removeTemplateFieldIds(document: any): void {
+    walkSchemaProperties(document, (property) => {
+        delete property.templateFieldId;
+    });
+}
+
+function prepareSchemaTemplateMetadata(item: ISchema, previous?: ISchema): void {
+    if (item.category === SchemaCategory.TEMPLATE) {
+        item.templateSchemaId = previous?.templateSchemaId || GenerateUUIDv4();
+        prepareTemplateFieldIds(item.document, previous?.document);
+    } else if (previous?.templateSchemaId) {
+        item.templateId = previous.templateId;
+        item.templateSchemaId = previous.templateSchemaId;
+        preserveTemplateFieldIds(item.document, previous.document);
+    } else {
+        delete item.templateId;
+        delete item.templateSchemaId;
+        removeTemplateFieldIds(item.document);
+    }
+}
 
 async function resolveTemplateSchemaContext(item: ISchema, owner: IOwner): Promise<void> {
     if (item.category !== SchemaCategory.TEMPLATE) {
@@ -95,6 +178,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { item, owner } = msg;
                 await resolveTemplateSchemaContext(item, owner);
+                prepareSchemaTemplateMetadata(item);
                 await createSchemaAndArtifacts(item.category, item, owner, NewNotifier.empty());
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
@@ -111,10 +195,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { item, owner, task } = msg;
-            const notifier = await NewNotifier.create(task);
-            RunFunctionAsync(async () => {
-                await resolveTemplateSchemaContext(item, owner);
-                const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+                    await resolveTemplateSchemaContext(item, owner);
+                    prepareSchemaTemplateMetadata(item);
+                    const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
@@ -166,11 +251,17 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (checkForCircularDependency(row)) {
                     throw new Error(`There is circular dependency in schema: ${row.iri}`);
                 }
+                const previous = {
+                    templateId: row.templateId,
+                    templateSchemaId: row.templateSchemaId,
+                    document: row.document
+                } as ISchema;
                 validateSchemaDependencies(item);
                 row.name = item.name;
                 row.description = item.description;
                 row.entity = item.entity;
                 row.document = item.document;
+                prepareSchemaTemplateMetadata(row, previous);
                 row.status = SchemaStatus.DRAFT;
                 row.errors = [];
                 SchemaHelper.setVersion(row, row.version, row.version);

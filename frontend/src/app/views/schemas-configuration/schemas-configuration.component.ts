@@ -150,18 +150,34 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.isTemplateConfigMode ? '/schema-template-configuration' : '/schema-configuration';
     }
 
+    private getSchemaConfigKey(schema: Schema | null | undefined): string {
+        return (schema as any)?.templateSchemaId || schema?.id || (schema as any)?._id || '';
+    }
+
+    private getFieldConfigKey(field: SchemaField | null | undefined): string {
+        return (field as any)?.templateFieldId || field?.name || '';
+    }
+
     public get selectedSchemaConfig(): any {
-        const id = this.selectedSchemaId;
-        return id ? this.schemaTemplate?.config?.schemas?.[id] : null;
+        const key = this.getSchemaConfigKey(this.selectedSchema);
+        if (!key) {
+            return null;
+        }
+        const configs = this.schemaTemplate?.config?.schemas;
+        return configs?.[key] || (this.selectedSchemaId ? configs?.[this.selectedSchemaId] : null) || null;
     }
 
     public get selectedFieldConfig(): any {
-        const fieldPath = this.selectedFieldPath;
-        return fieldPath ? this.selectedSchemaConfig?.fields?.[fieldPath] : null;
+        const fieldKey = this.selectedFieldPath;
+        if (!fieldKey) {
+            return null;
+        }
+        const fields = this.selectedSchemaConfig?.fields;
+        return fields?.[fieldKey] || (this.selectedField?.name ? fields?.[this.selectedField.name] : null) || null;
     }
 
     public get selectedFieldPath(): string {
-        return this.selectedField?.name || '';
+        return this.getFieldConfigKey(this.selectedField);
     }
 
     public get canAddCustomFieldsToSelectedSchema(): boolean {
@@ -176,20 +192,29 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.isTemplateConfigMode) {
             return false;
         }
-        const schemaId = this.selectedSchemaId;
-        const fieldPath = field.name || '';
-        if (!schemaId || !fieldPath) {
+        const schemaKey = this.getSchemaConfigKey(this.selectedSchema);
+        const legacySchemaKey = this.selectedSchemaId;
+        const fieldKey = this.getFieldConfigKey(field);
+        const legacyFieldKey = field.name || '';
+        if (!schemaKey || !fieldKey) {
             return true;
         }
-        return this.schemaTemplate?.config?.schemas?.[schemaId]?.fields?.[fieldPath]?.locked !== false;
+        const schemaConfig = this.schemaTemplate?.config?.schemas?.[schemaKey]
+            || (legacySchemaKey ? this.schemaTemplate?.config?.schemas?.[legacySchemaKey] : null);
+        const fieldConfig = schemaConfig?.fields?.[fieldKey]
+            || (legacyFieldKey ? schemaConfig?.fields?.[legacyFieldKey] : null);
+        return fieldConfig?.locked !== false;
     }
 
     public isTemplateSchemaCustomFieldsLocked(schema: Schema): boolean {
         if (!this.isTemplateConfigMode) {
             return false;
         }
-        const schemaId = schema.id || (schema as any)._id;
-        const config = schemaId ? (this.schemaTemplate?.config?.schemas?.[schemaId] as any) : null;
+        const schemaKey = this.getSchemaConfigKey(schema);
+        const legacySchemaKey = schema.id || (schema as any)._id;
+        const config = schemaKey
+            ? ((this.schemaTemplate?.config?.schemas?.[schemaKey] || this.schemaTemplate?.config?.schemas?.[legacySchemaKey]) as any)
+            : null;
         return config?.customFieldsLocked === true;
     }
 
@@ -703,14 +728,21 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private ensureSelectedSchemaConfig(): any | null {
-        if (!this.schemaTemplate || !this.selectedSchemaId) {
+        const schemaKey = this.getSchemaConfigKey(this.selectedSchema);
+        if (!this.schemaTemplate || !schemaKey) {
             return null;
         }
         this.schemaTemplate.config = this.schemaTemplate.config || {};
         this.schemaTemplate.config.schemas = this.schemaTemplate.config.schemas || {};
-        this.schemaTemplate.config.schemas[this.selectedSchemaId] =
-            this.schemaTemplate.config.schemas[this.selectedSchemaId] || {};
-        return this.schemaTemplate.config.schemas[this.selectedSchemaId];
+        const legacySchemaKey = this.selectedSchemaId;
+        if (!this.schemaTemplate.config.schemas[schemaKey] && legacySchemaKey) {
+            this.schemaTemplate.config.schemas[schemaKey] = this.schemaTemplate.config.schemas[legacySchemaKey] || {};
+            if (legacySchemaKey !== schemaKey) {
+                delete this.schemaTemplate.config.schemas[legacySchemaKey];
+            }
+        }
+        this.schemaTemplate.config.schemas[schemaKey] = this.schemaTemplate.config.schemas[schemaKey] || {};
+        return this.schemaTemplate.config.schemas[schemaKey];
     }
 
     private ensureSelectedFieldConfig(): any | null {
@@ -719,8 +751,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return null;
         }
         schemaConfig.fields = schemaConfig.fields || {};
-        schemaConfig.fields[this.selectedFieldPath] = schemaConfig.fields[this.selectedFieldPath] || {};
-        return schemaConfig.fields[this.selectedFieldPath];
+        const fieldKey = this.selectedFieldPath;
+        const legacyFieldKey = this.selectedField?.name || '';
+        if (!schemaConfig.fields[fieldKey] && legacyFieldKey) {
+            schemaConfig.fields[fieldKey] = schemaConfig.fields[legacyFieldKey] || {};
+            if (legacyFieldKey !== fieldKey) {
+                delete schemaConfig.fields[legacyFieldKey];
+            }
+        }
+        schemaConfig.fields[fieldKey] = schemaConfig.fields[fieldKey] || {};
+        return schemaConfig.fields[fieldKey];
     }
 
     public markDirty(): void {

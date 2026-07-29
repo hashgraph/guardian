@@ -58,4 +58,8 @@ export class SchemaTemplatesService {
     public pushDelete(id: string): Observable<TaskResponse> {
         return this.http.delete<TaskResponse>(`${this.url}/push/${id}`);
     }
+
+    public pushApply(templateId: string, policyId: string): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/apply`, {});
+    }
 }

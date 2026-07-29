@@ -41,6 +41,7 @@ import {
     RetirePool,
     Schema as SchemaCollection,
     SchemaTemplate,
+    SchemaTemplateSnapshot,
     SchemaRule,
     SplitDocuments,
     SuggestionsConfig,
@@ -2024,6 +2025,63 @@ export class DatabaseServer extends AbstractDatabaseServer {
      */
     public static async removeSchemaTemplate(item: SchemaTemplate): Promise<void> {
         return await new DataBaseHelper(SchemaTemplate).remove(item);
+    }
+
+    /**
+     * Save schema template snapshot.
+     * @param item snapshot
+     */
+    public static async saveSchemaTemplateSnapshot(
+        item: Partial<SchemaTemplateSnapshot>
+    ): Promise<SchemaTemplateSnapshot> {
+        const snapshot = new DataBaseHelper(SchemaTemplateSnapshot).create(item);
+        return await new DataBaseHelper(SchemaTemplateSnapshot).save(snapshot);
+    }
+
+    /**
+     * Get schema template snapshot by id.
+     * @param id snapshot id
+     */
+    public static async getSchemaTemplateSnapshotById(id: string): Promise<SchemaTemplateSnapshot | null> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).findOne(id);
+    }
+
+    /**
+     * Get schema template snapshot.
+     * @param filters filters
+     */
+    public static async getSchemaTemplateSnapshot(
+        filters: FilterQuery<SchemaTemplateSnapshot>
+    ): Promise<SchemaTemplateSnapshot | null> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).findOne(filters);
+    }
+
+    /**
+     * Get schema template snapshots.
+     * @param filters filters
+     * @param options options
+     */
+    public static async getSchemaTemplateSnapshots(
+        filters?: FilterQuery<SchemaTemplateSnapshot>,
+        options?: unknown
+    ): Promise<SchemaTemplateSnapshot[]> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).find(filters, options);
+    }
+
+    /**
+     * Update schema template snapshot.
+     * @param item snapshot
+     */
+    public static async updateSchemaTemplateSnapshot(item: SchemaTemplateSnapshot): Promise<SchemaTemplateSnapshot> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).update(item);
+    }
+
+    /**
+     * Delete schema template snapshot.
+     * @param item snapshot
+     */
+    public static async removeSchemaTemplateSnapshot(item: SchemaTemplateSnapshot): Promise<void> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).remove(item);
     }
 
     /**
