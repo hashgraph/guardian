@@ -70,6 +70,15 @@ form {
     margin-bottom: 16px;
 }
 
+.draft-file-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 2px;
+    margin-bottom: 12px;
+    margin-right: 32px;
+}
+
 .dialog-footer {
     padding: 20px 32px 32px 32px !important;
 }
@@ -81,10 +90,6 @@ form {
 
     &>div {
         margin-left: 0px;
-        margin-right: 16px;
-    }
-
-    request-draft-file-actions {
         margin-right: 16px;
     }
 
