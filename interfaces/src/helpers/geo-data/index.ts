@@ -45,9 +45,9 @@ export function getAllCountries(): { value: string; name: string }[] {
 }
 
 export function getContinentOfCountry(country: string): string | null {
-    const entry = Object.entries(countries)
-        .find(([countryCode]) => countryCode === country);
-    return entry?.[1].continent || null;
+    return isCountry(country)
+        ? countries[country as keyof typeof countries].continent || null
+        : null;
 }
 
 export function getCountriesOfContinent(continent: string): string[] {
