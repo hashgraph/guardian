@@ -68,11 +68,23 @@ export abstract class BaseEntity {
     protected _createFile(json: string | Buffer, name: string): Promise<ObjectId> {
         return new Promise<ObjectId>((resolve, reject) => {
             try {
+                if (json === null || json === undefined) {
+                    reject(new Error(`GridFS write (${name}): content is null/undefined`));
+                    return;
+                }
                 const fileName = `${name}_${this._id?.toString()}_${GenerateUUIDv4()}`;
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
                 const fileId = fileStream.id;
+                let settled = false;
+                // resolve only after a successful finish; surface async write errors instead of leaving a phantom id
+                const done = (err?: any) => {
+                    if (settled) { return; }
+                    settled = true;
+                    if (err) { reject(err); } else { resolve(fileId); }
+                };
+                fileStream.on('error', done);
                 fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
+                fileStream.end(() => done());
             } catch (error) {
                 reject(error)
             }

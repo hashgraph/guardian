@@ -144,11 +144,22 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     public static async saveFile(uuid: string, buffer: Buffer): Promise<ObjectId> {
         return new Promise<ObjectId>((resolve, reject) => {
             try {
+                if (buffer === null || buffer === undefined) {
+                    reject(new Error('GridFS saveFile: buffer is null/undefined'));
+                    return;
+                }
                 const fileStream = DataBaseHelper.gridFS.openUploadStream(uuid);
+                const fileId = fileStream.id;
+                let settled = false;
+                // resolve only after a successful finish; surface async write errors instead of leaving a phantom id
+                const done = (err?: any) => {
+                    if (settled) { return; }
+                    settled = true;
+                    if (err) { reject(err); } else { resolve(fileId); }
+                };
+                fileStream.on('error', done);
                 fileStream.write(buffer);
-                fileStream.end(() => {
-                    resolve(fileStream.id);
-                });
+                fileStream.end(() => done());
             } catch (error) {
                 reject(error);
             }
@@ -165,8 +176,19 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
     public static async saveFileWithId(id: ObjectId, filename: string, buffer: Buffer): Promise<ObjectId> {
         return new Promise<ObjectId>((resolve, reject) => {
             try {
+                if (buffer === null || buffer === undefined) {
+                    reject(new Error('GridFS saveFileWithId: buffer is null/undefined'));
+                    return;
+                }
                 const stream = DataBaseHelper.gridFS.openUploadStreamWithId(id, filename);
-                stream.end(buffer, (err?: any) => err ? reject(err) : resolve(id));
+                let settled = false;
+                const done = (err?: any) => {
+                    if (settled) { return; }
+                    settled = true;
+                    if (err) { reject(err); } else { resolve(id); }
+                };
+                stream.on('error', done);
+                stream.end(buffer, (err?: any) => done(err));
             } catch (e) {
                 reject(e);
             }
