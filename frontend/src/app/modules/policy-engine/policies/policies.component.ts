@@ -56,6 +56,7 @@ import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dial
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
+import { ApplySchemaTemplateDialog } from '../dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -580,6 +581,14 @@ export class PoliciesComponent implements OnInit {
                         icon: 'import-xls',
                         color: 'primary-color',
                         click: () => this.importFromExcel(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT || !!policy.schemaTemplate?.templateId,
+                        tooltip: 'Apply Schema Template',
+                        icon: 'link',
+                        color: 'primary-color',
+                        click: () => this.openApplySchemaTemplateDialog(policy)
                     })
                 ]
             }, {
@@ -1871,6 +1880,28 @@ export class PoliciesComponent implements OnInit {
                 styleClass: 'guardian-dialog',
             })!
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
+    }
+
+    public openApplySchemaTemplateDialog(policy: any): void {
+        this.policyMenu?.hide();
+        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy
+            }
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((task) => {
+            if (!task?.taskId) {
+                return;
+            }
+            void this.router.navigate(['task', task.taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
+        });
     }
 
     public onChangeStatus(event: any, policy: any): void {

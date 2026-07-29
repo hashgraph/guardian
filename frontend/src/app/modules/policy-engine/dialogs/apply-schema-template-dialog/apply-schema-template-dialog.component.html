@@ -1,0 +1,87 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">Apply Schema Template</div>
+    @if (policy?.name) {
+      <div class="header-item">{{ policy.name }}</div>
+    }
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body">
+  <div class="context">
+    @if (loading || applying) {
+      <div class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+      </div>
+    }
+
+    <form [formGroup]="filtersForm" class="filters">
+      <div class="filter-row">
+        <div class="p-input-icon-right guardian-input-container">
+          <input
+            class="search-policy-input"
+            formControlName="name"
+            pInputText
+            placeholder="Search by template name"
+            type="text"
+            (input)="applyFilters()" />
+          <i class="pi pi-search search-icon"></i>
+        </div>
+      </div>
+    </form>
+
+    @if (list && list.length) {
+      <div class="grid-container">
+        <div class="grid-header">
+          <div class="col-auto">Name</div>
+          <div class="col-120">Status</div>
+          <div class="col-120">Version</div>
+        </div>
+        <div class="grid-body">
+          @for (template of list; track template) {
+            <div
+              class="grid-row"
+              [class.selected]="selectedTemplateId === getTemplateId(template)"
+              (click)="selectTemplate(template)">
+              <div class="col-auto">
+                <div class="template-name">{{ template.name }}</div>
+                <div class="template-description">{{ template.description }}</div>
+              </div>
+              <div class="col-120">{{ getStatusLabel(template.status) }}</div>
+              <div class="col-120">{{ template.version || '' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (!list || !list.length) {
+      <div class="empty-grid">
+        <div class="empty-grid-icon">
+          <svg-icon
+            class="svg-icon-32"
+            src="/assets/images/icons/32/search.svg"
+            svgClass="empty-icon-color">
+          </svg-icon>
+        </div>
+        <div class="empty-grid-header">There are no schema templates</div>
+        <div class="empty-grid-text">Please try to change or clear filters</div>
+      </div>
+    }
+  </div>
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <button (click)="onClose()" class="button secondary" label="Cancel" pButton></button>
+    <button
+      (click)="applyTemplate()"
+      [disabled]="!selectedTemplateId || applying"
+      class="button"
+      label="Apply"
+      pButton></button>
+  </div>
+</div>

@@ -58,85 +58,18 @@ import { FilterObject } from '@mikro-orm/core';
 @Controller()
 export class SchemaService { }
 
-function walkSchemaProperties(document: any, visitor: (property: any, path: string[]) => void, path: string[] = []): void {
-    if (!document || typeof document !== 'object') {
-        return;
-    }
-    const properties = document.properties;
-    if (properties && typeof properties === 'object') {
-        for (const [name, property] of Object.entries<any>(properties)) {
-            const fieldPath = [...path, name];
-            visitor(property, fieldPath);
-            const target = property?.type === 'array' ? property.items : property;
-            walkSchemaProperties(target, visitor, fieldPath);
-        }
-    }
-}
-
-function collectTemplateFieldIds(document: any): {
-    byPath: Map<string, string>,
-    ids: Set<string>
-} {
-    const byPath = new Map<string, string>();
-    const ids = new Set<string>();
-    walkSchemaProperties(document, (property, path) => {
-        if (property?.templateFieldId) {
-            const id = String(property.templateFieldId);
-            byPath.set(path.join('.'), id);
-            ids.add(id);
-        }
-    });
-    return { byPath, ids };
-}
-
-function prepareTemplateFieldIds(document: any, previousDocument?: any): void {
-    const previous = collectTemplateFieldIds(previousDocument);
-    walkSchemaProperties(document, (property, path) => {
-        const incoming = property?.templateFieldId ? String(property.templateFieldId) : '';
-        const previousByPath = previous.byPath.get(path.join('.'));
-        if (incoming && previous.ids.has(incoming)) {
-            property.templateFieldId = incoming;
-        } else if (previousByPath) {
-            property.templateFieldId = previousByPath;
-        } else {
-            property.templateFieldId = GenerateUUIDv4();
-        }
-    });
-}
-
-function preserveTemplateFieldIds(document: any, previousDocument?: any): void {
-    const previous = collectTemplateFieldIds(previousDocument);
-    walkSchemaProperties(document, (property, path) => {
-        const incoming = property?.templateFieldId ? String(property.templateFieldId) : '';
-        const previousByPath = previous.byPath.get(path.join('.'));
-        if (incoming && previous.ids.has(incoming)) {
-            property.templateFieldId = incoming;
-        } else if (previousByPath) {
-            property.templateFieldId = previousByPath;
-        } else {
-            delete property.templateFieldId;
-        }
-    });
-}
-
-function removeTemplateFieldIds(document: any): void {
-    walkSchemaProperties(document, (property) => {
-        delete property.templateFieldId;
-    });
-}
-
 function prepareSchemaTemplateMetadata(item: ISchema, previous?: ISchema): void {
     if (item.category === SchemaCategory.TEMPLATE) {
         item.templateSchemaId = previous?.templateSchemaId || GenerateUUIDv4();
-        prepareTemplateFieldIds(item.document, previous?.document);
+        SchemaHelper.prepareTemplateFieldIds(item.document, previous?.document);
     } else if (previous?.templateSchemaId) {
         item.templateId = previous.templateId;
         item.templateSchemaId = previous.templateSchemaId;
-        preserveTemplateFieldIds(item.document, previous.document);
+        SchemaHelper.preserveTemplateFieldIds(item.document, previous.document);
     } else {
         delete item.templateId;
         delete item.templateSchemaId;
-        removeTemplateFieldIds(item.document);
+        SchemaHelper.removeTemplateFieldIds(item.document);
     }
 }
 
