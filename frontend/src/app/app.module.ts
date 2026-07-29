@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, provideAppInitializer } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
@@ -22,6 +22,7 @@ import { ProfileService } from './services/profile.service';
 import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
+import { refreshAccessTokenOnStartup } from './services/refresh-access-token.initializer';
 import { AuditService } from './services/audit.service';
 import { CredentialsService } from './services/credentials.service';
 import { PolicyEngineService } from './services/policy-engine.service';
@@ -306,6 +307,9 @@ const GuardianPreset = definePreset(Aura, {
         MenubarModule
     ],
     providers: [
+        // Refresh the access token from the stored refresh token before the app
+        // boots, so the initial requests aren't sent with an expired token.
+        provideAppInitializer(refreshAccessTokenOnStartup),
         MessageService,
         WebSocketService,
         AuthService,
