@@ -32,6 +32,7 @@ export enum TaskAction {
     CREATE_TOOL = 'Create tool',
     CREATE_SCHEMA_TEMPLATE = 'Create schema template',
     DELETE_SCHEMA_TEMPLATE = 'Delete schema template',
+    APPLY_SCHEMA_TEMPLATE = 'Apply schema template',
     PUBLISH_TOOL = 'Publish tool',
     IMPORT_TOOL_FILE = 'Import tool file',
     IMPORT_TOOL_MESSAGE = 'Import tool message',

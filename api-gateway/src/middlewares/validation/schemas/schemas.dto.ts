@@ -143,6 +143,16 @@ export class SchemaDTO {
 
     @ApiProperty({
         type: 'string',
+        required: false,
+        nullable: true,
+        example: Examples.UUID
+    })
+    @IsOptional()
+    @IsString()
+    templateSchemaId?: string;
+
+    @ApiProperty({
+        type: 'string',
         example: Examples.IPFS
     })
     @IsOptional()

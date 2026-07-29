@@ -352,4 +352,61 @@ export class SchemaTemplatesApi {
             await InternalException(error, this.logger, user.id);
         }
     }
+
+    /**
+     * Apply schema template to policy async.
+     */
+    @Post('/:templateId/policies/:policyId/push/apply')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Applies schema template to policy asynchronously.',
+        description: 'Copies template schemas into the selected draft policy and stores template binding metadata on the policy.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async applySchemaTemplateAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Param('policyId') policyId: string
+    ): Promise<TaskDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.APPLY_SCHEMA_TEMPLATE, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                taskManager.addStatus(task.taskId, 'Copy template schemas', StatusType.PROCESSING);
+                const result = await guardians.applySchemaTemplate(templateId, policyId, owner);
+                taskManager.addStatus(task.taskId, 'Copy template schemas', StatusType.COMPLETED);
+                taskManager.addResult(task.taskId, result);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
 }

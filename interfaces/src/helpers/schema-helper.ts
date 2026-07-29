@@ -17,6 +17,7 @@ export class SchemaHelper {
     public static parseProperty(name: string, property: any): SchemaField {
         const field: SchemaField = {
             name: null,
+            templateFieldId: null,
             title: null,
             description: null,
             type: null,
@@ -45,6 +46,7 @@ export class SchemaHelper {
             _property = _property.oneOf[0];
         }
         field.name = name;
+        field.templateFieldId = property.templateFieldId || _property.templateFieldId || null;
         field.title = property.title || _property.title || name;
         field.description = property.description || _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
@@ -158,6 +160,9 @@ export class SchemaHelper {
         property.title = field.title || name;
         property.description = field.description || name;
         property.readOnly = !!field.readOnly;
+        if (field.templateFieldId) {
+            property.templateFieldId = field.templateFieldId;
+        }
 
         if (field.examples) {
             property.examples = field.examples;
