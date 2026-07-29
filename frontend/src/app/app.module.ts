@@ -14,6 +14,7 @@ import { SchemaHelper } from '@guardian/interfaces';
 import { CheckboxModule } from 'primeng/checkbox';
 import { CardModule } from 'primeng/card';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { DrawerModule } from 'primeng/drawer';
 import { ClipboardModule } from '@angular/cdk/clipboard';
 //Services
 import { AuthInterceptor, AuthService } from './services/auth.service';
@@ -56,6 +57,7 @@ import { HeaderComponent } from './views/header/header.component';
 import { RegisterComponent } from './views/register/register.component';
 import { RootProfileComponent } from './views/root-profile/root-profile.component';
 import { NextGenBannerComponent } from './views/next-gen-banner/next-gen-banner.component';
+import { FirstStepsPanelComponent } from './views/first-steps-panel/first-steps-panel.component';
 import { TokenConfigComponent } from './views/token-config/token-config.component';
 import { AuditComponent } from './views/audit/audit.component';
 import { TrustChainComponent } from './views/trust-chain/trust-chain.component';
@@ -65,6 +67,7 @@ import { SettingsViewComponent } from './views/admin/settings-view/settings-view
 import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-dialog.component';
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
+import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -208,6 +211,7 @@ const GuardianPreset = definePreset(Aura, {
         RegisterComponent,
         RootProfileComponent,
         NextGenBannerComponent,
+        FirstStepsPanelComponent,
         TokenConfigComponent,
         AuditComponent,
         TrustChainComponent,
@@ -218,6 +222,7 @@ const GuardianPreset = definePreset(Aura, {
         ServiceStatusComponent,
         InfoComponent,
         SchemaConfigComponent,
+        SchemasConfigurationComponent,
         BrandingComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
@@ -295,6 +300,7 @@ const GuardianPreset = definePreset(Aura, {
         CheckboxModule,
         CardModule,
         ToggleSwitchModule,
+        DrawerModule,
         AngularSvgIconModule.forRoot(),
         TreeTableModule,
         MenubarModule

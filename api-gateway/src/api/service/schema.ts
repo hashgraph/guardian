@@ -465,9 +465,10 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getSchemasPage(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number,
@@ -502,6 +503,7 @@ export class SchemaApi {
             }
             const { items, count } = await guardians.getSchemasByOwner(options, owner);
             SchemaHelper.updatePermission(items, owner);
+            req.locals = SchemaUtils.toOld(items);
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -752,9 +754,10 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getSchemasPageByTopicId(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Param('topicId') topicId: string,
         @Query('pageIndex') pageIndex?: number,
@@ -777,6 +780,7 @@ export class SchemaApi {
             }
             const { items, count } = await guardians.getSchemasByOwner(options, owner);
             SchemaHelper.updatePermission(items, owner);
+            req.locals = SchemaUtils.toOld(items);
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -1547,15 +1551,15 @@ export class SchemaApi {
         try {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.DELETE_SCHEMAS, user.id);
+            const reqUrl = req.url;
+            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
             RunFunctionAsync<ServiceError>(async () => {
                 await guardians.deleteSchema(schemaId, owner, task, String(includeChildren).toLowerCase() === 'true');
+                await this.cacheService.invalidate(getCacheKey([reqUrl, ...invalidedCacheKeys], user)).catch(() => null);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: error.code || 500, message: error.message });
             });
-
-            const invalidedCacheKeys = [`${PREFIXES.SCHEMES}schema-with-sub-schemas`];
-            await this.cacheService.invalidate(getCacheKey([req.url, ...invalidedCacheKeys], user))
 
             return task;
         } catch (error) {
@@ -2720,9 +2724,10 @@ export class SchemaApi {
     })
     @ApiExtraModels(SchemaDTO, InternalServerErrorDTO)
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getSystemSchema(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Param('username') username: string,
         @Query('pageIndex') pageIndex?: number,
@@ -2733,6 +2738,7 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const { items, count } = await guardians.getSystemSchemas(user, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
+            req.locals = SchemaUtils.toOld(items);
             return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
         } catch (error) {
             await InternalException(error, this.logger, user.id);

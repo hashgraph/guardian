@@ -50,7 +50,7 @@
 }
 
 .block-expand {
-    width: 40px;
+    width: 32px;
     height: 40px;
     position: relative;
     cursor: pointer;
@@ -65,16 +65,18 @@
     position: relative;
     min-width: 160px;
     background: var(--guardian-background, #fff);
-    border: 2px solid #000;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
     box-sizing: border-box;
     cursor: pointer;
     -webkit-user-select: none;
     user-select: none;
     margin: 4px 8px 4px 0px;
-    box-shadow: 4px 4px 6px 0px #00000040;
+    box-shadow: 0 1px 2px var(--guardian-shadow, #00000014);
     padding: 0px 12px;
     align-items: center;
     display: flex;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
 }
 
 .block-item * {
@@ -127,13 +129,13 @@
 }
 
 .block-container[selected="true"] .block-item {
-    border-color: #5161e1 !important;
-    box-shadow: 4px 4px 6px 0px #00000040, 0px 0px 4px 1px #5161e1cc !important;
+    border-color: var(--color-primary, #4169E2) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary, #4169E2) 30%, transparent) !important;
 }
 
 .block-container[selected="true"] .module-body .block-item::after {
-    border-color: #5161e1 !important;
-    box-shadow: -1px -2px 2px 0px #5161e161 !important;
+    border-color: var(--color-primary, #4169E2) !important;
+    box-shadow: -1px -2px 2px 0px color-mix(in srgb, var(--color-primary, #4169E2) 38%, transparent) !important;
 }
 
 .block-container[error="true"] .block-item {
@@ -148,8 +150,8 @@
 
 .block-container[error="true"] .tool-body .block-item::after {
     background-image:
-        linear-gradient(180deg, #838383 3px, var(--pc-error-bg-strong) 3px),
-        linear-gradient(180deg, var(--pc-error-bg-strong) 3px, #838383 3px) !important;
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--pc-error-bg-strong) 3px),
+        linear-gradient(180deg, var(--pc-error-bg-strong) 3px, var(--guardian-grey-color-3, #838383) 3px) !important;
 }
 
 .block-container[error="true"][selected="true"] .block-item {
@@ -178,7 +180,7 @@
     left: 2px;
     position: relative;
     font-size: 24px;
-    color: #404fb2;
+    color: var(--color-primary, #404fb2);
 }
 
 .module-item-icon i,
@@ -191,7 +193,7 @@
 }
 
 .tool-icon {
-    color: #c37a29 !important;
+    color: var(--pc-tool-block-color, #c37a29) !important;
 }
 
 .block-item-icon i,
@@ -205,7 +207,7 @@
     max-width: 330px;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #404040;
+    color: var(--guardian-font-color, #404040);
 }
 
 .block-container[block-type="UI Components"] .block-item {
@@ -227,7 +229,7 @@
 
 .block-container[block-type="module"] .block-item {
     background: var(--guardian-background, white);
-    border-color: #adadad;
+    border-color: var(--guardian-grey-color-3, #adadad);
 }
 
 .block-all-expand {
@@ -270,7 +272,7 @@
     content: "";
     width: 40px;
     height: 8px;
-    border: 2px solid #838383;
+    border: 2px solid var(--guardian-grey-color-3, #838383);
     top: -8px;
     left: 0px;
     border-bottom-width: 0;
@@ -294,8 +296,8 @@
     z-index: 2;
     box-sizing: border-box;
     background-image:
-        linear-gradient(180deg, #838383 3px, var(--guardian-background, #fff) 3px),
-        linear-gradient(180deg, var(--guardian-background, #fff) 3px, #838383 3px);
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--guardian-background, #fff) 3px),
+        linear-gradient(180deg, var(--guardian-background, #fff) 3px, var(--guardian-grey-color-3, #838383) 3px);
     background-position: 0 0, 3px 0;
     background-size: 3px 6px, 3px 6px;
     background-repeat: repeat-y;
@@ -305,7 +307,7 @@
 .module-body .block-item {
     height: 40px;
     background: var(--guardian-background, #fff) !important;
-    border-color: #838383 !important;
+    border-color: var(--guardian-grey-color-3, #838383) !important;
     padding: 2px 12px 2px 12px;
     margin: 8px 8px 3px 0px;
 }
@@ -342,13 +344,17 @@
     pointer-events: none !important;
     transform: translate(-50%, -100%) translate(0, -5px);
     background: var(--guardian-background, #fff);
-    padding: 5px 15px;
-    border: 1px solid #7c7c7c;
-    border-radius: 4px;
+    padding: 8px 12px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
     z-index: 9999;
-    box-shadow: -1px 2px 3px 0px rgb(0 0 0 / 30%);
+    box-shadow: 0 4px 12px var(--guardian-shadow, rgb(0 0 0 / 30%));
     min-width: 250px;
     transition: opacity 0.5s;
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    font-size: 13px;
+    line-height: 18px;
+    color: var(--guardian-font-color, #23252E);
 }
 
 .tooltip::ng-deep span {
@@ -375,19 +381,19 @@
     overflow: visible;
     display: none;
     align-items: center;
-    position: absolute;
     right: 12px;
     top: 0px;
 }
 
 .module-menu.block-menu {
     top: 7px;
+    margin-top: 7px;
 }
 
 .action-button {
     background-color: var(--guardian-background, white);
     font-size: 10px;
-    border-radius: 5px;
+    border-radius: 6px;
     width: 31px;
     height: 31px;
     line-height: 0px;
@@ -395,7 +401,7 @@
     color: var(--guardian-font-color, #3f51b5);
     z-index: 2;
     border: 1px solid var(--guardian-border-color, rgb(200 200 200));
-    box-shadow: 2px 2px 6px 1px #00000035;
+    box-shadow: 0 1px 3px var(--guardian-shadow, #00000035);
     cursor: pointer;
 
     * {
@@ -408,7 +414,11 @@
 }
 
 .delete-action {
-    color: red;
+    color: var(--pc-del-color, #FF432A);
+}
+
+.add-child-action {
+    color: var(--color-primary, #4169E2);
 }
 
 .move-actions-container {
@@ -489,6 +499,7 @@
 
 .tree[move-actions="1"] .block-container[selected="true"] .module-menu.block-menu {
     top: -26px;
+    margin-top: -26px;
 }
 
 .tree[move-actions="1"] .block-container[selected="true"] {
@@ -567,21 +578,21 @@
 // }
 
 .block-container[deprecated="true"] .block-item {
-    background-color: lightgray !important;
-    border-color: lightgray !important;
+    background-color: var(--guardian-disabled-background, lightgray) !important;
+    border-color: var(--guardian-disabled-color, lightgray) !important;
 }
 
 .block-container[deprecated="true"] .block-item::after {
     content: "";
     width: 110%;
     height: 3px;
-    background-color: black;
+    background-color: var(--guardian-font-color, black);
     position: absolute;
     left: -5%;
 }
 
 .block-container[selected="true"][deprecated="true"] .block-item {
-    border-color: #5161e1 !important;
+    border-color: var(--color-primary, #4169E2) !important;
 }
 
 .cdk-drag-animating {
@@ -590,7 +601,7 @@
 
 .cdk-drag-placeholder {
     opacity: 0.4 !important;
-    background: #e3e3e3 !important;
+    background: var(--guardian-grey-color, #e3e3e3) !important;
 }
 
 .cdk-drag-placeholder.block-container {
@@ -630,25 +641,25 @@
 }
 .block-container[warning="true"] .tool-body .block-item::after {
     background-image:
-        linear-gradient(180deg, #838383 3px, var(--pc-warning-bg-light) 3px),
-        linear-gradient(180deg, var(--pc-warning-bg-light) 3px, #838383 3px) !important;
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--pc-warning-bg-light) 3px),
+        linear-gradient(180deg, var(--pc-warning-bg-light) 3px, var(--guardian-grey-color-3, #838383) 3px) !important;
 }
 
 .block-container[info="true"] .block-item {
-    border-color: #35a307 !important;
-    background: #eaffea !important;
+    border-color: var(--pc-valid-color, #19BE47) !important;
+    background: var(--guardian-success-background, #eaffea) !important;
 }
 .block-container[info="true"][selected="true"] .block-item {
-    box-shadow: 4px 4px 6px 0px #00000040, 0 0 4px 1px #35a307cc !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--pc-valid-color, #19BE47) 35%, transparent) !important;
 }
 .block-container[info="true"] .module-body .block-item::after {
-    border-color: #35a307 !important;
-    background: #eaffea !important;
+    border-color: var(--pc-valid-color, #19BE47) !important;
+    background: var(--guardian-success-background, #eaffea) !important;
 }
 .block-container[info="true"] .tool-body .block-item::after {
     background-image:
-        linear-gradient(180deg, #838383 3px, #eaffea 3px),
-        linear-gradient(180deg, #eaffea 3px, #838383 3px) !important;
+        linear-gradient(180deg, var(--guardian-grey-color-3, #838383) 3px, var(--guardian-success-background, #eaffea) 3px),
+        linear-gradient(180deg, var(--guardian-success-background, #eaffea) 3px, var(--guardian-grey-color-3, #838383) 3px) !important;
 }
 
 .block-body
@@ -668,7 +679,7 @@
     }
 
     span {
-        font-family: Inter, sans-serif;
+        font-family: var(--font-family-inter, 'Inter', sans-serif);
         font-weight: 500;
         font-style: Medium;
         font-size: 12px;
@@ -679,12 +690,28 @@
 }
 
 .block-body
+.block-event-mark {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-warning, #E0A800);
+
+    i {
+        font-size: 13px;
+    }
+}
+
+.block-event-mark ~ .block-selected-mark {
+    margin-left: 8px;
+}
+
 .block-selected-mark {
     margin-top: 4px;
     margin-left: auto;
 
     span {
-        font-family: Inter, sans-serif;
+        font-family: var(--font-family-inter, 'Inter', sans-serif);
         font-weight: 500;
         font-style: Medium;
         font-size: 12px;
@@ -697,4 +724,297 @@
 .block-container[selected="true"]
 .block-body .block-tag-count {
     right: 0;
+}
+
+// #6 / #3 Drop the folder-tab "hat" from module blocks (root and nested).
+// It reads as a detached rectangle; the icon + border already convey a module.
+.module-body .block-item::after {
+    display: none !important;
+}
+
+// Same for the tool block's left stripe: the icon + border already read as a tool.
+.tool-body .block-item::after {
+    display: none !important;
+}
+
+// #2 Root block: the collapse-all control already sits in the expand column,
+// so hide the root's own (redundant) caret to avoid two overlapping arrows.
+// Keep the column width so the block doesn't shift.
+.block-container[root="true"] .block-expand i {
+    display: none !important;
+}
+
+// Fit + modernize the collapse-all control inside the 32px expand column.
+.block-all-expand {
+    left: 0 !important;
+    width: 32px !important;
+}
+
+.block-all-expand i,
+.block-all-expand svg {
+    left: 4px !important;
+    top: 50% !important;
+    transform: translateY(-50%);
+    width: 24px !important;
+    height: 24px !important;
+    padding: 4px !important;
+    font-size: 15px !important;
+    border-radius: 6px;
+    background: transparent !important;
+    color: var(--guardian-font-color-secondary, #848FA9) !important;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.block-all-expand:hover i,
+.block-all-expand:hover svg {
+    background: var(--guardian-grey-background, #f1f3f9) !important;
+    color: var(--guardian-font-color, #23252E) !important;
+}
+
+// #1 Thinner block borders (theme applies 2px via --theme-border-width).
+.block-item[theme-all],
+.block-item[theme-block] {
+    border-width: 1px !important;
+}
+
+// #3 Tighter vertical rhythm between blocks (between the original and the
+// tightest pass).
+.block-container {
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.block-item:has(.block-item-text) {
+    min-height: 44px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
+.block-body:has(.block-item-text) {
+    min-height: 44px;
+}
+
+// #5 Center the root / module / tool icon vertically.
+.module-item-icon {
+    top: 50% !important;
+    transform: translateY(-50%);
+
+    i,
+    svg {
+        top: 0 !important;
+        left: 0 !important;
+    }
+}
+
+// ---- Canvas refresh: expand carets, typography, block hover ----
+
+// Modernize the expand caret: drop the grey square, use a clean chevron
+// glyph with a subtle rounded hover target.
+.block-expand {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.block-expand i {
+    position: static !important;
+    top: auto !important;
+    left: auto !important;
+    width: 22px !important;
+    height: 22px !important;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px !important;
+    border-radius: 6px;
+    background: transparent !important;
+    color: var(--guardian-font-color-secondary, #848FA9) !important;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.block-expand:hover i {
+    background: var(--guardian-grey-background, #f1f3f9) !important;
+    color: var(--guardian-font-color, #23252E) !important;
+}
+
+.block-container[collapsed="true"] .block-expand i {
+    transform: rotate(-90deg);
+}
+
+// ---- #3 Modern blocks: icon chip + name/type stack ----
+.block-item:has(.block-item-text) {
+    height: auto;
+    min-height: 46px;
+    align-items: center;
+}
+
+.block-body:has(.block-item-text) {
+    height: auto;
+    min-height: 46px;
+    align-items: center;
+}
+
+.block-item:has(.block-item-text) .block-item-icon {
+    width: 26px;
+    height: 26px;
+    left: 8px;
+    border-radius: 7px;
+    background: color-mix(in srgb, currentColor 12%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        font-size: 14px;
+    }
+}
+
+.block-item-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 0;
+    padding-left: 26px;
+    padding-right: 4px;
+    overflow: hidden;
+}
+
+.block-item-type {
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    font-size: 10px;
+    line-height: 1.25;
+    color: inherit;
+    opacity: 0.55;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+// ---- #2 Nesting connectors ----
+// Indent step is 40px/level and .block-expand is 40px wide, so each block's
+// parent-caret column is exactly 60px left of its .block-body. Draw a
+// continuous vertical guide at that column plus a horizontal branch to the
+// block, forming a proper tree.
+.block-container:not([root="true"]) .block-body {
+    &::before {
+        content: "";
+        position: absolute;
+        left: -48px;
+        top: -8px;
+        bottom: -8px;
+        width: 1px;
+        background: var(--pc-border-color, #E1E7EF);
+        pointer-events: none;
+    }
+
+    &::after {
+        content: "";
+        position: absolute;
+        left: -48px;
+        top: 50%;
+        width: 30px;
+        height: 1px;
+        background: var(--pc-border-color, #E1E7EF);
+        pointer-events: none;
+    }
+}
+
+// Typography: consistent Inter across block and module labels.
+.block-item-name {
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.25;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    max-width: 300px;
+}
+
+.block-item:has(.block-item-text) .block-item-name {
+    padding: 0 !important;
+}
+
+.module-item-name {
+    font-family: var(--font-family-inter, 'Inter', sans-serif);
+    font-size: 14px !important;
+    font-weight: 500;
+    color: var(--guardian-font-color, #23252E) !important;
+}
+
+// Softer, more tactile hover than the flat brightness filter.
+.block-item {
+    transition: box-shadow 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.block-item:hover {
+    filter: none;
+    box-shadow: 0 2px 6px var(--guardian-shadow, #00000022);
+}
+
+// Modernize the floating block action menu (both compact and move modes).
+// Clean, smaller icon buttons with rounded hover states.
+.action-button {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--pc-border-color, #E1E7EF) !important;
+    box-shadow: 0 1px 3px var(--guardian-shadow, #0000001a) !important;
+    background: var(--guardian-background, #fff);
+    color: var(--guardian-font-color-secondary, #848FA9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    i {
+        font-size: 12px;
+    }
+
+    &:hover {
+        background: var(--guardian-grey-background, #f1f3f9);
+        color: var(--guardian-font-color, #23252E);
+    }
+}
+
+// The compact actions group reads as one softly-shadowed card with
+// borderless buttons inside.
+.actions-container {
+    background: var(--guardian-background, #fff) !important;
+    border: 1px solid var(--pc-border-color, #E1E7EF) !important;
+    box-shadow: 0 6px 18px var(--guardian-shadow, #0000001f) !important;
+    border-radius: 9px !important;
+    padding: 3px !important;
+    display: flex;
+    align-items: center;
+    gap: 1px;
+
+    .action-button {
+        border: none !important;
+        box-shadow: none !important;
+        width: 26px !important;
+        height: 26px !important;
+    }
+}
+
+.actions-container .add-child-action,
+.action-button.add-child-action {
+    color: var(--color-primary, #4169E2);
+
+    &:hover {
+        background: color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent);
+        color: var(--color-primary, #4169E2);
+    }
+}
+
+.actions-container .delete-action,
+.action-button.delete-action {
+    color: var(--pc-del-color, #FF432A);
+
+    &:hover {
+        background: color-mix(in srgb, var(--pc-del-color, #FF432A) 12%, transparent);
+        color: var(--pc-del-color, #FF432A);
+    }
 }

@@ -329,6 +329,22 @@ form {
 .form-field-input {
     height: auto !important;
 }
+
+:host ::ng-deep .guardian-accordion {
+
+    .p-accordionpanel,
+    .p-accordioncontent,
+    .p-motion,
+    .p-accordioncontent-wrapper,
+    .p-accordioncontent-content {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .p-accordioncontent-content {
+        overflow-x: auto;
+    }
+}
 /* form {
     display: flex;
     flex-direction: column;

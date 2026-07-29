@@ -161,43 +161,53 @@ export class EventCanvas {
     private drawArrow(line: BlocLine, dash: boolean = false, selected: boolean = false): void {
         const ctx = this.context;
         const points = line.points;
-        ctx.save();
-        if (selected) {
-            ctx.strokeStyle = `rgb(0,0,255)`;
-            ctx.lineWidth = 3;
-        } else {
-            ctx.strokeStyle = `rgb(${line.color[0]},${line.color[1]},${line.color[2]})`;
-            ctx.lineWidth = line.selected ? 3 : 1;
+        const n = points.length;
+        if (n < 4) {
+            return;
         }
+        ctx.save();
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        let color: string;
+        if (selected) {
+            color = 'rgb(65, 105, 226)';
+            ctx.lineWidth = 2.5;
+        } else {
+            color = `rgb(${line.color[0]},${line.color[1]},${line.color[2]})`;
+            ctx.lineWidth = line.selected ? 2.5 : 1.5;
+        }
+        ctx.strokeStyle = color;
+        ctx.fillStyle = color;
         ctx.beginPath();
         if (dash) {
-            ctx.setLineDash([10, 5]);
+            ctx.setLineDash([8, 5]);
         } else {
             ctx.setLineDash([]);
         }
 
-        let fx: number = 0, fy: number = 0, tx: number = 0, ty: number = 0;
-        for (let i = 0; i < points.length - 3; i += 2) {
-            fx = points[i];
-            fy = points[i + 1];
-            tx = points[i + 2];
-            ty = points[i + 3];
-            ctx.moveTo(fx, fy);
-            ctx.lineTo(tx, ty);
+        // Route through the waypoints with rounded elbows instead of hard
+        // right-angle corners for a cleaner, modern connector.
+        const radius = 6;
+        ctx.moveTo(points[0], points[1]);
+        for (let i = 2; i < n - 2; i += 2) {
+            ctx.arcTo(points[i], points[i + 1], points[i + 2], points[i + 3], radius);
         }
-        const angle = Math.atan2(ty - fy, tx - fx);
-        const k = Math.PI / 7;
-        const headlen = 5;
+        ctx.lineTo(points[n - 2], points[n - 1]);
         ctx.stroke();
-        ctx.lineWidth = 3;
-        ctx.beginPath();
+
+        // Filled arrowhead at the target, aimed along the final segment.
+        const fx = points[n - 4], fy = points[n - 3];
+        const tx = points[n - 2], ty = points[n - 1];
+        const angle = Math.atan2(ty - fy, tx - fx);
+        const k = Math.PI / 6;
+        const headlen = 8;
         ctx.setLineDash([]);
+        ctx.beginPath();
         ctx.moveTo(tx, ty);
         ctx.lineTo(tx - headlen * Math.cos(angle - k), ty - headlen * Math.sin(angle - k));
         ctx.lineTo(tx - headlen * Math.cos(angle + k), ty - headlen * Math.sin(angle + k));
-        ctx.lineTo(tx, ty);
-        ctx.lineTo(tx - headlen * Math.cos(angle - k), ty - headlen * Math.sin(angle - k));
-        ctx.stroke();
+        ctx.closePath();
+        ctx.fill();
         ctx.restore();
     }
 

@@ -1,11 +1,13 @@
 <!-- UI Prop -->
 @if (properties) {
-  <table class="properties" [attr.readonly]="readonly">
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-        <i class="pi pi-caret-down"></i>
+  <table class="properties viewer-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName viewer-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
       </td>
-      <td class="propHeaderCell cellName">UI</td>
       <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
@@ -19,49 +21,53 @@
       <td class="propRowCol"></td>
       <td class="propRowCell cellName" pTooltip="Enable common sorting" tooltipPosition="top" [tooltipOptions]="{showDelay: 300}">Enable common sorting</td>
       <td class="propRowCell">
-        <input type="checkbox" [(ngModel)]="properties.uiMetaData.enableSorting" [readonly]="readonly"
-          (blur)="onSave()">
+        <p-toggleswitch
+          [(ngModel)]="properties.uiMetaData.enableSorting"
+          [disabled]="readonly"
+          (onChange)="onSave()">
+        </p-toggleswitch>
       </td>
     </tr>
-    <tr class="propHeader">
-      <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'fieldsGroup')"
-        [attr.collapse]="propHidden.fieldsGroup">
-        <i class="pi pi-caret-down"></i>
+    <tr class="propHeader" (click)="onHide(propHidden, 'fieldsGroup')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName viewer-section-header" [attr.collapse]="propHidden.fieldsGroup">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>Fields</span>
       </td>
-      <td class="propHeaderCell cellName">Fields</td>
       <td class="propHeaderCell">
-        <div class="propAdd" (click)="addField()">
+        <div class="propAdd" (click)="$event.stopPropagation(); $event.stopPropagation(); addField()">
           <i class="pi pi-plus"></i>
           <span>Add Field</span>
         </div>
       </td>
     </tr>
     @for (field of properties.uiMetaData.fields; track field; let i = $index) {
-      <tr class="propRow" [attr.collapse]="propHidden.fieldsGroup">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden.fields, i)"
-          [attr.collapse]="propHidden.fields[i]">
-          <i class="pi pi-caret-down"></i>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup" (click)="onHide(propHidden.fields, i)">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName" [attr.collapse]="propHidden.fields[i]">
+          <i class="pi pi-chevron-down chevron-icon"></i>
+          <span>{{ getFieldName(field, i) }}</span>
         </td>
-        <td class="propRowCell cellName">{{ getFieldName(field, i) }}</td>
         <td class="propRowCell not-editable-text">
           <span>{{ field.name }}</span>
-          <span class="remove-prop" [attr.readonly]="readonly" (click)="removeField(i)">
+          <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeField(i)">
             <i class="pi pi-trash"></i>
           </span>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Field Path</td>
         <td class="propRowCell">
           <document-path [(value)]="field.name" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Type</td>
         <td class="propRowCell">
           <p-select
+            panelStyleClass="pc-select-panel"
             [(ngModel)]="field.type"
             (onChange)="onSelectFieldType(field)"
             [disabled]="readonly"
@@ -72,42 +78,42 @@
           </p-select>
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Title</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="field.title" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Tooltip</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="field.tooltip" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Cell Content</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="field.content" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">UI Class</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="field.uiClass" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">width</td>
+        <td class="propRowCell cellName">Width</td>
         <td class="propRowCell">
           <input class="prop-input" [(ngModel)]="field.width" [readonly]="readonly" (blur)="onSave()">
         </td>
       </tr>
-      <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">
           <i class="pi pi-link icon-link"></i> Bind Group
@@ -118,22 +124,20 @@
         </td>
       </tr>
       @if (field.type=='button') {
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName" title="Hide when discontinued">
             Hide when discontinued
           </td>
           <td class="propRowCell">
-            <p-checkbox
+            <p-toggleswitch
               [(ngModel)]="field.hideWhenDiscontinued"
-              [binary]="true"
-              [readonly]="readonly"
-              (blur)="onSave()"
-              [style]="{marginLeft: '8px'}"
-            ></p-checkbox>
+              [disabled]="readonly"
+              (onChange)="onSave()">
+            </p-toggleswitch>
           </td>
         </tr>
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">
             <i class="pi pi-bolt icon-event"></i>
@@ -141,6 +145,7 @@
           </td>
           <td class="propRowCell">
             <p-select
+              panelStyleClass="pc-select-panel"
               [(ngModel)]="field.action"
               [disabled]="readonly"
               (onChange)="onSave()"
@@ -152,7 +157,7 @@
           </td>
         </tr>
         @if (field.action=='link') {
-          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
               <i class="pi pi-link icon-link"></i>
@@ -165,7 +170,7 @@
           </tr>
         }
         @if (field.action=='dialog') {
-          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Type</td>
             <td class="propRowCell">
@@ -173,7 +178,7 @@
                 (blur)="onSave()">
             </td>
           </tr>
-          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Content</td>
             <td class="propRowCell">
@@ -181,7 +186,7 @@
                 (blur)="onSave()">
             </td>
           </tr>
-          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">Dialog Class</td>
             <td class="propRowCell">
@@ -189,7 +194,7 @@
                 (blur)="onSave()">
             </td>
           </tr>
-          <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+          <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
             <td class="propRowCol"></td>
             <td class="propRowCell cellName">
               <i class="pi pi-link icon-link"></i>
@@ -203,7 +208,7 @@
         }
       }
       @if (field.type=='block') {
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">
             <i class="pi pi-link icon-link"></i>
@@ -216,7 +221,7 @@
         </tr>
       }
       @if (field.type=='blocks') {
-        <tr class="propRow subRow" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
+        <tr class="propRow" lvl="1" [attr.collapse]="propHidden.fieldsGroup || propHidden.fields[i]">
           <td class="propRowCol"></td>
           <td class="propRowCell cellName">
             <i class="pi pi-link icon-link"></i>

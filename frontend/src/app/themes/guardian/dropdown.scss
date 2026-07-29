@@ -41,6 +41,27 @@
             // justify-content: center;
             margin: auto 0;
         }
+
+        .p-select-option-group {
+            cursor: default;
+            pointer-events: none;
+            background: var(--guardian-grey-background, #f9fafc) !important;
+            border-top: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+            border-bottom: 1px solid var(--guardian-grey-color-2, #E1E7EF);
+        }
+
+        .p-select-option-group-label {
+            font-family: Inter, sans-serif !important;
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            color: var(--color-grey-5, #848FA9) !important;
+            padding: 6px 16px !important;
+        }
+
+        .p-select-option-group + .p-select-option,
+        .p-select-option[data-p-group-child="true"] {
+            padding-left: 20px !important;
+        }
     }
 
     &.full-size {

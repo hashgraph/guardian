@@ -1141,6 +1141,24 @@ export class SchemaConfigComponent implements OnInit {
         return this.onEditDocument(element);
     }
 
+    // Todo: remove/change temporary code
+    public onNewInEditor(): void {
+        const topic = this.currentTopic === SchemaConfigComponent.NOT_BINDED ? undefined : (this.currentTopic || undefined);
+        this.router.navigate(['/schema-configuration'], {
+            queryParams: { type: String(this.type).toLowerCase(), topic, mode: 'new' }
+        });
+    }
+
+    // Todo: remove/change temporary code
+    public onOpenInEditor(element: Schema): void {
+        const id = element.id || (element as any)._id;
+        const topic = element.topicId
+            || (this.currentTopic === SchemaConfigComponent.NOT_BINDED ? undefined : (this.currentTopic || undefined));
+        this.router.navigate(['/schema-configuration'], {
+            queryParams: { schemaId: id, type: String(this.type).toLowerCase(), topic }
+        });
+    }
+
     public onOpenForm(schema: Schema, example: boolean): void {
         this.dialog.open(SchemaFormDialog, {
             showHeader: false,
