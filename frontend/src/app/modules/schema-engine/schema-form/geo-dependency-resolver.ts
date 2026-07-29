@@ -117,6 +117,8 @@ function conflictMessage(
         `${ancestor.type} '${values[ancestor.name]}'.`;
 }
 
+// Geo dependency logic is mirrored in geo-validator.ts (common) and
+// schema-dependency-validator.ts (guardian-service). Keep in sync.
 function isRelatedAncestor(
     descendant: GeoResolverField,
     ancestor: GeoResolverField,

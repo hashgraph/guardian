@@ -59,6 +59,8 @@ function isConsistent(
     return true;
 }
 
+// Geo dependency logic is mirrored in geo-dependency-resolver.ts (frontend) and
+// schema-dependency-validator.ts (guardian-service). Keep in sync.
 function isRelatedAncestor(
     descendant: SchemaField,
     ancestor: SchemaField,

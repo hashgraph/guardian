@@ -10,6 +10,8 @@ interface DependencyField {
     dependency?: { on: string; kind: string };
 }
 
+// Geo dependency logic is mirrored in geo-validator.ts (common) and
+// geo-dependency-resolver.ts (frontend). Keep in sync.
 function validateScope(document: any, scope: string): void {
     if (!document?.properties || typeof document.properties !== 'object') {
         return;
