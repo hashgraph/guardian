@@ -13,6 +13,7 @@ export class CustomConfirmDialogComponent implements OnInit {
     public header: string;
     public text: string;
     public texts: string[];
+    public details: string[];
     public buttons: {
         name: string,
         class: string,
@@ -32,6 +33,7 @@ export class CustomConfirmDialogComponent implements OnInit {
         this.header = this.config.data.header;
         this.text = this.config.data.text;
         this.texts = this.config.data.texts;
+        this.details = this.config.data.details;
 
         this.buttons = this.config.data.buttons;
         this.options = this.config.data.options;
