@@ -12,8 +12,8 @@ choosing between the two is the main question people have.
 Three cards sit at the top of the page:
 
 - **Exports This Month** — how many exports you have run this calendar month.
-- **ESG Fields Available** — how many reporting fields you can choose from, split into required and
-  optional.
+- **ESG Fields Available** — how many ESG Climate Data fields the selected dataset offers, out of its
+  total field count. The number always matches the "ESG Climate Data" group in the field picker below.
 - **Last Export** — when you last exported anything, or *No exports yet*.
 
 Below them, three tabs: **Export Data**, **Impact Summary** and **Disclosure Guidance**.
@@ -78,8 +78,9 @@ Where Export Data produces raw rows, Impact Summary produces a compiled narrativ
 **Configure Summary** asks for an **Output Format**, then **Generate Impact Summary** builds it. The
 preview that appears is titled *Portfolio Impact Overview* and covers:
 
-- **Total Credits Issued** and **Total Retired** — where a retirement figure has been derived rather
-  than read directly from a record, it is labelled *inferred*, so you always know which is which;
+- **Total Credits Issued** and **Total Retired** — retirement figures are derived from token-deletion
+  activity rather than a dedicated retirement ledger; how that derivation works is set out in the
+  Limitations note in the generated report rather than tagged onto each figure;
 - **Active Projects** and **Countries**;
 - **SDG Contributions** and **Geographic Distribution** sections;
 - a footer confirming the network the data was verified on and when the summary was generated.
@@ -89,23 +90,16 @@ document.
 
 ## Disclosure Guidance
 
-This tab does not generate anything. It explains what the numbers mean and how they line up with the
-frameworks you are likely to be reporting into.
+This tab does not generate anything. It explains what the numbers mean and where they come from.
 
-**Framework Alignment** lists the standards the exports and summaries are designed to fit: **GHG
-Protocol**, **CDP**, **TCFD**, **GRI** and **ISO 14064**, each with a one-line description of what it
-covers.
-
-**Definitions & Calculation Guidance** is a searchable set of entries, each tagged as a *Term*, a
-*Verification* note or a *Policy* note. They cover, among others:
+**Definitions & Calculation Guidance** is a searchable set of entries, each tagged as a *Term* or a
+*Verification* note, with topic keywords shown when an entry is expanded:
 
 - **Emissions Reduced** — what the quantity means, with the formula used to arrive at it;
 - **Vintage Year** — the calendar year of the underlying reduction, as distinct from the issuance
   year;
-- **Mitigation Type** — how avoidance and removal are distinguished;
 - **How to Verify** — how to use the traceability references in an export to check a record
-  independently;
-- **Pre-approved Import Sources** — the constraint on where external data may come from.
+  independently.
 
 Two closing sections explain **Verification Status** — that records are anchored on Hedera and can be
 checked on HashScan — and **Assurance & Independent Verification**, which is honest about what the

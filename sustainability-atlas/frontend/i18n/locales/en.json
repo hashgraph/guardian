@@ -1465,7 +1465,7 @@
             },
             "esgFieldsAvailable": {
                 "label": "ESG Fields Available",
-                "sub": "{required} required, {optional} optional"
+                "sub": "of {total} total fields in {dataset}"
             },
             "lastExport": {
                 "label": "Last Export",
@@ -1508,7 +1508,6 @@
             "metrics": {
                 "creditsIssued": "Total Credits Issued",
                 "retired": "Total Retired",
-                "inferred": "inferred",
                 "activeProjects": "Active Projects",
                 "activeCountries": "Countries"
             },
@@ -1524,15 +1523,6 @@
             }
         },
         "disclosure": {
-            "frameworksTitle": "Framework Alignment",
-            "frameworksSubtitle": "Exports and summaries align with widely used disclosure and accounting frameworks.",
-            "frameworks": {
-                "ghgProtocol": { "name": "GHG Protocol", "desc": "Corporate accounting and reporting standard for greenhouse gas emissions." },
-                "cdp": { "name": "CDP", "desc": "Global environmental disclosure system for climate, water and forests." },
-                "tcfd": { "name": "TCFD", "desc": "Climate-related financial disclosure recommendations." },
-                "gri": { "name": "GRI", "desc": "Global Reporting Initiative sustainability reporting standards." },
-                "iso14064": { "name": "ISO 14064", "desc": "Standard for quantification and reporting of GHG emissions and removals." }
-            },
             "entriesTitle": "Definitions & Calculation Guidance",
             "searchPlaceholder": "Search guidance…",
             "noResults": "No guidance matches your search.",
@@ -1547,17 +1537,9 @@
                     "title": "Vintage Year",
                     "body": "The calendar year in which the underlying emission reduction or removal activity occurred. For credits, the reporting year is the calendar year of the on-chain minting activity."
                 },
-                "mitigationType": {
-                    "title": "Mitigation Type",
-                    "body": "The class of climate action (e.g. avoidance or removal) derived from the methodology's emission-reduction approach."
-                },
                 "howToVerify": {
                     "title": "How to Verify",
                     "body": "Every exported record includes traceability references. Use the verification URL to open the corresponding transaction, token or topic on the Hedera network explorer (HashScan) for independent confirmation."
-                },
-                "preApprovedSources": {
-                    "title": "Pre-approved Import Sources",
-                    "body": "External data may only be imported from pre-approved sources that support automated verification. Records from sources without a verification mechanism are not admitted."
                 }
             },
             "verificationStatus": {

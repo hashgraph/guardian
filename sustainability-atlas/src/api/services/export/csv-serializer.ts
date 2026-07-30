@@ -26,7 +26,7 @@ const UTF8_BOM = '﻿';
 
 /** Hand-rolled CSV serializer (no `csv`/`json2csv` dependency): RFC 4180-style quoting via `escapeCsvField()`, UTF-8 BOM prefix, `\r\n` row terminator, and rows built incrementally then joined once to avoid O(n²) string concatenation. */
 export class CsvSerializer implements Serializer {
-    async serialize(fields: string[], rows: Record<string, unknown>[]): Promise<SerializedExport> {
+    async serialize(fields: string[], rows: Record<string, unknown>[], _datasetTitle: string): Promise<SerializedExport> {
         const lines: string[] = [toCsvRow(fields)];
         for (const row of rows) {
             lines.push(toCsvRow(fields.map((field) => row[field])));

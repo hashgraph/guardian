@@ -24,8 +24,19 @@ function cellText(value: unknown): string {
     return String(value);
 }
 
-/** "emissions_reduced" -> "Emissions Reduced". */
+/**
+ * Field keys whose generic Title-Case humanization doesn't read right (acronyms, or a display name that has
+ * diverged from the field's original key) — checked before falling back to the generic rule below. Never
+ * changes the field `key` itself, only the label rendered in this PDF.
+ */
+const FIELD_LABEL_OVERRIDES: Record<string, string> = {
+    sdg: 'SDG',
+    standard: 'Methodology',
+};
+
+/** "emissions_reduced" -> "Emissions Reduced"; respects FIELD_LABEL_OVERRIDES for keys like "sdg" -> "SDG". */
 function humanizeField(key: string): string {
+    if (FIELD_LABEL_OVERRIDES[key]) return FIELD_LABEL_OVERRIDES[key];
     return key.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
@@ -39,8 +50,8 @@ function valueCell(value: string): TableCell {
 
 /** `pdfmake` tabular dataset-export serializer. Renders `fields`/`rows` as a single header+body table — the generic "PDF of this filtered dataset" export, distinct from the curated Impact Summary report template (`src/api/services/impact-summary/pdf-template.ts`). */
 export class PdfSerializer implements Serializer {
-    async serialize(fields: string[], rows: Record<string, unknown>[]): Promise<SerializedExport> {
-        const docDefinition = this.buildDocDefinition(fields, rows);
+    async serialize(fields: string[], rows: Record<string, unknown>[], datasetTitle: string): Promise<SerializedExport> {
+        const docDefinition = this.buildDocDefinition(fields, rows, datasetTitle);
         pdfMake.setFonts(PDF_FONTS);
         const content = await pdfMake.createPdf(docDefinition).getBuffer();
 
@@ -51,7 +62,11 @@ export class PdfSerializer implements Serializer {
         };
     }
 
-    private buildDocDefinition(fields: string[], rows: Record<string, unknown>[]): TDocumentDefinitions {
+    private buildDocDefinition(
+        fields: string[],
+        rows: Record<string, unknown>[],
+        datasetTitle: string,
+    ): TDocumentDefinitions {
         // Record-block (key-value) layout instead of a wide table: shows every field readably regardless of how
         // many are selected, since a wide table can't fit on a page and clips the right-hand columns. Empty
         // fields are omitted (e.g. projects have no transaction_id / registry_record_id).
@@ -73,7 +88,7 @@ export class PdfSerializer implements Serializer {
                 kvLink: { fontSize: 9, color: '#2563eb', decoration: 'underline' },
             },
             content: [
-                { text: 'Dataset Export', style: 'title' },
+                { text: datasetTitle, style: 'title' },
                 {
                     text: `Generated ${new Date().toISOString()} · ${rows.length} record(s) · ${fields.length} field(s)`,
                     style: 'subtitle',

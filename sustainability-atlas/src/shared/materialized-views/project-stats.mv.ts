@@ -9,7 +9,17 @@
  *
  * Mirrors the live aggregation that used to live in PgProjectRepository.findAll
  * (ISSUANCE_COUNT_JOIN / LIFECYCLE_ISSUED_JOIN / LIFECYCLE_RETIRED_JOIN). The
- * findById path still computes these live for a single row, so it stays exact.
+ * findById path does NOT join this MV — it computes all of these live for the
+ * single row, and its issuanceCount query is written to mirror the `issued` CTE
+ * below exactly (same table, same FILTER, no join to `message`). Any change to
+ * the aggregation semantics here has to be mirrored there, or the projects list
+ * and the project detail page will report different numbers for the same project.
+ *
+ * One deliberate exception: for a project with NO project_mint_link rows whose
+ * credits were resolved from token_cache instead, findById falls back to the
+ * number of linked credit rows so the detail page can't render the nonsensical
+ * "N issued, 0 issuances". This MV has no row for such a project at all, so the
+ * list page reports 0 there — a known, accepted divergence.
  *
  * Projects with no mints are intentionally absent here; the row query
  * LEFT JOINs this MV and COALESCEs the missing columns to 0, matching the old

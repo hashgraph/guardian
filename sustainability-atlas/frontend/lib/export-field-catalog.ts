@@ -1,6 +1,7 @@
 import type {
     ExportDataset,
     ExportFieldDefinition,
+    ExportFieldGroup,
     ExportFieldGroupDefinition,
 } from '~/types/reports';
 
@@ -85,4 +86,9 @@ export function getDefaultSelectedFieldKeys(dataset: ExportDataset): string[] {
     return getExportFields(dataset)
         .filter((field) => field.defaultSelected)
         .map((field) => field.key);
+}
+
+/** Count of catalog fields in a given group for a dataset (e.g. how many "ESG Climate Data" rows the FieldPicker renders). */
+export function getFieldGroupCount(dataset: ExportDataset, group: ExportFieldGroup): number {
+    return getExportFields(dataset).filter((field) => field.group === group).length;
 }

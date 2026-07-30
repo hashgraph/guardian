@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Disclosure Guidance tab: framework list, searchable guidance accordion, and callouts. */
+/** Disclosure Guidance tab: searchable guidance accordion and callouts. */
 import { Search, ChevronDown, ShieldCheck, AlertTriangle, ExternalLink } from 'lucide-vue-next';
 
 // Content structure; all user-facing copy lives in reports.disclosure.* / glossary.* i18n keys.
@@ -8,23 +8,14 @@ interface GuidanceEntry {
     id: string;
     tag: GuidanceTag;
     hasFormula?: boolean;
+    /** Rendered as #chips on the expanded entry, and matched by the search box. */
     topics: string[];
 }
-
-const FRAMEWORKS = [
-    { id: 'ghgProtocol' },
-    { id: 'cdp' },
-    { id: 'tcfd' },
-    { id: 'gri' },
-    { id: 'iso14064' },
-];
 
 const GUIDANCE_ENTRIES: GuidanceEntry[] = [
     { id: 'emissionsReduced', tag: 'term', hasFormula: true, topics: ['emissions', 'esg'] },
     { id: 'vintageYear', tag: 'term', topics: ['vintage', 'credits'] },
-    { id: 'mitigationType', tag: 'term', topics: ['methodology', 'esg'] },
     { id: 'howToVerify', tag: 'verification', hasFormula: false, topics: ['hashscan', 'traceability'] },
-    { id: 'preApprovedSources', tag: 'policy', topics: ['imports', 'governance'] },
 ];
 
 const GUIDANCE_TAG_CLASS: Record<GuidanceTag, string> = {
@@ -59,18 +50,6 @@ const hashscanUrl = computed(() => `https://hashscan.io/${network.value}`);
 
 <template>
     <div class="space-y-6">
-        <!-- Framework alignment -->
-        <div class="rounded-xl border bg-card p-5">
-            <h3 class="text-sm font-semibold text-foreground">{{ $t('reports.disclosure.frameworksTitle') }}</h3>
-            <p class="text-xs text-muted-foreground mt-1 mb-4">{{ $t('reports.disclosure.frameworksSubtitle') }}</p>
-            <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                <div v-for="f in FRAMEWORKS" :key="f.id" class="rounded-lg border bg-muted/20 px-4 py-3">
-                    <p class="text-sm font-medium text-foreground">{{ $t(`reports.disclosure.frameworks.${f.id}.name`) }}</p>
-                    <p class="text-xs text-muted-foreground mt-0.5">{{ $t(`reports.disclosure.frameworks.${f.id}.desc`) }}</p>
-                </div>
-            </div>
-        </div>
-
         <!-- Searchable guidance accordion -->
         <div class="rounded-xl border bg-card p-5">
             <div class="flex flex-wrap items-center justify-between gap-3 mb-4">

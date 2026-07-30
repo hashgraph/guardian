@@ -43,7 +43,6 @@ const sdgIds = computed(() => (summary.value?.sdgContributions ?? []).map(s => s
                 <div class="rounded-lg border bg-muted/20 px-4 py-3">
                     <p class="text-xs text-muted-foreground">
                         {{ $t('reports.impactSummary.metrics.retired') }}
-                        <span class="text-[10px] italic">({{ $t('reports.impactSummary.metrics.inferred') }})</span>
                     </p>
                     <p class="text-lg font-bold text-foreground tabular-nums">{{ formatNumber(summary.totalRetiredInferred) }}</p>
                 </div>

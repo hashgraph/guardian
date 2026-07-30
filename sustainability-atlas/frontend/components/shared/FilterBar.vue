@@ -27,10 +27,6 @@ const props = defineProps<{
     dropdownAlign?: 'left' | 'right';
 }>();
 
-const dropdownClass = computed(() =>
-    props.dropdownAlign === 'right' ? 'right-0' : 'left-0',
-);
-
 const emit = defineEmits<{
     'update:modelValue': [value: string];
     'filter': [key: string, value: string];
@@ -41,9 +37,82 @@ const openDropdown = ref<string | null>(null);
 const dropdownRefs = ref<Record<string, HTMLElement | null>>({});
 const dropdownSearch = ref<Record<string, string>>({});
 
+const panelRef = ref<HTMLElement | null>(null);
+const dropdownStyle = ref<Record<string, string>>({});
+
+function bindPanelRef(el: Element | null) {
+    if (el) {
+        panelRef.value = el as HTMLElement;
+        return;
+    }
+    if (!openDropdown.value) panelRef.value = null;
+}
+
 watch(openDropdown, (_newKey, oldKey) => {
     if (oldKey) dropdownSearch.value[oldKey] = '';
 });
+
+/**
+ * Positions the currently-open panel as `position: fixed`, anchored to its
+ * trigger's live `getBoundingClientRect()` — this is what lets it render
+ * through a Teleport without being clipped by an ancestor's overflow-hidden.
+ *
+ * Range-type filters (daterange/yearrange/numrange) have always anchored to
+ * the trigger's left edge regardless of `dropdownAlign` (matching the old
+ * hardcoded `left-0` on those panels); only the select-style panels honor
+ * `dropdownAlign="right"`. That distinction is preserved here.
+ */
+function updatePanelPosition() {
+    const key = openDropdown.value;
+    if (!key || !import.meta.client) return;
+    const trigger = dropdownRefs.value[key];
+    if (!trigger) return;
+
+    const filter = props.filters?.find((f) => f.key === key);
+    const isRangeType = filter?.type === 'daterange' || filter?.type === 'yearrange' || filter?.type === 'numrange';
+    const rightAlign = !isRangeType && props.dropdownAlign === 'right';
+
+    const rect = trigger.getBoundingClientRect();
+    const viewportW = window.innerWidth;
+    const viewportH = window.innerHeight;
+    const gap = 4; // matches the old `mt-1`
+
+    if (rect.bottom < 0 || rect.top > viewportH) {
+        openDropdown.value = null;
+        return;
+    }
+
+    const style: Record<string, string> = { position: 'fixed', zIndex: '9999' };
+
+    style.top = `${rect.bottom + gap}px`;
+    if (rightAlign) {
+        style.right = `${viewportW - rect.right}px`;
+    } else {
+        style.left = `${rect.left}px`;
+    }
+
+    const panel = panelRef.value;
+    if (panel) {
+        const panelRect = panel.getBoundingClientRect();
+
+        let top = rect.bottom + gap;
+        const overflowsBottom = top + panelRect.height > viewportH - 8;
+        const roomAbove = rect.top - panelRect.height - gap > 8;
+        if (overflowsBottom && roomAbove) {
+            top = rect.top - panelRect.height - gap; // flip above the trigger
+        }
+        top = Math.max(8, Math.min(top, viewportH - panelRect.height - 8));
+
+        let left = rightAlign ? rect.right - panelRect.width : rect.left;
+        left = Math.max(8, Math.min(left, viewportW - panelRect.width - 8));
+
+        style.top = `${top}px`;
+        style.left = `${left}px`;
+        delete style.right;
+    }
+
+    dropdownStyle.value = style;
+}
 
 function filteredOptions(filter: FilterOption): FilterOption['options'] {
     const q = (dropdownSearch.value[filter.key] ?? '').toLowerCase().trim();
@@ -51,8 +120,14 @@ function filteredOptions(filter: FilterOption): FilterOption['options'] {
     return filter.options.filter(o => o.label.toLowerCase().includes(q));
 }
 
-function toggleDropdown(key: string) {
-    openDropdown.value = openDropdown.value === key ? null : key;
+async function toggleDropdown(key: string) {
+    if (openDropdown.value === key) {
+        openDropdown.value = null;
+        return;
+    }
+    openDropdown.value = key;
+    await nextTick();
+    updatePanelPosition();
 }
 
 function selectFilter(key: string, value: string) {
@@ -228,18 +303,36 @@ const hasActiveFilters = computed(() => {
     return props.modelValue.trim() !== '' || chipsActive;
 });
 
-// Close dropdown when clicking outside
+// Close dropdown when clicking outside. The panel is teleported to <body>,
+// so it's no longer a DOM descendant of the trigger wrapper — it must be
+// checked separately, or every click inside the panel (an option, a date
+// input, the inline search box) would be misread as "outside" and close it.
 if (import.meta.client) {
     const handler = (e: MouseEvent) => {
         if (openDropdown.value) {
-            const el = dropdownRefs.value[openDropdown.value];
-            if (el && !el.contains(e.target as Node)) {
+            const target = e.target as Node;
+            const trigger = dropdownRefs.value[openDropdown.value];
+            const panel = panelRef.value;
+            const insideTrigger = !!trigger && trigger.contains(target);
+            const insidePanel = !!panel && panel.contains(target);
+            if (!insideTrigger && !insidePanel) {
                 openDropdown.value = null;
             }
         }
     };
-    onMounted(() => document.addEventListener('click', handler));
-    onUnmounted(() => document.removeEventListener('click', handler));
+    const reposition = () => {
+        if (openDropdown.value) updatePanelPosition();
+    };
+    onMounted(() => {
+        document.addEventListener('click', handler);
+        window.addEventListener('scroll', reposition, true);
+        window.addEventListener('resize', reposition);
+    });
+    onUnmounted(() => {
+        document.removeEventListener('click', handler);
+        window.removeEventListener('scroll', reposition, true);
+        window.removeEventListener('resize', reposition);
+    });
 }
 </script>
 
@@ -279,6 +372,11 @@ if (import.meta.client) {
                 </svg>
             </button>
 
+            <!-- Teleported to <body> so the panel can render as `position: fixed`
+                 (see updatePanelPosition()) and escape any ancestor's
+                 overflow-hidden (e.g. the rounded card shells that clip an
+                 absolutely-positioned panel otherwise). -->
+            <Teleport to="body">
             <Transition
                 enter-active-class="transition ease-out duration-100"
                 enter-from-class="opacity-0 -translate-y-1"
@@ -290,7 +388,9 @@ if (import.meta.client) {
                 <!-- Multi-select dropdown -->
                 <div
                     v-if="openDropdown === filter.key && filter.multiSelect"
-                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[12rem] max-w-[16rem] rounded-md border bg-popover shadow-md text-left']"
+                    :ref="bindPanelRef"
+                    :style="dropdownStyle"
+                    class="fixed min-w-[12rem] max-w-[16rem] rounded-md border bg-popover shadow-md text-left"
                 >
                     <!-- Inline search for searchable multi-select dropdowns -->
                     <div v-if="filter.searchable" class="p-1 border-b border-border">
@@ -338,7 +438,9 @@ if (import.meta.client) {
                 <!-- Numeric range dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key && filter.type === 'numrange'"
-                    class="absolute left-0 top-full mt-1 z-[9999] w-56 rounded-md border bg-popover p-3 shadow-md"
+                    :ref="bindPanelRef"
+                    :style="dropdownStyle"
+                    class="fixed w-56 rounded-md border bg-popover p-3 shadow-md"
                 >
                     <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{{ filter.label }}</p>
                     <div class="space-y-2.5">
@@ -384,7 +486,9 @@ if (import.meta.client) {
                 <!-- Date range dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key && filter.type === 'daterange'"
-                    class="absolute left-0 top-full mt-1 z-[9999] w-64 rounded-md border bg-popover p-3 shadow-md"
+                    :ref="bindPanelRef"
+                    :style="dropdownStyle"
+                    class="fixed w-64 rounded-md border bg-popover p-3 shadow-md"
                 >
                     <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{{ filter.label }}</p>
                     <div class="space-y-2.5">
@@ -426,7 +530,9 @@ if (import.meta.client) {
                 <!-- Year range dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key && filter.type === 'yearrange'"
-                    class="absolute left-0 top-full mt-1 z-[9999] w-52 rounded-md border bg-popover p-3 shadow-md"
+                    :ref="bindPanelRef"
+                    :style="dropdownStyle"
+                    class="fixed w-52 rounded-md border bg-popover p-3 shadow-md"
                 >
                     <p class="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">{{ filter.label }}</p>
                     <div class="space-y-2.5">
@@ -472,7 +578,9 @@ if (import.meta.client) {
                 <!-- Single-select dropdown -->
                 <div
                     v-else-if="openDropdown === filter.key"
-                    :class="[dropdownClass, 'absolute top-full mt-1 z-[9999] min-w-[10rem] max-w-[16rem] rounded-md border bg-popover shadow-md text-left']"
+                    :ref="bindPanelRef"
+                    :style="dropdownStyle"
+                    class="fixed min-w-[10rem] max-w-[16rem] rounded-md border bg-popover shadow-md text-left"
                 >
                     <!-- Inline search for searchable dropdowns -->
                     <div v-if="filter.searchable" class="p-1 border-b border-border">
@@ -502,6 +610,7 @@ if (import.meta.client) {
                     </div>
                 </div>
             </Transition>
+            </Teleport>
         </div>
 
         <!-- Extra text-style action (e.g. Save Search) rendered immediately

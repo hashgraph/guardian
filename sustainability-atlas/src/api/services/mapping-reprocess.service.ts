@@ -12,7 +12,7 @@ import { MappingAuditEntryDto, MappingAuditQueryDto, PaginatedMappingAuditDto } 
 import { PgPolicySchemaRepository } from '../repositories/pg-policy-schema.repository';
 import { buildPolicyWorkflowGraph, PolicyWorkflowGraph } from './policy-graph.builder';
 import { bareUuid, buildVcTitleMaps, detectMrvLayout, structureVcData } from '@shared/vc-detail/vc-detail.decoder';
-import type { MrvSchemaLayout } from '@shared/vc-detail/vc-detail.decoder';
+import type { MrvSchemaLayout, SchemaFieldOrderEntry } from '@shared/vc-detail/vc-detail.decoder';
 import { MrvDataQueryDto, MrvDataResponseDto } from '../dto/mrv-data.dto';
 import type { VcDocData, VcTitleMaps } from '@shared/vc-detail/vc-detail.types';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
@@ -1116,12 +1116,15 @@ export class MappingReprocessService {
         const policyTopicId = typeof businessData['policyTopicId'] === 'string' ? (businessData['policyTopicId'] as string) : null;
         if (!topicId || !policyTopicId) return empty;
 
-        const policyRows: Array<{ rawSchemaJson: Record<string, unknown> | null }> = await ds.query(
-            `SELECT "rawSchemaJson" FROM policy WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded' LIMIT 1`,
+        const policyRows: Array<{ rawSchemaJson: Record<string, unknown> | null; schemaFields: unknown }> = await ds.query(
+            `SELECT "rawSchemaJson", "schemaFields" FROM policy WHERE "policyTopicId" = $1 AND "decodeStatus" = 'decoded' LIMIT 1`,
             [policyTopicId],
         );
         const rawSchemaJson = (policyRows[0]?.rawSchemaJson ?? {}) as Record<string, any>;
-        const layout = detectMrvLayout(rawSchemaJson, bareSchemaUuid);
+        const schemaFields = Array.isArray(policyRows[0]?.schemaFields)
+            ? (policyRows[0]!.schemaFields as SchemaFieldOrderEntry[])
+            : null;
+        const layout = detectMrvLayout(rawSchemaJson, bareSchemaUuid, schemaFields);
         const schemaDocEntry = Object.entries(rawSchemaJson).find(([iri]) => bareUuid(iri) === bareSchemaUuid);
         const schemaName = typeof schemaDocEntry?.[1]?.['name'] === 'string' ? (schemaDocEntry[1]['name'] as string) : null;
         if (layout.columns.length === 0) return { ...empty, schemaName };
@@ -1148,18 +1151,8 @@ export class MappingReprocessService {
             )`;
         }
 
-        if (layout.dateColumnKey && (query.from || query.to)) {
-            filterParams.push(layout.dateColumnKey);
-            const dateExpr = `(NULLIF(documents->'credentialSubject'->0->>$${filterParams.length}, ''))::timestamptz`;
-            if (query.from) {
-                filterParams.push(query.from);
-                whereExtra += ` AND ${dateExpr} >= $${filterParams.length}::timestamptz`;
-            }
-            if (query.to) {
-                filterParams.push(query.to);
-                whereExtra += ` AND ${dateExpr} <= $${filterParams.length}::timestamptz`;
-            }
-        }
+        whereExtra = this.appendDateRangeWhere(filterParams, whereExtra, layout, query,
+            (idx) => `documents->'credentialSubject'->0->>$${idx}`);
 
         const baseWhere = `"topicId" = $1 AND type = 'VC-Document'
             AND split_part(documents->'credentialSubject'->0->>'type', '&', 1) = $2${whereExtra}`;
@@ -1179,7 +1172,13 @@ export class MappingReprocessService {
             dataParams.push(layout.deviceArrayKey, layout.deviceLabelKey);
             const arrIdx = dataParams.length - 1, keyIdx = dataParams.length;
             deviceSelect = `, (SELECT string_agg(DISTINCT b->>$${keyIdx}, ', ')
-                FROM jsonb_array_elements(COALESCE(documents->'credentialSubject'->0->$${arrIdx}, '[]'::jsonb)) b) AS device_label`;
+                FROM jsonb_array_elements(COALESCE(documents->'credentialSubject'->0->$${arrIdx}, '[]'::jsonb)) b
+                WHERE NULLIF(b->>$${keyIdx}, '') IS NOT NULL) AS device_label,
+                (SELECT array_agg(x ORDER BY x) FROM (
+                    SELECT DISTINCT b->>$${keyIdx} AS x
+                    FROM jsonb_array_elements(COALESCE(documents->'credentialSubject'->0->$${arrIdx}, '[]'::jsonb)) b
+                    WHERE NULLIF(b->>$${keyIdx}, '') IS NOT NULL
+                ) labels) AS device_labels`;
         }
 
         const sortCol = layout.columns.find((c) => c.key === query.sortBy) ?? layout.columns.find((c) => c.key === layout.dateColumnKey);
@@ -1201,19 +1200,8 @@ export class MappingReprocessService {
             const dateOnlyWhereBase = `"topicId" = $1 AND type = 'VC-Document'
                 AND split_part(documents->'credentialSubject'->0->>'type', '&', 1) = $2`;
             const dateOnlyParams: unknown[] = [topicId, bareSchemaUuid];
-            let dateOnlyWhere = '';
-            if (layout.dateColumnKey && (query.from || query.to)) {
-                dateOnlyParams.push(layout.dateColumnKey);
-                const dateExpr = `(NULLIF(documents->'credentialSubject'->0->>$${dateOnlyParams.length}, ''))::timestamptz`;
-                if (query.from) {
-                    dateOnlyParams.push(query.from);
-                    dateOnlyWhere += ` AND ${dateExpr} >= $${dateOnlyParams.length}::timestamptz`;
-                }
-                if (query.to) {
-                    dateOnlyParams.push(query.to);
-                    dateOnlyWhere += ` AND ${dateExpr} <= $${dateOnlyParams.length}::timestamptz`;
-                }
-            }
+            let dateOnlyWhere = this.appendDateRangeWhere(dateOnlyParams, '', layout, query,
+                (idx) => `documents->'credentialSubject'->0->>$${idx}`);
             dateOnlyParams.push(layout.deviceLabelKey, layout.deviceArrayKey);
             const keyIdx = dateOnlyParams.length - 1, arrIdx = dateOnlyParams.length;
             devicePromise = ds.query(
@@ -1246,6 +1234,7 @@ export class MappingReprocessService {
                 consensusTimestamp: r['consensusTimestamp'] as string,
                 values,
                 device: (r['device_label'] as string | null) || null,
+                deviceLabels: Array.isArray(r['device_labels']) ? (r['device_labels'] as string[]) : null,
             };
         });
 
@@ -1261,6 +1250,60 @@ export class MappingReprocessService {
             dateColumnKey: layout.dateColumnKey,
             flattened: false,
         };
+    }
+
+    /**
+     * Appends the monitoring-period date-range predicate to `whereExtra`, pushing
+     * placeholders onto `params` (parameterized — never string-interpolates
+     * `query.from`/`query.to`/the schema-derived date keys). Two modes:
+     *
+     *   - Overlap mode (layout has both a start and end date column): a record
+     *     matches when its period OVERLAPS the selected [from, to] range —
+     *     `record.start <= to AND record.end >= from` — with either half
+     *     omitted when the corresponding query param is absent.
+     *   - Single-column mode (today's pre-existing behaviour, kept exactly for
+     *     schemas with only one date column): `dateColumnKey >= from AND <= to`.
+     *
+     * `fieldExpr(paramIdx)` builds the JSONB text-extraction expression for a
+     * given key placeholder — callers differ only in whether they read from
+     * `documents->'credentialSubject'->0` (record-mode) or `t.item` (flattened/
+     * item-mode), so that difference is injected rather than duplicated here.
+     */
+    private appendDateRangeWhere(
+        params: unknown[],
+        whereExtra: string,
+        layout: MrvSchemaLayout,
+        query: MrvDataQueryDto,
+        fieldExpr: (paramIdx: number) => string,
+    ): string {
+        if (!query.from && !query.to) return whereExtra;
+
+        if (layout.startDateColumnKey && layout.endDateColumnKey) {
+            if (query.to) {
+                params.push(layout.startDateColumnKey);
+                const startExpr = `(NULLIF(${fieldExpr(params.length)}, ''))::timestamptz`;
+                params.push(query.to);
+                whereExtra += ` AND ${startExpr} <= $${params.length}::timestamptz`;
+            }
+            if (query.from) {
+                params.push(layout.endDateColumnKey);
+                const endExpr = `(NULLIF(${fieldExpr(params.length)}, ''))::timestamptz`;
+                params.push(query.from);
+                whereExtra += ` AND ${endExpr} >= $${params.length}::timestamptz`;
+            }
+        } else if (layout.dateColumnKey) {
+            params.push(layout.dateColumnKey);
+            const dateExpr = `(NULLIF(${fieldExpr(params.length)}, ''))::timestamptz`;
+            if (query.from) {
+                params.push(query.from);
+                whereExtra += ` AND ${dateExpr} >= $${params.length}::timestamptz`;
+            }
+            if (query.to) {
+                params.push(query.to);
+                whereExtra += ` AND ${dateExpr} <= $${params.length}::timestamptz`;
+            }
+        }
+        return whereExtra;
     }
 
     /**
@@ -1293,18 +1336,8 @@ export class MappingReprocessService {
             filterParams.push(layout.deviceLabelKey, query.device);
             whereExtra += ` AND t.item->>$${filterParams.length - 1} = $${filterParams.length}`;
         }
-        if (layout.dateColumnKey && (query.from || query.to)) {
-            filterParams.push(layout.dateColumnKey);
-            const dateExpr = `(NULLIF(t.item->>$${filterParams.length}, ''))::timestamptz`;
-            if (query.from) {
-                filterParams.push(query.from);
-                whereExtra += ` AND ${dateExpr} >= $${filterParams.length}::timestamptz`;
-            }
-            if (query.to) {
-                filterParams.push(query.to);
-                whereExtra += ` AND ${dateExpr} <= $${filterParams.length}::timestamptz`;
-            }
-        }
+        whereExtra = this.appendDateRangeWhere(filterParams, whereExtra, layout, query,
+            (idx) => `t.item->>$${idx}`);
 
         const fromClause = `FROM message m,
             jsonb_array_elements(m.documents->'credentialSubject'->0->$3) WITH ORDINALITY AS t(item, idx)`;
@@ -1337,19 +1370,8 @@ export class MappingReprocessService {
         let devicePromise: Promise<Array<{ device: string }>> = Promise.resolve([]);
         if (layout.deviceLabelKey) {
             const dateOnlyParams: unknown[] = [topicId, bareSchemaUuid, deviceArrayKey];
-            let dateOnlyWhere = '';
-            if (layout.dateColumnKey && (query.from || query.to)) {
-                dateOnlyParams.push(layout.dateColumnKey);
-                const dateExpr = `(NULLIF(t.item->>$${dateOnlyParams.length}, ''))::timestamptz`;
-                if (query.from) {
-                    dateOnlyParams.push(query.from);
-                    dateOnlyWhere += ` AND ${dateExpr} >= $${dateOnlyParams.length}::timestamptz`;
-                }
-                if (query.to) {
-                    dateOnlyParams.push(query.to);
-                    dateOnlyWhere += ` AND ${dateExpr} <= $${dateOnlyParams.length}::timestamptz`;
-                }
-            }
+            let dateOnlyWhere = this.appendDateRangeWhere(dateOnlyParams, '', layout, query,
+                (idx) => `t.item->>$${idx}`);
             dateOnlyParams.push(layout.deviceLabelKey);
             const keyIdx = dateOnlyParams.length;
             devicePromise = ds.query(
@@ -1380,11 +1402,17 @@ export class MappingReprocessService {
         const rows = dataRows.map((r: Record<string, unknown>) => {
             const values: Record<string, string> = {};
             layout.columns.forEach((c, i) => { values[c.key] = (r[`col_${colIndexes[i]}`] as string | null) ?? ''; });
+            // Flattened mode is already one-row-per-item, so there is exactly one
+            // device per row — deviceLabels is just that single value wrapped in
+            // an array (or null), mirroring the record-mode shape for callers
+            // that always read deviceLabels rather than branching on `flattened`.
+            const deviceLabel = (r['device_label'] as string | null) || null;
             return {
                 consensusTimestamp: r['consensusTimestamp'] as string,
                 itemIndex: r['item_index'] as number,
                 values,
-                device: (r['device_label'] as string | null) || null,
+                device: deviceLabel,
+                deviceLabels: deviceLabel ? [deviceLabel] : null,
             };
         });
 

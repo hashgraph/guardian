@@ -53,7 +53,7 @@ function onExported() {
 
         <!-- Stat cards -->
         <div class="px-6 pt-4 pb-6">
-            <StatCards />
+            <StatCards :dataset="exportDataset" />
         </div>
 
         <!-- Tabs -->
