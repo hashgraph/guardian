@@ -338,6 +338,9 @@ export enum MessageAPI {
     PUBLISH_ORGANIZATION = 'PUBLISH_ORGANIZATION',
     ENROLL_ORGANIZATION_MEMBER = 'ENROLL_ORGANIZATION_MEMBER',
     GET_ORG_POLICY_IDS_FOR_USER = 'GET_ORG_POLICY_IDS_FOR_USER',
+
+    // Policy data query — read-only dynamic query for policy-committed documents
+    GET_POLICY_DATA_DOCUMENTS = 'GET_POLICY_DATA_DOCUMENTS',
 }
 
 /**

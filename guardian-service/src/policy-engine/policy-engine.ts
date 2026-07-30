@@ -526,6 +526,7 @@ export class PolicyEngine extends NatsService {
             delete data.owner;
             delete data.version;
             delete data.messageId;
+            delete data.discontinuedDate;
         }
         const model = DatabaseServer.createPolicy(data);
         model.creator = user.creator;

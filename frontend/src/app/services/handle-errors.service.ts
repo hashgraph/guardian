@@ -85,7 +85,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 } else {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }
-                return { warning, text, header };
+                return { warning, text, header, blockErrorData: errorObject.data };
             }
         }
 
@@ -96,7 +96,7 @@ export class HandleErrorsService implements HttpInterceptor {
         return { warning, text, header };
     }
 
-    private createMessage(result: { warning: any, text: any, header: any }, error: any) {
+    private createMessage(result: { warning: any, text: any, header: any, blockErrorData?: any }, error: any) {
         if (result.warning) {
             this.toastService.warn(result.text, 'Waiting for initialization');
         } else {
@@ -104,7 +104,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 !this.excludeErrorCodes.includes(String(error.status)) &&
                 !this.excludeErrorTexts.includes(String(result.text))
             ) {
-                this.toastService.error(result.text, result.header, { sticky: true, logMessage: result.text });
+                this.toastService.error(result.text, result.header, { sticky: true, logMessage: result.text, blockErrorData: result.blockErrorData });
             }
         }
     }

@@ -41,6 +41,7 @@ export class CommonPropertyComponent implements OnInit {
     }
 
     groupCollapse: boolean = false;
+    private groupCollapseInitialized: boolean = false;
     itemCollapse: any = {};
     needUpdate: boolean = true;
 
@@ -78,6 +79,10 @@ export class CommonPropertyComponent implements OnInit {
             } else if (this.property.type === 'Array') {
                 if (!Array.isArray(this.data[this.property.name])) {
                     this.data[this.property.name] = [];
+                }
+                if (!this.groupCollapseInitialized) {
+                    this.groupCollapse = !this.data[this.property.name].length;
+                    this.groupCollapseInitialized = true;
                 }
             } else if (
                 this.property.type === 'Select' ||
@@ -206,12 +211,16 @@ export class CommonPropertyComponent implements OnInit {
             }
         }
         this.value.push(item);
+        this.groupCollapse = false;
         this.update.emit();
     }
 
     removeItems(i: number) {
         this.needUpdate = true;
         this.value.splice(i, 1);
+        if (!this.value.length) {
+            this.groupCollapse = true;
+        }
         this.update.emit();
     }
 

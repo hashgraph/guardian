@@ -361,7 +361,7 @@ export class IpfsApi {
         try {
             const guardians = new Guardians();
             const result = await guardians.getFileFromDryRunStorage(user, cid, 'raw');
-            if (result.type !== 'Buffer') {
+            if (result?.type !== 'Buffer') {
                 throw new HttpException('File is not found', HttpStatus.NOT_FOUND)
             }
             return new StreamableFile(Buffer.from(result));

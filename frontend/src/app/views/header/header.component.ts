@@ -9,6 +9,7 @@ import {ProfileService} from 'src/app/services/profile.service';
 import {WebSocketService} from 'src/app/services/web-socket.service';
 import {environment} from 'src/environments/environment';
 import {AuthService} from '../../services/auth.service';
+import {getUserInitials} from '../../utils';
 
 /**
  * Header and Navigation
@@ -197,6 +198,10 @@ export class HeaderComponent implements OnInit {
         return policyRoles.map((item: any) => {
             return `${item.name} (${item.version}): ${item.role}`
         }).join('\r\n');
+    }
+
+    public getInitials(username: string | null): string {
+        return getUserInitials(username);
     }
 
     public isActiveLink(type: string): boolean {

@@ -51,6 +51,7 @@ import { RelayerAccountsApi } from './api/service/relayer-accounts.js';
 import { FormulasApi } from './api/service/formulas.js';
 import { ExternalPoliciesApi } from './api/service/external-policy.js';
 import { CredentialsApi } from './api/service/credentials.js';
+import { PolicyDataApi } from './api/service/policy-data.js';
 import { OrganizationApi } from './api/service/organization.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
@@ -114,7 +115,8 @@ import { OrganizationApi } from './api/service/organization.js';
         RelayerAccountsApi,
         WorkerTasksController,
         CredentialsApi,
-        OrganizationApi
+        OrganizationApi,
+        PolicyDataApi
     ],
     providers: [
         LoggerService,

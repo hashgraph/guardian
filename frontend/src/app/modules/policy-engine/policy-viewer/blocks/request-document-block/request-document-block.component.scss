@@ -639,3 +639,10 @@
         margin-top: 8px;
     }
 }
+
+.draft-file-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-bottom: 12px;
+}

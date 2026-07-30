@@ -122,6 +122,7 @@ export class PolicyImport {
             delete policy.version;
             delete policy.previousVersion;
             delete policy.createDate;
+            delete policy.discontinuedDate;
             policy.uuid = GenerateUUIDv4();
             policy.creator = user.creator;
             policy.owner = user.owner;
@@ -155,6 +156,7 @@ export class PolicyImport {
             delete policy.version;
             delete policy.previousVersion;
             delete policy.createDate;
+            delete policy.discontinuedDate;
             policy.uuid = GenerateUUIDv4();
             policy.creator = user.creator;
             policy.owner = user.owner;

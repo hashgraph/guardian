@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { MessageService, ToastMessageOptions } from 'primeng/api';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
+import { IBlockErrorData } from '@guardian/interfaces';
 
 type ToastSeverity = 'success' | 'info' | 'warn' | 'error';
 
@@ -8,6 +9,7 @@ export interface ToastOptions {
     logMessage?: string;
     logUrl?: string;
     sticky?: boolean;
+    blockErrorData?: IBlockErrorData;
 }
 
 @Injectable({
@@ -43,7 +45,7 @@ export class ToastService {
             ? `/admin/logs?message=${btoa(options.logMessage)}`
             : options.logUrl;
         const timing = options.sticky ? { sticky: true } : { life: this.TRANSIENT_LIFE };
-        this.add('error', detail, summary, { ...timing, data: { logUrl } });
+        this.add('error', detail, summary, { ...timing, data: { logUrl, blockErrorData: options.blockErrorData } });
     }
 
     public processAsyncError(error: any): void {

@@ -604,7 +604,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
-                    return new MessageError(error, error.code);
+                    return new MessageError(error, error.code, error.data);
                 }
             });
 
@@ -639,7 +639,7 @@ export class PolicyEngineService {
                     return new MessageResponse(blockData);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
-                    return new MessageError(error, error.code);
+                    return new MessageError(error, error.code, error.data);
                 }
             });
 

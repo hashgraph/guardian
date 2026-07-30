@@ -40,3 +40,5 @@ export * from './relayer-account.dto.js'
 export * from './organizations.dto.js'
 export * from './policy-parameters.dto.js'
 export * from './mock.dto.js'
+
+export * from './policy-data.dto.js'

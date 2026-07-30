@@ -1,35 +1,42 @@
+.properties .propHeader .report-item-section-header {
+    gap: 4px !important;
+}
+
 .file-input {
     display: none;
 }
 
-.file-action-icon {
-    font-size: 15px;
-    position: absolute;
-    bottom: 2px;
-    right: 0px;
-}
-
-.file-action-button {
-    //height: 100%;
-    width: 23px;
-    background: var(--guardian-background, white);
-    border: none;
-    margin-top: 12px;
-
-    i {
-        position: relative;
-    }
-}
-
-.file-spinner {
-    width: 20px;
-    margin-left: 5px;
-}
-
-.icon-container .icon-input {
+.icon-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
     width: 100%;
 }
 
-.icon-container {
-    display: flex;
+.icon-container .icon-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.file-action-button {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: var(--guardian-font-color-secondary, #848FA9);
+    cursor: pointer;
+}
+
+.file-action-icon {
+    font-size: 13px;
+}
+
+.file-spinner {
+    flex: 0 0 auto;
+    width: 20px;
 }

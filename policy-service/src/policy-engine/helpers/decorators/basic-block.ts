@@ -667,6 +667,10 @@ export function BasicBlock<T>(options: Partial<PolicyBlockDecoratorOptions>) {
                     if (virtualUser) {
                         result.set(virtualUser.did, virtualUser);
                     }
+                    // Always notify the acting user: the pointer lookup above can miss.
+                    if (currentUser?.did) {
+                        result.set(currentUser.did, currentUser);
+                    }
                 } else {
                     const allUsers = await this.databaseServer.getAllPolicyUsers(this.policyId);
                     for (const group of allUsers) {

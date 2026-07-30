@@ -223,12 +223,12 @@ export { Interfaces };
 // test wants to drive behaviour through the genuine class it imports.
 //
 // register(apiFn, logger) runs the already-imported API function with NATS
-// neutralised: GuardiansNatsService.prototype.registerListener / .subscribe are
+// neutralised: GuardiansService.prototype.registerListener / .subscribe are
 // patched to CAPTURE {event, cb} (no broker), and ApplicationState.getState() is
 // forced to READY so the api-response gate lets handlers through.
 // ---------------------------------------------------------------------------
 import * as Common from '@guardian/common';
-import { GuardiansNatsService } from '../dist/helpers/guardians.js';
+import { GuardiansService } from '../dist/helpers/guardians.js';
 
 export const common = Common;
 export const DatabaseServer = Common.DatabaseServer;
@@ -295,7 +295,7 @@ export function ensureOrm() {
  */
 export async function register(apiFn, logger = silentLogger(), ...apiArgs) {
     const captured = [];
-    const proto = GuardiansNatsService.prototype;
+    const proto = GuardiansService.prototype;
     const origRL = proto.registerListener;
     const hadSub = Object.prototype.hasOwnProperty.call(proto, 'subscribe');
     const origSub = proto.subscribe;

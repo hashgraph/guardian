@@ -11,6 +11,35 @@
 
 .dialog-header {
     padding: 32px 32px 24px 32px !important;
+    align-items: center;
+    gap: 12px;
+
+    // Let the title flow so the compact header actions and icons align to
+    // the right without overlapping it.
+    .header-container {
+        position: static;
+        right: auto;
+        top: auto;
+        padding-left: 0;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .header-action {
+        flex: 0 0 auto;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 14px;
+        white-space: nowrap;
+
+        .svg-icon {
+            display: inline-flex;
+            width: 16px;
+            height: 16px;
+        }
+    }
 
     .header-item {
         padding: 6px 12px;
@@ -76,24 +105,28 @@ form {
 
 .action-buttons {
     display: flex;
+    align-items: center;
     user-select: none;
-    justify-content: flex-start !important;
+    gap: 16px;
 
-    &>div {
-        margin-left: 0px;
-        margin-right: 16px;
+    .action-buttons-spacer {
+        order: 2;
+        flex: 1 1 auto;
     }
 
     .dialog-button {
         display: none;
+        margin: 0;
     }
 
     .dialog-button[id="cancel"] {
         display: block;
+        order: 0;
     }
 
     .dialog-button[id="submit"] {
         display: block;
+        order: 1;
 
         button {
             padding-left: 16px;
@@ -101,10 +134,17 @@ form {
         }
     }
 
+    .last-autosave {
+        order: 3;
+    }
+
+    request-draft-file-actions {
+        order: 4;
+    }
+
     .dialog-button[id="save"] {
         display: block;
-        margin-left: auto;
-        margin-right: 0px;
+        order: 5;
 
         &[visible="false"] {
             display: none !important;
@@ -117,22 +157,12 @@ form {
             padding-right: 16px;
         }
     }
-
-    .dialog-button[id="save"][visible="false"]+.last-autosave {
-        right: 52px;
-    }
-
-    .dialog-button[id="save"][visible="true"]+.last-autosave {
-        right: 182px;
-    }
 }
 
 .last-autosave {
-    position: absolute;
-    right: 182px;
-    bottom: 42px;
     font-size: 14px;
     color: #8E8E8E;
+    white-space: nowrap;
 }
 
 .close-icon-color {
@@ -154,37 +184,6 @@ form {
         .dialog-button[visible="true"] {
             display: block !important;
         }
-    }
-}
-
-.restore-data {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--primary-color);
-    background: var(--guardian-grey-background, #F9FAFC);
-    border: 1px solid var(--guardian-border-color);
-    height: 52px;
-    min-height: 52px;
-    border-radius: 8px;
-    margin-bottom: 16px;
-    margin-right: 32px;
-
-    svg-icon {
-        height: 30px;
-        padding: 2px;
-        width: 36px;
-    }
-
-    b {
-        height: 30px;
-        line-height: 30px;
-        padding-right: 16px;
-    }
-
-    button {
-        height: 30px;
-        padding: 0px 30px 0px 12px;
     }
 }
 
