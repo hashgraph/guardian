@@ -260,13 +260,15 @@
                                 <div class="sc-schema-props-row">
                                     <div class="sc-schema-props-field">
                                         <label class="sc-schema-props-label">Entity type</label>
-                                        <select class="sc-schema-props-select"
-                                                [(ngModel)]="selectedSchema.entity"
-                                                (ngModelChange)="markDirty()">
-                                            @for (opt of entityOptions; track opt.value) {
-                                                <option [value]="opt.value">{{ opt.label }}</option>
-                                            }
-                                        </select>
+                                        <p-select class="guardian-dropdown sc-schema-props-select"
+                                                  panelStyleClass="guardian-dropdown-panel"
+                                                  [options]="entityOptions"
+                                                  optionLabel="label"
+                                                  optionValue="value"
+                                                  appendTo="body"
+                                                  [(ngModel)]="selectedSchema.entity"
+                                                  (ngModelChange)="markDirty()">
+                                        </p-select>
                                     </div>
                                     <div class="sc-schema-props-field">
                                         <label class="sc-schema-props-label">Status</label>
@@ -434,13 +436,15 @@
                                     <div class="sc-schema-props-row">
                                         <div class="sc-schema-props-field">
                                             <label class="sc-schema-props-label">Entity type</label>
-                                            <select class="sc-schema-props-select"
-                                                    [(ngModel)]="ds.entity"
-                                                    (ngModelChange)="markDirty()">
-                                                @for (opt of entityOptions; track opt.value) {
-                                                    <option [value]="opt.value">{{ opt.label }}</option>
-                                                }
-                                            </select>
+                                            <p-select class="guardian-dropdown sc-schema-props-select"
+                                                      panelStyleClass="guardian-dropdown-panel"
+                                                      [options]="entityOptions"
+                                                      optionLabel="label"
+                                                      optionValue="value"
+                                                      appendTo="body"
+                                                      [(ngModel)]="ds.entity"
+                                                      (ngModelChange)="markDirty()">
+                                            </p-select>
                                         </div>
                                         <div class="sc-schema-props-field">
                                             <label class="sc-schema-props-label">Status</label>
@@ -660,9 +664,9 @@
                             <div class="sc-check-list">
                                 @for (opt of geoJsonOptions; track opt) {
                                     <div class="sc-check-item" (click)="toggleGeoJsonType(opt)">
-                                        <div class="sc-check-box" [class.active]="isGeoJsonTypeSelected(opt)">
-                                            <i class="pi pi-check"></i>
-                                        </div>
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="isGeoJsonTypeSelected(opt)"></p-checkbox>
                                         <div class="sc-check-desc">
                                             <strong>{{ opt }}</strong>
                                         </div>
@@ -676,9 +680,9 @@
                             <div class="sc-rp-label">Text style</div>
                             <div class="sc-check-list">
                                 <div class="sc-check-item" (click)="$any(selectedField).textBold = !$any(selectedField).textBold; markDirty()">
-                                    <div class="sc-check-box" [class.active]="$any(selectedField).textBold">
-                                        <i class="pi pi-check"></i>
-                                    </div>
+                                    <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                style="pointer-events:none"
+                                                [ngModel]="$any(selectedField).textBold"></p-checkbox>
                                     <div class="sc-check-desc">
                                         <strong>Bold</strong>
                                     </div>
@@ -799,7 +803,10 @@
                         <div class="sc-radio-list">
                             @for (opt of requiredModeOptions; track opt.value) {
                                 <div class="sc-radio-item" (click)="setFieldRequiredMode(opt.value)">
-                                    <div class="sc-radio-dot" [class.active]="getFieldRequiredMode(selectedField) === opt.value"></div>
+                                    <p-radioButton class="guardian-radio-button radio-button-24" name="sc-required-mode"
+                                                   style="pointer-events:none"
+                                                   [value]="opt.value"
+                                                   [ngModel]="getFieldRequiredMode(selectedField)"></p-radioButton>
                                     <span>{{ opt.label }}</span>
                                 </div>
                             }
@@ -834,9 +841,9 @@
                             <div class="sc-check-list">
                                 @if (selectedFieldCanBeArray) {
                                     <div class="sc-check-item" (click)="toggleBehaviour('isArray')">
-                                        <div class="sc-check-box" [class.active]="selectedField.isArray">
-                                            <i class="pi pi-check"></i>
-                                        </div>
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isArray"></p-checkbox>
                                         <div class="sc-check-desc">
                                             <strong>Allow multiple answers</strong>
                                             <span>Renders as a list</span>
@@ -845,9 +852,9 @@
                                 }
                                 @if (selectedFieldCanBeUpdatable) {
                                     <div class="sc-check-item" (click)="toggleBehaviour('isUpdatable')">
-                                        <div class="sc-check-box" [class.active]="selectedField.isUpdatable">
-                                            <i class="pi pi-check"></i>
-                                        </div>
+                                        <p-checkbox class="guardian-checkbox checkbox-24" [binary]="true"
+                                                    style="pointer-events:none"
+                                                    [ngModel]="selectedField.isUpdatable"></p-checkbox>
                                         <div class="sc-check-desc">
                                             <strong>Updatable field</strong>
                                             <span>Value can be updated after submission</span>
@@ -888,12 +895,15 @@
                                                 <button class="sc-fv-yesno-btn" [class.active]="$any(selectedField).default === false" (click)="setFieldBooleanValue('default', $any(selectedField).default === false ? null : false)">No</button>
                                             </div>
                                         } @else if (getFieldValueInputType(selectedField!) === 'enum') {
-                                            <select class="sc-fv-select" [ngModel]="$any(selectedField).default" (ngModelChange)="setFieldPresetValue('default', $event)">
-                                                <option value="">— none —</option>
-                                                @for (opt of (selectedField!.enum || []); track opt) {
-                                                    <option [value]="opt">{{ opt }}</option>
-                                                }
-                                            </select>
+                                            <p-select class="guardian-dropdown sc-fv-select"
+                                                      panelStyleClass="guardian-dropdown-panel"
+                                                      [options]="selectedField!.enum || []"
+                                                      appendTo="body"
+                                                      [showClear]="true"
+                                                      placeholder="— none —"
+                                                      [ngModel]="$any(selectedField).default"
+                                                      (ngModelChange)="setFieldPresetValue('default', $event)">
+                                            </p-select>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="$any(selectedField).default"
@@ -913,12 +923,15 @@
                                                 <button class="sc-fv-yesno-btn" [class.active]="$any(selectedField).suggest === false" (click)="setFieldBooleanValue('suggest', $any(selectedField).suggest === false ? null : false)">No</button>
                                             </div>
                                         } @else if (getFieldValueInputType(selectedField!) === 'enum') {
-                                            <select class="sc-fv-select" [ngModel]="$any(selectedField).suggest" (ngModelChange)="setFieldPresetValue('suggest', $event)">
-                                                <option value="">— none —</option>
-                                                @for (opt of (selectedField!.enum || []); track opt) {
-                                                    <option [value]="opt">{{ opt }}</option>
-                                                }
-                                            </select>
+                                            <p-select class="guardian-dropdown sc-fv-select"
+                                                      panelStyleClass="guardian-dropdown-panel"
+                                                      [options]="selectedField!.enum || []"
+                                                      appendTo="body"
+                                                      [showClear]="true"
+                                                      placeholder="— none —"
+                                                      [ngModel]="$any(selectedField).suggest"
+                                                      (ngModelChange)="setFieldPresetValue('suggest', $event)">
+                                            </p-select>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="$any(selectedField).suggest"
@@ -938,12 +951,15 @@
                                                 <button class="sc-fv-yesno-btn" [class.active]="getFieldTestValue() === false" (click)="setFieldTestBooleanValue(getFieldTestValue() === false ? null : false)">No</button>
                                             </div>
                                         } @else if (getFieldValueInputType(selectedField!) === 'enum') {
-                                            <select class="sc-fv-select" [ngModel]="getFieldTestValue()" (ngModelChange)="setFieldTestValue($event)">
-                                                <option value="">— none —</option>
-                                                @for (opt of (selectedField!.enum || []); track opt) {
-                                                    <option [value]="opt">{{ opt }}</option>
-                                                }
-                                            </select>
+                                            <p-select class="guardian-dropdown sc-fv-select"
+                                                      panelStyleClass="guardian-dropdown-panel"
+                                                      [options]="selectedField!.enum || []"
+                                                      appendTo="body"
+                                                      [showClear]="true"
+                                                      placeholder="— none —"
+                                                      [ngModel]="getFieldTestValue()"
+                                                      (ngModelChange)="setFieldTestValue($event)">
+                                            </p-select>
                                         } @else {
                                             <input class="sc-fv-input" [type]="getFieldValueInputType(selectedField!)"
                                                 [ngModel]="getFieldTestValue()"

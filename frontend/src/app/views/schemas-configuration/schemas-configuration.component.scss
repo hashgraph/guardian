@@ -684,7 +684,6 @@
         .sc-schema-props-toggle { color: var(--color-primary, #4169E2); }
         .sc-schema-props-label { color: var(--color-primary, #4169E2); }
         .sc-schema-props-name,
-        .sc-schema-props-select,
         .sc-schema-props-input,
         .sc-schema-props-desc {
             border-color: color-mix(in srgb, var(--color-primary, #4169E2) 25%, transparent);
@@ -793,7 +792,6 @@
     font-weight: 400;
 }
 
-.sc-schema-props-select,
 .sc-schema-props-input {
     font-size: 11px;
     padding: 4px 7px;
@@ -816,7 +814,8 @@
     }
 }
 
-.sc-schema-props-select { cursor: pointer; }
+// Entity-type dropdown is a p-select (guardian-dropdown); host only needs sizing
+.sc-schema-props-select { width: 100%; }
 
 .sc-schema-props-desc {
     font-size: 11px;
@@ -1782,31 +1781,6 @@
     transition: background 0.12s;
 
     &:hover { background: var(--guardian-grey-background, #F9FAFC); }
-}
-
-.sc-check-box {
-    width: 16px;
-    height: 16px;
-    border-radius: 4px;
-    border: 1.5px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-background, #fff);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    margin-top: 1px;
-
-    i {
-        font-size: 9px;
-        color: transparent;
-    }
-
-    &.active {
-        background: var(--color-primary, #4169E2);
-        border-color: var(--color-primary, #4169E2);
-
-        i { color: #fff; }
-    }
 }
 
 .sc-check-desc {
@@ -2885,33 +2859,6 @@
     &:hover { background: var(--guardian-grey-background, #F9FAFC); }
 }
 
-.sc-radio-dot {
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    border: 1.5px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-background, #fff);
-    flex-shrink: 0;
-    position: relative;
-    transition: border-color 0.12s, background 0.12s;
-
-    &::after {
-        content: '';
-        position: absolute;
-        inset: 2px;
-        border-radius: 50%;
-        background: transparent;
-        transition: background 0.12s;
-    }
-
-    &.active {
-        border-color: var(--color-primary, #4169E2);
-        background: var(--color-primary, #4169E2);
-
-        &::after { background: var(--guardian-background, #fff); }
-    }
-}
-
 // ── Expression editor row ────────────────────────────────────────────────────
 .sc-rp-group--expr {
     margin-top: 8px;
@@ -3134,22 +3081,8 @@
     }
 }
 
-.sc-fv-select {
-    width: 100%;
-    padding: 5px 9px;
-    border-radius: 6px;
-    border: 1px solid var(--guardian-border-color, #E1E7EF);
-    background: var(--guardian-grey-background, #F9FAFC);
-    font-size: 12px;
-    color: var(--guardian-font-color, #23252E);
-    font-family: inherit;
-    outline: none;
-    cursor: pointer;
-
-    &:focus {
-        border-color: var(--color-primary, #4169E2);
-    }
-}
+// Field-value enum picker is a p-select (guardian-dropdown); host only needs sizing
+.sc-fv-select { width: 100%; }
 
 .sc-fv-yesno {
     display: flex;
