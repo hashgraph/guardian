@@ -62,8 +62,9 @@ export class ProjectMapperService {
             topicId: string;
             policyId: string | null;
             documents: Record<string, unknown>;
+            options: Record<string, unknown> | null;
         }> = await this.dataSource.query(
-            `SELECT "consensusTimestamp", "topicId", "policyId", documents
+            `SELECT "consensusTimestamp", "topicId", "policyId", documents, options
              FROM message
              WHERE "consensusTimestamp" = $1
                AND type = 'VC-Document'
@@ -573,16 +574,17 @@ export class ProjectMapperService {
         //
         // During fresh ingest IPFS fetches arrive in order, so an early
         // project-schema VC (e.g. cs.id=Yn886) gets processed BEFORE the
-        // newer canonical (cs.id=A9oX7) lands. At that moment a Yn886 row
-        // gets seeded (the only project-schema VC in the topic so far).
-        // When A9oX7 arrives later, its row is created — but the Yn886
-        // orphan stays behind. Sweep it here, scoped to project-schema VCs
-        // only: delete any sibling PROJECT row in the same topic whose
-        // projectKey is NOT referenced by any VC's cs.ref. Genuinely
-        // distinct chain roots in the same topic (e.g. Regenerating
-        // Rajasthan's 554b459b + c21ef213) both have downstream refs, so
-        // neither is deleted.
+        // newer canonical (cs.id=A9oX7) lands, leaving Yn886's row behind
+        // once A9oX7's own row is created. A same-topic sibling is only
+        // deleted when it has no downstream cs.ref activity of its own AND
+        // this VC's own options.relationships explicitly names the
+        // sibling's registration VC — positive proof of the same lineage,
+        // not just "nothing points at it yet" (also true of any brand-new,
+        // legitimately distinct sibling project).
         if (isProjectSchemaVc) {
+            const relationships = Array.isArray(vc.options?.['relationships'])
+                ? (vc.options!['relationships'] as unknown[]).map(String)
+                : [];
             await this.dataSource.query(
                 `DELETE FROM business_view bv
                  WHERE bv."viewType" = 'PROJECT'
@@ -592,8 +594,14 @@ export class ProjectMapperService {
                      SELECT 1 FROM message m
                      WHERE m.type = 'VC-Document'
                        AND m.documents->'credentialSubject'->0->>'ref' = bv."projectKey"
+                   )
+                   AND EXISTS (
+                     SELECT 1 FROM message m
+                     WHERE m.type = 'VC-Document'
+                       AND m.documents->'credentialSubject'->0->>'id' = bv."projectKey"
+                       AND m."consensusTimestamp" = ANY($3::text[])
                    )`,
-                [vc.topicId, projectKey],
+                [vc.topicId, projectKey, relationships],
             );
         }
 
