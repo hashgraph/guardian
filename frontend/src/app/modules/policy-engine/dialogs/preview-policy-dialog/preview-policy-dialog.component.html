@@ -215,6 +215,118 @@
               </form>
             </div>
           }
+          @if (schemaTemplate) {
+            <div class="schema-template-panel">
+              <div class="schema-template-panel__header">
+                <div>
+                  <div class="schema-template-panel__eyebrow">Schema Template</div>
+                  <div class="schema-template-panel__title">
+                    {{ schemaTemplate.templateName || 'N\\A' }}
+                    @if (schemaTemplate.templateVersion) {
+                      <span>v{{schemaTemplate.templateVersion}}</span>
+                    }
+                  </div>
+                </div>
+                <div class="schema-template-panel__badges">
+                  @if (schemaTemplate.templateStatus) {
+                    <span class="schema-template-badge">{{schemaTemplate.templateStatus}}</span>
+                  }
+                  @if (schemaTemplateStatus==='local') {
+                    <span class="schema-template-badge schema-template-badge--success">Local</span>
+                  }
+                  @if (schemaTemplateStatus==='network') {
+                    <span class="schema-template-badge schema-template-badge--success">Network</span>
+                  }
+                  @if (schemaTemplateStatus==='invalid' && !detachSchemaTemplate) {
+                    <span class="schema-template-badge schema-template-badge--warning">Needs selection</span>
+                  }
+                </div>
+              </div>
+
+              <label class="schema-template-option" for="detach-schema-template">
+                <p-checkbox
+                  [(ngModel)]="detachSchemaTemplate"
+                  (onChange)="onDetachSchemaTemplateChange()"
+                  inputId="detach-schema-template"
+                  binary="true"
+                  tabindex="-1"
+                ></p-checkbox>
+                <div>
+                <div class="schema-template-option__title">Detach template during import</div>
+                <div class="schema-template-option__hint">Imported schemas stay in the policy.</div>
+                </div>
+              </label>
+
+              <div class="schema-template-message">
+                <label for="schema-template-message-id">Template message ID</label>
+                <div class="schema-template-message__control">
+                  <input
+                    id="schema-template-message-id"
+                    class="input"
+                    type="text"
+                    pInputText
+                    [(ngModel)]="schemaTemplateMessageId"
+                    (change)="onSchemaTemplateMessageChange($event)"
+                    [disabled]="detachSchemaTemplate"
+                    [attr.status]="schemaTemplateStatus === 'invalid' ? 'invalid' : ''"
+                    maxlength="20"
+                    tabindex="-1">
+                  <div class="schema-template-message__actions">
+                    @if (schemaTemplateStatus==='load') {
+                      <div class="preloader-image"></div>
+                    }
+                    @if (schemaTemplateStatus==='local' || schemaTemplateStatus==='network') {
+                      <div
+                        [pTooltip]="schemaTemplateStatus === 'local' ? 'Template found locally.' : 'Template found in Hedera/IPFS and will be imported.'"
+                        [tooltipOptions]="{showDelay: 300}"
+                        tooltipPosition="top">
+                        <svg-icon
+                          class="svg-icon"
+                          src="/assets/images/icons/check.svg"
+                          svgClass="icon-color-success">
+                        </svg-icon>
+                      </div>
+                    }
+                    @if (schemaTemplateStatus==='invalid' && !detachSchemaTemplate) {
+                      <div
+                        pTooltip="Template is inaccessible. Select a local template or detach restrictions."
+                        [tooltipOptions]="{showDelay: 300}"
+                        tooltipPosition="top">
+                        <svg-icon
+                          class="svg-icon"
+                          src="/assets/images/icons/warning.svg"
+                          svgClass="icon-color-failure">
+                        </svg-icon>
+                      </div>
+                    }
+                    <div
+                      class="guardian-icon-button"
+                      [class.guardian-disabled]="detachSchemaTemplate"
+                      (click)="!detachSchemaTemplate && onSchemaTemplateSearch()">
+                      <svg-icon
+                        class="icon-btn svg-icon"
+                        src="/assets/images/icons/search.svg"
+                        svgClass="icon-color-primary"></svg-icon>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              @if (selectedSchemaTemplate) {
+                <div class="schema-template-selected">
+                  Selected local template: <strong>{{selectedSchemaTemplate.name}}</strong>
+                  @if (selectedSchemaTemplate.version) {
+                    <span>v{{selectedSchemaTemplate.version}}</span>
+                  }
+                </div>
+              }
+              @if (detachSchemaTemplate) {
+                <div class="schema-template-warning">
+                  Imported schemas will remain in the policy. Template locks and field restrictions will be removed.
+                </div>
+              }
+            </div>
+          }
         </div>
       </div>
     }

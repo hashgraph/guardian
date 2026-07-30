@@ -77,6 +77,10 @@ export class SchemaTemplatesService {
         return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
     }
 
+    public checkMessage(messageId: string): Observable<any> {
+        return this.http.get<any>(`${this.url}/check/${messageId}`);
+    }
+
     public previewByFile(file: any): Observable<any> {
         return this.http.post<any>(`${this.url}/import/file/preview`, file, {
             headers: {

@@ -767,6 +767,47 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
             }
         });
 
+    ApiResponse(MessageAPI.CHECK_SCHEMA_TEMPLATE,
+        async (msg: {
+            messageId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { messageId, owner } = msg;
+                if (!messageId) {
+                    return new MessageResponse({ status: 'not-found' });
+                }
+                const template = await DatabaseServer.getSchemaTemplate({
+                    messageId,
+                    status: ModuleStatus.PUBLISHED
+                });
+                if (template) {
+                    return new MessageResponse({
+                        status: 'local',
+                        template: {
+                            id: template.id,
+                            name: template.name,
+                            version: template.version,
+                            messageId: template.messageId,
+                            status: template.status
+                        }
+                    });
+                }
+                const preview = await prepareTemplatePreviewMessage(messageId, owner);
+                return new MessageResponse({
+                    status: 'network',
+                    template: {
+                        name: preview?.template?.name,
+                        version: preview?.template?.version,
+                        messageId,
+                        topicId: preview?.templateTopicId
+                    }
+                });
+            } catch (error) {
+                return new MessageResponse({ status: 'not-found' });
+            }
+        });
+
     ApiResponse(MessageAPI.SCHEMA_TEMPLATE_EXPORT_FILE,
         async (msg: {
             id: string,

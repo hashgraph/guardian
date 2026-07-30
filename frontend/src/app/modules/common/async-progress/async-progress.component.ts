@@ -16,7 +16,7 @@ import { CONFIGURATION_ERRORS } from '../../policy-engine/injectors/configuratio
     standalone: false
 })
 export class AsyncProgressComponent implements OnInit, OnDestroy {
-    public action: TaskAction | string;
+    public action: TaskAction;
     public progressValue!: number;
     public statusesCount: number = 0;
     public statuses: IStatus[] = [];
@@ -179,7 +179,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
-            case 'Create schema template': {
+            case TaskAction.CREATE_SCHEMA_TEMPLATE: {
                 const templateId = result?.id || result?._id || result;
                 setTimeout(() => {
                     this.router.navigate(['schema-template-configuration'], {
@@ -389,7 +389,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
-            case 'Delete schema template':
+            case TaskAction.DELETE_SCHEMA_TEMPLATE:
                 if (this.last) {
                     this.redirect(this.last);
                     return;
@@ -492,15 +492,15 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                     });
                 }, 500);
                 break;
-            case 'Create schema template':
-            case 'Delete schema template':
+            case TaskAction.CREATE_SCHEMA_TEMPLATE:
+            case TaskAction.DELETE_SCHEMA_TEMPLATE:
                 setTimeout(() => {
                     this.router.navigate(['schema-templates'], {
                         replaceUrl: true,
                     });
                 }, 500);
                 break;
-            case 'Apply schema template':
+            case TaskAction.APPLY_SCHEMA_TEMPLATE:
                 setTimeout(() => {
                     this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,

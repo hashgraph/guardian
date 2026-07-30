@@ -1207,7 +1207,7 @@
                                     }
                                 </div>
                             </div>
-                            @if (isTemplateConfigMode && field.isRef) {
+                            @if (isTemplateConfigMode && canEnterSubSchema(field)) {
                                 <div class="sc-field-card-actions">
                                     <button class="sc-subschema-enter-btn" title="Open sub-schema settings" (click)="enterTemplateSubSchema(field, $event)">
                                         <i class="pi pi-arrow-right"></i>Enter
@@ -1216,7 +1216,7 @@
                             }
                             @if (!isTemplateConfigMode) {
                             <div class="sc-field-card-actions">
-                                @if (field.isRef) {
+                                @if (canEnterSubSchema(field)) {
                                     <button class="sc-subschema-enter-btn" title="Enter sub-schema" (click)="enterSubSchema(field, $event)">
                                         <i class="pi pi-arrow-right"></i>Enter
                                     </button>

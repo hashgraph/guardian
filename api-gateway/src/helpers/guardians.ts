@@ -2418,6 +2418,16 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Check schema template message availability
+     * @param messageId
+     * @param owner
+     * @returns template availability metadata
+     */
+    public async checkSchemaTemplate(messageId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.CHECK_SCHEMA_TEMPLATE, { messageId, owner });
+    }
+
+    /**
      * Update schema template
      * @param id
      * @param template

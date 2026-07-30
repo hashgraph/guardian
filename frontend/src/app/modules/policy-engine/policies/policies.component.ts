@@ -1347,13 +1347,14 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
+                const schemaTemplate = result.schemaTemplate;
                 const importRecords = !!result.importRecords;
                 const originalTracking = !!result.originalTracking;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo, originalTracking)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, schemaTemplate, importRecords }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1368,7 +1369,7 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, { tools }, demo, originalTracking)
+                        .pushImportByFile(data, versionOfTopicId, { tools, schemaTemplate }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {

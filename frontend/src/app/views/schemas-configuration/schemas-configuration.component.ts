@@ -1535,6 +1535,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return ft?.key || 'string';
     }
 
+    public canEnterSubSchema(field: SchemaField): boolean {
+        if (!field || this.getFieldCurrentType(field) !== 'sub-schema') {
+            return false;
+        }
+        return this.schemas.some(schema => !!schema.iri && schema.iri === field.type);
+    }
+
     private get currentFieldScope(): SchemaField[] {
         return this.isDrilling
             ? this.drillCurrentFields
@@ -1615,6 +1622,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.pattern = ft.pattern || '';
         f.customType = ft.customType || '';
         f.unitSystem = ft.unitSystem || '';
+        delete f.fields;
         delete f.enum;
         if (ft.key === 'enum') { f.enum = []; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
@@ -1626,10 +1634,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public changeSubSchemaRef(schema: Schema): void {
-        if (!this.selectedField || !this.selectedField.isRef) { return; }
+        if (!this.selectedField) { return; }
         const oldIri = (this.selectedField as any).type;
         const f = this.selectedField as any;
+        f.isRef = true;
         f.type = schema.iri || '';
+        f.customType = 'subSchema';
+        f.format = '';
+        f.pattern = '';
+        f.unitSystem = '';
         f.fields = schema.fields ? [...schema.fields] : [];
         // If the changed field's old IRI appears in the drill stack, those entries are stale — close.
         if (oldIri && this.drillStack.some(e => e.schemaIri === oldIri)) {
@@ -1659,6 +1672,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (!this.canEnterSubSchema(field)) { return; }
         this.selectedField = null;
         // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
         // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
@@ -1680,6 +1694,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public enterTemplateSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (!this.canEnterSubSchema(field)) { return; }
         const subSchema = this.schemas.find(s => s.iri === field.type);
         if (subSchema) {
             this.switchSchema(subSchema);
@@ -2778,9 +2793,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const existingNames = new Set((contextFields ?? this.selectedSchema?.fields ?? []).map(f => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }
+        const name = `field_${idx}`;
         const field: any = {
-            name: `field_${idx}`,
-            title: ft.label,
+            name,
+            title: name,
             description: '',
             required: false,
             isArray: false,

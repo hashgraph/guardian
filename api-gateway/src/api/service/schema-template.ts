@@ -239,6 +239,31 @@ export class SchemaTemplatesApi {
     }
 
     /**
+     * Check schema template message.
+     */
+    @Get('/check/:messageId')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Checks schema template message availability.',
+        description: 'Checks whether a schema template message is available locally or from Hedera/IPFS.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.OK)
+    async checkSchemaTemplate(
+        @AuthUser() user: IAuthUser,
+        @Param('messageId') messageId: string
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.checkSchemaTemplate(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Preview schema template from file.
      */
     @Post('/import/file/preview')

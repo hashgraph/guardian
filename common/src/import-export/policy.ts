@@ -1,5 +1,5 @@
 import JSZip from 'jszip';
-import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, Tag, Token } from '../entity/index.js';
+import { Artifact, Formula, Policy, PolicyCategory, PolicyTool, Schema, SchemaTemplateSnapshot, Tag, Token } from '../entity/index.js';
 import { DatabaseServer } from '../database-modules/index.js';
 import { ImportExportUtils } from './utils.js';
 import { PolicyCategoryExport, SchemaCategory, SchemaHelper, Schema as InterfaceSchema, SchemaEntity, GenerateUUIDv4 } from '@guardian/interfaces';
@@ -29,6 +29,7 @@ export interface IPolicyComponents {
     tags: Tag[];
     tools: PolicyTool[];
     tests: IArtifact[];
+    schemaTemplateSnapshot?: SchemaTemplateSnapshot | null;
 }
 
 /**
@@ -75,6 +76,96 @@ export class PolicyImportExport {
         return Array.from(result.values());
     }
 
+    private static async loadTopicSchemas(topicId: string): Promise<Schema[]> {
+        const result = new Map<string, Schema>();
+        const schemas = await new DatabaseServer().find(Schema, {
+            topicId,
+            readonly: false
+        });
+        for (const schema of schemas) {
+            result.set(schema.iri, schema);
+        }
+        return Array.from(result.values());
+    }
+
+    private static mergeSchemas(...schemaGroups: Schema[][]): Schema[] {
+        const result = new Map<string, Schema>();
+        for (const schemas of schemaGroups) {
+            for (const schema of schemas) {
+                result.set(schema.iri, schema);
+            }
+        }
+        return Array.from(result.values());
+    }
+
+    private static async loadPolicySchemaTemplateSchemas(
+        policy: Policy,
+        existingSchemas: Schema[]
+    ): Promise<Schema[]> {
+        const schemaMap = policy.schemaTemplate?.schemaMap || {};
+        const schemaIds = Object.values(schemaMap)
+            .map(id => id?.toString?.() || String(id || ''))
+            .filter(id => !!id);
+
+        if (!schemaIds.length) {
+            return existingSchemas;
+        }
+
+        const result = new Map<string, Schema>();
+        for (const schema of existingSchemas) {
+            result.set(schema.id?.toString(), schema);
+        }
+
+        const missingIds = schemaIds.filter(id => !result.has(id));
+        if (!missingIds.length) {
+            return Array.from(result.values());
+        }
+
+        const objectIds = missingIds
+            .filter(id => ObjectId.isValid(id))
+            .map(id => new ObjectId(id));
+        if (!objectIds.length) {
+            return Array.from(result.values());
+        }
+
+        const templateSchemas = await DatabaseServer.getSchemas({
+            _id: { $in: objectIds },
+            topicId: policy.topicId,
+            readonly: false
+        });
+
+        for (const schema of templateSchemas) {
+            result.set(schema.id?.toString(), schema);
+        }
+
+        const loadedIris = new Set(Array.from(result.values()).map(schema => schema.iri));
+        const missingRefs = new Set<string>();
+        for (const schema of templateSchemas) {
+            const defs = schema?.document?.$defs;
+            if (defs && Object.prototype.toString.call(defs) === '[object Object]') {
+                for (const iri of Object.keys(defs)) {
+                    if (!loadedIris.has(iri)) {
+                        missingRefs.add(iri);
+                    }
+                }
+            }
+        }
+
+        if (missingRefs.size) {
+            const refSchemas = await DatabaseServer.getSchemas({
+                iri: { $in: Array.from(missingRefs) },
+                topicId: policy.topicId,
+                readonly: false
+            });
+            for (const schema of refSchemas) {
+                result.set(schema.id?.toString(), schema);
+                loadedIris.add(schema.iri);
+            }
+        }
+
+        return Array.from(result.values());
+    }
+
     private static async loadSystemSchemas(topicId: string): Promise<Schema[]> {
         const result = new Map<string, Schema>();
         const schemas = await new DatabaseServer().find(Schema, {
@@ -104,9 +195,18 @@ export class PolicyImportExport {
         const dataBaseServer = new DatabaseServer();
 
         const tokens = await dataBaseServer.find(Token, { tokenId: { $in: tokenIds } });
-        const schemas = await PolicyImportExport.loadSchemas(topicId, schemasIds);
+        const schemas = await PolicyImportExport.loadPolicySchemaTemplateSchemas(
+            policy,
+            PolicyImportExport.mergeSchemas(
+                await PolicyImportExport.loadTopicSchemas(topicId),
+                await PolicyImportExport.loadSchemas(topicId, schemasIds)
+            )
+        );
         const systemSchemas = await PolicyImportExport.loadSystemSchemas(topicId);
         const tools = await dataBaseServer.find(PolicyTool, { messageId: { $in: toolIds } });
+        const schemaTemplateSnapshot = policy.schemaTemplate?.snapshotId
+            ? await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId)
+            : null;
         const artifacts: IArtifact[] = [];
         const artifactRows = await dataBaseServer.find(Artifact, { policyId: policy.id });
         for (const item of artifactRows) {
@@ -155,7 +255,8 @@ export class PolicyImportExport {
             artifacts,
             tags,
             tests,
-            formulas
+            formulas,
+            schemaTemplateSnapshot
         };
     }
 
@@ -238,6 +339,14 @@ export class PolicyImportExport {
         zip.folder('tools');
         for (const tool of preparedComponents.tools) {
             zip.file(`tools/${tool.hash}.json`, JSON.stringify(tool));
+        }
+
+        if (preparedComponents.schemaTemplateSnapshot) {
+            zip.folder('schemaTemplate');
+            zip.file(
+                'schemaTemplate/snapshot.json',
+                JSON.stringify(preparedComponents.schemaTemplateSnapshot)
+            );
         }
 
         zip.folder('tags');
@@ -325,6 +434,7 @@ export class PolicyImportExport {
             tagsStringArray,
             formulasStringArray,
             systemSchemasStringArray,
+            schemaTemplateSnapshotString,
         ] = await Promise.all([
             Promise.all(fileEntries.filter(file => /^tokens\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^schem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
@@ -332,6 +442,9 @@ export class PolicyImportExport {
             Promise.all(fileEntries.filter(file => /^tags\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^formulas\/.+/.test(file[0])).map(file => file[1].async('string'))),
             Promise.all(fileEntries.filter(file => /^systemSchem[a,e]s\/.+/.test(file[0])).map(file => file[1].async('string'))),
+            content.files['schemaTemplate/snapshot.json'] && !content.files['schemaTemplate/snapshot.json'].dir
+                ? content.files['schemaTemplate/snapshot.json'].async('string')
+                : null,
         ]);
         const tokens = tokensStringArray.map(item => JSON.parse(item));
         const schemas = schemasStringArray.map(item => JSON.parse(item));
@@ -339,6 +452,9 @@ export class PolicyImportExport {
         const tags = tagsStringArray.map(item => JSON.parse(item));
         const formulas = formulasStringArray.map(item => JSON.parse(item));
         const systemSchemas = systemSchemasStringArray.map(item => JSON.parse(item));
+        const schemaTemplateSnapshot = schemaTemplateSnapshotString
+            ? JSON.parse(schemaTemplateSnapshotString)
+            : null;
 
         const metaDataFile = (Object.entries(content.files).find(file => file[0] === 'artifacts/metadata.json'));
         const metaDataString = metaDataFile && await metaDataFile[1].async('string') || '[]';
@@ -393,7 +509,8 @@ export class PolicyImportExport {
             tags,
             tools,
             tests,
-            formulas
+            formulas,
+            schemaTemplateSnapshot
         }
 
         const hashSum = PolicyImportExport.getPolicyHash(policyComponents);
@@ -516,6 +633,7 @@ export class PolicyImportExport {
         PolicyImportExport.removeField(components.policy, 'id');
         PolicyImportExport.removeField(components, 'guardianVersion');
         PolicyImportExport.removeField(components, 'systemSchemas');
+        delete components.schemaTemplateSnapshot;
 
         components.schemas.sort((schemaA, schemaB) => schemaA.name > schemaB.name ? -1 : 1);
 
@@ -712,6 +830,10 @@ export class PolicyImportExport {
             return item;
         });
 
+        const schemaTemplateSnapshot = components.schemaTemplateSnapshot
+            ? PolicyImportExport.prepareSchemaTemplateSnapshot(components.schemaTemplateSnapshot)
+            : null;
+
         return {
             policy: policyObject,
             tokens,
@@ -721,8 +843,22 @@ export class PolicyImportExport {
             tags,
             tools,
             tests,
-            formulas
+            formulas,
+            schemaTemplateSnapshot
         };
+    }
+
+    private static prepareSchemaTemplateSnapshot(snapshot: SchemaTemplateSnapshot): SchemaTemplateSnapshot {
+        const item: any = { ...snapshot };
+        delete item._id;
+        delete item.id;
+        delete item.policyId;
+        delete item.configFileId;
+        delete item.schemasFileId;
+        delete item._configFileId;
+        delete item._schemasFileId;
+
+        return item;
     }
 
     static async saveOriginalZip(zipFile: any, policyName?: string): Promise<ObjectId> {
