@@ -47,6 +47,7 @@ const policySchemaColumns: string[] = [
     'topic',
     'version',
     'entity',
+    'template',
     'tags',
     'status',
     'operation',
@@ -108,6 +109,7 @@ export class SchemaConfigComponent implements OnInit {
     public selectedAll: boolean = false;
     public owner: string = '';
     public policyNameByTopic: { [x: string]: string } = {};
+    public schemaTemplateLabelByTopic: { [x: string]: string } = {};
     public moduleNameByTopic: { [x: string]: string } = {};
     public toolNameByTopic: { [x: string]: string } = {};
     public readonlyByTopic: { [x: string]: boolean } = {};
@@ -288,6 +290,9 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public ifCanDelete(element: Schema): boolean {
+        if (this.isPolicyTemplateSchema(element)) {
+            return false;
+        }
         if (this.type === SchemaType.System) {
             return (
                 this.isConfirmed &&
@@ -303,6 +308,10 @@ export class SchemaConfigComponent implements OnInit {
                 element.status !== SchemaStatus.DEMO
             );
         }
+    }
+
+    private isPolicyTemplateSchema(element: Schema): boolean {
+        return this.type === SchemaType.Policy && !!(element?.templateId || element?.templateSchemaId);
     }
 
     public ifCanCopy(element: Schema): boolean {
@@ -503,12 +512,14 @@ export class SchemaConfigComponent implements OnInit {
                 const policyViews: any[] = policyViewsResponse || [];
 
                 this.policyNameByTopic = {};
+                this.schemaTemplateLabelByTopic = {};
                 this.policyIdByTopic = {};
                 this.allPolicies = [];
                 for (const policy of policies) {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
                         this.policyNameByTopic[policy.topicId] = policy.name;
+                        this.schemaTemplateLabelByTopic[policy.topicId] = this.getPolicyTemplateLabel(policy);
                         this.allPolicies.push(policy);
                         this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
                     }
@@ -517,6 +528,7 @@ export class SchemaConfigComponent implements OnInit {
                     if (policy.topicId) {
                         this.policyIdByTopic[policy.topicId] = policy.id;
                         this.policyNameByTopic[policy.topicId] = policy.name;
+                        this.schemaTemplateLabelByTopic[policy.topicId] = this.getPolicyTemplateLabel(policy);
                         this.allPolicies.push(policy);
                         this.readonlyByTopic[policy.topicId] = policy.creator !== this.owner;
                     }
@@ -639,6 +651,7 @@ export class SchemaConfigComponent implements OnInit {
             for (const element of this.page as any[]) {
                 element.__policyId = this.policyIdByTopic[element.topicId];
                 element.__policyName = this.policyNameByTopic[element.topicId] || ' - ';
+                element.__schemaTemplate = this.getSchemaTemplateLabel(element);
                 element.__toolId = this.toolIdByTopic[element.topicId];
                 element.__toolName = this.toolNameByTopic[element.topicId] || ' - ';
             }
@@ -731,6 +744,23 @@ export class SchemaConfigComponent implements OnInit {
         });
 
         return result;
+    }
+
+    private getPolicyTemplateLabel(policy: any): string {
+        const binding = policy?.schemaTemplate;
+        if (!binding?.templateName) {
+            return '';
+        }
+        return binding.templateVersion
+            ? `${binding.templateName} (${binding.templateVersion})`
+            : binding.templateName;
+    }
+
+    public getSchemaTemplateLabel(schema: any): string {
+        if (!schema?.templateId && !schema?.templateSchemaId) {
+            return '';
+        }
+        return this.schemaTemplateLabelByTopic[schema.topicId] || '';
     }
 
     private loadTagsData() {
@@ -1772,11 +1802,17 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onDeleteItems() {
-        if (this.selectedItems?.length === 1) {
-            this.onCheckDeleteSchema(this.selectedItems[0]);
-        } else if (this.selectedItems?.length >= 2) {
+        const selectedItems = this.selectedItems ?? [];
+        const deletableItems = selectedItems.filter(item => this.ifCanDelete(item));
+
+        if (selectedItems.length === 1 && deletableItems.length === 1) {
+            this.onCheckDeleteSchema(deletableItems[0]);
+        } else if (selectedItems.length >= 1) {
+            if (!deletableItems.length) {
+                return;
+            }
             this.loading = true;
-            this.schemaService.getSchemaDeletionPreview(this.selectedItems.map(item => item.id)).subscribe((result: ISchemaDeletionPreview) => {
+            this.schemaService.getSchemaDeletionPreview(deletableItems.map(item => item.id)).subscribe((result: ISchemaDeletionPreview) => {
                 this.loading = false;
                 const dialogRef = this.dialogService.open(SchemaDeleteDialogComponent, {
                     showHeader: false,
@@ -1785,7 +1821,7 @@ export class SchemaConfigComponent implements OnInit {
                     data: {
                         header: 'Delete Schema',
                         text: `Are you sure want to delete these schemas?`,
-                        itemNames: this.selectedItems
+                        itemNames: deletableItems
                             .filter(item => !result.blockedChildren.some(block => item.uuid === block.schema.uuid))
                             .map(item => item.name),
                         deletableChildren: result.deletableChildren,
@@ -1795,7 +1831,7 @@ export class SchemaConfigComponent implements OnInit {
                 dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: any) => {
                     if (result.action === 'Delete') {
                         this.loading = true;
-                        this.schemaService.deleteMultiple(this.selectedItems.map(item => item.id), result.includeChildren)
+                        this.schemaService.deleteMultiple(deletableItems.map(item => item.id), result.includeChildren)
                             .pipe(takeUntil(this._destroy$)).subscribe(
                                 async (result) => {
                                     const { taskId, expectation } = result;

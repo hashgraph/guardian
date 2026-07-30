@@ -213,6 +213,9 @@
                   <th class="header-cell-text" style="min-width: 100px;">
                     Entity
                   </th>
+                  <th class="header-cell-text" style="min-width: 140px;">
+                    Template
+                  </th>
                   <th class="header-cell-text" style="min-width: 185px;">
                     Tags
                   </th>
@@ -256,7 +259,7 @@
               @if ((!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)) {
                 <tr [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="(!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)" [attr.schema-status]="rowData.status">
                   @if (rowData.isParent) {
-                    <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
+                    <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 9 : (type === 'tool' ? 4 : 3)">
                       <div class="parent-row-content">
                         <span class="parent-row-name">
                           <a (click)="onSelectFilter(rowData.topicId)" class="filter-link">
@@ -329,6 +332,9 @@
                       </td>
                       <td class="row-cell-text">
                         <span class="text-truncate">{{ rowData.entity }}</span>
+                      </td>
+                      <td class="row-cell-text" [pTooltip]="getSchemaTemplateLabel(rowData) || '–'">
+                        <span class="text-truncate">{{ getSchemaTemplateLabel(rowData) || '–' }}</span>
                       </td>
                       <td class="row-cell-text" style="min-width: 185px;">
                         @if (user.TAGS_TAG_READ) {
