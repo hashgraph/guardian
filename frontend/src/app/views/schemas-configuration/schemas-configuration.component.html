@@ -549,8 +549,8 @@
                                 class="sc-rp-input sc-rp-input--mono"
                                 type="text"
                                 placeholder="Field name"
-                                [(ngModel)]="selectedField.name"
-                                (ngModelChange)="markDirty()" />
+                                [ngModel]="selectedField.name"
+                                (ngModelChange)="onFieldNameChange($event)" />
                         </div>
                         <div class="sc-rp-group">
                             <label class="sc-rp-label">
@@ -590,6 +590,35 @@
                                 }
                             </div>
                         </div>
+
+                        @if (selectedFieldHasGeoAncestors || selectedField.dependency) {
+                            <div class="sc-rp-divider"></div>
+                            <div class="sc-rp-group">
+                                <label class="sc-rp-label">Depends on</label>
+                                <p-select
+                                    class="guardian-dropdown sc-rp-select"
+                                    panelStyleClass="guardian-dropdown-panel"
+                                    [options]="geoDependencyOptions"
+                                    optionValue="name"
+                                    [showClear]="true"
+                                    appendTo="body"
+                                    placeholder="No dependency"
+                                    [ngModel]="selectedField.dependency?.on || null"
+                                    (onChange)="setGeoDependency($event.value)">
+                                    <ng-template pTemplate="selectedItem" let-parent>
+                                        <span>{{ geoDependencyLabel(parent) }}</span>
+                                    </ng-template>
+                                    <ng-template pTemplate="item" let-parent>
+                                        <span>{{ geoDependencyLabel(parent) }}</span>
+                                    </ng-template>
+                                </p-select>
+                                @if (!geoDependencyOptions.length) {
+                                    <span class="sc-rp-hint">
+                                        No compatible geographic ancestor fields in this schema
+                                    </span>
+                                }
+                            </div>
+                        }
 
                         @if (selectedFieldIsEnum) {
                             <div class="sc-rp-divider"></div>
