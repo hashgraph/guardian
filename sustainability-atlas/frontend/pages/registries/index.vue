@@ -475,6 +475,7 @@ function viewRegistry(r: RegistryDto) {
                                         v-if="r.stats.projectCount > 0 && r.did"
                                         :to="`/projects?registryDid=${encodeURIComponent(r.did)}`"
                                         class="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                                        :title="$t('registries.tooltips.viewProjects')"
                                         @click.stop
                                     >
                                         {{ r.stats.projectCount }}
@@ -487,6 +488,7 @@ function viewRegistry(r: RegistryDto) {
                                         v-if="r.stats.issuanceCount > 0 && r.did"
                                         :to="`/credits?registryDid=${encodeURIComponent(r.did)}`"
                                         class="text-foreground hover:text-primary hover:underline transition-colors"
+                                        :title="$t('registries.tooltips.viewIssuances')"
                                         @click.stop
                                     >
                                         {{ r.stats.issuanceCount }}

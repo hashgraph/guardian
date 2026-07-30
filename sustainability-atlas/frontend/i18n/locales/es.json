@@ -1036,7 +1036,9 @@
             "loadFailed": "Error al cargar los registros."
         },
         "tooltips": {
-            "viewMethodologies": "Ver metodologías de este registro"
+            "viewMethodologies": "Ver metodologías de este registro",
+            "viewProjects": "Ver proyectos de este registro",
+            "viewIssuances": "Ver emisiones de este registro"
         },
         "detail": {
             "breadcrumb": "Registros",

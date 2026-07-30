@@ -1044,6 +1044,8 @@
         },
         "tooltips": {
             "viewMethodologies": "View methodologies for this registry",
+            "viewProjects": "View projects for this registry",
+            "viewIssuances": "View issuances for this registry",
             "hideEmpty": "On by default. Hides registries with 0 methodologies, 0 projects, 0 users, and 0 issuances — the same set counted in the dashboard 'Registries' stat card. Uncheck to see every indexed registry, including announcement-only ones with no on-chain activity yet."
         },
         "detail": {
