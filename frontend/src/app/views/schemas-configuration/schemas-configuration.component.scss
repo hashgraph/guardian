@@ -890,7 +890,7 @@
 .sc-section-line {
     flex: 1;
     height: 1px;
-    background: rgba(0, 0, 0, 0.1);
+    background: var(--guardian-border-color, #E1E7EF);
 }
 
 .sc-fields-list {
@@ -1304,7 +1304,7 @@
 }
 
 .sc-drag-handle {
-    color: rgba(0, 0, 0, 0.2);
+    color: var(--guardian-font-color-secondary, #848FA9);
     font-size: 13px;
     cursor: grab;
     flex-shrink: 0;
@@ -1439,7 +1439,7 @@
 
     i {
         font-size: 32px;
-        color: rgba(0, 0, 0, 0.12);
+        color: var(--guardian-font-color-secondary, #848FA9);
     }
 }
 
@@ -1557,7 +1557,7 @@
 
     i {
         font-size: 48px;
-        color: rgba(0, 0, 0, 0.08);
+        color: var(--guardian-font-color-secondary, #848FA9);
     }
 }
 
@@ -1642,7 +1642,7 @@
 
     &:not(.active):hover {
         color: var(--guardian-font-color, #23252E);
-        background: rgba(0, 0, 0, 0.03);
+        background: var(--guardian-hover, #F0F3FC);
     }
 }
 
@@ -1756,7 +1756,7 @@
 
 .sc-rp-divider {
     height: 1px;
-    background: rgba(0, 0, 0, 0.08);
+    background: var(--guardian-border-color, #E1E7EF);
 }
 
 .sc-check-list {
@@ -1912,7 +1912,7 @@
     font-size: 11px;
     color: var(--guardian-font-color-secondary, #848FA9);
 
-    i { font-size: 18px; color: rgba(0, 0, 0, 0.12); }
+    i { font-size: 18px; color: var(--guardian-font-color-secondary, #848FA9); }
 }
 
 /* ── Enum options editor ── */
@@ -2151,7 +2151,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 8px 10px;
-    background: rgba(0, 0, 0, 0.03);
+    background: var(--guardian-hover, #F0F3FC);
     border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
 }
 
@@ -2188,7 +2188,7 @@
     border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
 
     &:last-child { border-bottom: none; }
-    &--else { background: rgba(0, 0, 0, 0.015); }
+    &--else { background: var(--guardian-hover, #F0F3FC); }
 }
 
 .sc-cond-section-hd {
@@ -2412,7 +2412,7 @@
 
 .sc-canvas-tab-pill {
     display: flex;
-    background: rgba(0, 0, 0, 0.06);
+    background: var(--guardian-hover, #F0F3FC);
     border-radius: 6px;
     padding: 2px;
     gap: 1px;
