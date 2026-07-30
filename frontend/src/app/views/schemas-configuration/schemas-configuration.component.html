@@ -245,6 +245,11 @@
                                     <i class="pi pi-file-edit"></i>Schema properties
                                     @if (selectedSchema.iri) {
                                         <span class="sc-schema-props-iri">({{ selectedSchema.iri }})</span>
+                                        <i class="pi sc-schema-props-iri-copy"
+                                           [class.pi-check]="copiedIri"
+                                           [class.pi-copy]="!copiedIri"
+                                           [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                           (click)="copyIri(selectedSchema.iri, $event)"></i>
                                     }
                                 </div>
                                 <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
@@ -253,11 +258,14 @@
                                 </button>
                             </div>
                             @if (!schemaPropsCollapsed) {
-                                <input class="sc-schema-props-name"
-                                       [(ngModel)]="selectedSchema.name"
-                                       (ngModelChange)="markDirty()"
-                                       placeholder="Schema name" />
-                                <div class="sc-schema-props-row">
+                                <div class="sc-schema-props-row sc-schema-props-row--main">
+                                    <div class="sc-schema-props-field">
+                                        <label class="sc-schema-props-label">Schema name</label>
+                                        <input class="sc-schema-props-name"
+                                               [(ngModel)]="selectedSchema.name"
+                                               (ngModelChange)="markDirty()"
+                                               placeholder="Schema name" />
+                                    </div>
                                     <div class="sc-schema-props-field">
                                         <label class="sc-schema-props-label">Entity type</label>
                                         <p-select class="guardian-dropdown sc-schema-props-select"
@@ -269,11 +277,6 @@
                                                   [(ngModel)]="selectedSchema.entity"
                                                   (ngModelChange)="markDirty()">
                                         </p-select>
-                                    </div>
-                                    <div class="sc-schema-props-field">
-                                        <label class="sc-schema-props-label">Status</label>
-                                        <input class="sc-schema-props-input sc-schema-props-input--readonly"
-                                               [value]="selectedSchema.status" readonly />
                                     </div>
                                 </div>
                                 <div class="sc-schema-props-field sc-schema-props-field--full">
@@ -421,6 +424,11 @@
                                         <i class="pi pi-sitemap"></i>Sub-schema properties
                                         @if (ds.iri) {
                                             <span class="sc-schema-props-iri">({{ ds.iri }})</span>
+                                            <i class="pi sc-schema-props-iri-copy"
+                                               [class.pi-check]="copiedIri"
+                                               [class.pi-copy]="!copiedIri"
+                                               [title]="copiedIri ? 'Copied' : 'Copy schema IRI'"
+                                               (click)="copyIri(ds.iri, $event)"></i>
                                         }
                                     </div>
                                     <button class="sc-schema-props-toggle" (click)="drillPropsCollapsed = !drillPropsCollapsed">
@@ -429,11 +437,14 @@
                                     </button>
                                 </div>
                                 @if (!drillPropsCollapsed) {
-                                    <input class="sc-schema-props-name"
-                                           [(ngModel)]="ds.name"
-                                           (ngModelChange)="markDirty()"
-                                           placeholder="Sub-schema name" />
-                                    <div class="sc-schema-props-row">
+                                    <div class="sc-schema-props-row sc-schema-props-row--main">
+                                        <div class="sc-schema-props-field">
+                                            <label class="sc-schema-props-label">Sub-schema name</label>
+                                            <input class="sc-schema-props-name"
+                                                   [(ngModel)]="ds.name"
+                                                   (ngModelChange)="markDirty()"
+                                                   placeholder="Sub-schema name" />
+                                        </div>
                                         <div class="sc-schema-props-field">
                                             <label class="sc-schema-props-label">Entity type</label>
                                             <p-select class="guardian-dropdown sc-schema-props-select"
@@ -445,11 +456,6 @@
                                                       [(ngModel)]="ds.entity"
                                                       (ngModelChange)="markDirty()">
                                             </p-select>
-                                        </div>
-                                        <div class="sc-schema-props-field">
-                                            <label class="sc-schema-props-label">Status</label>
-                                            <input class="sc-schema-props-input sc-schema-props-input--readonly"
-                                                   [value]="ds.status" readonly />
                                         </div>
                                     </div>
                                     <div class="sc-schema-props-field sc-schema-props-field--full">

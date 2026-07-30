@@ -155,6 +155,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
     ];
 
+    public copiedIri: boolean = false;
+
     public get systemFields(): any[] {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
     }
@@ -677,6 +679,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public selectField(field: SchemaField): void {
         this.selectedField = this.selectedField === field ? null : field;
+    }
+
+    public copyIri(value: string | null | undefined, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) { return; }
+        navigator.clipboard.writeText(value).then(() => {
+            this.copiedIri = true;
+            setTimeout(() => { this.copiedIri = false; }, 1500);
+        }).catch(() => { this.copiedIri = false; });
     }
 
     private static readonly HIDE_VALUES_TYPES = new Set(['helptext', 'file', 'table']);
