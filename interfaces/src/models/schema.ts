@@ -127,7 +127,7 @@ export class Schema implements ISchema {
      */
     public templateId?: string;
     /**
-     * Stable schema id inside a schema template lineage
+     * Stable schema id inside a schema template
      */
     public templateSchemaId?: string;
     /**

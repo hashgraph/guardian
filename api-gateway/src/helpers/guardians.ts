@@ -2448,6 +2448,19 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Detach schema template from policy
+     * @param policyId
+     * @param owner
+     * @returns updated policy
+     */
+    public async detachSchemaTemplate(
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, owner });
+    }
+
+    /**
      * Publish tool
      * @param id
      * @param owner

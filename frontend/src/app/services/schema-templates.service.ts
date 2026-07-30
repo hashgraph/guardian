@@ -62,4 +62,8 @@ export class SchemaTemplatesService {
     public pushApply(templateId: string, policyId: string): Observable<TaskResponse> {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/apply`, {});
     }
+
+    public pushDetach(policyId: string): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/policies/${policyId}/push/detach`, {});
+    }
 }

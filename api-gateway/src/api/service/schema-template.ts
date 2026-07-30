@@ -3,15 +3,19 @@ import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, 
 import { ISchemaTemplate, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
-import { EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
+import { CacheService, EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
 import { InternalServerErrorDTO, pageHeader, TaskDTO } from '#middlewares';
+import { PREFIXES } from '#constants';
 
 const ONLY_SR = ' Only users with the Standard Registry role are allowed to make the request.';
 
 @Controller('schema-templates')
 @ApiTags('schema-templates')
 export class SchemaTemplatesApi {
-    constructor(private readonly logger: PinoLogger) {
+    constructor(
+        private readonly cacheService: CacheService,
+        private readonly logger: PinoLogger
+    ) {
     }
 
     /**
@@ -399,6 +403,65 @@ export class SchemaTemplatesApi {
                 taskManager.addStatus(task.taskId, 'Copy template schemas', StatusType.PROCESSING);
                 const result = await guardians.applySchemaTemplate(templateId, policyId, owner);
                 taskManager.addStatus(task.taskId, 'Copy template schemas', StatusType.COMPLETED);
+                taskManager.addStatus(task.taskId, 'Save template binding', StatusType.PROCESSING);
+                await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
+                taskManager.addStatus(task.taskId, 'Save template binding', StatusType.COMPLETED);
+                taskManager.addResult(task.taskId, result);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Detach schema template from policy async.
+     */
+    @Post('/policies/:policyId/push/detach')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Detaches schema template from policy asynchronously.',
+        description: 'Removes template binding metadata from the selected draft policy and turns copied template schemas into regular policy schemas.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async detachSchemaTemplateAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('policyId') policyId: string
+    ): Promise<TaskDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.DETACH_SCHEMA_TEMPLATE, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.PROCESSING);
+                taskManager.addStatus(task.taskId, 'Validate policy template binding', StatusType.COMPLETED);
+                taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.PROCESSING);
+                const result = await guardians.detachSchemaTemplate(policyId, owner);
+                taskManager.addStatus(task.taskId, 'Detach template from policy schemas', StatusType.COMPLETED);
+                taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.PROCESSING);
+                await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
+                taskManager.addStatus(task.taskId, 'Finalize policy binding', StatusType.COMPLETED);
                 taskManager.addResult(task.taskId, result);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);

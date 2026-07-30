@@ -108,7 +108,7 @@ export interface ISchema {
      */
     templateId?: string;
     /**
-     * Stable schema id inside a schema template lineage
+     * Stable schema id inside a schema template
      */
     templateSchemaId?: string;
     /**

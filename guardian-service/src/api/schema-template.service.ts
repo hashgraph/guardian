@@ -152,6 +152,39 @@ function cloneJson<T>(value: T): T {
     return value === undefined ? value : JSON.parse(JSON.stringify(value));
 }
 
+function normalizeTemplateConfigKeys(
+    config: ISchemaTemplateConfig | null | undefined,
+    schemas: Schema[]
+): ISchemaTemplateConfig {
+    const normalized = cloneJson(config || { schemas: {} });
+    normalized.schemas = normalized.schemas || {};
+    for (const schema of schemas || []) {
+        const stableKey = schema.templateSchemaId || '';
+        const dbKey = schema.id || (schema as any)?._id || '';
+        if (!stableKey || !dbKey || stableKey === dbKey) {
+            continue;
+        }
+        if (!normalized.schemas[stableKey] && normalized.schemas[dbKey]) {
+            normalized.schemas[stableKey] = cloneJson(normalized.schemas[dbKey]);
+        }
+    }
+    return normalized;
+}
+
+async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<void> {
+    if (!template?.topicId) {
+        return;
+    }
+    const schemas = await DatabaseServer.getSchemas({
+        topicId: template.topicId,
+        category: SchemaCategory.TEMPLATE
+    });
+    for (const schema of schemas as Schema[]) {
+        await ensureTemplateSchemaReferences(schema);
+    }
+    template.config = normalizeTemplateConfigKeys(template.config, schemas as Schema[]);
+}
+
 function createTemplateStateHash(config: ISchemaTemplateConfig, schemas: ISchemaTemplateSnapshotSchemas): string {
     return createHash('sha256')
         .update(SchemaHelper.stableStringify({ config, schemas }))
@@ -190,7 +223,7 @@ async function saveApplySnapshot(
     schemaMap: Record<string, string>,
     appliedAt: string
 ) {
-    const config = cloneJson(template.config || {});
+    const config = normalizeTemplateConfigKeys(template.config, templateSchemas);
     const schemas = buildTemplateSchemasSnapshot(templateSchemas);
     const snapshot: ISchemaTemplateSnapshot = {
         policyId: policy.id,
@@ -210,7 +243,7 @@ async function saveApplySnapshot(
     return await DatabaseServer.saveSchemaTemplateSnapshot(snapshot);
 }
 
-async function ensureTemplateSchemaLineage(schema: Schema): Promise<void> {
+async function ensureTemplateSchemaReferences(schema: Schema): Promise<void> {
     let changed = false;
     if (!schema.templateSchemaId) {
         schema.templateSchemaId = GenerateUUIDv4();
@@ -309,7 +342,7 @@ async function applySchemaTemplate(
     }
 
     for (const schema of templateSchemas as Schema[]) {
-        await ensureTemplateSchemaLineage(schema);
+        await ensureTemplateSchemaReferences(schema);
     }
 
     const schemaMap: Record<string, string> = {};
@@ -360,6 +393,61 @@ async function applySchemaTemplate(
         await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
         throw error;
     }
+}
+
+async function detachSchemaTemplate(
+    policyId: string,
+    owner: IOwner
+): Promise<any> {
+    const policy = await DatabaseServer.getPolicyById(policyId);
+    if (!policy || policy.owner !== owner.owner) {
+        throw new Error('Invalid policy');
+    }
+    if (policy.status !== PolicyStatus.DRAFT) {
+        throw new Error('Policy is not in draft status');
+    }
+    if (!policy.topicId) {
+        throw new Error('Policy has no topic');
+    }
+    if (!policy.schemaTemplate?.templateId) {
+        throw new Error('Schema template is not applied to policy');
+    }
+
+    const binding = policy.schemaTemplate;
+    const schemaIds = new Set(Object.values(binding.schemaMap || {}).filter(id => !!id).map(id => String(id)));
+    let detachedSchemas = 0;
+    const schemas = await DatabaseServer.getSchemas({
+        topicId: policy.topicId,
+        category: SchemaCategory.POLICY
+    });
+
+    for (const schema of schemas as Schema[]) {
+        const schemaId = String(schema.id || (schema as any)?._id || '');
+        const isBoundSchema = schemaIds.has(schemaId) || schema.templateId === binding.templateId;
+        if (!isBoundSchema) {
+            continue;
+        }
+        schema.templateId = '';
+        schema.templateSchemaId = '';
+        SchemaHelper.removeTemplateFieldIds(schema.document);
+        await DatabaseServer.updateSchema(schema.id, schema);
+        detachedSchemas++;
+    }
+
+    if (binding.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
+        if (snapshot) {
+            await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        }
+    }
+
+    policy.schemaTemplate = null;
+    await DatabaseServer.updatePolicy(policy);
+    return {
+        policyId: policy.id,
+        templateId: binding.templateId,
+        detachedSchemas
+    };
 }
 
 /**
@@ -461,6 +549,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 if (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner) {
                     throw new Error('Invalid schema template');
                 }
+                await normalizeSchemaTemplateConfig(template);
                 return new MessageResponse(template);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
@@ -533,6 +622,21 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { templateId, policyId, owner } = msg;
                 const result = await applySchemaTemplate(templateId, policyId, owner);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.DETACH_SCHEMA_TEMPLATE,
+        async (msg: {
+            policyId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { policyId, owner } = msg;
+                const result = await detachSchemaTemplate(policyId, owner);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
