@@ -191,11 +191,45 @@ function createTemplateStateHash(config: ISchemaTemplateConfig, schemas: ISchema
         .digest('hex');
 }
 
-function toSnapshotField(field: any): ISchemaTemplateSnapshotField {
-    return SchemaHelper.cloneSchemaRuntimeValue(field || {});
+function buildTemplateSchemaIriMap(templateSchemas: Schema[]): Map<string, string> {
+    const result = new Map<string, string>();
+    for (const schema of templateSchemas || []) {
+        if (!schema?.templateSchemaId) {
+            continue;
+        }
+        const aliases = [
+            schema.iri,
+            schema.document?.$id,
+            schema.uuid && schema.version ? `#${schema.uuid}&${schema.version}` : ''
+        ];
+        for (const alias of aliases) {
+            if (alias) {
+                result.set(alias, schema.templateSchemaId);
+            }
+        }
+    }
+    return result;
 }
 
-function toSnapshotSchema(schema: Schema): ISchemaTemplateSnapshotSchema {
+function toSnapshotField(
+    field: any,
+    templateSchemaByIri: Map<string, string>
+): ISchemaTemplateSnapshotField {
+    const snapshotField = SchemaHelper.cloneSchemaRuntimeValue(field || {});
+    const refTemplateSchemaId = field?.isRef && field?.type
+        ? templateSchemaByIri.get(field.type)
+        : '';
+    if (refTemplateSchemaId) {
+        snapshotField.refTemplateSchemaId = refTemplateSchemaId;
+        delete snapshotField.fields;
+    }
+    return snapshotField;
+}
+
+function toSnapshotSchema(
+    schema: Schema,
+    templateSchemaByIri: Map<string, string>
+): ISchemaTemplateSnapshotSchema {
     const parsed = new InterfaceSchema(schema as ISchema, true);
     return {
         templateSchemaId: schema.templateSchemaId,
@@ -203,15 +237,16 @@ function toSnapshotSchema(schema: Schema): ISchemaTemplateSnapshotSchema {
         description: schema.description,
         entity: schema.entity,
         version: schema.version,
-        fields: (parsed.fields || []).map((field) => toSnapshotField(field)),
+        fields: (parsed.fields || []).map((field) => toSnapshotField(field, templateSchemaByIri)),
         conditions: SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || [])
     };
 }
 
 function buildTemplateSchemasSnapshot(templateSchemas: Schema[]): ISchemaTemplateSnapshotSchemas {
     const schemas: Record<string, ISchemaTemplateSnapshotSchema> = {};
+    const templateSchemaByIri = buildTemplateSchemaIriMap(templateSchemas);
     for (const schema of templateSchemas) {
-        schemas[schema.templateSchemaId] = toSnapshotSchema(schema);
+        schemas[schema.templateSchemaId] = toSnapshotSchema(schema, templateSchemaByIri);
     }
     return { schemas };
 }

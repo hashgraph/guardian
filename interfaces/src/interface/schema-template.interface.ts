@@ -20,7 +20,9 @@ export interface IPolicySchemaTemplateBinding {
 export type ISchemaTemplateSnapshotField = Omit<
     SchemaField,
     'path' | 'fullPath' | 'fullType' | 'arrayLvl' | 'errors'
->;
+> & {
+    refTemplateSchemaId?: string;
+};
 
 export interface ISchemaTemplateSnapshotSchema {
     templateSchemaId: string;
