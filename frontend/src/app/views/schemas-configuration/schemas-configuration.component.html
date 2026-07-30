@@ -85,6 +85,51 @@
         }
     </header>
 
+    @if (hasAppliedTemplate) {
+        <div class="st-applied-template-banner">
+            <i class="pi pi-lock"></i>
+            <span>Template applied:</span>
+            <strong>{{ appliedTemplateLabel }}</strong>
+            @if (appliedTemplateVersion) {
+                <span class="st-applied-template-version">v{{ appliedTemplateVersion }}</span>
+            }
+        </div>
+    }
+
+    @if (isTemplateConfigMode) {
+        <div class="st-template-settings-panel">
+            <div class="st-template-settings-header">
+                <div class="st-template-settings-title">
+                    <i class="pi pi-sliders-h"></i>
+                    Template settings
+                </div>
+                <div class="st-template-settings-meta">
+                    <span class="st-template-settings-chip">{{ schemaTemplate?.status || '' }}</span>
+                    @if (schemaTemplate?.version) {
+                        <span class="st-template-settings-chip">v{{ schemaTemplate?.version }}</span>
+                    }
+                </div>
+            </div>
+            <div class="st-template-settings-form">
+                <div class="sc-schema-props-field">
+                    <label class="sc-schema-props-label">Name</label>
+                    <input class="sc-schema-props-name"
+                           [ngModel]="schemaTemplate?.name || ''"
+                           (ngModelChange)="setTemplateName($event)"
+                           placeholder="Template name" />
+                </div>
+                <div class="sc-schema-props-field sc-schema-props-field--full">
+                    <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
+                    <textarea class="sc-schema-props-desc"
+                              [ngModel]="schemaTemplate?.description || ''"
+                              (ngModelChange)="setTemplateDescription($event)"
+                              rows="2"
+                              placeholder="What this template represents..."></textarea>
+                </div>
+            </div>
+        </div>
+    }
+
     <div class="sc-main">
 
         <!-- ── Sidebar ──────────────────────────────────────────── -->
@@ -125,8 +170,8 @@
                             <div
                                 class="sc-field-chip"
                                 [class.sc-field-chip--accent]="ft.accent"
-                                [class.sc-field-chip--disabled]="!selectedSchema"
-                                draggable="true"
+                                [class.sc-field-chip--disabled]="!canAddFieldToSelectedSchema"
+                                [attr.draggable]="canAddFieldToSelectedSchema ? 'true' : 'false'"
                                 (dragstart)="onFieldTypeDragStart($event, ft)"
                                 (dragend)="onDragEnd()"
                                 (click)="addField(ft)">
@@ -203,6 +248,10 @@
                                             <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" pTooltip="Edit" tooltipPosition="right">
                                                 <i class="pi pi-pencil"></i>
                                             </button>
+                                        } @else if (isTemplateSchemaDeleteLocked(schema)) {
+                                            <button class="sc-schema-delete-btn sc-schema-delete-btn--locked" disabled pTooltip="Schema deletion is locked" tooltipPosition="right">
+                                                <i class="pi pi-lock"></i>
+                                            </button>
                                         } @else {
                                         <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right">
                                             <i class="pi pi-trash"></i>
@@ -238,10 +287,14 @@
 
                     <!-- No schema loaded (no schemaId param, and not in new mode) -->
                     <div class="sc-overview-empty">
-                        <i class="pi pi-file-o"></i>
-                        <span>No schema selected</span>
-                        <button class="sc-btn sc-btn-primary" (click)="onNewSchema()">
-                            <i class="pi pi-plus"></i>New schema
+                        <div class="sc-overview-empty-icon">
+                            <i class="pi pi-file-plus"></i>
+                        </div>
+                        <div class="sc-overview-empty-title">No schema selected</div>
+                        <div class="sc-overview-empty-text">Create a schema or choose one from the sidebar.</div>
+                        <button class="sc-empty-new-schema-btn" (click)="onNewSchema()">
+                            <i class="pi pi-plus"></i>
+                            <span>New schema</span>
                         </button>
                     </div>
 
@@ -264,12 +317,12 @@
                         </div>
 
                         <!-- ── Root schema properties panel ── -->
-                        <div class="sc-schema-props">
+                        <div class="sc-schema-props" [class.sc-schema-props--locked]="selectedSchemaSettingsLocked">
                             <div class="sc-schema-props-header">
                                 <div class="sc-schema-props-title">
                                     <i class="pi pi-file-edit"></i>
                                     @if (isTemplateConfigMode) {
-                                        Schema template settings
+                                        Selected schema settings
                                     } @else {
                                         Schema properties
                                     }
@@ -282,17 +335,21 @@
                                            (click)="copyIri(selectedSchema.iri, $event)"></i>
                                     }
                                 </div>
-                                <button class="sc-schema-props-toggle" (click)="isTemplateConfigMode ? saveTemplateConfig() : schemaPropsCollapsed = !schemaPropsCollapsed">
-                                    @if (isTemplateConfigMode) {
-                                        <i class="pi" [class.pi-save]="!templateConfigSaving" [class.pi-spinner]="templateConfigSaving" [class.pi-spin]="templateConfigSaving"></i>
-                                        Save
-                                    } @else {
+                                @if (!isTemplateConfigMode) {
+                                    <button class="sc-schema-props-toggle" (click)="schemaPropsCollapsed = !schemaPropsCollapsed">
                                         <i class="pi" [class.pi-chevron-down]="!schemaPropsCollapsed" [class.pi-chevron-up]="schemaPropsCollapsed"></i>
                                         {{ schemaPropsCollapsed ? 'Show' : 'Hide' }}
-                                    }
-                                </button>
+                                    </button>
+                                }
                             </div>
                             @if (isTemplateConfigMode) {
+                                <button class="st-toggle-row st-toggle-row--inline" (click)="toggleCanChangeSelectedSchemaSettings()">
+                                    <span>
+                                        <strong>Change schema settings</strong>
+                                        <small>Allows changing schema name, description and entity type after applying.</small>
+                                    </span>
+                                    <span class="st-toggle" [class.active]="canChangeSelectedSchemaSettings"></span>
+                                </button>
                                 <button class="st-toggle-row st-toggle-row--inline" (click)="toggleCanAddCustomFieldsToSelectedSchema()">
                                     <span>
                                         <strong>Can add custom fields</strong>
@@ -301,11 +358,18 @@
                                     <span class="st-toggle" [class.active]="canAddCustomFieldsToSelectedSchema"></span>
                                 </button>
                             } @else if (!schemaPropsCollapsed) {
+                                @if (selectedSchemaSettingsLocked) {
+                                    <div class="st-lock-note st-lock-note--inline">
+                                        <i class="pi pi-lock"></i>
+                                        <span>Schema settings are locked by the applied template.</span>
+                                    </div>
+                                }
                                 <div class="sc-schema-props-row sc-schema-props-row--main">
                                     <div class="sc-schema-props-field">
                                         <label class="sc-schema-props-label">Schema name</label>
                                         <input class="sc-schema-props-name"
                                                [(ngModel)]="selectedSchema.name"
+                                               [readonly]="selectedSchemaSettingsLocked"
                                                (ngModelChange)="markDirty()"
                                                placeholder="Schema name" />
                                     </div>
@@ -314,6 +378,7 @@
                                         <p-select class="guardian-dropdown sc-schema-props-select"
                                                   panelStyleClass="guardian-dropdown-panel"
                                                   [options]="entityOptions"
+                                                  [disabled]="selectedSchemaSettingsLocked"
                                                   optionLabel="label"
                                                   optionValue="value"
                                                   appendTo="body"
@@ -326,6 +391,7 @@
                                     <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
                                     <textarea class="sc-schema-props-desc"
                                               [(ngModel)]="selectedSchema.description"
+                                              [readonly]="selectedSchemaSettingsLocked"
                                               (ngModelChange)="markDirty()"
                                               rows="2"
                                               placeholder="What this schema represents…"></textarea>
@@ -593,7 +659,7 @@
                 </aside>
             }
             @if (selectedField && !isTemplateConfigMode) {
-                <aside class="sc-right-panel">
+                <aside class="sc-right-panel" [class.sc-right-panel--locked]="selectedFieldLocked">
                     <div class="sc-rp-header">
                         <div class="sc-rp-title">
                             <i class="pi pi-sliders-h"></i>
@@ -601,9 +667,15 @@
                         </div>
                         <span class="sc-rp-badge">{{ getFieldTypeBadge(selectedField) }}</span>
                     </div>
+                    @if (selectedFieldLocked) {
+                        <div class="st-lock-note">
+                            <i class="pi pi-lock"></i>
+                            <span>Field editing is locked by the applied template.</span>
+                        </div>
+                    }
 
                     <!-- ── Settings pane ── -->
-                    <div class="sc-rp-pane" style="display:flex">
+                    <div class="sc-rp-pane" style="display:flex" [attr.aria-disabled]="selectedFieldLocked">
                         @if (selectedFieldErrors.length) {
                             <div class="sc-rp-errors">
                                 @for (err of selectedFieldErrors; track err) {
@@ -1151,10 +1223,11 @@
                                         <i class="pi pi-arrow-right"></i>Enter
                                     </button>
                                 }
-                                <button class="sc-icon-btn" title="Duplicate field" (click)="duplicateField(field, $event)">
+                                <button class="sc-icon-btn" title="Duplicate field" [disabled]="isTemplateFieldLocked(field)" (click)="duplicateField(field, $event)">
                                     <i class="pi pi-copy"></i>
                                 </button>
                                 <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field"
+                                    [disabled]="isTemplateFieldLocked(field)"
                                     (click)="isDrilling ? deleteDrillField(field, $event) : deleteField(field, $event)">
                                     <i class="pi pi-trash"></i>
                                 </button>
@@ -1173,9 +1246,10 @@
         @if (!isTemplateConfigMode) {
         <div class="sc-drop-zone"
              [class.sc-drop-zone--reorder]="reorderAtEnd"
+             [class.sc-drop-zone--disabled]="!canAddFieldToSelectedSchema"
              (click)="isDrilling ? addDrillField(defaultFieldType) : addField(defaultFieldType)">
             <i class="pi pi-plus"></i>
-            Click to add a string field, or drag a type from the sidebar
+            {{ canAddFieldToSelectedSchema ? 'Click to add a string field, or drag a type from the sidebar' : 'Custom fields are locked by the applied template' }}
         </div>
         }
     </ng-template>

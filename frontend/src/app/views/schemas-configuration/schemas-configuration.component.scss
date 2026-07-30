@@ -33,6 +33,107 @@
     z-index: 10;
 }
 
+.st-applied-template-banner {
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 16px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #fff7e6;
+    color: #7a4f00;
+    font-size: 13px;
+    flex-shrink: 0;
+
+    i {
+        font-size: 14px;
+    }
+
+    strong {
+        color: #3f2a00;
+        font-weight: 600;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+.st-applied-template-version {
+    padding: 2px 6px;
+    border-radius: 6px;
+    background: rgba(122, 79, 0, 0.12);
+    font-size: 11px;
+    line-height: 14px;
+}
+
+.st-template-settings-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px 16px 12px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    background: #f8f8f7;
+    flex-shrink: 0;
+}
+
+.st-template-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.st-template-settings-form {
+    display: grid;
+    grid-template-columns: minmax(240px, 360px) minmax(320px, 1fr);
+    align-items: start;
+    gap: 12px;
+
+    .sc-schema-props-name,
+    .sc-schema-props-desc {
+        background: #fff;
+    }
+}
+
+.st-template-settings-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--text-color, #2c2c2a);
+    font-size: 13px;
+    font-weight: 600;
+
+    i {
+        color: var(--text-color-secondary, #888780);
+        font-size: 14px;
+    }
+}
+
+.st-template-settings-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.st-template-settings-chip {
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    padding: 0 7px;
+    border-radius: 6px;
+    background: #edece8;
+    color: var(--text-color-secondary, #888780);
+    font-size: 10px;
+    line-height: 20px;
+    text-transform: uppercase;
+}
+
+@media (max-width: 1100px) {
+    .st-template-settings-form {
+        grid-template-columns: 1fr;
+    }
+}
+
 .sc-breadcrumb {
     display: flex;
     align-items: center;
@@ -571,6 +672,18 @@
     justify-content: center;
     &:hover { color: var(--color-accent-red-1, #FF432A); background: var(--guardian-failure-background, #FFEAEA); }
     i { font-size: 13px; }
+
+    &:disabled,
+    &--locked {
+        cursor: default;
+        color: #888780;
+        background: var(--surface-ground, #f1efe8);
+
+        &:hover {
+            color: #888780;
+            background: var(--surface-ground, #f1efe8);
+        }
+    }
 }
 
 .sc-schema-icon {
@@ -737,6 +850,64 @@
     }
 }
 
+.sc-overview-empty-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 12px;
+    background: #e1f5ee;
+    color: var(--primary-color, #1d9e75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+
+    i { font-size: 24px; }
+}
+
+.sc-overview-empty-title {
+    color: var(--text-color, #2c2c2a);
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 22px;
+}
+
+.sc-overview-empty-text {
+    max-width: 320px;
+    color: var(--text-color-secondary, #888780);
+    font-size: 13px;
+    line-height: 18px;
+}
+
+.sc-empty-new-schema-btn {
+    height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 6px;
+    padding: 0 16px;
+    border: 1px solid var(--primary-color, #1d9e75);
+    border-radius: 8px;
+    background: var(--primary-color, #1d9e75);
+    color: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+
+    i { font-size: 13px; }
+
+    &:hover {
+        background: #168665;
+        border-color: #168665;
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
 
 /* ── Editor (schema selected, builder tab) ── */
 .sc-editor {
@@ -812,6 +983,23 @@
         .sc-schema-props-desc {
             border-color: color-mix(in srgb, var(--color-primary, #4169E2) 25%, transparent);
             &:focus { border-color: var(--color-primary, #4169E2); box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary, #4169E2) 12%, transparent); }
+        }
+    }
+
+    &--locked {
+        .sc-schema-props-name,
+        .sc-schema-props-select,
+        .sc-schema-props-desc {
+            background: #f3f4f6;
+            border-color: #d9dee7;
+            color: #7b8496;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .sc-schema-props-name::placeholder,
+        .sc-schema-props-desc::placeholder {
+            color: #a8b0bf;
         }
     }
 }
@@ -1570,6 +1758,12 @@
         background: var(--guardian-failure-background, #FFEAEA);
         color: color-mix(in srgb, var(--color-accent-red-1, #FF432A) 82%, #000);
     }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.45;
+        pointer-events: none;
+    }
 }
 
 .sc-fields-empty {
@@ -1615,6 +1809,19 @@
         border-color: var(--color-primary, #4169E2);
         color: var(--color-primary, #4169E2);
         background: var(--guardian-success-background, #EEFBF0);
+    }
+
+    &--disabled {
+        cursor: default;
+        color: #888780;
+        background: var(--surface-ground, #f8f8f7);
+        pointer-events: none;
+
+        &:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+            color: #888780;
+            background: var(--surface-ground, #f8f8f7);
+        }
     }
 }
 
@@ -1763,6 +1970,28 @@
     text-transform: capitalize;
 }
 
+.st-lock-note {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 14px 0;
+    padding: 9px 10px;
+    border-radius: 8px;
+    background: #fff7e6;
+    color: #7a4f00;
+    font-size: 12px;
+    line-height: 16px;
+
+    i {
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+}
+
+.st-lock-note--inline {
+    margin: 0;
+}
+
 // ── Tab bar ──────────────────────────────────────────────────────────────────
 .sc-rp-tabs {
     display: flex;
@@ -1828,6 +2057,11 @@
     flex: 1;
 
     &.active { display: flex; }
+}
+
+.sc-right-panel--locked .sc-rp-pane {
+    opacity: 0.58;
+    pointer-events: none;
 }
 
 .sc-rp-errors {

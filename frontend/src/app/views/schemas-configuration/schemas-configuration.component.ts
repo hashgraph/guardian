@@ -1,7 +1,7 @@
 import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
-import { EMPTY, Subject, Subscription, forkJoin } from 'rxjs';
+import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
@@ -185,8 +185,39 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return !this.selectedSchemaConfig?.customFieldsLocked;
     }
 
+    public get canChangeSelectedSchemaSettings(): boolean {
+        return !this.selectedSchemaConfig?.schemaSettingsLocked;
+    }
+
+    public get canAddFieldToSelectedSchema(): boolean {
+        return !!this.selectedSchema &&
+            !this.isTemplateConfigMode &&
+            !this.isTemplateConfigPendingForSchema(this.selectedSchema) &&
+            !this.isTemplateSchemaCustomFieldsLocked(this.selectedSchema);
+    }
+
     public get canEditSelectedFieldInTemplate(): boolean {
         return this.selectedFieldConfig?.locked === false;
+    }
+
+    public get selectedFieldLocked(): boolean {
+        return !!this.selectedField && this.isTemplateFieldLocked(this.selectedField);
+    }
+
+    public get selectedSchemaSettingsLocked(): boolean {
+        return !!this.selectedSchema && this.isTemplateSchemaSettingsLocked(this.selectedSchema);
+    }
+
+    public get hasAppliedTemplate(): boolean {
+        return !this.isTemplateMode && !!this.schemaTemplate;
+    }
+
+    public get appliedTemplateLabel(): string {
+        return this.schemaTemplate?.name || 'Schema template';
+    }
+
+    public get appliedTemplateVersion(): string {
+        return this.schemaTemplate?.version || '';
     }
 
     public isTemplateFieldLocked(field: SchemaField): boolean {
@@ -194,17 +225,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return false;
         }
         const schema = this.getSchemaForFieldLocks();
-        const schemaKey = this.getSchemaConfigKey(schema);
-        const legacySchemaKey = schema?.id || (schema as any)?._id || this.selectedSchemaId;
+        const schemaConfig = this.getSchemaTemplateConfig(schema);
         const fieldKey = this.getFieldConfigKey(field);
         const legacyFieldKey = field.name || '';
-        if (!schemaKey || !fieldKey) {
+        const isAppliedTemplateField = !this.isTemplateConfigMode && !!(field as any)?.templateFieldId;
+
+        if (!fieldKey) {
             return true;
         }
-        const schemaConfig = this.schemaTemplate?.config?.schemas?.[schemaKey]
-            || (legacySchemaKey ? this.schemaTemplate?.config?.schemas?.[legacySchemaKey] : null);
+        if (!schemaConfig) {
+            return false;
+        }
         const fieldConfig = schemaConfig?.fields?.[fieldKey]
             || (legacyFieldKey ? schemaConfig?.fields?.[legacyFieldKey] : null);
+        if (!this.isTemplateConfigMode && isAppliedTemplateField && fieldConfig?.locked === false) {
+            return false;
+        }
+        if (!this.isTemplateConfigMode && isAppliedTemplateField) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !fieldConfig) {
+            return false;
+        }
         return fieldConfig?.locked !== false;
     }
 
@@ -215,26 +257,45 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
     }
 
-    public isTemplateSchemaLocked(schema: Schema): boolean {
+    public isTemplateSchemaDeleteLocked(schema: Schema): boolean {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        if (!this.isTemplateMode && !!schema.templateId) {
+            return true;
+        }
+        return false;
+    }
+
+    public isTemplateSchemaSettingsLocked(schema: Schema): boolean {
         if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
             return false;
         }
         const config = this.getSchemaTemplateConfig(schema);
+        return !!config?.schemaSettingsLocked;
+    }
+
+    public isTemplateSchemaLocked(schema: Schema): boolean {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        if (!this.isTemplateMode && !!schema.templateId) {
+            return true;
+        }
+        const config = this.getSchemaTemplateConfig(schema);
         return !!(
-            config?.locked ||
-            config?.editLocked ||
-            config?.deleteLocked ||
+            config?.schemaSettingsLocked ||
             config?.customFieldsLocked
         );
     }
 
     public getTemplateSchemaLockTooltip(schema: Schema): string {
-        const config = this.getSchemaTemplateConfig(schema);
-        if (config?.locked || config?.editLocked) {
-            return 'Schema editing is locked';
+        if (!this.isTemplateMode && !!schema.templateId) {
+            return 'Detach template before deleting this schema';
         }
-        if (config?.deleteLocked) {
-            return 'Schema deletion is locked';
+        const config = this.getSchemaTemplateConfig(schema);
+        if (config?.schemaSettingsLocked) {
+            return 'Schema settings are locked';
         }
         if (config?.customFieldsLocked) {
             return 'Custom fields are locked';
@@ -242,8 +303,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return 'Schema is locked';
     }
 
-    private get hasAppliedTemplateConfig(): boolean {
+    public get hasAppliedTemplateConfig(): boolean {
         return !this.isTemplateMode && !!this.schemaTemplate?.config;
+    }
+
+    private isTemplateConfigPendingForSchema(schema: Schema | null | undefined): boolean {
+        const loadedTemplateId = this.schemaTemplate?.id || (this.schemaTemplate as any)?._id;
+        return !this.isTemplateMode &&
+            !!schema?.templateId &&
+            (!this.schemaTemplate || loadedTemplateId !== schema.templateId);
     }
 
     private getSchemaForFieldLocks(): Schema | null {
@@ -259,9 +327,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!schemaKey) {
             return null;
         }
-        return this.schemaTemplate?.config?.schemas?.[schemaKey]
+        const schemas = this.schemaTemplate?.config?.schemas;
+        const config = schemas?.[schemaKey]
             || (legacySchemaKey ? this.schemaTemplate?.config?.schemas?.[legacySchemaKey] : null)
             || null;
+        if (config) {
+            return config;
+        }
+        if ((this.isTemplateConfigMode && this.schemaTemplate) || (!this.isTemplateMode && schema?.templateId && this.schemaTemplate)) {
+            return {};
+        }
+        return null;
     }
 
     public hoveredSchemaId: string | null = null;
@@ -398,6 +474,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                             rawSubSchemas: (data.subSchemas || []).map((s: any) => new Schema(s)),
                         };
                     }),
+                    switchMap((data) => {
+                        const templateId = data.schema?.templateId || '';
+                        if (!templateId || this.isTemplateMode) {
+                            return of({ ...data, appliedTemplate: null });
+                        }
+                        return this.loadAppliedSchemaTemplateById(templateId)
+                            .pipe(map((appliedTemplate) => ({ ...data, appliedTemplate })));
+                    }),
                     catchError(() => {
                         this.schemaLoading = false;
                         return EMPTY;
@@ -405,10 +489,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 );
             }),
             takeUntil(this.destroy$)
-        ).subscribe(({ schema, subSchemas, rawSubSchemas }) => {
+        ).subscribe(({ schema, subSchemas, rawSubSchemas, appliedTemplate }) => {
             if (!schema) {
                 this.schemaLoading = false;
                 return;
+            }
+            if (!this.isTemplateMode) {
+                this.schemaTemplate = appliedTemplate;
             }
             this.selectedSchema = schema;
             this.schemaLoading = false;
@@ -729,21 +816,36 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateMode) {
             return;
         }
-        const templateId = this.schemas.find(schema => !!schema.templateId)?.templateId || '';
-        if (!templateId || templateId === this.loadedAppliedTemplateId) {
+        const templateId = this.selectedSchema?.templateId ||
+            this.schemas.find(schema => !!schema.templateId)?.templateId ||
+            '';
+        if (!templateId) {
+            this.loadedAppliedTemplateId = '';
+            this.schemaTemplate = null;
             return;
         }
-        this.loadedAppliedTemplateId = templateId;
-        this.schemaTemplatesService.getById(templateId)
+        this.loadAppliedSchemaTemplateById(templateId)
             .pipe(takeUntil(this.destroy$))
-            .subscribe({
-                next: (template) => {
-                    this.schemaTemplate = template;
-                },
-                error: () => {
-                    this.schemaTemplate = null;
-                },
+            .subscribe((template) => {
+                this.schemaTemplate = template;
             });
+    }
+
+    private loadAppliedSchemaTemplateById(templateId: string): Observable<ISchemaTemplate | null> {
+        if (templateId === this.loadedAppliedTemplateId && this.schemaTemplate) {
+            return of(this.schemaTemplate);
+        }
+        this.loadedAppliedTemplateId = templateId;
+        return this.schemaTemplatesService.getById(templateId).pipe(
+            map((template) => ({
+                ...template,
+                config: template?.config || { schemas: {} }
+            } as ISchemaTemplate)),
+            catchError(() => {
+                this.loadedAppliedTemplateId = '';
+                return of(null);
+            })
+        );
     }
 
     public toggleCanAddCustomFieldsToSelectedSchema(): void {
@@ -752,6 +854,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         config.customFieldsLocked = !config.customFieldsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleCanChangeSelectedSchemaSettings(): void {
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.schemaSettingsLocked = !config.schemaSettingsLocked;
         this.templateConfigDirty = true;
     }
 
@@ -764,6 +875,26 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.templateConfigDirty = true;
     }
 
+    public markTemplateDirty(): void {
+        this.templateConfigDirty = true;
+    }
+
+    public setTemplateName(name: string): void {
+        if (!this.schemaTemplate) {
+            return;
+        }
+        this.schemaTemplate.name = name;
+        this.markTemplateDirty();
+    }
+
+    public setTemplateDescription(description: string): void {
+        if (!this.schemaTemplate) {
+            return;
+        }
+        this.schemaTemplate.description = description;
+        this.markTemplateDirty();
+    }
+
     public saveTemplateConfig(): void {
         if (!this.schemaTemplate?.id || this.templateConfigSaving || !this.templateConfigDirty) {
             return;
@@ -772,13 +903,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateConfigMode) {
             this.isSaving = true;
         }
+        const currentTemplate = this.schemaTemplate;
         this.schemaTemplatesService.update(this.schemaTemplate.id, {
+            name: this.schemaTemplate.name,
+            description: this.schemaTemplate.description,
             config: this.schemaTemplate.config || {}
         })
             .pipe(takeUntil(this.destroy$))
             .subscribe({
                 next: (template) => {
-                    this.schemaTemplate = template;
+                    this.schemaTemplate = {
+                        ...currentTemplate,
+                        ...template,
+                        config: template?.config || currentTemplate.config || {}
+                    };
                     this.templateConfigDirty = false;
                     this.templateConfigSaving = false;
                     if (this.isTemplateConfigMode) {
@@ -968,6 +1106,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
         if (!this.selectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) { return; }
         if (this.isDrilling) { this.addDrillField(ft); return; }
         const newField = this.buildNewField(ft);
         if (this.sidebarDropIndex !== -1) {
@@ -990,6 +1129,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public deleteField(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (this.isTemplateFieldLocked(field)) { return; }
         if (!this.selectedSchema?.fields) { return; }
         const idx = this.selectedSchema.fields.indexOf(field);
         if (idx !== -1) {
@@ -1004,6 +1144,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public duplicateField(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (this.isTemplateFieldLocked(field)) { return; }
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const targetFields = this.isDrilling ? this.drillCurrentFields : this.selectedSchema?.fields;
         if (!targetFields) { return; }
         const existingNames = new Set(targetFields.map(f => f.name));
@@ -1537,6 +1679,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addDrillField(ft: FieldTypeUI): void {
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const newField = this.buildNewField(ft, this.drillCurrentFields);
         if (this.sidebarDropIndex !== -1) {
             const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
@@ -1550,6 +1693,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public deleteDrillField(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (this.isTemplateFieldLocked(field)) { return; }
         const idx = this.drillCurrentFields.indexOf(field);
         if (idx !== -1) {
             this.removeGeoDependenciesByField(field, this.drillCurrentFields);
@@ -1560,6 +1704,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onFieldTypeDragStart(event: DragEvent, ft: FieldTypeUI): void {
+        if (!this.canAddFieldToSelectedSchema) {
+            event.preventDefault();
+            return;
+        }
         this._dragFieldType = ft;
         this._dragSchema = null;
         event.dataTransfer!.effectAllowed = 'copy';
@@ -1601,6 +1749,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public canDragSchema(schema: Schema): boolean {
+        if (!this.canAddFieldToSelectedSchema) { return false; }
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
         if (selId && selId === schId) { return false; }
@@ -1652,6 +1801,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onCardMouseDown(event: MouseEvent, field: SchemaField, fields: SchemaField[]): void {
         if ((event.target as HTMLElement).closest('button')) { return; }
+        if (this.isTemplateFieldLocked(field)) { return; }
         event.preventDefault();
         if (this._mouseMoveListener) { this.clearReorder(); }
         const card = event.currentTarget as HTMLElement;
@@ -1687,6 +1837,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private onDocMouseUp(event: MouseEvent): void {
+        if (this.reorderField && this.isTemplateFieldLocked(this.reorderField)) {
+            this.clearReorder();
+            return;
+        }
         if (this.isDragActive && this.reorderField && this._dragFields) {
             const fields = this._dragFields;
             const srcIdx = fields.indexOf(this.reorderField);
@@ -1769,6 +1923,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public onCanvasDragEnter(event: DragEvent): void {
         if (this.isTemplateConfigMode) { return; }
         if (!this._dragFieldType && !this._dragSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) {
+            this.isDragOverCanvas = false;
+            this.sidebarDropIndex = -1;
+            return;
+        }
         this._dragEnterCount++;
         this.isDragOverCanvas = true;
     }
@@ -1776,6 +1935,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public onCanvasDragOver(event: DragEvent): void {
         if (this.isTemplateConfigMode) { return; }
         if (!this._dragFieldType && !this._dragSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) {
+            this.isDragOverCanvas = false;
+            this.sidebarDropIndex = -1;
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'none';
+            }
+            return;
+        }
         event.preventDefault();
         event.dataTransfer!.dropEffect = 'copy';
         this.updateSidebarDropIndicator(event.clientY);
@@ -1818,6 +1985,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this._dragEnterCount = 0;
         this.isDragOverCanvas = false;
         if (!this.selectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) {
+            this._dragFieldType = null;
+            this._dragSchema = null;
+            this.sidebarDropIndex = -1;
+            return;
+        }
         if (this._dragFieldType) {
             if (this.isDrilling) { this.addDrillField(this._dragFieldType); }
             else { this.addField(this._dragFieldType); }
@@ -1831,6 +2004,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private addDrillSchemaField(schema: Schema): void {
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const existingNames = new Set((this.drillCurrentFields ?? []).map((f: SchemaField) => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }
@@ -1868,6 +2042,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private addSchemaField(schema: Schema): void {
         if (!this.selectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const existingNames = new Set((this.selectedSchema.fields ?? []).map((f: SchemaField) => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }
@@ -2507,13 +2682,35 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             pageSize: this.schemasPageSize,
             search,
         })
-            .pipe(takeUntil(this._cancelLoadSchemas$), takeUntil(this.destroy$))
-            .subscribe({
-                next: (response: HttpResponse<ISchema[]>) => {
-                    const total = Number(response.headers?.get('X-Total-Count') || 0);
+            .pipe(
+                map((response: HttpResponse<ISchema[]>) => {
                     const items = (response.body || [])
                         .map(s => { try { return new Schema(s); } catch { return null; } })
                         .filter((s): s is Schema => s !== null);
+                    return {
+                        response,
+                        items,
+                        templateId: this.selectedSchema?.templateId ||
+                            items.find(schema => !!schema.templateId)?.templateId ||
+                            ''
+                    };
+                }),
+                switchMap((data) => {
+                    if (!data.templateId || this.isTemplateMode) {
+                        return of({ ...data, appliedTemplate: null });
+                    }
+                    return this.loadAppliedSchemaTemplateById(data.templateId)
+                        .pipe(map((appliedTemplate) => ({ ...data, appliedTemplate })));
+                }),
+                takeUntil(this._cancelLoadSchemas$),
+                takeUntil(this.destroy$)
+            )
+            .subscribe({
+                next: ({ response, items, appliedTemplate }) => {
+                    if (!this.isTemplateMode) {
+                        this.schemaTemplate = appliedTemplate;
+                    }
+                    const total = Number(response.headers?.get('X-Total-Count') || 0);
                     this.schemasTotal = total;
                     if (search) {
                         items.sort((a, b) => this.rankMatch(b.name || '', search) - this.rankMatch(a.name || '', search));
@@ -2592,6 +2789,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onDeleteSchema(schema: Schema): void {
+        if (this.isTemplateSchemaDeleteLocked(schema)) {
+            return;
+        }
         const dirtyKey = `new:${(schema as any).uuid}`;
         if (this.newSchemaKeys.has(dirtyKey)) {
             const wasSelected = this.selectedSchema === schema;
