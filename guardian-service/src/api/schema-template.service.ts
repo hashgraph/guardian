@@ -279,6 +279,8 @@ function preparePolicySchemaCopy(
     delete copy.defs;
     delete copy.errors;
 
+    copy.uuid = GenerateUUIDv4();
+    copy.contextURL = `schema:${copy.uuid}`;
     copy.topicId = policyTopicId;
     copy.category = SchemaCategory.POLICY;
     copy.templateId = templateId;

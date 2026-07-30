@@ -1312,13 +1312,13 @@
 .sc-subschema-enter-btn {
     display: flex;
     align-items: center;
-    gap: 4px;
-    padding: 4px 10px;
+    gap: 5px;
+    padding: 5px 13px;
     border-radius: 6px;
     background: var(--color-primary, #4169E2);
     color: #fff;
     border: none;
-    font-size: 11px;
+    font-size: 12px;
     font-family: inherit;
     font-weight: 500;
     cursor: pointer;
@@ -1732,9 +1732,8 @@
 
 .sc-field-card-actions {
     display: flex;
+    align-items: center;
     gap: 2px;
-    opacity: 0;
-    transition: opacity 0.15s;
     flex-shrink: 0;
 }
 

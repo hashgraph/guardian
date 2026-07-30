@@ -112,6 +112,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return this.dirtySchemaIds.size > 0;
     }
 
+    public get showTopSaveActions(): boolean {
+        return !!this.selectedSchema || this.isTemplateConfigMode;
+    }
+
     public get selectedSchemaId(): string | null {
         return this.selectedSchema?.id || (this.selectedSchema as any)?._id || null;
     }
@@ -190,10 +194,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public get canAddFieldToSelectedSchema(): boolean {
-        return !!this.selectedSchema &&
+        const schema = this.currentContextSchema;
+        return !!schema &&
             !this.isTemplateConfigMode &&
-            !this.isTemplateConfigPendingForSchema(this.selectedSchema) &&
-            !this.isTemplateSchemaCustomFieldsLocked(this.selectedSchema);
+            !this.isTemplateConfigPendingForSchema(schema) &&
+            !this.isTemplateSchemaCustomFieldsLocked(schema);
     }
 
     public get canEditSelectedFieldInTemplate(): boolean {
@@ -969,7 +974,6 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public markDirty(): void {
-        // Mark both root and drilled sub-schema dirty: root needs $defs rebuilt on save.
         if (this.isDrilling) {
             const contextIri = this.currentDrilledSchemaIri;
             const subSchema = contextIri ? this.schemas.find(s => s.iri === contextIri) : null;
@@ -980,6 +984,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             } else if (subUuid) {
                 this.dirtySchemaIds.add(`new:${subUuid}`);
             }
+            return;
         }
         const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (rootId) {
@@ -1158,6 +1163,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (Array.isArray(f.enum)) { clone.enum = [...f.enum]; }
         if (Array.isArray(f.fields)) { clone.fields = [...f.fields]; }
         if (Array.isArray(f.availableOptions)) { clone.availableOptions = [...f.availableOptions]; }
+        this.clearTemplateFieldMetadata(clone);
         const srcIdx = targetFields.indexOf(field);
         if (srcIdx !== -1) {
             targetFields.splice(srcIdx + 1, 0, clone as SchemaField);
@@ -1166,6 +1172,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = clone as SchemaField;
         this.markDirty();
+    }
+
+    private clearTemplateFieldMetadata(field: any): void {
+        delete field.templateFieldId;
+        if (Array.isArray(field.fields)) {
+            field.fields.forEach((child: any) => this.clearTemplateFieldMetadata(child));
+        }
     }
 
     public selectField(field: SchemaField): void {
@@ -1653,6 +1666,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         ];
         this._parentLoadId = null;
         this.loadParentSchemas();
+    }
+
+    public enterTemplateSubSchema(field: SchemaField, event: Event): void {
+        event.stopPropagation();
+        const subSchema = this.schemas.find(s => s.iri === field.type);
+        if (subSchema) {
+            this.switchSchema(subSchema);
+        }
     }
 
     public drillTo(index: number): void {

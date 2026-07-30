@@ -22,7 +22,7 @@
 
         <div class="sc-spacer"></div>
 
-        @if (selectedSchema) {
+        @if (showTopSaveActions) {
             @if (!isTemplateConfigMode) {
             <div class="sc-nav-tabs">
                 <button class="sc-nav-tab" [class.active]="activeTab === 'builder'" (click)="activeTab = 'builder'">
@@ -243,16 +243,12 @@
                                             <i class="pi pi-lock"></i>
                                         </span>
                                     }
-                                    @if (hoveredSchemaId === (schema.id || schema._id)) {
-                                        @if (isTemplateConfigMode) {
-                                            <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" pTooltip="Edit" tooltipPosition="right">
-                                                <i class="pi pi-pencil"></i>
-                                            </button>
-                                        } @else if (isTemplateSchemaDeleteLocked(schema)) {
-                                            <button class="sc-schema-delete-btn sc-schema-delete-btn--locked" disabled pTooltip="Schema deletion is locked" tooltipPosition="right">
-                                                <i class="pi pi-lock"></i>
-                                            </button>
-                                        } @else {
+                                    @if (isTemplateConfigMode) {
+                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" pTooltip="Edit" tooltipPosition="right">
+                                            <i class="pi pi-pencil"></i>
+                                        </button>
+                                    } @else if (hoveredSchemaId === (schema.id || schema._id)) {
+                                        @if (!isTemplateSchemaDeleteLocked(schema)) {
                                         <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); onDeleteSchema(schema)" pTooltip="Delete" tooltipPosition="right">
                                             <i class="pi pi-trash"></i>
                                         </button>
@@ -1211,10 +1207,12 @@
                                     }
                                 </div>
                             </div>
-                            @if (isTemplateFieldLocked(field)) {
-                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
-                                    <i class="pi pi-lock"></i>
-                                </span>
+                            @if (isTemplateConfigMode && field.isRef) {
+                                <div class="sc-field-card-actions">
+                                    <button class="sc-subschema-enter-btn" title="Open sub-schema settings" (click)="enterTemplateSubSchema(field, $event)">
+                                        <i class="pi pi-arrow-right"></i>Enter
+                                    </button>
+                                </div>
                             }
                             @if (!isTemplateConfigMode) {
                             <div class="sc-field-card-actions">
@@ -1223,15 +1221,21 @@
                                         <i class="pi pi-arrow-right"></i>Enter
                                     </button>
                                 }
-                                <button class="sc-icon-btn" title="Duplicate field" [disabled]="isTemplateFieldLocked(field)" (click)="duplicateField(field, $event)">
-                                    <i class="pi pi-copy"></i>
-                                </button>
-                                <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field"
-                                    [disabled]="isTemplateFieldLocked(field)"
-                                    (click)="isDrilling ? deleteDrillField(field, $event) : deleteField(field, $event)">
-                                    <i class="pi pi-trash"></i>
-                                </button>
+                                @if (!isTemplateFieldLocked(field)) {
+                                    <button class="sc-icon-btn" title="Duplicate field" (click)="duplicateField(field, $event)">
+                                        <i class="pi pi-copy"></i>
+                                    </button>
+                                    <button class="sc-icon-btn sc-icon-btn--danger" title="Delete field"
+                                        (click)="isDrilling ? deleteDrillField(field, $event) : deleteField(field, $event)">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                }
                             </div>
+                            }
+                            @if (isTemplateFieldLocked(field)) {
+                                <span class="st-field-lock" pTooltip="Field editing is locked" tooltipPosition="top">
+                                    <i class="pi pi-lock"></i>
+                                </span>
                             }
                         </div>
                     }
