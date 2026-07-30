@@ -132,7 +132,9 @@ function tip(iwaPaths: string): string {
                     Status
                     <InfoTooltip :text="tip('ActivityImpactModule.validations')" />
                 </div>
-                <div class="text-sm font-medium text-foreground">{{ project.status || '—' }}</div>
+                <div class="text-sm font-medium text-foreground">
+                    {{ project.lifecycleStage ? $t(`projects.lifecycleStages.${project.lifecycleStage}`) : '—' }}
+                </div>
             </div>
 
             <!-- Sector -->
