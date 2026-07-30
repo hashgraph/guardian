@@ -231,6 +231,11 @@
         line-height: 16px;
         margin-top: 2px;
     }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.62;
+    }
 }
 
 .st-toggle {
@@ -2373,6 +2378,17 @@
         background: var(--color-primary, #4169E2);
         color: #fff;
         border-color: var(--color-primary, #4169E2);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.45;
+    }
+
+    &:disabled:hover {
+        background: #fff;
+        color: var(--text-color-secondary, #888780);
+        border-color: rgba(0, 0, 0, 0.12);
     }
 }
 

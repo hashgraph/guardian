@@ -122,6 +122,53 @@ export class SchemaTemplatesApi {
     }
 
     /**
+     * Create schema template version async.
+     */
+    @Post('/:templateId/push/new-version')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Creates a new draft version of a schema template asynchronously.',
+        description: 'Copies a published schema template and its schemas into a new editable draft version.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async createSchemaTemplateVersionAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string
+    ): Promise<TaskDTO> {
+        if (!templateId) {
+            throw new HttpException('Invalid template id', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION, user.id);
+            await guardians.createSchemaTemplateVersionAsync(templateId, owner, task);
+            await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Get schema templates page.
      */
     @Get('/')
@@ -585,6 +632,69 @@ export class SchemaTemplatesApi {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);
                 taskManager.addError(task.taskId, { code: 500, message: error.message });
             });
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Publish schema template async.
+     */
+    @Put('/:templateId/push/publish')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Publishes schema template asynchronously.',
+        description: 'Publishes schema template package with metadata, configuration, and schemas.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiBody({
+        description: 'Schema template version for publish.',
+        schema: {
+            type: 'object',
+            properties: {
+                templateVersion: {
+                    type: 'string',
+                    example: '1.0.0'
+                }
+            }
+        }
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async publishSchemaTemplateAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Body() body: { templateVersion: string }
+    ): Promise<TaskDTO> {
+        if (!templateId) {
+            throw new HttpException('Invalid template id', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        if (!body?.templateVersion) {
+            throw new HttpException('Schema template version in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.PUBLISH_SCHEMA_TEMPLATE, user.id);
+            await guardians.publishSchemaTemplateAsync(templateId, owner, body, task);
+            await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
             return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);

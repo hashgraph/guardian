@@ -193,6 +193,20 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             }
+            case TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION: {
+                const templateId = result?.id || result?._id || result;
+                setTimeout(() => {
+                    this.router.navigate(['schema-template-configuration'], {
+                        queryParams: {
+                            type: 'template',
+                            topic: result?.topicId,
+                            templateId
+                        },
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
             case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
             case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE: {
                 const templateId = result?.templateId;
@@ -215,6 +229,17 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             }
+            case TaskAction.PUBLISH_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
             case TaskAction.APPLY_SCHEMA_TEMPLATE:
             case TaskAction.DETACH_SCHEMA_TEMPLATE:
                 if (this.last) {
@@ -493,7 +518,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             case TaskAction.CREATE_SCHEMA_TEMPLATE:
+            case TaskAction.CREATE_SCHEMA_TEMPLATE_VERSION:
             case TaskAction.DELETE_SCHEMA_TEMPLATE:
+            case TaskAction.PUBLISH_SCHEMA_TEMPLATE:
                 setTimeout(() => {
                     this.router.navigate(['schema-templates'], {
                         replaceUrl: true,

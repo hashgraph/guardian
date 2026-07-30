@@ -51,6 +51,10 @@ export class SchemaTemplatesService {
         return this.http.post<TaskResponse>(`${this.url}/push`, template);
     }
 
+    public pushNewVersion(id: string): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/${id}/push/new-version`, {});
+    }
+
     public update(id: string, template: Partial<ISchemaTemplate>): Observable<SchemaTemplateGridItem> {
         return this.http.put<SchemaTemplateGridItem>(`${this.url}/${id}`, template);
     }
@@ -61,6 +65,10 @@ export class SchemaTemplatesService {
 
     public pushDelete(id: string): Observable<TaskResponse> {
         return this.http.delete<TaskResponse>(`${this.url}/push/${id}`);
+    }
+
+    public pushPublish(id: string, options: { templateVersion: string }): Observable<TaskResponse> {
+        return this.http.put<TaskResponse>(`${this.url}/${id}/push/publish`, options);
     }
 
     public exportInFile(id: string): Observable<ArrayBuffer> {

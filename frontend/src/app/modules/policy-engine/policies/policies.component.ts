@@ -122,6 +122,16 @@ const columns = [{
         )
     }
 }, {
+    id: 'template',
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
     id: 'publicLink',
     permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return true;
@@ -1900,6 +1910,16 @@ export class PoliciesComponent implements OnInit {
             binding?.snapshotId ||
             Object.keys(binding?.schemaMap || {}).length
         );
+    }
+
+    public getSchemaTemplateLabel(policy: any): string {
+        const binding = policy?.schemaTemplate;
+        if (!binding?.templateName) {
+            return '';
+        }
+        return binding.templateVersion
+            ? `${binding.templateName} v${binding.templateVersion}`
+            : binding.templateName;
     }
 
     public openApplySchemaTemplateDialog(policy: any): void {

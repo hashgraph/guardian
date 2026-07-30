@@ -393,14 +393,14 @@
                         <div class="operations-row-container">
                           @if (user.SCHEMAS_SCHEMA_REVIEW) {
                             <div>
-                              @if (rowData.status == 'DRAFT') {
+                              @if (rowData.status == 'DRAFT' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
                                   class="btn-approve">Publish
                                 </div>
                               }
-                              @if (rowData.status == 'UNPUBLISHED') {
+                              @if (rowData.status == 'UNPUBLISHED' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
@@ -451,14 +451,14 @@
                         <div class="operations-row-container">
                           @if (user.SCHEMAS_SCHEMA_REVIEW) {
                             <div>
-                              @if (rowData.status == 'DRAFT') {
+                              @if (rowData.status == 'DRAFT' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
                                   class="btn-approve">Publish
                                 </div>
                               }
-                              @if (rowData.status == 'UNPUBLISHED') {
+                              @if (rowData.status == 'UNPUBLISHED' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
@@ -510,14 +510,14 @@
                         <div class="operations-row-container">
                           @if (user.SCHEMAS_SCHEMA_REVIEW) {
                             <div>
-                              @if (rowData.status == 'DRAFT') {
+                              @if (rowData.status == 'DRAFT' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
                                   class="btn-approve">Publish
                                 </div>
                               }
-                              @if (rowData.status == 'UNPUBLISHED') {
+                              @if (rowData.status == 'UNPUBLISHED' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"

@@ -752,7 +752,7 @@ export class SchemaConfigComponent implements OnInit {
             return '';
         }
         return binding.templateVersion
-            ? `${binding.templateName} (${binding.templateVersion})`
+            ? `${binding.templateName} v${binding.templateVersion}`
             : binding.templateName;
     }
 
@@ -1421,6 +1421,9 @@ export class SchemaConfigComponent implements OnInit {
     }
 
     public onPublish(element: Schema): void {
+        if (!this.canPublishSchema(element)) {
+            return;
+        }
         const dialogRef = this.dialog.open(SetVersionDialog, {
             width: '350px',
             modal: true,
@@ -1434,6 +1437,10 @@ export class SchemaConfigComponent implements OnInit {
                 this.publishSchema(element.id, version);
             }
         });
+    }
+
+    public canPublishSchema(element: Schema): boolean {
+        return element?.category !== SchemaCategory.TEMPLATE && element?.topicId !== 'draft';
     }
 
     public onPublishTagSchema(element: Schema): void {

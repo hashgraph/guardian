@@ -173,6 +173,7 @@ import { IgnoreRulesDialog } from './dialogs/ignore-rules-dialog/ignore-rules-di
 import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
+import { PublishSchemaTemplateDialog } from './dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { GlobalEventsWriterBlockComponent} from './policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component';
@@ -269,6 +270,7 @@ import { ApplySchemaTemplateDialog } from './dialogs/apply-schema-template-dialo
         PolicyTestResult,
         PublishPolicyDialog,
         PublishToolDialog,
+        PublishSchemaTemplateDialog,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,

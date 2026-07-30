@@ -145,6 +145,20 @@ async function getTemplateSchemaValidationContext(
 }
 
 async function validateTemplateSchemaDelete(schema: ISchema): Promise<void> {
+    if (schema.category === SchemaCategory.TEMPLATE) {
+        if (!schema.templateId) {
+            throw new Error('Schema template id is required.');
+        }
+        const template = await DatabaseServer.getSchemaTemplateById(schema.templateId);
+        if (!template) {
+            throw new Error('Invalid schema template.');
+        }
+        if (template.status === ModuleStatus.PUBLISHED) {
+            throw new Error(`Schema template "${template.name}" is published and cannot be edited.`);
+        }
+        return;
+    }
+
     const context = await getTemplateSchemaValidationContext(schema);
     if (!context) {
         return;
@@ -354,6 +368,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     document: item.document ? JSON.parse(JSON.stringify(item.document)) : item.document
                 } as ISchema;
                 validateSchemaDependencies(next);
+                await resolveTemplateSchemaContext(next, owner);
                 prepareSchemaTemplateMetadata(next, previous);
                 await validateTemplateSchemaUpdate(row, next);
                 row.name = next.name;
@@ -1125,6 +1140,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     filter.category = SchemaCategory.TEMPLATE;
                     const template = await DatabaseServer.getSchemaTemplateById(options.templateId);
                     filter.topicId = template?.topicId;
+                    filter.templateId = template?.id;
                 }
                 if (options.topicId) {
                     if (options.topicId === 'not-binded') {
@@ -1244,6 +1260,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     filter.category = SchemaCategory.TEMPLATE;
                     const template = await DatabaseServer.getSchemaTemplateById(options.templateId);
                     filter.topicId = template?.topicId;
+                    filter.templateId = template?.id;
                 } else if (Array.isArray(options.category)) {
                     filter.category = { $in: options.category };
                 } else if (typeof options.category === 'string') {

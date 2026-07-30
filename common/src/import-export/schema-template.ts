@@ -31,6 +31,7 @@ export class SchemaTemplateImportExport {
             ? await DatabaseServer.getSchemas({
                 topicId: template.topicId,
                 category: SchemaCategory.TEMPLATE,
+                templateId: template.id,
                 readonly: false
             })
             : [];

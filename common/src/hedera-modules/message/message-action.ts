@@ -29,6 +29,7 @@ export enum MessageAction {
     PublishTool = 'publish-tool',
     CreateTool = 'create-tool',
     CreateSchemaTemplate = 'create-schema-template',
+    PublishSchemaTemplate = 'publish-schema-template',
     CreateContract = 'create-contract',
     DiscontinuePolicy = 'discontinue-policy',
     DeferredDiscontinuePolicy = 'deferred-discontinue-policy',

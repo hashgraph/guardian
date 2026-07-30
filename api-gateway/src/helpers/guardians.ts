@@ -2388,6 +2388,17 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Create schema template draft version
+     * @param id
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async createSchemaTemplateVersionAsync(id: string, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_TEMPLATE_VERSION, { id, owner, task });
+    }
+
+    /**
      * Return schema templates
      * @param filters
      * @param owner
@@ -2450,6 +2461,38 @@ export class Guardians extends NatsService {
      */
     public async deleteSchemaTemplate(id: string, owner: IOwner): Promise<boolean> {
         return await this.sendMessage(MessageAPI.DELETE_SCHEMA_TEMPLATE, { id, owner });
+    }
+
+    /**
+     * Publish schema template
+     * @param id
+     * @param owner
+     * @param body
+     * @returns published template
+     */
+    public async publishSchemaTemplate(
+        id: string,
+        owner: IOwner,
+        body: { templateVersion: string }
+    ): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_TEMPLATE, { id, owner, body });
+    }
+
+    /**
+     * Publish schema template async
+     * @param id
+     * @param owner
+     * @param body
+     * @param task
+     * @returns task
+     */
+    public async publishSchemaTemplateAsync(
+        id: string,
+        owner: IOwner,
+        body: { templateVersion: string },
+        task: NewTask
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_TEMPLATE_ASYNC, { id, owner, body, task });
     }
 
     /**

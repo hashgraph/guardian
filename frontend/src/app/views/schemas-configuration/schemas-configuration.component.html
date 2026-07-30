@@ -62,7 +62,7 @@
                         [class.dirty]="hasUnsavedChanges && (isTemplateConfigMode || currentSchemaErrorCount === 0)"
                         [class.invalid]="hasUnsavedChanges && !isTemplateConfigMode && currentSchemaErrorCount > 0"
                         [class.clean]="!hasUnsavedChanges"
-                        [disabled]="!hasUnsavedChanges || isSaving || (!isTemplateConfigMode && currentSchemaErrorCount > 0)"
+                        [disabled]="isTemplateReadonly || !hasUnsavedChanges || isSaving || (!isTemplateConfigMode && currentSchemaErrorCount > 0)"
                         (click)="saveAll()">
                     <i class="pi pi-save"></i>
                     Save all
@@ -74,12 +74,36 @@
                     <i class="pi pi-download"></i>
                     Export
                 </button>
+                @if (!isTemplateMode) {
                 <button class="sc-btn sc-btn-primary"
                     [disabled]="!canPublish"
                     (click)="onPublish()">
                     <i class="pi pi-send"></i>
                     Publish
                 </button>
+                }
+                }
+                @if (isTemplateConfigMode) {
+                <button class="sc-btn"
+                    [disabled]="!canExportTemplate"
+                    (click)="onExportTemplate()">
+                    <i class="pi pi-download"></i>
+                    Export
+                </button>
+                @if (canCreateTemplateNewVersion) {
+                    <button class="sc-btn sc-btn-primary"
+                        (click)="onCreateTemplateNewVersion()">
+                        <i class="pi pi-copy"></i>
+                        New Version
+                    </button>
+                } @else {
+                    <button class="sc-btn sc-btn-primary"
+                        [disabled]="!canPublishTemplate"
+                        (click)="onPublishTemplate()">
+                        <i class="pi pi-send"></i>
+                        Publish
+                    </button>
+                }
                 }
             </div>
         }
@@ -110,11 +134,18 @@
                     }
                 </div>
             </div>
+            @if (isTemplateReadonly) {
+                <div class="st-lock-note st-lock-note--inline">
+                    <i class="pi pi-lock"></i>
+                    <span>Published template is read-only. Create a new version to edit it.</span>
+                </div>
+            }
             <div class="st-template-settings-form">
                 <div class="sc-schema-props-field">
                     <label class="sc-schema-props-label">Name</label>
                     <input class="sc-schema-props-name"
                            [ngModel]="schemaTemplate?.name || ''"
+                           [readonly]="isTemplateReadonly"
                            (ngModelChange)="setTemplateName($event)"
                            placeholder="Template name" />
                 </div>
@@ -122,6 +153,7 @@
                     <label class="sc-schema-props-label">Description <span class="sc-schema-props-optional">(optional)</span></label>
                     <textarea class="sc-schema-props-desc"
                               [ngModel]="schemaTemplate?.description || ''"
+                              [readonly]="isTemplateReadonly"
                               (ngModelChange)="setTemplateDescription($event)"
                               rows="2"
                               placeholder="What this template represents..."></textarea>
@@ -195,7 +227,7 @@
                                 [ngModel]="schemaSearch"
                                 (ngModelChange)="schemaSearch$.next($event)" />
                         </div>
-                        <button class="sc-btn-new-schema" (click)="onNewSchema()" title="New schema">
+                        <button class="sc-btn-new-schema" [disabled]="isTemplateReadonly" (click)="onNewSchema()" title="New schema">
                             <i class="pi pi-plus"></i>
                         </button>
                     </div>
@@ -244,7 +276,7 @@
                                         </span>
                                     }
                                     @if (isTemplateConfigMode) {
-                                        <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" pTooltip="Edit" tooltipPosition="right">
+                                <button class="sc-schema-delete-btn" (click)="$event.stopPropagation(); openTemplateSchemaEditor({ schema })" [pTooltip]="isTemplateReadonly ? 'View' : 'Edit'" tooltipPosition="right">
                                             <i class="pi pi-pencil"></i>
                                         </button>
                                     } @else if (hoveredSchemaId === (schema.id || schema._id)) {
@@ -339,14 +371,14 @@
                                 }
                             </div>
                             @if (isTemplateConfigMode) {
-                                <button class="st-toggle-row st-toggle-row--inline" (click)="toggleCanChangeSelectedSchemaSettings()">
+                                <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanChangeSelectedSchemaSettings()">
                                     <span>
                                         <strong>Change schema settings</strong>
                                         <small>Allows changing schema name, description and entity type after applying.</small>
                                     </span>
                                     <span class="st-toggle" [class.active]="canChangeSelectedSchemaSettings"></span>
                                 </button>
-                                <button class="st-toggle-row st-toggle-row--inline" (click)="toggleCanAddCustomFieldsToSelectedSchema()">
+                                <button class="st-toggle-row st-toggle-row--inline" [disabled]="isTemplateReadonly" (click)="toggleCanAddCustomFieldsToSelectedSchema()">
                                     <span>
                                         <strong>Can add custom fields</strong>
                                         <small>Allows adding fields outside the template standard when applied.</small>
@@ -644,7 +676,7 @@
                             <span>Selected field</span>
                             <strong>{{ selectedField.title || selectedField.description || selectedField.name }}</strong>
                         </div>
-                        <button class="st-toggle-row" (click)="toggleCanEditSelectedFieldInTemplate()">
+                        <button class="st-toggle-row" [disabled]="isTemplateReadonly" (click)="toggleCanEditSelectedFieldInTemplate()">
                             <span>
                                 <strong>Can edit selected field</strong>
                                 <small>Allows editing this field when the template is applied.</small>
@@ -1251,9 +1283,9 @@
         <div class="sc-drop-zone"
              [class.sc-drop-zone--reorder]="reorderAtEnd"
              [class.sc-drop-zone--disabled]="!canAddFieldToSelectedSchema"
-             (click)="isDrilling ? addDrillField(defaultFieldType) : addField(defaultFieldType)">
+            (click)="isDrilling ? addDrillField(defaultFieldType) : addField(defaultFieldType)">
             <i class="pi pi-plus"></i>
-            {{ canAddFieldToSelectedSchema ? 'Click to add a string field, or drag a type from the sidebar' : 'Custom fields are locked by the applied template' }}
+            {{ canAddFieldToSelectedSchema ? 'Click to add a string field, or drag a type from the sidebar' : (isTemplateReadonly ? 'Published template is read-only' : 'Custom fields are locked by the applied template') }}
         </div>
         }
     </ng-template>

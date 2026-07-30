@@ -2,6 +2,7 @@ import { FilterObject } from '@mikro-orm/core';
 import {
     BinaryMessageResponse,
     DatabaseServer,
+    INotificationStep,
     MessageError,
     MessageResponse,
     MessageAction,
@@ -30,6 +31,7 @@ import {
     ISchemaTemplateSnapshotSchema,
     ISchemaTemplateSnapshotSchemas,
     MessageAPI,
+    ModelHelper,
     ModuleStatus,
     PolicyStatus,
     Schema as InterfaceSchema,
@@ -143,6 +145,145 @@ async function createSchemaTemplate(
     }
 }
 
+function prepareTemplateSchemaVersionCopy(
+    source: Schema,
+    template: SchemaTemplate
+): ISchema {
+    const copy: any = JSON.parse(JSON.stringify(source));
+    delete copy._id;
+    delete copy.hash;
+    delete copy.status;
+    delete copy.messageId;
+    delete copy.documentURL;
+    delete copy.documentFileId;
+    delete copy.contextURL;
+    delete copy.contextFileId;
+    delete copy.contentDocumentFileId;
+    delete copy.contentContextFileId;
+    delete copy.createDate;
+    delete copy.updateDate;
+    delete copy.topicCount;
+    delete copy.defs;
+    delete copy.errors;
+
+    copy.topicId = template.topicId;
+    copy.category = SchemaCategory.TEMPLATE;
+    copy.templateId = template.id;
+    copy.templateSchemaId = source.templateSchemaId;
+    copy.readonly = false;
+    copy.system = false;
+    return copy;
+}
+
+async function createSchemaTemplateVersion(
+    id: string,
+    owner: IOwner,
+    logger: PinoLogger,
+    notifier: INotificationStep
+): Promise<SchemaTemplate> {
+    const STEP_VALIDATE = 'Find and validate schema template';
+    const STEP_CREATE_TEMPLATE = 'Create draft template version';
+    const STEP_COPY_SCHEMAS = 'Copy template schemas';
+    const STEP_UPDATE_REFS = 'Update schema references';
+    const STEP_SAVE_CONFIG = 'Save template config';
+
+    notifier.addStep(STEP_VALIDATE);
+    notifier.addStep(STEP_CREATE_TEMPLATE);
+    notifier.addStep(STEP_COPY_SCHEMAS);
+    notifier.addStep(STEP_UPDATE_REFS);
+    notifier.addStep(STEP_SAVE_CONFIG);
+    notifier.start();
+
+    let draft: SchemaTemplate | null = null;
+    try {
+        notifier.startStep(STEP_VALIDATE);
+        const source = await DatabaseServer.getSchemaTemplateById(id);
+        if (!source || source.owner !== owner.owner) {
+            throw new Error('Invalid schema template');
+        }
+        if (source.status !== ModuleStatus.PUBLISHED) {
+            throw new Error('Schema template is not published');
+        }
+        if (!source.topicId) {
+            throw new Error('Schema template has no topic');
+        }
+        const existingDraft = await DatabaseServer.getSchemaTemplate({
+            topicId: source.topicId,
+            status: ModuleStatus.DRAFT,
+            owner: owner.owner
+        });
+        if (existingDraft) {
+            throw new Error('Draft schema template version already exists');
+        }
+        const sourceSchemas = await DatabaseServer.getSchemas({
+            topicId: source.topicId,
+            category: SchemaCategory.TEMPLATE,
+            templateId: source.id,
+            readonly: false
+        });
+        for (const schema of sourceSchemas as Schema[]) {
+            await ensureTemplateSchemaReferences(schema);
+        }
+        notifier.completeStep(STEP_VALIDATE);
+
+        notifier.startStep(STEP_CREATE_TEMPLATE);
+        const templatePayload: ISchemaTemplate = {
+            uuid: source.uuid,
+            name: source.name,
+            description: source.description,
+            creator: owner.creator,
+            owner: owner.owner,
+            status: ModuleStatus.DRAFT,
+            previousVersion: source.version,
+            topicId: source.topicId,
+            config: cloneJson(source.config || {})
+        };
+        draft = await DatabaseServer.saveSchemaTemplate(templatePayload);
+        notifier.completeStep(STEP_CREATE_TEMPLATE);
+
+        notifier.startStep(STEP_COPY_SCHEMAS);
+        const iriMap = new Map<string, string>();
+        const copiedSchemas: Schema[] = [];
+        for (const schema of sourceSchemas as Schema[]) {
+            const copy = prepareTemplateSchemaVersionCopy(schema, draft);
+            const saved = await createSchemaAndArtifacts(
+                SchemaCategory.TEMPLATE,
+                copy,
+                owner,
+                NewNotifier.empty()
+            );
+            iriMap.set(schema.iri, saved.iri);
+            copiedSchemas.push(saved);
+        }
+        notifier.completeStep(STEP_COPY_SCHEMAS);
+
+        notifier.startStep(STEP_UPDATE_REFS);
+        await updateCopiedSchemaRefs(copiedSchemas, iriMap);
+        notifier.completeStep(STEP_UPDATE_REFS);
+
+        notifier.startStep(STEP_SAVE_CONFIG);
+        await normalizeSchemaTemplateConfig(draft);
+        const result = await DatabaseServer.updateSchemaTemplate(draft);
+        notifier.completeStep(STEP_SAVE_CONFIG);
+        notifier.complete();
+        return result;
+    } catch (error) {
+        if (draft) {
+            const schemas = await DatabaseServer.getSchemas({
+                topicId: draft.topicId,
+                category: SchemaCategory.TEMPLATE,
+                templateId: draft.id,
+                readonly: false
+            });
+            for (const schema of schemas as Schema[]) {
+                await deleteSchema(schema.id, owner, NewNotifier.empty());
+            }
+            await DatabaseServer.removeSchemaTemplate(draft);
+        }
+        throw error;
+    }
+}
+
 async function prepareTemplatePreviewMessage(
     messageId: string,
     owner: IOwner
@@ -170,6 +311,9 @@ async function prepareTemplatePreviewMessage(
     }
     if (message.type !== MessageType.SchemaTemplate) {
         throw new Error('Invalid Message Type');
+    }
+    if (message.action !== MessageAction.PublishSchemaTemplate) {
+        throw new Error('Invalid Message Action');
     }
     if (!message.document) {
         throw new Error('file in body is empty');
@@ -251,12 +395,144 @@ async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
         item.schemasCount = template.topicId
             ? await DatabaseServer.getSchemasCount({
                 topicId: template.topicId,
-                category: SchemaCategory.TEMPLATE
+                category: SchemaCategory.TEMPLATE,
+                templateId: template.id
             })
             : 0;
         result.push(item);
     }
     return result;
+}
+
+async function publishSchemaTemplate(
+    id: string,
+    version: string,
+    owner: IOwner,
+    notifier: INotificationStep,
+    logger: PinoLogger
+): Promise<SchemaTemplate> {
+    const STEP_VALIDATE = 'Find and validate schema template';
+    const STEP_GENERATE_FILE = 'Generate schema template package';
+    const STEP_SAVE_FILE = 'Save package in database';
+    const STEP_PUBLISH = 'Publish schema template';
+    const STEP_SAVE = 'Save template status';
+
+    notifier.addStep(STEP_VALIDATE);
+    notifier.addStep(STEP_GENERATE_FILE);
+    notifier.addStep(STEP_SAVE_FILE);
+    notifier.addStep(STEP_PUBLISH);
+    notifier.addStep(STEP_SAVE);
+    notifier.start();
+
+    let template: SchemaTemplate | null = null;
+    try {
+        notifier.startStep(STEP_VALIDATE);
+        template = await DatabaseServer.getSchemaTemplateById(id);
+        if (!template || template.owner !== owner.owner) {
+            throw new Error('Invalid schema template');
+        }
+        if (template.status === ModuleStatus.PUBLISHED) {
+            throw new Error('Schema template already published');
+        }
+        if (!ModelHelper.checkVersionFormat(version)) {
+            throw new Error('Invalid version format');
+        }
+        if (!template.topicId) {
+            await createTemplateTopic(template, owner, logger);
+        }
+        const publishedTemplates = await DatabaseServer.getSchemaTemplates({
+            topicId: template.topicId,
+            owner: owner.owner,
+            status: ModuleStatus.PUBLISHED
+        });
+        const lastPublishedVersion = (publishedTemplates as SchemaTemplate[])
+            .filter((item) => item.id !== template.id && !!item.version)
+            .map((item) => item.version as string)
+            .sort((left, right) => ModelHelper.versionCompare(right, left))[0];
+        const previousVersion = template.previousVersion || template.version || lastPublishedVersion;
+        template.previousVersion = previousVersion;
+        if (previousVersion && ModelHelper.versionCompare(version, previousVersion) <= 0) {
+            throw new Error('Version must be greater than ' + previousVersion);
+        }
+        const sameVersionTemplates = await DatabaseServer.getSchemaTemplates({
+            topicId: template.topicId,
+            version,
+            owner: owner.owner
+        });
+        if ((sameVersionTemplates as SchemaTemplate[])
+            ?.some((item) => item.id !== template.id)) {
+            throw new Error('Schema template with current version already was published');
+        }
+        await normalizeSchemaTemplateConfig(template);
+        notifier.completeStep(STEP_VALIDATE);
+
+        notifier.startStep(STEP_GENERATE_FILE);
+        template.version = version;
+        const zip = await SchemaTemplateImportExport.generate(template);
+        const buffer = await zip.generateAsync({
+            type: 'arraybuffer',
+            compression: 'DEFLATE',
+            compressionOptions: {
+                level: 3
+            },
+            platform: 'UNIX'
+        });
+        notifier.completeStep(STEP_GENERATE_FILE);
+
+        notifier.startStep(STEP_SAVE_FILE);
+        template.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(buffer));
+        notifier.completeStep(STEP_SAVE_FILE);
+
+        notifier.startStep(STEP_PUBLISH);
+        const users = new Users();
+        const root = await users.getHederaAccount(owner.creator, owner.id);
+        const topic = await TopicConfig.fromObject(
+            await DatabaseServer.getTopicById(template.topicId),
+            true,
+            owner.id
+        );
+        const messageServer = new MessageServer({
+            operatorId: root.hederaAccountId,
+            operatorKey: root.hederaAccountKey,
+            signOptions: root.signOptions
+        }).setTopicObject(topic);
+        const message = new SchemaTemplateMessage(
+            MessageType.SchemaTemplate,
+            MessageAction.PublishSchemaTemplate
+        );
+        message.setDocument(template, buffer);
+        const messageStatus = await messageServer.sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: owner.id
+        });
+        notifier.completeStep(STEP_PUBLISH);
+
+        notifier.startStep(STEP_SAVE);
+        template.messageId = messageStatus.getId();
+        template.status = ModuleStatus.PUBLISHED;
+        const schemas = await DatabaseServer.getSchemas({
+            topicId: template.topicId,
+            category: SchemaCategory.TEMPLATE,
+            templateId: template.id,
+            readonly: false
+        });
+        for (const schema of schemas as Schema[]) {
+            schema.status = SchemaStatus.PUBLISHED;
+        }
+        await DatabaseServer.updateSchemas(schemas as Schema[]);
+        const result = await DatabaseServer.updateSchemaTemplate(template);
+        notifier.completeStep(STEP_SAVE);
+        notifier.complete();
+        return result;
+    } catch (error) {
+        if (template) {
+            template.status = ModuleStatus.PUBLISH_ERROR;
+            await DatabaseServer.updateSchemaTemplate(template);
+        }
+        throw error;
+    }
 }
 
 function escapeRegExp(value: string): string {
@@ -292,7 +568,8 @@ async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<
     }
     const schemas = await DatabaseServer.getSchemas({
         topicId: template.topicId,
-        category: SchemaCategory.TEMPLATE
+        category: SchemaCategory.TEMPLATE,
+        templateId: template.id
     });
     for (const schema of schemas as Schema[]) {
         await ensureTemplateSchemaReferences(schema);
@@ -487,7 +764,8 @@ async function applySchemaTemplate(
 
     const templateSchemas = await DatabaseServer.getSchemas({
         topicId: template.topicId,
-        category: SchemaCategory.TEMPLATE
+        category: SchemaCategory.TEMPLATE,
+        templateId: template.id
     });
     if (!templateSchemas.length) {
         throw new Error('Schema template has no schemas');
@@ -658,6 +936,29 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 const { template, owner } = msg;
                 const item = await createSchemaTemplate(template, owner, logger);
                 return new MessageResponse(item);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.CREATE_SCHEMA_TEMPLATE_VERSION,
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            task: any
+        }) => {
+            const { id, owner, task } = msg;
+            try {
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+                    const result = await createSchemaTemplateVersion(id, owner, logger, notifier);
+                    notifier.result(result);
+                }, async (error) => {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    notifier.fail(error);
+                });
+                return new MessageResponse(task);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -969,7 +1270,6 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 item.description = template.description;
                 item.config = template.config || {};
                 item.version = template.version;
-                item.previousVersion = template.previousVersion;
 
                 const result = await DatabaseServer.updateSchemaTemplate(item);
                 return new MessageResponse(result);
@@ -993,6 +1293,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                     const schemas = await DatabaseServer.getSchemas({
                         topicId: template.topicId,
                         category: SchemaCategory.TEMPLATE,
+                        templateId: template.id,
                         readonly: false
                     });
                     for (const schema of schemas as Schema[]) {
@@ -1004,6 +1305,64 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
 
                 await DatabaseServer.removeSchemaTemplate(template);
                 return new MessageResponse(true);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.PUBLISH_SCHEMA_TEMPLATE,
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            body: { templateVersion: string }
+        }) => {
+            try {
+                const { id, owner, body } = msg;
+                if (!body || !body.templateVersion) {
+                    throw new Error('Schema template version in body is empty');
+                }
+                const result = await publishSchemaTemplate(
+                    id,
+                    body.templateVersion,
+                    owner,
+                    NewNotifier.empty(),
+                    logger
+                );
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.PUBLISH_SCHEMA_TEMPLATE_ASYNC,
+        async (msg: {
+            id: string,
+            owner: IOwner,
+            body: { templateVersion: string },
+            task: any
+        }) => {
+            const { id, owner, body, task } = msg;
+            try {
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+                    if (!body || !body.templateVersion) {
+                        throw new Error('Schema template version in body is empty');
+                    }
+                    const result = await publishSchemaTemplate(
+                        id,
+                        body.templateVersion,
+                        owner,
+                        notifier,
+                        logger
+                    );
+                    notifier.result(result);
+                }, async (error) => {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    notifier.fail(error);
+                });
+                return new MessageResponse(task);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);

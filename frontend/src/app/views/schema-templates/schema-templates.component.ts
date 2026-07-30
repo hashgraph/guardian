@@ -5,6 +5,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { ImportEntityDialog, ImportEntityType, IImportEntityResult } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
+import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
@@ -29,6 +30,21 @@ export class SchemaTemplatesComponent implements OnInit {
     public user: UserPermissions = new UserPermissions();
     public isConfirmed: boolean = false;
     public textSearch: string = '';
+    public publishMenuSelector: any = null;
+
+    private readonly draftStatusOptions = [{
+        id: 'Publish',
+        title: 'Publish',
+        description: 'Release version into public domain.',
+        color: '#4caf50',
+    }];
+
+    private readonly publishErrorStatusOptions = [{
+        id: 'Publish',
+        title: 'Publish',
+        description: 'Release version into public domain.',
+        color: '#4caf50',
+    }];
 
     public showTemplateDialog: boolean = false;
     public saving: boolean = false;
@@ -54,8 +70,7 @@ export class SchemaTemplatesComponent implements OnInit {
 
     public canEdit(template: SchemaTemplateGridItem): boolean {
         return this.isConfirmed &&
-            this.user.TEMPLATES_TEMPLATE_UPDATE &&
-            template.status !== ModuleStatus.PUBLISHED;
+            this.user.TEMPLATES_TEMPLATE_READ;
     }
 
     public canExport(template: SchemaTemplateGridItem): boolean {
@@ -67,6 +82,18 @@ export class SchemaTemplatesComponent implements OnInit {
         return this.isConfirmed &&
             this.user.TEMPLATES_TEMPLATE_DELETE &&
             template.status !== ModuleStatus.PUBLISHED;
+    }
+
+    public canPublish(template: SchemaTemplateGridItem): boolean {
+        return this.isConfirmed &&
+            this.user.TEMPLATES_TEMPLATE_UPDATE &&
+            template.status !== ModuleStatus.PUBLISHED;
+    }
+
+    public canCreateNewVersion(template: SchemaTemplateGridItem): boolean {
+        return this.isConfirmed &&
+            this.user.TEMPLATES_TEMPLATE_UPDATE &&
+            template.status === ModuleStatus.PUBLISHED;
     }
 
     public openCreateDialog(): void {
@@ -224,6 +251,60 @@ export class SchemaTemplatesComponent implements OnInit {
         });
     }
 
+    public publishTemplate(template: SchemaTemplateGridItem): void {
+        const id = template.id || (template as any)._id;
+        if (!id || !this.canPublish(template)) {
+            return;
+        }
+        const dialogRef = this.dialogService.open(PublishSchemaTemplateDialog, {
+            showHeader: false,
+            header: 'Publish Schema Template',
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                template
+            },
+        })!;
+        dialogRef.onClose.subscribe((options: { templateVersion: string } | null) => {
+            if (!options) {
+                return;
+            }
+            this.loading = true;
+            this.templatesService.pushPublish(id, options).subscribe({
+                next: (task) => {
+                    void this.router.navigate(['/task', task.taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                },
+                error: () => {
+                    this.loading = false;
+                }
+            });
+        });
+    }
+
+    public createNewVersion(template: SchemaTemplateGridItem): void {
+        const id = template.id || (template as any)._id;
+        if (!id || !this.canCreateNewVersion(template)) {
+            return;
+        }
+        this.loading = true;
+        this.templatesService.pushNewVersion(id).subscribe({
+            next: (task) => {
+                void this.router.navigate(['/task', task.taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
+            },
+            error: () => {
+                this.loading = false;
+            }
+        });
+    }
+
     public openSchemas(template: SchemaTemplateGridItem): void {
         if (!template.topicId) {
             return;
@@ -294,6 +375,35 @@ export class SchemaTemplatesComponent implements OnInit {
             default:
                 return 'grey';
         }
+    }
+
+    public showStatusActions(template: SchemaTemplateGridItem): boolean {
+        return this.user.TEMPLATES_TEMPLATE_UPDATE &&
+            (
+                template.status === ModuleStatus.DRAFT ||
+                template.status === ModuleStatus.PUBLISH_ERROR
+            );
+    }
+
+    public getStatusOptions(template: SchemaTemplateGridItem): any[] {
+        if (template.status === ModuleStatus.PUBLISH_ERROR) {
+            return this.publishErrorStatusOptions;
+        }
+        return this.draftStatusOptions;
+    }
+
+    public getStatusName(template: SchemaTemplateGridItem): string {
+        if (template.status === ModuleStatus.PUBLISH_ERROR) {
+            return 'Not published';
+        }
+        return this.getStatusLabel(template.status);
+    }
+
+    public onChangeStatus(event: any, template: SchemaTemplateGridItem): void {
+        if (event.value?.id === 'Publish') {
+            this.publishTemplate(template);
+        }
+        setTimeout(() => this.publishMenuSelector = null, 0);
     }
 
     private loadProfile(): void {

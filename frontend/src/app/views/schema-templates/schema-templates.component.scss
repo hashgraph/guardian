@@ -115,6 +115,41 @@
     background: rgba(255, 67, 42, 0.16);
 }
 
+.status-actions-dropdown {
+    ::ng-deep {
+        .p-select {
+            border: 1px solid var(--color-secondary);
+            outline: none !important;
+            box-shadow: none !important;
+        }
+
+        .p-inputtext {
+            padding: 5px 0 4px 10px;
+            color: inherit;
+            font-family: Inter, sans-serif;
+            font-size: 14px;
+            font-style: normal;
+            font-weight: 500;
+        }
+    }
+}
+
+.dropdown-item-title {
+    color: #0031ff;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+}
+
+.dropdown-item-description {
+    color: #848fa9;
+    font-family: Inter, sans-serif;
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+}
+
 .schema-template-link {
     padding: 0;
     color: var(--primary-color);
@@ -163,6 +198,7 @@
 }
 
 .col-version,
+.col-previous-version,
 .col-status,
 .col-schemas {
     min-width: 120px;
