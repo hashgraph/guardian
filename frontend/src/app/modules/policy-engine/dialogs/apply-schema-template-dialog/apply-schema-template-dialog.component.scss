@@ -12,63 +12,9 @@
     justify-content: center;
 }
 
-.dialog-header {
-    height: 80px;
-    display: flex;
-    width: 100%;
-    position: relative;
-    color: #495057;
-    padding: 1.5rem 0;
-
-    .header-container {
-        width: 100%;
-        position: relative;
-        flex: 1;
-        display: flex;
-        flex-direction: row;
-        min-width: 0;
-
-        .header-text {
-            font-weight: 600;
-            font-size: 1.25rem;
-            font-family: Poppins, sans-serif;
-            font-style: normal;
-            padding: 0;
-            white-space: nowrap;
-        }
-
-        .header-item {
-            padding: 6px 12px;
-            background: var(--guardian-grey-background, #E1E7EF);
-            margin: 0 16px;
-            border-radius: 6px;
-            color: #6f7279;
-            font-size: 14px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-    }
-
-    .header-icon {
-        width: 32px;
-        min-width: 32px;
-        max-width: 32px;
-        position: relative;
-        flex: 32px;
-        padding: 4px;
-        border-radius: 100%;
-        cursor: pointer;
-
-        &:hover {
-            background: var(--guardian-grey-background, #e9ecef);
-        }
-    }
-}
-
 .dialog-body {
     height: 45vh;
-    overflow-y: auto;
+    overflow: hidden;
 }
 
 .context {
@@ -129,7 +75,6 @@
         overflow: auto;
 
         .col-auto {
-            width: 100%;
             min-width: 0;
             white-space: nowrap;
             overflow: hidden;
@@ -137,23 +82,33 @@
         }
 
         .col-120 {
-            width: 120px;
-            min-width: 120px;
-            max-width: 120px;
+            min-width: 0;
         }
 
         .grid-header {
-            display: flex;
-            flex-direction: row;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 120px 120px;
             width: 100%;
             height: 46px;
             min-height: 46px;
             max-height: 46px;
 
             & > div {
+                display: flex;
+                align-items: center;
                 font-weight: 500;
-                padding: 12px 4px;
+                padding: 12px 8px;
+                justify-content: flex-start;
+                text-align: left;
             }
+        }
+
+        .grid-header > .col-auto {
+            align-items: center;
+            flex-direction: row;
+            justify-content: flex-start;
+            padding-left: 32px;
+            text-align: left;
         }
 
         .grid-body {
@@ -164,8 +119,8 @@
             border-radius: 6px;
 
             .grid-row {
-                display: flex;
-                flex-direction: row;
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 120px 120px;
                 width: 100%;
                 height: 64px;
                 min-height: 64px;
@@ -174,7 +129,18 @@
                 cursor: pointer;
 
                 & > div {
-                    padding: 14px 6px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-start;
+                    padding: 14px 8px;
+                    text-align: left;
+                }
+
+                & > .col-auto {
+                    align-items: flex-start;
+                    justify-content: center;
+                    padding-left: 32px;
+                    text-align: left;
                 }
 
                 &:hover,
@@ -205,6 +171,47 @@
         margin-top: 4px;
         font-size: 12px;
         color: #848FA9;
+    }
+
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 52px;
+        height: 24px;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-family: Inter;
+        font-size: 14px;
+        font-style: normal;
+        font-weight: 500;
+        line-height: 16px;
+    }
+
+    .chip-color-grey {
+        color: var(--color-grey-6, #848fa9);
+        background: var(--color-grey-3, #e1e7ef);
+    }
+
+    .chip-color-blue {
+        color: var(--color-primary, #0031ff);
+        background: rgba(6, 129, 238, 0.16);
+    }
+
+    .chip-color-green {
+        color: #19be47;
+        background: #cafdd9;
+    }
+
+    .chip-color-red {
+        color: var(--color-accent-red-1, #ff432a);
+        background: rgba(255, 67, 42, 0.16);
+    }
+
+    .grid-container .grid-row .col-auto {
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
     }
 
     .empty-grid {
@@ -238,6 +245,13 @@
     display: flex;
     justify-content: flex-end;
     gap: 12px;
+
+    button {
+        min-width: 115px;
+        height: 40px;
+        font-size: var(--guardian-primary-font-size);
+        font-weight: 500;
+    }
 }
 
 .empty-icon-color {

@@ -193,6 +193,18 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             }
+            case TaskAction.APPLY_SCHEMA_TEMPLATE:
+            case TaskAction.DETACH_SCHEMA_TEMPLATE:
+                if (this.last) {
+                    this.redirect(this.last);
+                    return;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
             case TaskAction.IMPORT_POLICY_FILE:
             case TaskAction.IMPORT_POLICY_MESSAGE:
                 if (this.redir) {
@@ -396,7 +408,6 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             default:
-                debugger;
                 return;
         }
     }
@@ -461,6 +472,13 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case 'Delete schema template':
                 setTimeout(() => {
                     this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            case 'Apply schema template':
+                setTimeout(() => {
+                    this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,
                     });
                 }, 500);

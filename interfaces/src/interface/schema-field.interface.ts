@@ -17,7 +17,7 @@ export interface SchemaField {
      */
     name: string;
     /**
-     * Stable field id inside a schema template lineage
+     * Stable field id inside a schema template
      */
     templateFieldId?: string;
     /**

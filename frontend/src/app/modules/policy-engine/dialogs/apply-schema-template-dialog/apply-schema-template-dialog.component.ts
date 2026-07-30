@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { UntypedFormControl, UntypedFormGroup } from '@angular/forms';
 import { ModuleStatus } from '@guardian/interfaces';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { debounceTime, distinctUntilChanged, Subject, takeUntil } from 'rxjs';
 import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
 @Component({
@@ -10,16 +11,16 @@ import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services
     styleUrls: ['./apply-schema-template-dialog.component.scss'],
     standalone: false
 })
-export class ApplySchemaTemplateDialog implements OnInit {
+export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     public loading = true;
     public applying = false;
     public policy: any;
-    public templates: SchemaTemplateGridItem[] = [];
     public list: SchemaTemplateGridItem[] = [];
     public selectedTemplateId: string | null = null;
     public filtersForm = new UntypedFormGroup({
         name: new UntypedFormControl('')
     });
+    private readonly destroy$ = new Subject<void>();
 
     constructor(
         public ref: DynamicDialogRef,
@@ -30,33 +31,41 @@ export class ApplySchemaTemplateDialog implements OnInit {
     }
 
     public ngOnInit(): void {
+        this.filtersForm.get('name')?.valueChanges
+            .pipe(
+                debounceTime(300),
+                distinctUntilChanged(),
+                takeUntil(this.destroy$)
+            )
+            .subscribe((value) => {
+                this.selectedTemplateId = null;
+                this.loadTemplates(String(value || '').trim());
+            });
         this.loadTemplates();
     }
 
-    public loadTemplates(): void {
+    public ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
+    public loadTemplates(search: string = ''): void {
         this.loading = true;
-        this.templatesService.page(0, 1000).subscribe({
+        this.templatesService.page(0, 1000, search)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
             next: (response) => {
-                this.templates = (response.body || []).filter((template) => {
+                this.list = (response.body || []).filter((template) => {
                     return template.status === ModuleStatus.DRAFT ||
                         template.status === ModuleStatus.PUBLISHED;
                 });
-                this.applyFilters();
                 this.loading = false;
             },
             error: () => {
-                this.templates = [];
                 this.list = [];
                 this.loading = false;
             }
         });
-    }
-
-    public applyFilters(): void {
-        const name = this.filtersForm.value?.name?.trim()?.toLowerCase();
-        this.list = name
-            ? this.templates.filter((template) => template.name?.toLowerCase().includes(name))
-            : [...this.templates];
     }
 
     public selectTemplate(template: SchemaTemplateGridItem): void {
@@ -95,6 +104,20 @@ export class ApplySchemaTemplateDialog implements OnInit {
             case ModuleStatus.DRAFT:
             default:
                 return 'Draft';
+        }
+    }
+
+    public getStatusColor(status?: ModuleStatus): string {
+        switch (status) {
+            case ModuleStatus.PUBLISHED:
+                return 'green';
+            case ModuleStatus.PUBLISH_ERROR:
+                return 'red';
+            case ModuleStatus.DRY_RUN:
+                return 'blue';
+            case ModuleStatus.DRAFT:
+            default:
+                return 'grey';
         }
     }
 }

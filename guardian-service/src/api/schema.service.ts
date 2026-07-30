@@ -149,9 +149,15 @@ async function validateTemplateSchemaDelete(schema: ISchema): Promise<void> {
     if (!context) {
         return;
     }
-    if (context.schemaConfig.deleteLocked) {
-        throw new Error(`Schema "${schema.name}" is locked by schema template and cannot be deleted.`);
-    }
+    throw new Error(`Schema "${schema.name}" belongs to an applied schema template. Detach the template before deleting this schema.`);
+}
+
+function getSchemaSettingsHash(schema: ISchema): string {
+    return SchemaHelper.stableStringify({
+        name: schema.name,
+        description: schema.description,
+        entity: schema.entity
+    });
 }
 
 async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): Promise<void> {
@@ -161,22 +167,8 @@ async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): P
     }
 
     const { schemaConfig } = context;
-    if (schemaConfig.locked || schemaConfig.editLocked) {
-        const previousHash = SchemaHelper.stableStringify({
-            name: previous.name,
-            description: previous.description,
-            entity: previous.entity,
-            document: previous.document
-        });
-        const nextHash = SchemaHelper.stableStringify({
-            name: next.name,
-            description: next.description,
-            entity: next.entity,
-            document: next.document
-        });
-        if (previousHash !== nextHash) {
-            throw new Error(`Schema "${previous.name}" is locked by schema template and cannot be edited.`);
-        }
+    if (schemaConfig.schemaSettingsLocked && getSchemaSettingsHash(previous) !== getSchemaSettingsHash(next)) {
+        throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
     }
 
     const previousFields = flattenFields(getSchemaFields(previous));
@@ -228,6 +220,9 @@ function prepareSchemaTemplateMetadata(item: ISchema, previous?: ISchema): void 
         item.templateId = previous.templateId;
         item.templateSchemaId = previous.templateSchemaId;
         SchemaHelper.preserveTemplateFieldIds(item.document, previous.document);
+    } else if (item.category === SchemaCategory.POLICY && item.templateId && item.templateSchemaId) {
+        // Policy schema copied from a schema template. Its document already carries
+        // templateFieldId values from the template and must keep them.
     } else {
         delete item.templateId;
         delete item.templateSchemaId;

@@ -57,6 +57,7 @@ import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog
 import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 import { ApplySchemaTemplateDialog } from '../dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -584,11 +585,19 @@ export class PoliciesComponent implements OnInit {
                     }),
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
-                        disabled: policy.status !== PolicyStatus.DRAFT || !!policy.schemaTemplate?.templateId,
+                        disabled: policy.status !== PolicyStatus.DRAFT || this.hasAppliedSchemaTemplate(policy),
                         tooltip: 'Apply Schema Template',
                         icon: 'link',
                         color: 'primary-color',
                         click: () => this.openApplySchemaTemplateDialog(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
+                        tooltip: 'Detach Schema Template',
+                        icon: 'link-break',
+                        color: 'primary-color',
+                        click: () => this.detachSchemaTemplate(policy)
                     })
                 ]
             }, {
@@ -735,6 +744,7 @@ export class PoliciesComponent implements OnInit {
         private dialogService: DialogService,
         private toastService: ToastService,
         private schemaService: SchemaService,
+        private schemaTemplatesService: SchemaTemplatesService,
         private wizardService: WizardService,
         private tokenService: TokenService,
         private contractSerivce: ContractService,
@@ -1882,6 +1892,15 @@ export class PoliciesComponent implements OnInit {
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
     }
 
+    private hasAppliedSchemaTemplate(policy: any): boolean {
+        const binding = policy?.schemaTemplate;
+        return !!(
+            binding?.templateId ||
+            binding?.snapshotId ||
+            Object.keys(binding?.schemaMap || {}).length
+        );
+    }
+
     public openApplySchemaTemplateDialog(policy: any): void {
         this.policyMenu?.hide();
         const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
@@ -1899,6 +1918,51 @@ export class PoliciesComponent implements OnInit {
             void this.router.navigate(['task', task.taskId], {
                 queryParams: {
                     last: btoa(location.href)
+                }
+            });
+        });
+    }
+
+    public detachSchemaTemplate(policy: any): void {
+        this.policyMenu?.hide();
+        const templateName = policy.schemaTemplate?.templateName || 'schema template';
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Detach Schema Template',
+                text: `Detach "${templateName}" from this policy?`,
+                details: [
+                    'The imported from template schemas will remain in the policy.',
+                    'Template locks and field restrictions will be removed.'
+                ],
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Detach',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+            if (result !== 'Detach') {
+                return;
+            }
+            this.schemaTemplatesService.pushDetach(policy.id).subscribe({
+                next: (task) => {
+                    if (!task?.taskId) {
+                        return;
+                    }
+                    void this.router.navigate(['task', task.taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                },
+                error: ({ message }) => {
+                    this.toastService.error(message);
                 }
             });
         });

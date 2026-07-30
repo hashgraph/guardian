@@ -62,9 +62,7 @@ export interface ISchemaTemplateFieldConfig {
 }
 
 export interface ISchemaTemplateSchemaConfig {
-    locked?: boolean;
-    editLocked?: boolean;
-    deleteLocked?: boolean;
+    schemaSettingsLocked?: boolean;
     customFieldsLocked?: boolean;
     fields?: Record<string, ISchemaTemplateFieldConfig>;
 }
