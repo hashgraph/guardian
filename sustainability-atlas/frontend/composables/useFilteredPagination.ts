@@ -157,7 +157,8 @@ export function useFilteredPagination<T>(
                         result = result.filter((item) => selectedValues.includes(String(item[key as keyof T])));
                     }
                 } else {
-                    result = result.filter((item) => String(item[key as keyof T]) === value);
+                    const selectedValues = decodeMultiValue(value);
+                    result = result.filter((item) => selectedValues.includes(String(item[key as keyof T])));
                 }
             }
         }

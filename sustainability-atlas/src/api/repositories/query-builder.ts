@@ -197,10 +197,13 @@ export class QueryBuilder {
             case 'eq': {
                 if (typeof value === 'string' && value.includes('|')) {
                     const parts = this.decodeMultiValue(value);
-                    if (parts.length > 1) {
-                        this.params.push(parts);
-                        return `${sql} = ANY($${this.paramIdx++}::text[])`;
-                    }
+                    this.params.push(parts);
+                    return `${sql} = ANY($${this.paramIdx++}::text[])`;
+                }
+                if (typeof value === 'string') {
+                    const parts = this.decodeMultiValue(value);
+                    this.params.push(parts[0] ?? value);
+                    return `${sql} = $${this.paramIdx++}`;
                 }
                 this.params.push(value);
                 return `${sql} = $${this.paramIdx++}`;
