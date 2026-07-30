@@ -475,6 +475,9 @@
         "filteredByRegistry": "Showing projects for registry",
         "unknownRegistry": "this registry",
         "clearRegistryFilter": "Clear filter",
+        "filteredByMethodology": "Showing projects for methodology",
+        "unknownMethodology": "this methodology",
+        "clearMethodologyFilter": "Clear filter",
         "projectsFound": "{count} projects found",
         "totalIssuances": "Total issuances:",
         "countries": "Countries:",
@@ -641,6 +644,8 @@
         "filteredByRegistry": "Showing issuances for registry",
         "unknownRegistry": "this registry",
         "clearRegistryFilter": "Clear filter",
+        "filteredBySdg": "Showing issuances for SDG {sdg}",
+        "clearSdgFilter": "Clear filter",
         "supplyTooltip": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials.",
         "columns": {
             "token": "Token",
@@ -1041,6 +1046,8 @@
         },
         "tooltips": {
             "viewMethodologies": "View methodologies for this registry",
+            "viewProjects": "View projects for this registry",
+            "viewIssuances": "View issuances for this registry",
             "hideEmpty": "On by default. Hides registries with 0 methodologies, 0 projects, 0 users, and 0 issuances — the same set counted in the dashboard 'Registries' stat card. Uncheck to see every indexed registry, including announcement-only ones with no on-chain activity yet."
         },
         "detail": {
@@ -1109,6 +1116,7 @@
             "countries": "Countries",
             "projects": "Projects",
             "issued": "Issued",
+            "mintAmount": "Mint Amount",
             "retired": "Retired",
             "categories": "Categories",
             "registries": "Registries",
@@ -1124,6 +1132,7 @@
         "searchPlaceholder": "Search SDG...",
         "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDG.",
         "viewProjects": "View projects tagged with {name}",
+        "viewIssuances": "View issuances for {name}",
         "columns": {
             "sdg": "SDG",
             "goal": "Goal",

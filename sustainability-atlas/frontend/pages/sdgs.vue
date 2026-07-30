@@ -102,7 +102,15 @@ function sdgIcon(id: number): string {
                                     @click="goToProjectsForSdg(s.sdgId)"
                                 >{{ s.projects.toLocaleString() }}</button>
                             </td>
-                            <td class="py-3 px-4 text-center tabular-nums font-medium">{{ s.credits }}</td>
+                            <td class="py-3 px-4 text-center tabular-nums font-medium">
+                                <AppLink
+                                    :to="`/credits?sdg=${s.sdgId}`"
+                                    class="text-primary hover:underline transition-colors"
+                                    :title="$t('sdgs.viewIssuances', { name: s.name })"
+                                >
+                                    {{ s.credits }}
+                                </AppLink>
+                            </td>
                             <td class="py-3 px-4 text-center tabular-nums">{{ s.developers }}</td>
                             <td class="py-3 px-4 text-center tabular-nums">{{ s.countries }}</td>
                             <td class="py-3 px-4">

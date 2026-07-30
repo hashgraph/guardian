@@ -470,13 +470,25 @@ function viewRegistry(r: RegistryDto) {
                                     </AppLink>
                                     <span v-else class="text-muted-foreground">{{ r.stats.policyCount }}</span>
                                 </td>
-                                <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.projectCount }}</td>
+                                <td class="py-3 px-4 text-right tabular-nums">
+                                    <AppLink
+                                        v-if="r.stats.projectCount > 0 && r.did"
+                                        :to="`/projects?registryDid=${encodeURIComponent(r.did)}`"
+                                        class="font-medium text-foreground hover:text-primary hover:underline transition-colors"
+                                        :title="$t('registries.tooltips.viewProjects')"
+                                        @click.stop
+                                    >
+                                        {{ r.stats.projectCount }}
+                                    </AppLink>
+                                    <span v-else class="text-muted-foreground">{{ r.stats.projectCount }}</span>
+                                </td>
                                 <td class="py-3 px-4 text-right tabular-nums">{{ r.stats.userCount }}</td>
                                 <td class="py-3 px-4 text-right tabular-nums font-medium">
                                     <AppLink
                                         v-if="r.stats.issuanceCount > 0 && r.did"
                                         :to="`/credits?registryDid=${encodeURIComponent(r.did)}`"
                                         class="text-foreground hover:text-primary hover:underline transition-colors"
+                                        :title="$t('registries.tooltips.viewIssuances')"
                                         @click.stop
                                     >
                                         {{ r.stats.issuanceCount }}

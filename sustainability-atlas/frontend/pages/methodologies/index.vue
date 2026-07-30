@@ -581,10 +581,24 @@ async function downloadMethodologies() {
                   </span>
                   <span v-else class="text-xs text-muted-foreground">—</span>
                 </td>
-                <td class="py-3 px-4 text-right tabular-nums">
-                  <span :title="r.stats.projectCount !== r.stats.instanceProjectCount
-                    ? `${r.stats.projectCount} total across all versions`
-                    : undefined">
+                <td class="py-3 px-4 text-right tabular-nums font-medium">
+                  <AppLink
+                    v-if="r.topicId && r.stats.instanceProjectCount > 0"
+                    :to="`/projects?methodologyId=${encodeURIComponent(r.topicId)}`"
+                    :title="r.stats.projectCount !== r.stats.instanceProjectCount
+                      ? `${r.stats.projectCount} total across all versions`
+                      : undefined"
+                    class="text-foreground hover:text-primary hover:underline transition-colors"
+                    @click.stop
+                  >
+                    {{ r.stats.instanceProjectCount }}
+                  </AppLink>
+                  <span
+                    v-else
+                    :title="r.stats.projectCount !== r.stats.instanceProjectCount
+                      ? `${r.stats.projectCount} total across all versions`
+                      : undefined"
+                  >
                     {{ r.stats.instanceProjectCount }}
                   </span>
                 </td>

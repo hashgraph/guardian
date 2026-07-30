@@ -475,6 +475,9 @@
         "filteredByRegistry": "Mostrando proyectos del registro",
         "unknownRegistry": "este registro",
         "clearRegistryFilter": "Quitar filtro",
+        "filteredByMethodology": "Mostrando proyectos de la metodología",
+        "unknownMethodology": "esta metodología",
+        "clearMethodologyFilter": "Quitar filtro",
         "projectsFound": "{count} proyectos encontrados",
         "totalIssuances": "Emisiones totales:",
         "countries": "Países:",
@@ -636,6 +639,8 @@
         "filteredByRegistry": "Mostrando emisiones del registro",
         "unknownRegistry": "este registro",
         "clearRegistryFilter": "Quitar filtro",
+        "filteredBySdg": "Mostrando emisiones del ODS {sdg}",
+        "clearSdgFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
         "columns": {
             "token": "Token",
@@ -1033,7 +1038,9 @@
             "loadFailed": "Error al cargar los registros."
         },
         "tooltips": {
-            "viewMethodologies": "Ver metodologías de este registro"
+            "viewMethodologies": "Ver metodologías de este registro",
+            "viewProjects": "Ver proyectos de este registro",
+            "viewIssuances": "Ver emisiones de este registro"
         },
         "detail": {
             "breadcrumb": "Registros",
@@ -1101,6 +1108,7 @@
             "countries": "Países",
             "projects": "Proyectos",
             "issued": "Emitido",
+            "mintAmount": "Cantidad de acuñación",
             "retired": "Retirado",
             "categories": "Categorías",
             "registries": "Registros",
@@ -1116,6 +1124,7 @@
         "searchPlaceholder": "Buscar ODS...",
         "coverageTooltip": "Porcentaje del total de proyectos que contribuyen a este ODS. Un proyecto puede contribuir a varios ODS.",
         "viewProjects": "Ver proyectos etiquetados con {name}",
+        "viewIssuances": "Ver emisiones de {name}",
         "columns": {
             "sdg": "ODS",
             "goal": "Objetivo",

@@ -22,7 +22,21 @@ const route = useRoute();
 const projectKeyFilter = computed(() => route.query.projectKey as string | undefined);
 const methodologyIdFilter = computed(() => route.query.methodologyId as string | undefined);
 const registryDidFilter = computed(() => route.query.registryDid as string | undefined);
-const { credits, total, pending } = useCredits(projectKeyFilter, methodologyIdFilter, registryDidFilter);
+const sdgFilter = computed(() => {
+    const raw = route.query.sdg || route.query.sdgs;
+    return typeof raw === 'string' ? raw : undefined;
+});
+
+const { projects } = useProjects();
+const sdgProjectKeys = computed(() => {
+    if (!sdgFilter.value) return undefined;
+    const sdgNum = parseInt(sdgFilter.value, 10);
+    if (isNaN(sdgNum)) return undefined;
+    const matching = projects.value.filter(p => p.sdgs?.includes(sdgNum));
+    return matching.map(p => p.projectKey || p.id).filter(Boolean) as string[];
+});
+
+const { credits, total, pending } = useCredits(projectKeyFilter, methodologyIdFilter, registryDidFilter, sdgProjectKeys);
 
 const config = useRuntimeConfig();
 const apiBaseURL = import.meta.server
@@ -54,11 +68,28 @@ async function viewVc(c: any) {
 const hideUnlinked = ref(route.query.linkedOnly === 'true');
 
 const allCredits = computed(() => {
-    const mapped = credits.value.map(c => ({
+    let mapped = credits.value.map(c => ({
         ...c,
         supplyFormatted: formatCredits(c.supply),
     }));
-    return hideUnlinked.value ? mapped.filter(c => c.projectId) : mapped;
+    if (hideUnlinked.value) {
+        mapped = mapped.filter(c => c.projectId);
+    }
+    if (sdgFilter.value) {
+        const sdgNum = parseInt(sdgFilter.value, 10);
+        if (!isNaN(sdgNum)) {
+            const sdgProjectKeysSet = new Set(
+                projects.value
+                    .filter(p => p.sdgs?.includes(sdgNum))
+                    .flatMap(p => [p.id, p.projectKey, p.name].filter(Boolean))
+            );
+            mapped = mapped.filter(c =>
+                (c.projectId && sdgProjectKeysSet.has(c.projectId)) ||
+                (c.project && sdgProjectKeysSet.has(c.project))
+            );
+        }
+    }
+    return mapped;
 });
 
 const projectFilterName = computed(() => {
@@ -81,7 +112,7 @@ const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, act
         searchFields: ['name', 'symbol', 'tokenId', 'projectDisplay', 'methodologyDisplay', 'registry'],
         pageSize: 10,
         defaultSort: { key: 'supply', dir: 'desc' },
-        excludeFromQuery: ['projectKey', 'methodologyId', 'linkedOnly', 'registryDid'],
+        excludeFromQuery: ['projectKey', 'methodologyId', 'linkedOnly', 'registryDid', 'sdg', 'sdgs'],
     });
 
 
@@ -246,6 +277,15 @@ async function downloadCredits() {
             </div>
         </div>
 
+        <div v-if="sdgFilter" class="px-6 pb-2">
+            <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+                <span class="text-muted-foreground">{{ $t('credits.filteredBySdg', { sdg: sdgFilter }) }}</span>
+                <AppLink to="/credits" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                    {{ $t('credits.clearSdgFilter') }} ×
+                </AppLink>
+            </div>
+        </div>
+
         <div class="px-6 pb-3">
             <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters">
                 <template #before-clear>
@@ -371,8 +411,15 @@ async function downloadCredits() {
                                     </AppLink>
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
-                                <td class="py-3 px-4 max-w-[180px] text-muted-foreground">
-                                    <TruncatedText v-if="c.methodologyDisplay" :text="c.methodologyDisplay" />
+                                <td class="py-3 px-4 max-w-[180px]">
+                                    <AppLink
+                                        v-if="c.methodologyId && c.methodologyDisplay"
+                                        :to="`/methodologies/${encodeURIComponent(c.methodologyId)}`"
+                                        class="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                                        @click.stop
+                                    >
+                                        <TruncatedText :text="c.methodologyDisplay" />
+                                    </AppLink>
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
                                 <td class="py-3 px-4 whitespace-nowrap">
