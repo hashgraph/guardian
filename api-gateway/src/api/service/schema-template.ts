@@ -185,6 +185,45 @@ export class SchemaTemplatesApi {
     }
 
     /**
+     * Get effective applied schema template by policy topic id.
+     */
+    @Get('/policies/topic/:topicId/applied')
+    @Auth(
+        Permissions.POLICIES_POLICY_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns effective applied schema template state by policy topic.',
+        description: 'Returns policy-specific schema template state. Snapshot configuration is used when available.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'topicId',
+        type: String,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Applied schema template state.',
+        schema: { type: 'object' }
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async getAppliedSchemaTemplateByPolicyTopic(
+        @AuthUser() user: IAuthUser,
+        @Param('topicId') topicId: string
+    ): Promise<ISchemaTemplate | null> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.getAppliedSchemaTemplateByPolicyTopic(topicId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
      * Get a schema template by id.
      */
     @Get('/:templateId')

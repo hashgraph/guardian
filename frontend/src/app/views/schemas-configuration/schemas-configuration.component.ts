@@ -484,7 +484,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         if (!templateId || this.isTemplateMode) {
                             return of({ ...data, appliedTemplate: null });
                         }
-                        return this.loadAppliedSchemaTemplateById(templateId)
+                        return this.loadAppliedSchemaTemplateByPolicyTopic(templateId, data.schema?.topicId || this.topic)
                             .pipe(map((appliedTemplate) => ({ ...data, appliedTemplate })));
                     }),
                     catchError(() => {
@@ -829,23 +829,33 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             this.schemaTemplate = null;
             return;
         }
-        this.loadAppliedSchemaTemplateById(templateId)
+        this.loadAppliedSchemaTemplateByPolicyTopic(templateId, this.selectedSchema?.topicId || this.topic)
             .pipe(takeUntil(this.destroy$))
             .subscribe((template) => {
                 this.schemaTemplate = template;
             });
     }
 
-    private loadAppliedSchemaTemplateById(templateId: string): Observable<ISchemaTemplate | null> {
-        if (templateId === this.loadedAppliedTemplateId && this.schemaTemplate) {
+    private loadAppliedSchemaTemplateByPolicyTopic(
+        templateId: string,
+        topicId: string
+    ): Observable<ISchemaTemplate | null> {
+        const cacheKey = `${templateId}:${topicId}`;
+        if (cacheKey === this.loadedAppliedTemplateId && this.schemaTemplate) {
             return of(this.schemaTemplate);
         }
-        this.loadedAppliedTemplateId = templateId;
-        return this.schemaTemplatesService.getById(templateId).pipe(
-            map((template) => ({
-                ...template,
-                config: template?.config || { schemas: {} }
-            } as ISchemaTemplate)),
+        if (!topicId) {
+            return of(null);
+        }
+        this.loadedAppliedTemplateId = cacheKey;
+        return this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+            map((template) => template
+                ? ({
+                    ...template,
+                    config: template.config || { schemas: {} }
+                } as ISchemaTemplate)
+                : null
+            ),
             catchError(() => {
                 this.loadedAppliedTemplateId = '';
                 return of(null);
@@ -2720,7 +2730,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     if (!data.templateId || this.isTemplateMode) {
                         return of({ ...data, appliedTemplate: null });
                     }
-                    return this.loadAppliedSchemaTemplateById(data.templateId)
+                    return this.loadAppliedSchemaTemplateByPolicyTopic(data.templateId, this.topic)
                         .pipe(map((appliedTemplate) => ({ ...data, appliedTemplate })));
                 }),
                 takeUntil(this._cancelLoadSchemas$),

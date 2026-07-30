@@ -2408,6 +2408,16 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Return applied schema template state by policy topic
+     * @param topicId
+     * @param owner
+     * @returns applied schema template state
+     */
+    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.GET_APPLIED_SCHEMA_TEMPLATE, { topicId, owner });
+    }
+
+    /**
      * Update schema template
      * @param id
      * @param template

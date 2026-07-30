@@ -39,6 +39,10 @@ export class SchemaTemplatesService {
         return this.http.get<SchemaTemplateGridItem>(`${this.url}/${id}`);
     }
 
+    public getAppliedByPolicyTopic(topicId: string): Observable<SchemaTemplateGridItem | null> {
+        return this.http.get<SchemaTemplateGridItem | null>(`${this.url}/policies/topic/${topicId}/applied`);
+    }
+
     public create(template: Partial<ISchemaTemplate>): Observable<SchemaTemplateGridItem> {
         return this.http.post<SchemaTemplateGridItem>(`${this.url}/`, template);
     }

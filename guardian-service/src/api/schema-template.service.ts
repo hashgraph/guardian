@@ -510,6 +510,49 @@ async function detachSchemaTemplate(
     };
 }
 
+async function getAppliedSchemaTemplateByPolicyTopic(
+    topicId: string,
+    owner: IOwner
+): Promise<any | null> {
+    const policy = await DatabaseServer.getPolicy({ topicId });
+    if (!policy || policy.owner !== owner.owner) {
+        throw new Error('Invalid policy');
+    }
+
+    const binding = policy.schemaTemplate;
+    if (!binding?.templateId) {
+        return null;
+    }
+
+    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+    let config: ISchemaTemplateConfig | null | undefined;
+    if (binding.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
+        config = snapshot?.config;
+    }
+    if (!config) {
+        config = template?.config;
+    }
+
+    return {
+        id: binding.templateId,
+        _id: binding.templateId,
+        uuid: template?.uuid,
+        name: binding.templateName || template?.name,
+        description: template?.description,
+        owner: template?.owner || owner.owner,
+        creator: template?.creator,
+        status: binding.templateStatus || template?.status,
+        version: binding.templateVersion || template?.version,
+        topicId: template?.topicId,
+        messageId: binding.templateMessageId || template?.messageId,
+        config: config || { schemas: {} },
+        snapshotId: binding.snapshotId,
+        templateStateHash: binding.templateStateHash,
+        appliedAt: binding.appliedAt
+    };
+}
+
 /**
  * Connect to the message broker methods of working with schema templates.
  */
@@ -611,6 +654,21 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 }
                 await normalizeSchemaTemplateConfig(template);
                 return new MessageResponse(template);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.GET_APPLIED_SCHEMA_TEMPLATE,
+        async (msg: {
+            topicId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { topicId, owner } = msg;
+                const result = await getAppliedSchemaTemplateByPolicyTopic(topicId, owner);
+                return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
