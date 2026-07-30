@@ -11,6 +11,7 @@ import {
 import {
     DefaultFieldDictionary,
     FieldTypesDictionary,
+    isAncestorType,
     Schema,
     SchemaCategory,
     SchemaCondition,
@@ -361,6 +362,9 @@ export class SchemaConfigurationComponent implements OnInit {
         this.updateConditionControls(conditions);
         this.errors = errors;
         this.rebuildOptionCaches();
+        this.resolveGeoDependencies();
+        this.validateGeoDependencies();
+        this.changeForm.emit(this);
     }
 
 
@@ -788,9 +792,11 @@ export class SchemaConfigurationComponent implements OnInit {
 
     public onRemove(item: FieldControl) {
         this.removeConditionsByField(item);
+        this.removeGeoDependenciesByField(item);
         this.fields = this.fields.filter((e) => e != item);
         item.remove(this.fieldsForm);
         this.rebuildOptionCaches();
+        this.validateGeoDependencies();
     }
 
     private removeConditionsByField(field: FieldControl) {
@@ -800,6 +806,14 @@ export class SchemaConfigurationComponent implements OnInit {
         for (const condition of conditionsToRemove) {
             this.conditions = this.conditions.filter((e) => e != condition);
             this.conditionsForm.removeControl(condition.name);
+        }
+    }
+
+    private removeGeoDependenciesByField(field: FieldControl): void {
+        for (const candidate of this.fields) {
+            if (candidate.controlDependency.value === field) {
+                candidate.controlDependency.setValue(null);
+            }
         }
     }
 
@@ -817,6 +831,7 @@ export class SchemaConfigurationComponent implements OnInit {
             title,
             description,
             typeIndex,
+            dependency,
             required,
             isArray,
             unit,
@@ -915,6 +930,9 @@ export class SchemaConfigurationComponent implements OnInit {
             unit: type?.unitSystem ? unit : undefined,
             unitSystem: type?.unitSystem,
             customType: type?.customType,
+            dependency: dependency instanceof FieldControl
+                ? { on: dependency.controlKey.value, kind: 'geo' }
+                : undefined,
             textColor,
             textSize,
             textBold,
@@ -1704,15 +1722,77 @@ export class SchemaConfigurationComponent implements OnInit {
         return groups;
     }
 
+    private resolveGeoDependencies(): void {
+        const fieldsByKey = new Map(
+            this.fields.map((field) => [field.controlKey.value, field])
+        );
+        for (const field of this.fields) {
+            const dependency = field.controlDependency.value;
+            if (typeof dependency === 'string') {
+                const parent = fieldsByKey.get(dependency);
+                if (parent) {
+                    field.controlDependency.setValue(parent, { emitEvent: false });
+                }
+            }
+        }
+    }
+
+    private geoDependencyError(field: FieldControl): string | null {
+        const parent = field.controlDependency.value;
+        if (!parent) {
+            return null;
+        }
+        if (!(parent instanceof FieldControl) || !this.fields.includes(parent)) {
+            return 'The dependency target does not exist.';
+        }
+        if (parent === field) {
+            return 'A field cannot depend on itself.';
+        }
+        const childType = this.schemaTypeMap[field.controlType.value]?.customType;
+        const parentType = this.schemaTypeMap[parent.controlType.value]?.customType;
+        if (!isAncestorType('geo', parentType, childType)) {
+            return 'The selected field is not a compatible geographic ancestor.';
+        }
+
+        const visited = new Set<FieldControl>([field]);
+        let current: FieldControl | null = parent;
+        while (current) {
+            if (visited.has(current)) {
+                return 'Circular geographic dependencies are not allowed.';
+            }
+            visited.add(current);
+            const next: unknown = current.controlDependency.value;
+            current = next instanceof FieldControl ? next : null;
+        }
+        return null;
+    }
+
+    private validateGeoDependencies(): void {
+        for (const field of this.fields) {
+            const control = field.controlDependency;
+            const error = this.geoDependencyError(field);
+            const errors = { ...(control.errors || {}) };
+            delete errors.geoDependency;
+            if (error) {
+                errors.geoDependency = error;
+            }
+            control.setErrors(Object.keys(errors).length ? errors : null);
+        }
+    }
+
     private watchFieldControl(fc: FieldControl): void {
         merge(
             fc.controlType.valueChanges,
             fc.controlArray.valueChanges,
             fc.controlKey.valueChanges,
             fc.controlTitle.valueChanges,
+            fc.controlDependency.valueChanges,
         )
             .pipe(takeUntil(this.destroy$))
-            .subscribe(() => this.rebuildOptionCaches());
+            .subscribe(() => {
+                this.rebuildOptionCaches();
+                this.validateGeoDependencies();
+            });
     }
 
     private rebuildOptionCaches(): void {

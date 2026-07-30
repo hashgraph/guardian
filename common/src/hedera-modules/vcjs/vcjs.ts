@@ -19,6 +19,7 @@ import axios from 'axios';
 import { BbsBlsSignature2020, BbsBlsSignatureProof2020, Bls12381G2KeyPair, KeyPairOptions } from '@mattrglobal/jsonld-signatures-bbs';
 import { IPFS } from '../../helpers/index.js';
 import { CommonDidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method } from './did/index.js';
+import { validateGeoConsistency } from './geo-validator.js';
 
 import * as jsigV7Module from 'jsonld-signatures-v7';
 import { ContextHelper } from './context-helper.js';
@@ -322,9 +323,15 @@ export class VCJS {
 
         const validate = await ajv.compileAsync(schema);
         const valid = validate(vcObject);
-        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
+        errors = [...(errors || []), ...geoErrors];
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
+        return new SchemaValidationResult(
+            valid && !geoErrors.length,
+            'JSON_SCHEMA_VALIDATION_ERROR',
+            errors as any
+        );
     }
 
     /**
@@ -586,11 +593,19 @@ export class VCJS {
 
         this.prepareSchema(schema);
 
+        const schemaObject = Schema.fromVc(schema);
+
         const validate = await ajv.compileAsync(schema);
         const valid = validate(subject);
-        const errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
+        const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
+        errors = [...(errors || []), ...geoErrors];
 
-        return new SchemaValidationResult(valid, 'JSON_SCHEMA_VALIDATION_ERROR', errors as any);
+        return new SchemaValidationResult(
+            valid && !geoErrors.length,
+            'JSON_SCHEMA_VALIDATION_ERROR',
+            errors as any
+        );
     }
 
     /**

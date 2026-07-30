@@ -24,7 +24,7 @@
                     <div *ngIf="isInput(item) && !isIPFS(item)" class="form-field-input guardian-input-container">
                         <textarea
                             pInputTextarea
-                            [value]="item.value"
+                            [value]="displayValue(item)"
                             [readonly]="true"
                             type="text"
                             [autoResize]="true"

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, Subscription, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, ISchema, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -328,6 +328,40 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         '@context', 'type', 'policyId', 'ref', 'guardianVersion',
     ]);
 
+    private getGeoDependencyError(field: SchemaField, allFields: SchemaField[]): string | null {
+        const dependency = field.dependency;
+        if (!dependency) {
+            return null;
+        }
+        const parent = allFields.find(candidate => candidate.name === dependency.on);
+        if (!parent) {
+            return 'The dependency target does not exist.';
+        }
+        if (parent === field) {
+            return 'A field cannot depend on itself.';
+        }
+        if (
+            dependency.kind !== 'geo' ||
+            !isGeoCustomType(field.customType || '') ||
+            !isAncestorType('geo', parent.customType || '', field.customType || '')
+        ) {
+            return 'The selected field is not a compatible geographic ancestor.';
+        }
+        const visited = new Set<SchemaField>([field]);
+        let current: SchemaField | undefined = parent;
+        while (current) {
+            if (visited.has(current)) {
+                return 'Circular geographic dependencies are not allowed.';
+            }
+            visited.add(current);
+            const next: string | undefined = current.dependency?.on;
+            current = next
+                ? allFields.find(candidate => candidate.name === next)
+                : undefined;
+        }
+        return null;
+    }
+
     private getFieldErrors(field: SchemaField, allFields: SchemaField[]): string[] {
         const errors: string[] = [];
 
@@ -352,6 +386,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
         if ((field as any).customType === 'enum' && (!Array.isArray(field.enum) || field.enum.length === 0)) {
             errors.push('Enum must have at least one value');
+        }
+
+        const geoDependencyError = this.getGeoDependencyError(field, allFields);
+        if (geoDependencyError) {
+            errors.push(geoDependencyError);
         }
 
         return errors;
@@ -590,11 +629,20 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    private removeGeoDependenciesByField(field: SchemaField, fields: SchemaField[]): void {
+        for (const candidate of fields) {
+            if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === field.name) {
+                delete candidate.dependency;
+            }
+        }
+    }
+
     public deleteField(field: SchemaField, event: Event): void {
         event.stopPropagation();
         if (!this.selectedSchema?.fields) { return; }
         const idx = this.selectedSchema.fields.indexOf(field);
         if (idx !== -1) {
+            this.removeGeoDependenciesByField(field, this.selectedSchema.fields);
             this.selectedSchema.fields.splice(idx, 1);
             if (this.selectedField === field) {
                 this.selectedField = null;
@@ -943,6 +991,55 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return ft?.key || 'string';
     }
 
+    private get currentFieldScope(): SchemaField[] {
+        return this.isDrilling
+            ? this.drillCurrentFields
+            : (this.selectedSchema?.fields ?? []);
+    }
+
+    public get selectedFieldHasGeoAncestors(): boolean {
+        return relationAncestors('geo', this.selectedField?.customType || '').length > 0;
+    }
+
+    public get geoDependencyOptions(): SchemaField[] {
+        const field = this.selectedField;
+        if (!field) {
+            return [];
+        }
+        return this.currentFieldScope.filter(candidate =>
+            candidate !== field &&
+            isAncestorType('geo', candidate.customType || '', field.customType || '')
+        );
+    }
+
+    public geoDependencyLabel(field: SchemaField | null): string {
+        return field?.description || field?.title || field?.name || '';
+    }
+
+    public setGeoDependency(parentName: string | null): void {
+        if (!this.selectedField) {
+            return;
+        }
+        this.selectedField.dependency = parentName
+            ? { on: parentName, kind: 'geo' }
+            : undefined;
+        this.markDirty();
+    }
+
+    public onFieldNameChange(name: string): void {
+        if (!this.selectedField) {
+            return;
+        }
+        const oldName = this.selectedField.name;
+        this.selectedField.name = name;
+        for (const candidate of this.currentFieldScope) {
+            if (candidate.dependency?.kind === 'geo' && candidate.dependency.on === oldName) {
+                candidate.dependency = { ...candidate.dependency, on: name };
+            }
+        }
+        this.markDirty();
+    }
+
     public changeFieldType(ft: FieldTypeUI): void {
         if (!this.selectedField) { return; }
         // Sub-schema fields are added by dragging from the Schemas tab; clicking the
@@ -1042,6 +1139,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         event.stopPropagation();
         const idx = this.drillCurrentFields.indexOf(field);
         if (idx !== -1) {
+            this.removeGeoDependenciesByField(field, this.drillCurrentFields);
             this.drillCurrentFields.splice(idx, 1);
             if (this.selectedField === field) { this.selectedField = null; }
             this.markDirty();

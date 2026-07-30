@@ -262,6 +262,10 @@ export class DocumentGenerator {
                 return true;
             case 'string': {
                 switch (field.customType) {
+                    case 'country':
+                    case 'continent':
+                    case 'state':
+                        return undefined;
                     case 'enum':
                         if (field.enum) {
                             return field.enum[0];
