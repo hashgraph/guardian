@@ -2,7 +2,7 @@ import { BlockActionError } from '../errors/index.js';
 import { ActionCallback, ValidatorBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { IPolicyEvent, PolicyInputEventType, PolicyOutputEventType } from '../interfaces/index.js';
-import { ChildrenType, ControlType } from '../interfaces/block-about.js';
+import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-about.js';
 import { AnyBlockType, IPolicyDocument, IPolicyEventState, IPolicyValidatorBlock } from '../policy-engine.interface.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { PolicyUtils } from '../helpers/utils.js';
@@ -471,12 +471,12 @@ export class DocumentValidatorBlock {
             const memberDids = new Set(await resolveOrgMemberDids(event?.user));
             if (options.checkOwnerOrgDocument) {
                 if (!orgId || !memberDids.has(document.owner)) {
-                    return `Invalid owner organization`;
+                    return { message: 'Invalid owner organization' };
                 }
             }
             if (options.checkAssigneeOrgDocument) {
                 if (!orgId || !memberDids.has(document.assignedTo)) {
-                    return `Invalid assignee organization`;
+                    return { message: 'Invalid assignee organization' };
                 }
             }
         }
@@ -485,12 +485,12 @@ export class DocumentValidatorBlock {
             const memberDids = new Set(await resolveOrgMemberDids(event?.user));
             if (options.checkOwnerOrgDocument) {
                 if (!orgId || !memberDids.has(document.owner)) {
-                    return `Invalid owner organization`;
+                    return { message: 'Invalid owner organization' };
                 }
             }
             if (options.checkAssigneeOrgDocument) {
                 if (!orgId || !memberDids.has(document.assignedTo)) {
-                    return `Invalid assignee organization`;
+                    return { message: 'Invalid assignee organization' };
                 }
             }
         }

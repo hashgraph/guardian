@@ -362,7 +362,7 @@ export class OrganizationApi {
     @Auth(Permissions.ORGANIZATIONS_ORG_ROLE_MANAGE)
     @ApiOperation({
         summary: 'Create a role under an organization.',
-        description: 'Creates a named role under the organization with a subset of OrgRolePermission (TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER, MEMBER_MANAGE). MEMBER_MANAGE makes members holding the role organization administrators, able to manage their own organization\'s non-admin membership; granting or revoking it is always Standard-Registry-only. Role names are unique within an organization.'
+        description: 'Creates a named role under the organization with a subset of OrgRolePermission (TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER, TOKEN_ASSOCIATE, TOKEN_DISSOCIATE, MEMBER_MANAGE). MEMBER_MANAGE makes members holding the role organization administrators, able to manage their own organization\'s non-admin membership; granting or revoking it is always Standard-Registry-only. Role names are unique within an organization.'
     })
     @ApiParam({ name: 'id', type: String, required: true, description: 'Organization identifier', example: Examples.DB_ID })
     @ApiBody({ description: 'Role name + optional permissions list.', type: CreateOrgRoleDTO, required: true })
@@ -754,7 +754,7 @@ export class OrganizationApi {
 
     //#endregion
 
-    //#region Org-wallet token association
+    //#region Org-wallet token operations
 
     /**
      * Associate the organization's Hedera wallet with a token.
