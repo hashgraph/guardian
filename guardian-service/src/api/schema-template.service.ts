@@ -11,7 +11,26 @@ import {
     TopicHelper,
     Users
 } from '@guardian/common';
-import { GenerateUUIDv4, IOwner, ISchema, ISchemaTemplate, MessageAPI, ModuleStatus, PolicyStatus, SchemaCategory, SchemaStatus, TopicType } from '@guardian/interfaces';
+import { createHash } from 'node:crypto';
+import {
+    GenerateUUIDv4,
+    IOwner,
+    ISchema,
+    ISchemaTemplate,
+    ISchemaTemplateConfig,
+    ISchemaTemplateSnapshot,
+    ISchemaTemplateSnapshotField,
+    ISchemaTemplateSnapshotSchema,
+    ISchemaTemplateSnapshotSchemas,
+    MessageAPI,
+    ModuleStatus,
+    PolicyStatus,
+    Schema as InterfaceSchema,
+    SchemaCategory,
+    SchemaHelper,
+    SchemaStatus,
+    TopicType
+} from '@guardian/interfaces';
 import { ApiResponse } from './helpers/api-response.js';
 import { createSchemaAndArtifacts, deleteSchema, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
@@ -129,18 +148,66 @@ function escapeRegExp(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function walkSchemaProperties(document: any, visitor: (property: any) => void): void {
-    if (!document || typeof document !== 'object') {
-        return;
+function cloneJson<T>(value: T): T {
+    return value === undefined ? value : JSON.parse(JSON.stringify(value));
+}
+
+function createTemplateStateHash(config: ISchemaTemplateConfig, schemas: ISchemaTemplateSnapshotSchemas): string {
+    return createHash('sha256')
+        .update(SchemaHelper.stableStringify({ config, schemas }))
+        .digest('hex');
+}
+
+function toSnapshotField(field: any): ISchemaTemplateSnapshotField {
+    return SchemaHelper.cloneSchemaRuntimeValue(field || {});
+}
+
+function toSnapshotSchema(schema: Schema): ISchemaTemplateSnapshotSchema {
+    const parsed = new InterfaceSchema(schema as ISchema, true);
+    return {
+        templateSchemaId: schema.templateSchemaId,
+        name: schema.name,
+        description: schema.description,
+        entity: schema.entity,
+        version: schema.version,
+        fields: (parsed.fields || []).map((field) => toSnapshotField(field)),
+        conditions: SchemaHelper.cloneSchemaRuntimeValue(parsed.conditions || [])
+    };
+}
+
+function buildTemplateSchemasSnapshot(templateSchemas: Schema[]): ISchemaTemplateSnapshotSchemas {
+    const schemas: Record<string, ISchemaTemplateSnapshotSchema> = {};
+    for (const schema of templateSchemas) {
+        schemas[schema.templateSchemaId] = toSnapshotSchema(schema);
     }
-    const properties = document.properties;
-    if (properties && typeof properties === 'object') {
-        for (const property of Object.values<any>(properties)) {
-            visitor(property);
-            const target = property?.type === 'array' ? property.items : property;
-            walkSchemaProperties(target, visitor);
-        }
-    }
+    return { schemas };
+}
+
+async function saveApplySnapshot(
+    template: SchemaTemplate,
+    policy: any,
+    templateSchemas: Schema[],
+    schemaMap: Record<string, string>,
+    appliedAt: string
+) {
+    const config = cloneJson(template.config || {});
+    const schemas = buildTemplateSchemasSnapshot(templateSchemas);
+    const snapshot: ISchemaTemplateSnapshot = {
+        policyId: policy.id,
+        policyUUID: policy.uuid,
+        templateId: template.id,
+        templateUUID: template.uuid,
+        templateName: template.name,
+        templateVersion: template.version,
+        templateStatus: template.status,
+        templateMessageId: template.messageId,
+        templateStateHash: createTemplateStateHash(config, schemas),
+        appliedAt,
+        schemaMap,
+        config,
+        schemas
+    };
+    return await DatabaseServer.saveSchemaTemplateSnapshot(snapshot);
 }
 
 async function ensureTemplateSchemaLineage(schema: Schema): Promise<void> {
@@ -149,12 +216,7 @@ async function ensureTemplateSchemaLineage(schema: Schema): Promise<void> {
         schema.templateSchemaId = GenerateUUIDv4();
         changed = true;
     }
-    walkSchemaProperties(schema.document, (property) => {
-        if (!property.templateFieldId) {
-            property.templateFieldId = GenerateUUIDv4();
-            changed = true;
-        }
-    });
+    changed = SchemaHelper.ensureTemplateFieldIds(schema.document) || changed;
     if (changed) {
         await DatabaseServer.updateSchema(schema.id, schema);
     }
@@ -272,16 +334,32 @@ async function applySchemaTemplate(
 
     await updateCopiedSchemaRefs(copiedSchemas, iriMap);
 
+    const appliedAt = new Date().toISOString();
+    const snapshot = await saveApplySnapshot(
+        template,
+        policy,
+        templateSchemas as Schema[],
+        schemaMap,
+        appliedAt
+    );
+
     policy.schemaTemplate = {
         templateId: template.id,
         templateName: template.name,
         templateVersion: template.version,
         templateStatus: template.status,
         templateMessageId: template.messageId,
-        appliedAt: new Date().toISOString(),
+        templateStateHash: snapshot.templateStateHash,
+        snapshotId: snapshot.id,
+        appliedAt,
         schemaMap
     };
-    return await DatabaseServer.updatePolicy(policy);
+    try {
+        return await DatabaseServer.updatePolicy(policy);
+    } catch (error) {
+        await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        throw error;
+    }
 }
 
 /**

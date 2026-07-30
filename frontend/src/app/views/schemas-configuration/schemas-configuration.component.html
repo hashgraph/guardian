@@ -193,8 +193,8 @@
                                             </span>
                                         </div>
                                     </div>
-                                    @if (isTemplateSchemaCustomFieldsLocked(schema)) {
-                                        <span class="st-schema-lock" pTooltip="Custom fields are locked" tooltipPosition="right">
+                                    @if (isTemplateSchemaLocked(schema)) {
+                                        <span class="st-schema-lock" [pTooltip]="getTemplateSchemaLockTooltip(schema)" tooltipPosition="right">
                                             <i class="pi pi-lock"></i>
                                         </span>
                                     }

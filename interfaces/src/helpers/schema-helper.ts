@@ -9,6 +9,72 @@ import SentinelHubSchema from './sentinel-hub/sentinel-hub-schema.js';
  * Schema helper class
  */
 export class SchemaHelper {
+    private static readonly SCHEMA_FIELD_RUNTIME_KEYS = new Set([
+        'path',
+        'fullPath',
+        'fullType',
+        'arrayLvl',
+        'errors'
+    ]);
+
+    /**
+     * Clone schema values without runtime-only field properties and circular references.
+     * @param value
+     * @param ignoredKeys
+     * @param seen
+     */
+    public static cloneSchemaRuntimeValue(
+        value: any,
+        ignoredKeys: Set<string> = SchemaHelper.SCHEMA_FIELD_RUNTIME_KEYS,
+        seen: WeakSet<object> = new WeakSet()
+    ): any {
+        if (!value || typeof value !== 'object') {
+            return value;
+        }
+        if (seen.has(value)) {
+            return undefined;
+        }
+        seen.add(value);
+        try {
+            if (Array.isArray(value)) {
+                return value
+                    .map((item) => SchemaHelper.cloneSchemaRuntimeValue(item, ignoredKeys, seen))
+                    .filter((item) => item !== undefined);
+            }
+            const result: any = {};
+            for (const [key, child] of Object.entries(value)) {
+                if (ignoredKeys.has(key) || child === undefined) {
+                    continue;
+                }
+                const cloned = SchemaHelper.cloneSchemaRuntimeValue(child, ignoredKeys, seen);
+                if (cloned !== undefined) {
+                    result[key] = cloned;
+                }
+            }
+            return result;
+        } finally {
+            seen.delete(value);
+        }
+    }
+
+    /**
+     * Stable JSON stringifier for hash and equality checks.
+     * @param value
+     */
+    public static stableStringify(value: any): string {
+        if (Array.isArray(value)) {
+            return `[${value.map((item) => SchemaHelper.stableStringify(item)).join(',')}]`;
+        }
+        if (value && typeof value === 'object') {
+            const entries = Object.keys(value)
+                .filter((key) => value[key] !== undefined)
+                .sort()
+                .map((key) => `${JSON.stringify(key)}:${SchemaHelper.stableStringify(value[key])}`);
+            return `{${entries.join(',')}}`;
+        }
+        return JSON.stringify(value);
+    }
+
     /**
      * Walk through every JSON schema property, including nested object and array item properties.
      * @param document

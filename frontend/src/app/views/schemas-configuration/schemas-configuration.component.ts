@@ -47,6 +47,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public readonly schemaSearch$ = new Subject<string>();
     private readonly _cancelLoadSchemas$ = new Subject<void>();
     private loadedTemplateId: string = '';
+    private loadedAppliedTemplateId: string = '';
     private pendingTemplateSchemaId: string = '';
     public schemasPage: number = 0;
     public schemasPageSize: number = 50;
@@ -189,11 +190,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isTemplateFieldLocked(field: SchemaField): boolean {
-        if (!this.isTemplateConfigMode) {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
             return false;
         }
-        const schemaKey = this.getSchemaConfigKey(this.selectedSchema);
-        const legacySchemaKey = this.selectedSchemaId;
+        const schema = this.getSchemaForFieldLocks();
+        const schemaKey = this.getSchemaConfigKey(schema);
+        const legacySchemaKey = schema?.id || (schema as any)?._id || this.selectedSchemaId;
         const fieldKey = this.getFieldConfigKey(field);
         const legacyFieldKey = field.name || '';
         if (!schemaKey || !fieldKey) {
@@ -207,15 +209,59 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public isTemplateSchemaCustomFieldsLocked(schema: Schema): boolean {
-        if (!this.isTemplateConfigMode) {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
             return false;
         }
+        return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
+    }
+
+    public isTemplateSchemaLocked(schema: Schema): boolean {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        const config = this.getSchemaTemplateConfig(schema);
+        return !!(
+            config?.locked ||
+            config?.editLocked ||
+            config?.deleteLocked ||
+            config?.customFieldsLocked
+        );
+    }
+
+    public getTemplateSchemaLockTooltip(schema: Schema): string {
+        const config = this.getSchemaTemplateConfig(schema);
+        if (config?.locked || config?.editLocked) {
+            return 'Schema editing is locked';
+        }
+        if (config?.deleteLocked) {
+            return 'Schema deletion is locked';
+        }
+        if (config?.customFieldsLocked) {
+            return 'Custom fields are locked';
+        }
+        return 'Schema is locked';
+    }
+
+    private get hasAppliedTemplateConfig(): boolean {
+        return !this.isTemplateMode && !!this.schemaTemplate?.config;
+    }
+
+    private getSchemaForFieldLocks(): Schema | null {
+        if (this.isDrilling && this.currentDrilledSchemaIri) {
+            return this.schemas.find(s => s.iri === this.currentDrilledSchemaIri) ?? this.selectedSchema;
+        }
+        return this.selectedSchema;
+    }
+
+    private getSchemaTemplateConfig(schema: Schema | null | undefined): any | null {
         const schemaKey = this.getSchemaConfigKey(schema);
-        const legacySchemaKey = schema.id || (schema as any)._id;
-        const config = schemaKey
-            ? ((this.schemaTemplate?.config?.schemas?.[schemaKey] || this.schemaTemplate?.config?.schemas?.[legacySchemaKey]) as any)
-            : null;
-        return config?.customFieldsLocked === true;
+        const legacySchemaKey = schema?.id || (schema as any)?._id;
+        if (!schemaKey) {
+            return null;
+        }
+        return this.schemaTemplate?.config?.schemas?.[schemaKey]
+            || (legacySchemaKey ? this.schemaTemplate?.config?.schemas?.[legacySchemaKey] : null)
+            || null;
     }
 
     public hoveredSchemaId: string | null = null;
@@ -675,6 +721,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 error: () => {
                     this.schemaTemplate = null;
                     this.templateLoading = false;
+                },
+            });
+    }
+
+    private loadAppliedSchemaTemplate(): void {
+        if (this.isTemplateMode) {
+            return;
+        }
+        const templateId = this.schemas.find(schema => !!schema.templateId)?.templateId || '';
+        if (!templateId || templateId === this.loadedAppliedTemplateId) {
+            return;
+        }
+        this.loadedAppliedTemplateId = templateId;
+        this.schemaTemplatesService.getById(templateId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (template) => {
+                    this.schemaTemplate = template;
+                },
+                error: () => {
+                    this.schemaTemplate = null;
                 },
             });
     }
@@ -2465,6 +2532,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemasLoading = false;
                     }
                     this.schemasFetched = true;
+                    this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                 },
                 error: () => {

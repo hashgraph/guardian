@@ -21,11 +21,14 @@ import {
     IOwner,
     GenerateUUIDv4,
     ISchema,
+    ISchemaTemplateConfig,
+    ISchemaTemplateSchemaConfig,
     IChildSchemaDeletionBlock,
     MessageAPI,
     ModuleStatus,
     Schema,
     SchemaCategory,
+    SchemaField,
     SchemaHelper,
     SchemaNode,
     SchemaStatus,
@@ -57,6 +60,165 @@ import { FilterObject } from '@mikro-orm/core';
 
 @Controller()
 export class SchemaService { }
+
+interface TemplateSchemaValidationContext {
+    schemaConfig: ISchemaTemplateSchemaConfig;
+}
+
+function getSchemaFields(schema: ISchema): SchemaField[] {
+    return new Schema(schema, true).fields || [];
+}
+
+function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
+    for (const field of fields || []) {
+        result.push(field);
+        if (Array.isArray(field.fields)) {
+            flattenFields(field.fields, result);
+        }
+    }
+    return result;
+}
+
+function getFieldConfig(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): any {
+    const templateFieldId = field.templateFieldId || '';
+    const name = field.name || '';
+    return (templateFieldId ? schemaConfig.fields?.[templateFieldId] : null)
+        || (name ? schemaConfig.fields?.[name] : null)
+        || null;
+}
+
+function isTemplateFieldLocked(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): boolean {
+    if (!field.templateFieldId) {
+        return false;
+    }
+    return getFieldConfig(schemaConfig, field)?.locked !== false;
+}
+
+function fieldComparableHash(field: SchemaField): string {
+    return SchemaHelper.stableStringify(SchemaHelper.cloneSchemaRuntimeValue(field));
+}
+
+function getConfigForTemplateSchema(
+    config: ISchemaTemplateConfig | null | undefined,
+    schema: ISchema
+): ISchemaTemplateSchemaConfig {
+    const schemas = config?.schemas;
+    if (!schemas) {
+        return {};
+    }
+    return schemas[schema.templateSchemaId || '']
+        || schemas[schema.id || '']
+        || schemas[(schema as any)._id || '']
+        || {};
+}
+
+async function getTemplateSchemaValidationContext(
+    schema: ISchema
+): Promise<TemplateSchemaValidationContext | null> {
+    if (
+        schema.category !== SchemaCategory.POLICY ||
+        !schema.topicId ||
+        !schema.templateId ||
+        !schema.templateSchemaId
+    ) {
+        return null;
+    }
+
+    const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
+    if (!policy?.schemaTemplate?.templateId) {
+        return null;
+    }
+
+    let config: ISchemaTemplateConfig | null | undefined;
+    if (policy.schemaTemplate.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId);
+        config = snapshot?.config;
+    }
+    if (!config) {
+        const template = await DatabaseServer.getSchemaTemplateById(policy.schemaTemplate.templateId);
+        config = template?.config;
+    }
+
+    return {
+        schemaConfig: getConfigForTemplateSchema(config, schema)
+    };
+}
+
+async function validateTemplateSchemaDelete(schema: ISchema): Promise<void> {
+    const context = await getTemplateSchemaValidationContext(schema);
+    if (!context) {
+        return;
+    }
+    if (context.schemaConfig.deleteLocked) {
+        throw new Error(`Schema "${schema.name}" is locked by schema template and cannot be deleted.`);
+    }
+}
+
+async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): Promise<void> {
+    const context = await getTemplateSchemaValidationContext(previous);
+    if (!context) {
+        return;
+    }
+
+    const { schemaConfig } = context;
+    if (schemaConfig.locked || schemaConfig.editLocked) {
+        const previousHash = SchemaHelper.stableStringify({
+            name: previous.name,
+            description: previous.description,
+            entity: previous.entity,
+            document: previous.document
+        });
+        const nextHash = SchemaHelper.stableStringify({
+            name: next.name,
+            description: next.description,
+            entity: next.entity,
+            document: next.document
+        });
+        if (previousHash !== nextHash) {
+            throw new Error(`Schema "${previous.name}" is locked by schema template and cannot be edited.`);
+        }
+    }
+
+    const previousFields = flattenFields(getSchemaFields(previous));
+    const nextFields = flattenFields(getSchemaFields(next));
+    const previousTemplateFields = new Map<string, SchemaField>();
+    const nextTemplateFields = new Map<string, SchemaField>();
+    const previousCustomPaths = new Set<string>();
+
+    for (const field of previousFields) {
+        if (field.templateFieldId) {
+            previousTemplateFields.set(field.templateFieldId, field);
+        } else if (field.path) {
+            previousCustomPaths.add(field.path);
+        }
+    }
+    for (const field of nextFields) {
+        if (field.templateFieldId) {
+            nextTemplateFields.set(field.templateFieldId, field);
+        }
+    }
+
+    for (const previousField of previousTemplateFields.values()) {
+        if (!isTemplateFieldLocked(schemaConfig, previousField)) {
+            continue;
+        }
+        const nextField = nextTemplateFields.get(previousField.templateFieldId);
+        if (!nextField) {
+            throw new Error(`Field "${previousField.title || previousField.name}" is locked by schema template and cannot be removed.`);
+        }
+        if (fieldComparableHash(previousField) !== fieldComparableHash(nextField)) {
+            throw new Error(`Field "${previousField.title || previousField.name}" is locked by schema template and cannot be edited.`);
+        }
+    }
+
+    if (schemaConfig.customFieldsLocked) {
+        for (const field of nextFields) {
+            if (!field.templateFieldId && field.path && !previousCustomPaths.has(field.path)) {
+                throw new Error(`Schema "${previous.name}" does not allow custom fields because it is locked by schema template.`);
+            }
+        }
+    }
+}
 
 function prepareSchemaTemplateMetadata(item: ISchema, previous?: ISchema): void {
     if (item.category === SchemaCategory.TEMPLATE) {
@@ -189,12 +351,22 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     templateSchemaId: row.templateSchemaId,
                     document: row.document
                 } as ISchema;
-                validateSchemaDependencies(item);
-                row.name = item.name;
-                row.description = item.description;
-                row.entity = item.entity;
-                row.document = item.document;
-                prepareSchemaTemplateMetadata(row, previous);
+                const next = {
+                    ...row,
+                    name: item.name,
+                    description: item.description,
+                    entity: item.entity,
+                    document: item.document ? JSON.parse(JSON.stringify(item.document)) : item.document
+                } as ISchema;
+                validateSchemaDependencies(next);
+                prepareSchemaTemplateMetadata(next, previous);
+                await validateTemplateSchemaUpdate(row, next);
+                row.name = next.name;
+                row.description = next.description;
+                row.entity = next.entity;
+                row.document = next.document;
+                row.templateId = next.templateId;
+                row.templateSchemaId = next.templateSchemaId;
                 row.status = SchemaStatus.DRAFT;
                 row.errors = [];
                 SchemaHelper.setVersion(row, row.version, row.version);
@@ -348,8 +520,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
                     fields: [
+                        'id',
                         'iri',
                         'name',
+                        'owner',
+                        'topicId',
+                        'category',
+                        'templateId',
+                        'templateSchemaId',
                         'version',
                         'sourceVersion',
                         'status'
@@ -1564,6 +1742,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
 
                 for (const schema of schemasToDelete) {
+                    await validateTemplateSchemaDelete(schema);
+                }
+
+                for (const schema of schemasToDelete) {
 
                     const deleteSchemaStep = stepMap.get(schema.id);
                     const result = await deleteSchema(schema.id, owner, deleteSchemaStep);
@@ -1612,6 +1794,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 });
                 if (schemasToDelete?.length <= 0) {
                     return new MessageError('Schemas not found', 404);
+                }
+                for (const schema of schemasToDelete) {
+                    await validateTemplateSchemaDelete(schema);
                 }
                 for (const schema of schemasToDelete) {
                     await deleteSchema(
