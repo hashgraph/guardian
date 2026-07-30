@@ -17,8 +17,24 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
         COUNT(*) FILTER (WHERE bv."viewType" = 'PROJECT')     AS project_count,
         -- Issuance count = number of mint events per token (matches the
         -- project/methodology tables), not the number of distinct tokens minted.
+        --
+        -- The bv.id = (SELECT ... LIMIT 1) guard counts each tokenId ONCE. business_view holds one row
+        -- per HCS message, so a republished token has several CREDIT rows; without the guard this SUM added
+        -- that token's entire mint count once per duplicate row, multiplying the result (TolamEarth reported
+        -- 209 issuances against the 39 the Issuances page counts). Same fan-out, and the same fix, as the
+        -- METHODOLOGY policy-version dedup in the LATERAL join below; the canonical-row selection also
+        -- mirrors PgCreditRepository's MINT_FROM CREDIT lookup, which picks the newest row by "createdAt".
         COALESCE(SUM(
-            CASE WHEN bv."viewType" = 'CREDIT' THEN (
+            CASE WHEN bv."viewType" = 'CREDIT'
+                  AND bv.id = (
+                      SELECT b2.id
+                      FROM business_view b2
+                      WHERE b2."viewType" = 'CREDIT'
+                        AND b2."businessData"->>'tokenId' = bv."businessData"->>'tokenId'
+                      ORDER BY b2."createdAt" DESC NULLS LAST, b2.id DESC
+                      LIMIT 1
+                  )
+            THEN (
                 SELECT COUNT(*) FROM message m_mint
                 WHERE m_mint.type = 'VC-Document'
                   AND m_mint.documents IS NOT NULL

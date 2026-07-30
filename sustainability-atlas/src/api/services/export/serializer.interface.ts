@@ -19,6 +19,10 @@ export interface Serializer {
      * @param fields Selected export-field-catalog keys, in display order — this is also the column/row-key order.
      * @param rows One plain object per record, keyed by the SAME field keys as `fields` (row sources may include
      *   extra keys not in `fields`; serializers must ignore anything not selected).
+     * @param datasetTitle Human-readable dataset display name (e.g. "Projects", "Issuances" — see
+     *   `getDatasetDisplayName()` in `export-field-catalog.ts`) used as the document title in formats that
+     *   render one (PDF heading, XLSX title row/worksheet name). `CsvSerializer` ignores this: a title row
+     *   above the header row would corrupt CSV's machine-parsing contract.
      */
-    serialize(fields: string[], rows: Record<string, unknown>[]): Promise<SerializedExport>;
+    serialize(fields: string[], rows: Record<string, unknown>[], datasetTitle: string): Promise<SerializedExport>;
 }

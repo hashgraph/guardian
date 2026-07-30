@@ -8,6 +8,24 @@
 /** The 4 datasets exposed by the export engine (mirrors the existing list-endpoint domains). */
 export type ExportDataset = 'credits' | 'projects' | 'methodologies' | 'registries';
 
+/**
+ * Human-readable display name for each dataset, used as the document title in export formats that render one
+ * (PDF heading, XLSX title row/worksheet name — see pdf-serializer.ts / xlsx-serializer.ts). Hand-mirrors the
+ * frontend's `reports.datasets.*` i18n labels (frontend/i18n/locales/en.json), since the backend has no i18n
+ * layer. NOTE: `credits` displays as "Issuances" everywhere in the UI, not "Credits".
+ */
+export const DATASET_DISPLAY_NAMES: Record<ExportDataset, string> = {
+    credits: 'Issuances',
+    projects: 'Projects',
+    methodologies: 'Methodologies',
+    registries: 'Registries',
+};
+
+/** Display name for a dataset's export document title. See `DATASET_DISPLAY_NAMES`. */
+export function getDatasetDisplayName(dataset: ExportDataset): string {
+    return DATASET_DISPLAY_NAMES[dataset];
+}
+
 /** The 3 field groups from the "Export Data" mockup, in mockup display order. */
 export type ExportFieldGroup =
     | 'PROJECT_IDENTIFIERS'

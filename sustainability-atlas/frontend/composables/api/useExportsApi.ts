@@ -63,7 +63,7 @@ function buildQueryString(query: Record<string, string | number | boolean | stri
 
 export const useExportsApi = () => {
     const config = useRuntimeConfig();
-    const { apiFetch } = useApiFetch();
+    const { apiFetch, authFetch } = useApiFetch();
     const { network } = useNetwork();
 
     const baseURL = (): string =>
@@ -130,16 +130,18 @@ export const useExportsApi = () => {
         const { toast } = await import('vue-sonner');
         try {
             const qs = buildQueryString(query);
-            const res = await fetch(qs ? `${url}?${qs}` : url, { credentials: 'include' });
+            const res = await authFetch(qs ? `${url}?${qs}` : url);
             if (!res.ok) {
+                if (res.status === 401) {
+                    toast.error('Your session has expired. Please sign in again to export.');
+                    return false;
+                }
                 let message =
-                    res.status === 401
-                        ? 'You must be signed in to download this export.'
-                        : res.status === 400
-                          ? 'Invalid export request.'
-                          : res.status === 404
-                            ? 'This export could not be found.'
-                            : 'Failed to generate the export. Please try again.';
+                    res.status === 400
+                        ? 'Invalid export request.'
+                        : res.status === 404
+                          ? 'This export could not be found.'
+                          : 'Failed to generate the export. Please try again.';
                 try {
                     const body = await res.json();
                     if (body?.message) {

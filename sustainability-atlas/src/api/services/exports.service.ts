@@ -16,6 +16,7 @@ import {
     ExportDataset,
     getExportFieldKeys,
     getDefaultSelectedFieldKeys,
+    getDatasetDisplayName,
 } from '@shared/config/export-field-catalog';
 import { buildVerificationUrl, sourceSystemLabel } from '@shared/utils/hashscan-url';
 import { Serializer } from './export/serializer.interface';
@@ -88,7 +89,8 @@ export class ExportsService {
         const rows = await this.fetchRowsForExport(dataset, network, filters);
 
         const serializer = this.selectSerializer(query.format);
-        const { content, mime, extension } = await serializer.serialize(fields, rows);
+        const datasetTitle = getDatasetDisplayName(dataset);
+        const { content, mime, extension } = await serializer.serialize(fields, rows, datasetTitle);
         const filename = `${dataset}-export-${this.timestampSlug()}.${extension}`;
 
         await this.auditExport({

@@ -14,7 +14,13 @@ const emit = defineEmits<{
 }>();
 
 interface MrvColumn { key: string; label: string; description: string | null; isDate: boolean }
-interface MrvRow { consensusTimestamp: string; itemIndex?: number; values: Record<string, string>; device: string | null }
+interface MrvRow {
+    consensusTimestamp: string;
+    itemIndex?: number;
+    values: Record<string, string>;
+    device: string | null;
+    deviceLabels?: string[] | null;
+}
 interface MrvDataResponse {
     schemaUuid: string;
     schemaName: string | null;
@@ -138,6 +144,21 @@ function drillIntoDevice(device: string) {
     page.value = 1;
 }
 
+/**
+ * Individual device/measurement-point pills for a row. Prefers the backend's
+ * `deviceLabels` (exact, unambiguous per-device values — safe to drill into
+ * directly). Falls back to splitting the legacy joined `device` string only
+ * when `deviceLabels` is missing/null (e.g. an older or cached API response
+ * before the backend started sending it) — this is a last resort, since
+ * splitting on ', ' is lossy if an individual device label itself contains a
+ * comma.
+ */
+function deviceLabelsFor(row: MrvRow): string[] {
+    if (row.deviceLabels != null) return row.deviceLabels;
+    if (!row.device) return [];
+    return row.device.split(', ');
+}
+
 function clearFilters() {
     deviceFilter.value = '';
     dateFrom.value = '';
@@ -213,8 +234,8 @@ function formatCell(value: string, col: MrvColumn): string {
                                     <component :is="sortIcon(col)" class="h-3 w-3" />
                                 </span>
                             </th>
-                            <th v-if="hasDeviceDimension" class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">
-                                Device
+                            <th v-if="hasDeviceDimension" class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
+                                Device / Measurement Point
                             </th>
                             <th class="text-center py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap w-16">
                                 Raw
@@ -237,14 +258,17 @@ function formatCell(value: string, col: MrvColumn): string {
                                 <span class="block truncate">{{ formatCell(row.values[col.key], col) }}</span>
                             </td>
                             <td v-if="hasDeviceDimension" class="py-2 px-4">
-                                <button
-                                    v-if="row.device"
-                                    class="text-[11px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5 hover:bg-primary/20 transition-colors"
-                                    title="View this device's history"
-                                    @click="drillIntoDevice(row.device)"
-                                >
-                                    {{ row.device }}
-                                </button>
+                                <div v-if="deviceLabelsFor(row).length > 0" class="flex flex-wrap gap-1">
+                                    <button
+                                        v-for="label in deviceLabelsFor(row)"
+                                        :key="label"
+                                        class="text-[11px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5 hover:bg-primary/20 transition-colors"
+                                        title="View this device's history"
+                                        @click="drillIntoDevice(label)"
+                                    >
+                                        {{ label }}
+                                    </button>
+                                </div>
                                 <span v-else class="text-muted-foreground">—</span>
                             </td>
                             <td class="py-2 px-4 text-center">

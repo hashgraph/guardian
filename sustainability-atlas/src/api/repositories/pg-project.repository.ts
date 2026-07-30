@@ -342,6 +342,14 @@ export class PgProjectRepository extends ProjectRepository {
             [row.projectKey],
         );
 
+        const issuanceCountRows: Array<{ count: number }> = await this.dataSource.query(
+            `SELECT COUNT(*) FILTER (WHERE token_id IS NOT NULL)::int AS count
+             FROM project_mint_link
+             WHERE project_key = $1`,
+            [row.projectKey],
+        );
+        let issuanceCount = issuanceCountRows[0]?.count ?? 0;
+
         if (mintTokenRows.length > 0) {
             // Aggregate minted amount per token; keep last MintToken VC as raw data
             const mintsByToken = new Map<string, { total: number; mintDate: Date | null; rawVc: Record<string, any> | null }>();
@@ -499,6 +507,8 @@ export class PgProjectRepository extends ProjectRepository {
             } // end else (siblingCount === 1)
         }
 
+        if (issuanceCount === 0 && issuances.length > 0) issuanceCount = issuances.length;
+
         const totalActive = totalIssued - totalRetired;
 
         // Load schema metadata for this project's policyTopicId so the DTO can render a grouped linked-VCs view without a second round trip.
@@ -539,7 +549,7 @@ export class PgProjectRepository extends ProjectRepository {
             }
         }
 
-        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas, issuanceEvents);
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas, issuanceEvents, issuanceCount);
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
@@ -809,6 +819,7 @@ export class PgProjectRepository extends ProjectRepository {
         lifecycle?: { totalIssued: number; totalRetired: number; totalActive: number },
         policySchemas?: PolicySchemaRow[],
         issuanceEvents?: IssuanceEventRow[],
+        issuanceCount?: number,
     ): ProjectRow {
         // When called from findAll(), lifecycle totals come from the lateral subquery columns on the raw row;
         // when called from findById(), they are passed explicitly as the lifecycle argument (which takes priority).
@@ -835,7 +846,9 @@ export class PgProjectRepository extends ProjectRepository {
             updatedAt: row.updatedAt,
             issuances,
             issuanceEvents: issuanceEvents ?? [],
-            issuanceCount: row.issuance_count ?? undefined,
+            // findAll() supplies this via the mv_project_stats join on the raw row; findById() computes it
+            // live and passes it explicitly (which takes priority, mirroring how `lifecycle` is resolved above).
+            issuanceCount: issuanceCount ?? row.issuance_count ?? undefined,
             totalIssued: resolvedLifecycle?.totalIssued,
             totalRetired: resolvedLifecycle?.totalRetired,
             totalActive: resolvedLifecycle?.totalActive,

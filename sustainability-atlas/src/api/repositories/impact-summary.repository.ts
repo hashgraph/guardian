@@ -35,6 +35,29 @@ export interface ImpactSummaryRegistryRow {
     projectCount: number;
     issuanceCount: number;
     policyCount: number;
+    creditsIssued: number;
+}
+
+/** One row of the "Credits by Methodology" PDF sample table — a top-N slice, not the full methodology list (see MethodologyRepository for that). */
+export interface ImpactSummaryMethodologyRow {
+    name: string | null;
+    methodologyId: string | null;
+    registryName: string | null;
+    version: string | null;
+    projectCount: number;
+    issuanceCount: number;
+    creditsIssued: number;
+}
+
+/** One row of the "Credits by Project" PDF sample table — a top-N slice (by credits desc), not the full project list (see ProjectRepository for that). */
+export interface ImpactSummaryProjectRow {
+    name: string | null;
+    country: string;
+    methodology: string | null;
+    status: string | null;
+    registryName: string | null;
+    issuanceCount: number;
+    creditsIssued: number;
 }
 
 /** Fully-assembled aggregate for one network; `totalCreditsIssued`/`totalRetiredInferred` are derived by summing `geographicDistribution` so the grand totals and per-country breakdown are always mutually consistent. */
@@ -52,6 +75,10 @@ export interface ImpactSummaryRow {
     registryBreakdown: ImpactSummaryRegistryRow[];
     /** Deduped by relatedTopicId (business_view is per-message; republished methodologies share a relatedTopicId). */
     methodologyCount: number;
+    /** Top-10 sample by project/issuance activity, for the PDF's "Credits by Methodology" table. */
+    methodologyBreakdown: ImpactSummaryMethodologyRow[];
+    /** Top-12 sample by credits issued desc, for the PDF's "Credits by Project" table. */
+    projectBreakdown: ImpactSummaryProjectRow[];
 }
 
 export abstract class ImpactSummaryRepository {

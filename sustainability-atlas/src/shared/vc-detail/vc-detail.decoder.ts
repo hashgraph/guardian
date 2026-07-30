@@ -246,11 +246,28 @@ export interface MrvColumnDef {
     isDate: boolean;
 }
 
+/**
+ * Minimal shape of a `policy.schemaFields` entry needed to recover the
+ * schema-declared property order. Deliberately duplicated (rather than
+ * imported from `@worker/mapping/policy-pipeline.types`'s `FlattenedSchemaField`)
+ * so `@shared` doesn't take a dependency on `@worker` — the real array entries
+ * have more fields, but are structurally assignable to this narrower type.
+ */
+export interface SchemaFieldOrderEntry {
+    schemaIri: string;
+    path: string;
+    title?: string;
+}
+
 export interface MrvSchemaLayout {
-    /** Scalar fields — become table columns. Arrays are never flattened into columns. */
+    /** Scalar fields — become table columns. Arrays are never flattened into columns. Ordered by each field's position in `policy.schemaFields` when available (see `buildSchemaFieldOrder`); otherwise in raw `properties` iteration order. */
     columns: MrvColumnDef[];
-    /** Key of the first date-formatted column, or null. Drives the default sort + time-range filter. */
+    /** Key of the first date-formatted column (in schema order), or null. Drives the default sort — kept for back-compat; use startDateColumnKey/endDateColumnKey for the range filter. */
     dateColumnKey: string | null;
+    /** Key of the monitoring-period START date column, or null when the schema doesn't have a distinguishable start/end pair (e.g. only one date column). */
+    startDateColumnKey: string | null;
+    /** Key of the monitoring-period END date column, or null when the schema doesn't have a distinguishable start/end pair. */
+    endDateColumnKey: string | null;
     /** Key of the first array-of-objects field (e.g. a repeatable "device"/"block" group), or null. */
     deviceArrayKey: string | null;
     /** Key inside the device array's item schema used as its display label, or null. */
@@ -277,21 +294,115 @@ function isDateFormat(def: Record<string, any>): boolean {
     return def['format'] === 'date-time' || def['format'] === 'date';
 }
 
-/** Scalar (non-array) fields of a JSON-schema `properties` object → table columns, plus the first date-like column found. */
-function extractColumns(props: Record<string, any>): { columns: MrvColumnDef[]; dateColumnKey: string | null } {
-    const columns: MrvColumnDef[] = [];
-    let dateColumnKey: string | null = null;
+/**
+ * Builds a `{ topLevelKey: position }` map from `policy.schemaFields` scoped to
+ * one schema's bare UUID — used to recover the schema author's declared
+ * property order, which `rawSchemaJson` (a Postgres `jsonb` OBJECT column)
+ * loses on write (jsonb reorders object keys: shorter keys first, then
+ * lexicographic). `schemaFields` is stored as a jsonb ARRAY, which — unlike a
+ * jsonb object — DOES preserve element order, and is built from the
+ * freshly-parsed (order-correct) schema document by `flattenSchemaDocument`.
+ *
+ * Only TOP-LEVEL fields are considered (`path` with no `.`) — `flattenSchemaDocument`
+ * emits one entry per property at every nesting depth, and a top-level object/array
+ * field's own path never contains a dot (only its descendants' do), so this reliably
+ * isolates the entries that correspond 1:1 with `Object.entries(schemaDoc.document.properties)`.
+ *
+ * Returns an empty map (never throws) when `schemaFields` is null/empty/malformed —
+ * `extractColumns` then falls back to the untouched (pre-fix) `properties` iteration
+ * order, so older policy rows that were never reprocessed behave exactly as before.
+ */
+export function buildSchemaFieldOrder(
+    schemaFields: SchemaFieldOrderEntry[] | null | undefined,
+    schemaUuid: string,
+): Map<string, number> {
+    const order = new Map<string, number>();
+    if (!Array.isArray(schemaFields)) return order;
+    let i = 0;
+    for (const f of schemaFields) {
+        if (!f || typeof f !== 'object') continue;
+        const iri = typeof f.schemaIri === 'string' ? f.schemaIri : '';
+        if (!iri || bareUuid(iri) !== schemaUuid) continue;
+        const path = typeof f.path === 'string' ? f.path : '';
+        if (!path || path.includes('.')) continue; // top-level fields only
+        if (!order.has(path)) order.set(path, i++);
+    }
+    return order;
+}
+
+/** Field-name hints used to tell a monitoring period's start date column from its end date column (title preferred, key as fallback). */
+const START_DATE_RE = /start|from|begin/i;
+const END_DATE_RE = /end|to\b|until|finish/i;
+
+interface ColumnCandidate extends MrvColumnDef {
+    /** Raw schema `title` (before the description/humanized-key fallbacks folded into `label`) — used for start/end date detection so a humanized key can't accidentally match a regex the author's title wouldn't. */
+    rawTitle: string;
+}
+
+/**
+ * Scalar (non-array) fields of a JSON-schema `properties` object → table columns
+ * (ordered per `fieldOrder`, see `buildSchemaFieldOrder`), plus the date column(s)
+ * used for sorting/filtering.
+ */
+function extractColumns(
+    props: Record<string, any>,
+    fieldOrder: Map<string, number>,
+): { columns: MrvColumnDef[]; dateColumnKey: string | null; startDateColumnKey: string | null; endDateColumnKey: string | null } {
+    const candidates: ColumnCandidate[] = [];
     for (const [key, defRaw] of Object.entries(props)) {
         if (SYSTEM_KEYS.has(key)) continue;
         const def = (defRaw ?? {}) as Record<string, any>;
         if (def['type'] === 'array') continue; // never a flat column, even one level in
-        const title = typeof def['title'] === 'string' ? def['title'].trim() : '';
+        const rawTitle = typeof def['title'] === 'string' ? def['title'].trim() : '';
         const desc = typeof def['description'] === 'string' ? def['description'].trim() : '';
         const isDate = isDateFormat(def);
-        if (isDate && !dateColumnKey) dateColumnKey = key;
-        columns.push({ key, label: title || desc || humanizeKey(key), description: desc || null, isDate });
+        candidates.push({ key, label: rawTitle || desc || humanizeKey(key), description: desc || null, isDate, rawTitle });
     }
-    return { columns, dateColumnKey };
+
+    // FIX: order by policy.schemaFields position instead of raw Object.entries
+    // order (which reflects jsonb's internal key storage, not schema-declared
+    // order). Fields absent from schemaFields (fieldOrder has no entry, or the
+    // map is empty entirely) keep their relative Object.entries position —
+    // Array#sort is stable, so returning 0 for "both unmatched" ties preserves
+    // it, and unmatched fields sort after every matched one (MAX_SAFE_INTEGER).
+    const ordered = fieldOrder.size === 0
+        ? candidates
+        : [...candidates].sort((a, b) => {
+            const ia = fieldOrder.get(a.key) ?? Number.MAX_SAFE_INTEGER;
+            const ib = fieldOrder.get(b.key) ?? Number.MAX_SAFE_INTEGER;
+            return ia - ib;
+        });
+
+    const dateCols = ordered.filter((c) => c.isDate);
+    const dateColumnKey = dateCols[0]?.key ?? null;
+
+    // Distinguish monitoring-period start vs end when there are 2+ date
+    // columns: prefer a title/key regex match; fall back to schema order
+    // (earlier = start) for whichever side didn't get a confident regex hit,
+    // or when nothing matched at all (e.g. "Timestamp 1" / "Timestamp 2").
+    let startDateColumnKey: string | null = null;
+    let endDateColumnKey: string | null = null;
+    if (dateCols.length >= 2) {
+        let startCol: ColumnCandidate | undefined;
+        let endCol: ColumnCandidate | undefined;
+        for (const c of dateCols) {
+            const probe = c.rawTitle || c.key;
+            const isStart = START_DATE_RE.test(probe);
+            const isEnd = END_DATE_RE.test(probe);
+            if (isStart && !isEnd && !startCol) startCol = c;
+            else if (isEnd && !isStart && !endCol) endCol = c;
+        }
+        const remaining = dateCols.filter((c) => c !== startCol && c !== endCol);
+        if (!startCol) startCol = remaining.shift();
+        if (!endCol) endCol = remaining.shift();
+        if (startCol && endCol && startCol.key !== endCol.key) {
+            startDateColumnKey = startCol.key;
+            endDateColumnKey = endCol.key;
+        }
+    }
+
+    const columns: MrvColumnDef[] = ordered.map(({ key, label, description, isDate }) => ({ key, label, description, isDate }));
+    return { columns, dateColumnKey, startDateColumnKey, endDateColumnKey };
 }
 
 /**
@@ -322,8 +433,12 @@ function pickDeviceLabelKey(keys: string[]): string | null {
 export function detectMrvLayout(
     rawSchemaJson: Record<string, any> | null | undefined,
     schemaUuid: string,
+    schemaFields?: SchemaFieldOrderEntry[] | null,
 ): MrvSchemaLayout {
-    const empty: MrvSchemaLayout = { columns: [], dateColumnKey: null, deviceArrayKey: null, deviceLabelKey: null, flattenDeviceItems: false };
+    const empty: MrvSchemaLayout = {
+        columns: [], dateColumnKey: null, startDateColumnKey: null, endDateColumnKey: null,
+        deviceArrayKey: null, deviceLabelKey: null, flattenDeviceItems: false,
+    };
     if (!rawSchemaJson || typeof rawSchemaJson !== 'object') return empty;
 
     const schemaDoc = findSchemaDocByUuid(rawSchemaJson, schemaUuid);
@@ -343,7 +458,8 @@ export function detectMrvLayout(
         }
     }
 
-    const top = extractColumns(props as Record<string, any>);
+    const topFieldOrder = buildSchemaFieldOrder(schemaFields, schemaUuid);
+    const top = extractColumns(props as Record<string, any>, topFieldOrder);
 
     if (top.columns.length > 0) {
         let deviceLabelKey: string | null = null;
@@ -352,7 +468,11 @@ export function detectMrvLayout(
             const devProps = ((deviceDoc?.['document'] ?? {}) as Record<string, any>)['properties'] ?? {};
             deviceLabelKey = pickDeviceLabelKey(Object.keys(devProps as Record<string, any>).filter((k) => !SYSTEM_KEYS.has(k)));
         }
-        return { columns: top.columns, dateColumnKey: top.dateColumnKey, deviceArrayKey, deviceLabelKey, flattenDeviceItems: false };
+        return {
+            columns: top.columns, dateColumnKey: top.dateColumnKey,
+            startDateColumnKey: top.startDateColumnKey, endDateColumnKey: top.endDateColumnKey,
+            deviceArrayKey, deviceLabelKey, flattenDeviceItems: false,
+        };
     }
 
     // No top-level scalar fields — the schema's real content lives entirely inside
@@ -363,10 +483,15 @@ export function detectMrvLayout(
     if (deviceRefUuid) {
         const deviceDoc = findSchemaDocByUuid(rawSchemaJson, deviceRefUuid);
         const devProps = ((deviceDoc?.['document'] ?? {}) as Record<string, any>)['properties'] ?? {};
-        const nested = extractColumns(devProps as Record<string, any>);
+        const deviceFieldOrder = buildSchemaFieldOrder(schemaFields, deviceRefUuid);
+        const nested = extractColumns(devProps as Record<string, any>, deviceFieldOrder);
         const deviceLabelKey = pickDeviceLabelKey(nested.columns.map((c) => c.key));
         const columns = nested.columns.filter((c) => c.key !== deviceLabelKey);
-        return { columns, dateColumnKey: nested.dateColumnKey, deviceArrayKey, deviceLabelKey, flattenDeviceItems: true };
+        return {
+            columns, dateColumnKey: nested.dateColumnKey,
+            startDateColumnKey: nested.startDateColumnKey, endDateColumnKey: nested.endDateColumnKey,
+            deviceArrayKey, deviceLabelKey, flattenDeviceItems: true,
+        };
     }
 
     return empty;

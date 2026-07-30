@@ -1,15 +1,20 @@
 <script setup lang="ts">
-/** Reports page stat cards, derived from the audit-log-backed export history. */
+/** Reports page stat cards: export history counts + the live ESG field catalog for the selected dataset. */
 import { Download, ListChecks, Clock } from 'lucide-vue-next';
-import type { ExportHistoryItem } from '~/types/reports';
+import type { ExportDataset, ExportHistoryItem } from '~/types/reports';
+import { getExportFields, getFieldGroupCount } from '~/lib/export-field-catalog';
+
+const props = defineProps<{
+    dataset: ExportDataset;
+}>();
 
 const { t, locale } = useI18n();
 const { network } = useNetwork();
 const { listRecent } = useExportsApi();
 
-const ESG_FIELDS_TOTAL = 24;
-const ESG_FIELDS_REQUIRED = 12;
-const ESG_FIELDS_OPTIONAL = ESG_FIELDS_TOTAL - ESG_FIELDS_REQUIRED;
+const esgFieldCount = computed(() => getFieldGroupCount(props.dataset, 'ESG_CLIMATE_DATA'));
+const totalFieldCount = computed(() => getExportFields(props.dataset).length);
+const datasetLabel = computed(() => t(`reports.datasets.${props.dataset}`));
 
 const HISTORY_SAMPLE_SIZE = 50;
 
@@ -57,8 +62,8 @@ const cards = computed<StatCard[]>(() => [
     {
         key: 'esgFieldsAvailable',
         label: t('reports.stats.esgFieldsAvailable.label'),
-        value: String(ESG_FIELDS_TOTAL),
-        sub: t('reports.stats.esgFieldsAvailable.sub', { required: ESG_FIELDS_REQUIRED, optional: ESG_FIELDS_OPTIONAL }),
+        value: String(esgFieldCount.value),
+        sub: t('reports.stats.esgFieldsAvailable.sub', { total: totalFieldCount.value, dataset: datasetLabel.value }),
         icon: ListChecks,
     },
     {

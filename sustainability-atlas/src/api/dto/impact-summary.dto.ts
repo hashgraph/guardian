@@ -75,6 +75,55 @@ export class ImpactSummaryRegistryDto {
 
     @ApiProperty({ description: 'Number of METHODOLOGY (policy) rows under this registry' })
     policyCount: number;
+
+    @ApiProperty({ description: 'On-chain credits issued (SUM of mv_project_stats.total_issued) across PROJECT rows published under this registry' })
+    creditsIssued: number;
+}
+
+export class ImpactSummaryMethodologyDto {
+    @ApiProperty({ nullable: true, description: 'Methodology display name' })
+    name: string | null;
+
+    @ApiProperty({ nullable: true, description: 'business_view.relatedTopicId — the stable methodology/policy-topic identifier' })
+    methodologyId: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Publishing registry display name' })
+    registryName: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Methodology version, from businessData.options.version' })
+    version: string | null;
+
+    @ApiProperty({ description: 'Number of PROJECT rows linked to this methodology' })
+    projectCount: number;
+
+    @ApiProperty({ description: 'Number of tokens with minting activity under this methodology' })
+    issuanceCount: number;
+
+    @ApiProperty({ description: 'On-chain credits issued for projects linked to this methodology' })
+    creditsIssued: number;
+}
+
+export class ImpactSummaryProjectDto {
+    @ApiProperty({ nullable: true, description: 'Project display name' })
+    name: string | null;
+
+    @ApiProperty({ description: "Country label, or 'Unknown' when blank/missing" })
+    country: string;
+
+    @ApiProperty({ nullable: true, description: 'Methodology name (businessData.methodology)' })
+    methodology: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Raw businessData.status field (not the fuller derived lifecycle-stage logic used on the Projects page)' })
+    status: string | null;
+
+    @ApiProperty({ nullable: true, description: 'Publishing registry display name' })
+    registryName: string | null;
+
+    @ApiProperty({ description: 'Number of tokens with minting activity for this project' })
+    issuanceCount: number;
+
+    @ApiProperty({ description: 'On-chain credits issued (mv_project_stats.total_issued) for this project' })
+    creditsIssued: number;
 }
 
 export class ImpactSummaryResponseDto {
@@ -129,6 +178,18 @@ export class ImpactSummaryResponseDto {
 
     @ApiProperty({ description: "Distinct methodology count, deduped by relatedTopicId (business_view is per-message; republished methodology versions share a relatedTopicId)" })
     methodologyCount: number;
+
+    @ApiProperty({
+        type: [ImpactSummaryMethodologyDto],
+        description: 'Top-10 sample of methodologies by project/issuance activity, for the PDF "Credits by Methodology" table. Not the full methodology list — see /methodologies for that.',
+    })
+    methodologyBreakdown: ImpactSummaryMethodologyDto[];
+
+    @ApiProperty({
+        type: [ImpactSummaryProjectDto],
+        description: 'Top-12 sample of projects by credits issued descending, for the PDF "Credits by Project" table. Not the full project list — see /projects for that.',
+    })
+    projectBreakdown: ImpactSummaryProjectDto[];
 
     @ApiProperty({ description: 'ISO timestamp this summary was computed (aggregates are computed live on each request)' })
     generatedAt: string;
@@ -215,6 +276,8 @@ export function buildImpactSummaryResponse(row: ImpactSummaryRow, network: strin
         sectorBreakdown: buildSectorBreakdown(row.sectorBreakdown, row.totalCreditsIssued),
         registryBreakdown: row.registryBreakdown,
         methodologyCount: row.methodologyCount,
+        methodologyBreakdown: row.methodologyBreakdown,
+        projectBreakdown: row.projectBreakdown,
         generatedAt: new Date().toISOString(),
     };
 }

@@ -16,7 +16,7 @@ function cellValue(value: unknown): unknown {
  * work with one complete in-memory file per generation.
  */
 export class XlsxSerializer implements Serializer {
-    async serialize(fields: string[], rows: Record<string, unknown>[]): Promise<SerializedExport> {
+    async serialize(fields: string[], rows: Record<string, unknown>[], datasetTitle: string): Promise<SerializedExport> {
         const passthrough = new PassThrough();
         const chunks: Buffer[] = [];
         const collected = new Promise<void>((resolve, reject) => {
@@ -33,13 +33,32 @@ export class XlsxSerializer implements Serializer {
         workbook.creator = 'Sustainability Atlas';
         workbook.created = new Date();
 
-        const worksheet = workbook.addWorksheet('Export');
+        // Worksheet name mirrors the exported dataset (e.g. "Projects", "Issuances") instead of the generic
+        // "Export" — Excel worksheet names are capped at 31 chars, which every dataset title comfortably fits.
+        const worksheet = workbook.addWorksheet(datasetTitle);
+
+        // `header` is intentionally omitted from the column defs (only `key`/`width` are set): exceljs writes a
+        // column's `header` straight into row 1 the moment `.columns` is assigned, which would collide with the
+        // title row we write by hand below. `key` alone is enough for the keyed `addRow()` calls further down.
         worksheet.columns = fields.map((field) => ({
-            header: field,
             key: field,
             width: Math.min(Math.max(field.length + 2, 14), 40),
         }));
-        worksheet.getRow(1).font = { bold: true };
+
+        // Row 1: dataset title, merged across every selected column.
+        worksheet.mergeCells(1, 1, 1, Math.max(fields.length, 1));
+        const titleCell = worksheet.getCell(1, 1);
+        titleCell.value = datasetTitle;
+        titleCell.font = { bold: true, size: 14 };
+        worksheet.getRow(1).commit();
+
+        // Row 2: column headers (the raw field-catalog keys, same labels as before this change).
+        const headerRow = worksheet.getRow(2);
+        fields.forEach((field, index) => {
+            headerRow.getCell(index + 1).value = field;
+        });
+        headerRow.font = { bold: true };
+        headerRow.commit();
 
         for (const row of rows) {
             const values: Record<string, unknown> = {};

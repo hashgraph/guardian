@@ -40,12 +40,12 @@ export class MrvDataQueryDto {
     @IsString()
     device?: string;
 
-    @ApiPropertyOptional({ description: 'ISO 8601 — only records whose date column is on/after this instant' })
+    @ApiPropertyOptional({ description: 'ISO 8601 range start. When the schema exposes a distinguishable start/end date pair the range matches by period OVERLAP (a record matches when its own period intersects [from, to] at all, i.e. record end >= from); for a schema with a single date column it degrades to "that column >= from".' })
     @IsOptional()
     @IsISO8601()
     from?: string;
 
-    @ApiPropertyOptional({ description: 'ISO 8601 — only records whose date column is on/before this instant' })
+    @ApiPropertyOptional({ description: 'ISO 8601 range end. Overlap counterpart of `from` — matches when the record period STARTS on/before this instant (record start <= to); for a single-date-column schema, "that column <= to".' })
     @IsOptional()
     @IsISO8601()
     to?: string;
@@ -72,8 +72,15 @@ export class MrvRecordRowDto {
     @ApiProperty({ description: 'Formatted column values keyed by column key' })
     values: Record<string, string>;
 
-    @ApiProperty({ nullable: true, description: 'Device / measurement-point label this record (or, when flattened, this item) is associated with, when the schema has a device-like nested field' })
+    @ApiProperty({ nullable: true, description: 'Device / measurement-point label this record (or, when flattened, this item) is associated with, when the schema has a device-like nested field. When a record spans MULTIPLE devices, this is a comma-joined string (e.g. "IOT-DEV-8, IOT-DEV-939") — use deviceLabels for the individual, filter-matchable values.' })
     device: string | null;
+
+    @ApiProperty({
+        type: [String],
+        nullable: true,
+        description: 'The individual DISTINCT device/measurement-point labels backing `device` (unjoined) — pass ONE of these as the `device` query filter; `device` itself (the joined string) can never match the single-array-element equality check the filter performs.',
+    })
+    deviceLabels: string[] | null;
 
     @ApiProperty({
         required: false,

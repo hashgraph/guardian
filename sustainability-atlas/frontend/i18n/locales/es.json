@@ -1448,7 +1448,7 @@
             },
             "esgFieldsAvailable": {
                 "label": "Campos ESG Disponibles",
-                "sub": "{required} obligatorios, {optional} opcionales"
+                "sub": "de {total} campos totales en {dataset}"
             },
             "lastExport": {
                 "label": "Última Exportación",
@@ -1491,7 +1491,6 @@
             "metrics": {
                 "creditsIssued": "Créditos Totales Emitidos",
                 "retired": "Total Retirado",
-                "inferred": "inferido",
                 "activeProjects": "Proyectos Activos",
                 "activeCountries": "Países"
             },
@@ -1507,15 +1506,6 @@
             }
         },
         "disclosure": {
-            "frameworksTitle": "Alineación con Marcos",
-            "frameworksSubtitle": "Las exportaciones y los resúmenes se alinean con marcos de divulgación y contabilidad ampliamente utilizados.",
-            "frameworks": {
-                "ghgProtocol": { "name": "Protocolo GEI", "desc": "Norma corporativa de contabilidad e informes de emisiones de gases de efecto invernadero." },
-                "cdp": { "name": "CDP", "desc": "Sistema global de divulgación ambiental para clima, agua y bosques." },
-                "tcfd": { "name": "TCFD", "desc": "Recomendaciones de divulgación financiera relacionadas con el clima." },
-                "gri": { "name": "GRI", "desc": "Normas de informes de sostenibilidad de la Global Reporting Initiative." },
-                "iso14064": { "name": "ISO 14064", "desc": "Norma para la cuantificación e informe de emisiones y remociones de GEI." }
-            },
             "entriesTitle": "Definiciones y Guía de Cálculo",
             "searchPlaceholder": "Buscar guía…",
             "noResults": "Ninguna guía coincide con su búsqueda.",
@@ -1530,17 +1520,9 @@
                     "title": "Año de Cosecha (Vintage)",
                     "body": "El año calendario en que ocurrió la actividad de reducción o remoción de emisiones subyacente. Para los créditos, el año de informe es el año calendario de la actividad de acuñación en cadena."
                 },
-                "mitigationType": {
-                    "title": "Tipo de Mitigación",
-                    "body": "La clase de acción climática (p. ej., evitación o remoción) derivada del enfoque de reducción de emisiones de la metodología."
-                },
                 "howToVerify": {
                     "title": "Cómo Verificar",
                     "body": "Cada registro exportado incluye referencias de trazabilidad. Utilice la URL de verificación para abrir la transacción, el token o el tema correspondiente en el explorador de la red Hedera (HashScan) para una confirmación independiente."
-                },
-                "preApprovedSources": {
-                    "title": "Fuentes de Importación Preaprobadas",
-                    "body": "Los datos externos solo pueden importarse desde fuentes preaprobadas que admitan verificación automatizada. Los registros de fuentes sin mecanismo de verificación no se admiten."
                 }
             },
             "verificationStatus": {
