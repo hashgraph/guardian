@@ -104,9 +104,9 @@ function sdgIcon(id: number): string {
                             </td>
                             <td class="py-3 px-4 text-center tabular-nums font-medium">
                                 <AppLink
-                                    :to="`/projects?sdgs=${s.sdgId}`"
+                                    :to="`/credits?sdg=${s.sdgId}`"
                                     class="text-primary hover:underline transition-colors"
-                                    :title="$t('sdgs.viewProjects', { name: s.name })"
+                                    :title="$t('sdgs.viewIssuances', { name: s.name })"
                                 >
                                     {{ s.credits }}
                                 </AppLink>

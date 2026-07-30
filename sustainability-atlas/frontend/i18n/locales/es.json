@@ -639,6 +639,8 @@
         "filteredByRegistry": "Mostrando emisiones del registro",
         "unknownRegistry": "este registro",
         "clearRegistryFilter": "Quitar filtro",
+        "filteredBySdg": "Mostrando emisiones del ODS {sdg}",
+        "clearSdgFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
         "columns": {
             "token": "Token",
@@ -1122,6 +1124,7 @@
         "searchPlaceholder": "Buscar ODS...",
         "coverageTooltip": "Porcentaje del total de proyectos que contribuyen a este ODS. Un proyecto puede contribuir a varios ODS.",
         "viewProjects": "Ver proyectos etiquetados con {name}",
+        "viewIssuances": "Ver emisiones de {name}",
         "columns": {
             "sdg": "ODS",
             "goal": "Objetivo",

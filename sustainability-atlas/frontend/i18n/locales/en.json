@@ -644,6 +644,8 @@
         "filteredByRegistry": "Showing issuances for registry",
         "unknownRegistry": "this registry",
         "clearRegistryFilter": "Clear filter",
+        "filteredBySdg": "Showing issuances for SDG {sdg}",
+        "clearSdgFilter": "Clear filter",
         "supplyTooltip": "Total number of Credits Minted for the particular project. For NFTs, this is the number of unique serials.",
         "columns": {
             "token": "Token",
@@ -1130,6 +1132,7 @@
         "searchPlaceholder": "Search SDG...",
         "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDG.",
         "viewProjects": "View projects tagged with {name}",
+        "viewIssuances": "View issuances for {name}",
         "columns": {
             "sdg": "SDG",
             "goal": "Goal",
