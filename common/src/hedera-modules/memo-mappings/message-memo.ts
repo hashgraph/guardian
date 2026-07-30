@@ -84,6 +84,7 @@ export class MessageMemo extends MemoMap {
         messageMemo[`${MessageType.Schema}.${MessageAction.PublishSystemSchema}`] = 'System Schema publishing message';
         messageMemo[`${MessageType.SchemaPackage}.${MessageAction.PublishSchemas}`] = 'Schemas publishing message';
         messageMemo[`${MessageType.SchemaPackage}.${MessageAction.PublishSystemSchemas}`] = 'System Schemas publishing message';
+        messageMemo[`${MessageType.SchemaTemplate}.${MessageAction.CreateSchemaTemplate}`] = 'Schema template creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.PolicyTopic}`] = 'Policy Topic creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.InstancePolicyTopic}`] = 'Policy Instance topic creation message';
         messageMemo[`${MessageType.Topic}.${MessageAction.CreateTopic}.${TopicType.UserTopic}`] = 'Standard Registry topic creation message';

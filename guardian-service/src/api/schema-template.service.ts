@@ -3,9 +3,13 @@ import {
     DatabaseServer,
     MessageError,
     MessageResponse,
+    MessageAction,
+    MessageServer,
+    MessageType,
     NewNotifier,
     PinoLogger,
     Schema,
+    SchemaTemplateMessage,
     SchemaTemplate,
     TopicConfig,
     TopicHelper,
@@ -71,15 +75,34 @@ async function createTemplateTopic(
         }
     );
     await topic.saveKeys(owner.id);
+    template.topicId = topic.topicId;
+
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
+    const message = new SchemaTemplateMessage(
+        MessageType.SchemaTemplate,
+        MessageAction.CreateSchemaTemplate
+    );
+    message.setDocument(template);
+    const messageStatus = await messageServer
+        .setTopicObject(parent)
+        .sendMessage(message, {
+            sendToIPFS: true,
+            memo: null,
+            userId: owner.id,
+            interception: null
+        });
+
     await topicHelper.twoWayLink({
         topic,
         parent,
-        rationale: null,
+        rationale: messageStatus.getId(),
         userId: owner.id
     });
     await DatabaseServer.saveTopic(topic.toObject());
-
-    template.topicId = topic.topicId;
     await DatabaseServer.updateSchemaTemplate(template);
 }
 
