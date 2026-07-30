@@ -212,6 +212,83 @@ export class InterfaceStepBlock {
     }
 
     /**
+     * Move the step off a non-UI child the workflow dead-ended on.
+     *
+     * `runAction` moves the step onto a child *before* running it, so a `defaultActive:
+     * false` child (customLogicBlock, sendToGuardianBlock, ...) is the active child while
+     * it executes. Those have no UI, so the container serializes them as `undefined`, and
+     * the viewer renders "This step isn't available to you right now". Normally the chain
+     * moves on immediately; when it dead-ends there instead - a customLogic script that
+     * returns an empty result never fires a RunEvent - the step stays pointed at a child
+     * nothing can render, permanently.
+     *
+     * Callers signal the dead end explicitly rather than having the step infer it, because
+     * outgoing links are fired without awaiting unless the run is recorded, so event order
+     * is not a reliable stall signal. This also keeps the method inert during the normal
+     * transient pass through a non-UI child.
+     *
+     * A cyclic step rewinds to the first child - the same resting place `releaseChild`
+     * picks after a successful cycle. Anything else walks back to the closest earlier
+     * child with UI. (Rewinding cyclic steps by walking back would land the user on a
+     * completed sub-wizard: VM0033's `new_project` has two `tool` children between the
+     * form and the calculation.)
+     *
+     * No-op unless the step is currently parked on `child`, and never for a
+     * `defaultActive: true` child - a permission-gated UI child genuinely is another
+     * participant's turn.
+     *
+     * @param user
+     * @param child
+     * @param actionStatus
+     */
+    public async unparkStalledChild(
+        user: PolicyUser,
+        child: AnyBlockType,
+        actionStatus?: RecordActionStep
+    ): Promise<boolean> {
+        if (!user || !child || child.defaultActive) {
+            return false;
+        }
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
+        const childIndex = ref.children.findIndex((c) => c.uuid === child.uuid);
+        const blockState = this.state[user.id];
+        if (childIndex === -1 || !blockState || blockState.index !== childIndex) {
+            return false;
+        }
+
+        const fallbackIndex = this.isCyclic() ? 0 : this.findRenderableIndexBefore(childIndex, user);
+        if (fallbackIndex === childIndex) {
+            return false;
+        }
+
+        ref.warn(
+            `step stalled on non-UI child "${child.tag}" (index ${childIndex}); ` +
+            `rewinding to index ${fallbackIndex} for user ${user.id}`
+        );
+        blockState.index = fallbackIndex;
+        ref.updateBlock(blockState, user, ref.tag, user.userId);
+        await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, user, null, actionStatus);
+        ref.backup();
+        return true;
+    }
+
+    /**
+     * Closest child before `index` that this user can actually see
+     * @param index
+     * @param user
+     */
+    private findRenderableIndexBefore(index: number, user: PolicyUser): number {
+        const ref = PolicyComponentsUtils.GetBlockRef<IPolicyContainerBlock>(this);
+        for (let i = index - 1; i > 0; i--) {
+            const candidate = ref.children[i];
+            if (candidate?.defaultActive && candidate.hasPermission(user)) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    /**
      * Is cyclic
      */
     public isCyclic(): boolean {
