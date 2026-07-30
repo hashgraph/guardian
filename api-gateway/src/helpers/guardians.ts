@@ -2443,6 +2443,69 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Export schema template file
+     * @param id
+     * @param owner
+     * @returns schema template archive
+     */
+    public async exportSchemaTemplateFile(id: string, owner: IOwner): Promise<any> {
+        const file = await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_EXPORT_FILE, { id, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Export schema template message metadata
+     * @param id
+     * @param owner
+     * @returns schema template metadata
+     */
+    public async exportSchemaTemplateMessage(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_EXPORT_MESSAGE, { id, owner });
+    }
+
+    /**
+     * Preview schema template file
+     * @param zip
+     * @param owner
+     * @returns schema template preview
+     */
+    public async previewSchemaTemplateFile(zip: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_PREVIEW, { zip, owner });
+    }
+
+    /**
+     * Preview schema template message
+     * @param messageId
+     * @param owner
+     * @returns schema template preview
+     */
+    public async previewSchemaTemplateMessage(messageId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Import schema template file async
+     * @param zip
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async importSchemaTemplateFileAsync(zip: any, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_ASYNC, { zip, owner, task });
+    }
+
+    /**
+     * Import schema template message async
+     * @param messageId
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async importSchemaTemplateMessageAsync(messageId: string, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
+    }
+
+    /**
      * Apply schema template to policy
      * @param templateId
      * @param policyId

@@ -1,5 +1,6 @@
 import { FilterObject } from '@mikro-orm/core';
 import {
+    BinaryMessageResponse,
     DatabaseServer,
     MessageError,
     MessageResponse,
@@ -8,8 +9,10 @@ import {
     MessageType,
     NewNotifier,
     PinoLogger,
+    RunFunctionAsync,
     Schema,
     SchemaTemplateMessage,
+    SchemaTemplateImportExport,
     SchemaTemplate,
     TopicConfig,
     TopicHelper,
@@ -36,7 +39,7 @@ import {
     TopicType
 } from '@guardian/interfaces';
 import { ApiResponse } from './helpers/api-response.js';
-import { createSchemaAndArtifacts, deleteSchema, updateSchemaDefs } from '../helpers/import-helpers/index.js';
+import { createSchemaAndArtifacts, deleteSchema, SchemaImportExportHelper, updateSchemaDefs } from '../helpers/import-helpers/index.js';
 
 async function createTemplateTopic(
     template: SchemaTemplate,
@@ -138,6 +141,95 @@ async function createSchemaTemplate(
         await DatabaseServer.removeSchemaTemplate(template);
         throw error;
     }
+}
+
+async function prepareTemplatePreviewMessage(
+    messageId: string,
+    owner: IOwner
+): Promise<any> {
+    if (!messageId) {
+        throw new Error('Message ID in body is empty');
+    }
+
+    const users = new Users();
+    const root = await users.getHederaAccount(owner.creator, owner.id);
+    const messageServer = new MessageServer({
+        operatorId: root.hederaAccountId,
+        operatorKey: root.hederaAccountKey,
+        signOptions: root.signOptions
+    });
+    const message = await messageServer.getMessage<SchemaTemplateMessage>({
+        messageId,
+        loadIPFS: true,
+        userId: owner.id,
+        interception: null
+    });
+
+    if (!message) {
+        throw new Error('Invalid Message');
+    }
+    if (message.type !== MessageType.SchemaTemplate) {
+        throw new Error('Invalid Message Type');
+    }
+    if (!message.document) {
+        throw new Error('file in body is empty');
+    }
+
+    const result: any = await SchemaTemplateImportExport.parseZipFile(message.document);
+    result.messageId = messageId;
+    result.templateTopicId = message.schemaTemplateTopicId;
+    return result;
+}
+
+async function importSchemaTemplateByComponents(
+    components: any,
+    owner: IOwner,
+    logger: PinoLogger,
+    notifier: any
+): Promise<SchemaTemplate> {
+    const STEP_CREATE_TEMPLATE = 'Create schema template and topic';
+    const STEP_IMPORT_SCHEMAS = 'Import template schemas';
+    const STEP_SAVE_CONFIG = 'Save template config';
+
+    notifier.addStep(STEP_CREATE_TEMPLATE);
+    notifier.addStep(STEP_IMPORT_SCHEMAS);
+    notifier.addStep(STEP_SAVE_CONFIG);
+    notifier.start();
+
+    const templatePayload = cloneJson(components.template || {});
+    const schemaPayloads = cloneJson(components.schemas || []);
+    templatePayload.config = templatePayload.config || {};
+
+    notifier.startStep(STEP_CREATE_TEMPLATE);
+    const template = await createSchemaTemplate(templatePayload, owner, logger);
+    notifier.completeStep(STEP_CREATE_TEMPLATE);
+
+    notifier.startStep(STEP_IMPORT_SCHEMAS);
+    for (const schema of schemaPayloads) {
+        schema.topicId = template.topicId;
+        schema.category = SchemaCategory.TEMPLATE;
+        schema.templateId = template.id;
+        schema.templateSchemaId = schema.templateSchemaId || GenerateUUIDv4();
+        SchemaHelper.ensureTemplateFieldIds(schema.document);
+    }
+    await SchemaImportExportHelper.importSchemaByFiles(
+        schemaPayloads,
+        owner,
+        {
+            category: SchemaCategory.TEMPLATE,
+            topicId: template.topicId
+        },
+        notifier.getStep(STEP_IMPORT_SCHEMAS),
+        owner.id
+    );
+    notifier.completeStep(STEP_IMPORT_SCHEMAS);
+
+    notifier.startStep(STEP_SAVE_CONFIG);
+    await normalizeSchemaTemplateConfig(template);
+    const result = await DatabaseServer.updateSchemaTemplate(template);
+    notifier.completeStep(STEP_SAVE_CONFIG);
+    notifier.complete();
+    return result;
 }
 
 function ensureEditable(
@@ -673,6 +765,152 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
             }
+        });
+
+    ApiResponse(MessageAPI.SCHEMA_TEMPLATE_EXPORT_FILE,
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { id, owner } = msg;
+                if (!id || !owner) {
+                    return new MessageError('Invalid schema template parameter');
+                }
+                const template = await DatabaseServer.getSchemaTemplateById(id);
+                if (!template) {
+                    throw new Error('Invalid schema template');
+                }
+                if (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner) {
+                    throw new Error('Invalid schema template');
+                }
+                if (template.status === ModuleStatus.PUBLISHED && template.contentFileId) {
+                    const buffer = await DatabaseServer.loadFile(template.contentFileId);
+                    return new BinaryMessageResponse(Uint8Array.from(buffer).buffer);
+                }
+
+                await normalizeSchemaTemplateConfig(template);
+                const zip = await SchemaTemplateImportExport.generate(template);
+                const file = await zip.generateAsync({
+                    type: 'arraybuffer',
+                    compression: 'DEFLATE',
+                    compressionOptions: {
+                        level: 3
+                    },
+                    platform: 'UNIX'
+                });
+                return new BinaryMessageResponse(file);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.SCHEMA_TEMPLATE_EXPORT_MESSAGE,
+        async (msg: {
+            id: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { id, owner } = msg;
+                const template = await DatabaseServer.getSchemaTemplateById(id);
+                if (!template) {
+                    throw new Error('Invalid schema template');
+                }
+                if (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner) {
+                    throw new Error('Invalid schema template');
+                }
+                return new MessageResponse({
+                    id: template.id,
+                    uuid: template.uuid,
+                    name: template.name,
+                    description: template.description,
+                    messageId: template.messageId,
+                    owner: template.owner,
+                    version: template.version
+                });
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_PREVIEW,
+        async (msg: {
+            zip: any,
+            owner: IOwner
+        }) => {
+            try {
+                const { zip } = msg;
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await SchemaTemplateImportExport.parseZipFile(Buffer.from(zip.data));
+                return new MessageResponse(preview);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_PREVIEW,
+        async (msg: {
+            messageId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { messageId, owner } = msg;
+                const preview = await prepareTemplatePreviewMessage(messageId, owner);
+                return new MessageResponse(preview);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_ASYNC,
+        async (msg: {
+            zip: any,
+            owner: IOwner,
+            task: any
+        }) => {
+            const { zip, owner, task } = msg;
+            const notifier = await NewNotifier.create(task);
+            RunFunctionAsync(async () => {
+                if (!zip) {
+                    throw new Error('file in body is empty');
+                }
+                const preview = await SchemaTemplateImportExport.parseZipFile(Buffer.from(zip.data));
+                const template = await importSchemaTemplateByComponents(preview, owner, logger, notifier);
+                notifier.result({
+                    templateId: template.id,
+                    errors: []
+                });
+            }, async (error) => {
+                notifier.fail(error);
+            });
+            return new MessageResponse(task);
+        });
+
+    ApiResponse(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_ASYNC,
+        async (msg: {
+            messageId: string,
+            owner: IOwner,
+            task: any
+        }) => {
+            const { messageId, owner, task } = msg;
+            const notifier = await NewNotifier.create(task);
+            RunFunctionAsync(async () => {
+                const preview = await prepareTemplatePreviewMessage(messageId, owner);
+                const template = await importSchemaTemplateByComponents(preview, owner, logger, notifier);
+                notifier.result({
+                    templateId: template.id,
+                    errors: []
+                });
+            }, async (error) => {
+                notifier.fail(error);
+            });
+            return new MessageResponse(task);
         });
 
     ApiResponse(MessageAPI.UPDATE_SCHEMA_TEMPLATE,

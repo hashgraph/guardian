@@ -1,4 +1,5 @@
 import { SchemaTemplate } from '../../entity/index.js';
+import { toBuffer } from '../../helpers/index.js';
 import { Message } from './message.js';
 import { MessageAction } from './message-action.js';
 import { SchemaTemplateMessageBody } from './message-body.interface.js';
@@ -8,6 +9,10 @@ import { MessageType } from './message-type.js';
  * Schema template message
  */
 export class SchemaTemplateMessage extends Message {
+    /**
+     * Document
+     */
+    public document: Buffer;
     /**
      * UUID
      */
@@ -42,13 +47,14 @@ export class SchemaTemplateMessage extends Message {
      * Set document
      * @param model
      */
-    public setDocument(model: SchemaTemplate): void {
+    public setDocument(model: SchemaTemplate, zip?: ArrayBuffer | Buffer): void {
         this.uuid = model.uuid;
         this.name = model.name;
         this.description = model.description;
         this.owner = model.owner;
         this.schemaTemplateTopicId = model.topicId;
         this.version = model.version;
+        this.document = toBuffer(zip);
     }
 
     /**
@@ -75,13 +81,19 @@ export class SchemaTemplateMessage extends Message {
      * To documents
      */
     public async toDocuments(): Promise<Buffer[]> {
+        if (this.document) {
+            return [this.document];
+        }
         return [];
     }
 
     /**
      * Load documents
      */
-    public loadDocuments(): SchemaTemplateMessage {
+    public loadDocuments(documents?: any[]): SchemaTemplateMessage {
+        if (documents && documents.length === 1) {
+            this.document = Buffer.from(documents[0]) as any;
+        }
         return this;
     }
 
@@ -139,6 +151,7 @@ export class SchemaTemplateMessage extends Message {
         result.name = this.name;
         result.description = this.description;
         result.owner = this.owner;
+        result.document = this.document;
         result.topicId = this.schemaTemplateTopicId;
         result.version = this.version;
         return result;

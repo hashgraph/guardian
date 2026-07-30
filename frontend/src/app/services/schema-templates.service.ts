@@ -63,6 +63,40 @@ export class SchemaTemplatesService {
         return this.http.delete<TaskResponse>(`${this.url}/push/${id}`);
     }
 
+    public exportInFile(id: string): Observable<ArrayBuffer> {
+        return this.http.get(`${this.url}/${id}/export/file`, {
+            responseType: 'arraybuffer'
+        });
+    }
+
+    public exportInMessage(id: string): Observable<any> {
+        return this.http.get(`${this.url}/${id}/export/message`);
+    }
+
+    public previewByMessage(messageId: string): Observable<any> {
+        return this.http.post<any>(`${this.url}/import/message/preview`, { messageId });
+    }
+
+    public previewByFile(file: any): Observable<any> {
+        return this.http.post<any>(`${this.url}/import/file/preview`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
+    public pushImportByMessage(messageId: string): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/push/import/message`, { messageId });
+    }
+
+    public pushImportByFile(file: any): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/push/import/file`, file, {
+            headers: {
+                'Content-Type': 'binary/octet-stream'
+            }
+        });
+    }
+
     public pushApply(templateId: string, policyId: string): Observable<TaskResponse> {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/apply`, {});
     }

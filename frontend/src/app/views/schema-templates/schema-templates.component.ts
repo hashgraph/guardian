@@ -3,6 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ISchemaTemplate, ModuleStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { ImportEntityDialog, ImportEntityType, IImportEntityResult } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
+import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
@@ -58,8 +60,7 @@ export class SchemaTemplatesComponent implements OnInit {
 
     public canExport(template: SchemaTemplateGridItem): boolean {
         return this.isConfirmed &&
-            this.user.TEMPLATES_TEMPLATE_READ &&
-            template.status === ModuleStatus.PUBLISHED;
+            this.user.TEMPLATES_TEMPLATE_READ;
     }
 
     public canDelete(template: SchemaTemplateGridItem): boolean {
@@ -84,6 +85,64 @@ export class SchemaTemplatesComponent implements OnInit {
         if (!this.canExport(template)) {
             return;
         }
+        const id = template.id || (template as any)._id;
+        if (!id) {
+            return;
+        }
+        this.loading = true;
+        this.templatesService.exportInMessage(id).subscribe({
+            next: (schemaTemplate) => {
+                this.loading = false;
+                this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Schema Template',
+                    width: '700px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        schemaTemplate
+                    },
+                });
+            },
+            error: () => {
+                this.loading = false;
+            }
+        });
+    }
+
+    public importTemplate(messageId?: string): void {
+        const dialogRef = this.dialogService.open(ImportEntityDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                type: ImportEntityType.Template,
+                timeStamp: messageId
+            }
+        })!;
+        dialogRef.onClose.subscribe((result: IImportEntityResult | null) => {
+            if (result) {
+                this.importTemplateDetails(result);
+            }
+        });
+    }
+
+    private importTemplateDetails(result: IImportEntityResult): void {
+        this.loading = true;
+        const request = result.type === 'message'
+            ? this.templatesService.pushImportByMessage(result.data)
+            : this.templatesService.pushImportByFile(result.data);
+        request.subscribe({
+            next: (task) => {
+                void this.router.navigate(['/task', task.taskId], {
+                    queryParams: {
+                        last: btoa(location.href)
+                    }
+                });
+            },
+            error: () => {
+                this.loading = false;
+            }
+        });
     }
 
     public saveTemplate(): void {

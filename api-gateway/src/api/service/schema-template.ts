@@ -1,5 +1,5 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
 import { ISchemaTemplate, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
@@ -179,6 +179,176 @@ export class SchemaTemplatesApi {
                 search
             }, new EntityOwner(user));
             return res.header('X-Total-Count', count).send(items);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Export schema template in file.
+     */
+    @Get('/:templateId/export/file')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Exports schema template as a file.',
+        description: 'Exports schema template metadata, configuration, and schemas as a zip-based *.template file.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.OK)
+    async exportSchemaTemplateFile(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Response() res: any
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            const file: any = await guardians.exportSchemaTemplateFile(templateId, new EntityOwner(user));
+            res.header('Content-disposition', `attachment; filename=schema-template_${Date.now()}`);
+            res.header('Content-type', 'application/zip');
+            return res.send(file);
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Export schema template in message.
+     */
+    @Get('/:templateId/export/message')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_READ,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Returns schema template identity and Hedera message id for export.',
+        description: 'Returns template metadata and message id when the template has been published.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.OK)
+    async exportSchemaTemplateMessage(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.exportSchemaTemplateMessage(templateId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Preview schema template from file.
+     */
+    @Post('/import/file/preview')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Previews schema template package from uploaded file.',
+        description: 'Parses a schema template archive without persisting it.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.OK)
+    async previewSchemaTemplateFile(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<any> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.previewSchemaTemplateFile(body, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Preview schema template from message.
+     */
+    @Post('/import/message/preview')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Previews schema template package from message.',
+        description: 'Loads a schema template package from a Hedera message/IPFS and parses it without persisting.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.OK)
+    async previewSchemaTemplateMessage(
+        @AuthUser() user: IAuthUser,
+        @Body() body: { messageId: string }
+    ): Promise<any> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const guardians = new Guardians();
+            return await guardians.previewSchemaTemplateMessage(messageId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Import schema template from file async.
+     */
+    @Post('/push/import/file')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Imports schema template from uploaded file asynchronously.',
+        description: 'Imports schema template metadata, configuration, and schemas from a local archive.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async importSchemaTemplateFileAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: any
+    ): Promise<TaskDTO> {
+        try {
+            const guardians = new Guardians();
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE, user.id);
+            await guardians.importSchemaTemplateFileAsync(body, new EntityOwner(user), task);
+            await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Import schema template from message async.
+     */
+    @Post('/push/import/message')
+    @Auth(
+        Permissions.TEMPLATES_TEMPLATE_CREATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Imports schema template from message asynchronously.',
+        description: 'Imports schema template metadata, configuration, and schemas from a Hedera message/IPFS archive.' + ONLY_SR,
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async importSchemaTemplateMessageAsync(
+        @AuthUser() user: IAuthUser,
+        @Body() body: { messageId: string }
+    ): Promise<TaskDTO> {
+        const messageId = body?.messageId;
+        if (!messageId) {
+            throw new HttpException('Message ID in body is empty', HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        try {
+            const guardians = new Guardians();
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE, user.id);
+            await guardians.importSchemaTemplateMessageAsync(messageId, new EntityOwner(user), task);
+            await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
+            return task;
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

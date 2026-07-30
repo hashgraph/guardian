@@ -193,6 +193,28 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             }
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE: {
+                const templateId = result?.templateId;
+                if (templateId) {
+                    setTimeout(() => {
+                        this.router.navigate(['schema-template-configuration'], {
+                            queryParams: {
+                                type: 'template',
+                                templateId
+                            },
+                            replaceUrl: true,
+                        });
+                    }, 500);
+                    break;
+                }
+                setTimeout(() => {
+                    this.router.navigate(['schema-templates'], {
+                        replaceUrl: true,
+                    });
+                }, 500);
+                break;
+            }
             case TaskAction.APPLY_SCHEMA_TEMPLATE:
             case TaskAction.DETACH_SCHEMA_TEMPLATE:
                 if (this.last) {
@@ -447,6 +469,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_POLICY_MESSAGE:
             case TaskAction.IMPORT_TOOL_FILE:
             case TaskAction.IMPORT_TOOL_MESSAGE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_FILE:
+            case TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE:
             case TaskAction.WIZARD_CREATE_POLICY:
             case TaskAction.PUBLISH_POLICY:
             case TaskAction.DELETE_POLICY:

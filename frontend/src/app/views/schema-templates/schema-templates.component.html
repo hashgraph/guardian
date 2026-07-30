@@ -60,9 +60,9 @@
           }
           @if (canCreate) {
             <p-button
+              (click)="importTemplate()"
               class="toolbar-btn-primary"
               label="Import"
-              [disabled]="true"
               [pTooltip]="'Import'"
               tooltipPosition="bottom">
               <svg
