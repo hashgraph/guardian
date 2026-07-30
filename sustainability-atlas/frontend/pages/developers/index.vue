@@ -64,7 +64,7 @@ const statusColor: Record<string, string> = {
                             <SortableHeader :label="$t('developers.columns.hq')" sort-key="country" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('developers.columns.countries')" sort-key="countries" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('developers.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('developers.columns.issued')" sort-key="totalIssued" :tooltip="$t('developers.issuedTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('developers.columns.mintAmount')" sort-key="totalIssued" :tooltip="$t('developers.issuedTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('developers.columns.retired')" sort-key="totalRetired" :tooltip="$t('developers.retiredTooltip')" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('developers.columns.categories') }}</th>
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('developers.columns.registries') }}</th>

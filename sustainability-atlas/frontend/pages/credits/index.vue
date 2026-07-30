@@ -371,8 +371,15 @@ async function downloadCredits() {
                                     </AppLink>
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
-                                <td class="py-3 px-4 max-w-[180px] text-muted-foreground">
-                                    <TruncatedText v-if="c.methodologyDisplay" :text="c.methodologyDisplay" />
+                                <td class="py-3 px-4 max-w-[180px]">
+                                    <AppLink
+                                        v-if="c.methodologyId && c.methodologyDisplay"
+                                        :to="`/methodologies/${encodeURIComponent(c.methodologyId)}`"
+                                        class="text-muted-foreground hover:text-primary hover:underline transition-colors"
+                                        @click.stop
+                                    >
+                                        <TruncatedText :text="c.methodologyDisplay" />
+                                    </AppLink>
                                     <span v-else class="text-muted-foreground/40">-</span>
                                 </td>
                                 <td class="py-3 px-4 whitespace-nowrap">

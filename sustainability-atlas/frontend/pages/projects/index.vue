@@ -119,14 +119,34 @@ const route = useRoute();
 const registryDidFilter = computed(() =>
   typeof route.query.registryDid === "string" ? route.query.registryDid : null,
 );
-const scopedProjects = computed(() =>
-  registryDidFilter.value
-    ? allProjects.value.filter((p) => p.registryDid === registryDidFilter.value)
-    : allProjects.value,
+const methodologyIdFilter = computed(() =>
+  typeof route.query.methodologyId === "string" ? route.query.methodologyId : null,
 );
+
+const scopedProjects = computed(() => {
+  let list = allProjects.value;
+  if (registryDidFilter.value) {
+    list = list.filter((p) => p.registryDid === registryDidFilter.value);
+  }
+  if (methodologyIdFilter.value) {
+    list = list.filter(
+      (p) =>
+        p.instanceTopicId === methodologyIdFilter.value ||
+        p.methodologyId === methodologyIdFilter.value ||
+        p.policyTopicId === methodologyIdFilter.value
+    );
+  }
+  return list;
+});
+
 const registryFilterName = computed(() => {
   if (!registryDidFilter.value) return null;
   return scopedProjects.value[0]?.registry ?? null;
+});
+
+const methodologyFilterName = computed(() => {
+  if (!methodologyIdFilter.value) return null;
+  return scopedProjects.value[0]?.methodology ?? null;
 });
 
 const {
@@ -156,12 +176,7 @@ const {
   pageSize: 10,
   defaultSort: { key: "createdAt", dir: "desc" },
   arrayFields: ["sdgs"],
-  // registryDid drives the separate scopedProjects narrowing above, not the
-  // manual FilterBar `registry` filter — excluding it here stops
-  // parseFiltersFromQuery from also picking it up as a generic activeFilters
-  // entry, which would persist (stuck at mount-time value) even after
-  // navigating away and silently keep the list scoped after "Clear filter".
-  excludeFromQuery: ["registryDid"],
+  excludeFromQuery: ["registryDid", "methodologyId"],
 });
 
 // applyPreset()'s sort.key is typed against this page's specific row union
@@ -427,6 +442,16 @@ async function downloadProjects() {
             <span v-if="!pending" class="font-medium text-foreground">{{ registryFilterName ?? $t('projects.unknownRegistry') }}</span>
             <AppLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {{ $t('projects.clearRegistryFilter') }} ×
+            </AppLink>
+        </div>
+    </div>
+
+    <div v-if="methodologyIdFilter" class="px-4 sm:px-6 pb-2">
+        <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
+            <span class="text-muted-foreground">{{ $t('projects.filteredByMethodology') }}</span>
+            <span v-if="!pending" class="font-medium text-foreground">{{ methodologyFilterName ?? $t('projects.unknownMethodology') }}</span>
+            <AppLink to="/projects" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
+                {{ $t('projects.clearMethodologyFilter') }} ×
             </AppLink>
         </div>
     </div>
