@@ -913,8 +913,8 @@
                                                       panelStyleClass="guardian-dropdown-panel"
                                                       [options]="selectedField!.enum || []"
                                                       appendTo="body"
-                                                      [showClear]="true"
-                                                      placeholder="— none —"
+                                                      [showClear]="false"
+                                                      placeholder="None"
                                                       [ngModel]="$any(selectedField).default"
                                                       (ngModelChange)="setFieldPresetValue('default', $event)">
                                             </p-select>
@@ -941,8 +941,8 @@
                                                       panelStyleClass="guardian-dropdown-panel"
                                                       [options]="selectedField!.enum || []"
                                                       appendTo="body"
-                                                      [showClear]="true"
-                                                      placeholder="— none —"
+                                                      [showClear]="false"
+                                                      placeholder="None"
                                                       [ngModel]="$any(selectedField).suggest"
                                                       (ngModelChange)="setFieldPresetValue('suggest', $event)">
                                             </p-select>
@@ -969,8 +969,8 @@
                                                       panelStyleClass="guardian-dropdown-panel"
                                                       [options]="selectedField!.enum || []"
                                                       appendTo="body"
-                                                      [showClear]="true"
-                                                      placeholder="— none —"
+                                                      [showClear]="false"
+                                                      placeholder="None"
                                                       [ngModel]="getFieldTestValue()"
                                                       (ngModelChange)="setFieldTestValue($event)">
                                             </p-select>
