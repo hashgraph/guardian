@@ -325,7 +325,11 @@
         "total": "total",
         "field": "field",
         "fields": "fields",
-        "changed": "changed"
+        "changed": "changed",
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        }
     },
     "nav": {
         "dashboard": "Dashboard",

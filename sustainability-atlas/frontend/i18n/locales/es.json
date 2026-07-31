@@ -325,7 +325,11 @@
         "total": "total",
         "field": "campo",
         "fields": "campos",
-        "changed": "cambiado"
+        "changed": "cambiado",
+        "status": {
+            "Active": "Activo",
+            "Inactive": "Inactivo"
+        }
     },
     "nav": {
         "dashboard": "Panel",

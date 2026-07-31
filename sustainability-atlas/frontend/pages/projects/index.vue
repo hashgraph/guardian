@@ -213,7 +213,10 @@ const filters = computed<FilterOption[]>(() => [
     key: "status",
     label: t("projects.filters.status"),
     multiSelect: true,
-    options: filterOptions.value.statuses.map((s) => ({ value: s, label: s })),
+    options: filterOptions.value.statuses.map((s) => ({
+      value: s,
+      label: t(`projects.lifecycleStages.${s}`),
+    })),
   },
   {
     key: "registry",
