@@ -30,8 +30,8 @@ const FIELD_TYPE_ADDONS: Record<string, UIAddon> = {
     'Country':       { key: 'country',       icon: 'pi-flag',                group: 'Geographic' },
     'Continent':     { key: 'continent',     icon: 'pi-globe',               group: 'Geographic' },
     'State/Province': { key: 'state',         icon: 'pi-map-marker',          group: 'Geographic' },
-    'Postfix':       { key: 'postfix',       icon: 'pi-hashtag',             group: 'Units of Measure' },
-    'Prefix':        { key: 'prefix',        icon: 'pi-hashtag',             group: 'Units of Measure' },
+    'postfix':       { key: 'postfix',       icon: 'pi-hashtag',             group: 'Units of Measure', label: 'Postfix' },
+    'prefix':        { key: 'prefix',        icon: 'pi-hashtag',             group: 'Units of Measure', label: 'Prefix' },
     'hederaAccount': { key: 'hederaAccount', icon: 'pi-id-card',             group: 'Hedera',           label: 'Account' },
 };
 

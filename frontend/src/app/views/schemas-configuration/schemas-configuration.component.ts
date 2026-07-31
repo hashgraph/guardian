@@ -121,8 +121,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public drillPropsCollapsed: boolean = false;
 
     public get drilledSchema(): Schema | null {
-        const iri = this.currentDrilledSchemaIri;
-        return iri ? (this.schemas.find(s => s.iri === iri) ?? null) : null;
+        return this.resolveRefSchema(this.currentDrilledSchemaIri) ?? null;
     }
 
     public get currentContextSchema(): Schema | null {
@@ -154,6 +153,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         { label: 'Verifiable Credential',          value: SchemaEntity.VC   },
         { label: 'Encrypted Verifiable Credential', value: SchemaEntity.EVC },
     ];
+
+    public copiedIri: boolean = false;
 
     public get systemFields(): any[] {
         return DefaultFieldDictionary.getDefaultFields(this.selectedSchema?.entity as SchemaEntity);
@@ -679,6 +680,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = this.selectedField === field ? null : field;
     }
 
+    public copyIri(value: string | null | undefined, event?: Event): void {
+        event?.stopPropagation();
+        if (!value) { return; }
+        navigator.clipboard.writeText(value).then(() => {
+            this.copiedIri = true;
+            setTimeout(() => { this.copiedIri = false; }, 1500);
+        }).catch(() => { this.copiedIri = false; });
+    }
+
     private static readonly HIDE_VALUES_TYPES = new Set(['helptext', 'file', 'table']);
 
     public get selectedFieldShowValues(): boolean {
@@ -920,7 +930,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onSubSchemaRefChange(iri: string): void {
-        const schema = this.schemas.find(s => s.iri === iri);
+        const schema = this.resolveRefSchema(iri);
         if (schema) { this.changeSubSchemaRef(schema); }
     }
 
@@ -962,8 +972,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.selectedField) { return; }
         const f = this.selectedField as any;
         f.textColor = '#000000';
-        f.textSize = '18';
+        f.textSize = '18px';
         f.textBold = false;
+        this.markDirty();
+    }
+
+    public getHelpTextSize(): number | null {
+        const raw = (this.selectedField as any)?.textSize;
+        if (raw === null || raw === undefined || raw === '') { return null; }
+        const num = parseFloat(String(raw).replace('px', ''));
+        return isNaN(num) ? null : num;
+    }
+
+    public setHelpTextSize(value: number | string | null): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        if (value === null || value === undefined || value === '') {
+            f.textSize = '';
+        } else {
+            const num = parseFloat(String(value).replace('px', ''));
+            f.textSize = isNaN(num) ? '' : num + 'px';
+        }
         this.markDirty();
     }
 
@@ -1042,9 +1071,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public changeFieldType(ft: FieldTypeUI): void {
         if (!this.selectedField) { return; }
-        // Sub-schema fields are added by dragging from the Schemas tab; clicking the
-        // tile on an existing sub-schema field is a no-op to avoid corruption.
-        if (ft.key === 'sub-schema') { return; }
+        if (ft.key === 'sub-schema') {
+            // Already a sub-schema: keep the current reference — the "Referenced schema"
+            // dropdown is how it gets changed, so clicking the tile is a no-op.
+            if (this.getFieldCurrentType(this.selectedField) === 'sub-schema') { return; }
+            // Convert a plain field into a sub-schema: set up a bare reference and let the
+            // "Referenced schema" dropdown pick the actual schema.
+            const sub = this.selectedField as any;
+            sub.isRef = true;
+            sub.type = '';
+            sub.fields = [];
+            sub.format = '';
+            sub.pattern = '';
+            sub.customType = '';
+            sub.unitSystem = '';
+            delete sub.enum;
+            sub.default = null;
+            sub.suggest = null;
+            sub.examples = undefined;
+            this._rebuildRefPreset();
+            this.markDirty();
+            return;
+        }
         const f = this.selectedField as any;
         f.isRef = ft.isRef || false;
         f.type = ft.schemaType || 'string';
@@ -1075,8 +1123,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    // Referenced sub-schemas may live only in _subSchemasByIri (the API's $defs for the
+    // loaded schema), not in the paginated sidebar list, so resolve from both.
+    private resolveRefSchema(iri: string): Schema | undefined {
+        if (!iri) { return undefined; }
+        return this.schemas.find(s => s.iri === iri) ?? this._subSchemasByIri.get(iri);
+    }
+
     public get availableRefSchemas(): Schema[] {
-        return this.schemas.filter(s => this.canDragSchema(s));
+        const list = this.schemas.filter(s => this.canDragSchema(s));
+        // Keep the currently-referenced schema selectable even when it isn't in the
+        // draggable list, otherwise the dropdown value matches no option and shows blank.
+        const currentIri = this.selectedSubSchemaIri;
+        if (currentIri && !list.some(s => s.iri === currentIri)) {
+            const current = this.resolveRefSchema(currentIri);
+            if (current) { return [current, ...list]; }
+        }
+        return list;
     }
 
     public enterSubSchema(field: SchemaField, event: Event): void {
@@ -1532,7 +1595,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public getRefSchemaName(field: SchemaField): string {
         if (!field.isRef) { return ''; }
-        return this.schemas.find(s => s.iri === field.type)?.name || '';
+        return this.resolveRefSchema((field as any).type)?.name || '';
     }
 
     // ── Conditions ─────────────────────────────────────────────────────────────
