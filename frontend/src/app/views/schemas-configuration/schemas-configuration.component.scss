@@ -49,8 +49,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 26px;
-    height: 26px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--sc-radius-sm);
     border: 1px solid var(--guardian-border-color, #E1E7EF);
     background: var(--guardian-background, #fff);
@@ -59,7 +59,7 @@
     flex-shrink: 0;
     transition: all 0.15s;
 
-    i { font-size: 14px; }
+    i { font-size: 16px; }
 
     &:hover {
         background: var(--guardian-grey-background, #F9FAFC);

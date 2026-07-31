@@ -15,9 +15,13 @@
       <div class="top-toolbar">
         <!-- ============ LEFT ZONE: identity + status ============ -->
         @if (rootType === 'Policy') {
-          <div (click)="backToPolicies()" class="top-toolbar-btn icon-only all-status" title="Back">
-            <i class="pi pi-arrow-left"></i>
-          </div>
+          <nav class="pc-breadcrumb all-status">
+            <div (click)="backToPolicies()" class="pc-back-crumb" title="Back to policies">
+              <i class="pi pi-arrow-left"></i>
+            </div>
+            <a (click)="backToPolicies()" class="pc-crumb-link">Policies</a>
+            <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+          </nav>
           <div (click)="identityMenu.toggle($event)" class="policy-identity all-status">
             <div class="policy-identity-icon">
               <svg-icon src="/assets/images/icons/article.svg"
@@ -59,16 +63,21 @@
             </div>
           }
           @if (policyTemplate.isRun) {
-            <div [routerLink]="['/policy-viewer', policyId]" class="top-toolbar-btn all-status">
-              <i class="pi pi-angle-double-right"></i>
-              <span>Go</span>
+            <div [routerLink]="['/policy-viewer', policyId]"
+              class="top-toolbar-btn top-toolbar-btn--primary all-status" title="Run">
+              <i class="pi pi-play"></i>
+              <span>Run</span>
             </div>
           }
         }
         @if (rootType === 'Module') {
-          <div (click)="backToModules()" class="top-toolbar-btn icon-only all-status" title="Back">
-            <i class="pi pi-arrow-left"></i>
-          </div>
+          <nav class="pc-breadcrumb all-status">
+            <div (click)="backToModules()" class="pc-back-crumb" title="Back to modules">
+              <i class="pi pi-arrow-left"></i>
+            </div>
+            <a (click)="backToModules()" class="pc-crumb-link">Modules</a>
+            <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+          </nav>
           <div (click)="moduleIdentityMenu.toggle($event)" class="policy-identity all-status">
             <div class="policy-identity-icon">
               <svg-icon src="/assets/images/icons/policy-module.svg"
@@ -93,9 +102,13 @@
           }
         }
         @if (rootType === 'Tool') {
-          <div (click)="backToTools()" class="top-toolbar-btn icon-only all-status" title="Back">
-            <i class="pi pi-arrow-left"></i>
-          </div>
+          <nav class="pc-breadcrumb all-status">
+            <div (click)="backToTools()" class="pc-back-crumb" title="Back to tools">
+              <i class="pi pi-arrow-left"></i>
+            </div>
+            <a (click)="backToTools()" class="pc-crumb-link">Tools</a>
+            <i class="pi pi-chevron-right pc-breadcrumb-sep"></i>
+          </nav>
           <div (click)="toolIdentityMenu.toggle($event)" class="policy-identity all-status">
             <div class="policy-identity-icon">
               <svg-icon src="/assets/images/icons/handyman.svg"
@@ -129,7 +142,7 @@
 
         <div class="toolbar-spacer"></div>
 
-        <!-- ============ CENTER ZONE: view segment ============ -->
+        <!-- ============ RIGHT ZONE: view segment + actions ============ -->
         <div class="view-segment">
           <div class="view-segment-item" [class.active]="currentView == 'blocks'"
             (click)="onView('blocks')">Design</div>
@@ -139,9 +152,6 @@
             (click)="onView('yaml')">YAML</div>
         </div>
 
-        <div class="toolbar-spacer"></div>
-
-        <!-- ============ RIGHT ZONE: actions ============ -->
         @if (rootType === 'Policy') {
           <div (click)="toggleCommandPalette()" class="top-toolbar-btn icon-only all-status command-palette-btn"
             title="Command palette (⌘K)">
