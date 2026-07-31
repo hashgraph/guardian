@@ -940,10 +940,10 @@
 
     &.active {
         border: 1.5px solid var(--color-primary, #4169E2);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent-green-1, #19BE47) 10%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #4169E2) 10%, transparent);
 
         .sc-field-type-icon {
-            background: var(--guardian-success-background, #EEFBF0);
+            background: var(--guardian-primary-background, #E1E7FA);
             i { color: var(--color-primary, #4169E2); }
         }
 
@@ -2057,16 +2057,16 @@
 
     &:hover {
         border-color: var(--color-primary, #4169E2);
-        background: var(--guardian-success-background, #EEFBF0);
+        background: var(--guardian-primary-background, #E1E7FA);
 
-        i, span { color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
+        i, span { color: var(--color-primary, #4169E2); }
     }
 
     &.active {
         border: 1.5px solid var(--color-primary, #4169E2);
-        background: var(--guardian-success-background, #EEFBF0);
+        background: var(--guardian-primary-background, #E1E7FA);
 
-        i, span { color: color-mix(in srgb, var(--color-accent-green-1, #19BE47) 82%, #000); }
+        i, span { color: var(--color-primary, #4169E2); }
     }
 
     &--accent {
