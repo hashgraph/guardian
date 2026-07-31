@@ -3051,6 +3051,28 @@
     margin-left: auto;
 }
 
+// Constrain the expanded ref-schema panel so long schema names don't stretch it
+// across the screen; the name ellipsises within a sensible width instead.
+// The panel is appended to <body>, so this rule must be global (leading ::ng-deep).
+::ng-deep .guardian-dropdown-panel.sc-ref-schema-panel {
+    max-width: 480px;
+
+    .sc-ref-sel-item {
+        min-width: 0;
+
+        > span:not(.sc-ref-sel-ver) {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sc-ref-sel-ver {
+            flex-shrink: 0;
+        }
+    }
+}
+
 // ── Values section (Default / Suggested / Test value) ────────────────────────
 .sc-fv-list {
     display: flex;
