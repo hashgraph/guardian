@@ -92,13 +92,19 @@ const POLICY_DECODE_STATUS_JOIN = `
     ) p ON TRUE
 `;
 
-/** Effective decode status for display + filtering; maps policy.decodeStatus ('decoded'/'pending'/'failed') to the public API vocabulary ('success'/'pending'/'failed'). */
-const EFFECTIVE_DECODE_STATUS = `
+/** Maps policy.decodeStatus ('decoded'/'pending'/'failed') to the public API vocabulary ('success'/'pending'/'failed'). */
+const effectiveDecodeStatus = (col: string): string => `
     CASE
-        WHEN p."decodeStatus" = 'decoded' THEN 'success'
-        ELSE p."decodeStatus"
+        WHEN ${col} = 'decoded' THEN 'success'
+        ELSE ${col}
     END
 `;
+
+/** Over the stats MV's precomputed column — used by the list and export paths. */
+const EFFECTIVE_DECODE_STATUS = effectiveDecodeStatus('canon.decode_status');
+
+/** Over a live `policy` join — used by findById, which resolves one row exactly. */
+const EFFECTIVE_DECODE_STATUS_LIVE = effectiveDecodeStatus('p."decodeStatus"');
 
 const SEARCH_TSVECTOR = `(
     setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
@@ -123,16 +129,12 @@ const SOURCE_MESSAGE_JOIN = `
  * `id`, so the dedup cost does not scale with the number of candidate rows.
  */
 const CANONICAL_JOIN = `
-    LEFT JOIN (
-        SELECT DISTINCT ON ("relatedTopicId") id
-        FROM business_view
-        WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
-        ORDER BY "relatedTopicId", "sourceTimestamp"::numeric DESC, id DESC
-    ) canon ON canon.id = bv.id
+    LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} canon
+        ON canon."relatedTopicId" = bv."relatedTopicId"
 `;
 
 const METHODOLOGY_CANONICAL_DEDUP = `
-    (bv."relatedTopicId" IS NULL OR canon.id IS NOT NULL)
+    (bv."relatedTopicId" IS NULL OR canon.canonical_id = bv.id)
 `;
 
 /**
@@ -260,46 +262,36 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
+        // Every per-methodology value comes from the stats MV, which is also the
+        // canonical-row source — so this is one join, with no per-row LATERAL
+        // and no derived table to re-sort for each candidate row.
         const rowsSql = `
             SELECT
                 bv.*,
-                s.project_count,
-                s.instance_project_count,
-                s.issuance_count,
-                s.instance_issuance_count,
-                s.schema_count,
-                reg.registry_name,
+                canon.project_count,
+                canon.instance_project_count,
+                canon.issuance_count,
+                canon.instance_issuance_count,
+                canon.schema_count,
+                canon.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
-                p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
-                p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
-                lc_m.total_issued,
-                lc_m.total_retired,
+                canon.sectoral_scopes,
+                canon.emission_reduction_approach,
+                canon.total_issued,
+                canon.total_retired,
                 ${rankExpr} AS search_rank
             FROM business_view bv
-            LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
-                ON s."relatedTopicId" = bv."relatedTopicId"
             ${CANONICAL_JOIN}
-            ${REGISTRY_NAME_JOIN}
-            ${POLICY_DECODE_STATUS_JOIN}
-            ${LIFECYCLE_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count reuses the same WHERE, minus the stats MV join and LIMIT/OFFSET.
-        // The registry and policy joins are included only when a filter references
-        // them (`reg.registry_name` / EFFECTIVE_DECODE_STATUS over `p.*`);
-        // CANONICAL_JOIN is always needed, since the dedup predicate reads `canon.id`.
         const countParams = params.slice(0, params.length - 2);
-        const needsRegistryJoin = Boolean(query.registryName);
-        const needsPolicyJoin = Boolean(query.decodeStatus?.length);
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM business_view bv
             ${CANONICAL_JOIN}
-            ${needsRegistryJoin ? REGISTRY_NAME_JOIN : ''}
-            ${needsPolicyJoin ? POLICY_DECODE_STATUS_JOIN : ''}
             WHERE ${whereSql}
         `;
 
@@ -325,7 +317,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.instance_issuance_count,
                 s.schema_count,
                 reg.registry_name,
-                (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
+                (${EFFECTIVE_DECODE_STATUS_LIVE}) AS decode_status,
                 p."sourceCid" AS policy_source_cid,
                 p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
                 p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach
@@ -541,19 +533,15 @@ export class PgMethodologyRepository extends MethodologyRepository {
             const batchSql = `
                 SELECT
                     bv."displayName" AS name,
-                    reg.registry_name,
+                    canon.registry_name,
                     bv."businessData"->'options'->>'version' AS version,
-                    p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
-                    COALESCE(s.project_count, 0) AS project_count,
+                    canon.emission_reduction_approach,
+                    COALESCE(canon.project_count, 0) AS project_count,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files AS "ipfsCids"
                 FROM business_view bv
-                LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
-                    ON s."relatedTopicId" = bv."relatedTopicId"
                 ${CANONICAL_JOIN}
-                ${REGISTRY_NAME_JOIN}
-                ${POLICY_DECODE_STATUS_JOIN}
                 ${SOURCE_MESSAGE_JOIN}
                 WHERE ${whereSql}
                 ORDER BY bv."sourceTimestamp" ASC

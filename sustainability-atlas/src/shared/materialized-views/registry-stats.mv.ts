@@ -11,8 +11,18 @@ export const MV_REGISTRY_STATS_NAME = 'mv_registry_stats';
 
 export const MV_REGISTRY_STATS_CREATE_SQL = `
     CREATE MATERIALIZED VIEW IF NOT EXISTS ${MV_REGISTRY_STATS_NAME} AS
+    WITH canonical AS (
+        -- The canonical (newest) REGISTRY row per DID. Precomputed so the list
+        -- endpoints test canonicality with an equality check against a column
+        -- they already join, instead of deduplicating every REGISTRY row per request.
+        SELECT DISTINCT ON ("registryDid") "registryDid", id
+        FROM business_view
+        WHERE "viewType" = 'REGISTRY' AND "registryDid" IS NOT NULL
+        ORDER BY "registryDid", "sourceTimestamp"::numeric DESC, id DESC
+    )
     SELECT
         bv."registryDid",
+        MAX(c.id) AS canonical_id,
         COUNT(*) FILTER (WHERE bv."viewType" = 'METHODOLOGY') AS policy_count,
         COUNT(*) FILTER (WHERE bv."viewType" = 'PROJECT')     AS project_count,
         -- Issuance count = number of mint events per token (matches the
@@ -96,8 +106,13 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
                  pp."updatedAt" DESC NULLS LAST
         LIMIT 1
     ) p ON bv."viewType" = 'METHODOLOGY'
+    LEFT JOIN canonical c ON c."registryDid" = bv."registryDid"
     WHERE bv."registryDid" IS NOT NULL
-      AND bv."viewType" IN ('METHODOLOGY', 'PROJECT', 'CREDIT')
+      -- REGISTRY is included so every registryDid gets a row (and therefore a
+      -- canonical_id), including registries that have produced nothing yet.
+      -- The counts below are all viewType-FILTERed, so they are unaffected;
+      -- such rows still score 0 and are still excluded by hideEmpty.
+      AND bv."viewType" IN ('REGISTRY', 'METHODOLOGY', 'PROJECT', 'CREDIT')
     GROUP BY bv."registryDid";
 `;
 
@@ -105,4 +120,6 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
 export const MV_REGISTRY_STATS_INDEX_SQL = `
     CREATE UNIQUE INDEX IF NOT EXISTS idx_${MV_REGISTRY_STATS_NAME}_registry_did
     ON ${MV_REGISTRY_STATS_NAME} ("registryDid");
+    CREATE INDEX IF NOT EXISTS idx_${MV_REGISTRY_STATS_NAME}_canonical_id
+    ON ${MV_REGISTRY_STATS_NAME} (canonical_id);
 `;

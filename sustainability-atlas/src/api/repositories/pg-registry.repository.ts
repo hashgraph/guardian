@@ -76,16 +76,12 @@ const SEARCH_TSVECTOR = `(
  * `id`. Mirrors PgMethodologyRepository's CANONICAL_JOIN.
  */
 const CANONICAL_JOIN = `
-    LEFT JOIN (
-        SELECT DISTINCT ON ("registryDid") id
-        FROM business_view
-        WHERE "viewType" = 'REGISTRY' AND "registryDid" IS NOT NULL
-        ORDER BY "registryDid", "sourceTimestamp"::numeric DESC, id DESC
-    ) canon ON canon.id = bv.id
+    LEFT JOIN ${MV_REGISTRY_STATS_NAME} canon
+        ON canon."registryDid" = bv."registryDid"
 `;
 
 const REGISTRY_CANONICAL_DEDUP = `
-    (bv."registryDid" IS NULL OR canon.id IS NOT NULL)
+    (bv."registryDid" IS NULL OR canon.canonical_id = bv.id)
 `;
 
 /** PostgreSQL implementation of the RegistryRepository; generic filter/sort logic is delegated to QueryBuilder + REGISTRY_FIELD_SCHEMA, while full-text search, MV joins, and ranking remain explicit since they don't fit the generic operator model. */

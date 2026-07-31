@@ -22,9 +22,20 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
         WHERE "viewType" = 'METHODOLOGY'
           AND "relatedTopicId" IS NOT NULL
         GROUP BY "relatedTopicId"
+    ),
+    -- The canonical (newest) business_view row per topic. Precomputed here so
+    -- the list endpoints can test canonicality with an equality check against a
+    -- column they already join, instead of deduplicating every METHODOLOGY row
+    -- on each request.
+    canonical AS (
+        SELECT DISTINCT ON ("relatedTopicId") "relatedTopicId", id
+        FROM business_view
+        WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
+        ORDER BY "relatedTopicId", "sourceTimestamp"::numeric DESC, id DESC
     )
     SELECT
         mb."relatedTopicId",
+        c.id AS canonical_id,
         COALESCE((
             SELECT COUNT(*)
             FROM business_view p
@@ -68,22 +79,56 @@ export const MV_METHODOLOGY_STATS_CREATE_SQL = `
         p."decodeStatus" AS decode_status,
         p.attempts       AS decode_attempts,
         p."lastAttemptAt" AS decode_last_attempt_at,
+        p."policyMapping"->'sectoralScopes'             AS sectoral_scopes,
+        p."policyMapping"->'emissionReductionApproach'  AS emission_reduction_approach,
+        reg.registry_name,
+        COALESCE(lc.total_issued, 0)::bigint  AS total_issued,
+        COALESCE(lc.total_retired, 0)::bigint AS total_retired,
         mb.last_update
     FROM methodology_base mb
+    JOIN canonical c ON c."relatedTopicId" = mb."relatedTopicId"
     LEFT JOIN LATERAL (
-        -- A single policyTopicId can have multiple version rows. Pick the most
-        -- recently updated decoded one so the MV stays 1:1 with the unique index.
-        SELECT "decodeStatus", attempts, "lastAttemptAt"
+        -- A single policyTopicId can have multiple version rows. Prefer the
+        -- decoded one, then the most recently updated, so the MV stays 1:1 with
+        -- the unique index. Selection rule matches the list endpoint's
+        -- effective-decode-status resolution.
+        SELECT "decodeStatus", attempts, "lastAttemptAt", "policyMapping"
         FROM policy
         WHERE "policyTopicId" = mb.policy_topic_id
-          AND "decodeStatus" = 'decoded'
-        ORDER BY "updatedAt" DESC NULLS LAST
+        ORDER BY ("decodeStatus" = 'decoded') DESC NULLS LAST,
+                 "updatedAt" DESC NULLS LAST
         LIMIT 1
-    ) p ON TRUE;
+    ) p ON TRUE
+    -- Publishing registry's display name, resolved from the canonical
+    -- methodology row's registryDid.
+    LEFT JOIN LATERAL (
+        SELECT r."displayName" AS registry_name
+        FROM business_view bvc
+        LEFT JOIN LATERAL (
+            SELECT "displayName"
+            FROM business_view
+            WHERE "viewType" = 'REGISTRY' AND "registryDid" = bvc."registryDid"
+            ORDER BY "createdAt" DESC NULLS LAST
+            LIMIT 1
+        ) r ON TRUE
+        WHERE bvc.id = c.id
+    ) reg ON TRUE
+    -- Lifecycle volumes summed from the per-project stats view over the
+    -- projects belonging to this methodology instance.
+    LEFT JOIN LATERAL (
+        SELECT SUM(mps.total_issued)  AS total_issued,
+               SUM(mps.total_retired) AS total_retired
+        FROM business_view proj
+        JOIN mv_project_stats mps ON mps."projectKey" = proj."projectKey"
+        WHERE proj."viewType" = 'PROJECT'
+          AND proj."businessData"->>'instanceTopicId' = mb."relatedTopicId"
+    ) lc ON TRUE;
 `;
 
 // Unique index required for REFRESH MATERIALIZED VIEW CONCURRENTLY
 export const MV_METHODOLOGY_STATS_INDEX_SQL = `
     CREATE UNIQUE INDEX IF NOT EXISTS idx_${MV_METHODOLOGY_STATS_NAME}_related_topic_id
     ON ${MV_METHODOLOGY_STATS_NAME} ("relatedTopicId");
+    CREATE INDEX IF NOT EXISTS idx_${MV_METHODOLOGY_STATS_NAME}_canonical_id
+    ON ${MV_METHODOLOGY_STATS_NAME} (canonical_id);
 `;
