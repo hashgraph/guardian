@@ -207,6 +207,9 @@ export interface SdgStats {
     name: string;
     color: string;
     projects: number;
+    /** Mint-event count, shown in the Issuances column. */
+    issuances: number;
+    /** Credit volume issued. */
     credits: number;
     developers: number;
     countries: number;

@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsIn, IsISO8601, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { MAX_PAGE_SIZE } from './pagination.dto';
 
 /**
  * Query params for GET /:id/mrv-data/:schemaUuid — a real, server-paginated table
@@ -17,12 +18,12 @@ export class MrvDataQueryDto {
     @Min(1)
     page?: number = 1;
 
-    @ApiPropertyOptional({ default: 50, description: 'Rows per page (max 500)' })
+    @ApiPropertyOptional({ default: 50, description: `Rows per page (max ${MAX_PAGE_SIZE})` })
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
-    @Max(500)
+    @Max(MAX_PAGE_SIZE)
     limit?: number = 50;
 
     @ApiPropertyOptional({ description: 'Column key to sort by; must be one of the schema\'s sortable columns (see MrvDataResponseDto.columns). Falls back to the date column, then consensus timestamp.' })

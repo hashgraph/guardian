@@ -63,6 +63,7 @@ export interface ProjectListQuery {
     country?: string;
     methodology?: string;
     registry?: string;
+    registryDid?: string;
     developer?: string;
     vintage?: string;
     status?: string;

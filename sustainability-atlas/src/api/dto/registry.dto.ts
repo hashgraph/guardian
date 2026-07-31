@@ -66,6 +66,12 @@ export class RegistryStats {
 
     @ApiProperty({ description: 'Number of users (placeholder, always 0)' })
     userCount: number;
+
+    @ApiProperty({ description: 'Credits issued across this registry\'s projects' })
+    totalIssued: number;
+
+    @ApiProperty({ description: 'Credits retired across this registry\'s projects' })
+    totalRetired: number;
 }
 
 export class RegistryResponseDto {

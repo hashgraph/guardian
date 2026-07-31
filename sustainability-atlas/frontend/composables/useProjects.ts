@@ -231,20 +231,28 @@ export function useProjects() {
     const key = computed(() => `projects:${network.value}`);
     const url = computed(() => `/api/v1/${network.value}/projects`);
 
-    // Page size used for the bulk dashboard fetch. The first page also carries
+    // Must not exceed the API's per-request cap. The first page also carries
     // meta.total so we know whether to fetch additional pages.
-    const PAGE_SIZE = 1000;
+    const PAGE_SIZE = 100;
 
-    async function fetchAll(): Promise<{ data: Record<string, any>[]; meta: { total: number } }> {
+    // Bound on concurrent follow-up pages, so a large network degrades into a
+    // partial list rather than a request storm. `truncated` tells the caller
+    // the set is incomplete instead of silently showing a short list.
+    const MAX_PAGES = 20;
+
+    async function fetchAll(): Promise<{ data: Record<string, any>[]; meta: { total: number; truncated: boolean } }> {
         const first = await $fetch<{ data: Record<string, any>[]; meta: { total: number } }>(
             url.value, { baseURL, query: { limit: PAGE_SIZE, page: 1 } },
         );
         const total = first?.meta?.total ?? first?.data?.length ?? 0;
         const totalPages = Math.ceil(total / PAGE_SIZE);
-        if (totalPages <= 1) return first ?? { data: [], meta: { total: 0 } };
+        if (totalPages <= 1) {
+            return { data: first?.data ?? [], meta: { total, truncated: false } };
+        }
 
+        const pagesToFetch = Math.min(totalPages, MAX_PAGES);
         const rest = await Promise.all(
-            Array.from({ length: totalPages - 1 }, (_, i) =>
+            Array.from({ length: pagesToFetch - 1 }, (_, i) =>
                 $fetch<{ data: Record<string, any>[] }>(url.value, {
                     baseURL,
                     query: { limit: PAGE_SIZE, page: i + 2 },
@@ -252,15 +260,18 @@ export function useProjects() {
             ),
         );
 
-        return { data: [...first.data, ...rest.flat()], meta: { total } };
+        return {
+            data: [...first.data, ...rest.flat()],
+            meta: { total, truncated: totalPages > pagesToFetch },
+        };
     }
 
-    const { data, pending, error } = useAsyncData<{ data: Record<string, any>[]; meta: { total: number } }>(
+    const { data, pending, error } = useAsyncData<{ data: Record<string, any>[]; meta: { total: number; truncated: boolean } }>(
         key.value,
         fetchAll,
         {
             watch: [network],
-            default: () => ({ data: [], meta: { total: 0 } }),
+            default: () => ({ data: [], meta: { total: 0, truncated: false } }),
         },
     );
 
@@ -270,6 +281,8 @@ export function useProjects() {
     });
 
     const total = computed(() => data.value?.meta?.total ?? 0);
+    /** True when `projects` holds only the first MAX_PAGES pages of a larger set. */
+    const truncated = computed(() => data.value?.meta?.truncated ?? false);
 
     const filterOptions = computed(() => ({
         registries: [...new Set(projects.value.map(p => p.registry).filter(Boolean))].sort(),
@@ -280,7 +293,7 @@ export function useProjects() {
         sectoralScopes: [...new Set(projects.value.map(p => p.sectoralScope).filter(Boolean))].sort(),
     }));
 
-    return { projects, total, filterOptions, pending, error };
+    return { projects, total, truncated, filterOptions, pending, error };
 }
 
 export function useProjectDetail(id: Ref<string>) {

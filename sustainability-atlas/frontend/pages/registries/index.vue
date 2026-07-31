@@ -149,10 +149,12 @@ const { data, pending, error, refresh } = useRegistriesApi({
 // Live updates: poll the API every 15 seconds on the client.
 // SSR still provides the initial render; polling keeps it fresh
 // as the worker syncs new data in the background.
+// Poll only while the tab is visible. The interval matches MV_REFRESH_INTERVAL,
+// since polling faster cannot surface newer data.
 if (import.meta.client) {
     const pollInterval = setInterval(() => {
-        refresh();
-    }, 15000);
+        if (document.visibilityState === 'visible') refresh();
+    }, 60000);
     onBeforeUnmount(() => clearInterval(pollInterval));
 }
 

@@ -2,6 +2,9 @@ import { IsOptional, IsInt, Min, Max, IsString, IsIn } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+/** Maximum rows any list endpoint will return in one page. */
+export const MAX_PAGE_SIZE = 100;
+
 export class PaginationQueryDto {
     @ApiPropertyOptional({ default: 1, minimum: 1, description: 'Page number (1-indexed)' })
     @IsOptional()
@@ -10,12 +13,17 @@ export class PaginationQueryDto {
     @Min(1)
     page?: number = 1;
 
-    @ApiPropertyOptional({ default: 20, minimum: 1, maximum: 1000, description: 'Items per page' })
+    @ApiPropertyOptional({
+        default: 20,
+        minimum: 1,
+        maximum: MAX_PAGE_SIZE,
+        description: `Items per page (max ${MAX_PAGE_SIZE})`,
+    })
     @IsOptional()
     @Type(() => Number)
     @IsInt()
     @Min(1)
-    @Max(1000)
+    @Max(MAX_PAGE_SIZE)
     limit?: number = 20;
 
     @ApiPropertyOptional({ description: 'Free-text search query (full-text + fuzzy)' })

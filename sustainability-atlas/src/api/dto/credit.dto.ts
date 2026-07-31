@@ -1,4 +1,5 @@
-import { IsOptional, IsString, IsIn } from 'class-validator';
+import { IsOptional, IsString, IsIn, IsNumberString, IsDateString, IsBoolean } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaginationQueryDto } from './pagination.dto';
 import { CreditRow } from '../repositories/credit.repository';
@@ -36,6 +37,43 @@ export class CreditQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     methodologyId?: string;
+
+    @ApiPropertyOptional({ description: 'Return only issuances resolvable to a project' })
+    @IsOptional()
+    @Transform(({ value }) => value === true || value === 'true')
+    @IsBoolean()
+    linkedOnly?: boolean;
+
+    @ApiPropertyOptional({ description: 'Minimum minted amount (inclusive)' })
+    @IsOptional()
+    @IsNumberString()
+    supplyMin?: string;
+
+    @ApiPropertyOptional({ description: 'Maximum minted amount (inclusive)' })
+    @IsOptional()
+    @IsNumberString()
+    supplyMax?: string;
+
+    @ApiPropertyOptional({ description: 'Earliest mint date (ISO 8601, inclusive)' })
+    @IsOptional()
+    @IsDateString()
+    mintDateFrom?: string;
+
+    @ApiPropertyOptional({ description: 'Latest mint date (ISO 8601, inclusive)' })
+    @IsOptional()
+    @IsDateString()
+    mintDateTo?: string;
+}
+
+export class CreditStatsDto {
+    @ApiProperty({ description: 'Sum of minted amounts across the filtered set' })
+    totalSupply: number;
+
+    @ApiProperty({ description: 'Distinct registries in the filtered set' })
+    uniqueRegistries: number;
+
+    @ApiProperty({ description: 'Distinct projects in the filtered set' })
+    uniqueProjects: number;
 }
 
 export class CreditResponseDto {

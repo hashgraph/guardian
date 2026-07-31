@@ -82,35 +82,17 @@ watch(localSearch, (val) => {
   syncToUrl();
 });
 
-// Fetch the registries list once so the registry filter can render as a
-// labeled dropdown (registry name + topic id) rather than a free-text DID.
-const registriesPage = ref(1);
-const registriesLimit = ref(500);
-const registriesSearch = ref('');
-const registriesSortBy = ref(null);
-const registriesSortDir = ref(null);
-const registriesFilters = ref({ hideEmpty: true });
-const { data: registriesData } = useRegistriesApi({
-  page: registriesPage,
-  limit: registriesLimit,
-  search: registriesSearch,
-  network: computed(() => network.value),
-  sortBy: registriesSortBy as any,
-  sortDir: registriesSortDir as any,
-  filters: registriesFilters,
-});
+// Distinct registry names so the registry filter renders as a labeled dropdown
+// rather than a free-text DID. Names are already deduplicated by the endpoint —
+// a single registry can appear under multiple DIDs (policy versions).
+const { registries: registryNames } = useFacetOptions();
 
-const registryNameOptions = computed(() => {
-    // Deduplicate by name — a single registry can appear under multiple DIDs
-    // (policy versions). Using the name as both value and key collapses them.
-    const names = new Set<string>();
-    for (const r of (registriesData.value?.data ?? [])) {
-        if (r.name) names.add(r.name);
-    }
-    return [...names]
+const registryNameOptions = computed(() =>
+    [...registryNames.value]
         .sort((a, b) => naturalCompare(a, b))
-        .map(n => ({ value: n, label: n }));
-});
+        .map(n => ({ value: n, label: n })),
+);
+
 
 const barFilters = computed<FilterOption[]>(() => [
     {
@@ -147,10 +129,30 @@ const activeFilterRecord = computed<Record<string, string>>(() => {
 // while still showing a friendly name in its own banner.
 const registryDidFromQuery = computed(() =>
     typeof route.query.registryDid === 'string' ? route.query.registryDid : null);
-const registryFilterName = computed(() => {
-    if (!registryDidFromQuery.value) return null;
-    return registriesData.value?.data.find(r => r.did === registryDidFromQuery.value)?.name ?? null;
-});
+// Resolved from the single registry the query names, rather than searching a
+// fully-loaded registry list.
+const registryFromQuery = ref<{ name: string | null } | null>(null);
+if (import.meta.client) {
+    const regCfg = useRuntimeConfig();
+    const regBaseURL = regCfg.public.apiBaseUrl as string;
+    watch([registryDidFromQuery, network], async () => {
+        const did = registryDidFromQuery.value;
+        if (!did) {
+            registryFromQuery.value = null;
+            return;
+        }
+        try {
+            registryFromQuery.value = await $fetch<{ name: string | null }>(
+                `/api/v1/${network.value}/registries/${encodeURIComponent(did)}`,
+                { baseURL: regBaseURL },
+            );
+        } catch {
+            registryFromQuery.value = null;
+        }
+    }, { immediate: true });
+}
+
+const registryFilterName = computed(() => registryFromQuery.value?.name ?? null);
 
 // `filters.value.registryDid` is only ever seeded once at mount (from
 // `initialFilters`) and drives the actual useMethodologiesApi fetch — it
@@ -204,11 +206,12 @@ const { data, pending, error, refresh } = useMethodologiesApi({
   filters,
 });
 
-// Live updates: poll the API every 15 seconds on the client.
+// Poll only while the tab is visible. The interval matches MV_REFRESH_INTERVAL,
+// since polling faster cannot surface newer data.
 if (import.meta.client) {
   const pollInterval = setInterval(() => {
-    refresh();
-  }, 15000);
+    if (document.visibilityState === 'visible') refresh();
+  }, 60000);
   onBeforeUnmount(() => clearInterval(pollInterval));
 }
 
@@ -250,8 +253,12 @@ const meta = computed(
 const totalPages = computed(() => meta.value.totalPages || 1);
 const totalCount = computed(() => meta.value.total || 0);
 
-// Stats bar — reuses the same composable as the table but with a fixed
-// limit=1000 and no filters, so the key is always distinct from the table key.
+// Stats bar — the UNFILTERED total, shown as the "of Y" in the FilterBar's
+// "X of Y" count, so it can't be read off the table's own (filtered) meta.total.
+//
+// Reuses the list composable at limit=1: only the count query matters, the row
+// is discarded. Every ref below is static, so this resolves once per network
+// rather than re-running on each filter change.
 const statsPage = ref(1);
 const statsLimit = ref(1);
 const statsSearch = ref("");
@@ -408,7 +415,7 @@ async function downloadMethodologies() {
     <div v-if="registryDidFromQuery" class="px-6 pb-2">
         <div class="flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/20 px-4 py-2 text-sm">
             <span class="text-muted-foreground">{{ $t('methodologies.filteredByRegistry') }}</span>
-            <span v-if="registriesData" class="font-medium text-foreground">{{ registryFilterName ?? $t('methodologies.unknownRegistry') }}</span>
+            <span class="font-medium text-foreground">{{ registryFilterName ?? $t('methodologies.unknownRegistry') }}</span>
             <AppLink to="/methodologies" class="ml-auto text-xs text-muted-foreground hover:text-foreground transition-colors">
                 {{ $t('methodologies.clearRegistryFilter') }} ×
             </AppLink>
