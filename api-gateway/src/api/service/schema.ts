@@ -653,6 +653,8 @@ export class SchemaApi {
         @Query('topicId') topicId: string,
         @Query('search') search: string,
         @Query('searchOptions') searchOptions: string[] | string,
+        @Query('templateSchemasOnly') templateSchemasOnly: string,
+        @Query('unusedInPolicyOnly') unusedInPolicyOnly: string,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         try {
@@ -690,6 +692,12 @@ export class SchemaApi {
                 } else if (typeof searchOptions === 'string') {
                     options.searchOptions = searchOptions.split(',');
                 }
+            }
+            if (templateSchemasOnly === 'true') {
+                options.templateSchemasOnly = true;
+            }
+            if (unusedInPolicyOnly === 'true') {
+                options.unusedInPolicyOnly = true;
             }
             options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
 

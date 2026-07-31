@@ -128,6 +128,8 @@ export class SchemaService {
         category?: SchemaCategory,
         topicId?: string,
         templateId?: string,
+        templateSchemasOnly?: boolean,
+        unusedInPolicyOnly?: boolean,
         search?: string,
         searchOptions?: string[],
         pageIndex?: number,

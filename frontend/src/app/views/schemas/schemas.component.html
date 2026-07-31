@@ -49,6 +49,18 @@
             </p-select>
           </div>
         }
+        @if (isPolicy) {
+        <label class="schema-filter-checkbox">
+            <p-checkbox (onChange)="onFilter($event)" [(ngModel)]="templateSchemasOnly" [binary]="true">
+            </p-checkbox>
+            <span>From template</span>
+        </label>
+        <label class="schema-filter-checkbox">
+            <p-checkbox (onChange)="onFilter($event)" [(ngModel)]="unusedInPolicyOnly" [binary]="true">
+            </p-checkbox>
+            <span>Unused in policy</span>
+        </label>
+        }
         @if (isTool) {
           <div class="topic-search">
             <p-select

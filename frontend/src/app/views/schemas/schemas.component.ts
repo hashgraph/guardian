@@ -143,6 +143,8 @@ export class SchemaConfigComponent implements OnInit {
         { label: 'References', value: 'references' },
         { label: 'Fields', value: 'fields' },
     ];
+    public templateSchemasOnly: boolean = false;
+    public unusedInPolicyOnly: boolean = false;
 
     public element: any = {};
 
@@ -359,8 +361,12 @@ export class SchemaConfigComponent implements OnInit {
     ngOnInit() {
         const type = this.route.snapshot.queryParams.type;
         const topic = this.route.snapshot.queryParams.topic;
+        const templateSchemasOnly = this.route.snapshot.queryParams.templateSchemasOnly;
+        const unusedInPolicyOnly = this.route.snapshot.queryParams.unusedInPolicyOnly;
         this.type = this.getType(type);
         this.currentTopic = topic && topic !== 'all' ? topic : '';
+        this.templateSchemasOnly = templateSchemasOnly === 'true';
+        this.unusedInPolicyOnly = unusedInPolicyOnly === 'true';
         this.loadProfile();
     }
 
@@ -638,6 +644,8 @@ export class SchemaConfigComponent implements OnInit {
                 loader = this.schemaService.getSchemasByPage({
                     category,
                     topicId: this.currentTopic || '',
+                    templateSchemasOnly: this.type === SchemaType.Policy && this.templateSchemasOnly,
+                    unusedInPolicyOnly: this.type === SchemaType.Policy && this.unusedInPolicyOnly,
                     search: this.textSearch,
                     searchOptions: this.textSearchOptionsValue,
                     pageIndex: this.pageIndex,
@@ -799,6 +807,8 @@ export class SchemaConfigComponent implements OnInit {
             queryParams: {
                 type: this.type,
                 topic: this.currentTopic || 'all',
+                templateSchemasOnly: this.type === SchemaType.Policy && this.templateSchemasOnly ? true : null,
+                unusedInPolicyOnly: this.type === SchemaType.Policy && this.unusedInPolicyOnly ? true : null,
             },
         });
         this.loadSchemas();
@@ -825,6 +835,8 @@ export class SchemaConfigComponent implements OnInit {
         this.pageIndex = 0;
         this.pageSize = 100;
         this.currentTopic = '';
+        this.templateSchemasOnly = false;
+        this.unusedInPolicyOnly = false;
         this.router.navigate(['/schemas'], {
             queryParams: { type }
         });
