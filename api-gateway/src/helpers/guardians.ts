@@ -15,6 +15,8 @@ import {
     ISchema,
     ISchemaDeletionPreview,
     ISchemaTemplate,
+    ISchemaTemplateUpdateOptions,
+    ISchemaTemplateUpdatePreview,
     IToken,
     ITokenInfo,
     IUser,
@@ -2571,6 +2573,38 @@ export class Guardians extends NatsService {
         owner: IOwner
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.APPLY_SCHEMA_TEMPLATE, { templateId, policyId, owner });
+    }
+
+    /**
+     * Preview applied schema template update
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @returns update preview
+     */
+    public async previewSchemaTemplateUpdate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<ISchemaTemplateUpdatePreview> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner });
+    }
+
+    /**
+     * Update applied schema template on policy
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns updated policy
+     */
+    public async updateAppliedSchemaTemplate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner,
+        options?: ISchemaTemplateUpdateOptions
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE, { templateId, policyId, owner, options });
     }
 
     /**

@@ -604,6 +604,14 @@ export class PoliciesComponent implements OnInit {
                     new MenuButton({
                         visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
                         disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
+                        tooltip: 'Update Schema Template',
+                        icon: 'refresh',
+                        color: 'primary-color',
+                        click: () => this.openUpdateSchemaTemplateDialog(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
                         tooltip: 'Detach Schema Template',
                         icon: 'link-break',
                         color: 'primary-color',
@@ -1932,7 +1940,25 @@ export class PoliciesComponent implements OnInit {
                 policy
             }
         })!;
-        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((task) => {
+        this.redirectToTaskOnClose(dialogRef);
+    }
+
+    public openUpdateSchemaTemplateDialog(policy: any): void {
+        this.policyMenu?.hide();
+        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
+            showHeader: false,
+            width: '820px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy,
+                mode: 'update'
+            }
+        })!;
+        this.redirectToTaskOnClose(dialogRef);
+    }
+
+    private redirectToTaskOnClose(dialogRef: any): void {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((task: any) => {
             if (!task?.taskId) {
                 return;
             }

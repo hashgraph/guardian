@@ -87,6 +87,7 @@ export class TaskManager {
         [TaskAction.IMPORT_SCHEMA_TEMPLATE_MESSAGE, 4],
         [TaskAction.APPLY_SCHEMA_TEMPLATE, 3],
         [TaskAction.DETACH_SCHEMA_TEMPLATE, 3],
+        [TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE, 3],
         [TaskAction.IMPORT_TOOL_FILE, 9],
         [TaskAction.IMPORT_TOOL_MESSAGE, 11],
         [TaskAction.MIGRATE_DATA, 4],

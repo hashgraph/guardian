@@ -30,6 +30,13 @@ import {
     ISchemaTemplateSnapshotField,
     ISchemaTemplateSnapshotSchema,
     ISchemaTemplateSnapshotSchemas,
+    ISchemaTemplateUpdateChange,
+    ISchemaTemplateUpdateConflict,
+    ISchemaTemplateUpdateOptions,
+    ISchemaTemplateUpdatePreview,
+    SchemaTemplateUpdateChangeType,
+    SchemaTemplateUpdateConflictType,
+    SchemaTemplateUpdateResolutionAction,
     MessageAPI,
     ModelHelper,
     ModuleStatus,
@@ -388,10 +395,37 @@ function ensureEditable(
     }
 }
 
+function hasSchemaTemplateBinding(policy: any): boolean {
+    const binding = policy?.schemaTemplate;
+    return !!(
+        binding?.templateId ||
+        binding?.snapshotId ||
+        Object.keys(binding?.schemaMap || {}).length
+    );
+}
+
+async function getPoliciesUsingSchemaTemplate(
+    template: SchemaTemplate,
+    owner: string
+): Promise<any[]> {
+    const policies = await DatabaseServer.getPolicies(
+        { owner },
+        { fields: ['id', 'name', 'schemaTemplate'] } as any
+    );
+    return (policies as any[]).filter((policy) => {
+        const binding = policy?.schemaTemplate;
+        return binding?.templateId === template.id ||
+            binding?.templateId === template.id?.toString();
+    });
+}
+
 async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
     const result = [];
     for (const template of templates) {
         const item: any = template;
+        const usedByPolicies = template.owner
+            ? await getPoliciesUsingSchemaTemplate(template, template.owner)
+            : [];
         item.schemasCount = template.topicId
             ? await DatabaseServer.getSchemasCount({
                 topicId: template.topicId,
@@ -399,6 +433,11 @@ async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
                 templateId: template.id
             })
             : 0;
+        item.usedByPoliciesCount = usedByPolicies.length;
+        item.usedByPolicyNames = usedByPolicies
+            .map((policy) => policy.name || policy.id)
+            .filter((name) => !!name)
+            .slice(0, 5);
         result.push(item);
     }
     return result;
@@ -670,6 +709,833 @@ async function saveApplySnapshot(
     return await DatabaseServer.saveSchemaTemplateSnapshot(snapshot);
 }
 
+function createChange(
+    type: SchemaTemplateUpdateChangeType,
+    message: string,
+    data: Partial<ISchemaTemplateUpdateChange> = {}
+): ISchemaTemplateUpdateChange {
+    return {
+        type,
+        message,
+        ...data
+    };
+}
+
+function createConflict(
+    type: SchemaTemplateUpdateConflictType,
+    message: string,
+    data: Partial<ISchemaTemplateUpdateConflict> = {}
+): ISchemaTemplateUpdateConflict {
+    const id = [
+        type,
+        data.templateSchemaId || '',
+        data.templateFieldId || '',
+        data.fieldName || ''
+    ].join(':');
+    return {
+        id,
+        type,
+        message,
+        allowedActions: [],
+        ...data
+    };
+}
+
+function getSnapshotSchemaConfig(
+    config: ISchemaTemplateConfig | null | undefined,
+    templateSchemaId: string
+) {
+    return config?.schemas?.[templateSchemaId] || {};
+}
+
+function fieldsByTemplateId(fields: Array<ISchemaTemplateSnapshotField | any>): Map<string, any> {
+    const result = new Map<string, any>();
+    for (const field of fields || []) {
+        if (field?.templateFieldId) {
+            result.set(String(field.templateFieldId), field);
+        }
+    }
+    return result;
+}
+
+function customFields(fields: Array<ISchemaTemplateSnapshotField | any>): any[] {
+    return (fields || []).filter((field) => !field?.templateFieldId);
+}
+
+function flattenRuntimeFields(fields: any[], result: any[] = []): any[] {
+    for (const field of fields || []) {
+        result.push(field);
+        if (Array.isArray(field.fields)) {
+            flattenRuntimeFields(field.fields, result);
+        }
+    }
+    return result;
+}
+
+function getRuntimeCustomFields(schema: Schema): any[] {
+    const parsed = new InterfaceSchema(schema as ISchema, true);
+    return flattenRuntimeFields(parsed.fields || []).filter((field) => !field?.templateFieldId);
+}
+
+function parseFieldComment(comment: any): any {
+    if (!comment) {
+        return undefined;
+    }
+    if (typeof comment === 'object') {
+        return SchemaHelper.cloneSchemaRuntimeValue(comment);
+    }
+    if (typeof comment !== 'string') {
+        return comment;
+    }
+    try {
+        return JSON.parse(comment);
+    } catch {
+        return comment;
+    }
+}
+
+function normalizeFieldCommentForDiff(comment: any, refTemplateSchemaId?: string): any {
+    const parsed = parseFieldComment(comment);
+    if (!parsed || typeof parsed !== 'object') {
+        return parsed;
+    }
+    const result = SchemaHelper.cloneSchemaRuntimeValue(parsed);
+    if (refTemplateSchemaId && result['@id']) {
+        result['@id'] = `template-schema:${refTemplateSchemaId}`;
+    }
+    return result;
+}
+
+function normalizeFieldForDiff(field: any): any {
+    const result = SchemaHelper.cloneSchemaRuntimeValue(field || {});
+    const refTemplateSchemaId = result.refTemplateSchemaId || '';
+    const comment = normalizeFieldCommentForDiff(result.comment ?? result.$comment, refTemplateSchemaId);
+    if (comment !== undefined) {
+        result.comment = comment;
+    }
+    delete result.$comment;
+    if (refTemplateSchemaId) {
+        result.$ref = `template-schema:${refTemplateSchemaId}`;
+        result.type = 'subSchema';
+        delete result.context;
+        delete result.fields;
+    }
+    return result;
+}
+
+function fieldHash(field: any): string {
+    return SchemaHelper.stableStringify(normalizeFieldForDiff(field));
+}
+
+function snapshotSchemaHash(schema: ISchemaTemplateSnapshotSchema | undefined): string {
+    return SchemaHelper.stableStringify({
+        name: schema?.name,
+        description: schema?.description,
+        entity: schema?.entity,
+        fields: (schema?.fields || []).map((field) => normalizeFieldForDiff(field)),
+        conditions: schema?.conditions || []
+    });
+}
+
+function formatDiffValue(value: any): string {
+    if (value === undefined || value === null || value === '') {
+        return '-';
+    }
+    if (typeof value === 'boolean') {
+        return value ? 'Yes' : 'No';
+    }
+    return String(value);
+}
+
+function formatSchemaSummary(schema: ISchemaTemplateSnapshotSchema | undefined): string {
+    if (!schema) {
+        return 'Not present';
+    }
+    const parts = [
+        `Name: ${formatDiffValue(schema.name || 'Unnamed schema')}`,
+        schema.version ? `Version: ${schema.version}` : '',
+        schema.entity ? `Entity: ${schema.entity}` : ''
+    ].filter(Boolean);
+    return parts.join(' | ');
+}
+
+function formatFieldSummary(field: any): string {
+    if (!field) {
+        return 'Not present';
+    }
+    const parts = [
+        field.name ? `Key: ${field.name}` : '',
+        field.type ? `Type: ${field.type}` : '',
+        field.required ? 'Required' : 'Optional',
+        field.isArray ? 'Array' : ''
+    ].filter(Boolean);
+    return parts.join(' | ');
+}
+
+function getFieldDisplayName(field: any): string {
+    return field?.description || field?.title || field?.name || 'Unnamed field';
+}
+
+function buildDetails(
+    previous: any,
+    next: any,
+    properties: Array<{ key: string, label: string }>
+): ISchemaTemplateUpdateChange['details'] {
+    return properties
+        .map(({ key, label }) => ({
+            label,
+            before: formatDiffValue(previous?.[key]),
+            after: formatDiffValue(next?.[key])
+        }))
+        .filter((item) => item.before !== item.after);
+}
+
+function formatDiffJson(value: any): string {
+    if (value === undefined || value === null) {
+        return '-';
+    }
+    if (typeof value === 'string') {
+        return value || '-';
+    }
+    return SchemaHelper.stableStringify(value);
+}
+
+function fieldDetailsSource(field: any): any {
+    const normalized = normalizeFieldForDiff(field);
+    const comment = normalized.comment && typeof normalized.comment === 'object'
+        ? normalized.comment
+        : {};
+    return {
+        ...normalized,
+        fieldName: normalized.description || normalized.title || normalized.name,
+        semanticId: comment['@id'],
+        term: comment.term,
+        customType: comment.customType || normalized.customType,
+        availableOptions: formatDiffJson(comment.availableOptions || normalized.availableOptions),
+        orderPosition: comment.orderPosition ?? normalized.order
+    };
+}
+
+function buildSchemaChangeDetails(
+    previous: ISchemaTemplateSnapshotSchema,
+    next: ISchemaTemplateSnapshotSchema
+): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(previous, next, [
+        { key: 'name', label: 'Name' },
+        { key: 'description', label: 'Description' },
+        { key: 'entity', label: 'Entity type' }
+    ]);
+}
+
+function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
+    return !!details?.length;
+}
+
+function buildFieldChangeDetails(previous: any, next: any): ISchemaTemplateUpdateChange['details'] {
+    return buildDetails(fieldDetailsSource(previous), fieldDetailsSource(next), [
+        { key: 'fieldName', label: 'Field Name' },
+        { key: 'type', label: 'Type' },
+        { key: 'refTemplateSchemaId', label: 'Sub-schema' },
+        { key: 'semanticId', label: 'Semantic ID' },
+        { key: 'term', label: 'Term' },
+        { key: 'customType', label: 'Custom type' },
+        { key: 'availableOptions', label: 'Options' },
+        { key: 'orderPosition', label: 'Order' },
+        { key: 'required', label: 'Required' },
+        { key: 'isArray', label: 'Array' },
+        { key: 'readOnly', label: 'Read only' },
+        { key: 'format', label: 'Format' },
+        { key: 'pattern', label: 'Pattern' },
+        { key: 'unit', label: 'Unit' },
+        { key: 'unitSystem', label: 'Unit system' },
+        { key: 'property', label: 'Property' },
+        { key: 'hidden', label: 'Hidden' },
+        { key: 'autocalculate', label: 'Autocalculate' }
+    ]);
+}
+
+function getPolicySchemaByTemplateId(
+    policySchemas: Schema[],
+    schemaMap: Record<string, string> | undefined
+): Map<string, Schema> {
+    const result = new Map<string, Schema>();
+    const policySchemaById = new Map<string, Schema>();
+    for (const schema of policySchemas || []) {
+        policySchemaById.set(String(schema.id || (schema as any)?._id || ''), schema);
+        if (schema.templateSchemaId) {
+            result.set(schema.templateSchemaId, schema);
+        }
+    }
+    for (const [templateSchemaId, policySchemaId] of Object.entries(schemaMap || {})) {
+        const schema = policySchemaById.get(String(policySchemaId));
+        if (schema) {
+            result.set(templateSchemaId, schema);
+        }
+    }
+    return result;
+}
+
+function toPolicySnapshotSchema(schema: Schema): ISchemaTemplateSnapshotSchema {
+    return toSnapshotSchema(schema, new Map<string, string>());
+}
+
+function findSchemaProperty(document: any, path: string[]): any {
+    let current = document;
+    for (const key of path) {
+        const target = current?.type === 'array' ? current.items : current;
+        current = target?.properties?.[key];
+        if (!current) {
+            return null;
+        }
+    }
+    return current;
+}
+
+function ensureSchemaPropertyParent(document: any, path: string[]): any {
+    let current = document;
+    for (const key of path.slice(0, -1)) {
+        const target = current?.type === 'array' ? current.items : current;
+        target.properties = target.properties || {};
+        current = target.properties[key];
+        if (!current) {
+            return null;
+        }
+    }
+    const target = current?.type === 'array' ? current.items : current;
+    target.properties = target.properties || {};
+    return target;
+}
+
+function mergeCustomFieldsIntoDocument(
+    targetDocument: any,
+    sourceDocument: any,
+    fields: any[]
+): void {
+    for (const field of fields || []) {
+        const path = String(field.path || field.name || '').split('.').filter(Boolean);
+        if (!path.length) {
+            continue;
+        }
+        const property = findSchemaProperty(sourceDocument, path);
+        const parent = ensureSchemaPropertyParent(targetDocument, path);
+        const fieldName = path[path.length - 1];
+        if (!property || !parent || parent.properties?.[fieldName]) {
+            continue;
+        }
+        parent.properties[fieldName] = cloneJson(property);
+    }
+}
+
+function removeTemplateMetadataFromProperty(property: any): any {
+    const result = cloneJson(property);
+    SchemaHelper.removeTemplateFieldIds({
+        type: 'object',
+        properties: {
+            value: result
+        }
+    });
+    delete result.templateFieldId;
+    return result;
+}
+
+function mergeFieldsByTemplateIdIntoDocument(
+    targetDocument: any,
+    sourceDocument: any,
+    fields: any[],
+    templateFieldIds: Set<string>
+): void {
+    if (!templateFieldIds.size) {
+        return;
+    }
+    for (const field of fields || []) {
+        if (!field?.templateFieldId || !templateFieldIds.has(field.templateFieldId)) {
+            continue;
+        }
+        const path = String(field.path || field.name || '').split('.').filter(Boolean);
+        if (!path.length) {
+            continue;
+        }
+        const property = findSchemaProperty(sourceDocument, path);
+        const parent = ensureSchemaPropertyParent(targetDocument, path);
+        const fieldName = path[path.length - 1];
+        if (!property || !parent || parent.properties?.[fieldName]) {
+            continue;
+        }
+        parent.properties[fieldName] = removeTemplateMetadataFromProperty(property);
+    }
+}
+
+async function loadSchemaTemplateUpdateContext(
+    templateId: string,
+    policyId: string,
+    owner: IOwner
+) {
+    const template = await DatabaseServer.getSchemaTemplateById(templateId);
+    if (!template || (template.status !== ModuleStatus.PUBLISHED && template.owner !== owner.owner)) {
+        throw new Error('Invalid schema template');
+    }
+    if (!template.topicId) {
+        throw new Error('Schema template has no topic');
+    }
+
+    const policy = await DatabaseServer.getPolicyById(policyId);
+    if (!policy || policy.owner !== owner.owner) {
+        throw new Error('Invalid policy');
+    }
+    if (policy.status !== PolicyStatus.DRAFT) {
+        throw new Error('Policy is not in draft status');
+    }
+    if (!policy.topicId) {
+        throw new Error('Policy has no topic');
+    }
+    const binding = policy.schemaTemplate;
+    if (!binding?.templateId || !binding?.snapshotId) {
+        throw new Error('Policy has no applied schema template snapshot');
+    }
+
+    const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(binding.snapshotId);
+    if (!snapshot?.schemas || !snapshot?.config) {
+        throw new Error('Applied schema template snapshot is not available');
+    }
+
+    const templateSchemas = await DatabaseServer.getSchemas({
+        topicId: template.topicId,
+        category: SchemaCategory.TEMPLATE,
+        templateId: template.id
+    });
+    if (!templateSchemas.length) {
+        throw new Error('Schema template has no schemas');
+    }
+    for (const schema of templateSchemas as Schema[]) {
+        await ensureTemplateSchemaReferences(schema);
+    }
+    await normalizeSchemaTemplateConfig(template);
+
+    const nextSchemas = buildTemplateSchemasSnapshot(templateSchemas as Schema[]);
+    const policySchemas = await DatabaseServer.getSchemas({
+        topicId: policy.topicId,
+        category: SchemaCategory.POLICY
+    });
+    return {
+        template,
+        policy,
+        binding,
+        snapshot,
+        templateSchemas: templateSchemas as Schema[],
+        nextSchemas,
+        policySchemas: policySchemas as Schema[],
+        policySchemaByTemplateId: getPolicySchemaByTemplateId(policySchemas as Schema[], binding.schemaMap)
+    };
+}
+
+function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType<typeof loadSchemaTemplateUpdateContext>>): ISchemaTemplateUpdatePreview {
+    const changes: ISchemaTemplateUpdateChange[] = [];
+    const conflicts: ISchemaTemplateUpdateConflict[] = [];
+    const previousSchemas = context.snapshot.schemas?.schemas || {};
+    const nextSchemas = context.nextSchemas.schemas || {};
+    const previousConfig = context.snapshot.config || { schemas: {} };
+    const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
+
+    for (const [templateSchemaId, nextSchema] of Object.entries(nextSchemas)) {
+        const previousSchema = previousSchemas[templateSchemaId];
+        const policySchema = context.policySchemaByTemplateId.get(templateSchemaId);
+        if (!previousSchema || !policySchema) {
+            changes.push(createChange(
+                SchemaTemplateUpdateChangeType.SCHEMA_ADD,
+                `Schema "${nextSchema.name}" will be added from the template.`,
+                {
+                    templateSchemaId,
+                    schemaName: nextSchema.name,
+                    before: 'Not present',
+                    after: formatSchemaSummary(nextSchema)
+                }
+            ));
+            continue;
+        }
+        const nextSchemaConfig = getSnapshotSchemaConfig(nextConfig, templateSchemaId);
+        const policySnapshot = toPolicySnapshotSchema(policySchema);
+        const schemaSettingsBefore = nextSchemaConfig.schemaSettingsLocked
+            ? policySnapshot
+            : previousSchema;
+        const schemaDetails = buildSchemaChangeDetails(schemaSettingsBefore, nextSchema);
+        const schemaChanged = snapshotSchemaHash(previousSchema) !== snapshotSchemaHash(nextSchema);
+        const schemaSettingsWillBeOverwritten = nextSchemaConfig.schemaSettingsLocked && hasDetails(schemaDetails);
+        if (schemaChanged || schemaSettingsWillBeOverwritten) {
+            changes.push(createChange(
+                SchemaTemplateUpdateChangeType.SCHEMA_UPDATE,
+                `Schema "${nextSchema.name}" will be updated from the template.`,
+                {
+                    templateSchemaId,
+                    schemaName: nextSchema.name,
+                    before: formatSchemaSummary(schemaSettingsBefore),
+                    after: formatSchemaSummary(nextSchema),
+                    details: schemaDetails
+                }
+            ));
+        }
+
+        const previousFields = fieldsByTemplateId(previousSchema.fields);
+        const nextFields = fieldsByTemplateId(nextSchema.fields);
+        const policyCustomFields = customFields(policySnapshot.fields);
+
+        for (const [templateFieldId, field] of nextFields.entries()) {
+            const previousField = previousFields.get(templateFieldId);
+            if (!previousField) {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.FIELD_ADD,
+                    `Field "${field.title || field.name}" will be added to schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        templateFieldId,
+                        schemaName: nextSchema.name,
+                        fieldName: getFieldDisplayName(field),
+                        before: 'Not present',
+                        after: formatFieldSummary(field)
+                    }
+                ));
+            } else if (fieldHash(previousField) !== fieldHash(field)) {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.FIELD_UPDATE,
+                    `Field "${field.title || field.name}" will be updated in schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        templateFieldId,
+                        schemaName: nextSchema.name,
+                        fieldName: getFieldDisplayName(field),
+                        before: formatFieldSummary(previousField),
+                        after: formatFieldSummary(field),
+                        details: buildFieldChangeDetails(previousField, field)
+                    }
+                ));
+            }
+        }
+        for (const [templateFieldId, field] of previousFields.entries()) {
+            if (!nextFields.has(templateFieldId)) {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.FIELD_REMOVE,
+                    `Field "${field.title || field.name}" will be removed from schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        templateFieldId,
+                        schemaName: nextSchema.name,
+                        fieldName: getFieldDisplayName(field),
+                        before: formatFieldSummary(field),
+                        after: 'Removed'
+                    }
+                ));
+                const refTemplateSchemaId = field.refTemplateSchemaId || '';
+                const refPolicySchema = refTemplateSchemaId
+                    ? context.policySchemaByTemplateId.get(refTemplateSchemaId)
+                    : null;
+                const refHasCustomFields = refPolicySchema
+                    ? getRuntimeCustomFields(refPolicySchema).length > 0
+                    : false;
+                if (refTemplateSchemaId && refHasCustomFields) {
+                    const allowedActions = [SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY];
+                    if (!nextSchemaConfig.customFieldsLocked) {
+                        allowedActions.unshift(SchemaTemplateUpdateResolutionAction.KEEP_REFERENCE_AS_CUSTOM_FIELD);
+                    }
+                    if (allowedActions.length > 1) {
+                        conflicts.push(createConflict(
+                            SchemaTemplateUpdateConflictType.TEMPLATE_REF_REMOVED_WITH_CUSTOM_TARGET,
+                            `Reference field "${field.title || field.name}" was removed from schema "${nextSchema.name}", but the referenced policy schema has custom fields.`,
+                            {
+                                templateSchemaId,
+                                templateFieldId,
+                                schemaName: nextSchema.name,
+                                fieldName: field.name,
+                                allowedActions
+                            }
+                        ));
+                    }
+                }
+            }
+        }
+
+        for (const field of policyCustomFields) {
+            if (nextSchemaConfig.customFieldsLocked) {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CUSTOM_FIELD_REMOVE,
+                    `Custom field "${field.title || field.name}" will be removed from schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName: getFieldDisplayName(field),
+                        before: formatFieldSummary(field),
+                        after: 'Removed'
+                    }
+                ));
+            } else {
+                changes.push(createChange(
+                    SchemaTemplateUpdateChangeType.CUSTOM_FIELD_PRESERVE,
+                    `Custom field "${field.title || field.name}" will be preserved in schema "${nextSchema.name}".`,
+                    {
+                        templateSchemaId,
+                        schemaName: nextSchema.name,
+                        fieldName: getFieldDisplayName(field),
+                        before: formatFieldSummary(field),
+                        after: formatFieldSummary(field)
+                    }
+                ));
+            }
+        }
+    }
+
+    for (const [templateSchemaId, previousSchema] of Object.entries(previousSchemas)) {
+        if (nextSchemas[templateSchemaId]) {
+            continue;
+        }
+        const policySchema = context.policySchemaByTemplateId.get(templateSchemaId);
+        if (!policySchema) {
+            continue;
+        }
+        const customFieldsCount = getRuntimeCustomFields(policySchema).length;
+        const conflictReason = customFieldsCount
+            ? ` It contains ${customFieldsCount} custom policy field${customFieldsCount === 1 ? '' : 's'}, so choose whether to keep it as a custom schema or remove it from the policy.`
+            : ' Choose whether to keep it as a custom schema or remove it from the policy.';
+        changes.push(createChange(
+            SchemaTemplateUpdateChangeType.SCHEMA_REMOVE,
+            `Schema "${previousSchema.name}" was removed from the template.`,
+            {
+                templateSchemaId,
+                schemaName: previousSchema.name,
+                before: formatSchemaSummary(previousSchema),
+                after: 'Removed from template'
+            }
+        ));
+        conflicts.push(createConflict(
+            SchemaTemplateUpdateConflictType.SCHEMA_REMOVED_WITH_POLICY_USAGE,
+            `Schema "${previousSchema.name}" was removed from the template.${conflictReason}`,
+            {
+                templateSchemaId,
+                schemaName: previousSchema.name,
+                allowedActions: [
+                    SchemaTemplateUpdateResolutionAction.KEEP_AS_CUSTOM_SCHEMA,
+                    SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY
+                ]
+            }
+        ));
+    }
+
+    return {
+        policyId: context.policy.id,
+        templateId: context.template.id,
+        templateName: context.template.name,
+        templateVersion: context.template.version,
+        previousTemplateId: context.binding.templateId,
+        previousTemplateName: context.binding.templateName,
+        previousTemplateVersion: context.binding.templateVersion,
+        canApply: conflicts.length === 0,
+        changes,
+        conflicts
+    };
+}
+
+async function previewSchemaTemplateUpdate(
+    templateId: string,
+    policyId: string,
+    owner: IOwner
+): Promise<ISchemaTemplateUpdatePreview> {
+    return buildSchemaTemplateUpdatePreviewFromContext(
+        await loadSchemaTemplateUpdateContext(templateId, policyId, owner)
+    );
+}
+
+function getResolutionMap(options?: ISchemaTemplateUpdateOptions): Map<string, SchemaTemplateUpdateResolutionAction> {
+    const result = new Map<string, SchemaTemplateUpdateResolutionAction>();
+    for (const resolution of options?.resolutions || []) {
+        if (resolution?.conflictId && resolution.action) {
+            result.set(resolution.conflictId, resolution.action);
+        }
+    }
+    return result;
+}
+
+function validateSchemaTemplateUpdateResolutions(
+    preview: ISchemaTemplateUpdatePreview,
+    options?: ISchemaTemplateUpdateOptions
+): Map<string, SchemaTemplateUpdateResolutionAction> {
+    const resolutions = getResolutionMap(options);
+    for (const conflict of preview.conflicts.filter((item) => item.allowedActions.length > 1)) {
+        const action = resolutions.get(conflict.id);
+        if (!action || !conflict.allowedActions.includes(action)) {
+            throw new Error(`Schema template update conflict requires resolution: ${conflict.message}`);
+        }
+    }
+    return resolutions;
+}
+
+function applySchemaDocumentSettings(document: any, name: string, description: string): void {
+    if (!document || typeof document !== 'object') {
+        return;
+    }
+    document.title = name;
+    document.description = description;
+}
+
+function preparePolicySchemaUpdate(
+    target: Schema,
+    source: Schema,
+    templateId: string,
+    schemaConfig: any,
+    customTemplateFieldIds: Set<string> = new Set()
+): void {
+    const previousDocument = cloneJson(target.document);
+    const custom = schemaConfig.customFieldsLocked ? [] : getRuntimeCustomFields(target);
+    const previousFields = flattenRuntimeFields(new InterfaceSchema(target as ISchema, true).fields || []);
+    const settingsLocked = !!schemaConfig.schemaSettingsLocked;
+    const name = settingsLocked ? source.name : target.name;
+    const description = settingsLocked ? source.description : target.description;
+    const entity = settingsLocked ? source.entity : target.entity;
+
+    target.name = name;
+    target.description = description;
+    target.entity = entity;
+    target.document = cloneJson(source.document);
+    applySchemaDocumentSettings(target.document, name, description);
+    target.templateId = templateId;
+    target.templateSchemaId = source.templateSchemaId;
+    target.category = SchemaCategory.POLICY;
+    target.readonly = false;
+    target.system = false;
+    target.status = SchemaStatus.DRAFT;
+    target.errors = [];
+
+    mergeCustomFieldsIntoDocument(target.document, previousDocument, custom);
+    mergeFieldsByTemplateIdIntoDocument(target.document, previousDocument, previousFields, customTemplateFieldIds);
+    SchemaHelper.setVersion(target, target.version, target.version);
+    SchemaHelper.updateIRI(target);
+}
+
+async function removePolicySchema(schema: Schema, owner: IOwner): Promise<void> {
+    await deleteSchema(schema.id, owner, NewNotifier.empty());
+}
+
+async function updateAppliedSchemaTemplate(
+    templateId: string,
+    policyId: string,
+    owner: IOwner,
+    options?: ISchemaTemplateUpdateOptions
+): Promise<any> {
+    const context = await loadSchemaTemplateUpdateContext(templateId, policyId, owner);
+    const preview = buildSchemaTemplateUpdatePreviewFromContext(context);
+    const resolutions = validateSchemaTemplateUpdateResolutions(preview, options);
+    const nextConfig = normalizeTemplateConfigKeys(context.template.config, context.templateSchemas);
+    const previousSnapshot = context.snapshot;
+    const schemaMap: Record<string, string> = {};
+    const iriMap = new Map<string, string>();
+    const changedSchemas: Schema[] = [];
+
+    const templateSchemaById = new Map<string, Schema>();
+    for (const schema of context.templateSchemas) {
+        templateSchemaById.set(schema.templateSchemaId, schema);
+    }
+
+    for (const [templateSchemaId, source] of templateSchemaById.entries()) {
+        const target = context.policySchemaByTemplateId.get(templateSchemaId);
+        if (target) {
+            const sourceIri = source.iri;
+            const customTemplateFieldIds = new Set(
+                preview.conflicts
+                    .filter((conflict) =>
+                        conflict.type === SchemaTemplateUpdateConflictType.TEMPLATE_REF_REMOVED_WITH_CUSTOM_TARGET &&
+                        conflict.templateSchemaId === templateSchemaId &&
+                        conflict.templateFieldId &&
+                        resolutions.get(conflict.id) === SchemaTemplateUpdateResolutionAction.KEEP_REFERENCE_AS_CUSTOM_FIELD
+                    )
+                    .map((conflict) => conflict.templateFieldId as string)
+            );
+            preparePolicySchemaUpdate(
+                target,
+                source,
+                context.template.id,
+                getSnapshotSchemaConfig(nextConfig, templateSchemaId),
+                customTemplateFieldIds
+            );
+            await DatabaseServer.updateSchema(target.id, target);
+            schemaMap[templateSchemaId] = target.id;
+            if (sourceIri && target.iri) {
+                iriMap.set(sourceIri, target.iri);
+            }
+            changedSchemas.push(target);
+            continue;
+        }
+
+        const sourceIri = source.iri;
+        const copy = preparePolicySchemaCopy(source, context.policy.topicId, context.template.id);
+        const copied = await createSchemaAndArtifacts(
+            SchemaCategory.POLICY,
+            copy,
+            owner,
+            NewNotifier.empty()
+        );
+        schemaMap[templateSchemaId] = copied.id;
+        if (sourceIri && copied.iri) {
+            iriMap.set(sourceIri, copied.iri);
+        }
+        changedSchemas.push(copied);
+    }
+
+    for (const [templateSchemaId, snapshotSchema] of Object.entries(previousSnapshot.schemas?.schemas || {})) {
+        if (templateSchemaById.has(templateSchemaId)) {
+            continue;
+        }
+        const policySchema = context.policySchemaByTemplateId.get(templateSchemaId);
+        if (!policySchema) {
+            continue;
+        }
+        const conflict = preview.conflicts.find((item) =>
+            item.type === SchemaTemplateUpdateConflictType.SCHEMA_REMOVED_WITH_POLICY_USAGE &&
+            item.templateSchemaId === templateSchemaId
+        );
+        const action = conflict ? resolutions.get(conflict.id) : null;
+        if (action === SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY) {
+            await removePolicySchema(policySchema, owner);
+        } else {
+            policySchema.templateId = '';
+            policySchema.templateSchemaId = '';
+            SchemaHelper.removeTemplateFieldIds(policySchema.document);
+            await DatabaseServer.updateSchema(policySchema.id, policySchema);
+            changedSchemas.push(policySchema);
+        }
+    }
+
+    await updateCopiedSchemaRefs(
+        changedSchemas.filter((schema) => !!schema.templateId),
+        iriMap
+    );
+
+    const appliedAt = new Date().toISOString();
+    const snapshot = await saveApplySnapshot(
+        context.template,
+        context.policy,
+        context.templateSchemas,
+        schemaMap,
+        appliedAt
+    );
+
+    context.policy.schemaTemplate = {
+        templateId: context.template.id,
+        templateName: context.template.name,
+        templateVersion: context.template.version,
+        templateStatus: context.template.status,
+        templateMessageId: context.template.messageId,
+        templateStateHash: snapshot.templateStateHash,
+        snapshotId: snapshot.id,
+        appliedAt: context.binding.appliedAt || appliedAt,
+        updatedAt: appliedAt,
+        schemaMap
+    };
+    try {
+        const result = await DatabaseServer.updatePolicy(context.policy);
+        await DatabaseServer.removeSchemaTemplateSnapshot(previousSnapshot);
+        return result;
+    } catch (error) {
+        await DatabaseServer.removeSchemaTemplateSnapshot(snapshot);
+        throw error;
+    }
+}
+
 async function ensureTemplateSchemaReferences(schema: Schema): Promise<void> {
     let changed = false;
     if (!schema.templateSchemaId) {
@@ -758,7 +1624,7 @@ async function applySchemaTemplate(
     if (!policy.topicId) {
         throw new Error('Policy has no topic');
     }
-    if (policy.schemaTemplate?.templateId) {
+    if (hasSchemaTemplateBinding(policy)) {
         throw new Error('Schema template already applied to policy');
     }
 
@@ -1288,6 +2154,18 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 const { id, owner } = msg;
                 const template = await DatabaseServer.getSchemaTemplateById(id);
                 ensureEditable(template, owner);
+                const usedByPolicies = await getPoliciesUsingSchemaTemplate(template, owner.owner);
+                if (usedByPolicies.length) {
+                    const policyNames = usedByPolicies
+                        .map((policy) => policy.name || policy.id)
+                        .filter((name) => !!name);
+                    const shownPolicies = policyNames.slice(0, 5).join(', ');
+                    const hiddenCount = policyNames.length > 5 ? ` and ${policyNames.length - 5} more` : '';
+                    throw new Error(
+                        `Schema template is used by policies and cannot be deleted. ` +
+                        `Detach it from policies first${shownPolicies ? `: ${shownPolicies}${hiddenCount}` : ''}.`
+                    );
+                }
 
                 if (template.topicId) {
                     const schemas = await DatabaseServer.getSchemas({
@@ -1378,6 +2256,39 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
             try {
                 const { templateId, policyId, owner } = msg;
                 const result = await applySchemaTemplate(templateId, policyId, owner);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE,
+        async (msg: {
+            templateId: string,
+            policyId: string,
+            owner: IOwner
+        }) => {
+            try {
+                const { templateId, policyId, owner } = msg;
+                const result = await previewSchemaTemplateUpdate(templateId, policyId, owner);
+                return new MessageResponse(result);
+            } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
+                return new MessageError(error);
+            }
+        });
+
+    ApiResponse(MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE,
+        async (msg: {
+            templateId: string,
+            policyId: string,
+            owner: IOwner,
+            options?: ISchemaTemplateUpdateOptions
+        }) => {
+            try {
+                const { templateId, policyId, owner, options } = msg;
+                const result = await updateAppliedSchemaTemplate(templateId, policyId, owner, options);
                 return new MessageResponse(result);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);

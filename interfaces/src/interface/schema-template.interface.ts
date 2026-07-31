@@ -59,6 +59,77 @@ export interface ISchemaTemplateSnapshot {
     schemasFileId?: any;
 }
 
+export enum SchemaTemplateUpdateChangeType {
+    SCHEMA_ADD = 'SCHEMA_ADD',
+    SCHEMA_UPDATE = 'SCHEMA_UPDATE',
+    SCHEMA_REMOVE = 'SCHEMA_REMOVE',
+    FIELD_ADD = 'FIELD_ADD',
+    FIELD_UPDATE = 'FIELD_UPDATE',
+    FIELD_REMOVE = 'FIELD_REMOVE',
+    CUSTOM_FIELD_PRESERVE = 'CUSTOM_FIELD_PRESERVE',
+    CUSTOM_FIELD_REMOVE = 'CUSTOM_FIELD_REMOVE'
+}
+
+export enum SchemaTemplateUpdateConflictType {
+    SCHEMA_REMOVED_WITH_POLICY_USAGE = 'SCHEMA_REMOVED_WITH_POLICY_USAGE',
+    TEMPLATE_REF_REMOVED_WITH_CUSTOM_TARGET = 'TEMPLATE_REF_REMOVED_WITH_CUSTOM_TARGET'
+}
+
+export enum SchemaTemplateUpdateResolutionAction {
+    KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
+    REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
+    KEEP_REFERENCE_AS_CUSTOM_FIELD = 'KEEP_REFERENCE_AS_CUSTOM_FIELD'
+}
+
+export interface ISchemaTemplateUpdateChange {
+    type: SchemaTemplateUpdateChangeType;
+    templateSchemaId?: string;
+    templateFieldId?: string;
+    schemaName?: string;
+    fieldName?: string;
+    before?: string;
+    after?: string;
+    details?: Array<{
+        label: string;
+        before?: string;
+        after?: string;
+    }>;
+    message: string;
+}
+
+export interface ISchemaTemplateUpdateConflict {
+    id: string;
+    type: SchemaTemplateUpdateConflictType;
+    templateSchemaId?: string;
+    templateFieldId?: string;
+    schemaName?: string;
+    fieldName?: string;
+    message: string;
+    allowedActions: SchemaTemplateUpdateResolutionAction[];
+}
+
+export interface ISchemaTemplateUpdatePreview {
+    policyId: string;
+    templateId: string;
+    templateName?: string;
+    templateVersion?: string;
+    previousTemplateId?: string;
+    previousTemplateName?: string;
+    previousTemplateVersion?: string;
+    canApply: boolean;
+    changes: ISchemaTemplateUpdateChange[];
+    conflicts: ISchemaTemplateUpdateConflict[];
+}
+
+export interface ISchemaTemplateUpdateResolution {
+    conflictId: string;
+    action: SchemaTemplateUpdateResolutionAction;
+}
+
+export interface ISchemaTemplateUpdateOptions {
+    resolutions?: ISchemaTemplateUpdateResolution[];
+}
+
 export interface ISchemaTemplateFieldConfig {
     locked?: boolean;
 }

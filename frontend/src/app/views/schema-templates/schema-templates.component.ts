@@ -216,20 +216,38 @@ export class SchemaTemplatesComponent implements OnInit {
         if (!id || !this.canDelete(template)) {
             return;
         }
+        const usedByPoliciesCount = template.usedByPoliciesCount || 0;
+        const usedByPolicyNames = template.usedByPolicyNames || [];
+        const isUsedByPolicies = usedByPoliciesCount > 0;
         const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
             showHeader: false,
             width: '640px',
             styleClass: 'guardian-dialog',
             data: {
                 header: 'Delete Schema Template',
-                text: `Are you sure want to delete schema template (${template.name})?`,
-                buttons: [{
-                    name: 'Close',
-                    class: 'secondary'
-                }, {
-                    name: 'Delete',
-                    class: 'delete'
-                }]
+                text: isUsedByPolicies
+                    ? `Schema template "${template.name}" cannot be deleted.`
+                    : `Are you sure want to delete schema template (${template.name})?`,
+                details: isUsedByPolicies
+                    ? [
+                        `This template is applied to ${usedByPoliciesCount} ${usedByPoliciesCount === 1 ? 'policy' : 'policies'}.`,
+                        usedByPolicyNames.length
+                            ? `Used by: ${usedByPolicyNames.join(', ')}${usedByPoliciesCount > usedByPolicyNames.length ? '...' : ''}`
+                            : 'Detach it from policies before deleting.'
+                    ]
+                    : undefined,
+                buttons: isUsedByPolicies
+                    ? [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }]
+                    : [{
+                        name: 'Close',
+                        class: 'secondary'
+                    }, {
+                        name: 'Delete',
+                        class: 'delete'
+                    }]
             },
         })!;
         dialogRef.onClose.subscribe((result: string) => {

@@ -242,6 +242,7 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 break;
             case TaskAction.APPLY_SCHEMA_TEMPLATE:
             case TaskAction.DETACH_SCHEMA_TEMPLATE:
+            case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
                 if (this.last) {
                     this.redirect(this.last);
                     return;
@@ -528,6 +529,8 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
                 }, 500);
                 break;
             case TaskAction.APPLY_SCHEMA_TEMPLATE:
+            case TaskAction.DETACH_SCHEMA_TEMPLATE:
+            case TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE:
                 setTimeout(() => {
                     this.router.navigate(['policy-viewer'], {
                         replaceUrl: true,

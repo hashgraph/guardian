@@ -38,6 +38,7 @@ export enum TaskAction {
     IMPORT_SCHEMA_TEMPLATE_MESSAGE = 'Import schema template message',
     APPLY_SCHEMA_TEMPLATE = 'Apply schema template',
     DETACH_SCHEMA_TEMPLATE = 'Detach schema template',
+    UPDATE_APPLIED_SCHEMA_TEMPLATE = 'Update applied schema template',
     PUBLISH_TOOL = 'Publish tool',
     IMPORT_TOOL_FILE = 'Import tool file',
     IMPORT_TOOL_MESSAGE = 'Import tool message',

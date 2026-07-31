@@ -1,6 +1,6 @@
 import { IAuthUser, PinoLogger, RunFunctionAsync } from '@guardian/common';
 import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Post, Put, Query, Response } from '@nestjs/common';
-import { ISchemaTemplate, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
+import { ISchemaTemplate, ISchemaTemplateUpdateOptions, ISchemaTemplateUpdatePreview, Permissions, StatusType, TaskAction } from '@guardian/interfaces';
 import { ApiAcceptedResponse, ApiBody, ApiCreatedResponse, ApiInternalServerErrorResponse, ApiOkResponse, ApiOperation, ApiParam, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthUser, Auth } from '#auth';
 import { CacheService, EntityOwner, Guardians, InternalException, ServiceError, TaskManager } from '#helpers';
@@ -750,6 +750,114 @@ export class SchemaTemplatesApi {
                 taskManager.addStatus(task.taskId, 'Save template binding', StatusType.PROCESSING);
                 await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
                 taskManager.addStatus(task.taskId, 'Save template binding', StatusType.COMPLETED);
+                taskManager.addResult(task.taskId, result);
+            }, async (error) => {
+                await this.logger.error(error, ['API_GATEWAY'], user.id);
+                taskManager.addError(task.taskId, { code: 500, message: error.message });
+            });
+            return task;
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Preview applied schema template update.
+     */
+    @Get('/:templateId/policies/:policyId/update/preview')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Previews applied schema template update.',
+        description: 'Calculates schema and field changes before updating the template applied to a draft policy.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiOkResponse({
+        description: 'Schema template update preview.',
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.OK)
+    async previewSchemaTemplateUpdate(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Param('policyId') policyId: string
+    ): Promise<ISchemaTemplateUpdatePreview> {
+        try {
+            const guardians = new Guardians();
+            return await guardians.previewSchemaTemplateUpdate(templateId, policyId, new EntityOwner(user));
+        } catch (error) {
+            await InternalException(error, this.logger, user.id);
+        }
+    }
+
+    /**
+     * Update applied schema template on policy async.
+     */
+    @Post('/:templateId/policies/:policyId/push/update')
+    @Auth(
+        Permissions.POLICIES_POLICY_UPDATE,
+        // UserRole.STANDARD_REGISTRY,
+    )
+    @ApiOperation({
+        summary: 'Updates applied schema template on policy asynchronously.',
+        description: 'Applies a newer schema template version to a draft policy and refreshes the policy snapshot.' + ONLY_SR,
+    })
+    @ApiParam({
+        name: 'templateId',
+        type: String,
+        required: true
+    })
+    @ApiParam({
+        name: 'policyId',
+        type: String,
+        required: true
+    })
+    @ApiAcceptedResponse({
+        description: 'Task created.',
+        type: TaskDTO
+    })
+    @ApiInternalServerErrorResponse({
+        description: 'Internal server error.',
+        type: InternalServerErrorDTO,
+        example: { statusCode: 500, message: 'Error message' }
+    })
+    @HttpCode(HttpStatus.ACCEPTED)
+    async updateAppliedSchemaTemplateAsync(
+        @AuthUser() user: IAuthUser,
+        @Param('templateId') templateId: string,
+        @Param('policyId') policyId: string,
+        @Body() body: ISchemaTemplateUpdateOptions
+    ): Promise<TaskDTO> {
+        try {
+            const guardians = new Guardians();
+            const owner = new EntityOwner(user);
+            const taskManager = new TaskManager();
+            const task = taskManager.start(TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE, user.id);
+            RunFunctionAsync<ServiceError>(async () => {
+                taskManager.addStatus(task.taskId, 'Preview template changes', StatusType.PROCESSING);
+                await guardians.previewSchemaTemplateUpdate(templateId, policyId, owner);
+                taskManager.addStatus(task.taskId, 'Preview template changes', StatusType.COMPLETED);
+                taskManager.addStatus(task.taskId, 'Update policy schemas', StatusType.PROCESSING);
+                const result = await guardians.updateAppliedSchemaTemplate(templateId, policyId, owner, body);
+                taskManager.addStatus(task.taskId, 'Update policy schemas', StatusType.COMPLETED);
+                taskManager.addStatus(task.taskId, 'Save template snapshot', StatusType.PROCESSING);
+                await this.cacheService.invalidateAllTagsByPrefixes([PREFIXES.SCHEMES]);
+                taskManager.addStatus(task.taskId, 'Save template snapshot', StatusType.COMPLETED);
                 taskManager.addResult(task.taskId, result);
             }, async (error) => {
                 await this.logger.error(error, ['API_GATEWAY'], user.id);

@@ -11,6 +11,48 @@ interface TaskResponse {
 
 export interface SchemaTemplateGridItem extends ISchemaTemplate {
     schemasCount?: number;
+    usedByPoliciesCount?: number;
+    usedByPolicyNames?: string[];
+}
+
+export enum SchemaTemplateUpdateResolutionAction {
+    KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
+    REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
+    KEEP_REFERENCE_AS_CUSTOM_FIELD = 'KEEP_REFERENCE_AS_CUSTOM_FIELD'
+}
+
+export interface SchemaTemplateUpdateConflict {
+    id: string;
+    message: string;
+    allowedActions: SchemaTemplateUpdateResolutionAction[];
+}
+
+export interface SchemaTemplateUpdatePreview {
+    previousTemplateName?: string;
+    previousTemplateVersion?: string;
+    templateName?: string;
+    templateVersion?: string;
+    changes: Array<{
+        type: string;
+        schemaName?: string;
+        fieldName?: string;
+        before?: string;
+        after?: string;
+        details?: Array<{
+            label: string;
+            before?: string;
+            after?: string;
+        }>;
+        message: string;
+    }>;
+    conflicts: SchemaTemplateUpdateConflict[];
+}
+
+export interface SchemaTemplateUpdateOptions {
+    resolutions?: Array<{
+        conflictId: string;
+        action: SchemaTemplateUpdateResolutionAction;
+    }>;
 }
 
 @Injectable()
@@ -111,6 +153,14 @@ export class SchemaTemplatesService {
 
     public pushApply(templateId: string, policyId: string): Observable<TaskResponse> {
         return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/apply`, {});
+    }
+
+    public previewUpdate(templateId: string, policyId: string): Observable<SchemaTemplateUpdatePreview> {
+        return this.http.get<SchemaTemplateUpdatePreview>(`${this.url}/${templateId}/policies/${policyId}/update/preview`);
+    }
+
+    public pushUpdate(templateId: string, policyId: string, options: SchemaTemplateUpdateOptions): Observable<TaskResponse> {
+        return this.http.post<TaskResponse>(`${this.url}/${templateId}/policies/${policyId}/push/update`, options || {});
     }
 
     public pushDetach(policyId: string): Observable<TaskResponse> {
