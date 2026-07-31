@@ -329,4 +329,26 @@ describe('StepBlockComponent - step parked on a server-side block', () => {
         expect(component.pending).toBe(false);
         expect(component.unavailable).toBe(true);
     });
+
+    it('drops the pending state when the reload fails', () => {
+        // Otherwise `loading` stays true and the spinner renders on top of the error card.
+        component.setData(pendingData());
+
+        component._onError({ status: 500, error: { message: 'Internal Server Error' } });
+
+        expect(component.errored).toBe(true);
+        expect(component.loading).toBe(false);
+        expect(component.pending).toBe(false);
+        expect(component.unavailable).toBe(false);
+    });
+
+    it('drops the pending state when the user retries', () => {
+        component.setData(pendingData());
+
+        component.retry();
+
+        expect(component.pending).toBe(false);
+        // still loading, but because the retry request is in flight - not a stale flag
+        expect(component.loaded).toBe(false);
+    });
 });

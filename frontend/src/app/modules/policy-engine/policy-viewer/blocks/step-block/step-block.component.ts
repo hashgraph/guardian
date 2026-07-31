@@ -145,6 +145,7 @@ export class StepBlockComponent implements OnInit {
         clearTimeout(this.emptyTimer);
         this.loaded = false;
         this.hasError = false;
+        this._pending = false;
         this.loadData();
     }
 
@@ -166,6 +167,10 @@ export class StepBlockComponent implements OnInit {
         if (blockUnavailable) {
             this._onSuccess(null);
         } else {
+            // Drop the pending state: whatever the step was executing, we no longer have
+            // a usable answer about it. Leaving it set keeps `loading` true and renders
+            // the spinner on top of the error card.
+            this._pending = false;
             this.hasError = true;
             this.loaded = true;
         }
