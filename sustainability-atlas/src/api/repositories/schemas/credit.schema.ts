@@ -54,8 +54,15 @@ export const CREDIT_FIELD_SCHEMA: FieldSchema = {
         sql: 'total_supply',
         sortable: true,
     },
+    /**
+     * Sorts on the message's consensus timestamp rather than the displayed
+     * `mint_date` alias. The alias is a COALESCE spanning `message` and
+     * `project_mint_link`, so no index can serve it and ordering by it forces a
+     * full join-and-sort of every mint event before the LIMIT. Consensus
+     * timestamp is monotonic and, where a link exists, tracks its mint_date.
+     */
     mintDate: {
-        sql: 'mint_date',
+        sql: 'm."consensusTimestamp"',
         sortable: true,
     },
     supplyMin: {

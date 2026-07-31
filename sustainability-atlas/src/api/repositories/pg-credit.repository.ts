@@ -311,11 +311,11 @@ export class PgCreditRepository extends CreditRepository {
         const { builder, rankExpr } = this.buildFilters(query);
 
         const orderBy = search
-            ? `search_rank DESC, mint_date DESC NULLS LAST`
+            ? `search_rank DESC, m."consensusTimestamp" DESC`
             : builder.buildOrderBy({
                 sortBy,
                 sortDir,
-                defaultExpr: 'mint_date DESC NULLS LAST',
+                defaultExpr: 'm."consensusTimestamp" DESC',
             });
 
         const whereSql = builder.getWhereClause();

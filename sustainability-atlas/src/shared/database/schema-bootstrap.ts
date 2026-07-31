@@ -231,6 +231,18 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         ON business_view ("viewType", "createdAt" DESC)
     `);
 
+    // Backs the credits list's default ordering. The predicate matches the
+    // list's base filter exactly, so the planner can walk this index in
+    // consensus-timestamp order and stop at LIMIT instead of joining and
+    // sorting every mint event.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_mint_token_cts
+        ON message ("consensusTimestamp" DESC)
+        WHERE type = 'VC-Document'
+          AND documents IS NOT NULL
+          AND (documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'
+    `);
+
     // Backs the credits search: ILIKE '%term%' on tc.name / tc.symbol plus
     // similarity() on tc.name.
     await dataSource.query(`
