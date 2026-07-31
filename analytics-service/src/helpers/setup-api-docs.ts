@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { scalarCustomCss, scalarFavicon } from './scalar-theme.js';
 
 /**
  * Serves the Scalar API reference UI at `/api-docs` and keeps the raw OpenAPI
@@ -26,6 +27,8 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pag
             layout: 'modern',
             theme: 'default',
             darkMode: false,
+            favicon: scalarFavicon,
+            customCss: scalarCustomCss,
         })
     );
 }
