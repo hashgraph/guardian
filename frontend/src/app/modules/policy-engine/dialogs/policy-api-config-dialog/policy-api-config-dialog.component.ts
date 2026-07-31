@@ -25,8 +25,9 @@ export class PolicyApiConfigDialogComponent {
     public validationErrors: Map<number, string> = new Map();
     public isLargeSize = true;
 
-    // Block types whose APIs should not be exposed externally and are therefore
-    // skipped by "Add all". Extend this list by adding another block type string.
+    // Block types whose APIs should not be exposed externally: excluded from the
+    // target dropdown and "Add all", and flagged invalid if present in imported
+    // entries. Extend this list by adding another block type string.
     private static readonly SKIPPED_BLOCK_TYPES: ReadonlySet<string> = new Set<string>([
         'informationBlock',
         'interfaceStepBlock',
@@ -34,6 +35,8 @@ export class PolicyApiConfigDialogComponent {
         'ipfsTransformationUIAddon',
         'transformationUIAddon',
         'httpRequestUIAddon',
+        'documentsSourceAddon',
+        'paginationAddon',
     ]);
 
     private static readonly POST_PARAMS: { name: string; type: string; description: string }[] = [
