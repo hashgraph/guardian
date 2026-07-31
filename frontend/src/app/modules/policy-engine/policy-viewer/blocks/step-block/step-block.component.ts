@@ -14,6 +14,11 @@ export interface IStepBlockData {
     blocks?: IBlock<any>[];
     index: number;
     readonly?: boolean;
+    /**
+     * The active child is a server-side block with no UI, i.e. the workflow is running
+     * a chain rather than waiting on another participant.
+     */
+    pending?: boolean;
 }
 
 /**
@@ -44,7 +49,20 @@ export class StepBlockComponent implements OnInit {
         // a successful response with no viewable active child (e.g. the step advanced
         // to a block this user has no permission for -> the container serializes it as
         // null) left the spinner running forever. See `unavailable` for that case.
-        return !this.loaded;
+        //
+        // `pending` also spins: the step is sitting on a server-side block while a
+        // chain runs, which is progress, not a dead end.
+        return !this.loaded || this.pending;
+    }
+
+    get pending(): boolean {
+        // Reported by policy-service when the active child has no UI. The EMPTY_COMMIT
+        // delay below cannot cover this case: a step parked mid-chain is a *successful*
+        // 200 response (`{ index, blocks: [...] }` with a null entry at `index`), so it
+        // was applied immediately and the message appeared for as long as the chain
+        // took - which for a monitoring report is far longer than any timeout worth
+        // guessing at.
+        return this._pending;
     }
 
     get activeBlock(): any {
@@ -56,7 +74,8 @@ export class StepBlockComponent implements OnInit {
         // This happens when the workflow advanced to a step this user cannot access
         // (role/state gate), so the policy-service container serializes the active
         // child as null. Show a friendly "not your turn" message - NOT an error.
-        return this.loaded && !this.hasError && !this.activeBlock;
+        // A pending step is excluded: nobody else has the turn, the chain is running.
+        return this.loaded && !this.hasError && !this.pending && !this.activeBlock;
     }
 
     get errored(): boolean {
@@ -79,6 +98,7 @@ export class StepBlockComponent implements OnInit {
     loaded: boolean = false;
     hasError: boolean = false;
     private index: number = 0;
+    private _pending: boolean = false;
 
     constructor(
         private policyEngineService: PolicyEngineService,
@@ -158,6 +178,7 @@ export class StepBlockComponent implements OnInit {
             this.isActive = true;
             this.blocks = data.blocks || [];
             this.index = data.index;
+            this._pending = !!data.pending;
             // A response has been processed - stop the spinner.
             this.loaded = true;
         } else {
@@ -170,6 +191,7 @@ export class StepBlockComponent implements OnInit {
                 this.blocks = null;
                 this.index = 0;
                 this.isActive = false;
+                this._pending = false;
                 // No active block to render - `unavailable` now shows the message.
                 this.loaded = true;
             }, StepBlockComponent.EMPTY_COMMIT_DELAY_MS);

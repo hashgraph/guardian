@@ -178,6 +178,7 @@ export class InterfaceStepBlock {
         if (blockState.index === undefined) {
             blockState.index = 0;
         }
+        const activeChild = (ref as IPolicyContainerBlock).children[blockState.index];
         return {
             id: ref.uuid,
             blockType: ref.blockType,
@@ -187,7 +188,15 @@ export class InterfaceStepBlock {
                 user.location === LocationType.REMOTE
             ),
             uiMetaData: options?.uiMetaData,
-            index: blockState.index
+            index: blockState.index,
+            // The active child is a server-side block (`defaultActive: false`) - the
+            // workflow is *executing*, it is not waiting on another participant. The
+            // container serializes such a child as `undefined`, which on its own is
+            // indistinguishable from a role gate, so the viewer used to show "This step
+            // isn't available to you right now" for every chain that ran longer than a
+            // repaint. Reported explicitly so it can show progress instead; the flag
+            // costs nothing when the active child has UI.
+            pending: !!activeChild && !activeChild.defaultActive
         };
     }
 

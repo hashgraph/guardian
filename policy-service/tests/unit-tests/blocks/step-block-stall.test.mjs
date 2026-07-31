@@ -145,6 +145,31 @@ describe('@unit interfaceStepBlock stall recovery', () => {
         assert.equal(await block.unparkStalledChild(user, k[0]), false);
     });
 
+    it('reports pending while the active child is a server-side block', async () => {
+        const { block, user } = setup({ index: 2 });
+
+        const data = await block.getData(user);
+
+        assert.equal(data.pending, true, 'the viewer can show progress instead of "not your turn"');
+    });
+
+    it('does not report pending when the active child has UI', async () => {
+        const kids = [child('form', true), child('approve', true, false)];
+        const { block, user } = setup({ children: kids, index: 1 });
+
+        const data = await block.getData(user);
+
+        // permission-gated: nothing renders, but that genuinely is another role's turn
+        assert.equal(data.pending, false);
+        assert.equal(data.blocks[1], undefined);
+    });
+
+    it('does not report pending for an out-of-range index', async () => {
+        const { block, user } = setup({ index: 99 });
+
+        assert.equal((await block.getData(user)).pending, false);
+    });
+
     it('does not touch getData or isChildActive semantics', async () => {
         const { block, kids, user } = setup({ index: 2 });
 

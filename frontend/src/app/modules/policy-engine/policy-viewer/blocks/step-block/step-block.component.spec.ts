@@ -23,6 +23,7 @@ interface ITestableStepBlock {
     readonly activeBlock: IBlock<any> | boolean;
     readonly unavailable: boolean;
     readonly errored: boolean;
+    readonly pending: boolean;
     setData(data: IStepBlockData | null): void;
     loadData(): void;
     retry(): void;
@@ -243,5 +244,89 @@ describe('StepBlockComponent - overlapping reloads', () => {
         expect(subscriptions.length).toBe(2);
         expect(subscriptions[0].unsubscribe).toHaveBeenCalled();
         expect(subscriptions[1].unsubscribe).not.toHaveBeenCalled();
+    });
+});
+
+/**
+ * A step parked mid-chain is a *successful* response - `{ index, blocks }` with a null
+ * entry at `index`, because the active child is a server-side block the container cannot
+ * serialize. It therefore never went through the empty-result delay above: it was applied
+ * immediately, and the message stayed up for as long as the chain took to run. A
+ * monitoring report chain (calc -> save -> table -> save) runs far longer than any delay
+ * worth guessing at, which is why the message was still visible after that fix.
+ *
+ * policy-service now reports this explicitly as `pending`.
+ */
+describe('StepBlockComponent - step parked on a server-side block', () => {
+    let component: ITestableStepBlock;
+
+    /** What getBlockData returns while a chain is running: no renderable active child. */
+    function pendingData(): IStepBlockData {
+        return { blocks: [block('form'), null as any, null as any], index: 1, readonly: false, pending: true };
+    }
+
+    beforeEach(() => {
+        jasmine.clock().install();
+        component = createComponent();
+        component.setData(blockData('current'));
+    });
+
+    afterEach(() => {
+        jasmine.clock().uninstall();
+    });
+
+    it('shows progress, not the "not your turn" message', () => {
+        component.setData(pendingData());
+
+        expect(component.pending).toBe(true);
+        expect(component.unavailable).toBe(false);
+        expect(component.loading).toBe(true);
+        expect(component.errored).toBe(false);
+    });
+
+    it('keeps showing progress for as long as the chain runs', () => {
+        component.setData(pendingData());
+
+        // well past any timeout-based guard
+        for (let elapsed = 0; elapsed < DELAY * 20; elapsed += DELAY) {
+            jasmine.clock().tick(DELAY);
+            expect(component.unavailable).toBe(false);
+        }
+    });
+
+    it('renders the next step once the chain delivers one', () => {
+        component.setData(pendingData());
+        component.setData(blockData('next'));
+
+        expect(component.pending).toBe(false);
+        expect(component.loading).toBe(false);
+        expect(component.activeBlock).toEqual(block('next'));
+        expect(component.unavailable).toBe(false);
+    });
+
+    it('still shows the message for a genuine role gate', () => {
+        // no active child and NOT pending - the workflow really did move to another role
+        component.setData({ blocks: [null as any, block('approve')], index: 0, readonly: false });
+
+        expect(component.pending).toBe(false);
+        expect(component.unavailable).toBe(true);
+        expect(component.loading).toBe(false);
+    });
+
+    it('clears pending when an empty result is finally committed', () => {
+        component.setData(pendingData());
+        component.setData(null);
+
+        jasmine.clock().tick(DELAY + 1);
+
+        expect(component.pending).toBe(false);
+        expect(component.unavailable).toBe(true);
+    });
+
+    it('treats a missing flag as not pending, so older servers behave as before', () => {
+        component.setData({ blocks: [null as any], index: 0, readonly: false });
+
+        expect(component.pending).toBe(false);
+        expect(component.unavailable).toBe(true);
     });
 });
