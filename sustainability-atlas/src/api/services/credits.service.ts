@@ -1,14 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { CreditQueryDto, CreditResponseDto } from '../dto/credit.dto';
+import { RedisService } from '@shared/redis/redis.service';
+import { createHash } from 'crypto';
+import { CreditQueryDto, CreditResponseDto, CreditStatsDto } from '../dto/credit.dto';
 import { PaginatedResponse } from '../dto/pagination.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgCreditRepository } from '../repositories/pg-credit.repository';
-import { CreditRepository, CreditRawDetail } from '../repositories/credit.repository';
+import { CreditRepository, CreditRawDetail, CreditListQuery } from '../repositories/credit.repository';
+
+const STATS_CACHE_TTL_SECONDS = 60;
 
 @Injectable()
 export class CreditsService {
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
+        private readonly redis: RedisService,
     ) {}
 
     async findAll(
@@ -20,8 +25,35 @@ export class CreditsService {
         const limit = query.limit ?? 20;
 
         const result = await repo.findAll({
+            ...this.toFilters(query),
             page,
             limit,
+            sortBy: query.sortBy,
+            sortDir: query.sortDir,
+        });
+
+        const data = result.rows.map(row => CreditResponseDto.fromRow(row, network));
+        return new PaginatedResponse(data, result.total, page, limit);
+    }
+
+    /** Aggregates over the entire filtered set, so the UI never derives totals from one page. */
+    async findStats(network: string, query: CreditQueryDto): Promise<CreditStatsDto> {
+        const filters = this.toFilters(query);
+        const cacheKey = `credit-stats:${network}:${createHash('sha1')
+            .update(JSON.stringify(filters))
+            .digest('hex')}`;
+
+        const cached = await this.redis.getJson<CreditStatsDto>(cacheKey);
+        if (cached) return cached;
+
+        const stats = await this.getRepository(network).findStats({ ...filters, page: 1, limit: 1 });
+        await this.redis.setJson(cacheKey, stats, STATS_CACHE_TTL_SECONDS);
+        return stats;
+    }
+
+    /** Filter fields shared by the list, its count and the stats aggregate. */
+    private toFilters(query: CreditQueryDto): Omit<CreditListQuery, 'page' | 'limit'> {
+        return {
             search: query.search,
             type: query.type,
             registry: query.registry,
@@ -29,12 +61,12 @@ export class CreditsService {
             tokenId: query.tokenId,
             projectKey: query.projectKey,
             methodologyId: query.methodologyId,
-            sortBy: query.sortBy,
-            sortDir: query.sortDir,
-        });
-
-        const data = result.rows.map(row => CreditResponseDto.fromRow(row, network));
-        return new PaginatedResponse(data, result.total, page, limit);
+            linkedOnly: query.linkedOnly,
+            supplyMin: query.supplyMin,
+            supplyMax: query.supplyMax,
+            mintDateFrom: query.mintDateFrom,
+            mintDateTo: query.mintDateTo,
+        };
     }
 
     async findRaw(network: string, tokenId: string): Promise<CreditRawDetail | null> {

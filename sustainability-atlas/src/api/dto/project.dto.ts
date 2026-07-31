@@ -185,6 +185,13 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsString()
     registry?: string;
 
+    @ApiPropertyOptional({
+        description: 'Filter by publishing registry DID (exact match). Unambiguous where two registries share a display name.',
+    })
+    @IsOptional()
+    @IsString()
+    registryDid?: string;
+
     @ApiPropertyOptional({ description: 'Filter by developer name (partial match)' })
     @IsOptional()
     @IsString()
@@ -222,6 +229,14 @@ export class ProjectIdNameDto {
 
     @ApiProperty({ description: 'Display name' })
     name: string;
+
+    @ApiProperty({
+        nullable: true,
+        description:
+            'Stable project key (credentialSubject.id). This is what mint attribution joins on, ' +
+            'so callers scoping another resource to these projects should prefer it over `id`.',
+    })
+    projectKey: string | null;
 }
 
 export class ProjectIdsDto {

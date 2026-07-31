@@ -1,20 +1,14 @@
 import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
 import { SectorType } from '~/types/enums';
 import { formatCredits } from '~/lib/format';
-import { ALPHA3_TO_NAME as CODE_TO_COUNTRY } from '~/composables/useProjects';
+import { ALPHA3_TO_NAME as CODE_TO_COUNTRY, COUNTRY_ALPHA3 } from '~/composables/useProjects';
 import { allocateDonutColors } from '~/lib/chart-colors';
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
-    const { projects, pending } = useProjects();
+    const { summary, pending } = useDashboardSummary(filters);
+    const { recentProjects } = useRecentProjects(filters);
     const { mintStats, buildMintSeries, mintedBySector, mintedByRegistry } = useMintStats(filters);
     const { t } = useI18n();
-
-    // Reverse-geocode projects whose country field was empty or unrecognized
-    // (countryCode === 'UNK') but that carry valid lat/lng. The composable
-    // populates a module-level cache asynchronously via Nominatim; bucketing
-    // below uses `resolvedCode(p)` so the dashboard map gets the same country
-    // labels the projects table already shows.
-    const { resolvedCode } = useGeocodedCountries(projects);
 
     function relativeTime(dateStr: string): string {
         const now = Date.now();
@@ -37,78 +31,15 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         const d = new Date(dateStr);
         return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
     }
-    const { network } = useNetwork();
-    const config = useRuntimeConfig();
-    const baseURL = import.meta.server
-        ? (config.apiBaseUrl as string)
-        : (config.public.apiBaseUrl as string);
+    // Options come from the API computed over the unfiltered project set, so
+    // selecting a value never collapses the list to that single option.
+    const developerOptions = computed(() =>
+        ['All Developers', ...summary.value.filterOptions.developers],
+    );
 
-    // System-wide totals fetched independently of the project list, so the
-    // top-line stat cards reflect everything indexed — not just whatever
-    // appears in the current filtered project set.
-    const registryTotal = ref(0);
-    const methodologyTotal = ref(0);
-
-    async function refreshTotals() {
-        if (!import.meta.client) return;
-        try {
-            const [r, m] = await Promise.all([
-                $fetch<{ meta: { total: number } }>(`/api/v1/${network.value}/registries`, {
-                    baseURL,
-                    // Match the /registries page's default filter: count only
-                    // registries that have produced policies/projects/users/
-                    // issuances. Keeps the stat-card total aligned with the
-                    // visible rows on that page.
-                    query: { limit: 1, page: 1, hideEmpty: true },
-                }),
-                $fetch<{ meta: { total: number } }>(`/api/v1/${network.value}/methodologies`, {
-                    baseURL,
-                    query: { limit: 1, page: 1 },
-                }),
-            ]);
-            registryTotal.value = r?.meta?.total ?? 0;
-            methodologyTotal.value = m?.meta?.total ?? 0;
-        } catch {
-            registryTotal.value = 0;
-            methodologyTotal.value = 0;
-        }
-    }
-
-    if (import.meta.client) {
-        refreshTotals();
-        watch(network, refreshTotals);
-    }
-
-    const developerOptions = computed(() => {
-        return ['All Developers', ...new Set(projects.value.map(p => p.developer).filter(Boolean))].sort((a, b) => {
-            if (a === 'All Developers') return -1;
-            if (b === 'All Developers') return 1;
-            return a.localeCompare(b);
-        });
-    });
-
-    const registryOptions = computed(() => {
-        return ['All Registries', ...new Set(projects.value.map(p => p.registry).filter(Boolean))].sort((a, b) => {
-            if (a === 'All Registries') return -1;
-            if (b === 'All Registries') return 1;
-            return a.localeCompare(b);
-        });
-    });
-
-    // Filter projects based on dashboard filters
-    const filteredProjects = computed(() => {
-        let result = [...projects.value];
-        if (filters?.value) {
-            const f = filters.value;
-            if (f.developer && f.developer !== 'All Developers') {
-                result = result.filter(p => p.developer === f.developer);
-            }
-            if (f.registry && f.registry !== 'All Registries') {
-                result = result.filter(p => p.registry === f.registry);
-            }
-        }
-        return result;
-    });
+    const registryOptions = computed(() =>
+        ['All Registries', ...summary.value.filterOptions.registries],
+    );
 
     // Country stats derived from filtered projects.
     //
@@ -123,33 +54,30 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     const countries = computed(() => {
         const countryMap: Record<string, {
             name: string; flag: string; code: string; projects: number;
-            credits: number; methodologies: Set<string>;
+            credits: number; methodologies: number;
             developer: string; registry: string;
         }> = {};
 
-        for (const p of filteredProjects.value) {
-            // Prefer the reverse-geocoded code when the project's own country
-            // was empty/garbage but its coordinates resolve. Falls back to
-            // p.countryCode (which is 'UNK' for unresolved cases).
-            const code = resolvedCode(p) || p.countryCode || 'UNK';
-            const name = code === 'UNK'
-                ? 'Unknown'
-                : (code === p.countryCode ? p.country : (CODE_TO_COUNTRY[code] || p.country || code));
+        for (const row of summary.value.countries) {
+            const rawCountry = row.country ?? '';
+            const code = COUNTRY_ALPHA3[rawCountry] || 'UNK';
+            const name = code === 'UNK' ? 'Unknown' : (CODE_TO_COUNTRY[code] || rawCountry || code);
+
             if (!countryMap[code]) {
                 countryMap[code] = {
                     name,
-                    flag: code === 'UNK' ? '' : p.flag,
+                    flag: '',
                     code,
                     projects: 0,
                     credits: 0,
-                    methodologies: new Set(),
-                    developer: p.developer,
-                    registry: p.registry,
+                    methodologies: 0,
+                    developer: row.developer ?? '',
+                    registry: row.registry ?? '',
                 };
             }
-            countryMap[code].projects++;
-            countryMap[code].credits += p.totalIssued ?? 0;
-            countryMap[code].methodologies.add(p.methodologyId);
+            countryMap[code].projects += row.projects;
+            countryMap[code].credits += row.credits;
+            countryMap[code].methodologies += row.methodologies;
         }
 
         return Object.values(countryMap)
@@ -159,7 +87,7 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
                 code: c.code,
                 projects: c.projects,
                 credits: formatCredits(c.credits),
-                methodologies: c.methodologies.size,
+                methodologies: c.methodologies,
                 developer: c.developer,
                 registry: c.registry,
             }))
@@ -180,44 +108,29 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             }));
     });
 
-    const mapPoints = computed<MapPoint[]>(() => {
-        // Show a dot whenever the project has real geo coordinates — country
-        // string is independent (a project with valid lat/lng but no extracted
-        // country still belongs on the map). Skip 0/0 and non-numeric coords
-        // to avoid a misleading marker in the Atlantic Ocean.
-        return filteredProjects.value
-            .filter(p =>
-                typeof p.lat === 'number' && typeof p.lng === 'number'
-                && (p.lat !== 0 || p.lng !== 0))
-            .map(p => ({
-                name: p.name,
-                lat: p.lat,
-                lng: p.lng,
-                credits: formatCredits(p.credits),
-            }));
-    });
+    const mapPoints = computed<MapPoint[]>(() =>
+        // The API returns only projects that actually carry coordinates, and
+        // already drops 0/0 and non-numeric pairs, so nothing is filtered here.
+        summary.value.mapPoints.map(p => ({
+            name: p.name ?? '',
+            lat: p.lat,
+            lng: p.lng,
+            credits: formatCredits(p.credits),
+        })),
+    );
 
-    // Registries derived from filtered projects
-    const registries = computed(() => {
-        const orgMap: Record<string, { name: string; policies: Set<string>; projects: number }> = {};
-
-        for (const p of filteredProjects.value) {
-            if (!orgMap[p.registry]) {
-                orgMap[p.registry] = { name: p.registry, policies: new Set(), projects: 0 };
-            }
-            orgMap[p.registry].policies.add(p.methodologyId);
-            orgMap[p.registry].projects++;
-        }
-
-        return Object.entries(orgMap)
-            .map(([key, data]) => ({
-                name: key,
-                policies: data.policies.size,
-                projects: data.projects,
-                credits: formatCredits(mintedByRegistry.value.get(key) ?? 0),
+    // Registries 
+    const registries = computed(() =>
+        summary.value.registries
+            .filter(r => r.label)
+            .map(r => ({
+                name: r.label as string,
+                policies: r.methodologies,
+                projects: r.projectCount,
+                credits: formatCredits(mintedByRegistry.value.get(r.label as string) ?? 0),
             }))
-            .sort((a, b) => b.projects - a.projects);
-    });
+            .sort((a, b) => b.projects - a.projects),
+    );
 
     function buildIssuanceSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
         return buildMintSeries(period);
@@ -240,17 +153,14 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
 
     // Recent activity from most recent real projects
     const recentActivity = computed<ActivityItem[]>(() => {
-        if (filteredProjects.value.length === 0) return [];
-
         const activities: ActivityItem[] = [];
 
-        const sortedProjects = [...filteredProjects.value]
+        // Re-sorted by the VC's own createdAt; the API orders by ingestion time.
+        const sortedProjects = [...recentProjects.value]
             .filter(p => p.createdAt)
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
-        const take = sortedProjects.slice(0, 5);
-
-        for (const p of take) {
+        for (const p of sortedProjects.slice(0, 5)) {
             activities.push({
                 time: relativeTime(p.createdAt),
                 action: t('dashboard.activity.newProjectRegistered'),
@@ -259,15 +169,15 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             });
         }
 
-        // Add one registry entry if we have registries
-        const uniqueRegistries = [...new Set(filteredProjects.value.map(p => p.registry).filter(Boolean))];
-        if (uniqueRegistries.length > 0) {
-            // Use oldest known project to anchor a registry "joined" entry
+        // Anchor a single "registry indexed" entry to the oldest project in the
+        // fetched window.
+        const firstRegistry = registries.value[0]?.name;
+        if (firstRegistry) {
             const oldest = sortedProjects[sortedProjects.length - 1];
             activities.push({
                 time: oldest ? relativeTime(oldest.createdAt) : '',
                 action: t('dashboard.activity.registryIndexed'),
-                detail: uniqueRegistries[0],
+                detail: firstRegistry,
                 type: 'registry',
             });
         }
@@ -289,38 +199,28 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     // Project-derived counts would otherwise hide registries/methodologies
     // that exist but haven't produced any projects yet.
     const stats = computed(() => {
-        const set = filteredProjects.value;
-        const uniqueRegistries = new Set<string>();
-        const uniqueMethodologies = new Set<string>();
-        for (const p of set) {
-            if (p.registry) uniqueRegistries.add(p.registry);
-            if (p.methodologyId) uniqueMethodologies.add(p.methodologyId);
-        }
+        const totals = summary.value.totals;
         return {
-            registries: hasActiveFilter.value
-                ? uniqueRegistries.size
-                : registryTotal.value,
-            methodologies: hasActiveFilter.value
-                ? uniqueMethodologies.size
-                : methodologyTotal.value,
-            projects: set.length,
+            registries: hasActiveFilter.value ? totals.filteredRegistries : totals.registries,
+            methodologies: hasActiveFilter.value ? totals.filteredMethodologies : totals.methodologies,
+            projects: totals.projects,
             totalCredits: mintStats.value.totalMinted,
         };
     });
 
     const sectorBreakdown = computed(() => {
-        // Count projects per sector from the local project list.
+        // Project counts per sector, grouped server-side.
         const projectCounts = new Map<string, number>();
-        for (const p of filteredProjects.value) {
-            const key = p.sector || SectorType.Undefined;
-            projectCounts.set(key, (projectCounts.get(key) ?? 0) + 1);
+        for (const row of summary.value.sectors) {
+            const key = row.label || SectorType.Undefined;
+            projectCounts.set(key, (projectCounts.get(key) ?? 0) + row.projectCount);
         }
 
         // Drive the row list from the API mint data so every sector with real
         // minted volume is represented, regardless of whether its label matches
-        // a project in filteredProjects. Without this, sectors whose label only
-        // exists in mintedBySector (not in filteredProjects) are silently dropped
-        // and their amounts never appear in the chart total.
+        // a sector that has projects. Without this, sectors whose label only
+        // exists in mintedBySector are silently dropped and their amounts never
+        // appear in the chart total.
         const seen = new Set<string>();
         const rows: { label: string; projectCount: number; creditCount: number }[] = [];
 
@@ -344,8 +244,8 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
 
     const registryBreakdown = computed(() => {
         const projectCounts = new Map<string, number>();
-        for (const p of filteredProjects.value) {
-            if (p.registry) projectCounts.set(p.registry, (projectCounts.get(p.registry) ?? 0) + 1);
+        for (const row of summary.value.registries) {
+            if (row.label) projectCounts.set(row.label, (projectCounts.get(row.label) ?? 0) + row.projectCount);
         }
 
         const seen = new Set<string>();
@@ -368,10 +268,10 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         const countryData = countries.value.find(c => c.code === code);
         if (!countryData) return null;
 
-        // Match by the same code source used during bucketing so the detail
-        // panel covers projects that were reverse-geocoded onto this country.
-        const countryProjects = filteredProjects.value.filter(p => (resolvedCode(p) || p.countryCode) === code);
-        const totalProjects = countryProjects.length;
+        // The API groups by the raw stored country string, so fold in every raw
+        // value that maps to this ISO code — the same merge `countries` does.
+        const matchesCode = (raw: string | null) => (COUNTRY_ALPHA3[raw ?? ''] || 'UNK') === code;
+        const totalProjects = countryData.projects;
 
         // Per-bucket counts AND credits. Percentages prefer credit weighting when
         // credits exist; otherwise fall back to project-count weighting so the
@@ -379,10 +279,12 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
         const catCredits: Record<string, number> = {};
         const catCounts: Record<string, number> = {};
         let totalCredits = 0;
-        for (const p of countryProjects) {
-            catCredits[p.category] = (catCredits[p.category] || 0) + p.credits;
-            catCounts[p.category]  = (catCounts[p.category]  || 0) + 1;
-            totalCredits += p.credits;
+        for (const row of summary.value.countrySectors) {
+            if (!matchesCode(row.country)) continue;
+            const label = row.label ?? '';
+            catCredits[label] = (catCredits[label] || 0) + row.credits;
+            catCounts[label]  = (catCounts[label]  || 0) + row.projectCount;
+            totalCredits += row.credits;
         }
 
         const useCredits = totalCredits > 0;
@@ -411,9 +313,11 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
 
         const regCredits: Record<string, number> = {};
         const regCounts: Record<string, number> = {};
-        for (const p of countryProjects) {
-            regCredits[p.registry] = (regCredits[p.registry] || 0) + p.credits;
-            regCounts[p.registry]  = (regCounts[p.registry]  || 0) + 1;
+        for (const row of summary.value.countryRegistries) {
+            if (!matchesCode(row.country)) continue;
+            const label = row.label ?? '';
+            regCredits[label] = (regCredits[label] || 0) + row.credits;
+            regCounts[label]  = (regCounts[label]  || 0) + row.projectCount;
         }
         const registriesBreakdown = Object.keys(regCounts)
             .map(name => {
@@ -442,10 +346,11 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     // Vintage distribution
     const vintageDistribution = computed(() => {
         const vintageMap: Record<string, { projects: number; credits: number }> = {};
-        for (const p of filteredProjects.value) {
-            if (!vintageMap[p.vintage]) vintageMap[p.vintage] = { projects: 0, credits: 0 };
-            vintageMap[p.vintage].projects++;
-            vintageMap[p.vintage].credits += p.credits;
+        for (const row of summary.value.vintages) {
+            const year = row.label ?? '';
+            if (!vintageMap[year]) vintageMap[year] = { projects: 0, credits: 0 };
+            vintageMap[year].projects += row.projectCount;
+            vintageMap[year].credits += row.credits;
         }
         return Object.entries(vintageMap)
             .sort((a, b) => a[0].localeCompare(b[0]))

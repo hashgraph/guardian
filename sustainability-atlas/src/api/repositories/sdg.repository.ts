@@ -10,6 +10,9 @@
 export interface SdgStatsRow {
     sdgId: number;
     projects: number;
+    /** Number of mint events across projects tagged with this SDG. */
+    issuances: number;
+    /** Credit volume issued across projects tagged with this SDG. */
     credits: number;
     developers: number;
     countries: number;

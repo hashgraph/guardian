@@ -1,7 +1,7 @@
 import { Controller, Get, NotFoundException, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { CreditsService } from '../services/credits.service';
-import { CreditQueryDto, PaginatedCreditsDto } from '../dto/credit.dto';
+import { CreditQueryDto, PaginatedCreditsDto, CreditStatsDto } from '../dto/credit.dto';
 
 @ApiTags('credits')
 @Controller('api/v1/:network/credits')
@@ -27,6 +27,23 @@ export class CreditsController {
         @Query() query: CreditQueryDto,
     ) {
         return this.creditsService.findAll(network, query);
+    }
+
+    @Get('stats')
+    @ApiOperation({
+        summary: 'Aggregate stats for the filtered credits set',
+        description:
+            'Total minted supply plus distinct registry and project counts across every row ' +
+            'matching the given filters, not just the current page. Accepts the same filter ' +
+            'params as the list endpoint. Cached for 60 seconds.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: CreditStatsDto })
+    async findStats(
+        @Param('network') network: string,
+        @Query() query: CreditQueryDto,
+    ): Promise<CreditStatsDto> {
+        return this.creditsService.findStats(network, query);
     }
 
     @Get(':tokenId/raw')

@@ -33,6 +33,18 @@ export const PROJECT_FIELD_SCHEMA: FieldSchema = {
         filter: 'ilike',
         sortable: false,
     },
+    /**
+     * Exact-match scope by publishing registry DID. Unlike `registry` (a name
+     * ILIKE, which collides when two registries share a display name) this is
+     * unambiguous, and it filters a plain indexed column on business_view
+     * instead of the joined registry-name derived table — so it never forces
+     * REGISTRY_NAME_JOIN into the count query.
+     */
+    registryDid: {
+        sql: `bv."registryDid"`,
+        filter: 'eq',
+        sortable: false,
+    },
     developer: {
         sql: `bv."businessData"->>'developer'`,
         filter: 'ilike',

@@ -21,6 +21,8 @@ export interface RegistryStats {
     projectCount: number;
     issuanceCount: number;
     userCount: number;
+    totalIssued: number;
+    totalRetired: number;
 }
 
 export interface RegistryDto {

@@ -9,9 +9,12 @@ import { formatCredits } from '~/lib/format';
 import { naturalCompare } from '~/lib/utils';
 import { allocateDonutColors } from '~/lib/chart-colors';
 import { SDG_LIST } from '~/lib/sdgs';
+import type { LabelCount } from '~/types/dashboard';
 
 const { t } = useI18n();
-const { projects: allProjects } = useProjects();
+// Aggregates come from the server-side dashboard summary rather than
+// downloading every project and reducing in the browser.
+const { summary } = useDashboardSummary();
 const { sdgStats } = useSdgStats();
 const { network } = useNetwork();
 
@@ -28,12 +31,11 @@ const tabs: Array<{ key: StakeholderTab; label: string; icon: any; desc: string 
 
 // ─── Shared aggregations ─────────────────────────────────────────────────────
 
-const projects = computed(() => allProjects.value ?? []);
-const totalProjects = computed(() => projects.value.length);
+const totalProjects = computed(() => summary.value.totals.projects);
 
-const totalIssued = computed(() => projects.value.reduce((s, p) => s + (p.totalIssued ?? 0), 0));
-const totalRetired = computed(() => projects.value.reduce((s, p) => s + (p.totalRetired ?? 0), 0));
-const totalActive = computed(() => projects.value.reduce((s, p) => s + (p.totalActive ?? 0), 0));
+const totalIssued = computed(() => summary.value.portfolio.totalIssued);
+const totalRetired = computed(() => summary.value.portfolio.totalRetired);
+const totalActive = computed(() => summary.value.portfolio.totalActive);
 
 // Retirement rate — what share of issued credits has been retired (carbon market liquidity signal)
 const retirementRate = computed(() => {
@@ -41,33 +43,20 @@ const retirementRate = computed(() => {
     return Math.round((totalRetired.value / totalIssued.value) * 100);
 });
 
-// Pipeline = projects not yet issuing — supply that's coming online
-const pipelineProjects = computed(
-    () => projects.value.filter(p => ['Registered', 'Under Validation', 'Verified'].includes(p.status)).length,
+// Pipeline = every project that has not yet issued — supply coming online.
+const pipelineProjects = computed(() =>
+    summary.value.lifecycleStages
+        .filter(s => s.label && s.label !== 'Issued')
+        .reduce((sum, s) => sum + s.projectCount, 0),
 );
 
-// Vintage spread — how recent the supply is (newer = higher integrity claim)
-const avgVintageYear = computed(() => {
-    const years = projects.value
-        .map(p => parseInt(p.vintage))
-        .filter(y => !isNaN(y) && y >= 2000 && y <= 2030);
-    if (years.length === 0) return null;
-    return Math.round(years.reduce((s, y) => s + y, 0) / years.length);
-});
+// Vintage spread — how recent the supply is (newer = higher integrity claim).
+// Averaged in Postgres with the same 2000..2030 guard the client applied.
+const avgVintageYear = computed(() => summary.value.portfolio.avgVintageYear);
 
-// Average crediting period duration in years
-const avgCreditingPeriodYears = computed(() => {
-    const diffs: number[] = [];
-    for (const p of projects.value) {
-        if (!p.creditingPeriodStart || !p.creditingPeriodEnd) continue;
-        const s = new Date(p.creditingPeriodStart).getTime();
-        const e = new Date(p.creditingPeriodEnd).getTime();
-        if (isNaN(s) || isNaN(e) || e <= s) continue;
-        diffs.push((e - s) / (1000 * 60 * 60 * 24 * 365.25));
-    }
-    if (diffs.length === 0) return null;
-    return Math.round((diffs.reduce((a, b) => a + b, 0) / diffs.length) * 10) / 10;
-});
+// Average crediting period duration in years. Also server-side, counting only
+// periods where both ends parse and end > start — same rule as before.
+const avgCreditingPeriodYears = computed(() => summary.value.portfolio.avgCreditingPeriodYears);
 
 // Headline KPIs
 const headlineKpis = computed(() => [
@@ -80,17 +69,22 @@ const headlineKpis = computed(() => [
 
 // ─── Lifecycle funnel (Market Overview) ──────────────────────────────────────
 
+// Derived from each project's submitted document types (registration →
+// validation → monitoring → verification → issuance), not the stored `status`
+// field, which is 'Issuing' for every project.
 const LIFECYCLE_STAGES: Array<{ key: string; label: string }> = [
-    { key: 'Registered',       label: 'Registered' },
-    { key: 'Under Validation', label: 'Validation' },
-    { key: 'Verified',         label: 'Verified' },
-    { key: 'Issuing',          label: 'Issuing' },
-    { key: 'Completed',        label: 'Completed' },
+    { key: 'Registered', label: 'Registered' },
+    { key: 'Validation', label: 'Validation' },
+    { key: 'Monitoring', label: 'Monitoring' },
+    { key: 'Verified',   label: 'Verified' },
+    { key: 'Issued',     label: 'Issued' },
 ];
 
 const lifecycleFunnel = computed(() => {
     const counts: Record<string, number> = {};
-    for (const p of projects.value) counts[p.status] = (counts[p.status] ?? 0) + 1;
+    for (const s of summary.value.lifecycleStages) {
+        if (s.label) counts[s.label] = (counts[s.label] ?? 0) + s.projectCount;
+    }
     const max = Math.max(1, ...Object.values(counts));
     return LIFECYCLE_STAGES.map(s => ({
         ...s,
@@ -104,11 +98,11 @@ const lifecycleFunnel = computed(() => {
 
 const vintageBuckets = computed(() => {
     const map: Record<string, { vintage: string; projects: number; credits: number }> = {};
-    for (const p of projects.value) {
-        const v = p.vintage || 'Unknown';
+    for (const row of summary.value.vintages) {
+        const v = row.label || 'Unknown';
         if (!map[v]) map[v] = { vintage: v, projects: 0, credits: 0 };
-        map[v].projects += 1;
-        map[v].credits += p.totalIssued ?? 0;
+        map[v].projects += row.projectCount;
+        map[v].credits += row.credits;
     }
     return Object.values(map)
         .filter(b => /^\d{4}$/.test(b.vintage))
@@ -127,92 +121,69 @@ function topBins(rows: BinRow[], sortBy: 'projects' | 'credits', n = 8): BinRow[
         .slice(0, n);
 }
 
-const sectorRows = computed<BinRow[]>(() => {
+/**
+ * Reshapes one of the API's label aggregates into BinRow form, folding null /
+ * empty labels into a single "Unknown" bin — the same bucketing the previous
+ * client-side `p.<field> || 'Unknown'` reduction produced.
+ */
+function toBins(rows: LabelCount[]): BinRow[] {
     const map: Record<string, BinRow> = {};
-    for (const p of projects.value) {
-        const k = p.sector || 'Unknown';
+    for (const row of rows) {
+        const k = row.label || 'Unknown';
         if (!map[k]) map[k] = { label: k, projects: 0, credits: 0 };
-        map[k].projects += 1;
-        map[k].credits += p.totalIssued ?? 0;
+        map[k].projects += row.projectCount;
+        map[k].credits += row.credits;
     }
     return Object.values(map);
-});
+}
+
+const sectorRows = computed<BinRow[]>(() => toBins(summary.value.sectors));
 
 const sectorTop = computed(() => topBins(sectorRows.value, 'credits'));
 const sectorColors = computed(() => allocateDonutColors(sectorTop.value.length, 'sector'));
 
 // ─── Registry breakdown ─────────────────────────────────────────────────────
 
-const registryRows = computed<BinRow[]>(() => {
-    const map: Record<string, BinRow> = {};
-    for (const p of projects.value) {
-        const k = p.registry || 'Unknown';
-        if (!map[k]) map[k] = { label: k, projects: 0, credits: 0 };
-        map[k].projects += 1;
-        map[k].credits += p.totalIssued ?? 0;
-    }
-    return Object.values(map);
-});
+const registryRows = computed<BinRow[]>(() => toBins(summary.value.registries));
 
 const registryTop = computed(() => topBins(registryRows.value, 'credits'));
 const registryColors = computed(() => allocateDonutColors(registryTop.value.length, 'registry'));
 
 // ─── Methodology breakdown ─────────────────────────────────────────────────
 
-const methodologyRows = computed<BinRow[]>(() => {
-    const map: Record<string, BinRow> = {};
-    for (const p of projects.value) {
-        const k = p.methodology || 'Unknown';
-        if (!map[k]) map[k] = { label: k, projects: 0, credits: 0 };
-        map[k].projects += 1;
-        map[k].credits += p.totalIssued ?? 0;
-    }
-    return Object.values(map);
-});
+const methodologyRows = computed<BinRow[]>(() => toBins(summary.value.methodologies));
 
 const methodologyTop = computed(() => topBins(methodologyRows.value, 'credits', 10));
 
 // ─── Country breakdown ─────────────────────────────────────────────────────
 
-const countryRows = computed<BinRow[]>(() => {
-    const map: Record<string, BinRow> = {};
-    for (const p of projects.value) {
-        const k = p.country || 'Unknown';
-        if (!map[k]) map[k] = { label: k, projects: 0, credits: 0 };
-        map[k].projects += 1;
-        map[k].credits += p.totalIssued ?? 0;
-    }
-    return Object.values(map);
-});
+const countryRows = computed<BinRow[]>(() =>
+    toBins(summary.value.countries.map(c => ({
+        label: c.country,
+        projectCount: c.projects,
+        credits: c.credits,
+        methodologies: c.methodologies,
+    }))),
+);
 
 const countryTop = computed(() => topBins(countryRows.value, 'credits', 10));
 
 // ─── Developer leaderboard ─────────────────────────────────────────────────
 
-interface DeveloperBin { label: string; projects: number; credits: number; countries: Set<string>; sectors: Set<string> }
-
-const developerStats = computed(() => {
-    const map: Record<string, DeveloperBin> = {};
-    for (const p of projects.value) {
-        const k = p.developer || 'Unknown';
-        if (!map[k]) map[k] = { label: k, projects: 0, credits: 0, countries: new Set(), sectors: new Set() };
-        const r = map[k];
-        r.projects += 1;
-        r.credits += p.totalIssued ?? 0;
-        if (p.country) r.countries.add(p.country);
-        if (p.sector) r.sectors.add(p.sector);
-    }
-    return Object.values(map)
+// Distinct country/sector counts per developer are computed in SQL — they can't
+// be derived on the client without every project row.
+const developerStats = computed(() =>
+    summary.value.developers
         .map(d => ({
-            label: d.label,
-            projects: d.projects,
+            label: d.label || 'Unknown',
+            projects: d.projectCount,
             credits: d.credits,
-            countryCount: d.countries.size,
-            sectorCount: d.sectors.size,
+            countryCount: d.countryCount,
+            sectorCount: d.sectorCount,
         }))
         .sort((a, b) => b.credits - a.credits)
-        .slice(0, 10);
-});
+        .slice(0, 10),
+);
 
 // ─── Avg project size by sector (Developer benchmark) ─────────────────────
 
@@ -271,15 +242,28 @@ const topRegistriesForHeat = computed(() => registryRows.value
     .map(r => r.label));
 
 const statusByRegistry = computed(() => {
-    const rows: Array<{ registry: string; cells: Array<{ stage: string; count: number }> }> = [];
-    for (const reg of topRegistriesForHeat.value) {
-        const cells = LIFECYCLE_STAGES.map(s => ({
-            stage: s.label,
-            count: projects.value.filter(p => p.registry === reg && p.status === s.key).length,
-        }));
-        rows.push({ registry: reg, cells });
+    // (registry, status) counts come pre-crossed from the API; index them once
+    // rather than re-scanning a project list per cell.
+    // Nested rather than a delimiter-joined composite key — registry names and
+    // statuses are free-form, so any separator character risks a collision.
+    const byRegistry = new Map<string, Map<string, number>>();
+    for (const cell of summary.value.registryStatuses) {
+        const reg = cell.registry ?? 'Unknown';
+        let statuses = byRegistry.get(reg);
+        if (!statuses) {
+            statuses = new Map<string, number>();
+            byRegistry.set(reg, statuses);
+        }
+        statuses.set(cell.status ?? '', cell.projectCount);
     }
-    return rows;
+
+    return topRegistriesForHeat.value.map(reg => ({
+        registry: reg,
+        cells: LIFECYCLE_STAGES.map(s => ({
+            stage: s.label,
+            count: byRegistry.get(reg)?.get(s.key) ?? 0,
+        })),
+    }));
 });
 
 const maxStatusCell = computed(() => {
@@ -303,15 +287,17 @@ const supplyAge = computed(() => {
     const now = new Date().getFullYear();
     const buckets = { fresh: 0, recent: 0, older: 0, legacy: 0 };
     let total = 0;
-    for (const p of projects.value) {
-        const y = parseInt(p.vintage);
+    // Bucketed from the per-vintage aggregate — one row per distinct vintage
+    // rather than one per project.
+    for (const row of summary.value.vintages) {
+        const y = parseInt(row.label ?? '');
         if (isNaN(y)) continue;
         const age = now - y;
-        total += p.totalIssued ?? 0;
-        if (age <= 2)  buckets.fresh  += p.totalIssued ?? 0;
-        else if (age <= 5)  buckets.recent += p.totalIssued ?? 0;
-        else if (age <= 10) buckets.older  += p.totalIssued ?? 0;
-        else               buckets.legacy += p.totalIssued ?? 0;
+        total += row.credits;
+        if (age <= 2)  buckets.fresh  += row.credits;
+        else if (age <= 5)  buckets.recent += row.credits;
+        else if (age <= 10) buckets.older  += row.credits;
+        else               buckets.legacy += row.credits;
     }
     return [
         { label: '≤ 2 years (Fresh)',   credits: buckets.fresh,  pct: total ? Math.round(buckets.fresh  / total * 100) : 0, color: 'bg-stat-green' },

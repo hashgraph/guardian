@@ -3,10 +3,6 @@ import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { naturalCompare, isValidCountryName, decodeMultiValue } from '~/lib/utils';
 import { SDG_LIST } from '~/lib/sdgs';
 
-// Both endpoints are paginated with no "all" mode; methodology/registry
-// catalogs are small enough that a single high-limit page covers them.
-const FILTER_OPTIONS_LIMIT = 1000;
-
 /**
  * Multi-select Country/Methodology/Registry/SDG filters for the "Manage
  * Watchlist" modal. Portfolio is a logged-in-only feature — state is a
@@ -34,14 +30,7 @@ export function usePortfolioWatchlistFilters(candidates: Ref<Project[]>, isModal
     const { network } = useNetwork();
     const { resolvedName: resolvedCountryName } = useGeocodedCountries(candidates);
 
-    const { data: methodologiesApiData } = useMethodologiesApi({
-        page: ref(1), limit: ref(FILTER_OPTIONS_LIMIT), search: ref(''),
-        network, sortBy: ref(null), sortDir: ref(null), enabled: isModalOpen,
-    });
-    const { data: registriesApiData } = useRegistriesApi({
-        page: ref(1), limit: ref(FILTER_OPTIONS_LIMIT), search: ref(''),
-        network, sortBy: ref(null), sortDir: ref(null), enabled: isModalOpen,
-    });
+    const { registries: registryNames, methodologies: methodologyNames } = useFacetOptions(isModalOpen);
 
     const watchlistFilters = useState<Record<string, string>>('portfolio-watchlist-filters', () => ({}));
 
@@ -68,11 +57,11 @@ export function usePortfolioWatchlistFilters(candidates: Ref<Project[]>, isModal
     // issue the Projects table already avoids by filtering on the plain name
     // string; dedupe here the same way so the dropdown shows each name once,
     // and use the name itself as the option value/match key.
-    function dedupeByName<T extends { name: string }>(items: T[]): T[] {
-        const seen = new Map<string, T>();
-        for (const item of items) {
-            const key = norm(item.name);
-            if (key && !seen.has(key)) seen.set(key, item);
+    function dedupeNames(names: string[]): string[] {
+        const seen = new Map<string, string>();
+        for (const name of names) {
+            const key = norm(name);
+            if (key && !seen.has(key)) seen.set(key, name);
         }
         return [...seen.values()];
     }
@@ -85,13 +74,13 @@ export function usePortfolioWatchlistFilters(candidates: Ref<Project[]>, isModal
             .map(c => ({ value: c, label: c })));
 
     const methodologyOptions = computed(() =>
-        dedupeByName((methodologiesApiData.value?.data ?? []).filter(m => m.name))
-            .map(m => ({ value: m.name, label: m.name }))
+        dedupeNames(methodologyNames.value.filter(Boolean))
+            .map(name => ({ value: name, label: name }))
             .sort((a, b) => a.label.localeCompare(b.label)));
 
     const registryOptions = computed(() =>
-        dedupeByName((registriesApiData.value?.data ?? []).filter(r => r.name))
-            .map(r => ({ value: r.name, label: r.name }))
+        dedupeNames(registryNames.value.filter(Boolean))
+            .map(name => ({ value: name, label: name }))
             .sort((a, b) => a.label.localeCompare(b.label)));
 
     const sdgOptions = computed(() =>

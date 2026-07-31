@@ -96,6 +96,8 @@ export interface MethodologyExportRow {
 /** Storage-agnostic repository contract. */
 export abstract class MethodologyRepository {
     abstract findAll(query: MethodologyListQuery): Promise<MethodologyListResult>;
+    /** Distinct display names for filter dropdowns — avoids paging the full list to build one. */
+    abstract findNameOptions(): Promise<string[]>;
     abstract findById(id: string): Promise<MethodologyRow | null>;
     /** Full filtered, `relatedTopicId`-deduped dataset for the export engine — never capped at 1000 rows, never HTTP page-looped by the caller; implementations batch internally. */
     abstract findAllForExport(filters: MethodologyExportFilters): Promise<MethodologyExportRow[]>;

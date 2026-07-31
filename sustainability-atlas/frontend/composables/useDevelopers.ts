@@ -1,33 +1,41 @@
 import type { Developer } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 import { useDevelopersApi } from '~/composables/api/useDevelopersApi';
+import type { DeveloperSortKey, DeveloperSortDir } from '~/composables/api/useDevelopersApi';
 
-export function useDevelopers(filters?: Ref<{ status?: string; search?: string; country?: string }>) {
+export interface UseDevelopersOptions {
+    page: Ref<number>;
+    limit: Ref<number>;
+    search: Ref<string>;
+    country: Ref<string | undefined>;
+    sortBy: Ref<DeveloperSortKey | null>;
+    sortDir: Ref<DeveloperSortDir | null>;
+}
+
+/**
+ * Server-paginated developer list. Search, country filtering, sorting and
+ * paging are all applied by the API.
+ */
+export function useDevelopers(opts: UseDevelopersOptions) {
     const { network } = useNetwork();
     const networkRef = computed(() => network.value);
 
-    // Fetch a large first page so the existing client-side useFilteredPagination
-    // can keep handling search / sort / paging. Total developer counts on a
-    // Guardian network are well under this ceiling.
-    const page = ref(1);
-    const limit = ref(1000);
-    const searchRef = ref('');
-    const sortByRef = ref<'name' | 'projects' | 'countries' | 'totalIssued' | 'totalRetired' | null>(null);
-    const sortDirRef = ref<'asc' | 'desc' | null>(null);
-    const apiFiltersRef = ref<Record<string, any>>({});
+    const apiFilters = computed<Record<string, any>>(() =>
+        opts.country.value ? { country: opts.country.value } : {},
+    );
 
     const { data, pending, error, refresh } = useDevelopersApi({
-        page,
-        limit,
-        search: searchRef,
+        page: opts.page,
+        limit: opts.limit,
+        search: opts.search,
         network: networkRef,
-        sortBy: sortByRef,
-        sortDir: sortDirRef,
-        filters: apiFiltersRef,
+        sortBy: opts.sortBy,
+        sortDir: opts.sortDir,
+        filters: apiFilters,
     });
 
-    const developers = computed<Developer[]>(() => {
-        let result: Developer[] = (data.value?.data ?? []).map(d => ({
+    const developers = computed<Developer[]>(() =>
+        (data.value?.data ?? []).map(d => ({
             id: d.id,
             name: d.name,
             country: d.country ?? '—',
@@ -38,34 +46,11 @@ export function useDevelopers(filters?: Ref<{ status?: string; search?: string; 
             totalRetired: formatCredits(d.totalRetired),
             categories: [...d.categories].sort(),
             status: 'Active' as const,
-        }));
+        })),
+    );
 
-        if (filters?.value) {
-            const f = filters.value;
-            if (f.status) result = result.filter(d => d.status === f.status);
-            if (f.country) {
-                const q = f.country.toLowerCase();
-                result = result.filter(d => d.country.toLowerCase().includes(q));
-            }
-            if (f.search) {
-                const q = f.search.toLowerCase();
-                result = result.filter(d =>
-                    d.name.toLowerCase().includes(q) ||
-                    d.country.toLowerCase().includes(q) ||
-                    d.registries.some(r => r.toLowerCase().includes(q)) ||
-                    d.categories.some(c => c.toLowerCase().includes(q)),
-                );
-            }
-        }
+    const total = computed(() => data.value?.meta?.total ?? 0);
+    const totalPages = computed(() => data.value?.meta?.totalPages ?? 1);
 
-        return result;
-    });
-
-    const total = computed(() => data.value?.meta?.total ?? developers.value.length);
-
-    const filterOptions = computed(() => ({
-        statuses: ['Active', 'Inactive'] as const,
-    }));
-
-    return { developers, total, filterOptions, pending, error, refresh };
+    return { developers, total, totalPages, pending, error, refresh };
 }

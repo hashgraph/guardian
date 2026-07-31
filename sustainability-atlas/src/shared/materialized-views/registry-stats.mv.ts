@@ -43,6 +43,22 @@ export const MV_REGISTRY_STATS_CREATE_SQL = `
             ) ELSE 0 END
         ), 0) AS issuance_count,
         0::bigint AS user_count,
+        -- Issued/retired volume per registry, summed from mv_project_stats,
+        -- which must therefore be created first (see ./index.ts ordering).
+        COALESCE((
+            SELECT SUM(mps.total_issued)
+            FROM business_view proj
+            JOIN mv_project_stats mps ON mps."projectKey" = proj."projectKey"
+            WHERE proj."viewType" = 'PROJECT'
+              AND proj."registryDid" = bv."registryDid"
+        ), 0)::bigint AS total_issued,
+        COALESCE((
+            SELECT SUM(mps.total_retired)
+            FROM business_view proj
+            JOIN mv_project_stats mps ON mps."projectKey" = proj."projectKey"
+            WHERE proj."viewType" = 'PROJECT'
+              AND proj."registryDid" = bv."registryDid"
+        ), 0)::bigint AS total_retired,
         MAX(bv."lastUpdate") AS last_update,
         -- Decode-status counts: grouped per registry across all METHODOLOGY rows.
         -- methodology_decode_success_count = number of methodologies under this registry

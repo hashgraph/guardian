@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import {
     CreditRepository,
@@ -8,12 +9,16 @@ import {
     CreditProjectLink,
     CreditExportFilters,
     CreditExportRow,
+    CreditStats,
 } from './credit.repository';
 import { QueryBuilder } from './query-builder';
-import { CREDIT_FIELD_SCHEMA } from './schemas/credit.schema';
+import { CREDIT_FIELD_SCHEMA, SUPPLY_EXPR, MINT_DATE_EXPR } from './schemas/credit.schema';
 
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
+
+/** Ceiling on rows a single export may stream; exceeding it throws rather than truncating. */
+const EXPORT_MAX_ROWS = 100_000;
 
 interface RawRow {
     tokenId: string | null;
@@ -63,13 +68,20 @@ const TOKEN_ID_EXPR = `(m.documents->'credentialSubject'->0->>'tokenId')`;
  * project_mint_link (pre-computed per-project attribution) and token_cache.
  * Rows where pml.* is NULL are unattributed mints — still included so the
  * table is complete regardless of worker attribution state.
+ *
+ * Split from the `cred` LATERAL below so the count query can omit that lookup
+ * when nothing references it — see buildJoins().
  */
-const MINT_FROM = `
+const MINT_FROM_LEAN = `
     message m
     LEFT JOIN project_mint_link pml
            ON pml.mint_consensus_timestamp = m."consensusTimestamp"
     LEFT JOIN token_cache tc
            ON tc."tokenId" = ${TOKEN_ID_EXPR}
+`;
+
+/** LATERAL: the token's own registryDid, the fallback for mints not attributed to a project. */
+const CREDIT_REGISTRY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT bv_c."registryDid" AS registry_did
         FROM business_view bv_c
@@ -79,6 +91,8 @@ const MINT_FROM = `
         LIMIT 1
     ) cred ON true
 `;
+
+const MINT_FROM = `${MINT_FROM_LEAN}${CREDIT_REGISTRY_JOIN}`;
 
 /**
  * LATERAL: resolve project metadata from the pre-attributed project_mint_link
@@ -151,44 +165,86 @@ const REGISTRY_JOIN = `
     ) reg ON true
 `;
 
+/** Which optional joins a given filter set actually requires. */
+interface JoinRequirements {
+    registry?: string;
+    registryDid?: string;
+    methodologyId?: string;
+    search?: string;
+    linkedOnly?: boolean;
+    /** Include the project/registry joins regardless of filters, for queries that select from them. */
+    forceAttribution?: boolean;
+}
+
+/**
+ * Builds the minimum join graph a query needs.
+ *
+ * The row query selects project/methodology/registry columns and needs them
+ * all; the COUNT only needs a join when a filter references it.
+ *
+ * Dependencies (from CREDIT_FIELD_SCHEMA):
+ *   registry      -> reg.registry_name                          -> REGISTRY_JOIN
+ *   search        -> reg.registry_name (plus tc.*, always there) -> REGISTRY_JOIN
+ *   registryDid   -> COALESCE(proj.registry_did, cred.registry_did)
+ *   methodologyId -> meth.methodology_id                        -> METHODOLOGY_JOIN
+ * REGISTRY_JOIN and METHODOLOGY_JOIN both read `proj.*`, and REGISTRY_JOIN also
+ * reads `cred.*`, so those pull in their dependencies.
+ * projectKey filters `pml.project_key` and `type` filters `tc.type` — both
+ * already in MINT_FROM_LEAN, so neither forces an extra join.
+ */
+function buildJoins(req: JoinRequirements): string {
+    const needsRegistry = Boolean(req.registry || req.search || req.forceAttribution);
+    const needsMethodology = Boolean(req.methodologyId);
+    const needsCred = needsRegistry || Boolean(req.registryDid);
+    const needsProject = needsRegistry || needsMethodology || Boolean(req.registryDid || req.linkedOnly);
+
+    return [
+        MINT_FROM_LEAN,
+        needsCred ? CREDIT_REGISTRY_JOIN : '',
+        needsProject ? PROJECT_JOIN : '',
+        needsMethodology ? METHODOLOGY_JOIN : '',
+        needsRegistry ? REGISTRY_JOIN : '',
+    ].join('\n');
+}
+
 /** PostgreSQL implementation of the CreditRepository; `findAll()` sources MintToken VC documents joined with `project_mint_link` for per-project attribution, including unattributed mints as rows with null project/methodology fields (registry still resolves via the token's own CREDIT row). One row per mint event (message row) — matches `findAllForExport()` and the project detail page's "Linked Issuances" grain, so the Issuances count/list is consistent everywhere, filtered or not. */
 export class PgCreditRepository extends CreditRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
     }
 
-    async findAll(query: CreditListQuery): Promise<CreditListResult> {
-        const { page, limit, search, sortBy, sortDir } = query;
-        const offset = (page - 1) * limit;
-
+    /** Builds the WHERE clause shared by findAll, its count, and findStats, plus the search-rank expression. */
+    private buildFilters(query: CreditListQuery): { builder: QueryBuilder; rankExpr: string } {
         const builder = new QueryBuilder(CREDIT_FIELD_SCHEMA);
 
-        // Base: only MintToken VC documents with a resolvable tokenId
         builder.addClause(`m.type = 'VC-Document'`);
         builder.addClause(`m.documents IS NOT NULL`);
         builder.addClause(`(m.documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'`);
         builder.addClause(`${TOKEN_ID_EXPR} IS NOT NULL`);
 
-        // Generic schema-driven filters
         builder.addFilters({
-            registryDid: query.registryDid,
-            registry:    query.registry,
-            tokenId:     query.tokenId,
+            registryDid:  query.registryDid,
+            registry:     query.registry,
+            tokenId:      query.tokenId,
+            supplyMin:    query.supplyMin,
+            supplyMax:    query.supplyMax,
+            mintDateFrom: query.mintDateFrom,
+            mintDateTo:   query.mintDateTo,
         });
 
-        // projectKey: restrict to mints attributed to this specific project.
-        // Supports a `|`-delimited list (handled by addFilter's 'eq' operator,
-        // which emits `= ANY($n::text[])` for multi-value input) so Portfolio
-        // can scope one query to its whole watchlist instead of paging network-wide.
+        // Accepts a `|`-delimited list so Portfolio can scope one query to its
+        // whole watchlist instead of paging network-wide.
         builder.addFilter('pml.project_key', 'eq', query.projectKey);
 
-        // methodologyId: restrict to mints whose resolved methodology matches
         if (query.methodologyId) {
             const param = builder.nextParam(query.methodologyId);
             builder.addClause(`meth.methodology_id = ${param}`);
         }
 
-        // type: map display form to token_cache raw values
+        if (query.linkedOnly) {
+            builder.addClause(`proj.project_id IS NOT NULL`);
+        }
+
         if (query.type) {
             const normalised = query.type.toLowerCase();
             if (normalised === 'fungible') {
@@ -198,10 +254,9 @@ export class PgCreditRepository extends CreditRepository {
             }
         }
 
-        // Full-text + fuzzy search across token name, symbol, id, and registry
         let rankExpr = '0';
-        if (search) {
-            const term = search.trim();
+        if (query.search) {
+            const term = query.search.trim();
             const likeParam = builder.nextParam(`%${term}%`);
             const simParam  = builder.nextParam(term);
 
@@ -215,6 +270,45 @@ export class PgCreditRepository extends CreditRepository {
 
             rankExpr = `COALESCE(similarity(COALESCE(tc.name, ''), ${simParam}), 0)`;
         }
+
+        return { builder, rankExpr };
+    }
+
+    /** Supply total and distinct registry/project counts across the whole filtered set. */
+    async findStats(query: CreditListQuery): Promise<CreditStats> {
+        const { builder } = this.buildFilters(query);
+
+        const sql = `
+            SELECT
+                COALESCE(SUM(${SUPPLY_EXPR}), 0)::numeric        AS total_supply,
+                COUNT(DISTINCT reg.registry_name)::int           AS unique_registries,
+                COUNT(DISTINCT proj.project_id)::int             AS unique_projects
+            FROM ${buildJoins({
+                registry: query.registry,
+                registryDid: query.registryDid,
+                methodologyId: query.methodologyId,
+                search: query.search,
+                // The stat columns themselves read proj/reg, so both are always required here.
+                forceAttribution: true,
+            })}
+            WHERE ${builder.getWhereClause()}
+        `;
+
+        const rows: Array<{ total_supply: string; unique_registries: number; unique_projects: number }> =
+            await this.dataSource.query(sql, builder.getParams());
+
+        return {
+            totalSupply: parseFloat(rows[0]?.total_supply ?? '0') || 0,
+            uniqueRegistries: rows[0]?.unique_registries ?? 0,
+            uniqueProjects: rows[0]?.unique_projects ?? 0,
+        };
+    }
+
+    async findAll(query: CreditListQuery): Promise<CreditListResult> {
+        const { page, limit, search, sortBy, sortDir } = query;
+        const offset = (page - 1) * limit;
+
+        const { builder, rankExpr } = this.buildFilters(query);
 
         const orderBy = search
             ? `search_rank DESC, mint_date DESC NULLS LAST`
@@ -242,14 +336,10 @@ export class PgCreditRepository extends CreditRepository {
                 tc.symbol,
                 tc.type                                                                         AS raw_type,
                 NULL::text                                                                      AS options_token_type,
-                COALESCE(pml.amount::numeric,
-                    (m.documents->'credentialSubject'->0->>'amount')::numeric
-                )                                                                               AS total_supply,
+                ${SUPPLY_EXPR}                                                                  AS total_supply,
                 COALESCE(proj.registry_did, cred.registry_did)                                  AS "registryDid",
                 reg.registry_name,
-                COALESCE(pml.mint_date,
-                    to_timestamp(m."consensusTimestamp"::numeric)
-                )                                                                               AS mint_date,
+                ${MINT_DATE_EXPR}                                                               AS mint_date,
                 proj.project_id,
                 proj.project_name,
                 meth.methodology_id,
@@ -265,14 +355,19 @@ export class PgCreditRepository extends CreditRepository {
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count: one row per mint event, so a plain COUNT(*) over the filtered set.
+        // Count: one row per mint event, so a plain COUNT(*) over the filtered
+        // set — carrying only the joins the active filters actually reference.
+        // Unfiltered this collapses to message ⟕ project_mint_link ⟕ token_cache.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
-            FROM ${MINT_FROM}
-            ${PROJECT_JOIN}
-            ${METHODOLOGY_JOIN}
-            ${REGISTRY_JOIN}
+            FROM ${buildJoins({
+                registry: query.registry,
+                registryDid: query.registryDid,
+                methodologyId: query.methodologyId,
+                linkedOnly: query.linkedOnly,
+                search,
+            })}
             WHERE ${whereSql}
         `;
 
@@ -394,8 +489,8 @@ export class PgCreditRepository extends CreditRepository {
                     tc.name                                                                         AS token_name,
                     tc.symbol                                                                        AS token_symbol,
                     tc.type                                                                          AS token_type_raw,
-                    COALESCE(pml.amount::numeric, (m.documents->'credentialSubject'->0->>'amount')::numeric) AS emissions_reduced,
-                    COALESCE(pml.mint_date, to_timestamp(m."consensusTimestamp"::numeric))            AS mint_date,
+                    ${SUPPLY_EXPR}                                                                AS emissions_reduced,
+                    ${MINT_DATE_EXPR}                                                             AS mint_date,
                     COALESCE(meth.methodology_name, proj.proj_methodology_name)                       AS standard,
                     meth.emission_reduction_approach                                                   AS mitigation_type_raw
                 FROM ${MINT_FROM}
@@ -411,6 +506,12 @@ export class PgCreditRepository extends CreditRepository {
             rows.push(...batch.map(PgCreditRepository.mapExportRow));
 
             if (batch.length < EXPORT_BATCH_SIZE) break;
+            if (rows.length >= EXPORT_MAX_ROWS) {
+                throw new BadRequestException(
+                    `Export matched more than ${EXPORT_MAX_ROWS.toLocaleString()} rows. ` +
+                    'Narrow the filters (date range, registry, or search) and try again.',
+                );
+            }
         }
 
         return rows;

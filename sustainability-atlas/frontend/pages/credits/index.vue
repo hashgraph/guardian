@@ -27,16 +27,116 @@ const sdgFilter = computed(() => {
     return typeof raw === 'string' ? raw : undefined;
 });
 
-const { projects } = useProjects();
-const sdgProjectKeys = computed(() => {
-    if (!sdgFilter.value) return undefined;
-    const sdgNum = parseInt(sdgFilter.value, 10);
-    if (isNaN(sdgNum)) return undefined;
-    const matching = projects.value.filter(p => p.sdgs?.includes(sdgNum));
-    return matching.map(p => p.projectKey || p.id).filter(Boolean) as string[];
+// Project keys matching the active SDG, used to scope the issuance query.
+const sdgProjectKeys = ref<string[] | undefined>(undefined);
+
+if (import.meta.client) {
+    const runtimeConfig = useRuntimeConfig();
+    const idsBaseURL = runtimeConfig.public.apiBaseUrl as string;
+
+    watch(
+        [sdgFilter, network],
+        async () => {
+            const sdgNum = parseInt(sdgFilter.value ?? '', 10);
+            if (!sdgFilter.value || isNaN(sdgNum)) {
+                sdgProjectKeys.value = undefined;
+                return;
+            }
+            try {
+                const res = await $fetch<{ items: Array<{ id: string; projectKey: string | null }> }>(
+                    `/api/v1/${network.value}/projects/ids`,
+                    { baseURL: idsBaseURL, query: { sdgs: String(sdgNum) } },
+                );
+                sdgProjectKeys.value = (res.items ?? [])
+                    .map(i => i.projectKey || i.id)
+                    .filter(Boolean);
+            } catch {
+                sdgProjectKeys.value = undefined;
+            }
+        },
+        { immediate: true },
+    );
+}
+
+const currentPage = ref(1);
+const pageSize = ref(10);
+const searchQuery = ref('');
+const sortKey = ref<CreditSortKey | null>('mintDate');
+const sortDir = ref<CreditSortDir | null>('desc');
+
+const hideUnlinked = ref(route.query.linkedOnly === 'true');
+
+// Column filters in API terms. FilterBar emits range types as "from|to".
+const activeFilters = ref<Record<string, string>>({});
+
+const apiFilters = computed<Record<string, string | string[]>>(() => {
+    const f: Record<string, string | string[]> = {};
+    const af = activeFilters.value;
+
+    if (af.type) {
+        const picked = decodeMultiValue(af.type);
+        // The API takes a single token type; selecting both is the same as no filter.
+        if (picked.length === 1) f.type = picked[0];
+    }
+    if (af.registry) f.registry = af.registry;
+
+    if (af.supply) {
+        const [min, max] = af.supply.split('|');
+        if (min) f.supplyMin = min;
+        if (max) f.supplyMax = max;
+    }
+    if (af.mintDate) {
+        const [from, to] = af.mintDate.split('|');
+        if (from) f.mintDateFrom = from;
+        if (to) f.mintDateTo = to;
+    }
+    if (hideUnlinked.value) f.linkedOnly = 'true';
+
+    return f;
 });
 
-const { credits, total, pending } = useCredits(projectKeyFilter, methodologyIdFilter, registryDidFilter, sdgProjectKeys);
+const { credits, total, totalPages, pending, filters: creditFilters } = useCredits({
+    page: currentPage,
+    limit: pageSize,
+    search: searchQuery,
+    sortBy: sortKey,
+    sortDir,
+    filters: apiFilters,
+    projectKey: projectKeyFilter,
+    methodologyId: methodologyIdFilter,
+    registryDid: registryDidFilter,
+    projectKeys: sdgProjectKeys,
+});
+
+const { stats: summaryStats } = useCreditStats(searchQuery, creditFilters);
+
+function toggleSort(key: CreditSortKey) {
+    if (sortKey.value === key) {
+        sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortKey.value = key;
+        sortDir.value = 'desc';
+    }
+    currentPage.value = 1;
+}
+
+function setFilter(key: string, value: string) {
+    if (value === 'all' || !value) delete activeFilters.value[key];
+    else activeFilters.value = { ...activeFilters.value, [key]: value };
+    currentPage.value = 1;
+}
+
+function clearFilters() {
+    activeFilters.value = {};
+    currentPage.value = 1;
+}
+
+function applyPreset(preset: Record<string, string>) {
+    activeFilters.value = { ...preset };
+    currentPage.value = 1;
+}
+
+watch([searchQuery, pageSize, hideUnlinked], () => { currentPage.value = 1; });
 
 const config = useRuntimeConfig();
 const apiBaseURL = import.meta.server
@@ -65,69 +165,51 @@ async function viewVc(c: any) {
     }
 }
 
-const hideUnlinked = ref(route.query.linkedOnly === 'true');
-
-const allCredits = computed(() => {
-    let mapped = credits.value.map(c => ({
+const rows = computed(() =>
+    credits.value.map(c => ({
         ...c,
         supplyFormatted: formatCredits(c.supply),
-    }));
-    if (hideUnlinked.value) {
-        mapped = mapped.filter(c => c.projectId);
-    }
-    if (sdgFilter.value) {
-        const sdgNum = parseInt(sdgFilter.value, 10);
-        if (!isNaN(sdgNum)) {
-            const sdgProjectKeysSet = new Set(
-                projects.value
-                    .filter(p => p.sdgs?.includes(sdgNum))
-                    .flatMap(p => [p.id, p.projectKey, p.name].filter(Boolean))
-            );
-            mapped = mapped.filter(c =>
-                (c.projectId && sdgProjectKeysSet.has(c.projectId)) ||
-                (c.project && sdgProjectKeysSet.has(c.project))
-            );
-        }
-    }
-    return mapped;
-});
+    })),
+);
 
 const projectFilterName = computed(() => {
     if (!projectKeyFilter.value) return null;
-    return allCredits.value[0]?.projectDisplay ?? null;
+    return rows.value[0]?.projectDisplay ?? null;
 });
 
 const methodologyFilterName = computed(() => {
     if (!methodologyIdFilter.value) return null;
-    return allCredits.value[0]?.methodologyDisplay ?? null;
+    return rows.value[0]?.methodologyDisplay ?? null;
 });
 
 const registryFilterName = computed(() => {
     if (!registryDidFilter.value) return null;
-    return allCredits.value[0]?.registry ?? null;
+    return rows.value[0]?.registry ?? null;
 });
-
-const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters, applyPreset } =
-    useFilteredPagination(allCredits, {
-        searchFields: ['name', 'symbol', 'tokenId', 'projectDisplay', 'methodologyDisplay', 'registry'],
-        pageSize: 10,
-        defaultSort: { key: 'supply', dir: 'desc' },
-        excludeFromQuery: ['projectKey', 'methodologyId', 'linkedOnly', 'registryDid', 'sdg', 'sdgs'],
-    });
-
 
 const skeletonRows = computed(() => Array.from({ length: pageSize.value }, (_, i) => i));
 
-// Derive filter options from allCredits so the dropdowns reflect whatever is
-// currently visible (respects hideUnlinked toggle and projectKey filter).
-const visibleFilterOptions = computed(() => ({
-    types: [...new Set(allCredits.value.map(c => c.type).filter((t): t is NonNullable<typeof t> => t !== null))].sort(naturalCompare),
-    registries: [...new Set(allCredits.value.map(c => c.registry).filter((r): r is NonNullable<typeof r> => r !== null))].sort(naturalCompare),
-}));
+const TOKEN_TYPES = ['Fungible', 'Non-Fungible'];
+
+const registryOptions = ref<string[]>([]);
+if (import.meta.client) {
+    const optCfg = useRuntimeConfig();
+    const optBaseURL = optCfg.public.apiBaseUrl as string;
+    watch(network, async () => {
+        try {
+            registryOptions.value = await $fetch<string[]>(
+                `/api/v1/${network.value}/registries/options`,
+                { baseURL: optBaseURL },
+            );
+        } catch {
+            registryOptions.value = [];
+        }
+    }, { immediate: true });
+}
 
 const filters = computed<FilterOption[]>(() => [
-    { key: 'type', label: t('credits.filters.tokenType'), multiSelect: true, options: visibleFilterOptions.value.types.map(x => ({ value: x, label: x })) },
-    { key: 'registry', label: t('credits.filters.registry'), multiSelect: true, searchable: true, options: visibleFilterOptions.value.registries.map(r => ({ value: r, label: r })) },
+    { key: 'type', label: t('credits.filters.tokenType'), multiSelect: true, options: TOKEN_TYPES.map(x => ({ value: x, label: x })) },
+    { key: 'registry', label: t('credits.filters.registry'), multiSelect: true, searchable: true, options: [...registryOptions.value].sort(naturalCompare).map(r => ({ value: r, label: r })) },
     { key: 'supply', label: t('credits.filters.supply'), type: 'numrange', options: [] },
     { key: 'mintDate', label: t('credits.filters.mintDate'), type: 'daterange', options: [] },
 ]);
@@ -164,14 +246,6 @@ function applySavedSearch(criteria: SavedSearchCriteria) {
 
 const { isAuthenticated } = useAuth();
 const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null);
-
-const summaryStats = computed(() => {
-    const f = filtered.value;
-    const totalSupply = f.reduce((sum, c) => sum + (c.supply ?? 0), 0);
-    const uniqueRegistries = new Set(f.map(c => c.registry).filter(Boolean)).size;
-    const uniqueProjects = new Set(f.map(c => c.projectId).filter(Boolean)).size;
-    return { totalSupply, uniqueRegistries, uniqueProjects };
-});
 
 const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat-blue', 'Non-Fungible': 'bg-stat-amber/10 text-stat-amber' };
 
@@ -287,7 +361,7 @@ async function downloadCredits() {
         </div>
 
         <div class="px-6 pb-3">
-            <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="filtered.length" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters">
+            <FilterBar v-model="searchQuery" :filters="filters" :active-filters="activeFilters" :result-count="total" :total-count="total" :search-placeholder="$t('credits.searchPlaceholder')" @filter="setFilter" @clear="clearFilters">
                 <template #before-clear>
                     <InfoTooltip
                         v-if="isAuthenticated"
@@ -350,9 +424,9 @@ async function downloadCredits() {
         </div>
 
         <!-- Summary Stats -->
-        <div v-if="filtered.length !== total" class="px-6 pb-3">
+        <div v-if="total > 0" class="px-6 pb-3">
             <div class="flex items-center gap-4 rounded-lg bg-muted/50 px-4 py-2.5 text-xs">
-                <span class="font-medium text-foreground">{{ $t('credits.issuancesFound', { count: filtered.length }) }}</span>
+                <span class="font-medium text-foreground">{{ $t("credits.issuancesFound", { count: total }) }}</span>
                 <span class="text-muted-foreground">&middot;</span>
                 <span class="text-muted-foreground">{{ $t('credits.totalSupply') }} <strong class="text-foreground">{{ formatCredits(summaryStats.totalSupply) }}</strong></span>
                 <span class="text-muted-foreground">&middot;</span>
@@ -391,7 +465,7 @@ async function downloadCredits() {
 
                         <!-- Data rows -->
                         <template v-else>
-                            <tr v-for="c in paginated" :key="`${c.tokenId}|${c.projectId ?? ''}|${c.mintConsensusTimestamp ?? ''}`" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(c.projectId ? `/credits/${encodeURIComponent(c.tokenId)}?projectId=${encodeURIComponent(c.projectId)}` : `/credits/${encodeURIComponent(c.tokenId)}`)">
+                            <tr v-for="c in rows" :key="`${c.tokenId}|${c.projectId ?? ''}|${c.mintConsensusTimestamp ?? ''}`" class="hover:bg-muted/30 transition-colors cursor-pointer" @click="navigateTo(c.projectId ? `/credits/${encodeURIComponent(c.tokenId)}?projectId=${encodeURIComponent(c.projectId)}` : `/credits/${encodeURIComponent(c.tokenId)}`)">
                                 <td class="py-3 px-4 whitespace-nowrap">
                                     <div class="font-medium text-foreground">{{ c.name ?? '-' }}</div>
                                     <div class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId ?? '-' }}</div>
@@ -444,13 +518,13 @@ async function downloadCredits() {
                                     </button>
                                 </td>
                             </tr>
-                            <tr v-if="paginated.length === 0"><td colspan="9" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
+                            <tr v-if="rows.length === 0"><td colspan="9" class="py-12 text-center text-sm text-muted-foreground">{{ $t('credits.noMatch') }}</td></tr>
                         </template>
                     </tbody>
                 </table>
                 </div>
             </div>
-            <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total-pages="totalPages" :total-items="filtered.length" />
+            <Pagination v-model:current-page="currentPage" v-model:page-size="pageSize" :total-pages="totalPages" :total-items="total" />
         </div>
 
         <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
