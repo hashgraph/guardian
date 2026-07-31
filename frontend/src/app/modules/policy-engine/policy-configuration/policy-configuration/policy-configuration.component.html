@@ -28,7 +28,10 @@
                 svgClass="icon-style-article action-color"></svg-icon>
             </div>
             <div class="policy-identity-text">
-              <span class="policy-identity-name">{{ policyTemplate.name || 'Untitled policy' }}</span>
+              <span #policyNameEl class="policy-identity-name"
+                [pTooltip]="policyTemplate.name || 'Untitled policy'"
+                [tooltipDisabled]="policyNameEl.scrollWidth <= policyNameEl.clientWidth"
+                tooltipPosition="bottom">{{ policyTemplate.name || 'Untitled policy' }}</span>
               <span class="policy-identity-meta">Policy details</span>
             </div>
             <i class="pi pi-chevron-down policy-identity-caret"></i>
@@ -84,7 +87,10 @@
                 svgClass="icon-style-policy-module action-color"></svg-icon>
             </div>
             <div class="policy-identity-text">
-              <span class="policy-identity-name">{{ moduleTemplate.name || 'Untitled module' }}</span>
+              <span #moduleNameEl class="policy-identity-name"
+                [pTooltip]="moduleTemplate.name || 'Untitled module'"
+                [tooltipDisabled]="moduleNameEl.scrollWidth <= moduleNameEl.clientWidth"
+                tooltipPosition="bottom">{{ moduleTemplate.name || 'Untitled module' }}</span>
               <span class="policy-identity-meta">Module details</span>
             </div>
             <i class="pi pi-chevron-down policy-identity-caret"></i>
@@ -115,7 +121,10 @@
                 svgClass="icon-style-handyman action-color tool-icon"></svg-icon>
             </div>
             <div class="policy-identity-text">
-              <span class="policy-identity-name">{{ toolTemplate.name || 'Untitled tool' }}</span>
+              <span #toolNameEl class="policy-identity-name"
+                [pTooltip]="toolTemplate.name || 'Untitled tool'"
+                [tooltipDisabled]="toolNameEl.scrollWidth <= toolNameEl.clientWidth"
+                tooltipPosition="bottom">{{ toolTemplate.name || 'Untitled tool' }}</span>
               <span class="policy-identity-meta">Tool details</span>
             </div>
             <i class="pi pi-chevron-down policy-identity-caret"></i>
