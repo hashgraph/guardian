@@ -121,8 +121,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public drillPropsCollapsed: boolean = false;
 
     public get drilledSchema(): Schema | null {
-        const iri = this.currentDrilledSchemaIri;
-        return iri ? (this.schemas.find(s => s.iri === iri) ?? null) : null;
+        return this.resolveRefSchema(this.currentDrilledSchemaIri) ?? null;
     }
 
     public get currentContextSchema(): Schema | null {
