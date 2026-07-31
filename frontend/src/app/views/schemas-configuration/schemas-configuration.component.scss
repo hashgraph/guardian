@@ -2426,11 +2426,6 @@
     background: var(--guardian-grey-background);
     flex-shrink: 0;
     gap: 8px;
-
-    &--drill {
-        background: var(--guardian-primary-background);
-        border-bottom-color: var(--color-secondary);
-    }
 }
 
 .sc-canvas-tab-pill {
