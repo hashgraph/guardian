@@ -1071,9 +1071,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public changeFieldType(ft: FieldTypeUI): void {
         if (!this.selectedField) { return; }
-        // Sub-schema fields are added by dragging from the Schemas tab; clicking the
-        // tile on an existing sub-schema field is a no-op to avoid corruption.
-        if (ft.key === 'sub-schema') { return; }
+        if (ft.key === 'sub-schema') {
+            // Already a sub-schema: keep the current reference — the "Referenced schema"
+            // dropdown is how it gets changed, so clicking the tile is a no-op.
+            if (this.getFieldCurrentType(this.selectedField) === 'sub-schema') { return; }
+            // Convert a plain field into a sub-schema: set up a bare reference and let the
+            // "Referenced schema" dropdown pick the actual schema.
+            const sub = this.selectedField as any;
+            sub.isRef = true;
+            sub.type = '';
+            sub.fields = [];
+            sub.format = '';
+            sub.pattern = '';
+            sub.customType = '';
+            sub.unitSystem = '';
+            delete sub.enum;
+            sub.default = null;
+            sub.suggest = null;
+            sub.examples = undefined;
+            this._rebuildRefPreset();
+            this.markDirty();
+            return;
+        }
         const f = this.selectedField as any;
         f.isRef = ft.isRef || false;
         f.type = ft.schemaType || 'string';
