@@ -20,6 +20,7 @@ import { ReportService } from './analytics/report.service.js';
 import { AppModule } from './app.module.js';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
+import { setupApiDocs } from './helpers/setup-api-docs.js';
 import { AnalyticsUtils } from './helpers/utils.js';
 
 const PORT = process.env.PORT || 3020;
@@ -87,7 +88,7 @@ Promise.all([
         job.start();
 
         const document = SwaggerModule.createDocument(app, SwaggerConfig);
-        SwaggerModule.setup('api-docs', app, document);
+        setupApiDocs(app, document, 'Guardian Analytics API');
 
         app.listen(PORT, async () => {
             const url = await app.getUrl();
