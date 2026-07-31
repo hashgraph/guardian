@@ -1,5 +1,5 @@
 import { Auth, AuthUser } from '#auth';
-import { EntityOwner, Guardians, InternalException, Users } from '#helpers';
+import { EntityOwner, Guardians, InternalException, Users, toOrgResponse } from '#helpers';
 import { IAuthUser, PinoLogger } from '@guardian/common';
 import { Permissions } from '@guardian/interfaces';
 import {
@@ -149,7 +149,7 @@ export class OrganizationApi {
     ): Promise<OrganizationDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).createOrganization(body, owner);
+            return toOrgResponse(await (new Users()).createOrganization(body, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -216,7 +216,7 @@ export class OrganizationApi {
                 pageIndex,
                 pageSize
             );
-            return res.header('X-Total-Count', count).send(items);
+            return res.header('X-Total-Count', count).send(toOrgResponse(items));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -244,7 +244,7 @@ export class OrganizationApi {
     ): Promise<OrganizationDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).getOrganization(id, owner);
+            return toOrgResponse(await (new Users()).getOrganization(id, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -278,7 +278,7 @@ export class OrganizationApi {
     ): Promise<OrganizationDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).updateOrganization(id, body, owner);
+            return toOrgResponse(await (new Users()).updateOrganization(id, body, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -304,7 +304,7 @@ export class OrganizationApi {
     ): Promise<OrganizationDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).deleteOrganization(id, owner);
+            return toOrgResponse(await (new Users()).deleteOrganization(id, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -336,7 +336,7 @@ export class OrganizationApi {
     ): Promise<OrganizationDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Guardians()).publishOrganization(
+            return toOrgResponse(await (new Guardians()).publishOrganization(
                 {
                     organizationId: id,
                     hederaAccountId: body.hederaAccountId,
@@ -345,7 +345,7 @@ export class OrganizationApi {
                 },
                 owner,
                 user.id
-            );
+            ));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -376,7 +376,7 @@ export class OrganizationApi {
     ): Promise<OrgRoleDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).createOrgRole(id, body, owner);
+            return toOrgResponse(await (new Users()).createOrgRole(id, body, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -404,7 +404,7 @@ export class OrganizationApi {
     ): Promise<OrgRoleDTO[]> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).getOrgRoles(id, owner);
+            return toOrgResponse(await (new Users()).getOrgRoles(id, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -433,7 +433,7 @@ export class OrganizationApi {
     ): Promise<OrgRoleDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).updateOrgRole(roleId, body, owner);
+            return toOrgResponse(await (new Users()).updateOrgRole(roleId, body, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -460,7 +460,7 @@ export class OrganizationApi {
     ): Promise<OrgRoleDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).deleteOrgRole(roleId, owner);
+            return toOrgResponse(await (new Users()).deleteOrgRole(roleId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -496,7 +496,7 @@ export class OrganizationApi {
     ): Promise<OrganizationMemberDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Guardians()).enrollOrganizationMember(
+            return toOrgResponse(await (new Guardians()).enrollOrganizationMember(
                 {
                     organizationId: id,
                     did: body.did,
@@ -504,7 +504,7 @@ export class OrganizationApi {
                 },
                 owner,
                 user.id
-            );
+            ));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -566,7 +566,7 @@ export class OrganizationApi {
                 pageIndex,
                 pageSize
             );
-            return res.header('X-Total-Count', count).send(items);
+            return res.header('X-Total-Count', count).send(toOrgResponse(items));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -596,7 +596,7 @@ export class OrganizationApi {
     ): Promise<OrganizationMemberDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).getOrgMember(memberId, owner);
+            return toOrgResponse(await (new Users()).getOrgMember(memberId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -629,7 +629,7 @@ export class OrganizationApi {
     ): Promise<OrganizationMemberDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).updateOrgMemberRole(memberId, body.orgRoleId, owner);
+            return toOrgResponse(await (new Users()).updateOrgMemberRole(memberId, body.orgRoleId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -660,7 +660,7 @@ export class OrganizationApi {
     ): Promise<OrganizationMemberDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).removeOrgMember(memberId, owner);
+            return toOrgResponse(await (new Users()).removeOrgMember(memberId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -692,7 +692,7 @@ export class OrganizationApi {
     ): Promise<PolicyOrgAssignmentDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).assignPolicyToOrg(id, body.policyId, owner);
+            return toOrgResponse(await (new Users()).assignPolicyToOrg(id, body.policyId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -719,7 +719,7 @@ export class OrganizationApi {
     ): Promise<PolicyOrgAssignmentDTO> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).revokePolicyFromOrg(id, policyId, owner);
+            return toOrgResponse(await (new Users()).revokePolicyFromOrg(id, policyId, owner));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -746,7 +746,7 @@ export class OrganizationApi {
     ): Promise<PolicyOrgAssignmentDTO[]> {
         try {
             const owner = new EntityOwner(user);
-            return await (new Users()).getOrgPolicies(id, owner, coerceBool(includeRevoked));
+            return toOrgResponse(await (new Users()).getOrgPolicies(id, owner, coerceBool(includeRevoked)));
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
