@@ -11,7 +11,7 @@ import { apiReference } from '@scalar/nestjs-api-reference';
  * unchanged for the documentation pipeline that curls `/api-docs-yaml` to
  * refresh the committed swagger files.
  */
-export function setupApiDocs(app: INestApplication, document: OpenAPIObject, title: string): void {
+export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pageTitle: string): void {
     SwaggerModule.setup('api-docs', app, document, {
         swaggerUiEnabled: false,
         jsonDocumentUrl: 'api-docs-json',
@@ -22,9 +22,10 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, tit
         '/api-docs',
         apiReference({
             content: document,
-            title,
+            pageTitle,
             layout: 'modern',
-            _integration: 'nestjs',
+            theme: 'default',
+            darkMode: false,
         })
     );
 }
