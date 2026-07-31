@@ -1,4 +1,4 @@
-<div class="content" [hidden]="!isActive || unavailable || errored" [attr.readonly-block]="readonly">
+<div class="content" [hidden]="!isActive || unavailable || errored || pending" [attr.readonly-block]="readonly">
   @if (activeBlock) {
     <div>
       <render-block [block]="activeBlock" [policyId]="policyId" [dryRun]="dryRun" [savepointIds]="savepointIds" [policyStatus]="policyStatus"></render-block>
