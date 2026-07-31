@@ -17,8 +17,7 @@ export interface SchemaTemplateGridItem extends ISchemaTemplate {
 
 export enum SchemaTemplateUpdateResolutionAction {
     KEEP_AS_CUSTOM_SCHEMA = 'KEEP_AS_CUSTOM_SCHEMA',
-    REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY',
-    KEEP_REFERENCE_AS_CUSTOM_FIELD = 'KEEP_REFERENCE_AS_CUSTOM_FIELD'
+    REMOVE_FROM_POLICY = 'REMOVE_FROM_POLICY'
 }
 
 export interface SchemaTemplateUpdateConflict {

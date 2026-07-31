@@ -1026,45 +1026,6 @@ function mergeCustomFieldsIntoDocument(
     }
 }
 
-function removeTemplateMetadataFromProperty(property: any): any {
-    const result = cloneJson(property);
-    SchemaHelper.removeTemplateFieldIds({
-        type: 'object',
-        properties: {
-            value: result
-        }
-    });
-    delete result.templateFieldId;
-    return result;
-}
-
-function mergeFieldsByTemplateIdIntoDocument(
-    targetDocument: any,
-    sourceDocument: any,
-    fields: any[],
-    templateFieldIds: Set<string>
-): void {
-    if (!templateFieldIds.size) {
-        return;
-    }
-    for (const field of fields || []) {
-        if (!field?.templateFieldId || !templateFieldIds.has(field.templateFieldId)) {
-            continue;
-        }
-        const path = String(field.path || field.name || '').split('.').filter(Boolean);
-        if (!path.length) {
-            continue;
-        }
-        const property = findSchemaProperty(sourceDocument, path);
-        const parent = ensureSchemaPropertyParent(targetDocument, path);
-        const fieldName = path[path.length - 1];
-        if (!property || !parent || parent.properties?.[fieldName]) {
-            continue;
-        }
-        parent.properties[fieldName] = removeTemplateMetadataFromProperty(property);
-    }
-}
-
 async function loadSchemaTemplateUpdateContext(
     templateId: string,
     policyId: string,
@@ -1223,32 +1184,6 @@ function buildSchemaTemplateUpdatePreviewFromContext(context: Awaited<ReturnType
                         after: 'Removed'
                     }
                 ));
-                const refTemplateSchemaId = field.refTemplateSchemaId || '';
-                const refPolicySchema = refTemplateSchemaId
-                    ? context.policySchemaByTemplateId.get(refTemplateSchemaId)
-                    : null;
-                const refHasCustomFields = refPolicySchema
-                    ? getRuntimeCustomFields(refPolicySchema).length > 0
-                    : false;
-                if (refTemplateSchemaId && refHasCustomFields) {
-                    const allowedActions = [SchemaTemplateUpdateResolutionAction.REMOVE_FROM_POLICY];
-                    if (!nextSchemaConfig.customFieldsLocked) {
-                        allowedActions.unshift(SchemaTemplateUpdateResolutionAction.KEEP_REFERENCE_AS_CUSTOM_FIELD);
-                    }
-                    if (allowedActions.length > 1) {
-                        conflicts.push(createConflict(
-                            SchemaTemplateUpdateConflictType.TEMPLATE_REF_REMOVED_WITH_CUSTOM_TARGET,
-                            `Reference field "${field.title || field.name}" was removed from schema "${nextSchema.name}", but the referenced policy schema has custom fields.`,
-                            {
-                                templateSchemaId,
-                                templateFieldId,
-                                schemaName: nextSchema.name,
-                                fieldName: field.name,
-                                allowedActions
-                            }
-                        ));
-                    }
-                }
             }
         }
 
@@ -1377,12 +1312,10 @@ function preparePolicySchemaUpdate(
     target: Schema,
     source: Schema,
     templateId: string,
-    schemaConfig: any,
-    customTemplateFieldIds: Set<string> = new Set()
+    schemaConfig: any
 ): void {
     const previousDocument = cloneJson(target.document);
     const custom = schemaConfig.customFieldsLocked ? [] : getRuntimeCustomFields(target);
-    const previousFields = flattenRuntimeFields(new InterfaceSchema(target as ISchema, true).fields || []);
     const settingsLocked = !!schemaConfig.schemaSettingsLocked;
     const name = settingsLocked ? source.name : target.name;
     const description = settingsLocked ? source.description : target.description;
@@ -1402,7 +1335,6 @@ function preparePolicySchemaUpdate(
     target.errors = [];
 
     mergeCustomFieldsIntoDocument(target.document, previousDocument, custom);
-    mergeFieldsByTemplateIdIntoDocument(target.document, previousDocument, previousFields, customTemplateFieldIds);
     SchemaHelper.setVersion(target, target.version, target.version);
     SchemaHelper.updateIRI(target);
 }
@@ -1435,22 +1367,11 @@ async function updateAppliedSchemaTemplate(
         const target = context.policySchemaByTemplateId.get(templateSchemaId);
         if (target) {
             const sourceIri = source.iri;
-            const customTemplateFieldIds = new Set(
-                preview.conflicts
-                    .filter((conflict) =>
-                        conflict.type === SchemaTemplateUpdateConflictType.TEMPLATE_REF_REMOVED_WITH_CUSTOM_TARGET &&
-                        conflict.templateSchemaId === templateSchemaId &&
-                        conflict.templateFieldId &&
-                        resolutions.get(conflict.id) === SchemaTemplateUpdateResolutionAction.KEEP_REFERENCE_AS_CUSTOM_FIELD
-                    )
-                    .map((conflict) => conflict.templateFieldId as string)
-            );
             preparePolicySchemaUpdate(
                 target,
                 source,
                 context.template.id,
-                getSnapshotSchemaConfig(nextConfig, templateSchemaId),
-                customTemplateFieldIds
+                getSnapshotSchemaConfig(nextConfig, templateSchemaId)
             );
             await DatabaseServer.updateSchema(target.id, target);
             schemaMap[templateSchemaId] = target.id;
@@ -1501,7 +1422,7 @@ async function updateAppliedSchemaTemplate(
     }
 
     await updateCopiedSchemaRefs(
-        changedSchemas.filter((schema) => !!schema.templateId),
+        changedSchemas,
         iriMap
     );
 
