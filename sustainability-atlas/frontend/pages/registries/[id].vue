@@ -36,10 +36,10 @@ function setTab(key: TabKey) {
     activeTab.value = key;
     router.replace({ hash: key === 'details' ? '' : `#${key}` });
 }
-const tabs = [
+const tabs = computed(() => [
     { key: 'details' as const,  label: t('registries.detail.info.title'), icon: FolderKanban },
-    { key: 'advanced' as const, label: 'Advanced',                         icon: Shield },
-];
+    { key: 'advanced' as const, label: t('projects.detail.tabs.advanced'), icon: Shield },
+]);
 
 const registryId = computed(() => route.params.id as string);
 
@@ -490,8 +490,8 @@ function openRawData() {
                     <div class="flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
                         <CheckCircle2 class="h-5 w-5 text-emerald-600 shrink-0" />
                         <div>
-                            <div class="text-sm font-medium text-emerald-800">Verified on Hedera</div>
-                            <div class="text-xs text-emerald-700">This registry is governed by an on-chain Guardian policy anchored to the Hedera network.</div>
+                            <div class="text-sm font-medium text-emerald-800">{{ $t('registries.detail.hedera.verified') }}</div>
+                            <div class="text-xs text-emerald-700">{{ $t('registries.detail.hedera.governedBy') }}</div>
                         </div>
                     </div>
 
@@ -506,7 +506,7 @@ function openRawData() {
                                 <code class="text-sm font-mono text-foreground">{{ registry.relatedTopicId || '—' }}</code>
                                 <button
                                     v-if="registry.relatedTopicId"
-                                    title="Copy"
+                                    :title="$t('common.copy')"
                                     @click="copyValue(registry.relatedTopicId!)"
                                 >
                                     <Check v-if="copiedValue === registry.relatedTopicId" class="h-3.5 w-3.5 text-emerald-500" />
@@ -534,7 +534,7 @@ function openRawData() {
                                 <code class="text-sm font-mono text-foreground">{{ registry.topicId || '—' }}</code>
                                 <button
                                     v-if="registry.topicId"
-                                    title="Copy"
+                                    :title="$t('common.copy')"
                                     @click="copyValue(registry.topicId!)"
                                 >
                                     <Check v-if="copiedValue === registry.topicId" class="h-3.5 w-3.5 text-emerald-500" />
@@ -566,7 +566,7 @@ function openRawData() {
                                 <button
                                     v-if="registry.did"
                                     class="shrink-0 mt-0.5"
-                                    title="Copy"
+                                    :title="$t('common.copy')"
                                     @click="copyValue(registry.did)"
                                 >
                                     <Check v-if="copiedValue === registry.did" class="h-3.5 w-3.5 text-emerald-500" />

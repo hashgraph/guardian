@@ -1248,6 +1248,8 @@
             },
             "hedera": {
                 "title": "Hedera On-Chain",
+                "verified": "Verified on Hedera",
+                "governedBy": "This registry is governed by an on-chain Guardian policy anchored to the Hedera network.",
                 "sourceTopic": "Source Topic ID",
                 "registryTopic": "Registry Topic ID",
                 "did": "Registry DID",

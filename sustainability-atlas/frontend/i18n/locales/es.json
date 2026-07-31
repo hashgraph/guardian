@@ -1211,7 +1211,8 @@
             "geography": "Geografía",
             "law": "Ley",
             "registryDid": "DID del Registro",
-            "createdDate": "Fecha de creación"
+            "createdDate": "Fecha de creación",
+            "hideEmpty": "Ocultar registros sin metodologías, proyectos, usuarios o emisiones"
         },
         "errors": {
             "loadFailed": "Error al cargar los registros."
@@ -1219,7 +1220,8 @@
         "tooltips": {
             "viewMethodologies": "Ver metodologías de este registro",
             "viewProjects": "Ver proyectos de este registro",
-            "viewIssuances": "Ver emisiones de este registro"
+            "viewIssuances": "Ver emisiones de este registro",
+            "hideEmpty": "Activado por defecto. Oculta los registros con 0 metodologías, 0 proyectos, 0 usuarios y 0 emisiones — el mismo conjunto contabilizado en la tarjeta de estadísticas de 'Registros' del panel. Desmarque esta opción para ver todos los registros indexados, incluidos aquellos que son solo anuncios y que aún no tienen actividad en la cadena."
         },
         "detail": {
             "breadcrumb": "Registros",
@@ -1245,6 +1247,8 @@
             },
             "hedera": {
                 "title": "En Cadena Hedera",
+                "verified": "Verificado en Hedera",
+                "governedBy": "Este registro se rige por una política de Guardian en cadena anclada a la red Hedera.",
                 "sourceTopic": "ID de Tema Fuente",
                 "registryTopic": "ID de Tema del Registro",
                 "did": "DID del Registro",
