@@ -161,7 +161,7 @@
               <tr class="guardian-grid-header">
                 @if (type === 'policy') {
                   @if (canDisplayColumn('select')) {
-                    <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                    <th class="header-cell-text" style="min-width: 64px; width: 64px; max-width: 64px;">
                       <p-checkbox
                         (onChange)="onSelectAllItems($event)"
                         [disabled]="isAnyDeleteDisabled()"
@@ -263,7 +263,7 @@
                   @if (!rowData.isParent) {
                     @if (type === 'policy') {
                       @if (canDisplayColumn('select')) {
-                        <td class="first-schema-grid-cell" style="min-width: 140px; max-width: 150px;">
+                        <td class="first-schema-grid-cell" style="min-width: 64px; width: 64px; max-width: 64px;">
                           <p-checkbox
                             (onChange)="onSelectItem(rowData)"
                             [disabled]="isDeleteDisabled(rowData)"
