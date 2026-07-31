@@ -539,7 +539,8 @@
             "Validation": "Validado",
             "Monitoring": "MRV enviado",
             "Verified": "Verificado",
-            "Issued": "Emitido"
+            "Issued": "Emitido",
+            "Completed": "Completado"
         },
         "milestones": {
             "title": "Seguimiento de hitos",
@@ -1321,7 +1322,7 @@
             "countries": "Países",
             "topMethodology": "Metodología principal",
             "coverage": "Cobertura"
-        },
+},
         "names": {
             "1": "Fin de la pobreza",
             "2": "Hambre cero",
@@ -1343,16 +1344,109 @@
         }
     },
     "analytics": {
-        "title": "Analíticas",
-        "subtitle": "Métricas y tendencias de sostenibilidad en toda la red",
-        "metrics": {
-            "totalIssuance": "Emisión total",
-            "activeProjects": "Proyectos activos",
-            "retirements": "Retiros",
-            "avgProjectSize": "Tamaño medio de proyecto"
+        "title": "Analítica del Mercado de Carbono",
+        "subtitle": "Analítica orientada a las partes interesadas a través de {count} proyectos en {network}",
+        "tabs": {
+            "overview": "Resumen del Mercado",
+            "overviewDesc": "Ciclo de vida, añada y pulso de la canalización",
+            "buyer": "Vista del Comprador",
+            "buyerDesc": "Oferta, añada y disponibilidad de ODS",
+            "developer": "Vista del Desarrollador",
+            "developerDesc": "Referenciar la escala de proyectos y el rendimiento del sector",
+            "registry": "Vista del Registro",
+            "registryDesc": "Rendimiento, adopción de metodologías, alcance geográfico",
+            "impact": "Impacto Climático",
+            "impactDesc": "Alineación con ODS, contribución sectorial, concentración de añadas"
         },
-        "issuancesByMethodology": "Emisiones por metodología",
-        "issuancesByMethodologySub": "Distribución de emisiones entre tipos de metodología"
+        "kpis": {
+            "activeSupply": "Oferta Activa",
+            "activeSupplyHint": "Créditos en circulación (emitidos − retirados)",
+            "retirementRate": "Tasa de Retiro",
+            "retirementRateHint": "Créditos emitidos que han sido retirados",
+            "pipelineProjects": "Proyectos en Desarrollo",
+            "pipelineProjectsHint": "Proyectos pre-emisión: registrados → verificados",
+            "avgVintageYear": "Año Promedio de Añada",
+            "avgVintageYearHint": "Menor = oferta más antigua, mayor = más reciente",
+            "avgCreditingPeriod": "Período Promedio de Acreditación",
+            "avgCreditingPeriodHint": "Duración media del período de acreditación del proyecto",
+            "yearsSuffix": "años"
+        },
+        "lifecycle": {
+            "title": "Embudos de Ciclo de Vida del Proyecto",
+            "subtitle": "Distribución a través de las etapas del flujo de trabajo de la política Guardian"
+        },
+        "vintage": {
+            "title": "Distribución por Añada",
+            "subtitle": "Créditos emitidos agrupados por año de añada del proyecto",
+            "noData": "Sin datos de añada disponibles"
+        },
+        "supplyAge": {
+            "title": "Perfil de Antigüedad de la Oferta",
+            "subtitle": "Distribución de créditos emitidos por antigüedad de añada — las añadas más recientes son preferidas por la mayoría de los compradores corporativos",
+            "fresh": "≤ 2 años (Reciente)",
+            "recent": "3 – 5 años (Moderada)",
+            "older": "6 – 10 años (Antigua)",
+            "legacy": "> 10 años (Heredada)"
+        },
+        "sectors": {
+            "topCreditsTitle": "Principales Sectores por Créditos Emitidos",
+            "availableSupplyTitle": "Oferta Disponible por Sector",
+            "availableSupplySub": "Créditos activos (emitidos − retirados)",
+            "avgSizeTitle": "Tamaño Promedio del Proyecto por Sector",
+            "avgSizeSub": "Promedio de créditos emitidos por proyecto — referencia para evaluar nuevos proyectos",
+            "contributionTitle": "Contribución del Sector a la Oferta Total"
+        },
+        "countries": {
+            "topCreditsTitle": "Principales Países Anfitriones por Créditos",
+            "projectsCount": "{count} proy",
+            "contributionTitle": "Contribución del País a la Oferta"
+        },
+        "methodologies": {
+            "adoptionTitle": "Adopción de Metodologías",
+            "adoptionSub": "Metodologías más utilizadas por volumen de crédito",
+            "projectsCount": "{count}p"
+        },
+        "sdgs": {
+            "cobenefitTitle": "Cobertura de Co-beneficios ODS",
+            "cobenefitSub": "Número de proyectos que afirman contribuir a cada Objetivo de Desarrollo Sostenible de la ONU",
+            "alignmentTitle": "Matriz de Alineación con ODS",
+            "alignmentSub": "Los 17 Objetivos de Desarrollo Sostenible — cobertura y volumen de créditos",
+            "projectsLabel": "Proyectos",
+            "creditsLabel": "Créditos",
+            "projectsCount": "{count} proy"
+        },
+        "statusDist": {
+            "title": "Distribución del Estado",
+            "subtitle": "Dónde se sitúan los proyectos en el flujo de trabajo de la política hoy"
+        },
+        "developers": {
+            "title": "Clasificación de los Principales Desarrolladores",
+            "subtitle": "Clasificados por créditos totales emitidos — alcance multipaís y multisectorial",
+            "noData": "Sin datos de desarrolladores disponibles",
+            "columns": {
+                "rank": "Posición",
+                "developer": "Desarrollador",
+                "projects": "Proyectos",
+                "countries": "Países",
+                "sectors": "Sectores",
+                "credits": "Créditos"
+            }
+        },
+        "registries": {
+            "throughputTitle": "Rendimiento del Registro",
+            "throughputSub": "Promedio de créditos emitidos por proyecto, por registro — indicador de escala de calidad del proyecto",
+            "perProj": "/proy",
+            "heatmapTitle": "Mapa de Calor de la Canalización por Registro",
+            "heatmapSub": "Recuento de proyectos por etapa del ciclo de vida, principales registros",
+            "colRegistry": "Registro",
+            "noHeatData": "Sin datos del registro",
+            "marketShareTitle": "Cuota de Mercado del Registro",
+            "marketShareSub": "Cuota del total de créditos emitidos"
+        },
+        "vintageConcentration": {
+            "title": "Concentración de Añadas",
+            "subtitle": "Señal de riesgo: una fuerte concentración en añadas más antiguas puede indicar una menor integridad de la línea de base según los principios CCP / ICVCM"
+        }
     },
     "status": {
         "title": "Estado de sincronización",

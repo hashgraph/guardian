@@ -8,23 +8,30 @@ import {
 import { formatCredits } from '~/lib/format';
 import { naturalCompare } from '~/lib/utils';
 import { allocateDonutColors } from '~/lib/chart-colors';
-import { SDG_LIST } from '~/lib/sdgs';
+import { SDG_LIST, getLocalizedSDGName } from '~/lib/sdgs';
+import { SECTOR_I18N_KEYS } from '~/types/enums';
 
 const { t } = useI18n();
 const { projects: allProjects } = useProjects();
 const { sdgStats } = useSdgStats();
 const { network } = useNetwork();
 
+function translateSector(raw: string): string {
+    if (!raw) return '';
+    const key = SECTOR_I18N_KEYS[raw];
+    return key ? t(`dashboard.sectorTypes.${key}`) : raw;
+}
+
 type StakeholderTab = 'overview' | 'buyer' | 'developer' | 'registry' | 'impact';
 const tab = ref<StakeholderTab>('overview');
 
-const tabs: Array<{ key: StakeholderTab; label: string; icon: any; desc: string }> = [
-    { key: 'overview',  label: 'Market Overview', icon: BarChart3, desc: 'Lifecycle, vintage, and pipeline pulse' },
-    { key: 'buyer',     label: 'Buyer View',      icon: ShoppingCart, desc: 'Supply, vintage, and SDG availability' },
-    { key: 'developer', label: 'Developer View',  icon: Hammer,    desc: 'Benchmark project scale and sector performance' },
-    { key: 'registry',  label: 'Registry View',   icon: Building2, desc: 'Throughput, methodology adoption, geographic reach' },
-    { key: 'impact',    label: 'Climate Impact',  icon: Globe2,    desc: 'SDG alignment, sector contribution, vintage concentration' },
-];
+const tabs = computed<Array<{ key: StakeholderTab; label: string; icon: any; desc: string }>>(() => [
+    { key: 'overview',  label: t('analytics.tabs.overview'),  icon: BarChart3, desc: t('analytics.tabs.overviewDesc') },
+    { key: 'buyer',     label: t('analytics.tabs.buyer'),     icon: ShoppingCart, desc: t('analytics.tabs.buyerDesc') },
+    { key: 'developer', label: t('analytics.tabs.developer'), icon: Hammer,    desc: t('analytics.tabs.developerDesc') },
+    { key: 'registry',  label: t('analytics.tabs.registry'),  icon: Building2, desc: t('analytics.tabs.registryDesc') },
+    { key: 'impact',    label: t('analytics.tabs.impact'),    icon: Globe2,    desc: t('analytics.tabs.impactDesc') },
+]);
 
 // ─── Shared aggregations ─────────────────────────────────────────────────────
 
@@ -71,28 +78,28 @@ const avgCreditingPeriodYears = computed(() => {
 
 // Headline KPIs
 const headlineKpis = computed(() => [
-    { label: 'Active Supply',       value: formatCredits(totalActive.value),     hint: 'Credits in circulation (issued − retired)' },
-    { label: 'Retirement Rate',     value: `${retirementRate.value}%`,           hint: 'Issued credits that have been retired' },
-    { label: 'Pipeline Projects',   value: pipelineProjects.value.toLocaleString(), hint: 'Projects pre-issuance: registered → verified' },
-    { label: 'Avg Vintage Year',    value: avgVintageYear.value?.toString() ?? '—', hint: 'Lower = older supply, higher = fresher' },
-    { label: 'Avg Crediting Period', value: avgCreditingPeriodYears.value != null ? `${avgCreditingPeriodYears.value} yr` : '—', hint: 'Mean project crediting period length' },
+    { label: t('analytics.kpis.activeSupply'),       value: formatCredits(totalActive.value),     hint: t('analytics.kpis.activeSupplyHint') },
+    { label: t('analytics.kpis.retirementRate'),     value: `${retirementRate.value}%`,           hint: t('analytics.kpis.retirementRateHint') },
+    { label: t('analytics.kpis.pipelineProjects'),   value: pipelineProjects.value.toLocaleString(), hint: t('analytics.kpis.pipelineProjectsHint') },
+    { label: t('analytics.kpis.avgVintageYear'),    value: avgVintageYear.value?.toString() ?? '—', hint: t('analytics.kpis.avgVintageYearHint') },
+    { label: t('analytics.kpis.avgCreditingPeriod'), value: avgCreditingPeriodYears.value != null ? `${avgCreditingPeriodYears.value} ${t('analytics.kpis.yearsSuffix')}` : '—', hint: t('analytics.kpis.avgCreditingPeriodHint') },
 ]);
 
 // ─── Lifecycle funnel (Market Overview) ──────────────────────────────────────
 
-const LIFECYCLE_STAGES: Array<{ key: string; label: string }> = [
-    { key: 'Registered',       label: 'Registered' },
-    { key: 'Under Validation', label: 'Validation' },
-    { key: 'Verified',         label: 'Verified' },
-    { key: 'Issuing',          label: 'Issuing' },
-    { key: 'Completed',        label: 'Completed' },
-];
+const LIFECYCLE_STAGES = computed<Array<{ key: string; label: string }>>(() => [
+    { key: 'Registered',       label: t('projects.lifecycleStages.Registered') },
+    { key: 'Under Validation', label: t('projects.lifecycleStages.Validation') },
+    { key: 'Verified',         label: t('projects.lifecycleStages.Verified') },
+    { key: 'Issuing',          label: t('projects.lifecycleStages.Issued') },
+    { key: 'Completed',        label: t('projects.lifecycleStages.Completed') },
+]);
 
 const lifecycleFunnel = computed(() => {
     const counts: Record<string, number> = {};
     for (const p of projects.value) counts[p.status] = (counts[p.status] ?? 0) + 1;
     const max = Math.max(1, ...Object.values(counts));
-    return LIFECYCLE_STAGES.map(s => ({
+    return LIFECYCLE_STAGES.value.map(s => ({
         ...s,
         count: counts[s.key] ?? 0,
         pct: Math.round(((counts[s.key] ?? 0) / Math.max(1, totalProjects.value)) * 100),
@@ -130,7 +137,8 @@ function topBins(rows: BinRow[], sortBy: 'projects' | 'credits', n = 8): BinRow[
 const sectorRows = computed<BinRow[]>(() => {
     const map: Record<string, BinRow> = {};
     for (const p of projects.value) {
-        const k = p.sector || 'Unknown';
+        const raw = p.sector || 'Unknown';
+        const k = translateSector(raw);
         if (!map[k]) map[k] = { label: k, projects: 0, credits: 0 };
         map[k].projects += 1;
         map[k].credits += p.totalIssued ?? 0;
@@ -253,7 +261,7 @@ const sdgCoverage = computed(() => {
         const stat = sdgStats.value.find(s => s.id === sdg.id);
         return {
             id: sdg.id,
-            name: sdg.name,
+            name: getLocalizedSDGName(sdg.id, t),
             color: sdg.color,
             projects: stat?.projects ?? 0,
             credits: stat?.credits ?? 0,
@@ -273,7 +281,7 @@ const topRegistriesForHeat = computed(() => registryRows.value
 const statusByRegistry = computed(() => {
     const rows: Array<{ registry: string; cells: Array<{ stage: string; count: number }> }> = [];
     for (const reg of topRegistriesForHeat.value) {
-        const cells = LIFECYCLE_STAGES.map(s => ({
+        const cells = LIFECYCLE_STAGES.value.map(s => ({
             stage: s.label,
             count: projects.value.filter(p => p.registry === reg && p.status === s.key).length,
         }));
@@ -314,10 +322,10 @@ const supplyAge = computed(() => {
         else               buckets.legacy += p.totalIssued ?? 0;
     }
     return [
-        { label: '≤ 2 years (Fresh)',   credits: buckets.fresh,  pct: total ? Math.round(buckets.fresh  / total * 100) : 0, color: 'bg-stat-green' },
-        { label: '3 – 5 years (Recent)', credits: buckets.recent, pct: total ? Math.round(buckets.recent / total * 100) : 0, color: 'bg-stat-blue' },
-        { label: '6 – 10 years (Older)', credits: buckets.older,  pct: total ? Math.round(buckets.older  / total * 100) : 0, color: 'bg-stat-amber' },
-        { label: '> 10 years (Legacy)', credits: buckets.legacy, pct: total ? Math.round(buckets.legacy / total * 100) : 0, color: 'bg-stat-rose' },
+        { label: t('analytics.supplyAge.fresh'),   credits: buckets.fresh,  pct: total ? Math.round(buckets.fresh  / total * 100) : 0, color: 'bg-stat-green' },
+        { label: t('analytics.supplyAge.recent'), credits: buckets.recent, pct: total ? Math.round(buckets.recent / total * 100) : 0, color: 'bg-stat-blue' },
+        { label: t('analytics.supplyAge.older'),  credits: buckets.older,  pct: total ? Math.round(buckets.older  / total * 100) : 0, color: 'bg-stat-amber' },
+        { label: t('analytics.supplyAge.legacy'), credits: buckets.legacy, pct: total ? Math.round(buckets.legacy / total * 100) : 0, color: 'bg-stat-rose' },
     ];
 });
 
@@ -332,10 +340,9 @@ function fmtCompact(n: number): string {
     <div class="space-y-0">
         <!-- Header -->
         <div class="px-6 pt-6 pb-2">
-            <h1 class="text-2xl font-bold text-foreground">Carbon Market Analytics</h1>
+            <h1 class="text-2xl font-bold text-foreground">{{ $t('analytics.title') }}</h1>
             <p class="text-sm text-muted-foreground mt-1">
-                Stakeholder-driven analytics across {{ totalProjects.toLocaleString() }} projects on
-                <span class="font-medium text-foreground capitalize">{{ network }}</span>
+                {{ $t('analytics.subtitle', { count: totalProjects.toLocaleString(), network }) }}
             </p>
         </div>
 
@@ -383,9 +390,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Activity class="h-4 w-4 text-primary" />
-                        Project Lifecycle Funnel
+                        {{ $t('analytics.lifecycle.title') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Distribution across the Guardian policy workflow stages</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.lifecycle.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-2.5">
                     <div v-for="s in lifecycleFunnel" :key="s.key" class="flex items-center gap-3">
@@ -409,13 +416,13 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Clock class="h-4 w-4 text-primary" />
-                        Vintage Distribution
+                        {{ $t('analytics.vintage.title') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Credits issued grouped by project vintage year</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.vintage.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5">
                     <div v-if="vintageBuckets.length === 0" class="text-xs text-muted-foreground text-center py-8">
-                        No vintage data available
+                        {{ $t('analytics.vintage.noData') }}
                     </div>
                     <div v-else class="flex items-end gap-2 h-40">
                         <div v-for="b in vintageBuckets" :key="b.vintage" class="flex-1 flex flex-col items-center gap-1.5 min-w-0">
@@ -437,7 +444,7 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Layers class="h-4 w-4 text-primary" />
-                            Top Sectors by Credits Issued
+                            {{ $t('analytics.sectors.topCreditsTitle') }}
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
@@ -455,14 +462,14 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <MapPin class="h-4 w-4 text-primary" />
-                            Top Host Countries by Credits
+                            {{ $t('analytics.countries.topCreditsTitle') }}
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="(c, i) in countryTop" :key="c.label" class="flex items-center gap-3">
                             <span class="text-xs font-bold text-muted-foreground w-5 tabular-nums">{{ i + 1 }}</span>
                             <span class="text-xs text-foreground flex-1 truncate font-medium" :title="c.label">{{ c.label }}</span>
-                            <span class="text-[11px] tabular-nums text-muted-foreground">{{ c.projects }} proj</span>
+                            <span class="text-[11px] tabular-nums text-muted-foreground">{{ $t('analytics.countries.projectsCount', { count: c.projects }) }}</span>
                             <span class="text-xs font-semibold text-foreground tabular-nums w-16 text-right">{{ fmtCompact(c.credits) }}</span>
                         </div>
                     </div>
@@ -477,9 +484,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Clock class="h-4 w-4 text-primary" />
-                        Supply Age Profile
+                        {{ $t('analytics.supplyAge.title') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Distribution of issued credits by vintage age — fresher vintages are preferred by most corporate buyers</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.supplyAge.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-3">
                     <div v-for="s in supplyAge" :key="s.label" class="flex items-center gap-3">
@@ -499,9 +506,9 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Leaf class="h-4 w-4 text-primary" />
-                            Available Supply by Sector
+                            {{ $t('analytics.sectors.availableSupplyTitle') }}
                         </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">Active credits (issued − retired)</p>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sectors.availableSupplySub') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div
@@ -523,15 +530,15 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Award class="h-4 w-4 text-primary" />
-                            Methodology Adoption
+                            {{ $t('analytics.methodologies.adoptionTitle') }}
                         </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">Most-used methodologies by credit volume</p>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.methodologies.adoptionSub') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="(m, i) in methodologyTop" :key="m.label" class="flex items-center gap-3">
                             <span class="text-xs font-bold text-muted-foreground w-5 tabular-nums">{{ i + 1 }}</span>
                             <span class="text-xs text-foreground flex-1 truncate font-medium" :title="m.label">{{ m.label }}</span>
-                            <span class="text-[10px] text-muted-foreground tabular-nums">{{ m.projects }}p</span>
+                            <span class="text-[10px] text-muted-foreground tabular-nums">{{ $t('analytics.methodologies.projectsCount', { count: m.projects }) }}</span>
                             <span class="text-xs font-semibold text-foreground tabular-nums w-16 text-right">{{ fmtCompact(m.credits) }}</span>
                         </div>
                     </div>
@@ -543,9 +550,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Globe2 class="h-4 w-4 text-primary" />
-                        SDG Co-benefit Coverage
+                        {{ $t('analytics.sdgs.cobenefitTitle') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Number of projects claiming each UN Sustainable Development Goal</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sdgs.cobenefitSub') }}</p>
                 </div>
                 <div class="px-5 py-5">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -556,9 +563,9 @@ function fmtCompact(n: number): string {
                             :style="{ borderLeftColor: sdg.color, borderLeftWidth: '3px' }"
                         >
                             <div class="flex items-center gap-2">
-                                <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`SDG ${sdg.id}`" class="h-7 w-7 rounded shrink-0" />
+                                <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`${$t('sdgs.columns.sdg')} ${sdg.id}`" class="h-7 w-7 rounded shrink-0" />
                                 <div class="min-w-0">
-                                    <div class="text-[10px] font-bold text-foreground">SDG {{ sdg.id }}</div>
+                                    <div class="text-[10px] font-bold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdg.id }}</div>
                                     <div class="text-[10px] text-muted-foreground truncate" :title="sdg.name">{{ sdg.name }}</div>
                                 </div>
                             </div>
@@ -566,7 +573,7 @@ function fmtCompact(n: number): string {
                                 <div class="h-full transition-all duration-500" :style="{ width: `${(sdg.projects / maxSdgProjects) * 100}%`, background: sdg.color }" />
                             </div>
                             <div class="flex items-center justify-between text-[10px]">
-                                <span class="text-muted-foreground">{{ sdg.projects }} proj</span>
+                                <span class="text-muted-foreground">{{ $t('analytics.sdgs.projectsCount', { count: sdg.projects }) }}</span>
                                 <span class="text-foreground font-semibold tabular-nums">{{ fmtCompact(sdg.credits) }}</span>
                             </div>
                         </div>
@@ -583,9 +590,9 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <TrendingUp class="h-4 w-4 text-primary" />
-                            Avg Project Size by Sector
+                            {{ $t('analytics.sectors.avgSizeTitle') }}
                         </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">Mean credits issued per project — benchmark for scoping new projects</p>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sectors.avgSizeSub') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="s in avgSizeBySector" :key="s.label" class="flex items-center gap-3">
@@ -603,9 +610,9 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <CheckCircle2 class="h-4 w-4 text-primary" />
-                            Status Distribution
+                            {{ $t('analytics.statusDist.title') }}
                         </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">Where projects sit in the policy workflow today</p>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.statusDist.subtitle') }}</p>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
                         <div v-for="s in lifecycleFunnel" :key="s.key" class="flex items-center gap-3">
@@ -625,19 +632,19 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Award class="h-4 w-4 text-primary" />
-                        Top Developer Leaderboard
+                        {{ $t('analytics.developers.title') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Ranked by total credits issued — multi-country and multi-sector reach</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.developers.subtitle') }}</p>
                 </div>
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-muted/20 border-b">
-                            <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Rank</th>
-                            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Developer</th>
-                            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Projects</th>
-                            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Countries</th>
-                            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Sectors</th>
-                            <th class="text-right py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Credits</th>
+                            <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.developers.columns.rank') }}</th>
+                            <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.developers.columns.developer') }}</th>
+                            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.developers.columns.projects') }}</th>
+                            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.developers.columns.countries') }}</th>
+                            <th class="text-right py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.developers.columns.sectors') }}</th>
+                            <th class="text-right py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.developers.columns.credits') }}</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -650,7 +657,7 @@ function fmtCompact(n: number): string {
                             <td class="py-3 px-5 text-right text-foreground tabular-nums font-semibold">{{ fmtCompact(d.credits) }}</td>
                         </tr>
                         <tr v-if="developerStats.length === 0">
-                            <td colspan="6" class="py-8 px-5 text-center text-sm text-muted-foreground">No developer data available</td>
+                            <td colspan="6" class="py-8 px-5 text-center text-sm text-muted-foreground">{{ $t('analytics.developers.noData') }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -664,9 +671,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <TrendingUp class="h-4 w-4 text-primary" />
-                        Registry Throughput
+                        {{ $t('analytics.registries.throughputTitle') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Average credits issued per project, by registry — proxy for project-quality scale</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.registries.throughputSub') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-2.5">
                     <div v-for="r in registryThroughput" :key="r.label" class="flex items-center gap-3">
@@ -674,8 +681,8 @@ function fmtCompact(n: number): string {
                         <div class="flex-1 h-6 bg-muted/40 rounded overflow-hidden">
                             <div class="h-full bg-primary/70 transition-all duration-500" :style="{ width: `${(r.avgPerProject / maxThroughput) * 100}%` }" />
                         </div>
-                        <span class="text-[10px] text-muted-foreground tabular-nums w-12 text-right">{{ r.projects }}p</span>
-                        <span class="text-xs font-semibold text-foreground tabular-nums w-20 text-right">{{ fmtCompact(r.avgPerProject) }} /proj</span>
+                        <span class="text-[10px] text-muted-foreground tabular-nums w-12 text-right">{{ $t('analytics.methodologies.projectsCount', { count: r.projects }) }}</span>
+                        <span class="text-xs font-semibold text-foreground tabular-nums w-20 text-right">{{ fmtCompact(r.avgPerProject) }} {{ $t('analytics.registries.perProj') }}</span>
                     </div>
                 </div>
             </div>
@@ -685,15 +692,15 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <BarChart3 class="h-4 w-4 text-primary" />
-                        Pipeline Heatmap by Registry
+                        {{ $t('analytics.registries.heatmapTitle') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Project count per lifecycle stage, top registries</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.registries.heatmapSub') }}</p>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="border-b">
-                                <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Registry</th>
+                                <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('analytics.registries.colRegistry') }}</th>
                                 <th v-for="s in LIFECYCLE_STAGES" :key="s.key" class="py-2.5 px-3 text-[11px] font-medium text-muted-foreground uppercase tracking-wider text-center">{{ s.label }}</th>
                             </tr>
                         </thead>
@@ -707,7 +714,7 @@ function fmtCompact(n: number): string {
                                 </td>
                             </tr>
                             <tr v-if="statusByRegistry.length === 0">
-                                <td :colspan="LIFECYCLE_STAGES.length + 1" class="py-8 px-5 text-center text-sm text-muted-foreground">No registry data</td>
+                                <td :colspan="LIFECYCLE_STAGES.length + 1" class="py-8 px-5 text-center text-sm text-muted-foreground">{{ $t('analytics.registries.noHeatData') }}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -719,9 +726,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Building2 class="h-4 w-4 text-primary" />
-                        Registry Market Share
+                        {{ $t('analytics.registries.marketShareTitle') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Share of total credits issued</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.registries.marketShareSub') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-2.5">
                     <div v-for="(r, i) in registryTop" :key="r.label" class="flex items-center gap-3">
@@ -729,7 +736,7 @@ function fmtCompact(n: number): string {
                         <div class="flex-1 h-5 bg-muted/40 rounded overflow-hidden">
                             <div class="h-full transition-all duration-500" :style="{ width: `${(r.credits / Math.max(1, registryTop[0]?.credits)) * 100}%`, background: registryColors[i] }" />
                         </div>
-                        <span class="text-[11px] tabular-nums text-muted-foreground w-10 text-right">{{ r.projects }}p</span>
+                        <span class="text-[11px] tabular-nums text-muted-foreground w-10 text-right">{{ $t('analytics.methodologies.projectsCount', { count: r.projects }) }}</span>
                         <span class="text-xs font-semibold text-foreground tabular-nums w-16 text-right">{{ fmtCompact(r.credits) }}</span>
                     </div>
                 </div>
@@ -743,9 +750,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <Globe2 class="h-4 w-4 text-primary" />
-                        SDG Alignment Matrix
+                        {{ $t('analytics.sdgs.alignmentTitle') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">All 17 Sustainable Development Goals — coverage and credit volume</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.sdgs.alignmentSub') }}</p>
                 </div>
                 <div class="px-5 py-5">
                     <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -756,18 +763,18 @@ function fmtCompact(n: number): string {
                             :style="{ borderLeftColor: sdg.color, borderLeftWidth: '3px' }"
                         >
                             <div class="flex items-center gap-2 mb-2">
-                                <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`SDG ${sdg.id}`" class="h-8 w-8 rounded shrink-0" />
+                                <img :src="`/sdgs/E-WEB-Goal-${String(sdg.id).padStart(2, '0')}.png`" :alt="`${$t('sdgs.columns.sdg')} ${sdg.id}`" class="h-8 w-8 rounded shrink-0" />
                                 <div class="min-w-0 flex-1">
-                                    <div class="text-[10px] font-bold text-foreground">SDG {{ sdg.id }}</div>
+                                    <div class="text-[10px] font-bold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdg.id }}</div>
                                     <div class="text-[10px] text-muted-foreground truncate" :title="sdg.name">{{ sdg.name }}</div>
                                 </div>
                             </div>
                             <div class="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-                                <span>Projects</span>
+                                <span>{{ $t('analytics.sdgs.projectsLabel') }}</span>
                                 <span class="font-semibold text-foreground tabular-nums">{{ sdg.projects }}</span>
                             </div>
                             <div class="flex items-center justify-between text-[10px] text-muted-foreground">
-                                <span>Credits</span>
+                                <span>{{ $t('analytics.sdgs.creditsLabel') }}</span>
                                 <span class="font-semibold text-foreground tabular-nums">{{ fmtCompact(sdg.credits) }}</span>
                             </div>
                         </div>
@@ -781,7 +788,7 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Leaf class="h-4 w-4 text-primary" />
-                            Sector Contribution to Total Supply
+                            {{ $t('analytics.sectors.contributionTitle') }}
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
@@ -800,7 +807,7 @@ function fmtCompact(n: number): string {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <MapPin class="h-4 w-4 text-primary" />
-                            Country Contribution to Supply
+                            {{ $t('analytics.countries.contributionTitle') }}
                         </h2>
                     </div>
                     <div class="px-5 py-5 space-y-2.5">
@@ -820,9 +827,9 @@ function fmtCompact(n: number): string {
                 <div class="px-5 py-3.5 border-b bg-muted/30">
                     <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                         <AlertCircle class="h-4 w-4 text-stat-amber" />
-                        Vintage Concentration
+                        {{ $t('analytics.vintageConcentration.title') }}
                     </h2>
-                    <p class="text-[11px] text-muted-foreground mt-0.5">Risk signal: heavy concentration in older vintages may indicate weaker baseline integrity under CCP / ICVCM principles</p>
+                    <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('analytics.vintageConcentration.subtitle') }}</p>
                 </div>
                 <div class="px-5 py-5 space-y-3">
                     <div v-for="s in supplyAge" :key="s.label" class="flex items-center gap-3">

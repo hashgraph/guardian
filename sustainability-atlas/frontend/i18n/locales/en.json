@@ -539,7 +539,8 @@
             "Validation": "Validated",
             "Monitoring": "MRV Submitted",
             "Verified": "Verified",
-            "Issued": "Issued"
+            "Issued": "Issued",
+            "Completed": "Completed"
         },
         "milestones": {
             "title": "Milestone Tracker",
@@ -1344,16 +1345,109 @@
         }
     },
     "analytics": {
-        "title": "Analytics",
-        "subtitle": "Network-wide sustainability metrics and trends",
-        "metrics": {
-            "totalIssuance": "Total Issuance",
-            "activeProjects": "Active Projects",
-            "retirements": "Retirements",
-            "avgProjectSize": "Avg. Project Size"
+        "title": "Carbon Market Analytics",
+        "subtitle": "Stakeholder-driven analytics across {count} projects on {network}",
+        "tabs": {
+            "overview": "Market Overview",
+            "overviewDesc": "Lifecycle, vintage, and pipeline pulse",
+            "buyer": "Buyer View",
+            "buyerDesc": "Supply, vintage, and SDG availability",
+            "developer": "Developer View",
+            "developerDesc": "Benchmark project scale and sector performance",
+            "registry": "Registry View",
+            "registryDesc": "Throughput, methodology adoption, geographic reach",
+            "impact": "Climate Impact",
+            "impactDesc": "SDG alignment, sector contribution, vintage concentration"
         },
-        "issuancesByMethodology": "Issuances by Methodology",
-        "issuancesByMethodologySub": "Distribution of issuances across methodology types"
+        "kpis": {
+            "activeSupply": "Active Supply",
+            "activeSupplyHint": "Credits in circulation (issued − retired)",
+            "retirementRate": "Retirement Rate",
+            "retirementRateHint": "Issued credits that have been retired",
+            "pipelineProjects": "Pipeline Projects",
+            "pipelineProjectsHint": "Projects pre-issuance: registered → verified",
+            "avgVintageYear": "Avg Vintage Year",
+            "avgVintageYearHint": "Lower = older supply, higher = fresher",
+            "avgCreditingPeriod": "Avg Crediting Period",
+            "avgCreditingPeriodHint": "Mean project crediting period length",
+            "yearsSuffix": "yr"
+        },
+        "lifecycle": {
+            "title": "Project Lifecycle Funnel",
+            "subtitle": "Distribution across the Guardian policy workflow stages"
+        },
+        "vintage": {
+            "title": "Vintage Distribution",
+            "subtitle": "Credits issued grouped by project vintage year",
+            "noData": "No vintage data available"
+        },
+        "supplyAge": {
+            "title": "Supply Age Profile",
+            "subtitle": "Distribution of issued credits by vintage age — fresher vintages are preferred by most corporate buyers",
+            "fresh": "≤ 2 years (Fresh)",
+            "recent": "3 – 5 years (Recent)",
+            "older": "6 – 10 years (Older)",
+            "legacy": "> 10 years (Legacy)"
+        },
+        "sectors": {
+            "topCreditsTitle": "Top Sectors by Credits Issued",
+            "availableSupplyTitle": "Available Supply by Sector",
+            "availableSupplySub": "Active credits (issued − retired)",
+            "avgSizeTitle": "Avg Project Size by Sector",
+            "avgSizeSub": "Mean credits issued per project — benchmark for scoping new projects",
+            "contributionTitle": "Sector Contribution to Total Supply"
+        },
+        "countries": {
+            "topCreditsTitle": "Top Host Countries by Credits",
+            "projectsCount": "{count} proj",
+            "contributionTitle": "Country Contribution to Supply"
+        },
+        "methodologies": {
+            "adoptionTitle": "Methodology Adoption",
+            "adoptionSub": "Most-used methodologies by credit volume",
+            "projectsCount": "{count}p"
+        },
+        "sdgs": {
+            "cobenefitTitle": "SDG Co-benefit Coverage",
+            "cobenefitSub": "Number of projects claiming each UN Sustainable Development Goal",
+            "alignmentTitle": "SDG Alignment Matrix",
+            "alignmentSub": "All 17 Sustainable Development Goals — coverage and credit volume",
+            "projectsLabel": "Projects",
+            "creditsLabel": "Credits",
+            "projectsCount": "{count} proj"
+        },
+        "statusDist": {
+            "title": "Status Distribution",
+            "subtitle": "Where projects sit in the policy workflow today"
+        },
+        "developers": {
+            "title": "Top Developer Leaderboard",
+            "subtitle": "Ranked by total credits issued — multi-country and multi-sector reach",
+            "noData": "No developer data available",
+            "columns": {
+                "rank": "Rank",
+                "developer": "Developer",
+                "projects": "Projects",
+                "countries": "Countries",
+                "sectors": "Sectors",
+                "credits": "Credits"
+            }
+        },
+        "registries": {
+            "throughputTitle": "Registry Throughput",
+            "throughputSub": "Average credits issued per project, by registry — proxy for project-quality scale",
+            "perProj": "/proj",
+            "heatmapTitle": "Pipeline Heatmap by Registry",
+            "heatmapSub": "Project count per lifecycle stage, top registries",
+            "colRegistry": "Registry",
+            "noHeatData": "No registry data",
+            "marketShareTitle": "Registry Market Share",
+            "marketShareSub": "Share of total credits issued"
+        },
+        "vintageConcentration": {
+            "title": "Vintage Concentration",
+            "subtitle": "Risk signal: heavy concentration in older vintages may indicate weaker baseline integrity under CCP / ICVCM principles"
+        }
     },
     "status": {
         "title": "Sync Status",
