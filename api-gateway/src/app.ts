@@ -13,7 +13,7 @@ import process from 'node:process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
-import { buildScalarTagMetadata } from './helpers/swagger-tags.js';
+import { applyScalarTagMetadata } from './helpers/swagger-tags.js';
 import { setupApiDocs } from './helpers/setup-api-docs.js';
 import { MeecoAuth } from './helpers/meeco.js';
 import * as extraModels from './middlewares/index.js'
@@ -107,9 +107,7 @@ Promise.all([
                 }
             }) as any
         });
-        const { tags, xTagGroups } = buildScalarTagMetadata();
-        (document as any).tags = tags;
-        (document as any)['x-tagGroups'] = xTagGroups;
+        applyScalarTagMetadata(document);
         setupApiDocs(app, document, 'Guardian API');
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);

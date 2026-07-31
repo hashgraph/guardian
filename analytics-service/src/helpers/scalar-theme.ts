@@ -1,10 +1,12 @@
 /**
  * Guardian brand theme for the Scalar API reference.
  *
- * AUTO-GENERATED — do not hand-edit. Regenerate from the frontend brand assets.
- * Colors mirror the Guardian design tokens in `frontend/src/variables.scss`;
- * the logo (Guardian "H" mark) and favicon are inlined as data URIs so the
- * backend services need no static-asset hosting.
+ * Hand-maintained: colors mirror the Guardian design tokens in
+ * `frontend/src/variables.scss`, and the logo (Guardian "H" mark) plus favicon
+ * are inlined as base64 data URIs (sourced from
+ * `frontend/src/assets/images/icons/`) so the backend services need no
+ * static-asset hosting. This file is duplicated verbatim in each gateway
+ * service — keep the copies in sync when editing.
  */
 
 // Guardian "H" logotype (white paths) — shown on a dark circular badge.
@@ -84,7 +86,10 @@ export const scalarCustomCss = `
   --scalar-sidebar-search-color: #6E748B;
 }
 
-/* ---- Guardian logo badge at the top of the sidebar ---- */
+/* ---- Guardian logo badge at the top of the sidebar ----
+   Scalar exposes no logo config field, so the mark is injected via CSS.
+   The .t-doc__sidebar selector targets Scalar's internal sidebar class
+   (stable across the pinned 1.2.x range); re-verify on major upgrades. */
 .t-doc__sidebar {
   position: relative;
 }

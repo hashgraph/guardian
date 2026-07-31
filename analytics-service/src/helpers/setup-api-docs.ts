@@ -19,10 +19,14 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pag
         yamlDocumentUrl: 'api-docs-yaml',
     });
 
+    // Point Scalar at the JSON spec route above instead of embedding the
+    // document: `apiReference` rebuilds the page on every request, so embedding
+    // the multi-MB spec via `content` would re-serialize it on each hit. A
+    // relative URL also survives a path-prefixing reverse proxy.
     app.use(
         '/api-docs',
         apiReference({
-            content: document,
+            url: 'api-docs-json',
             pageTitle,
             layout: 'modern',
             theme: 'default',
