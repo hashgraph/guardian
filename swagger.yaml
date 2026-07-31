@@ -25618,6 +25618,16 @@ paths:
           schema:
             example: text
             type: string
+        - name: templateSchemasOnly
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: unusedInPolicyOnly
+          required: true
+          in: query
+          schema:
+            type: string
         - name: searchOptions
           required: false
           in: query
@@ -50988,6 +50998,118 @@ paths:
       security:
         - bearer: []
       summary: Applies schema template to policy asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/update/preview:
+    get:
+      description: >-
+        Calculates schema and field changes before updating the template applied
+        to a draft policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateUpdate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema template update preview.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Previews applied schema template update.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/push/update:
+    post:
+      description: >-
+        Applies a newer schema template version to a draft policy and refreshes
+        the policy snapshot. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_updateAppliedSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Updates applied schema template on policy asynchronously.
       tags:
         - schema-templates
   /schema-templates/policies/{policyId}/push/detach:
