@@ -931,7 +931,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onSubSchemaRefChange(iri: string): void {
-        const schema = this.schemas.find(s => s.iri === iri);
+        const schema = this.resolveRefSchema(iri);
         if (schema) { this.changeSubSchemaRef(schema); }
     }
 
@@ -1105,8 +1105,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    // Referenced sub-schemas may live only in _subSchemasByIri (the API's $defs for the
+    // loaded schema), not in the paginated sidebar list, so resolve from both.
+    private resolveRefSchema(iri: string): Schema | undefined {
+        if (!iri) { return undefined; }
+        return this.schemas.find(s => s.iri === iri) ?? this._subSchemasByIri.get(iri);
+    }
+
     public get availableRefSchemas(): Schema[] {
-        return this.schemas.filter(s => this.canDragSchema(s));
+        const list = this.schemas.filter(s => this.canDragSchema(s));
+        // Keep the currently-referenced schema selectable even when it isn't in the
+        // draggable list, otherwise the dropdown value matches no option and shows blank.
+        const currentIri = this.selectedSubSchemaIri;
+        if (currentIri && !list.some(s => s.iri === currentIri)) {
+            const current = this.resolveRefSchema(currentIri);
+            if (current) { return [current, ...list]; }
+        }
+        return list;
     }
 
     public enterSubSchema(field: SchemaField, event: Event): void {
@@ -1562,7 +1577,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public getRefSchemaName(field: SchemaField): string {
         if (!field.isRef) { return ''; }
-        return this.schemas.find(s => s.iri === field.type)?.name || '';
+        return this.resolveRefSchema((field as any).type)?.name || '';
     }
 
     // ── Conditions ─────────────────────────────────────────────────────────────
