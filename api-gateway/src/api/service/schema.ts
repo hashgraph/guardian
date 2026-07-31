@@ -503,8 +503,9 @@ export class SchemaApi {
             }
             const { items, count } = await guardians.getSchemasByOwner(options, owner);
             SchemaHelper.updatePermission(items, owner);
-            req.locals = SchemaUtils.toOld(items);
-            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+            const result = SchemaUtils.toOld(items);
+            req.locals = result;
+            return res.header('X-Total-Count', count).send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -780,8 +781,9 @@ export class SchemaApi {
             }
             const { items, count } = await guardians.getSchemasByOwner(options, owner);
             SchemaHelper.updatePermission(items, owner);
-            req.locals = SchemaUtils.toOld(items);
-            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+            const result = SchemaUtils.toOld(items);
+            req.locals = result;
+            return res.header('X-Total-Count', count).send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -2738,8 +2740,9 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const { items, count } = await guardians.getSystemSchemas(user, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
-            req.locals = SchemaUtils.toOld(items);
-            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+            const result = SchemaUtils.toOld(items);
+            req.locals = result;
+            return res.header('X-Total-Count', count).send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
