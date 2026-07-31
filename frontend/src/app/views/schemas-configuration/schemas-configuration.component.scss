@@ -1759,6 +1759,25 @@
     white-space: pre;
 }
 
+.sc-rp-color {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .sc-rp-color-hex {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+::ng-deep .sc-rp-color .sc-rp-color-picker .p-colorpicker-preview {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--sc-radius-sm);
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    cursor: pointer;
+}
+
 .sc-rp-hint {
     font-size: 10px;
     font-weight: 400;

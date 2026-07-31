@@ -710,21 +710,29 @@
                             </div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">Color</label>
-                                <input
-                                    class="sc-rp-input"
-                                    type="text"
-                                    placeholder="#000000"
-                                    [(ngModel)]="$any(selectedField).textColor"
-                                    (ngModelChange)="markDirty()" />
+                                <div class="sc-rp-color">
+                                    <p-colorPicker
+                                        class="sc-rp-color-picker"
+                                        [format]="'hex'"
+                                        [(ngModel)]="$any(selectedField).textColor"
+                                        (ngModelChange)="markDirty()"></p-colorPicker>
+                                    <input
+                                        class="sc-rp-input sc-rp-color-hex"
+                                        type="text"
+                                        placeholder="#000000"
+                                        [(ngModel)]="$any(selectedField).textColor"
+                                        (ngModelChange)="markDirty()" />
+                                </div>
                             </div>
                             <div class="sc-rp-group">
                                 <label class="sc-rp-label">Font size (px)</label>
                                 <input
                                     class="sc-rp-input"
-                                    type="text"
+                                    type="number"
+                                    min="1"
                                     placeholder="18"
-                                    [(ngModel)]="$any(selectedField).textSize"
-                                    (ngModelChange)="markDirty()" />
+                                    [ngModel]="getHelpTextSize()"
+                                    (ngModelChange)="setHelpTextSize($event)" />
                             </div>
                             <button class="sc-btn" (click)="resetHelpText()">
                                 <i class="pi pi-refresh"></i>

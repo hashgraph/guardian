@@ -973,8 +973,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (!this.selectedField) { return; }
         const f = this.selectedField as any;
         f.textColor = '#000000';
-        f.textSize = '18';
+        f.textSize = '18px';
         f.textBold = false;
+        this.markDirty();
+    }
+
+    public getHelpTextSize(): number | null {
+        const raw = (this.selectedField as any)?.textSize;
+        if (raw === null || raw === undefined || raw === '') { return null; }
+        const num = parseFloat(String(raw).replace('px', ''));
+        return isNaN(num) ? null : num;
+    }
+
+    public setHelpTextSize(value: number | string | null): void {
+        if (!this.selectedField) { return; }
+        const f = this.selectedField as any;
+        if (value === null || value === undefined || value === '') {
+            f.textSize = '';
+        } else {
+            const num = parseFloat(String(value).replace('px', ''));
+            f.textSize = isNaN(num) ? '' : num + 'px';
+        }
         this.markDirty();
     }
 
