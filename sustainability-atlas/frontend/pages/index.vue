@@ -540,7 +540,7 @@ const filteredStats = computed(() => {
                                         {{ sectorTotal > 0 ? ((chartMode === 'projects' ? s.projectCount : s.creditCount) / sectorTotal * 100).toFixed(1) : '0.0' }}%
                                     </span>
                                     <span class="text-xs text-muted-foreground tabular-nums shrink-0">
-                                        {{ chartMode === 'projects' ? `${s.projectCount} projects` : `${formatCredits(s.creditCount)}` }}
+                                        {{ chartMode === 'projects' ? $t('dashboard.projectsCount', { count: s.projectCount }) : `${formatCredits(s.creditCount)}` }}
                                     </span>
                                 </AppLink>
                             </div>
@@ -565,7 +565,7 @@ const filteredStats = computed(() => {
                                         {{ registryTotal > 0 ? ((chartMode === 'projects' ? s.projectCount : s.creditCount) / registryTotal * 100).toFixed(1) : '0.0' }}%
                                     </span>
                                     <span class="text-xs text-muted-foreground tabular-nums shrink-0">
-                                        {{ chartMode === 'projects' ? `${s.projectCount} projects` : `${formatCredits(s.creditCount)}` }}
+                                        {{ chartMode === 'projects' ? $t('dashboard.projectsCount', { count: s.projectCount }) : `${formatCredits(s.creditCount)}` }}
                                     </span>
                                 </AppLink>
                             </div>
@@ -708,7 +708,7 @@ const filteredStats = computed(() => {
                                 :class="retirementPeriod === p ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'"
                                 @click="retirementPeriod = p"
                             >
-                                {{ p === 'monthly' ? 'Monthly' : p === 'quarterly' ? 'Quarterly' : 'Yearly' }}
+                                {{ p === 'monthly' ? $t('dashboard.monthly') : p === 'quarterly' ? $t('dashboard.quarterly') : $t('dashboard.yearly') }}
                             </button>
                         </div>
                     </div>

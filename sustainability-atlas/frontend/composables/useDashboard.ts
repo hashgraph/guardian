@@ -7,7 +7,7 @@ import { allocateDonutColors } from '~/lib/chart-colors';
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { projects, pending } = useProjects();
     const { mintStats, buildMintSeries, mintedBySector, mintedByRegistry } = useMintStats(filters);
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
 
     // Reverse-geocode projects whose country field was empty or unrecognized
     // (countryCode === 'UNK') but that carry valid lat/lng. The composable
@@ -35,7 +35,8 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
             ? t('dashboard.activity.dayAgo', { n: diffDay })
             : t('dashboard.activity.daysAgo', { n: diffDay });
         const d = new Date(dateStr);
-        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+        const loc = locale.value === 'es' ? 'es-ES' : 'en-US';
+        return d.toLocaleDateString(loc, { month: 'short', day: 'numeric' });
     }
     const { network } = useNetwork();
     const config = useRuntimeConfig();

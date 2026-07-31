@@ -426,6 +426,7 @@
         "vintageDistributionSub": "Créditos emitidos por año de añada",
         "vintages": "añadas",
         "projectsSuffix": "proyectos",
+        "projectsCount": "{count} proyectos",
         "noVintageData": "No hay datos de añada que coincidan con los filtros seleccionados",
         "networkActivity": "Actividad de la red",
         "networkActivityTooltip": "Eventos recientes en la red de Guardian incluyendo nuevos registros de proyectos, emisiones de créditos, publicaciones de políticas y verificaciones.",
@@ -556,18 +557,72 @@
         "notFound": "Proyecto no encontrado",
         "details": {
             "projectDetails": "Detalles del proyecto",
+            "keyFacts": "Datos clave",
             "projectName": "Nombre del proyecto",
             "country": "País",
             "status": "Estado",
             "methodology": "Metodología",
+            "methodologyVersion": "Versión de la metodología",
             "registry": "Registro",
             "developer": "Desarrollador",
             "sector": "Sector",
+            "sectoralScope": "Alcance sectorial",
+            "category": "Categoría",
             "vintage": "Añada",
             "created": "Creado",
-            "creditingPeriod": "Período de acreditación"
+            "creditingPeriod": "Período de acreditación",
+            "estimatedTotalCredits": "Total de créditos estimados"
         },
         "detail": {
+            "hedera": {
+                "title": "Referencias on-chain de Hedera",
+                "verified": "Verificado en Hedera",
+                "governedBy": "Este proyecto se rige por una política de Guardian on-chain anclada a la red Hedera.",
+                "instanceTopicId": "ID de tópico de la instancia",
+                "policyTopicId": "ID de tópico de la política",
+                "firstVcAnchoredAt": "Primer VC anclado el",
+                "registryDid": "DID del Registro"
+            },
+            "lifecycle": {
+                "transferred": "Transferidos",
+                "transfers": "Transferencias",
+                "retirements": "Retiros",
+                "from": "Desde",
+                "to": "Hacia",
+                "quantity": "Cantidad",
+                "date": "Fecha",
+                "beneficiary": "Beneficiario",
+                "reason": "Razón",
+                "empty": "Aún no se han registrado transferencias o retiros para este proyecto."
+            },
+            "location": {
+                "title": "Ubicación del proyecto",
+                "countryLevel": "Ubicación a nivel de país",
+                "unavailable": "Datos de ubicación no disponibles",
+                "approximate": "Ubicación aproximada"
+            },
+            "documents": {
+                "empty": "No se encontraron documentos vinculados para este proyecto."
+            },
+            "mrv": {
+                "description": "Registros enviados mediante el mecanismo de ingestión de datos externo/IoT de esta metodología (dMRV), separados de los documentos enviados por humanos.",
+                "empty": "No se encontraron envíos de datos externos de MRV para este proyecto.",
+                "flattenedHint": "Este esquema no tiene campos propios por envío — cada fila a continuación es una entrada de dispositivo/medición; varias filas pueden provenir del mismo envío subyacente (use \"En bruto\" para ver el documento original completo).",
+                "noMatchingRecords": "Ningún registro coincide con estos filtros.",
+                "viewDeviceHistory": "Ver historial de este dispositivo",
+                "columns": {
+                    "device": "Dispositivo / Punto de medición",
+                    "raw": "En bruto"
+                },
+                "dataFlow": {
+                    "title": "Flujo de datos",
+                    "subtitle": "Un resumen de la actividad de monitoreo de este proyecto y emisión de créditos hasta el momento — haga clic para ver el historial completo de emisiones.",
+                    "mrvData": "Datos de MRV",
+                    "recordCount": "{count} registro | {count} registros",
+                    "creditsIssued": "Créditos emitidos",
+                    "issuedSummary": "{total} emitidos · {count} emisión | {total} emitidos · {count} emisiones"
+                }
+            },
             "linkedVcs": {
                 "title": "Datos en bruto vinculados",
                 "subtitle": "Documentos de datos en bruto que contribuyeron a este proyecto, agrupados por esquema. Los esquemas vacíos indican campos que no pudieron extraerse.",
@@ -575,6 +630,7 @@
                 "notTracked": "No hay datos en bruto vinculados disponibles — vuelva a analizar la metodología para poblarlos.",
                 "viewJson": "Ver JSON",
                 "projectSchemaBadge": "Esquema de proyecto",
+                "vcCount": "{count} VC | {count} VCs",
                 "columns": {
                     "timestamp": "Marca de tiempo",
                     "topicId": "ID de tópico",
@@ -585,10 +641,111 @@
                 "reextract": "Re-extraer",
                 "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
                 "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
-                "reextractError": "Error al re-extraer"
+                "reextractError": "Error al re-extraer",
+                "refreshIpfs": "Refrescar IPFS",
+                "refreshIpfsTooltip": "Forzar la reobtención desde IPFS para cada VC en el tópico de este proyecto y volver a analizar.",
+                "refreshIpfsSuccess": "Encoladas {refreshed} obtenciones de IPFS y {reparse} reanálisis — actualice en unos segundos",
+                "refreshIpfsEmpty": "Nada que refrescar — todos los VCs ya están obtenidos e indexados",
+                "refreshIpfsError": "Error al refrescar IPFS",
+                "exportIwa": "Exportar como IWA",
+                "exportCadtrust": "Exportar como CADTrust",
+                "exportCdop": "Exportar como CDOP"
+            },
+            "canvas": {
+                "title": "Diagrama de flujo de política",
+                "subtitle": "Carriles por rol de los documentos de la metodología, en el orden de pasos creado por la política. Desplace y amplíe para explorar.",
+                "policyJson": "JSON de la política",
+                "projectKey": "Clave del proyecto",
+                "loading": "Cargando flujo de trabajo de la metodología…",
+                "loadingJson": "Cargando policy.json…",
+                "empty": "Aún no hay un flujo de trabajo de metodología decodificado disponible para este proyecto.",
+                "action": "Acción",
+                "document": "Documento",
+                "latest": "último",
+                "legend": {
+                    "flow": "Evento de flujo genuino",
+                    "sequence": "Orden de pasos definido"
+                }
+            },
+            "trustChain": {
+                "title": "Pipeline y cadena de confianza del proyecto",
+                "subtitle": "Cada credencial en el ciclo de vida de este proyecto, en orden.",
+                "empty": "Aún no se encontraron credenciales vinculadas para este proyecto."
+            },
+            "pipeline": {
+                "title": "Pipeline de metodología",
+                "subtitle": "Un paso por esquema en el ciclo de vida de la metodología de este proyecto.",
+                "stepsCount": "{count} paso | {count} pasos",
+                "empty": "Aún no se encontraron esquemas vinculados para este proyecto.",
+                "dataPresent": "Datos presentes",
+                "awaitingData": "Esperando datos",
+                "documentCount": "{count} documento | {count} documentos",
+                "docTypes": {
+                    "pdd": "Diseño del proyecto",
+                    "monitoringReport": "Monitoreo",
+                    "unknown": "Documento"
+                }
             },
             "issuances": {
-                "yearFilter": "Año"
+                "yearFilter": "Año",
+                "empty": "Aún no se han registrado emisiones para este proyecto."
+            },
+            "tabs": {
+                "summary": "Resumen",
+                "documents": "Información detallada",
+                "issuances": "Emisiones y créditos",
+                "mrv": "Datos externos MRV",
+                "advanced": "Avanzado"
+            },
+            "mapping": {
+                "title": "Mapeo de campos de metodología",
+                "subtitle": "cómo se mapean los campos del proyecto a los campos del esquema",
+                "loading": "Cargando mapeo…",
+                "notLinked": "La versión de la metodología aún no está vinculada a este proyecto. Haz clic en Re-extraer arriba (o vuelve a analizar la metodología) para poblarla.",
+                "error": "Error al cargar el mapeo de metodología.",
+                "noSchema": "Aún no se ha confirmado ningún esquema de proyecto para esta metodología.",
+                "columns": {
+                    "projectField": "Campo del proyecto",
+                    "schemaField": "Campo del esquema"
+                },
+                "projectTitle": "Título del proyecto",
+                "country": "País",
+                "developer": "Desarrollador",
+                "category": "Categoría",
+                "scale": "Escala",
+                "sector": "Sector",
+                "vintageRaw": "Añada / Fecha de inicio",
+                "creditingPeriod": "Período de acreditación",
+                "sdgOrCobenefits": "ODS / Co-beneficios",
+                "projectLocation": "Ubicación del proyecto"
+            },
+            "relationships": {
+                "title": "Relaciones",
+                "subtitle": "Relaciones de entidades entre Registro, Política, Esquema, Rol, Datos brutos, VP y Token"
+            },
+            "emissions": {
+                "title": "Parámetros de emisión",
+                "baseline": "Emisiones de línea base",
+                "project": "Emisiones del proyecto",
+                "leakage": "Emisiones de fuga",
+                "baselineFactor": "Factor de emisión de línea base"
+            },
+            "vcs": {
+                "loadError": "Error al cargar el documento VC",
+                "rawVcTooltip": "Documento VC en bruto en la cadena de bloques",
+                "searchPlaceholder": "Buscar campos, valores, tablas...",
+                "loadingDocData": "Cargando datos del documento...",
+                "noMatchingFields": "No se encontraron campos coincidentes en este esquema.",
+                "recordNumber": "Registro {number}",
+                "fieldsCount": "{count} campo | {count} campos",
+                "entriesCount": "{count} entrada | {count} entradas",
+                "noFieldsAvailable": "No hay campos disponibles.",
+                "onChainEvidence": "Evidencia on-chain",
+                "verifiableCredential": "Credencial Verificable",
+                "loadingOnChainDoc": "Cargando documento on-chain…",
+                "issuerDid": "DID del Emisor",
+                "noReadableFields": "No hay campos legibles en esta credencial.",
+                "noCredentialData": "Sin datos de credencial."
             }
         },
         "compare": {
@@ -642,6 +799,10 @@
         "filteredBySdg": "Mostrando emisiones del ODS {sdg}",
         "clearSdgFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
+        "tokenTypes": {
+            "Fungible": "Fungible",
+            "Non-Fungible": "No fungible"
+        },
         "columns": {
             "token": "Token",
             "symbol": "Símbolo",
@@ -901,6 +1062,7 @@
             },
             "linkedProjects": {
                 "title": "Proyectos vinculados",
+                "projectCount": "{count} proyecto | {count} proyectos",
                 "noTopicId": "No hay ID de tópico de política disponible para esta metodología.",
                 "columns": {
                     "project": "Proyecto",
@@ -928,8 +1090,8 @@
                 "registryDid": "DID del Registro",
                 "network": "Red",
                 "downloadPolicy": "Descargar paquete de política (.zip)",
-                "downloadPending": "Preparando descarga… (obtenerla de IPFS puede tardar un momento)",
-                "downloadNotReady": "El paquete de política aún no está listo — la política no se ha decodificado por completo. Inténtalo de nuevo más tarde.",
+                "downloadPending": "Preparando descarga… (la obtención desde IPFS puede tardar un momento)",
+                "downloadNotReady": "El paquete de política aún no está listo — la política no se ha decodificado por completo. Inténtalo más tarde.",
                 "downloadError": "No se pudo descargar el paquete de política. Inténtalo de nuevo.",
                 "downloadAuthRequired": "Inicia sesión para descargar el paquete de política.",
                 "downloadRateLimited": "Has alcanzado el límite de descargas. Espera un momento e inténtalo de nuevo."
@@ -942,7 +1104,24 @@
                 "issuances": "Total de créditos emitidos",
                 "issuancesSub": "Créditos emitidos",
                 "trends": "Tendencias",
-                "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
+                "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados.",
+                "linkedIssuances": "Emisiones vinculadas",
+                "issuanceCount": "{count} emisión | {count} emisiones",
+                "noIssuances": "Aún no se han registrado emisiones para esta metodología.",
+                "creditLifecycle": "Ciclo de vida del crédito",
+                "creditLifecycleSub": "Emisión → Transferencias → Retiros",
+                "totalMintedCredits": "Total de créditos emitidos",
+                "retired": "Retirados",
+                "active": "Activos",
+                "pctRetired": "{pct}% retirados",
+                "noLifecycle": "Aún no se han registrado transferencias o retiros para esta metodología.",
+                "table": {
+                    "token": "Token",
+                    "tokenId": "ID de token",
+                    "type": "Tipo",
+                    "mintDate": "Fecha de emisión",
+                    "rawData": "Datos brutos"
+                }
             },
             "dashboard": {
                 "title": "Panel de metodología",
@@ -1134,6 +1313,25 @@
             "countries": "Países",
             "topMethodology": "Metodología principal",
             "coverage": "Cobertura"
+        },
+        "names": {
+            "1": "Fin de la pobreza",
+            "2": "Hambre cero",
+            "3": "Salud y bienestar",
+            "4": "Educación de calidad",
+            "5": "Igualdad de género",
+            "6": "Agua limpia y saneamiento",
+            "7": "Energía asequible y no contaminante",
+            "8": "Trabajo decente y crecimiento económico",
+            "9": "Industria, innovación e infraestructura",
+            "10": "Reducción de las desigualdades",
+            "11": "Ciudades y comunidades sostenibles",
+            "12": "Producción y consumo responsables",
+            "13": "Acción por el clima",
+            "14": "Vida submarina",
+            "15": "Vida de ecosistemas terrestres",
+            "16": "Paz, justicia e instituciones sólidas",
+            "17": "Alianzas para lograr los objetivos"
         }
     },
     "analytics": {

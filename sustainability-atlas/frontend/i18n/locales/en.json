@@ -426,6 +426,7 @@
         "vintageDistributionSub": "Minted credits by vintage year",
         "vintages": "vintages",
         "projectsSuffix": "projects",
+        "projectsCount": "{count} projects",
         "noVintageData": "No vintage data matches the selected filters",
         "networkActivity": "Network Activity",
         "networkActivityTooltip": "Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications.",
@@ -556,18 +557,72 @@
         "notFound": "Project not found",
         "details": {
             "projectDetails": "Project Details",
+            "keyFacts": "Key Facts",
             "projectName": "Project Name",
             "country": "Country",
             "status": "Status",
             "methodology": "Methodology",
+            "methodologyVersion": "Methodology Version",
             "registry": "Registry",
             "developer": "Developer",
             "sector": "Sector",
+            "sectoralScope": "Sectoral Scope",
+            "category": "Category",
             "vintage": "Vintage",
             "created": "Created",
-            "creditingPeriod": "Crediting Period"
+            "creditingPeriod": "Crediting Period",
+            "estimatedTotalCredits": "Estimated Total Credits"
         },
         "detail": {
+            "hedera": {
+                "title": "Hedera On-Chain References",
+                "verified": "Verified on Hedera",
+                "governedBy": "This project is governed by an on-chain Guardian policy anchored to the Hedera network.",
+                "instanceTopicId": "Instance Topic ID",
+                "policyTopicId": "Policy Topic ID",
+                "firstVcAnchoredAt": "First VC Anchored At",
+                "registryDid": "Registry DID"
+            },
+            "lifecycle": {
+                "transferred": "Transferred",
+                "transfers": "Transfers",
+                "retirements": "Retirements",
+                "from": "From",
+                "to": "To",
+                "quantity": "Quantity",
+                "date": "Date",
+                "beneficiary": "Beneficiary",
+                "reason": "Reason",
+                "empty": "No transfers or retirements recorded for this project yet."
+            },
+            "location": {
+                "title": "Project Location",
+                "countryLevel": "Country-level location",
+                "unavailable": "Location data unavailable",
+                "approximate": "Approximate location"
+            },
+            "documents": {
+                "empty": "No linked documents found for this project."
+            },
+            "mrv": {
+                "description": "Records submitted through this methodology's external/IoT data-ingestion mechanism (dMRV), separate from human-submitted documents.",
+                "empty": "No MRV external data submissions found for this project.",
+                "flattenedHint": "This schema has no per-submission fields of its own — each row below is one device/measurement entry; several rows can come from the same underlying submission (use \"Raw\" to see the full original document).",
+                "noMatchingRecords": "No records match these filters.",
+                "viewDeviceHistory": "View this device's history",
+                "columns": {
+                    "device": "Device / Measurement Point",
+                    "raw": "Raw"
+                },
+                "dataFlow": {
+                    "title": "Data Flow",
+                    "subtitle": "A snapshot of this project's monitoring activity and credit issuance so far — click through for the full issuance history.",
+                    "mrvData": "MRV Data",
+                    "recordCount": "{count} record | {count} records",
+                    "creditsIssued": "Credits Issued",
+                    "issuedSummary": "{total} issued · {count} issuance | {total} issued · {count} issuances"
+                }
+            },
             "linkedVcs": {
                 "title": "Linked Raw Data",
                 "subtitle": "Raw data documents that contributed to this project, grouped by schema. Empty schemas indicate fields that couldn't be extracted.",
@@ -575,6 +630,7 @@
                 "notTracked": "No linked raw data available — re-parse the methodology to populate.",
                 "viewJson": "View JSON",
                 "projectSchemaBadge": "Project schema",
+                "vcCount": "{count} VC | {count} VCs",
                 "columns": {
                     "timestamp": "Timestamp",
                     "topicId": "Topic ID",
@@ -590,10 +646,106 @@
                 "refreshIpfsTooltip": "Force re-fetch IPFS for every VC in this project's topic and reparse. Use when fields are missing because part of the VC chain never came down from IPFS.",
                 "refreshIpfsSuccess": "Queued {refreshed} IPFS fetch(es) and {reparse} reparse(s) — refresh in a few seconds",
                 "refreshIpfsEmpty": "Nothing to refresh — all VCs in this project's topic are already fetched and indexed",
-                "refreshIpfsError": "Failed to refresh IPFS"
+                "refreshIpfsError": "Failed to refresh IPFS",
+                "exportIwa": "Export as IWA",
+                "exportCadtrust": "Export as CADTrust",
+                "exportCdop": "Export as CDOP"
+            },
+            "canvas": {
+                "title": "Policy Flowchart",
+                "subtitle": "Role swimlanes of the methodology's documents, in the policy's authored step order. Pan and zoom to explore.",
+                "policyJson": "Policy JSON",
+                "projectKey": "Project Key",
+                "loading": "Loading methodology workflow…",
+                "loadingJson": "Loading policy.json…",
+                "empty": "No decoded methodology workflow available for this project yet.",
+                "action": "Action",
+                "document": "Document",
+                "latest": "latest",
+                "legend": {
+                    "flow": "Genuine flow event",
+                    "sequence": "Authored step order"
+                }
+            },
+            "trustChain": {
+                "title": "Project Pipeline & Trust Chain",
+                "subtitle": "Every credential in this project's lifecycle, in order.",
+                "empty": "No linked credentials found for this project yet."
+            },
+            "pipeline": {
+                "title": "Methodology Pipeline",
+                "subtitle": "One step per schema in this project's methodology lifecycle.",
+                "stepsCount": "{count} step | {count} steps",
+                "empty": "No linked schemas found for this project yet.",
+                "dataPresent": "Data present",
+                "awaitingData": "Awaiting data",
+                "documentCount": "{count} document | {count} documents",
+                "docTypes": {
+                    "pdd": "Project Design",
+                    "monitoringReport": "Monitoring",
+                    "unknown": "Document"
+                }
             },
             "issuances": {
-                "yearFilter": "Year"
+                "yearFilter": "Year",
+                "empty": "No issuances have been recorded for this project yet."
+            },
+            "tabs": {
+                "summary": "Summary",
+                "documents": "Detailed Information",
+                "issuances": "Issuances & Credits",
+                "mrv": "MRV External Data",
+                "advanced": "Advanced"
+            },
+            "mapping": {
+                "title": "Methodology Field Mapping",
+                "subtitle": "how project fields map to schema fields",
+                "loading": "Loading mapping…",
+                "notLinked": "Methodology version is not linked to this project yet. Click Re-extract above (or re-parse the methodology) to populate it.",
+                "error": "Failed to load methodology mapping.",
+                "noSchema": "No project schema has been confirmed for this methodology yet.",
+                "columns": {
+                    "projectField": "Project Field",
+                    "schemaField": "Schema Field"
+                },
+                "projectTitle": "Project Title",
+                "country": "Country",
+                "developer": "Developer",
+                "category": "Category",
+                "scale": "Scale",
+                "sector": "Sector",
+                "vintageRaw": "Vintage / Start Date",
+                "creditingPeriod": "Crediting Period",
+                "sdgOrCobenefits": "SDG / Co-benefits",
+                "projectLocation": "Project Location"
+            },
+            "relationships": {
+                "title": "Relationships",
+                "subtitle": "Entity relationships between Registry, Policy, Schema, Role, Raw Data, VP, and Token"
+            },
+            "emissions": {
+                "title": "Emission Parameters",
+                "baseline": "Baseline Emissions",
+                "project": "Project Emissions",
+                "leakage": "Leakage Emissions",
+                "baselineFactor": "Baseline Emission Factor"
+            },
+            "vcs": {
+                "loadError": "Failed to load VC document",
+                "rawVcTooltip": "Raw VC document on the blockchain",
+                "searchPlaceholder": "Search fields, values, tables...",
+                "loadingDocData": "Loading document data...",
+                "noMatchingFields": "No matching fields found in this schema.",
+                "recordNumber": "Record {number}",
+                "fieldsCount": "{count} field | {count} fields",
+                "entriesCount": "{count} entry | {count} entries",
+                "noFieldsAvailable": "No fields available.",
+                "onChainEvidence": "On-chain evidence",
+                "verifiableCredential": "Verifiable Credential",
+                "loadingOnChainDoc": "Loading on-chain document…",
+                "issuerDid": "Issuer DID",
+                "noReadableFields": "No readable fields in this credential.",
+                "noCredentialData": "No credential data."
             }
         },
         "compare": {
@@ -664,6 +816,10 @@
             "supply": "Mint Amount",
             "mintDate": "Mint Date",
             "hideUnlinked": "Hide issuances with no project link"
+        },
+        "tokenTypes": {
+            "Fungible": "Fungible",
+            "Non-Fungible": "Non-Fungible"
         },
         "tooltips": {
             "hideUnlinked": "Hides tokens that have not yet been matched to a project. Uncheck to see all indexed tokens including those still awaiting project attribution.",
@@ -906,6 +1062,7 @@
             },
             "linkedProjects": {
                 "title": "Linked Projects",
+                "projectCount": "{count} project | {count} projects",
                 "noTopicId": "No policy topic ID available for this methodology.",
                 "columns": {
                     "project": "Project",
@@ -947,7 +1104,24 @@
                 "issuances": "Total Minted Credits",
                 "issuancesSub": "Credits issued",
                 "trends": "Trends",
-                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
+                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced.",
+                "linkedIssuances": "Linked Issuances",
+                "issuanceCount": "{count} issuance | {count} issuances",
+                "noIssuances": "No issuances have been recorded for this methodology yet.",
+                "creditLifecycle": "Credit Lifecycle",
+                "creditLifecycleSub": "Issuance → Transfers → Retirements",
+                "totalMintedCredits": "Total Minted Credits",
+                "retired": "Retired",
+                "active": "Active",
+                "pctRetired": "{pct}% retired",
+                "noLifecycle": "No transfers or retirements recorded for this methodology yet.",
+                "table": {
+                    "token": "Token",
+                    "tokenId": "Token ID",
+                    "type": "Type",
+                    "mintDate": "Mint Date",
+                    "rawData": "Raw Data"
+                }
             },
             "dashboard": {
                 "title": "Methodology Dashboard",
@@ -1142,6 +1316,25 @@
             "countries": "Countries",
             "topMethodology": "Top Methodology",
             "coverage": "Coverage"
+        },
+        "names": {
+            "1": "No Poverty",
+            "2": "Zero Hunger",
+            "3": "Good Health and Well-being",
+            "4": "Quality Education",
+            "5": "Gender Equality",
+            "6": "Clean Water and Sanitation",
+            "7": "Affordable and Clean Energy",
+            "8": "Decent Work and Economic Growth",
+            "9": "Industry, Innovation and Infrastructure",
+            "10": "Reduced Inequalities",
+            "11": "Sustainable Cities and Communities",
+            "12": "Responsible Consumption and Production",
+            "13": "Climate Action",
+            "14": "Life Below Water",
+            "15": "Life on Land",
+            "16": "Peace, Justice and Strong Institutions",
+            "17": "Partnerships for the Goals"
         }
     },
     "analytics": {

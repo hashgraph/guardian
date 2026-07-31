@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { getSDG } from '~/lib/sdgs';
+import { getLocalizedSDGName } from '~/lib/sdgs';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     ids: number[];
@@ -16,7 +18,7 @@ function sdgIcon(id: number): string {
 }
 
 function sdgLabel(id: number): string {
-    return `SDG ${id}: ${getSDG(id)?.name ?? ''}`;
+    return `SDG ${id}: ${getLocalizedSDGName(id, t)}`;
 }
 
 // Teleported to <body> and positioned via getBoundingClientRect (same

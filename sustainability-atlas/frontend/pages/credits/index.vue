@@ -126,7 +126,7 @@ const visibleFilterOptions = computed(() => ({
 }));
 
 const filters = computed<FilterOption[]>(() => [
-    { key: 'type', label: t('credits.filters.tokenType'), multiSelect: true, options: visibleFilterOptions.value.types.map(x => ({ value: x, label: x })) },
+    { key: 'type', label: t('credits.filters.tokenType'), multiSelect: true, options: visibleFilterOptions.value.types.map(x => ({ value: x, label: t('credits.tokenTypes.' + x) })) },
     { key: 'registry', label: t('credits.filters.registry'), multiSelect: true, searchable: true, options: visibleFilterOptions.value.registries.map(r => ({ value: r, label: r })) },
     { key: 'supply', label: t('credits.filters.supply'), type: 'numrange', options: [] },
     { key: 'mintDate', label: t('credits.filters.mintDate'), type: 'daterange', options: [] },
@@ -397,7 +397,7 @@ async function downloadCredits() {
                                     <div class="text-[11px] text-muted-foreground/60 font-mono">{{ c.tokenId ?? '-' }}</div>
                                 </td>
                                 <td class="py-3 px-4 font-mono text-xs whitespace-nowrap">{{ c.symbol ?? '-' }}</td>
-                                <td class="py-3 px-4 whitespace-nowrap"><span :class="[c.type ? typeColor[c.type] : '', 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type ?? '-' }}</span></td>
+                                <td class="py-3 px-4 whitespace-nowrap"><span :class="[c.type ? typeColor[c.type] : '', 'text-xs font-medium rounded-full px-2 py-0.5']">{{ c.type ? $t('credits.tokenTypes.' + c.type) : '-' }}</span></td>
                                 <td class="py-3 px-4 text-right tabular-nums font-medium whitespace-nowrap">{{ c.supplyFormatted }}</td>
                                 <td class="py-3 px-4 text-muted-foreground text-xs tabular-nums whitespace-nowrap">{{ formatDate(c.mintDate) }}</td>
                                 <td class="py-3 px-4 max-w-[200px]">

@@ -102,11 +102,11 @@ async function copyToClipboard(text: string) {
                             v-if="schema.vcCount === 0"
                             class="shrink-0 inline-flex items-center rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 text-[10px] font-medium"
                         >
-                            0 VCs
+                            {{ $t('projects.detail.linkedVcs.vcCount', { count: 0 }) }}
                         </span>
                     </span>
                     <span class="flex items-center gap-2 shrink-0">
-                        <span class="text-xs text-muted-foreground tabular-nums">{{ schema.vcCount }} VC(s)</span>
+                        <span class="text-xs text-muted-foreground tabular-nums">{{ $t('projects.detail.linkedVcs.vcCount', { count: schema.vcCount }) }}</span>
                         <ChevronDown
                             class="h-3.5 w-3.5 text-muted-foreground transition-transform"
                             :class="schemaOpenState[schema.schemaUuid] ? 'rotate-180' : ''"
