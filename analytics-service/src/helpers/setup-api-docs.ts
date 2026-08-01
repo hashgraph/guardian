@@ -34,6 +34,7 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pag
             layout: 'modern',
             theme: 'default',
             darkMode: false,
+            showDeveloperTools: 'never',
             favicon: scalarFavicon,
             customCss: scalarCustomCss,
             withFastify,
