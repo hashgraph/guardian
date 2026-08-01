@@ -19,6 +19,9 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pag
         yamlDocumentUrl: 'api-docs-yaml',
     });
 
+    // Scalar replies via Express res.send() unless told the host runs Fastify.
+    const withFastify = app.getHttpAdapter().getType() === 'fastify';
+
     // Point Scalar at the JSON spec route above instead of embedding the
     // document: `apiReference` rebuilds the page on every request, so embedding
     // the multi-MB spec via `content` would re-serialize it on each hit. A
@@ -33,6 +36,7 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pag
             darkMode: false,
             favicon: scalarFavicon,
             customCss: scalarCustomCss,
+            withFastify,
         })
     );
 }
