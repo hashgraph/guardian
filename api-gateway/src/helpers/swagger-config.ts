@@ -2,6 +2,7 @@ import { DocumentBuilder } from '@nestjs/swagger';
 
 export const SwaggerConfig = new DocumentBuilder()
     .setTitle('Guardian')
+    .setOpenAPIVersion('3.2.0')
     .setDescription(
         'The Guardian is an innovative open-source platform that streamlines the creation, ' +
         'management, and verification of digital environmental assets. It leverages a customizable ' +
