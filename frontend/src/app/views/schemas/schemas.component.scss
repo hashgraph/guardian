@@ -818,6 +818,15 @@ a {
     }
 
     ::ng-deep .guardian-grid-table {
+        // Reserve the vertical scrollbar gutter on both the header and the
+        // body so their tables keep identical content widths and the columns
+        // stay aligned (the CSS max-height below scrolls the body without
+        // triggering PrimeNG's own scrollbar compensation).
+        .p-treetable-scrollable-header,
+        .p-treetable-scrollable-body {
+            scrollbar-gutter: stable;
+        }
+
         .p-treetable-scrollable-body {
             max-height: calc(100vh - var(--header-height) - 435px);
         }
