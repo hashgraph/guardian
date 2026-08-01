@@ -165,6 +165,7 @@
     display: flex;
     align-items: center;
     column-gap: 8px;
+    white-space: nowrap;
     background: var(--guardian-background, #FFF);
     cursor: pointer;
 }

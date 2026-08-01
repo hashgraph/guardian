@@ -157,11 +157,41 @@
             class="guardian-grid-table"
             [scrollable]="true"
             >
+            <ng-template pTemplate="colgroup">
+              <colgroup>
+                @if (type === 'policy') {
+                  @if (canDisplayColumn('select')) {
+                    <col style="width: 54px;" />
+                  }
+                  <col />
+                  <col style="width: 112px;" />
+                  <col style="width: 85px;" />
+                  <col style="width: 100px;" />
+                  <col style="width: 185px;" />
+                  <col style="width: 100px;" />
+                  <col style="width: 140px;" />
+                  <col style="width: 110px;" />
+                }
+                @if (type === 'module') {
+                  <col style="width: 150px;" />
+                  <col style="width: 100px;" />
+                  <col style="width: 140px;" />
+                  <col style="width: 110px;" />
+                }
+                @if (type === 'tool') {
+                  <col style="width: 150px;" />
+                  <col style="width: 150px;" />
+                  <col style="width: 100px;" />
+                  <col style="width: 140px;" />
+                  <col style="width: 110px;" />
+                }
+              </colgroup>
+            </ng-template>
             <ng-template pTemplate="header">
               <tr class="guardian-grid-header">
                 @if (type === 'policy') {
                   @if (canDisplayColumn('select')) {
-                    <th class="header-cell-text" style="min-width: 140px; max-width: 150px;">
+                    <th class="header-cell-text">
                       <p-checkbox
                         (onChange)="onSelectAllItems($event)"
                         [disabled]="isAnyDeleteDisabled()"
@@ -263,7 +293,7 @@
                   @if (!rowData.isParent) {
                     @if (type === 'policy') {
                       @if (canDisplayColumn('select')) {
-                        <td class="first-schema-grid-cell" style="min-width: 140px; max-width: 150px;">
+                        <td class="first-schema-grid-cell">
                           <p-checkbox
                             (onChange)="onSelectItem(rowData)"
                             [disabled]="isDeleteDisabled(rowData)"
