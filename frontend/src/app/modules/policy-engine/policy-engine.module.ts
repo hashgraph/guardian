@@ -189,6 +189,7 @@ import { PolicyParameterPropertyComponent } from 'src/app/components/policy-para
 import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
 import { ParameterDocumentPathComponent } from './helpers/parameter-document-path/parameter-document-path.component';
 import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+import { DryRunDialog } from './dialogs/dry-run-dialog/dry-run-dialog.component';
 import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
 
 @NgModule({
@@ -334,6 +335,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         PolicyParameterPropertyComponent,
         ParameterDocumentPathComponent,
         MockDialog,
+        DryRunDialog,
         PolicyTestAutomationPopupComponent
     ],
     imports: [
