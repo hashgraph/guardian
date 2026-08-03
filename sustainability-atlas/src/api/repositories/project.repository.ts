@@ -51,6 +51,7 @@ export interface ProjectRow {
     totalRetired?: number;
     totalActive?: number;
     policySchemas?: PolicySchemaRow[];
+    polygon?: string | null;
 }
 
 export interface ProjectListQuery {

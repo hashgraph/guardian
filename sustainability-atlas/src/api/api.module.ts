@@ -40,6 +40,7 @@ import { SdgsService } from './services/sdgs.service';
 import { DevelopersService } from './services/developers.service';
 import { DashboardService } from './services/dashboard.service';
 import { PortfolioStatsService } from './services/portfolio-stats.service';
+import { ActivityService } from './services/activity.service';
 import { ExportsService } from './services/exports.service';
 import { ImpactSummaryService } from './services/impact-summary.service';
 
@@ -94,6 +95,7 @@ import { LocalPolicyZipStorage } from '@worker/services/storage/local-policy-zip
         DevelopersService,
         DashboardService,
         PortfolioStatsService,
+        ActivityService,
         ExportsService,
         ImpactSummaryService,
         QueueRegistry,

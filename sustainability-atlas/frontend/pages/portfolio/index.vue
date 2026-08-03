@@ -29,6 +29,9 @@ import {
     SquarePen,
     AlertTriangle,
     Clock,
+    Tag,
+    Fingerprint,
+    UserCog,
 } from 'lucide-vue-next';
 import { toast } from 'vue-sonner';
 import { useDebounceFn, useIntersectionObserver } from '@vueuse/core';
@@ -224,19 +227,27 @@ const sdgCoverage = computed<RadarPoint[]>(() => {
 const activityIcons: Record<string, any> = {
     project: FolderKanban,
     credit: Coins,
-    policy: CheckCircle2,
+    methodology: CheckCircle2,
     verification: CheckCircle2,
     registry: Building2,
     retirement: Flame,
+    token: Tag,
+    identity: Fingerprint,
+    role: UserCog,
+    other: Activity,
 };
 
 const activityColors: Record<string, string> = {
     project: 'text-stat-green',
     credit: 'text-stat-amber',
-    policy: 'text-stat-blue',
+    methodology: 'text-stat-blue',
     verification: 'text-primary',
     registry: 'text-stat-rose',
     retirement: 'text-stat-amber',
+    token: 'text-stat-blue',
+    identity: 'text-primary',
+    role: 'text-stat-rose',
+    other: 'text-muted-foreground',
 };
 
 // KPI values

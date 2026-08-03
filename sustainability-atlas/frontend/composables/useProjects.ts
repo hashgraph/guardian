@@ -148,6 +148,7 @@ export function mapApiProject(raw: Record<string, any>): Project {
         flag: '',
         lat: raw.lat ?? 0,
         lng: raw.lng ?? 0,
+        polygon: typeof raw.polygon === 'string' ? raw.polygon : null,
         methodology: raw.methodology ?? '',
         methodologyId: raw.methodologyId ?? '',
         registry: raw.registryName ?? raw.registry ?? raw.registryDid ?? 'Unknown Registry',

@@ -82,9 +82,22 @@ The glossary entry for **Vintage** explains the distinction if it is unfamiliar.
 
 ## Network Activity
 
-A reverse-chronological feed of recent changes across the network — new project registrations, credit
-issuances, policy publications and verifications — each with a relative timestamp ("3 hours ago").
-It is the quickest way to see whether the network has been busy without reading any charts.
+The 10 most recent real events on the Guardian network, newest first, each with a relative timestamp
+("3 hours ago"). It is the quickest way to see whether the network has been busy without reading any
+charts. The feed refreshes automatically roughly every 25 seconds — no page reload needed.
+
+Events come from these categories:
+
+- **Project Registered** — a new project's registration VC landed on its policy topic.
+- **Methodology Registered** — a methodology (policy) was published.
+- **Registry Registered** — a new Standard Registry announced itself.
+- **Credit Minted** — tokens were issued against a project (this also covers what some registries call
+  an "issuance").
+- **Credit Retired** — tokens were permanently retired.
+- **Other network events** — everything else the indexer tracks: new credit tokens being created,
+  identity (DID) publications, verification approvals, and role grants.
+
+This feed is scoped to the network you have selected in the top bar, same as the rest of the Dashboard.
 
 ## When a panel says there is no data
 
