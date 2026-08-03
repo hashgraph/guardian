@@ -557,14 +557,14 @@ export class MockHelper {
         return new TopicId(i);
     }
 
-    private static stringToTokenId(id: string): AccountId {
-        const i = Number(id.split('.')[2]);
-        return new AccountId(i);
-    }
-
-    private static stringToAccountId(id: string): TokenId {
+    private static stringToTokenId(id: string): TokenId {
         const i = Number(id.split('.')[2]);
         return new TokenId(i);
+    }
+
+    private static stringToAccountId(id: string): AccountId {
+        const i = Number(id.split('.')[2]);
+        return new AccountId(i);
     }
 
     public static async getMockData(mockId: string): Promise<{
