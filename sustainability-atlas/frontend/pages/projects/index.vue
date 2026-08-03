@@ -24,6 +24,7 @@ import {
   downloadCsv,
   csvDateStamp,
   buildProjectCsvRows,
+  hederaTimestamp,
 } from "~/lib/csv-export";
 import { mapApiProject } from "~/composables/useProjects";
 import type { SavedSearchCriteria } from "~/composables/useSavedSearches";
@@ -106,6 +107,7 @@ const allProjects = computed(() =>
     // use the same value that appears in the column (not raw coordinates).
     country: displayCountry(p) ?? "",
     isPipeline: isPipelineStage(p),
+    createdDate: hederaTimestamp(p.sourceTimestamp),
   })),
 );
 
@@ -181,7 +183,7 @@ const {
     "developer",
   ],
   pageSize: 10,
-  defaultSort: { key: "createdAt", dir: "desc" },
+  defaultSort: { key: "createdDate", dir: "desc" },
   arrayFields: ["sdgs"],
   excludeFromQuery: ["registryDid", "methodologyId"],
 });
@@ -359,7 +361,10 @@ async function downloadProjects() {
 
     let mapped = (
       await fetchAllPages(`/api/v1/${network.value}/projects`, query)
-    ).map(mapApiProject);
+    ).map(mapApiProject).map((p) => ({
+      ...p,
+      createdDate: hederaTimestamp(p.sourceTimestamp),
+    }));
 
     if (af.sector) {
       const sectors = decodeMultiValue(af.sector).map((s: string) =>
@@ -636,6 +641,14 @@ async function downloadProjects() {
                   class="w-[8%] min-w-[90px]"
                   @sort="toggleSort($event as any)"
                 />
+                <SortableHeader
+                  :label="$t('projects.columns.createdDate')"
+                  sort-key="createdDate"
+                  :active-sort-key="sortKey as string"
+                  :sort-dir="sortDir"
+                  class="w-[9%] min-w-[105px]"
+                  @sort="toggleSort($event as any)"
+                />
                 <th class="w-[8%] min-w-[95px] py-3 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                   <span class="inline-flex items-center gap-1">
                     {{ $t("projects.columns.sdgs") }}
@@ -654,7 +667,7 @@ async function downloadProjects() {
               <!-- Loading skeleton -->
               <template v-if="pending && paginated.length === 0">
                 <tr v-for="i in skeletonRows" :key="`sk-${i}`">
-                  <td v-for="col in 11" :key="col" class="py-3.5 px-4">
+                  <td v-for="col in 12" :key="col" class="py-3.5 px-4">
                     <Skeleton class="h-4 w-full" />
                   </td>
                 </tr>
@@ -692,7 +705,7 @@ async function downloadProjects() {
                       {{ p.name }}
                     </AppLink>
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle text-muted-foreground truncate">
                     <div v-if="displayCountry(p)" class="flex items-center gap-2 max-w-full">
                       <CountryFlag :code="resolvedCode(p)" size="sm" class="shrink-0" />
@@ -745,7 +758,11 @@ async function downloadProjects() {
                   <td class="py-3.5 px-4 align-middle text-muted-foreground font-medium">
                     {{ p.lifecycleStage !== "Issued" ? p.expectedIssuanceYear ?? $t("projects.tbd") : "—" }}
                   </td>
-                  
+
+                  <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs tabular-nums whitespace-nowrap">
+                    {{ p.createdDate || "—" }}
+                  </td>
+
                   <td class="w-px py-3.5 px-3 align-middle whitespace-nowrap">
                     <div class="flex items-center min-w-max">
                       <SdgBadges :ids="p.sdgs" :max="2" />
@@ -767,7 +784,7 @@ async function downloadProjects() {
               
               <tr v-if="paginated.length === 0 && !pending">
                 <td
-                  colspan="11"
+                  colspan="12"
                   class="py-12 text-center text-sm text-muted-foreground"
                 >
                   {{ $t("projects.noMatch") }}

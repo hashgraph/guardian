@@ -1,16 +1,45 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse } from '@nestjs/swagger';
 import { DashboardService } from '../services/dashboard.service';
+import { ActivityService } from '../services/activity.service';
 import {
     DashboardMintStatsQueryDto,
     DashboardMintStatsDto,
     DashboardSummaryDto,
 } from '../dto/dashboard.dto';
+import { NetworkActivityItemDto } from '../dto/activity.dto';
 
 @ApiTags('dashboard')
 @Controller('api/v1/:network/dashboard')
 export class DashboardController {
-    constructor(private readonly dashboardService: DashboardService) {}
+    constructor(
+        private readonly dashboardService: DashboardService,
+        private readonly activityService: ActivityService,
+    ) {}
+
+    @Get('network-activity')
+    @ApiOperation({
+        summary: 'Latest 10 network events, newest first',
+        description:
+            'Real Guardian network events sourced from message + business_view: project, ' +
+            'methodology and registry registrations, credit issuance and retirement, and ' +
+            'other network events (token creation, identity publication, verification, role ' +
+            'grants). Respects the same registry/developer filters as the rest of the dashboard ' +
+            '— when either is set, events are scoped to it (methodology/registry registrations ' +
+            'and the "other" bucket are dropped entirely under a developer filter, since they ' +
+            'have no per-developer attribution). Results are cached for 10 seconds.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: [NetworkActivityItemDto] })
+    async getNetworkActivity(
+        @Param('network') network: string,
+        @Query() query: DashboardMintStatsQueryDto,
+    ): Promise<NetworkActivityItemDto[]> {
+        return this.activityService.getNetworkActivity(network, {
+            registry: query.registry,
+            developer: query.developer,
+        });
+    }
 
     @Get('mint-stats')
     @ApiOperation({

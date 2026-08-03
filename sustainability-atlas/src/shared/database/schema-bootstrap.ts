@@ -186,6 +186,24 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE "viewType" = 'CREDIT'
     `);
 
+    // Full-precision project boundary geometry, kept OUT of business_view's
+    // "businessData" jsonb deliberately — a boundary can run to hundreds of KB
+    // (real-world exports have hit tens of thousands of vertices), and that
+    // column is read by every project list/search query. This table is only
+    // ever read by the single project-detail fetch, keyed by project_key, so
+    // its size has no effect on list/search performance. Stored and served at
+    // full precision — no point is ever dropped, the project detail page's
+    // map renders every vertex.
+    await dataSource.query(`
+        CREATE TABLE IF NOT EXISTS project_geometry (
+            project_key  VARCHAR(120) PRIMARY KEY,
+            geo_type     VARCHAR(20)  NOT NULL,
+            geojson      JSONB        NOT NULL,
+            point_count  INTEGER      NOT NULL,
+            updated_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+        )
+    `);
+
     await dataSource.query(`
         CREATE TABLE IF NOT EXISTS guardian_event_log (
             id           BIGSERIAL    PRIMARY KEY,
@@ -241,6 +259,38 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE type = 'VC-Document'
           AND documents IS NOT NULL
           AND (documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'
+    `);
+
+    // Backs the Network Activity feed's "Credit Retired" branch — same shape
+    // as idx_message_mint_token_cts, matching WipeToken VCs instead.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_wipe_token_cts
+        ON message ("consensusTimestamp" DESC)
+        WHERE type = 'VC-Document'
+          AND documents IS NOT NULL
+          AND (documents->'credentialSubject'->0->>'type') LIKE 'WipeToken%'
+    `);
+
+    // Backs the Network Activity feed's "Methodology Registered" branch.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_published_policy_cts
+        ON message ("consensusTimestamp" DESC)
+        WHERE type = 'Instance-Policy' AND action = 'publish-policy'
+    `);
+
+    // Backs the Network Activity feed's "Registry Registered" branch.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_standard_registry_cts
+        ON message ("consensusTimestamp" DESC)
+        WHERE type = 'Standard Registry'
+    `);
+
+    // Backs the Network Activity feed's "Other" bucket (Token / DID-Document /
+    // VP-Document / Role-Document).
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_other_activity_cts
+        ON message ("consensusTimestamp" DESC)
+        WHERE type IN ('Token', 'DID-Document', 'VP-Document', 'Role-Document')
     `);
 
     // Backs the credits search: ILIKE '%term%' on tc.name / tc.symbol plus

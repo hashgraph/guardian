@@ -333,6 +333,24 @@ const effectiveLocation = computed(() => {
     return null;
 });
 
+// Normalized to MultiPolygon shape (polygons -> rings -> [lng, lat] points)
+// regardless of whether the API sent a Polygon or MultiPolygon, so
+// ProjectLocationMap only has to handle one nesting depth. Any parse failure
+// or unrecognized geometry type falls back to the plain lat/lng marker.
+const projectPolygon = computed<number[][][][] | null>(() => {
+    const raw = project.value?.polygon;
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed?.coordinates)) return null;
+        if (parsed.type === 'Polygon') return [parsed.coordinates];
+        if (parsed.type === 'MultiPolygon') return parsed.coordinates;
+        return null;
+    } catch {
+        return null;
+    }
+});
+
 // ─── Emission data (currently all dashes) ─────────────────────────────────────
 
 const emissions = computed(() => {
@@ -461,7 +479,8 @@ const emissions = computed(() => {
                             {{ $t('projects.detail.location.title') }}
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">
-                            <template v-if="effectiveLocation && !effectiveLocation.approximate">{{ effectiveLocation.lat.toFixed(4) }}, {{ effectiveLocation.lng.toFixed(4) }}</template>
+                            <template v-if="projectPolygon">Project boundary (polygon)</template>
+                            <template v-else-if="effectiveLocation && !effectiveLocation.approximate">{{ effectiveLocation.lat.toFixed(4) }}, {{ effectiveLocation.lng.toFixed(4) }}</template>
                             <template v-else-if="effectiveLocation?.approximate">{{ $t('projects.detail.location.countryLevel') }}</template>
                             <span v-if="displayCountry"> · {{ displayCountry }}</span>
                         </p>
@@ -478,6 +497,7 @@ const emissions = computed(() => {
                                 :lat="effectiveLocation?.lat ?? 0"
                                 :lng="effectiveLocation?.lng ?? 0"
                                 :name="project.name"
+                                :polygon="projectPolygon"
                                 :approximate="effectiveLocation?.approximate ?? false"
                                 :has-location="!!effectiveLocation"
                             />

@@ -4,12 +4,13 @@ import { allocateDonutColors } from '~/lib/chart-colors';
 import { bucketMintSeries } from '~/lib/mint-series';
 import { SectorType } from '~/types/enums';
 import type { WatchlistItem } from '~/composables/usePortfolioWatchlist';
-import type { ActivityItem, MapCountry, MapPoint } from '~/types/models';
+import type { MapCountry, MapPoint } from '~/types/models';
 import type { SdgStatsDto } from '~/composables/api/useSdgsApi';
 import { useGeocodedCountries } from '~/composables/useGeocodedCountries';
 import { ALPHA3_TO_NAME as CODE_TO_COUNTRY } from '~/composables/useProjects';
 import { useWatchlistProjects } from '~/composables/useWatchlistProjects';
 import { usePortfolioStats } from '~/composables/usePortfolioStats';
+import { useNetworkActivity } from './useNetworkActivity';
 
 /**
  * Returns all portfolio data filtered by watchlist.
@@ -22,7 +23,6 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
     // Projects visible in the portfolio — the batch endpoint already returns
     // only the watchlisted set, so no further client-side filtering is needed.
     const { projects: filteredProjects, pending: projectsPending } = useWatchlistProjects(watchlistItems);
-    const { t } = useI18n();
     const { network } = useNetwork();
     const networkRef = computed(() => network.value);
     const { data: sdgsData } = useSdgsApi({ network: networkRef });
@@ -270,45 +270,10 @@ export function usePortfolioDashboard(watchlistItems: Ref<WatchlistItem[]>) {
         }));
     });
 
-    // Network activity filtered to the active watchlist (recent project registrations).
-    function relativeTime(dateStr: string): string {
-        const now = Date.now();
-        const then = new Date(dateStr).getTime();
-        if (isNaN(then)) return dateStr;
-        const diffMin = Math.floor((now - then) / 60_000);
-        if (diffMin < 1)   return t('dashboard.activity.justNow');
-        if (diffMin < 60)  return diffMin === 1 ? t('dashboard.activity.minuteAgo', { n: diffMin }) : t('dashboard.activity.minutesAgo', { n: diffMin });
-        const diffHr  = Math.floor(diffMin / 60);
-        if (diffHr  < 24)  return diffHr  === 1 ? t('dashboard.activity.hourAgo',   { n: diffHr  }) : t('dashboard.activity.hoursAgo',   { n: diffHr  });
-        const diffDay = Math.floor(diffHr / 24);
-        if (diffDay < 30)  return diffDay === 1  ? t('dashboard.activity.dayAgo',    { n: diffDay }) : t('dashboard.activity.daysAgo',    { n: diffDay });
-        const d = new Date(dateStr);
-        return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-    }
-
-    const recentActivity = computed<ActivityItem[]>(() => {
-        if (filteredProjects.value.length === 0) return [];
-        const sorted = [...filteredProjects.value]
-            .filter(p => p.createdAt)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-        const activities: ActivityItem[] = sorted.slice(0, 5).map(p => ({
-            time: relativeTime(p.createdAt),
-            action: t('dashboard.activity.newProjectRegistered'),
-            detail: `${p.name} — ${p.registry}`,
-            type: 'project',
-        }));
-        const uniqueRegistries = [...new Set(filteredProjects.value.map(p => p.registry).filter(Boolean))];
-        if (uniqueRegistries.length > 0) {
-            const oldest = sorted[sorted.length - 1];
-            activities.push({
-                time: oldest ? relativeTime(oldest.createdAt) : '',
-                action: t('dashboard.activity.registryIndexed'),
-                detail: uniqueRegistries[0]!,
-                type: 'registry',
-            });
-        }
-        return activities;
-    });
+    // Network activity filtered to the active watchlist. useNetworkActivity
+    // short-circuits to an empty feed when projectKeys is empty, preserving
+    // the "empty watchlist ⇒ empty portfolio" invariant documented above.
+    const { activityItems: recentActivity } = useNetworkActivity(projectKeys);
 
     // True while either the project batch fetch or the portfolio stats fetch is
     // still loading. Guards chart sections against rendering with empty data on

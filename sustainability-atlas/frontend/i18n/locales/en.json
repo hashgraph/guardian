@@ -433,11 +433,20 @@
         "projectsCount": "{count} projects",
         "noVintageData": "No vintage data matches the selected filters",
         "networkActivity": "Network Activity",
-        "networkActivityTooltip": "Recent events on the Guardian network including new project registrations, credit issuances, policy publications, and verifications.",
+        "networkActivityTooltip": "The 10 most recent events on the Guardian network — project, methodology and registry registrations, credit issuance and retirement, and other network events (token creation, identity publication, verification, role grants). Refreshes automatically about every 25 seconds.",
         "networkActivitySub": "Recent changes across the Guardian network",
         "noActivity": "No recent activity matches the selected filters",
         "activity": {
             "newProjectRegistered": "New project registered",
+            "methodologyRegistered": "Methodology registered",
+            "registryRegistered": "Registry registered",
+            "creditMinted": "Credits minted",
+            "creditRetired": "Credits retired",
+            "tokenCreated": "Credit token created",
+            "identityPublished": "Identity published",
+            "verificationApproved": "Verification approved",
+            "roleGranted": "Role granted",
+            "networkEvent": "Network event",
             "registryIndexed": "Registry indexed",
             "justNow": "just now",
             "minuteAgo": "{n} minute ago",
@@ -495,6 +504,7 @@
         "expectedIssuanceYearTooltip": "The year credits are first expected to be issued — applies to pre-issuance projects. Shows \"TBD\" when no forecast is available yet, and \"—\" for projects that have already issued.",
         "columns": {
             "project": "Project",
+            "createdDate": "Created Date",
             "country": "Country",
             "registry": "Registry",
             "methodology": "Methodology",
@@ -1027,7 +1037,7 @@
                     "unmapped": "— None —",
                     "rerunSuccess": "Decoder re-queued — refresh in a few seconds",
                     "rerunError": "Failed to re-queue decoder",
-                    "reparseSuccess": "Re-queued {count} project(s) for re-parsing",
+                    "reparseSuccess": "Re-queued {count} VC(s) for re-parsing",
                     "reparseEmpty": "Nothing to re-parse — decode first or no cached VCs",
                     "reparseError": "Failed to re-queue project re-parse",
                     "reparseDisabledHint": "Decode the policy successfully before re-parsing projects",
@@ -1035,7 +1045,8 @@
                     "saveNoChanges": "No changes to save",
                     "saveError": "Failed to save mapping",
                     "arrayIndexPlaceholder": "Index",
-                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record."
+                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record.",
+                    "sectorLockedHint": "Sector is fixed by policy.json; mapping a field here has no effect."
                 }
             },
             "summary": {

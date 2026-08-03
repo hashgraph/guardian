@@ -1,13 +1,14 @@
-import type { ActivityItem, MapPoint, MapCountry } from '~/types/models';
+import type { MapPoint, MapCountry } from '~/types/models';
 import { SectorType } from '~/types/enums';
 import { formatCredits } from '~/lib/format';
 import { ALPHA3_TO_NAME as CODE_TO_COUNTRY, COUNTRY_ALPHA3 } from '~/composables/useProjects';
 import { allocateDonutColors } from '~/lib/chart-colors';
+import { useNetworkActivity } from './useNetworkActivity';
 
 export function useDashboard(filters?: Ref<{ developer?: string; registry?: string }>) {
     const { summary, pending } = useDashboardSummary(filters);
-    const { recentProjects } = useRecentProjects(filters);
     const { mintStats, buildMintSeries, mintedBySector, mintedByRegistry } = useMintStats(filters);
+    const { activityItems: recentActivity } = useNetworkActivity(undefined, filters);
     const { t, locale } = useI18n();
 
     function relativeTime(dateStr: string): string {
@@ -151,40 +152,6 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     const issuanceTotal = computed(() =>
         Math.round(issuanceMonths.value.reduce((sum, m) => sum + m.value, 0) * 10) / 10,
     );
-
-    // Recent activity from most recent real projects
-    const recentActivity = computed<ActivityItem[]>(() => {
-        const activities: ActivityItem[] = [];
-
-        // Re-sorted by the VC's own createdAt; the API orders by ingestion time.
-        const sortedProjects = [...recentProjects.value]
-            .filter(p => p.createdAt)
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
-        for (const p of sortedProjects.slice(0, 5)) {
-            activities.push({
-                time: relativeTime(p.createdAt),
-                action: t('dashboard.activity.newProjectRegistered'),
-                detail: `${p.name} — ${p.registry}`,
-                type: 'project',
-            });
-        }
-
-        // Anchor a single "registry indexed" entry to the oldest project in the
-        // fetched window.
-        const firstRegistry = registries.value[0]?.name;
-        if (firstRegistry) {
-            const oldest = sortedProjects[sortedProjects.length - 1];
-            activities.push({
-                time: oldest ? relativeTime(oldest.createdAt) : '',
-                action: t('dashboard.activity.registryIndexed'),
-                detail: firstRegistry,
-                type: 'registry',
-            });
-        }
-
-        return activities;
-    });
 
     // Stats
     const hasActiveFilter = computed(() => {

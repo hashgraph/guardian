@@ -353,22 +353,29 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
             // fields like `country` to a sub-schema field (e.g.,
             // "1.8 Project Location.projectSiteCountryarea") and still see
             // it as the resolved mapping in the editor.
-            const resolvedFields: Record<string, string | null> = {};
+            //
+            // Carries schemaIri alongside fieldPath (not just the bare path)
+            // because Guardian schemas commonly reuse generic field keys
+            // (e.g. "field5") across unrelated schemas in the same policy —
+            // without the schemaIri, DecodedMethodologyResponseDto can't tell
+            // which schema's "field5" was actually picked and can resolve the
+            // title from the wrong one.
+            const resolvedFields: Record<string, { fieldPath: string; schemaIri: string } | null> = {};
             for (const [fieldKey, entries] of Object.entries(policyMapping)) {
                 if (!Array.isArray(entries)) continue;
-                let primary: string | null = null;
-                let fallback: string | null = null;
+                let primary: { fieldPath: string; schemaIri: string } | null = null;
+                let fallback: { fieldPath: string; schemaIri: string } | null = null;
                 for (const entry of entries) {
                     if (!entry || typeof entry !== 'object') continue;
                     const e = entry as Record<string, unknown>;
                     const schemaType = e['schemaType'];
                     if (schemaType === 'mintToken' || schemaType === 'standardRegistry') continue;
-                    if (typeof e['fieldPath'] !== 'string') continue;
+                    if (typeof e['fieldPath'] !== 'string' || typeof e['schemaIri'] !== 'string') continue;
                     if (e['schemaIri'] === projectSchemaId) {
-                        primary = e['fieldPath'] as string;
+                        primary = { fieldPath: e['fieldPath'], schemaIri: e['schemaIri'] };
                         break;
                     }
-                    if (fallback === null) fallback = e['fieldPath'] as string;
+                    if (fallback === null) fallback = { fieldPath: e['fieldPath'], schemaIri: e['schemaIri'] };
                 }
                 if (primary !== null) {
                     resolvedFields[fieldKey] = primary;
@@ -379,30 +386,37 @@ export class PgPolicySchemaRepository extends PolicySchemaRepository {
 
             // Determine geoKey: prefer manual override from policyMapping['geo'],
             // then auto-detect first isGeoJson field in the project schema.
+            // geoSchemaIri travels with it for the same reason as
+            // resolvedFields above (title lookup must be schema-aware); the
+            // auto-detected fallback is always on the project schema itself.
             let geoKey = '';
+            let geoSchemaIri = projectSchemaId;
             const geoEntries = Array.isArray(policyMapping['geo']) ? policyMapping['geo'] : [];
-            let geoPrimary: string | null = null;
-            let geoFallback: string | null = null;
+            let geoPrimary: { fieldPath: string; schemaIri: string } | null = null;
+            let geoFallback: { fieldPath: string; schemaIri: string } | null = null;
             for (const entry of geoEntries) {
                 if (!entry || typeof entry !== 'object') continue;
                 const e = entry as Record<string, unknown>;
                 const schemaType = e['schemaType'];
                 if (schemaType === 'mintToken' || schemaType === 'standardRegistry') continue;
-                if (typeof e['fieldPath'] !== 'string') continue;
+                if (typeof e['fieldPath'] !== 'string' || typeof e['schemaIri'] !== 'string') continue;
                 if (e['schemaIri'] === projectSchemaId) {
-                    geoPrimary = e['fieldPath'] as string;
+                    geoPrimary = { fieldPath: e['fieldPath'], schemaIri: e['schemaIri'] };
                     break;
                 }
-                if (geoFallback === null) geoFallback = e['fieldPath'] as string;
+                if (geoFallback === null) geoFallback = { fieldPath: e['fieldPath'], schemaIri: e['schemaIri'] };
             }
-            geoKey = geoPrimary ?? geoFallback ?? '';
-            if (!geoKey) {
+            const geoResolved = geoPrimary ?? geoFallback;
+            if (geoResolved) {
+                geoKey = geoResolved.fieldPath;
+                geoSchemaIri = geoResolved.schemaIri;
+            } else {
                 for (const [k, v] of Object.entries(fieldMap)) {
                     if (v.isGeoJson) { geoKey = k; break; }
                 }
             }
 
-            projectSchemaConfig = { geoKey, section: null, fieldMap, resolvedFields };
+            projectSchemaConfig = { geoKey, geoSchemaIri, section: null, fieldMap, resolvedFields };
         }
 
         return {

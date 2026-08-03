@@ -93,4 +93,12 @@ export const CREDIT_FIELD_SCHEMA: FieldSchema = {
         filter: 'eq',
         sortable: true,
     },
+    projectDisplay: {
+        sql: 'project_name',
+        sortable: true,
+    },
+    methodologyDisplay: {
+        sql: 'methodology_name',
+        sortable: true,
+    },
 };

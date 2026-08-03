@@ -498,6 +498,14 @@ const formState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFie
 const formIndexState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
 const saveMappingPending = ref(false);
 
+// Sector is always resolved from the methodology's own policy.json
+// (sectoralScopes) when present — see project-mapper.service.ts's
+// `sector = normalizeSector(methScopes) || ...` precedence. Mapping a schema
+// field to "Sector" here would silently have no visible effect in that case,
+// so the row is disabled with an explanatory hint instead of letting an admin
+// edit a field that can never take effect.
+const sectorLockedByPolicyJson = computed(() => (methodology.value?.sectoralScopes?.length ?? 0) > 0);
+
 // Look up the schemaIri that owns a given fieldPath. For nested paths like
 // "projectSiteCountryarea", the backend stores it under a sub-schema IRI
 // (e.g., "#3cbd0aa8-...&1.0.0"). We scan availableSchemas to find which
@@ -546,12 +554,15 @@ function resolveFieldPathParts(key: ResolvedFieldKey): { base: string; index: st
     const iri = findOwningSchemaIri(baseKey, projectIri);
     return { base: `${iri}.${baseKey}`, index };
   }
-  const resolved = ps.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const resolved = ps.resolvedFields as Record<string, { fieldKey: string; schemaIri: string } | null>;
   const rf = resolved[key];
   if (!rf) return { base: '', index: '' };
   const { base: baseKey, index } = splitArrayIndex(rf.fieldKey);
-  const iri = findOwningSchemaIri(baseKey, projectIri);
-  return { base: `${iri}.${baseKey}`, index };
+  // rf.schemaIri is the schema this field was actually saved under — use it
+  // directly rather than re-guessing via findOwningSchemaIri, which picks
+  // the first schema containing a matching field key and can land on the
+  // wrong schema when multiple schemas reuse the same generic key.
+  return { base: `${rf.schemaIri}.${baseKey}`, index };
 }
 
 function enterEditMode() {
@@ -1628,7 +1639,7 @@ function getResolvedField(fieldKey: string) {
                     :disabled="reparsePending || decodedData.decodeStatus !== 'success'"
                     @click="triggerReparse"
                   >
-                    <RotateCcw :class="['h-3.5 w-3.5', reparsePending ? 'animate-spin' : '']" />
+                    <RotateCcw :class="['h-3.5 w-3.5', reparsePending ? 'animate-spin [animation-direction:reverse]' : '']" />
                     {{ $t('methodologies.detail.decoded.actions.reparseProjects') }}
                   </Button>
                   <!-- Tooltip explaining why button is disabled when decode not successful -->
@@ -1811,6 +1822,7 @@ function getResolvedField(fieldKey: string) {
                             :groups="mappingOptionGroups"
                             :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
                             :placeholder="$t('common.searchEllipsis')"
+                            :disabled="row.fieldKey === 'sector' && sectorLockedByPolicyJson"
                           />
                           <input
                             v-if="isArrayPath(formState[row.fieldKey as ResolvedFieldKey])"
@@ -1821,6 +1833,12 @@ function getResolvedField(fieldKey: string) {
                             :title="$t('methodologies.detail.decoded.actions.arrayIndexHint')"
                             class="w-16 shrink-0 rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                           />
+                        </div>
+                        <div
+                          v-if="row.fieldKey === 'sector' && sectorLockedByPolicyJson"
+                          class="text-xs text-muted-foreground mt-1"
+                        >
+                          {{ $t('methodologies.detail.decoded.actions.sectorLockedHint') }}
                         </div>
                       </template>
                       <template v-else>

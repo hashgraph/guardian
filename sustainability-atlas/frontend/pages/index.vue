@@ -16,6 +16,10 @@ import {
     Plus,
     Zap,
     Flame,
+    Tag,
+    Fingerprint,
+    UserCog,
+    Activity,
 } from 'lucide-vue-next';
 import { formatCredits, formatSmartCredits, formatNumber } from '~/lib/format';
 import {
@@ -246,19 +250,27 @@ function sectorRouteFor(label: string) {
 const activityIcons: Record<string, any> = {
     project: Plus,
     credit: Coins,
-    policy: CheckCircle2,
+    methodology: CheckCircle2,
     verification: Shield,
     registry: Building2,
     retirement: Zap,
+    token: Tag,
+    identity: Fingerprint,
+    role: UserCog,
+    other: Activity,
 };
 
 const activityColors: Record<string, string> = {
     project: 'text-stat-green',
     credit: 'text-stat-amber',
-    policy: 'text-stat-blue',
+    methodology: 'text-stat-blue',
     verification: 'text-primary',
     registry: 'text-stat-rose',
     retirement: 'text-stat-amber',
+    token: 'text-stat-blue',
+    identity: 'text-primary',
+    role: 'text-stat-rose',
+    other: 'text-muted-foreground',
 };
 
 // --- Stat cards ---
@@ -780,7 +792,7 @@ const filteredStats = computed(() => {
                         class="flex items-center gap-4 px-4 py-3"
                     >
                         <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
-                            <component :is="activityIcons[item.type]" :class="[activityColors[item.type], 'h-4 w-4']" />
+                            <component :is="activityIcons[item.type] ?? Activity" :class="[activityColors[item.type] ?? 'text-muted-foreground', 'h-4 w-4']" />
                         </div>
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-medium text-foreground">{{ item.action }}</p>
