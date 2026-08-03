@@ -403,16 +403,7 @@ export class PolicyImportExport {
     }
 
     private static _createFile(json: string | Buffer, fileName: string): Promise<ObjectId> {
-        return new Promise<ObjectId>((resolve, reject) => {
-            try {
-                const fileStream = DataBaseHelper.gridFS.openUploadStream(fileName);
-                const fileId = fileStream.id;
-                fileStream.write(json);
-                fileStream.end(() => resolve(fileId));
-            } catch (error) {
-                reject(error)
-            }
-        });
+        return DataBaseHelper.writeToGridFS(json, fileName, () => DataBaseHelper.gridFS.openUploadStream(fileName));
     }
 
     /**
