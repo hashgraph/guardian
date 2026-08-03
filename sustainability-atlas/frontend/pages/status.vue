@@ -325,12 +325,18 @@ function formatLagHuman(seconds: number): string {
 function formatFailedReason(reason: string | null | undefined): string {
     if (!reason) return t('status.failedDrawer.noReason');
     const lower = reason.toLowerCase();
-    if (lower.includes('timeout')) return t('status.errors.timeout');
+    if (lower.includes('timeout') || lower.includes('etimedout')) return t('status.errors.timeout');
     if (lower.includes('econnrefused') || lower.includes('network error') || lower.includes('fetch failed')) return t('status.errors.networkError');
+    if (lower.includes('connection is closed') || lower.includes('connection closed') || lower.includes('socket closed') || lower.includes('econnreset')) return t('status.errors.connectionClosed');
+    if (lower.includes('enotfound') || lower.includes('getaddrinfo') || lower.includes('dns')) return t('status.errors.dnsError');
     if (lower.includes('rate limit') || lower.includes('429')) return t('status.errors.rateLimit');
     if (lower.includes('ipfs')) return t('status.errors.ipfsError');
     if (lower.includes('stalled')) return t('status.errors.stalled');
     if (lower.includes('502') || lower.includes('503') || lower.includes('bad gateway')) return t('status.errors.badGateway');
+    if (lower.includes('400') || lower.includes('bad request')) return t('status.errors.badRequest');
+    if (lower.includes('404') || lower.includes('not found')) return t('status.errors.notFound');
+    if (lower.includes('500') || lower.includes('internal server error')) return t('status.errors.serverError');
+    if (lower.includes('401') || lower.includes('403') || lower.includes('unauthorized') || lower.includes('forbidden')) return t('status.errors.unauthorized');
     return reason.length > 80 ? reason.slice(0, 80) + '…' : reason;
 }
 

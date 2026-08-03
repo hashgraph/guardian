@@ -2280,7 +2280,13 @@
             "rateLimit": "Límite de tarifa excedido (HTTP 429)",
             "ipfsError": "Fallo de obtención del nodo / pasarela IPFS",
             "stalled": "Trabajo estancado en el nodo de trabajador",
-            "badGateway": "Error de pasarela no válida (HTTP 502 / 503)"
+            "badGateway": "Error de pasarela no válida (HTTP 502 / 503)",
+            "connectionClosed": "Conexión cerrada inesperadamente",
+            "dnsError": "Fallo de resolución DNS / Host no encontrado (ENOTFOUND)",
+            "badRequest": "Solicitud no válida (HTTP 400)",
+            "notFound": "Recurso no encontrado (HTTP 404)",
+            "serverError": "Error interno del servidor (HTTP 500)",
+            "unauthorized": "Acceso no autorizado / prohibido (HTTP 401 / 403)"
         },
         "columns": {
             "queue": "Cola",

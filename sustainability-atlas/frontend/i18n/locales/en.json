@@ -2281,7 +2281,13 @@
             "rateLimit": "Rate limit exceeded (HTTP 429)",
             "ipfsError": "IPFS gateway / node fetch failure",
             "stalled": "Job stalled on worker node",
-            "badGateway": "Bad gateway error (HTTP 502 / 503)"
+            "badGateway": "Bad gateway error (HTTP 502 / 503)",
+            "connectionClosed": "Connection closed unexpectedly",
+            "dnsError": "DNS resolution failure / Host not found (ENOTFOUND)",
+            "badRequest": "Bad request (HTTP 400)",
+            "notFound": "Resource not found (HTTP 404)",
+            "serverError": "Internal server error (HTTP 500)",
+            "unauthorized": "Unauthorized / Forbidden access (HTTP 401 / 403)"
         },
         "columns": {
             "queue": "Queue",
