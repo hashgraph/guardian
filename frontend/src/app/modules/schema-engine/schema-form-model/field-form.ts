@@ -420,12 +420,14 @@ export class FieldForm {
 
         for (const item of this.crossSchemaItems) {
             for (const entryIndex of this.getEntryIndexes(item)) {
-                const childModel = this.resolveChildModel(item.fieldPath, entryIndex);
-                if (!childModel) { continue; }
+                const childModels = this.resolveChildModels(item.fieldPath, entryIndex);
+                if (!childModels.length) { continue; }
                 const visible = this.checkCrossConditionValue(item, entryIndex);
                 item.visibilityByEntry.set(entryIndex, visible);
                 if (visible) {
-                    childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                    for (const childModel of childModels) {
+                        childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                    }
                 }
             }
         }
@@ -466,16 +468,18 @@ export class FieldForm {
         if (!this.crossSchemaItems.length) { return; }
         for (const item of this.crossSchemaItems) {
             for (const entryIndex of this.getEntryIndexes(item)) {
-                const childModel = this.resolveChildModel(item.fieldPath, entryIndex);
-                if (!childModel) { continue; }
+                const childModels = this.resolveChildModels(item.fieldPath, entryIndex);
+                if (!childModels.length) { continue; }
                 const visible = this.checkCrossConditionValue(item, entryIndex);
                 const wasVisible = item.visibilityByEntry.get(entryIndex);
                 if (force || visible !== wasVisible) {
                     item.visibilityByEntry.set(entryIndex, visible);
-                    if (visible) {
-                        childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
-                    } else {
-                        childModel.removeParentControlledField(item.field.name);
+                    for (const childModel of childModels) {
+                        if (visible) {
+                            childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                        } else {
+                            childModel.removeParentControlledField(item.field.name);
+                        }
                     }
                 }
             }
@@ -631,23 +635,43 @@ export class FieldForm {
         return names;
     }
 
-    private resolveChildModel(fieldPath: string[], entryIndex: number | null = null): FieldForm | null {
-        if (!fieldPath || fieldPath.length < 2) { return null; }
-        let model: FieldForm = this;
+    private isGroupArray(item: IFieldControl<any>): boolean {
+        const groups = this.rootForm.getArrayGroups();
+        if (groups.has(item)) { return true; }
+        for (const dependents of groups.values()) {
+            if (dependents.some(entry => entry.control === item)) { return true; }
+        }
+        return false;
+    }
+
+    private resolveChildModels(fieldPath: string[], entryIndex: number | null = null): FieldForm[] {
+        if (!fieldPath || fieldPath.length < 2) { return []; }
+        let models: FieldForm[] = [this];
         for (let i = 0; i < fieldPath.length - 1; i++) {
             const name = fieldPath[i];
-            const ctrl = model.findControl(name);
-            let next: FieldForm | null;
-            if (ctrl?.isArray && ctrl.isRef) {
-                if (entryIndex === null) { return null; }
-                next = (ctrl.list?.[entryIndex]?.model as FieldForm) || null;
-            } else {
-                next = (ctrl?.model as FieldForm) || null;
+            const next: FieldForm[] = [];
+            for (const model of models) {
+                const ctrl = model.findControl(name);
+                if (ctrl?.isArray && ctrl.isRef) {
+                    if (entryIndex === null) { continue; }
+                    if (model.isGroupArray(ctrl)) {
+                        const entry = ctrl.list?.[entryIndex]?.model as FieldForm | undefined;
+                        if (entry) { next.push(entry); }
+                    } else {
+                        for (const listItem of (ctrl.list || [])) {
+                            const entry = listItem.model as FieldForm | undefined;
+                            if (entry) { next.push(entry); }
+                        }
+                    }
+                } else {
+                    const entry = ctrl?.model as FieldForm | undefined;
+                    if (entry) { next.push(entry); }
+                }
             }
-            if (!next) { return null; }
-            model = next;
+            if (!next.length) { return []; }
+            models = next;
         }
-        return model;
+        return models;
     }
 
     private getPresetForPath(fieldPath: string[]): any {
