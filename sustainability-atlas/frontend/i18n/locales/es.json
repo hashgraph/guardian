@@ -322,10 +322,9 @@
         "rawData": "Datos brutos",
         "lines": "líneas",
         "mdash": "—",
-        "total": "total",
-        "field": "campo",
-        "fields": "campos",
-        "changed": "cambiado",
+        "refresh": "Actualizar",
+        "cancel": "Cancelar",
+        "unknownError": "Error desconocido",
         "status": {
             "Active": "Activo",
             "Inactive": "Inactivo"
@@ -1448,74 +1447,7 @@
             "subtitle": "Señal de riesgo: una fuerte concentración en añadas más antiguas puede indicar una menor integridad de la línea de base según los principios CCP / ICVCM"
         }
     },
-    "status": {
-        "title": "Estado de sincronización",
-        "subtitle": "Métricas del pipeline de datos y las colas de trabajadores",
-        "dataSyncedUpTo": "Datos sincronizados hasta",
-        "topicsIndexed": "Tópicos indexados",
-        "topicsDiscovered": "descubiertos",
-        "messagesProcessed": "Mensajes procesados",
-        "pendingInQueue": "pendientes en cola",
-        "queueStatus": "Estado de las colas",
-        "queueStatusSub": "Colas de trabajadores BullMQ",
-        "connectionLive": "En vivo",
-        "connectionPolling": "Sondeando",
-        "lastUpdated": "Última actualización",
-        "totalWaiting": "Total en espera",
-        "totalFailed": "Total fallidos",
-        "columns": {
-            "queue": "Cola",
-            "waiting": "En espera",
-            "active": "Activas",
-            "completed": "Completadas",
-            "failed": "Fallidas",
-            "delayed": "Diferidas",
-            "concurrency": "Concurrencia",
-            "status": "Estado",
-            "actions": "Acciones"
-        },
-        "queueStatuses": {
-            "active": "Activa",
-            "idle": "Inactiva",
-            "paused": "En pausa"
-        },
-        "actions": {
-            "pause": "Pausar",
-            "resume": "Reanudar",
-            "viewFailures": "Ver fallos",
-            "retryAll": "Reintentar todo"
-        },
-        "failedDrawer": {
-            "title": "Trabajos fallidos",
-            "byReason": "Por motivo",
-            "allFailed": "Todos los fallidos",
-            "retryJob": "Reintentar",
-            "forceRetry": "Ignorar límite de reintentos (forzar)",
-            "budgetExhausted": "Presupuesto de reintentos agotado",
-            "attempts": "Intentos",
-            "manualRetries": "Reintentos manuales"
-        },
-        "syncHealth": {
-            "title": "Salud de sincronización",
-            "lastSynced": "Última sincronización",
-            "lag": "Retraso",
-            "topics": "Tópicos",
-            "tokens": "Tokens"
-        },
-        "activity": {
-            "title": "Actividad reciente",
-            "events": "eventos",
-            "filterAll": "Todos",
-            "filterFailures": "Solo fallos",
-            "empty": "Sin eventos recientes — esperando actividad de las colas...",
-            "emptyFailures": "No se registraron fallos en esta sesión"
-        },
-        "retryAll": {
-            "confirm": "¿Reintentar todos los trabajos fallidos?",
-            "force": "Ignorar límite de reintentos (forzar)",
-            "result": "Reintentados {retried} trabajos, omitidos {skipped}"
-        }
-    },
+
     "vcViewer": {
         "rawDataOnBlockchain": "Datos brutos en la blockchain",
         "searchInJson": "Buscar en JSON...",
@@ -2318,6 +2250,213 @@
                 "title": "Eso es todo: la ayuda está aquí",
                 "body": "Puedes volver a iniciar este recorrido cuando quieras desde el botón de Ayuda, y abrir el Glosario desde ese mismo menú si algún término no te resulta familiar. Disfruta explorando el Atlas."
             }
+        }
+    },
+    "status": {
+        "title": "Estado de Sincronización",
+        "subtitle": "Colas de procesamiento en segundo plano y salud de sincronización de datos en tiempo real en la red Guardian",
+        "dataSyncedUpTo": "Datos sincronizados hasta",
+        "topicsIndexed": "Temas Indexados",
+        "topicsDiscovered": "temas descubiertos",
+        "messagesProcessed": "Mensajes Procesados",
+        "pendingInQueue": "pendientes en cola",
+        "connectionLive": "En Vivo",
+        "connectionPolling": "Sondeo de respaldo (intervalo de 30s)",
+        "lastUpdated": "Última actualización",
+        "allStatuses": "Todos los estados",
+        "allTypes": "Todos los tipos",
+        "allEvents": "Todos los eventos",
+        "allCategories": "Todas las categorías",
+        "queueStatus": "Estado de las Colas",
+        "queueStatusSub": "Colas de procesamiento de tareas en segundo plano en NestJS + BullMQ",
+        "totalWaiting": "Total en espera",
+        "totalFailed": "Total fallidos",
+        "columns": {
+            "queue": "Cola",
+            "waiting": "En espera",
+            "active": "Activo",
+            "completed": "Completado",
+            "failed": "Fallido",
+            "delayed": "Retrasado",
+            "concurrency": "Concurrencia",
+            "status": "Estado",
+            "actions": "Acciones",
+            "topicId": "ID del Tema",
+            "messages": "Mensajes",
+            "hasNext": "Tiene Siguiente",
+            "lastUpdate": "Última Actualización",
+            "action": "Acción",
+            "tokenId": "ID del Token",
+            "serial": "Serie",
+            "type": "Tipo"
+        },
+        "syncOptions": {
+            "synced": "Sincronizado",
+            "new": "Nuevo",
+            "disabled": "Deshabilitado"
+        },
+        "ipfsStatus": {
+            "fetched": "Obtenido",
+            "failed": "Fallido",
+            "pending": "Pendiente"
+        },
+        "ipfsErrorCategories": {
+            "transient": "Transitorio",
+            "permanent": "Permanente",
+            "unknown": "Desconocido"
+        },
+        "queueStatuses": {
+            "paused": "Pausado",
+            "active": "Activo",
+            "idle": "Inactivo"
+        },
+        "actions": {
+            "viewFailures": "Ver fallos",
+            "retryAll": "Reintentar todo",
+            "retry": "Reintentar"
+        },
+        "syncHealth": {
+            "title": "Salud de Sincronización y Microservicios",
+            "lastSynced": "Último Mensaje Sincronizado",
+            "lag": "Retraso de Red",
+            "lagSec": "{seconds}s de retraso",
+            "lagMin": "{minutes}m de retraso",
+            "lagHour": "{hours}h de retraso",
+            "topics": "Temas Rastreados",
+            "tokens": "Tokens Rastreados",
+            "searchTopicPlaceholder": "Buscar ID del tema…",
+            "requeueTopicLabel": "Reencolar tema:",
+            "requeueTopicPlaceholder": "0.0.43065",
+            "fromStartLabel": "Desde el inicio (reprocesar todos los mensajes)",
+            "queueButton": "Encolar",
+            "noTopicsFound": "No se encontraron temas",
+            "requeueTooltip": "Reencolar tema desde la marca de agua actual",
+            "requeueButton": "Reencolar",
+            "searchTokenPlaceholder": "Buscar ID del token…",
+            "noTokensFound": "No se encontraron tokens"
+        },
+        "guardianSync": {
+            "title": "Guardian Sync",
+            "description": "Flujo de eventos de Guardian — encola lecturas dirigidas en las colas anteriores en lugar de sondeo a ciegas.",
+            "instances": "Instancias",
+            "noInstances": "No hay instancias configuradas",
+            "connected": "Conectado",
+            "reconnecting": "Reconectando",
+            "recentTriggers": "Disparadores recientes",
+            "noTriggers": "No se registraron disparadores",
+            "heartbeat": "Latido {time}.",
+            "columns": {
+                "instance": "Instancia",
+                "aemEndpoint": "Endpoint AEM",
+                "status": "Estado",
+                "events": "Eventos",
+                "lastEvent": "Último Evento",
+                "lastSubject": "Último Asunto",
+                "when": "Cuándo",
+                "event": "Evento",
+                "ref": "Ref",
+                "action": "Acción"
+            }
+        },
+        "ipfs": {
+            "title": "Documentos IPFS",
+            "retryAllForTopic": "Reintentar Todo para el Tema",
+            "filterTopicPlaceholder": "Filtrar por ID de tema...",
+            "includeChildTopics": "Incluir temas hijos",
+            "noDocuments": "No se encontraron documentos IPFS",
+            "copyCid": "Copiar CID",
+            "copyCidV1": "Copiar CID v1",
+            "columns": {
+                "cid": "CID",
+                "cidV1": "CID v1",
+                "topicId": "ID del Tema",
+                "type": "Tipo",
+                "status": "Estado",
+                "error": "Error",
+                "attempts": "Intentos",
+                "lastFailed": "Último Fallo",
+                "actions": "Acciones"
+            }
+        },
+        "maintenance": {
+            "title": "Mantenimiento",
+            "description": "Operaciones exclusivas de administrador para reprocesar políticas y proyectos. Ejecute la redecodificación primero y luego el reanálisis para propagar los mapeos de campos actualizados.",
+            "redecodeAll": "Redecodificar Todas las Políticas",
+            "reparseAll": "Reanalizar Todos los Proyectos"
+        },
+        "activity": {
+            "title": "Feed de Actividad Reciente",
+            "events": "eventos",
+            "filterAll": "Todos los eventos",
+            "filterFailures": "Solo fallos",
+            "empty": "No hay actividad reciente en las colas",
+            "emptyFailures": "Sin fallos recientes",
+            "bufferFull": "(búfer lleno — los más antiguos pueden perderse)",
+            "labels": {
+                "jobFailed": "Trabajo Fallido",
+                "jobCompleted": "Trabajo Completado",
+                "jobStalled": "Trabajo Estancado",
+                "ipfsFetchFailed": "Fallo al Obtener IPFS",
+                "ipfsFetchRecovered": "IPFS Recuperado",
+                "documentLoaded": "Documento Cargado"
+            }
+        },
+        "retryAll": {
+            "confirm": "Reintentar Todos los Trabajos Fallidos",
+            "confirmBody": "¿Reintentar los {count} trabajos fallidos en {baseName}? Los trabajos que hayan superado el presupuesto de {budget} reintentos manuales se omitirán a menos que marque Forzar.",
+            "force": "Forzar reintento de trabajos que superaron el presupuesto",
+            "result": "Se encolaron {retried} trabajos fallidos para reintentar ({skipped} omitidos)"
+        },
+        "failedDrawer": {
+            "title": "Trabajos Fallidos",
+            "byReason": "Por Motivo",
+            "allFailed": "Todos los Fallidos",
+            "searchMatches": "{count} coincidencia en esta página ({total} total) | {count} coincidencias en esta página ({total} total)",
+            "failedCount": "{count} trabajo fallido | {count} trabajos fallidos",
+            "noGroupsFound": "No se encontraron grupos",
+            "noFailedJobs": "No hay trabajos fallidos",
+            "count": "Cantidad: {count}",
+            "retryGroup": "Reintentar grupo",
+            "filterPlaceholder": "Filtrar por ID de trabajo o ID de tema…",
+            "noSearchMatchesOnPage": "Ningún trabajo coincide con \"{search}\" en esta página",
+            "searchMatchesOnPage": "{count} coincidencia en esta página — use la paginación para buscar en otras páginas | {count} coincidencias en esta página — use la paginación para buscar en otras páginas",
+            "attempts": "Intentos",
+            "manualRetries": "Reintentos manuales",
+            "retryJob": "Reintentar trabajo",
+            "forceRetry": "Forzar reintento",
+            "budgetExhausted": "Presupuesto de reintentos manuales agotado. Marque Forzar para anular.",
+            "confirmRetryQuestion": "¿Confirmar reintento?",
+            "yesRetry": "Sí, reintentar",
+            "retriedState": "Reintentado",
+            "stackTrace": "Traza de la pila",
+            "noReason": "Sin motivo proporcionado",
+            "jobNotFailed": "El trabajo ya no está en estado fallido, actualizando..."
+        },
+        "time": {
+            "justNow": "ahora mismo",
+            "sAgo": "hace {s}s",
+            "mAgo": "hace {m}m",
+            "hAgo": "hace {h}h",
+            "dAgo": "hace {d}d",
+            "never": "nunca"
+        },
+        "toasts": {
+            "invalidTopicFormat": "Formato de ID de tema no válido. Se esperaba \"0.0.X\".",
+            "topicQueued": "Tema {topicId} encolado para sincronización",
+            "failedRequeue": "Error al reencolar {topicId}: {error}",
+            "failedPause": "Error al pausar {baseName}: {error}",
+            "failedResume": "Error al reanudar {baseName}: {error}",
+            "retryAllFailed": "Error al reintentar todo para {baseName}: {error}",
+            "jobQueuedRetry": "Trabajo {id} encolado para reintento",
+            "retryFailed": "Error en el reintento",
+            "cidQueuedRetry": "CID {cid}… encolado para reintento",
+            "retryFailedWithError": "Error en el reintento: {error}",
+            "topicRetryAllQueued": "Reintento encolado para todos los fallos en el tema {topicId}",
+            "retryAllFailedWithError": "Error al reintentar todo: {error}",
+            "redecodeEnqueued": "Redecodificación encolada: {enqueued}/{total} políticas ({skipped} omitidas)",
+            "redecodeFailed": "Error en la redecodificación: {error}",
+            "reparseEnqueued": "Reanálisis encolado: {enqueued} trabajos de VC en {succeeded} metodologías",
+            "reparseFailed": "Error en el reanálisis: {error}"
         }
     }
 }

@@ -322,10 +322,9 @@
         "rawData": "Raw Data",
         "lines": "lines",
         "mdash": "—",
-        "total": "total",
-        "field": "field",
-        "fields": "fields",
-        "changed": "changed",
+        "refresh": "Refresh",
+        "cancel": "Cancel",
+        "unknownError": "Unknown error",
         "status": {
             "Active": "Active",
             "Inactive": "Inactive"
@@ -1449,74 +1448,7 @@
             "subtitle": "Risk signal: heavy concentration in older vintages may indicate weaker baseline integrity under CCP / ICVCM principles"
         }
     },
-    "status": {
-        "title": "Sync Status",
-        "subtitle": "Data pipeline and worker queue metrics",
-        "dataSyncedUpTo": "Data Synced Up To",
-        "topicsIndexed": "Topics Indexed",
-        "topicsDiscovered": "discovered",
-        "messagesProcessed": "Messages Processed",
-        "pendingInQueue": "pending in queue",
-        "queueStatus": "Queue Status",
-        "queueStatusSub": "BullMQ worker queues",
-        "connectionLive": "Live",
-        "connectionPolling": "Polling",
-        "lastUpdated": "Last updated",
-        "totalWaiting": "Total Waiting",
-        "totalFailed": "Total Failed",
-        "columns": {
-            "queue": "Queue",
-            "waiting": "Waiting",
-            "active": "Active",
-            "completed": "Completed",
-            "failed": "Failed",
-            "delayed": "Delayed",
-            "concurrency": "Concurrency",
-            "status": "Status",
-            "actions": "Actions"
-        },
-        "queueStatuses": {
-            "active": "Active",
-            "idle": "Idle",
-            "paused": "Paused"
-        },
-        "actions": {
-            "pause": "Pause",
-            "resume": "Resume",
-            "viewFailures": "View failures",
-            "retryAll": "Retry all"
-        },
-        "failedDrawer": {
-            "title": "Failed jobs",
-            "byReason": "By reason",
-            "allFailed": "All failed",
-            "retryJob": "Retry",
-            "forceRetry": "Override retry limit (force)",
-            "budgetExhausted": "Retry budget exhausted",
-            "attempts": "Attempts",
-            "manualRetries": "Manual retries"
-        },
-        "syncHealth": {
-            "title": "Sync Health",
-            "lastSynced": "Last Synced",
-            "lag": "Lag",
-            "topics": "Topics",
-            "tokens": "Tokens"
-        },
-        "activity": {
-            "title": "Recent Activity",
-            "events": "events",
-            "filterAll": "All",
-            "filterFailures": "Failures only",
-            "empty": "No recent events — waiting for queue activity...",
-            "emptyFailures": "No failures recorded in this session"
-        },
-        "retryAll": {
-            "confirm": "Retry all failed jobs?",
-            "force": "Override retry limit (force)",
-            "result": "Retried {retried} jobs, skipped {skipped}"
-        }
-    },
+
     "vcViewer": {
         "rawDataOnBlockchain": "Raw Data on the blockchain",
         "searchInJson": "Search in JSON...",
@@ -2319,6 +2251,213 @@
                 "title": "That is it — help lives here",
                 "body": "Start this tour again any time from the Help button, and open the Glossary from the same menu if a term is unfamiliar. Enjoy exploring the Atlas."
             }
+        }
+    },
+    "status": {
+        "title": "Sync Status",
+        "subtitle": "Real-time background processing queues & data sync health across the Guardian network",
+        "dataSyncedUpTo": "Data synced up to",
+        "topicsIndexed": "Topics Indexed",
+        "topicsDiscovered": "topics discovered",
+        "messagesProcessed": "Messages Processed",
+        "pendingInQueue": "pending in queue",
+        "connectionLive": "Live",
+        "connectionPolling": "Polling fallback (30s interval)",
+        "lastUpdated": "Last updated",
+        "allStatuses": "All Statuses",
+        "allTypes": "All Types",
+        "allEvents": "All Events",
+        "allCategories": "All Categories",
+        "queueStatus": "Queue Status",
+        "queueStatusSub": "Background task worker queues running on NestJS + BullMQ",
+        "totalWaiting": "Total Waiting",
+        "totalFailed": "Total Failed",
+        "columns": {
+            "queue": "Queue",
+            "waiting": "Waiting",
+            "active": "Active",
+            "completed": "Completed",
+            "failed": "Failed",
+            "delayed": "Delayed",
+            "concurrency": "Concurrency",
+            "status": "Status",
+            "actions": "Actions",
+            "topicId": "Topic ID",
+            "messages": "Messages",
+            "hasNext": "Has Next",
+            "lastUpdate": "Last Update",
+            "action": "Action",
+            "tokenId": "Token ID",
+            "serial": "Serial",
+            "type": "Type"
+        },
+        "syncOptions": {
+            "synced": "Synced",
+            "new": "New",
+            "disabled": "Disabled"
+        },
+        "ipfsStatus": {
+            "fetched": "Fetched",
+            "failed": "Failed",
+            "pending": "Pending"
+        },
+        "ipfsErrorCategories": {
+            "transient": "Transient",
+            "permanent": "Permanent",
+            "unknown": "Unknown"
+        },
+        "queueStatuses": {
+            "paused": "Paused",
+            "active": "Active",
+            "idle": "Idle"
+        },
+        "actions": {
+            "viewFailures": "View failures",
+            "retryAll": "Retry all",
+            "retry": "Retry"
+        },
+        "syncHealth": {
+            "title": "Sync Health & Micro-Services",
+            "lastSynced": "Last Synced Message",
+            "lag": "Network Lag",
+            "lagSec": "{seconds}s lag",
+            "lagMin": "{minutes}m lag",
+            "lagHour": "{hours}h lag",
+            "topics": "Tracked Topics",
+            "tokens": "Tracked Tokens",
+            "searchTopicPlaceholder": "Search topic ID…",
+            "requeueTopicLabel": "Requeue topic:",
+            "requeueTopicPlaceholder": "0.0.43065",
+            "fromStartLabel": "From start (re-process all messages)",
+            "queueButton": "Queue",
+            "noTopicsFound": "No topics found",
+            "requeueTooltip": "Requeue topic from current watermark",
+            "requeueButton": "Requeue",
+            "searchTokenPlaceholder": "Search token ID…",
+            "noTokensFound": "No tokens found"
+        },
+        "guardianSync": {
+            "title": "Guardian Sync",
+            "description": "Guardian event stream — enqueues targeted fetches into the queues above instead of blind polling.",
+            "instances": "Instances",
+            "noInstances": "No instances configured",
+            "connected": "Connected",
+            "reconnecting": "Reconnecting",
+            "recentTriggers": "Recent triggers",
+            "noTriggers": "No triggers recorded",
+            "heartbeat": "Heartbeat {time}.",
+            "columns": {
+                "instance": "Instance",
+                "aemEndpoint": "AEM Endpoint",
+                "status": "Status",
+                "events": "Events",
+                "lastEvent": "Last Event",
+                "lastSubject": "Last Subject",
+                "when": "When",
+                "event": "Event",
+                "ref": "Ref",
+                "action": "Action"
+            }
+        },
+        "ipfs": {
+            "title": "IPFS Documents",
+            "retryAllForTopic": "Retry All for Topic",
+            "filterTopicPlaceholder": "Filter by topic ID...",
+            "includeChildTopics": "Include child topics",
+            "noDocuments": "No IPFS documents found",
+            "copyCid": "Copy CID",
+            "copyCidV1": "Copy CID v1",
+            "columns": {
+                "cid": "CID",
+                "cidV1": "CID v1",
+                "topicId": "Topic ID",
+                "type": "Type",
+                "status": "Status",
+                "error": "Error",
+                "attempts": "Attempts",
+                "lastFailed": "Last Failed",
+                "actions": "Actions"
+            }
+        },
+        "maintenance": {
+            "title": "Maintenance",
+            "description": "Admin-only operations for re-processing policies and projects. Run re-decode first, then reparse to propagate updated field mappings.",
+            "redecodeAll": "Redecode All Policies",
+            "reparseAll": "Reparse All Projects"
+        },
+        "activity": {
+            "title": "Recent Activity Feed",
+            "events": "events",
+            "filterAll": "All events",
+            "filterFailures": "Failures only",
+            "empty": "No recent queue activity",
+            "emptyFailures": "No recent failures",
+            "bufferFull": "(buffer full — oldest may be lost)",
+            "labels": {
+                "jobFailed": "Job Failed",
+                "jobCompleted": "Job Completed",
+                "jobStalled": "Job Stalled",
+                "ipfsFetchFailed": "IPFS Fetch Failed",
+                "ipfsFetchRecovered": "IPFS Recovered",
+                "documentLoaded": "Document Loaded"
+            }
+        },
+        "retryAll": {
+            "confirm": "Retry All Failed Jobs",
+            "confirmBody": "Retry all {count} failed jobs in {baseName}? Jobs that have exceeded the {budget}-manual-retry budget will be skipped unless Force is checked.",
+            "force": "Force retry jobs that exceeded retry budget",
+            "result": "Queued {retried} failed jobs for retry ({skipped} skipped)"
+        },
+        "failedDrawer": {
+            "title": "Failed Jobs",
+            "byReason": "By Reason",
+            "allFailed": "All Failed",
+            "searchMatches": "{count} match on this page ({total} total) | {count} matches on this page ({total} total)",
+            "failedCount": "{count} failed job | {count} failed jobs",
+            "noGroupsFound": "No groups found",
+            "noFailedJobs": "No failed jobs",
+            "count": "Count: {count}",
+            "retryGroup": "Retry group",
+            "filterPlaceholder": "Filter by job ID or topic ID…",
+            "noSearchMatchesOnPage": "No jobs match \"{search}\" on this page",
+            "searchMatchesOnPage": "{count} match on this page — use pagination to search other pages | {count} matches on this page — use pagination to search other pages",
+            "attempts": "Attempts",
+            "manualRetries": "Manual retries",
+            "retryJob": "Retry job",
+            "forceRetry": "Force retry",
+            "budgetExhausted": "Manual retry budget exhausted. Check Force to override.",
+            "confirmRetryQuestion": "Confirm retry?",
+            "yesRetry": "Yes, retry",
+            "retriedState": "Retried",
+            "stackTrace": "Stack trace",
+            "noReason": "No reason provided",
+            "jobNotFailed": "Job is no longer in failed state, refreshing..."
+        },
+        "time": {
+            "justNow": "just now",
+            "sAgo": "{s}s ago",
+            "mAgo": "{m}m ago",
+            "hAgo": "{h}h ago",
+            "dAgo": "{d}d ago",
+            "never": "never"
+        },
+        "toasts": {
+            "invalidTopicFormat": "Invalid topic ID format. Expected \"0.0.X\".",
+            "topicQueued": "Topic {topicId} queued for sync",
+            "failedRequeue": "Failed to requeue {topicId}: {error}",
+            "failedPause": "Failed to pause {baseName}: {error}",
+            "failedResume": "Failed to resume {baseName}: {error}",
+            "retryAllFailed": "Retry all failed for {baseName}: {error}",
+            "jobQueuedRetry": "Job {id} queued for retry",
+            "retryFailed": "Retry failed",
+            "cidQueuedRetry": "CID {cid}… queued for retry",
+            "retryFailedWithError": "Retry failed: {error}",
+            "topicRetryAllQueued": "Retry queued for all failures on topic {topicId}",
+            "retryAllFailedWithError": "Retry all failed: {error}",
+            "redecodeEnqueued": "Re-decode enqueued: {enqueued}/{total} policies ({skipped} skipped)",
+            "redecodeFailed": "Re-decode failed: {error}",
+            "reparseEnqueued": "Reparse enqueued: {enqueued} VC jobs across {succeeded} methodologies",
+            "reparseFailed": "Reparse failed: {error}"
         }
     }
 }
