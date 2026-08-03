@@ -32,7 +32,7 @@ export function setupApiDocs(app: INestApplication, document: OpenAPIObject, pag
             url: 'api-docs-json',
             pageTitle,
             layout: 'modern',
-            theme: 'default',
+            theme: 'kepler',
             darkMode: false,
             showDeveloperTools: 'never',
             favicon: scalarFavicon,
