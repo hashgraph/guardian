@@ -2275,6 +2275,24 @@
         "queueStatusSub": "Background task worker queues running on NestJS + BullMQ",
         "totalWaiting": "Total Waiting",
         "totalFailed": "Total Failed",
+        "eventTypes": {
+            "block_complete": "Block Complete",
+            "token_minted": "Token Minted",
+            "ipfs_added_file": "IPFS File Added",
+            "block_event": "Block Event",
+            "policyReady": "Policy Ready",
+            "publishPolicies": "Publish Policies"
+        },
+        "messageTypes": {
+            "vcDocument": "VC Document",
+            "vpDocument": "VP Document",
+            "instancePolicy": "Instance Policy",
+            "standardRegistry": "Standard Registry",
+            "tag": "Tag",
+            "token": "Token",
+            "schema": "Schema",
+            "didDocument": "DID Document"
+        },
         "errors": {
             "timeout": "Connection timed out during processing",
             "networkError": "Network connection error / ECONNREFUSED",

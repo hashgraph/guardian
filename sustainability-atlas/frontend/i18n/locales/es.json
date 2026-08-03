@@ -2274,6 +2274,24 @@
         "queueStatusSub": "Colas de procesamiento de tareas en segundo plano en NestJS + BullMQ",
         "totalWaiting": "Total en espera",
         "totalFailed": "Total fallidos",
+        "eventTypes": {
+            "block_complete": "Bloque completado",
+            "token_minted": "Token acuñado",
+            "ipfs_added_file": "Archivo añadido a IPFS",
+            "block_event": "Evento de bloque",
+            "policyReady": "Política lista",
+            "publishPolicies": "Publicar políticas"
+        },
+        "messageTypes": {
+            "vcDocument": "Documento VC",
+            "vpDocument": "Documento VP",
+            "instancePolicy": "Política de instancia",
+            "standardRegistry": "Registro estándar",
+            "tag": "Etiqueta",
+            "token": "Token",
+            "schema": "Esquema",
+            "didDocument": "Documento DID"
+        },
         "errors": {
             "timeout": "Tiempo de espera de conexión agotado durante el procesamiento",
             "networkError": "Error de conexión de red / ECONNREFUSED",

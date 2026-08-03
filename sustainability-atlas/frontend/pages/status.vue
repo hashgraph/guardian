@@ -138,24 +138,24 @@ const tokenTypeOptions = computed<SingleSelectOption[]>(() => [
 
 const guardianEventOptions = computed<SingleSelectOption[]>(() => [
     { value: '', label: t('status.allEvents') },
-    { value: 'block_complete', label: 'block_complete' },
-    { value: 'token_minted', label: 'token_minted' },
-    { value: 'ipfs_added_file', label: 'ipfs_added_file' },
-    { value: 'block_event', label: 'block_event' },
-    { value: 'policy-event-policy-ready', label: 'policy-ready' },
-    { value: 'policy-engine-event-publish-policies', label: 'publish-policies' },
+    { value: 'block_complete', label: t('status.eventTypes.block_complete') },
+    { value: 'token_minted', label: t('status.eventTypes.token_minted') },
+    { value: 'ipfs_added_file', label: t('status.eventTypes.ipfs_added_file') },
+    { value: 'block_event', label: t('status.eventTypes.block_event') },
+    { value: 'policy-event-policy-ready', label: t('status.eventTypes.policyReady') },
+    { value: 'policy-engine-event-publish-policies', label: t('status.eventTypes.publishPolicies') },
 ]);
 
 const ipfsMessageTypeOptions = computed<SingleSelectOption[]>(() => [
     { value: '', label: t('status.allTypes') },
-    { value: 'VC-Document', label: 'VC-Document' },
-    { value: 'VP-Document', label: 'VP-Document' },
-    { value: 'Instance-Policy', label: 'Instance-Policy' },
-    { value: 'Standard Registry', label: 'Standard Registry' },
-    { value: 'Tag', label: 'Tag' },
-    { value: 'Token', label: 'Token' },
-    { value: 'Schema', label: 'Schema' },
-    { value: 'DID-Document', label: 'DID-Document' },
+    { value: 'VC-Document', label: t('status.messageTypes.vcDocument') },
+    { value: 'VP-Document', label: t('status.messageTypes.vpDocument') },
+    { value: 'Instance-Policy', label: t('status.messageTypes.instancePolicy') },
+    { value: 'Standard Registry', label: t('status.messageTypes.standardRegistry') },
+    { value: 'Tag', label: t('status.messageTypes.tag') },
+    { value: 'Token', label: t('status.messageTypes.token') },
+    { value: 'Schema', label: t('status.messageTypes.schema') },
+    { value: 'DID-Document', label: t('status.messageTypes.didDocument') },
 ]);
 
 const ipfsStatusOptions = computed<SingleSelectOption[]>(() => [
@@ -320,6 +320,22 @@ function formatLagHuman(seconds: number): string {
     if (seconds < 60) return t('status.syncHealth.lagSec', { seconds });
     if (seconds < 3600) return t('status.syncHealth.lagMin', { minutes: Math.floor(seconds / 60) });
     return t('status.syncHealth.lagHour', { hours: Math.floor(seconds / 3600) });
+}
+
+function formatMessageType(type: string | null | undefined): string {
+    if (!type) return '—';
+    const keyMap: Record<string, string> = {
+        'VC-Document': 'vcDocument',
+        'VP-Document': 'vpDocument',
+        'Instance-Policy': 'instancePolicy',
+        'Standard Registry': 'standardRegistry',
+        'Tag': 'tag',
+        'Token': 'token',
+        'Schema': 'schema',
+        'DID-Document': 'didDocument',
+    };
+    const key = keyMap[type];
+    return key ? t(`status.messageTypes.${key}`) : type;
 }
 
 function formatFailedReason(reason: string | null | undefined): string {
@@ -1670,7 +1686,7 @@ function formatTs(ts: number): string {
 
                                     <!-- Message type -->
                                     <td class="py-3 px-3 text-xs text-muted-foreground">
-                                        <span v-if="row.messageType" class="bg-muted rounded px-1.5 py-0.5 text-xs">{{ row.messageType }}</span>
+                                        <span v-if="row.messageType" class="bg-muted rounded px-1.5 py-0.5 text-xs">{{ formatMessageType(row.messageType) }}</span>
                                         <span v-else class="text-muted-foreground">—</span>
                                     </td>
 
