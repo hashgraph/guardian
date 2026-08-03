@@ -616,7 +616,7 @@ async function normalizeSchemaTemplateConfig(template: SchemaTemplate): Promise<
     template.config = normalizeTemplateConfigKeys(template.config, schemas as Schema[]);
 }
 
-function createTemplateStateHash(config: ISchemaTemplateConfig, schemas: ISchemaTemplateSnapshotSchemas): string {
+export function createTemplateStateHash(config: ISchemaTemplateConfig, schemas: ISchemaTemplateSnapshotSchemas): string {
     return createHash('sha256')
         .update(SchemaHelper.stableStringify({ config, schemas }))
         .digest('hex');
@@ -673,7 +673,7 @@ function toSnapshotSchema(
     };
 }
 
-function buildTemplateSchemasSnapshot(templateSchemas: Schema[]): ISchemaTemplateSnapshotSchemas {
+export function buildTemplateSchemasSnapshot(templateSchemas: Schema[]): ISchemaTemplateSnapshotSchemas {
     const schemas: Record<string, ISchemaTemplateSnapshotSchema> = {};
     const templateSchemaByIri = buildTemplateSchemaIriMap(templateSchemas);
     for (const schema of templateSchemas) {
@@ -806,7 +806,7 @@ function normalizeFieldCommentForDiff(comment: any, refTemplateSchemaId?: string
     return result;
 }
 
-function normalizeFieldForDiff(field: any): any {
+export function normalizeFieldForDiff(field: any): any {
     const result = SchemaHelper.cloneSchemaRuntimeValue(field || {});
     const refTemplateSchemaId = result.refTemplateSchemaId || '';
     const comment = normalizeFieldCommentForDiff(result.comment ?? result.$comment, refTemplateSchemaId);
@@ -931,7 +931,7 @@ function hasDetails(details: ISchemaTemplateUpdateChange['details']): boolean {
     return !!details?.length;
 }
 
-function buildFieldChangeDetails(previous: any, next: any): ISchemaTemplateUpdateChange['details'] {
+export function buildFieldChangeDetails(previous: any, next: any): ISchemaTemplateUpdateChange['details'] {
     return buildDetails(fieldDetailsSource(previous), fieldDetailsSource(next), [
         { key: 'fieldName', label: 'Field Name' },
         { key: 'type', label: 'Type' },

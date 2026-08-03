@@ -101,6 +101,31 @@ export enum PolicyAccessCode {
     UNAVAILABLE = 2
 }
 
+export async function validatePolicySchemaTemplateBeforePublish(model: Policy): Promise<void> {
+    const binding = model.schemaTemplate;
+    const hasTemplateBinding = !!(
+        binding?.templateId ||
+        binding?.snapshotId ||
+        Object.keys(binding?.schemaMap || {}).length
+    );
+    if (!hasTemplateBinding) {
+        return;
+    }
+    if (!binding?.templateId) {
+        throw new Error(
+            'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
+            'Select a published schema template or detach it from the policy.'
+        );
+    }
+    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+    if (!template || template.status !== ModuleStatus.PUBLISHED) {
+        throw new Error(
+            'Policy cannot be published while it uses a draft schema template. ' +
+            'Publish the schema template first or detach it from the policy.'
+        );
+    }
+}
+
 /**
  * Policy engine service
  */
@@ -1173,28 +1198,7 @@ export class PolicyEngine extends NatsService {
     }
 
     private async validateSchemaTemplateBeforePublish(model: Policy): Promise<void> {
-        const binding = model.schemaTemplate;
-        const hasTemplateBinding = !!(
-            binding?.templateId ||
-            binding?.snapshotId ||
-            Object.keys(binding?.schemaMap || {}).length
-        );
-        if (!hasTemplateBinding) {
-            return;
-        }
-        if (!binding?.templateId) {
-            throw new Error(
-                'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
-                'Select a published schema template or detach it from the policy.'
-            );
-        }
-        const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
-        if (!template || template.status !== ModuleStatus.PUBLISHED) {
-            throw new Error(
-                'Policy cannot be published while it uses a draft schema template. ' +
-                'Publish the schema template first or detach it from the policy.'
-            );
-        }
+        await validatePolicySchemaTemplateBeforePublish(model);
     }
 
     /**

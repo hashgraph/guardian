@@ -175,13 +175,11 @@ function getSchemaSettingsHash(schema: ISchema): string {
     });
 }
 
-async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): Promise<void> {
-    const context = await getTemplateSchemaValidationContext(previous);
-    if (!context) {
-        return;
-    }
-
-    const { schemaConfig } = context;
+export function validateTemplateSchemaUpdateByConfig(
+    previous: ISchema,
+    next: ISchema,
+    schemaConfig: ISchemaTemplateSchemaConfig
+): void {
     if (schemaConfig.schemaSettingsLocked && getSchemaSettingsHash(previous) !== getSchemaSettingsHash(next)) {
         throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
     }
@@ -227,6 +225,15 @@ async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): P
     }
 }
 
+async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): Promise<void> {
+    const context = await getTemplateSchemaValidationContext(previous);
+    if (!context) {
+        return;
+    }
+
+    validateTemplateSchemaUpdateByConfig(previous, next, context.schemaConfig);
+}
+
 function normalizeSchemaReference(value: unknown): string[] {
     if (typeof value !== 'string' || !value) {
         return [];
@@ -256,9 +263,13 @@ function addSchemaReference(map: Map<string, SchemaCollection>, schema: SchemaCo
 }
 
 function getSchemaRefFields(schema: SchemaCollection): SchemaField[] {
-    return new Schema(schema, true)
-        .getFields()
-        .filter((field) => !!field.isRef && !!field.type);
+    try {
+        return new Schema(schema, true)
+            .getFields()
+            .filter((field) => !!field.isRef && !!field.type);
+    } catch {
+        return [];
+    }
 }
 
 function getStoredSchemaDefs(schema: SchemaCollection): string[] {
@@ -286,7 +297,7 @@ function collectDocumentSchemaReferences(document: any, refs: Set<string>): void
     }
 }
 
-function getSchemaReferenceIris(schema: SchemaCollection): Set<string> {
+export function getSchemaReferenceIris(schema: SchemaCollection): Set<string> {
     const refs = new Set<string>();
 
     for (const def of getStoredSchemaDefs(schema)) {
