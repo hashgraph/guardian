@@ -7,6 +7,7 @@ interface RawSdgRow {
     project_count: string;
     developer_count: string;
     country_count: string;
+    issuance_count: string;
     total_credits: string;
     top_methodology: string | null;
 }
@@ -32,7 +33,8 @@ export class PgSdgRepository extends SdgRepository {
                     bv."businessData"->>'developer'                 AS developer,
                     bv."businessData"->>'country'                   AS country,
                     bv."businessData"->>'methodology'               AS methodology,
-                    COALESCE(ps.issuance_count, 0)::numeric         AS credits,
+                    COALESCE(ps.issuance_count, 0)::numeric         AS issuances,
+                    COALESCE(ps.total_issued, 0)::numeric           AS credits,
                     (sdg.value)::int                                AS sdg_id
                 FROM business_view bv
                 LEFT JOIN ${MV_PROJECT_STATS_NAME} ps ON ps."projectKey" = bv."projectKey"
@@ -62,6 +64,7 @@ export class PgSdgRepository extends SdgRepository {
                 COUNT(DISTINCT ps.source_ts)::text           AS project_count,
                 COUNT(DISTINCT NULLIF(ps.developer, ''))::text AS developer_count,
                 COUNT(DISTINCT NULLIF(ps.country, ''))::text   AS country_count,
+                COALESCE(SUM(ps.issuances), 0)::text         AS issuance_count,
                 COALESCE(SUM(ps.credits), 0)::text           AS total_credits,
                 tm.methodology                               AS top_methodology
             FROM project_sdgs ps
@@ -75,6 +78,7 @@ export class PgSdgRepository extends SdgRepository {
             projects: parseInt(r.project_count, 10),
             developers: parseInt(r.developer_count, 10),
             countries: parseInt(r.country_count, 10),
+            issuances: parseInt(r.issuance_count, 10),
             credits: parseFloat(r.total_credits),
             topMethodology: r.top_methodology,
         }));

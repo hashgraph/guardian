@@ -133,14 +133,54 @@ export async function ensureDatabaseExists(): Promise<void> {
 }
 
 /**
+ * Pool options that are safe for EVERY process (API, worker, guardian-sync).
+ *
+ * Deliberately excludes statement_timeout — see buildStatementTimeoutOptions.
+ */
+function buildBasePoolOptions(): Record<string, unknown> {
+    return {
+        min: parseInt(process.env.DB_POOL_MIN || '2', 10),
+        max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+        // Error out when no connection is available in this window.
+        connectionTimeoutMillis: parseInt(process.env.DB_POOL_CONNECTION_TIMEOUT_MS || '5000', 10),
+        idleTimeoutMillis: parseInt(process.env.DB_POOL_IDLE_TIMEOUT_MS || '30000', 10),
+    };
+}
+
+/**
+ * Query-cancellation options, applied only where the caller opts in.
+ *
+ * `getDatabaseConfig` is shared by the API, the worker and guardian-sync, and
+ * the latter two run multi-minute statements (REFRESH MATERIALIZED VIEW
+ * CONCURRENTLY, mapping backfills) that must not be cancelled. Only the API's
+ * NetworkDataSourceRegistry passes statementTimeoutMs.
+ *
+ * query_timeout (client-side) sits above statement_timeout (server-side) so
+ * Postgres reports the cancellation rather than the driver timing out first.
+ */
+function buildStatementTimeoutOptions(statementTimeoutMs: number): Record<string, unknown> {
+    return {
+        statement_timeout: statementTimeoutMs,
+        query_timeout: statementTimeoutMs + 5000,
+        idle_in_transaction_session_timeout: parseInt(
+            process.env.DB_IDLE_IN_TRANSACTION_TIMEOUT_MS || '30000',
+            10,
+        ),
+    };
+}
+
+/**
  * Returns TypeORM DataSource options for a specific network's database.
  *
  * @param network Target network (defaults to HEDERA_NET)
  * @param options.synchronize Override the default sync behaviour
+ * @param options.statementTimeoutMs Cancel queries exceeding this many ms.
+ *   Opt-in per process — see buildStatementTimeoutOptions for why this must
+ *   NOT be applied to the worker or guardian-sync.
  */
 export function getDatabaseConfig(
     network?: string,
-    options: { synchronize?: boolean } = {},
+    options: { synchronize?: boolean; statementTimeoutMs?: number } = {},
 ): TypeOrmModuleOptions {
     const envSync = process.env.DB_SYNCHRONIZE;
     const synchronize = options.synchronize ?? (envSync === undefined ? true : envSync === 'true');
@@ -157,8 +197,10 @@ export function getDatabaseConfig(
         synchronize,
         logging: resolveLogging(),
         extra: {
-            min: parseInt(process.env.DB_POOL_MIN || '2', 10),
-            max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+            ...buildBasePoolOptions(),
+            ...(options.statementTimeoutMs
+                ? buildStatementTimeoutOptions(options.statementTimeoutMs)
+                : {}),
         },
     };
 }
@@ -240,10 +282,9 @@ export function getSystemDatabaseConfig(): TypeOrmModuleOptions {
         entities: [join(__dirname, '..', 'entities', 'auth', '*.{ts,js}')],
         synchronize: false,
         logging: resolveLogging(),
-        extra: {
-            min: parseInt(process.env.DB_POOL_MIN || '2', 10),
-            max: parseInt(process.env.DB_POOL_MAX || '10', 10),
-        },
+        // No statement_timeout: this config is also loaded by the worker, and
+        // auth/audit queries are small enough that the pool guards suffice.
+        extra: buildBasePoolOptions(),
     };
 }
 

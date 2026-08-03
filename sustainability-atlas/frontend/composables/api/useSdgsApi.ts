@@ -6,6 +6,7 @@ export interface SdgStatsDto {
     name: string;
     color: string;
     projects: number;
+    issuances: number;
     credits: number;
     developers: number;
     countries: number;
@@ -33,14 +34,20 @@ export const useSdgsApi = (opts: UseSdgsApiOptions) => {
     const url = computed(() => `/api/v1/${opts.network.value}/sdgs`);
     const key = computed(() => `sdgs:${opts.network.value}`);
 
+    // Set when the request itself failed, so callers can tell "load failed"
+    // apart from "loaded, but there is nothing to show".
+    const failed = ref(false);
+
     const { data, pending, error, refresh } = useAsyncData<SdgStatsListResponse>(
         key.value,
         async () => {
             try {
                 const res = await $fetch<SdgStatsListResponse>(url.value, { baseURL });
+                failed.value = false;
                 return res ?? emptyResponse();
             } catch (err) {
                 console.error('[useSdgsApi] fetch failed:', err);
+                failed.value = true;
                 return emptyResponse();
             }
         },
@@ -50,5 +57,5 @@ export const useSdgsApi = (opts: UseSdgsApiOptions) => {
         },
     );
 
-    return { data, pending, error, refresh };
+    return { data, pending, error, failed, refresh };
 };

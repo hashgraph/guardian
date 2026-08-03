@@ -22,6 +22,9 @@ export interface RegistryStatsRow {
     projectCount: number;
     issuanceCount: number;
     userCount: number;
+    /** Credit volume issued / retired across this registry's projects, precomputed in mv_registry_stats. */
+    totalIssued: number;
+    totalRetired: number;
 }
 
 export interface RegistryRow {
@@ -77,6 +80,8 @@ export interface RegistryExportRow {
 /** Storage-agnostic repository contract. */
 export abstract class RegistryRepository {
     abstract findAll(query: RegistryListQuery): Promise<RegistryListResult>;
+    /** Distinct display names for filter dropdowns — avoids paging the full list to build one. */
+    abstract findNameOptions(hideEmpty?: boolean): Promise<string[]>;
     abstract findByDid(did: string): Promise<RegistryRow | null>;
     abstract findById(id: string): Promise<RegistryRow | null>;
     /** Full filtered, `registryDid`-deduped dataset for the export engine — never capped at 1000 rows, never HTTP page-looped by the caller; implementations batch internally. */

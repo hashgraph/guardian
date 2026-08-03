@@ -30,7 +30,7 @@ import SavedSearchesRow from "~/components/saved-search/SavedSearchesRow.vue";
 
 const { t } = useI18n();
 const { network } = useNetwork();
-const { projects, total, filterOptions, pending } = useProjects();
+const { projects, total, truncated, filterOptions, pending } = useProjects();
 const {
   selectedEntries,
   canAdd,
@@ -515,6 +515,14 @@ async function downloadProjects() {
           <Download v-else class="h-3.5 w-3.5" />
           {{ $t("projects.downloadData") }}
         </button>
+      </div>
+    </div>
+
+    <div v-if="truncated" class="px-4 sm:px-6 pb-3">
+      <div class="rounded-xl border border-stat-amber/30 bg-stat-amber/10 px-4 py-2.5 text-xs text-foreground">
+        Showing the first {{ projects.length.toLocaleString() }} of
+        {{ total.toLocaleString() }} projects. Filters, search and totals below apply
+        to the loaded subset only — narrow the search to see the rest.
       </div>
     </div>
 

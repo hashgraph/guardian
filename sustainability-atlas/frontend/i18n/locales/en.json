@@ -1133,6 +1133,8 @@
         "coverageTooltip": "Percentage of total projects that contribute to this SDG. A project can contribute to multiple SDG.",
         "viewProjects": "View projects tagged with {name}",
         "viewIssuances": "View issuances for {name}",
+        "noMatch": "No SDGs match your search",
+        "loadFailed": "Couldn't load SDG data.",
         "columns": {
             "sdg": "SDG",
             "goal": "Goal",

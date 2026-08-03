@@ -24,8 +24,17 @@ export interface MaterializedViewDefinition {
  * Registry of all materialized views.
  * New views should be added here; they will be created on worker startup
  * and refreshed periodically by MvRefreshProcessor.
+ *
+ * Order is significant: views are created and refreshed top to bottom, so a
+ * view that reads another must come after it. mv_registry_stats reads
+ * mv_project_stats.
  */
 export const MATERIALIZED_VIEWS: MaterializedViewDefinition[] = [
+    {
+        name: MV_PROJECT_STATS_NAME,
+        createSql: MV_PROJECT_STATS_CREATE_SQL,
+        indexSql: MV_PROJECT_STATS_INDEX_SQL,
+    },
     {
         name: MV_REGISTRY_STATS_NAME,
         createSql: MV_REGISTRY_STATS_CREATE_SQL,
@@ -35,11 +44,6 @@ export const MATERIALIZED_VIEWS: MaterializedViewDefinition[] = [
         name: MV_METHODOLOGY_STATS_NAME,
         createSql: MV_METHODOLOGY_STATS_CREATE_SQL,
         indexSql: MV_METHODOLOGY_STATS_INDEX_SQL,
-    },
-    {
-        name: MV_PROJECT_STATS_NAME,
-        createSql: MV_PROJECT_STATS_CREATE_SQL,
-        indexSql: MV_PROJECT_STATS_INDEX_SQL,
     },
 ];
 

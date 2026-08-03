@@ -42,7 +42,10 @@ export class SdgStatsResponseDto {
     @ApiProperty({ description: 'Number of projects tagged with this SDG' })
     projects: number;
 
-    @ApiProperty({ description: 'Total credits (ER_y) summed across projects tagged with this SDG' })
+    @ApiProperty({ description: 'Number of mint events across projects tagged with this SDG' })
+    issuances: number;
+
+    @ApiProperty({ description: 'Credit volume issued across projects tagged with this SDG' })
     credits: number;
 
     @ApiProperty({ description: 'Number of distinct developers across projects tagged with this SDG' })
@@ -83,6 +86,7 @@ export function buildSdgStatsList(
             name: sdg.name,
             color: sdg.color,
             projects: stats?.projects ?? 0,
+            issuances: stats?.issuances ?? 0,
             credits: stats?.credits ?? 0,
             developers: stats?.developers ?? 0,
             countries: stats?.countries ?? 0,

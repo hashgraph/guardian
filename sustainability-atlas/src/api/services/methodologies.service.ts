@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { RedisService } from '@shared/redis/redis.service';
 import { promises as fs } from 'fs';
 import { join, resolve } from 'path';
 import CID from 'cids';
@@ -20,6 +21,9 @@ export type PolicyPackageResult =
     | { ok: true; cid: string; content: Buffer }
     | { ok: false; reason: 'not-decoded' | 'not-cached' };
 
+/** Matches MV_REFRESH_INTERVAL. */
+const OPTIONS_CACHE_TTL_SECONDS = 60;
+
 @Injectable()
 export class MethodologiesService {
     private readonly logger = new Logger(MethodologiesService.name);
@@ -28,7 +32,19 @@ export class MethodologiesService {
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
         private readonly ipfsService: IpfsService,
+        private readonly redis: RedisService,
     ) {}
+
+    /** Distinct methodology names for filter dropdowns. Cached — the set changes only on ingest. */
+    async findNameOptions(network: string): Promise<string[]> {
+        const cacheKey = `methodology-options:${network}`;
+        const cached = await this.redis.getJson<string[]>(cacheKey);
+        if (cached) return cached;
+
+        const names = await this.getRepository(network).findNameOptions();
+        await this.redis.setJson(cacheKey, names, OPTIONS_CACHE_TTL_SECONDS);
+        return names;
+    }
 
     private toV1Base32(cid: string): string {
         try { return new CID(cid).toV1().toString('base32'); }

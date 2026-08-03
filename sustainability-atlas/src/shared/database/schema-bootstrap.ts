@@ -209,6 +209,67 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         ON guardian_event_log (subject)
     `);
 
+    // Backs the canonical-row dedup on the METHODOLOGY / REGISTRY lists, which
+    // order by ("sourceTimestamp")::numeric. The cast means the plain column
+    // indexes can't serve it, and the sourceTimestamp index above is partial on
+    // viewType='PROJECT'.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_methodology_canonical
+        ON business_view ("relatedTopicId", (("sourceTimestamp")::numeric) DESC, id DESC)
+        WHERE "viewType" = 'METHODOLOGY' AND "relatedTopicId" IS NOT NULL
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_registry_canonical
+        ON business_view ("registryDid", (("sourceTimestamp")::numeric) DESC, id DESC)
+        WHERE "viewType" = 'REGISTRY' AND "registryDid" IS NOT NULL
+    `);
+
+    // Backs the default `bv."createdAt" DESC NULLS LAST` list ordering.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_view_type_created
+        ON business_view ("viewType", "createdAt" DESC)
+    `);
+
+    // Backs the credits list's default ordering. The predicate matches the
+    // list's base filter exactly, so the planner can walk this index in
+    // consensus-timestamp order and stop at LIMIT instead of joining and
+    // sorting every mint event.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_mint_token_cts
+        ON message ("consensusTimestamp" DESC)
+        WHERE type = 'VC-Document'
+          AND documents IS NOT NULL
+          AND (documents->'credentialSubject'->0->>'type') LIKE 'MintToken%'
+    `);
+
+    // Backs the credits search: ILIKE '%term%' on tc.name / tc.symbol plus
+    // similarity() on tc.name.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_token_cache_name_trgm
+        ON token_cache USING GIN (name gin_trgm_ops)
+    `);
+
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_token_cache_symbol_trgm
+        ON token_cache USING GIN (symbol gin_trgm_ops)
+    `);
+
+    // POLICY_DECODE_STATUS_JOIN and the credits METHODOLOGY_JOIN's nested
+    // subquery both look up `policy` by policyTopicId ordered by updatedAt.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_policy_topic_updated
+        ON policy ("policyTopicId", "updatedAt" DESC)
+    `);
+
+    // Backs the MRV data endpoint's topicId + schema-UUID scope. split_part is
+    // immutable, so it is indexable as an expression.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_message_mrv_topic_schema
+        ON message ("topicId", (split_part(documents->'credentialSubject'->0->>'type', '&', 1)))
+        WHERE type = 'VC-Document'
+    `);
+
     // ── Table: notification_watermarks ─────────────────────────────────────
     // Per-network scan progress for NotificationScanService (API-side, no
     // worker involvement). One row per event source ('issuance' today).

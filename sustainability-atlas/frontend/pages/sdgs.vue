@@ -5,7 +5,7 @@ function goToProjectsForSdg(sdgId: number) {
     return navigateTo({ path: '/projects', query: { sdgs: String(sdgId) } });
 }
 
-const { sdgStats, totalProjects } = useSdgStats();
+const { sdgStats, totalProjects, pending, failed, refresh } = useSdgStats();
 
 const allSdgs = computed(() => sdgStats.value.map(s => ({
     id: String(s.id),
@@ -13,6 +13,7 @@ const allSdgs = computed(() => sdgStats.value.map(s => ({
     name: s.name,
     color: s.color,
     projects: s.projects,
+    issuances: s.issuances,
     credits: formatCredits(s.credits),
     developers: s.developers,
     countries: s.countries,
@@ -61,7 +62,7 @@ function sdgIcon(id: number): string {
                             <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap">{{ $t('sdgs.columns.sdg') }}</th>
                             <SortableHeader :label="$t('sdgs.columns.goal')" sort-key="name" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('sdgs.columns.projects')" sort-key="projects" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
-                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="credits" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
+                            <SortableHeader :label="$t('sdgs.columns.issuances')" sort-key="issuances" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('sdgs.columns.developers')" sort-key="developers" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('sdgs.columns.countries')" sort-key="countries" :active-sort-key="sortKey as string" :sort-dir="sortDir" align="center" @sort="toggleSort($event as any)" />
                             <SortableHeader :label="$t('sdgs.columns.topMethodology')" sort-key="topMethodology" :active-sort-key="sortKey as string" :sort-dir="sortDir" @sort="toggleSort($event as any)" />
@@ -108,7 +109,7 @@ function sdgIcon(id: number): string {
                                     class="text-primary hover:underline transition-colors"
                                     :title="$t('sdgs.viewIssuances', { name: s.name })"
                                 >
-                                    {{ s.credits }}
+                                    {{ s.issuances.toLocaleString() }}
                                 </AppLink>
                             </td>
                             <td class="py-3 px-4 text-center tabular-nums">{{ s.developers }}</td>
@@ -126,6 +127,20 @@ function sdgIcon(id: number): string {
                                     </div>
                                     <span class="text-[10px] text-muted-foreground tabular-nums w-8 text-right">{{ totalProjects ? Math.round((s.projects / totalProjects) * 100) : 0 }}%</span>
                                 </div>
+                            </td>
+                        </tr>
+                        <tr v-if="paginated.length === 0">
+                            <td colspan="8" class="py-12 text-center text-sm text-muted-foreground">
+                                <template v-if="pending">{{ $t('common.loading') }}</template>
+                                <template v-else-if="failed">
+                                    <span class="text-foreground">{{ $t('sdgs.loadFailed') }}</span>
+                                    <button
+                                        type="button"
+                                        class="ml-2 text-primary hover:underline"
+                                        @click="refresh()"
+                                    >{{ $t('common.retry') }}</button>
+                                </template>
+                                <template v-else>{{ $t('sdgs.noMatch') }}</template>
                             </td>
                         </tr>
                     </tbody>

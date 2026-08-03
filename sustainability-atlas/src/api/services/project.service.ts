@@ -34,6 +34,7 @@ export class ProjectsService {
             country: query.country,
             methodology: query.methodology,
             registry: query.registry,
+            registryDid: query.registryDid,
             developer: query.developer,
             vintage: query.vintage,
             status: query.status,
@@ -82,7 +83,11 @@ export class ProjectsService {
         });
         const items = result.rows.map(row => {
             const dto = ProjectResponseDto.fromRow(row, network, false);
-            return { id: dto.sourceTimestamp, name: dto.name ?? dto.sourceTimestamp };
+            return {
+                id: dto.sourceTimestamp,
+                name: dto.name ?? dto.sourceTimestamp,
+                projectKey: dto.projectKey ?? null,
+            };
         });
         return { items };
     }
