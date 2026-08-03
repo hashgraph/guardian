@@ -796,6 +796,10 @@ export class MockHelper {
                 row.transaction.message = encodedJson;
 
                 const file = await DatabaseServer.getMock(mockId, MockEntityType.FILE, { cid: contextCid });
+                if (!file) {
+                    console.error(`replaceSchema: context file not found for CID "${contextCid}"`);
+                    return;
+                }
                 file.cid = dryRunCid;
                 await DatabaseServer.updateMock(file);
 
