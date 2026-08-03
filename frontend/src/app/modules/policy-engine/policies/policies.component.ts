@@ -54,6 +54,7 @@ import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.s
 import { DB_NAME, STORES_NAME } from 'src/app/constants';
 import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dialog.component';
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
+import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
 
 class MenuButton {
@@ -944,35 +945,21 @@ export class PoliciesComponent implements OnInit {
     }
 
     private dryRun(element: any) {
-        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
-            showHeader: false,
-            width: '640px',
-            styleClass: 'guardian-dialog',
-            data: {
-                header: 'Enable Mock',
-                texts: [
-                    `Mock Data intercepts all external service calls (IPFS, Topics, Tokens, and API requests) and returns pre-configured test responses instead of making real network calls. This lets you run and test your policy in a fully self-contained offline environment.`,
-                    `You can change this setting and configure individual blocks at any time from the 'Mock Config' panel.`,
-                    `Note: enabling Mock pre-records responses for every schema in the policy, so moving to Dry-Run may take several minutes.`
-                ],
-                buttons: [{
-                    name: 'Disable',
-                    class: 'secondary'
-                }, {
-                    name: 'Enable',
-                    class: 'primary'
-                }]
-            },
-        });
+        confirmDryRun(this.dialogService, element.id)
+            .pipe(takeUntil(this._destroy$))
+            .subscribe((choice) => {
+                if (choice) {
+                    this.executeDryRun(element, choice.enableMock);
+                }
+            });
+    }
 
-        dialogRef?.onClose.pipe(takeUntil(this._destroy$)).subscribe((result: string) => {
-            this.loading = true;
-            this.policyEngineService
-                .dryRun(element.id, {
-                    enableMock: result === 'Enable'
-                })
-                .pipe(takeUntil(this._destroy$))
-                .subscribe(
+    private executeDryRun(element: any, enableMock: boolean) {
+        this.loading = true;
+        this.policyEngineService
+            .dryRun(element.id, { enableMock })
+            .pipe(takeUntil(this._destroy$))
+            .subscribe(
                     (data: any) => {
                         const { policies, isValid, errors } = data;
                         if (!isValid) {
@@ -1012,7 +999,6 @@ export class PoliciesComponent implements OnInit {
                         this.loading = false;
                     }
                 );
-        });
     }
 
     private draft(element: any) {
