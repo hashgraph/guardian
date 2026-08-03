@@ -295,7 +295,7 @@ const filters = computed<FilterOption[]>(() => [
     multiSelect: true,
     options: SDG_LIST.map((s) => ({
       value: String(s.id),
-      label: `SDG ${s.id}: ${getLocalizedSDGName(s.id, t)}`,
+      label: `${t("sdgs.columns.sdg")} ${s.id}: ${getLocalizedSDGName(s.id, t)}`,
       icon: `/sdgs/E-WEB-Goal-${String(s.id).padStart(2, "0")}.png`,
     })),
   },

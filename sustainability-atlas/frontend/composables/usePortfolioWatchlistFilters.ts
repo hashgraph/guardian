@@ -1,7 +1,7 @@
 import type { Project } from '~/types/models';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 import { naturalCompare, isValidCountryName, decodeMultiValue } from '~/lib/utils';
-import { SDG_LIST } from '~/lib/sdgs';
+import { SDG_LIST, getLocalizedSDGName } from '~/lib/sdgs';
 
 /**
  * Multi-select Country/Methodology/Registry/SDG filters for the "Manage
@@ -86,7 +86,7 @@ export function usePortfolioWatchlistFilters(candidates: Ref<Project[]>, isModal
     const sdgOptions = computed(() =>
         SDG_LIST.map(s => ({
             value: String(s.id),
-            label: `SDG ${s.id}: ${s.name}`,
+            label: `${t('sdgs.columns.sdg')} ${s.id}: ${getLocalizedSDGName(s.id, t)}`,
             icon: `/sdgs/E-WEB-Goal-${String(s.id).padStart(2, '0')}.png`,
         })));
 

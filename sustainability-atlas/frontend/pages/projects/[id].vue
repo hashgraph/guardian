@@ -441,11 +441,11 @@ const emissions = computed(() => {
                             >
                                 <img
                                     :src="`/sdgs/E-WEB-Goal-${String(sdgId).padStart(2, '0')}.png`"
-                                    :alt="`SDG ${sdgId}`"
+                                    :alt="`${$t('sdgs.columns.sdg')} ${sdgId}`"
                                     class="h-10 w-10 rounded"
                                 />
                                 <div>
-                                    <div class="text-xs font-semibold text-foreground">SDG {{ sdgId }}</div>
+                                    <div class="text-xs font-semibold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdgId }}</div>
                                     <div class="text-[11px] text-muted-foreground">{{ getLocalizedSDGName(sdgId, t) }}</div>
                                 </div>
                             </div>
