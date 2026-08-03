@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ISchema, ISchemaDeletionPreview, SchemaCategory, SchemaEntity, SchemaNode } from '@guardian/interfaces';
-import { Observable } from 'rxjs';
+import { Observable, catchError, shareReplay, throwError } from 'rxjs';
 import { API_BASE_URL } from './api';
 import { AuthService } from './auth.service';
 import { headersV2 } from '../constants';
@@ -16,10 +16,34 @@ export class SchemaService {
     private readonly url: string = `${API_BASE_URL}/schemas`;
     private readonly singleSchemaUrl: string = `${API_BASE_URL}/schema`;
 
+    // Resolved single-schema requests keyed by id, so a block that receives a
+    // schema reference resolves the full schema once and shares it.
+    private readonly schemaByIdCache = new Map<string, Observable<ISchema>>();
+
     constructor(
         private http: HttpClient,
         private auth: AuthService,
     ) {
+    }
+
+    public getSchemaById(id: string): Observable<ISchema> {
+        return this.http.get<ISchema>(`${this.singleSchemaUrl}/${id}`);
+    }
+
+    // Resolve a full schema by id, cached and de-duplicated; evict on error to retry.
+    public resolveSchemaById(id: string): Observable<ISchema> {
+        let cached = this.schemaByIdCache.get(id);
+        if (!cached) {
+            cached = this.getSchemaById(id).pipe(
+                catchError((error) => {
+                    this.schemaByIdCache.delete(id);
+                    return throwError(() => error);
+                }),
+                shareReplay(1)
+            );
+            this.schemaByIdCache.set(id, cached);
+        }
+        return cached;
     }
 
     public static getOptions(filters?: {

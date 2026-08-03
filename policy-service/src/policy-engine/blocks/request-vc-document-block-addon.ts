@@ -153,7 +153,14 @@ export class RequestVcDocumentBlockAddon {
                 user.location === LocationType.REMOTE
             ),
             ...options,
-            schema: { ...this._schema, fields: [], conditions: [] },
+            // Lightweight schema reference; the client resolves the full schema by id.
+            schema: {
+                id: this._schema.id,
+                iri: this._schema.iri,
+                uuid: this._schema.uuid,
+                name: this._schema.name,
+                version: this._schema.version,
+            },
         };
         return data;
     }
