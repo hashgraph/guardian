@@ -384,9 +384,18 @@ export class SchemaFormComponent implements OnInit {
         return !!this.formModel?.rootForm?.isManagedArray(item);
     }
 
+    public entryTitleLabel(item: IFieldControl<any>): string {
+        return this.formModel?.getEntryTitleLabel(item) || 'Source entry';
+    }
+
     public entryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
         return this.formModel?.getEntryTitle(item, listItem)
             || `${item.description} #${listItem.index2}`;
+    }
+
+    public entryTitleNumber(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        const fallback = `${item.description} #${listItem.index2}`;
+        return this.entryTitle(item, listItem) === fallback ? '' : `#${listItem.index2}`;
     }
 
     public patchSuggestValue(item: IFieldControl<any>) {
@@ -1128,18 +1137,24 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
-        if (this.hide) {
-            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
-        }
-        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
+    private getTitleMappedNames(item: IFieldControl<any>): Set<string> {
+        return this.formModel?.getTitleMappedNames(item) || new Set<string>();
     }
 
-    public getTableRowFields(item: IFieldIndexControl<any>): any[] | undefined {
+    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
+        const mapped = this.getTitleMappedNames(item);
         if (this.hide) {
-            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
         }
-        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden);
+        return item.fields?.filter(f => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
+    }
+
+    public getTableRowFields(item: IFieldIndexControl<any>, owner?: IFieldControl<any>): any[] | undefined {
+        const mapped = owner ? this.getTitleMappedNames(owner) : new Set<string>();
+        if (this.hide) {
+            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
+        }
+        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
     }
 }
 

@@ -185,10 +185,12 @@ export class FieldForm {
         this.arrayGroupCache = null;
         this.crossSchemaItems = [];
         this.fieldControls = this.buildFields(fields);
+        this.conditionControls = this.buildConditions(conditions);
         if (this.schema?.arrayDependencies?.length) {
             this.alignArrayGroups();
+            this.syncArrayDependencyValues();
+            this.subscribeArrayDependencyValues();
         }
-        this.conditionControls = this.buildConditions(conditions);
         this.controls = this.rebuildControls();
         this.subscribeConditions();
     }
@@ -261,6 +263,12 @@ export class FieldForm {
         return as === bs;
     }
 
+    private findControl(name: string): IFieldControl<any> | undefined {
+        const base = this.fieldControls?.find(control => control.name === name);
+        if (base || !this.rootForm.schema?.arrayDependencies?.length) { return base; }
+        return this.conditionControls?.find(control => control.name === name);
+    }
+
     private evaluateIf(expr: IConditionExpr, entryIndex: number | null = null): boolean {
         if (!expr || !expr.pairs?.length) return false;
 
@@ -284,9 +292,7 @@ export class FieldForm {
         let model: FieldForm | null = this;
         for (const segment of segments) {
             result.push(segment);
-            const ctrl: IFieldControl<any> | undefined = model?.fieldControls?.find(
-                c => c.name === segment
-            );
+            const ctrl: IFieldControl<any> | undefined = model?.findControl(segment);
             if (ctrl?.isArray && ctrl.isRef) {
                 result.push(String(entryIndex));
                 model = (ctrl.list?.[entryIndex]?.model as FieldForm) || null;
@@ -301,7 +307,7 @@ export class FieldForm {
         if (!fieldPath?.length) { return null; }
         let model: FieldForm = this;
         for (let i = 0; i < fieldPath.length - 1; i++) {
-            const ctrl = model.fieldControls?.find(c => c.name === fieldPath[i]);
+            const ctrl = model.findControl(fieldPath[i]);
             if (!ctrl) { return null; }
             if (ctrl.isArray && ctrl.isRef) {
                 return ctrl.list?.length || 0;
@@ -408,6 +414,10 @@ export class FieldForm {
             }
         }
 
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.conditionControls = controls;
+        }
+
         for (const item of this.crossSchemaItems) {
             for (const entryIndex of this.getEntryIndexes(item)) {
                 const childModel = this.resolveChildModel(item.fieldPath, entryIndex);
@@ -476,14 +486,14 @@ export class FieldForm {
         if (!fieldPath?.length) { return null; }
         let model: FieldForm = this;
         for (let i = 0; i < fieldPath.length - 1; i++) {
-            const ctrl = model.fieldControls?.find(c => c.name === fieldPath[i]);
+            const ctrl = model.findControl(fieldPath[i]);
             const next = ctrl?.model as FieldForm | null;
             if (!next) { return null; }
             model = next;
         }
         const name = fieldPath[fieldPath.length - 1];
-        const control = model.fieldControls?.find(c => c.name === name && c.isArray);
-        return control ? { owner: model, control } : null;
+        const control = model.findControl(name);
+        return control?.isArray ? { owner: model, control } : null;
     }
 
     private buildArrayGroups(): Map<IFieldControl<any>, IArrayGroupEntry[]> {
@@ -538,6 +548,34 @@ export class FieldForm {
         }
     }
 
+    private syncArrayDependencyValues(): void {
+        for (const dependency of (this.schema?.arrayDependencies || [])) {
+            if (!dependency.valueMappings?.length) { continue; }
+            const source = this.resolveArrayEntry(dependency.on);
+            const target = this.resolveArrayEntry(dependency.field);
+            if (!source || !target) { continue; }
+            const count = Math.min(source.control.list?.length || 0, target.control.list?.length || 0);
+            for (let index = 0; index < count; index++) {
+                for (const mapping of dependency.valueMappings) {
+                    const sourceControl = source.control.list?.[index]?.control?.get(mapping.source.join('.'));
+                    const targetControl = target.control.list?.[index]?.control?.get(mapping.target.join('.'));
+                    if (!sourceControl || !targetControl) { continue; }
+                    targetControl.setValue(sourceControl.value ?? null, { emitEvent: false });
+                    targetControl.disable({ emitEvent: false });
+                }
+            }
+        }
+    }
+
+    private subscribeArrayDependencyValues(): void {
+        for (const dependency of (this.schema?.arrayDependencies || [])) {
+            if (!dependency.valueMappings?.length) { continue; }
+            this.resolveArrayEntry(dependency.on)?.control.valueChanges
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(() => this.syncArrayDependencyValues());
+        }
+    }
+
     private readSourceEntryValue(sourcePath: string[], titlePath: string, index: number): string | null {
         const source = this.resolveArrayEntry(sourcePath);
         const value = source?.control.list?.[index]?.control?.get(titlePath)?.value;
@@ -550,11 +588,13 @@ export class FieldForm {
         for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
             if (!dependency.title?.length) { continue; }
             const titlePath = dependency.title.join('.');
-            if (dependency.on.join('.') === item.path) {
+            const source = this.rootForm.resolveArrayEntry(dependency.on);
+            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
+            if (source?.control === item) {
                 const value = listItem.control?.get(titlePath)?.value;
                 if (value) { return String(value); }
             }
-            if (dependency.field.join('.') === item.path) {
+            if (dependent?.control === item) {
                 const value = this.rootForm.readSourceEntryValue(dependency.on, titlePath, index);
                 if (value) { return value; }
             }
@@ -562,12 +602,41 @@ export class FieldForm {
         return fallback;
     }
 
+    public getEntryTitleLabel(item: IFieldControl<any>): string | null {
+        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+            if (!dependency.title?.length) { continue; }
+            const source = this.rootForm.resolveArrayEntry(dependency.on);
+            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
+            if (source?.control !== item && dependent?.control !== item) { continue; }
+            const titlePath = dependency.title.join('.');
+            const field = source?.control.fields?.find(entry => entry.name === titlePath);
+            if (field?.description) { return field.description; }
+        }
+        return null;
+    }
+
+    public getTitleMappedNames(item: IFieldControl<any>): Set<string> {
+        const names = new Set<string>();
+        for (const dependency of (this.rootForm.schema?.arrayDependencies || [])) {
+            if (!dependency.title?.length || !dependency.valueMappings?.length) { continue; }
+            const dependent = this.rootForm.resolveArrayEntry(dependency.field);
+            if (dependent?.control !== item) { continue; }
+            const titlePath = dependency.title.join('.');
+            for (const mapping of dependency.valueMappings) {
+                if (mapping.source.join('.') === titlePath) {
+                    names.add(mapping.target.join('.'));
+                }
+            }
+        }
+        return names;
+    }
+
     private resolveChildModel(fieldPath: string[], entryIndex: number | null = null): FieldForm | null {
         if (!fieldPath || fieldPath.length < 2) { return null; }
         let model: FieldForm = this;
         for (let i = 0; i < fieldPath.length - 1; i++) {
             const name = fieldPath[i];
-            const ctrl = model.fieldControls?.find(c => c.name === name);
+            const ctrl = model.findControl(name);
             let next: FieldForm | null;
             if (ctrl?.isArray && ctrl.isRef) {
                 if (entryIndex === null) { return null; }
@@ -625,7 +694,9 @@ export class FieldForm {
         if (this.fieldControls) {
             for (const base of this.fieldControls) {
                 base.visibility = this.ifFieldVisible(base);
-                result.push(base);
+                if (!result.includes(base)) {
+                    result.push(base);
+                }
             }
         }
 
@@ -647,7 +718,9 @@ export class FieldForm {
                     const anchorIdx = this.getLastVisibleIndexByNames(result, cc.dependsOn);
 
                     if (anchorIdx >= 0) {
-                        result.splice(anchorIdx + 1, 0, cc);
+                        if (!result.includes(cc)) {
+                            result.splice(anchorIdx + 1, 0, cc);
+                        }
                         unplaced.delete(id);
                         placedThisPass++;
                     }
@@ -660,7 +733,9 @@ export class FieldForm {
 
             for (const id of unplaced) {
                 const cc = byId.get(id)!;
-                result.push(cc);
+                if (!result.includes(cc)) {
+                    result.push(cc);
+                }
             }
         }
 
@@ -1196,6 +1271,10 @@ export class FieldForm {
             item.name,
         )
         this.form.addControl(item.name, item.control);
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.rootForm.arrayGroupCache = null;
+            this.rootForm.alignArrayGroups();
+        }
         this.rebuildCrossSchemaConditions(true);
         if (this.rootForm !== this) {
             this.rootForm.rebuildCrossSchemaConditions(true);

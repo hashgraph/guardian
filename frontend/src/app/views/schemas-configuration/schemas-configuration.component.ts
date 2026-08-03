@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, Subscription, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, ISchemaArrayDependency, relationAncestors, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, ISchemaArrayDependency, ISchemaArrayDependencyMapping, relationAncestors, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -84,6 +84,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public newArrayDependencyField: string | null = null;
     public newArrayDependencyOn: string | null = null;
     public newArrayDependencyTitle: string | null = null;
+    public newArrayDependencyMappingSource: string | null = null;
+    public newArrayDependencyMappingTarget: string | null = null;
+    public newArrayDependencyValueMappings: ISchemaArrayDependencyMapping[] = [];
 
     public isDragOverCanvas: boolean = false;
     private _dragEnterCount: number = 0;
@@ -1334,6 +1337,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         };
         if (this.newArrayDependencyTitle) {
             dependency.title = this.newArrayDependencyTitle.split('.');
+        }
+        if (this.newArrayDependencyValueMappings.length) {
+            dependency.valueMappings = this.newArrayDependencyValueMappings
+                .map(item => ({ source: [...item.source], target: [...item.target] }));
         }
         schema.arrayDependencies = [...(schema.arrayDependencies ?? []), dependency];
         this.resetArrayDependencyEditor();

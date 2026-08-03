@@ -3409,6 +3409,13 @@
     }
 }
 
+.sc-array-link-mapping-editor {
+   display: grid;
+   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+   align-items: end;
+   gap: 12px;
+}
+
 .sc-array-link-editor-actions {
     display: flex;
     align-items: center;

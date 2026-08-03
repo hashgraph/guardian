@@ -325,6 +325,9 @@
                     <ng-template pTemplate="header">
                       <tr [attr.accordiontabid]="item.id">
                         <th style="width: 3rem">#</th>
+                        @if (isManagedArray(item)) {
+                          <th class="table-header">{{ entryTitleLabel(item) }}</th>
+                        }
                         @for (col of getTableHeaderFields(item); track col) {
                           <th
                             class="table-header"
@@ -338,7 +341,10 @@
                     <ng-template pTemplate="body" let-rowData>
                       <tr [attr.accordiontabid]="item.id + '-' + rowData.index2">
                         <td>{{ rowData.index2 }}</td>
-                        @for (itemControl of getTableRowFields(rowData); track itemControl) {
+                        @if (isManagedArray(item)) {
+                          <td>{{ entryTitle(item, rowData) }}</td>
+                        }
+                        @for (itemControl of getTableRowFields(rowData, item); track itemControl) {
                           <td>
                             <div class="table-content form-field-value">
                               @if (ifRequiredField(itemControl)) {
@@ -1242,6 +1248,7 @@
                                                         !item.control.dirty
                                                     "
                                                         >
+                                                        {{ entryTitleNumber(item, listItem) }}
                                                         {{ entryTitle(item, listItem) }}
                                                       </span>
                                                       @if (
