@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.2.0
 paths:
   /accounts/session:
     get:
@@ -50102,205 +50102,143 @@ paths:
 info:
   title: Guardian
   description: >-
-    The Guardian is a modular open-source solution that includes best-in-class
-    identity management and decentralized ledger technology (DLT) libraries. At
-    the heart of the Guardian solution is a sophisticated Policy Workflow Engine
-    (PWE) that enables applications to offer a requirements-based tokenization
-    implementation.
+    The Guardian is an innovative open-source platform that streamlines the
+    creation, management, and verification of digital environmental assets. It
+    leverages a customizable Policy Workflow Engine and Web3 technology to
+    ensure transparent and fraud-proof operations, making it a key tool for
+    transforming sustainability practices and carbon markets.
   version: 3.6.0
   contact:
     name: API developer
-    url: https://envisionblockchain.com
-    email: info@envisionblockchain.com
+    url: https://hashgraph.com
+    email: guardian@hashgraph.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 tags:
-  - name: guardian-schemas
-    x-page-title: Guardian Schemas
-    x-page-icon: table
   - name: schemas
-    x-parent: guardian-schemas
-    x-page-title: Schemas
-    x-page-description: Create and manage JSON schemas for policy data structures.
+    description: Create and manage JSON schemas for policy data structures.
+    x-displayName: Schemas
   - name: schema
-    x-parent: guardian-schemas
-    x-page-title: Schema
-    x-page-description: Schema operations on individual schema objects.
+    description: Schema operations on individual schema objects.
+    x-displayName: Schema
   - name: schema-rules
-    x-parent: guardian-schemas
-    x-page-title: Schema Rules
-    x-page-description: Validation rules and constraints applied to schema fields.
-  - name: guardian-policies
-    x-page-title: Guardian Policies
-    x-page-icon: scroll
+    description: Validation rules and constraints applied to schema fields.
+    x-displayName: Schema Rules
   - name: policies
-    x-parent: guardian-policies
-    x-page-title: Policies
-    x-page-description: Create, publish, and manage environmental policy workflows.
+    description: Create, publish, and manage environmental policy workflows.
+    x-displayName: Policies
   - name: record
-    x-parent: guardian-policies
-    x-page-title: Records
-    x-page-description: Environmental data records submitted through policy workflows.
+    description: Environmental data records submitted through policy workflows.
+    x-displayName: Records
   - name: tools
-    x-parent: guardian-policies
-    x-page-title: Tools
-    x-page-description: Standalone tools that extend policy workflow capabilities.
+    description: Standalone tools that extend policy workflow capabilities.
+    x-displayName: Tools
   - name: modules
-    x-parent: guardian-policies
-    x-page-title: Modules
-    x-page-description: Reusable policy logic modules that can be composed into workflows.
+    description: Reusable policy logic modules that can be composed into workflows.
+    x-displayName: Modules
   - name: formulas
-    x-parent: guardian-policies
-    x-page-title: Formulas
-    x-page-description: Calculation formulas for quantifying environmental impact.
+    description: Calculation formulas for quantifying environmental impact.
+    x-displayName: Formulas
   - name: artifacts
-    x-parent: guardian-policies
-    x-page-title: Artifacts
-    x-page-description: Files and documents attached to policies and policy blocks.
+    description: Files and documents attached to policies and policy blocks.
+    x-displayName: Artifacts
   - name: policy-labels
-    x-parent: guardian-policies
-    x-page-title: Labels
-    x-page-description: Labels for categorizing and filtering policies.
+    description: Labels for categorizing and filtering policies.
+    x-displayName: Labels
   - name: policy-comments
-    x-parent: guardian-policies
-    x-page-title: Comments
-    x-page-description: Threaded comments and review notes on policies.
+    description: Threaded comments and review notes on policies.
+    x-displayName: Comments
   - name: policy-repository
-    x-parent: guardian-policies
-    x-page-title: Repository
-    x-page-description: Policy marketplace for discovering and importing published policies.
+    description: Policy marketplace for discovering and importing published policies.
+    x-displayName: Repository
   - name: suggestions
-    x-parent: guardian-policies
-    x-page-title: Suggestions
-    x-page-description: Context-aware suggestions for policy design and configuration.
+    description: Context-aware suggestions for policy design and configuration.
+    x-displayName: Suggestions
   - name: analytics
-    x-parent: guardian-policies
-    x-page-title: Analytics
-    x-page-description: Query and export usage analytics across the platform.
+    description: Query and export usage analytics across the platform.
+    x-displayName: Analytics
   - name: policy-statistics
-    x-parent: guardian-policies
-    x-page-title: Statistics
-    x-page-description: Usage and execution statistics for policies.
+    description: Usage and execution statistics for policies.
+    x-displayName: Statistics
   - name: external-policies
-    x-parent: guardian-policies
-    x-page-title: External Policies
-    x-page-description: Integration with externally hosted or managed policies.
+    description: Integration with externally hosted or managed policies.
+    x-displayName: External Policies
   - name: wizard
-    x-parent: guardian-policies
-    x-page-title: Wizard
-    x-page-description: Step-by-step guided policy creation workflow.
-  - name: hedera-tokens
-    x-page-title: Hedera
-    x-page-icon: coins
+    description: Step-by-step guided policy creation workflow.
+    x-displayName: Wizard
   - name: tokens
-    x-parent: hedera-tokens
-    x-page-title: Tokens
-    x-page-description: Manage Hedera tokens representing environmental assets and carbon credits.
+    description: Manage Hedera tokens representing environmental assets and carbon credits.
+    x-displayName: Tokens
   - name: contracts
-    x-parent: hedera-tokens
-    x-page-title: Contracts
-    x-page-description: Smart contract interactions for token issuance and retirement.
+    description: Smart contract interactions for token issuance and retirement.
+    x-displayName: Contracts
   - name: relayer-accounts
-    x-parent: hedera-tokens
-    x-page-title: Relayer Accounts
-    x-page-description: Hedera relayer account configuration and management.
-  - name: data
-    x-page-title: Data & DMRV
-    x-page-icon: leaf
+    description: Hedera relayer account configuration and management.
+    x-displayName: Relayer Accounts
   - name: dmrv
-    x-parent: data
-    x-page-title: DMRV
-    x-page-description: Digital Measurement, Reporting and Verification data operations.
+    description: Digital Measurement, Reporting and Verification data operations.
+    x-displayName: DMRV
   - name: ipfs
-    x-parent: data
-    x-page-title: IPFS
-    x-page-description: Decentralized file storage via the InterPlanetary File System.
+    description: Decentralized file storage via the InterPlanetary File System.
+    x-displayName: IPFS
   - name: external
-    x-parent: data
-    x-page-title: External
-    x-page-description: Integration with external data sources and third-party systems.
+    description: Integration with external data sources and third-party systems.
+    x-displayName: External
   - name: projects
-    x-parent: data
-    x-page-title: Projects
-    x-page-description: Environmental projects generating verified carbon or ecological credits.
+    description: Environmental projects generating verified carbon or ecological credits.
+    x-displayName: Projects
   - name: map
-    x-parent: data
-    x-page-title: Map
-    x-page-description: Geospatial data and map visualization for project locations.
-  - name: identity
-    x-page-title: Identity & Access
-    x-page-icon: shield-halved
+    description: Geospatial data and map visualization for project locations.
+    x-displayName: Map
   - name: accounts
-    x-parent: identity
-    x-page-title: Accounts
-    x-page-description: Manage user accounts and authentication sessions.
+    description: Manage user accounts and authentication sessions.
+    x-displayName: Accounts
   - name: profiles
-    x-parent: identity
-    x-page-title: Profiles
-    x-page-description: User profile configuration and DID management.
+    description: User profile configuration and DID management.
+    x-displayName: Profiles
   - name: permissions
-    x-parent: identity
-    x-page-title: Permissions
-    x-page-description: Role-based access control and permission management.
+    description: Role-based access control and permission management.
+    x-displayName: Permissions
   - name: credentials
-    x-parent: identity
-    x-page-title: Credentials
-    x-page-description: W3C Verifiable Credentials issued and managed within policies.
+    description: W3C Verifiable Credentials issued and managed within policies.
+    x-displayName: Credentials
   - name: trust-chains
-    x-parent: identity
-    x-page-title: Trust Chains
-    x-page-description: Chains of verifiable trust linking issuers, verifiers, and holders.
-  - name: platform
-    x-page-title: Platform
-    x-page-icon: server
+    description: Chains of verifiable trust linking issuers, verifiers, and holders.
+    x-displayName: Trust Chains
   - name: settings
-    x-parent: platform
-    x-page-title: Settings
-    x-page-description: Global application configuration and environment settings.
+    description: Global application configuration and environment settings.
+    x-displayName: Settings
   - name: notifications
-    x-parent: platform
-    x-page-title: Notifications
-    x-page-description: User notifications and alert management.
+    description: User notifications and alert management.
+    x-displayName: Notifications
   - name: tags
-    x-parent: platform
-    x-page-title: Tags
-    x-page-description: User-defined tags for organizing platform resources.
+    description: User-defined tags for organizing platform resources.
+    x-displayName: Tags
   - name: logs
-    x-parent: platform
-    x-page-title: Logs
-    x-page-description: Audit logs recording user and system activity.
+    description: Audit logs recording user and system activity.
+    x-displayName: Logs
   - name: tasks
-    x-parent: platform
-    x-page-title: Tasks
-    x-page-description: Background task tracking for long-running operations.
+    description: Background task tracking for long-running operations.
+    x-displayName: Tasks
   - name: worker-tasks
-    x-parent: platform
-    x-page-title: Worker Tasks
-    x-page-description: Worker-level task queue management.
+    description: Worker-level task queue management.
+    x-displayName: Worker Tasks
   - name: metrics
-    x-parent: platform
-    x-page-title: Metrics
-    x-page-description: Real-time performance and operational metrics.
+    description: Real-time performance and operational metrics.
+    x-displayName: Metrics
   - name: ai-suggestions
-    x-parent: platform
-    x-page-title: AI Suggestions
-    x-page-description: AI-powered recommendations for policies, schemas, and workflows.
+    description: AI-powered recommendations for policies, schemas, and workflows.
+    x-displayName: AI Suggestions
   - name: demo
-    x-parent: platform
-    x-page-title: Demo
-    x-page-description: Demo data and sample environment setup.
-  - name: customization
-    x-page-title: Customization
-    x-page-icon: palette
+    description: Demo data and sample environment setup.
+    x-displayName: Demo
   - name: themes
-    x-parent: customization
-    x-page-title: Themes
-    x-page-description: UI theme selection and customization.
+    description: UI theme selection and customization.
+    x-displayName: Themes
   - name: branding
-    x-parent: customization
-    x-page-title: Branding
-    x-page-description: White-label branding assets and configuration.
+    description: White-label branding assets and configuration.
+    x-displayName: Branding
 servers:
   - url: /api/v1
     description: version 1.0
@@ -59098,3 +59036,59 @@ components:
         - owner
         - topicId
         - messageId
+x-tagGroups:
+  - name: Guardian Schemas
+    tags:
+      - schemas
+      - schema
+      - schema-rules
+  - name: Guardian Policies
+    tags:
+      - policies
+      - record
+      - tools
+      - modules
+      - formulas
+      - artifacts
+      - policy-labels
+      - policy-comments
+      - policy-repository
+      - suggestions
+      - analytics
+      - policy-statistics
+      - external-policies
+      - wizard
+  - name: Hedera
+    tags:
+      - tokens
+      - contracts
+      - relayer-accounts
+  - name: Data & DMRV
+    tags:
+      - dmrv
+      - ipfs
+      - external
+      - projects
+      - map
+  - name: Identity & Access
+    tags:
+      - accounts
+      - profiles
+      - permissions
+      - credentials
+      - trust-chains
+  - name: Platform
+    tags:
+      - settings
+      - notifications
+      - tags
+      - logs
+      - tasks
+      - worker-tasks
+      - metrics
+      - ai-suggestions
+      - demo
+  - name: Customization
+    tags:
+      - themes
+      - branding
