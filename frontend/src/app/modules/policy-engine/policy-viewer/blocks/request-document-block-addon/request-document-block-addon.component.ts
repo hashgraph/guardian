@@ -112,7 +112,7 @@ export class RequestDocumentBlockAddonComponent
                     data.schema = full;
                     super._onSuccess(data);
                 },
-                error: () => super._onSuccess(data)
+                error: (e) => this._onError(e)
             });
             return;
         }

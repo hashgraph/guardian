@@ -221,7 +221,7 @@ export class RequestDocumentBlockComponent
                     data.schema = full;
                     this._applyBlockData(data);
                 },
-                error: () => this._applyBlockData(data)
+                error: (e) => this._onError(e)
             });
             return;
         }
