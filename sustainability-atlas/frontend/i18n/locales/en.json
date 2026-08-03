@@ -874,7 +874,8 @@
                     "saveNoChanges": "No changes to save",
                     "saveError": "Failed to save mapping",
                     "arrayIndexPlaceholder": "Index",
-                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record."
+                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record.",
+                    "sectorLockedHint": "Sector is fixed by policy.json; mapping a field here has no effect."
                 }
             },
             "summary": {
