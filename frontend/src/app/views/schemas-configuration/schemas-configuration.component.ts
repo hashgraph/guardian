@@ -1911,6 +1911,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // Reconstructs the dot-path for the field stored in a condition row.
     // Needed because the stored object may be a field from a nested sub-schema.
     public getIfRowFieldPath(row: any): string {
+        const storedPath = row?.fieldPath;
+        if (Array.isArray(storedPath) && storedPath.length) { return storedPath.join('.'); }
         const field = row?.field;
         if (!field) { return ''; }
         const schema = this.currentContextSchema;
@@ -2016,12 +2018,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
         const rows = this.getIfRows(cond);
         const first = rows[0] ?? { field: this._firstConditionField, fieldValue: '' };
+        const predicate = {
+            field: first.field,
+            fieldValue: first.fieldValue,
+            ...(Array.isArray(first.fieldPath) && first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {}),
+        };
         if (op === 'SINGLE') {
-            (cond as any).ifCondition = { field: first.field, fieldValue: first.fieldValue };
+            (cond as any).ifCondition = predicate;
         } else if (op === 'AND') {
-            (cond as any).ifCondition = { AND: [first] };
+            (cond as any).ifCondition = { AND: [predicate] };
         } else {
-            (cond as any).ifCondition = { OR: [first] };
+            (cond as any).ifCondition = { OR: [predicate] };
         }
         this.markDirty();
     }
@@ -2034,10 +2041,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
         const field = this._resolveConditionField(pathStr);
         if (!field) { return; }
+        const fieldPath = pathStr.split('.');
+        const predicate = {
+            field,
+            fieldValue: '',
+            ...(fieldPath.length > 1 ? { fieldPath } : {}),
+        };
         const ic = cond.ifCondition as any;
-        if ('AND' in ic) { ic.AND[rowIdx] = { field, fieldValue: '' }; }
-        else if ('OR' in ic) { ic.OR[rowIdx] = { field, fieldValue: '' }; }
-        else { ic.field = field; ic.fieldValue = ''; }
+        if ('AND' in ic) { ic.AND[rowIdx] = predicate; }
+        else if ('OR' in ic) { ic.OR[rowIdx] = predicate; }
+        else { (cond as any).ifCondition = predicate; }
         this.markDirty();
     }
 
