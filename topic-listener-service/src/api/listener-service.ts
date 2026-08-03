@@ -2,6 +2,7 @@ import { DatabaseServer, MessageResponse, NatsService, PinoLogger } from '@guard
 import { GenerateUUIDv4, IListenerOptions, ListenerEvents } from '@guardian/interfaces';
 import { TopicListener as ListenerCollection } from '../entity/index.js';
 import { Listener } from './listener.js';
+import { envNumber } from '../helpers/env.js';
 
 /**
  * Worker class
@@ -17,7 +18,7 @@ export class ListenerService extends NatsService {
      * IP (worker-service, indexer, ...), so the listener paces itself well below it.
      */
     private readonly callDelay: number =
-        parseInt(process.env.LISTENER_CALL_DELAY_MS, 10) || Math.ceil(1000 / 40);
+        envNumber('LISTENER_CALL_DELAY_MS', Math.ceil(1000 / 40));
     private readonly map: Map<string, Listener>;
 
     constructor(

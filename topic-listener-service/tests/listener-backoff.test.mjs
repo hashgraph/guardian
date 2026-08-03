@@ -146,11 +146,37 @@ describe('Listener chunk handling', () => {
         assert.equal(listener._messages[0].data, 'foobar');
     });
 
-    it('reassembles chunks that arrive out of order', () => {
+    it('reassembles chunks of an in-progress group that arrive out of order', () => {
+        const listener = makeListener();
+        listener.addMessages(topicMessage(11, 'foo', chunkInfo('1-1', 1, 3)));
+        listener.addMessages(topicMessage(13, 'baz', chunkInfo('1-1', 3, 3)));
+        listener.addMessages(topicMessage(12, 'bar', chunkInfo('1-1', 2, 3)));
+        assert.equal(listener._messages.length, 1);
+        assert.equal(listener._messages[0].data, 'foobarbaz');
+    });
+
+    it('skips a continuation chunk that belongs to no in-progress group', () => {
         const listener = makeListener();
         listener.addMessages(topicMessage(12, 'bar', chunkInfo('1-1', 2, 2)));
-        listener.addMessages(topicMessage(11, 'foo', chunkInfo('1-1', 1, 2)));
-        assert.equal(listener._messages.length, 1);
-        assert.equal(listener._messages[0].data, 'foobar');
+        assert.equal(listener._messages.length, 0, 'orphan tail must not start a group');
+        assert.equal(listener._searchIndex, 12, 'orphan tail must still advance the index');
+    });
+
+    //searchIndex is persisted at the last chunk's sequence, sendIndex is confirmed at the
+    //first one, so a completed chunked message leaves searchIndex ahead of sendIndex.
+    it('does not wedge when resuming mid-group after a restart', () => {
+        //seq 11-12 was a 2-chunk message: sent and confirmed at 11, searched up to 12
+        const listener = makeListener({ searchIndex: 12, sendIndex: 11 });
+        assert.equal(listener._searchIndex, 11, 'resumes from min(searchIndex, sendIndex)');
+
+        //`gt:11` re-fetches only the tail chunk, then the next real message
+        listener.addMessages(topicMessage(12, 'bar', chunkInfo('1-1', 2, 2)));
+        listener.addMessages(topicMessage(13, 'next', null));
+
+        const message = listener.next();
+        assert.ok(message, 'the following message must not be blocked by the orphan tail');
+        assert.equal(message.index, 13);
+        assert.equal(message.status, 'COMPRESSED');
+        assert.equal(listener._searchIndex, 13);
     });
 });

@@ -6,6 +6,7 @@ import { Message } from './message.js';
 import { ListenerEvents } from '@guardian/interfaces';
 import { Subscription } from 'nats';
 import axios from 'axios';
+import { envNumber } from '../helpers/env.js';
 
 export class Listener {
     public readonly id: string;
@@ -22,15 +23,15 @@ export class Listener {
      * at full rate.
      */
     public static readonly REQUEST_TIMEOUT_MS: number =
-        parseInt(process.env.LISTENER_REQUEST_TIMEOUT_MS, 10) || 15 * 1000;
+        envNumber('LISTENER_REQUEST_TIMEOUT_MS', 15 * 1000);
     public static readonly ERROR_BACKOFF_MIN_MS: number =
-        parseInt(process.env.LISTENER_ERROR_BACKOFF_MIN_MS, 10) || 5 * 1000;
+        envNumber('LISTENER_ERROR_BACKOFF_MIN_MS', 5 * 1000);
     public static readonly ERROR_BACKOFF_MAX_MS: number =
-        parseInt(process.env.LISTENER_ERROR_BACKOFF_MAX_MS, 10) || 5 * 60 * 1000;
+        envNumber('LISTENER_ERROR_BACKOFF_MAX_MS', 5 * 60 * 1000);
     public static readonly IDLE_BACKOFF_STEP_MS: number =
-        parseInt(process.env.LISTENER_IDLE_BACKOFF_STEP_MS, 10) || 10 * 1000;
+        envNumber('LISTENER_IDLE_BACKOFF_STEP_MS', 10 * 1000);
     public static readonly IDLE_BACKOFF_MAX_MS: number =
-        parseInt(process.env.LISTENER_IDLE_BACKOFF_MAX_MS, 10) || 60 * 1000;
+        envNumber('LISTENER_IDLE_BACKOFF_MAX_MS', 60 * 1000);
 
     private _messages: Message[];
 
@@ -220,11 +221,19 @@ export class Listener {
                     m.addChunk(message);
                     //continuation chunks must advance the index too, otherwise the next poll
                     //re-fetches them forever and the group never completes.
-                    //Safe on restart: the constructor resumes from min(searchIndex, sendIndex),
-                    //so an incomplete in-memory group is re-fetched whole.
                     this._searchIndex = message.sequence_number;
                     return;
                 }
+            }
+            //A continuation chunk with no in-progress group is the tail of a message that was
+            //already sent: searchIndex is persisted at the last chunk's sequence while sendIndex
+            //is confirmed at the first one, so the resume point - min(searchIndex, sendIndex) -
+            //lands mid-group and `gt:` skips the head. Starting a new group here would leave it
+            //COMPRESSING at _messages[0], where next() returns null and blocks the topic forever.
+            //Forward paging always delivers chunk 1 first, so only that orphan tail is dropped.
+            if (message.chunk_info.number > 1) {
+                this._searchIndex = message.sequence_number;
+                return;
             }
         }
         const item = new Message();
@@ -234,32 +243,27 @@ export class Listener {
     }
 
     public async getMessages(topicId: string, lastNumber: number): Promise<TopicInfo | null> {
-        try {
-            const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages`;
-            const option: any = {
-                params: {
-                    limit: Listener.REST_API_MAX_LIMIT
-                },
-                responseType: 'json',
-                //the scheduler is sequential, so one hung request stalls every other listener
-                timeout: Listener.REQUEST_TIMEOUT_MS,
-            };
-            if (lastNumber > 0) {
-                option.params.sequencenumber = `gt:${lastNumber}`;
+        const url = `${Environment.HEDERA_TOPIC_API}/${topicId}/messages`;
+        const option: any = {
+            params: {
+                limit: Listener.REST_API_MAX_LIMIT
+            },
+            responseType: 'json',
+            //the scheduler is sequential, so one hung request stalls every other listener
+            timeout: Listener.REQUEST_TIMEOUT_MS,
+        };
+        if (lastNumber > 0) {
+            option.params.sequencenumber = `gt:${lastNumber}`;
+        }
+        const response = await axios.get(url, option);
+        const topicInfo = response?.data as TopicInfo;
+        if (topicInfo && Array.isArray(topicInfo.messages)) {
+            if (!topicInfo.links) {
+                topicInfo.links = { next: null };
             }
-            const response = await axios.get(url, option);
-            const topicInfo = response?.data as TopicInfo;
-            if (topicInfo && Array.isArray(topicInfo.messages)) {
-                if (!topicInfo.links) {
-                    topicInfo.links = { next: null };
-                }
-                return topicInfo;
-            } else {
-                return null;
-            }
-        } catch (error) {
-            console.log('getMessages ', topicId, error.message);
-            throw error;
+            return topicInfo;
+        } else {
+            return null;
         }
     }
 
