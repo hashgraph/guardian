@@ -278,6 +278,9 @@ export class ProjectResponseDto {
     @ApiProperty({ nullable: true, description: 'Longitude of the project location' })
     lng: number | null;
 
+    @ApiProperty({ nullable: true, description: 'GeoJSON Polygon/MultiPolygon string representing the project boundary, simplified for map display (full precision is kept in project_geometry)' })
+    polygon: string | null;
+
     @ApiProperty({ nullable: true, description: 'Associated methodology name' })
     methodology: string | null;
 
@@ -634,6 +637,7 @@ export class ProjectResponseDto {
             country: typeof data['country'] === 'string' ? data['country'] : null,
             lat: typeof data['lat'] === 'number' ? data['lat'] : null,
             lng: typeof data['lng'] === 'number' ? data['lng'] : null,
+            polygon: row.polygon ?? null,
             methodology: typeof data['methodology'] === 'string' ? data['methodology'] : null,
             methodologyId: typeof data['methodologyId'] === 'string' ? data['methodologyId'] : null,
             registryDid: row.registryDid,

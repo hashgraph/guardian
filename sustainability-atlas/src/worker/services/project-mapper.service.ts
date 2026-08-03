@@ -258,6 +258,7 @@ export class ProjectMapperService {
         // schema are included, filtered above). Extract each mapped field from cs.
         const extracted: Record<string, string | null> = {};
         let geoLngLat: [number, number] | null = null;
+        let geoPolygon: ParsedGeoPolygon | null = null;
 
         for (const field of PROJECT_EXTRACT_FIELDS) {
             // `name` is always allowed (it only ever GAP-FILLS via the merge SQL —
@@ -273,6 +274,7 @@ export class ProjectMapperService {
             const raw = resolveFieldValue(cs, path);
             if (field.key === 'geo') {
                 geoLngLat = parseGeoValue(raw);
+                geoPolygon = parseGeoPolygon(raw);
             } else if (field.key === 'creditingPeriodStart' && raw && typeof raw === 'object' && !Array.isArray(raw) && 'from' in (raw as object)) {
                 const from = (raw as Record<string, unknown>)['from'];
                 if (typeof from === 'string') extracted[field.key] = from;
@@ -664,6 +666,13 @@ export class ProjectMapperService {
             ],
         );
 
+        // Full-precision project boundary, stored separately from businessData
+        // (see upsertProjectGeometry doc) so it never bloats the hot business_view
+        // row that every list/search query touches.
+        if (geoPolygon) {
+            await this.upsertProjectGeometry(projectKey, geoPolygon, isProjectSchemaVc);
+        }
+
         // Orphan-registration cleanup.
         //
         // During fresh ingest IPFS fetches arrive in order, so an early
@@ -719,6 +728,46 @@ export class ProjectMapperService {
             }
         }
         return 'unknown';
+    }
+
+    /**
+     * Upserts a project's full-precision GeoJSON boundary into the dedicated
+     * `project_geometry` table (never into businessData — that jsonb blob is
+     * read by every list/search query, and a boundary can run to hundreds of
+     * KB). Stored and served at full precision — the project detail page's
+     * map renders every vertex, no point is ever dropped.
+     *
+     * Mirrors businessData's priority system: a project-schema VC is
+     * authoritative and always overwrites, while a non-project VC only fills
+     * the gap for a project that doesn't have a boundary yet (the `WHERE`
+     * clause gates the UPDATE branch only — the initial INSERT for a new
+     * project_key always happens regardless of which VC supplied it).
+     */
+    private async upsertProjectGeometry(
+        projectKey: string,
+        geo: ParsedGeoPolygon,
+        isProjectSchemaVc: boolean,
+    ): Promise<void> {
+        const polygons = (geo.type === 'Polygon' ? [geo.coordinates] : geo.coordinates) as number[][][][];
+        if (!Array.isArray(polygons)) return;
+
+        let pointCount = 0;
+        for (const poly of polygons) {
+            if (!Array.isArray(poly)) continue;
+            for (const ring of poly) pointCount += ring.length;
+        }
+
+        await this.dataSource.query(
+            `INSERT INTO project_geometry (project_key, geo_type, geojson, point_count, updated_at)
+             VALUES ($1, $2, $3::jsonb, $4, NOW())
+             ON CONFLICT (project_key) DO UPDATE SET
+                 geo_type = EXCLUDED.geo_type,
+                 geojson = EXCLUDED.geojson,
+                 point_count = EXCLUDED.point_count,
+                 updated_at = NOW()
+             WHERE $5`,
+            [projectKey, geo.type, JSON.stringify(geo), pointCount, isProjectSchemaVc],
+        );
     }
 
     /**
@@ -917,6 +966,32 @@ function parseGeoValue(raw: unknown): [number, number] | null {
         return extractLatLng(obj);
     }
     return extractLatLngStrings(obj);
+}
+
+interface ParsedGeoPolygon {
+    type: 'Polygon' | 'MultiPolygon';
+    coordinates: unknown;
+}
+
+/**
+ * Returns the full-precision `{ type, coordinates }` when the geo field value
+ * is strictly a GeoJSON Polygon or MultiPolygon. Every other geometry (Point,
+ * LineString, etc.) — and any non-GeoJSON lat/lng-string block — yields null,
+ * since only an actual area has a shape worth persisting alongside the
+ * centroid lat/lng. No size cap here: the full geometry is stored as-is in
+ * `project_geometry` (see upsertProjectGeometry) and served as-is to the
+ * frontend — every vertex is kept.
+ */
+function parseGeoPolygon(raw: unknown): ParsedGeoPolygon | null {
+    let v: unknown = raw;
+    if (Array.isArray(v) && v.length > 0) v = v[0];
+    if (!v || typeof v !== 'object') return null;
+    const obj = v as Record<string, any>;
+    const type = obj['type'];
+    if (type !== 'Polygon' && type !== 'MultiPolygon') return null;
+    const coords = obj['coordinates'];
+    if (!Array.isArray(coords)) return null;
+    return { type, coordinates: coords };
 }
 
 /**

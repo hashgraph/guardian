@@ -61,6 +61,13 @@ cards, one per watchlisted project, each showing issued, retired and transferred
 methodology, the crediting period and the SDG count, with an **Open** action through to the full
 project record.
 
+**Network Activity** shows the same event taxonomy as the Dashboard's version (see the Dashboard
+chapter) — project registrations, methodology and registry registrations, credit issuance and
+retirement, and other network events — refreshing automatically roughly every 25 seconds. Project
+registrations and credit issuance are scoped to your watchlist; methodology/registry registrations,
+credit retirement, and the "other" events bucket remain network-wide, since those aren't really
+events any one project "owns."
+
 ## Custom charts
 
 **Add Custom Chart** lets you build something the library does not offer.

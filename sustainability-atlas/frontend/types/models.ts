@@ -76,6 +76,7 @@ export interface Project {
     flag: string;
     lat: number;
     lng: number;
+    polygon?: string | null;
     methodology: string;
     methodologyId: string;
     registry: string;
@@ -227,7 +228,8 @@ export interface ActivityItem {
     time: string;
     action: string;
     detail: string;
-    type: 'project' | 'credit' | 'policy' | 'verification' | 'registry' | 'retirement';
+    type: 'project' | 'credit' | 'methodology' | 'verification' | 'registry' | 'retirement'
+        | 'token' | 'identity' | 'role' | 'other';
 }
 
 export interface MapPoint {

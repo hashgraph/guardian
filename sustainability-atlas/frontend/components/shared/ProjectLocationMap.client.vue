@@ -7,6 +7,7 @@ const props = defineProps<{
     name: string;
     approximate?: boolean;
     hasLocation: boolean;
+    polygon?: number[][][][] | null;
 }>();
 
 const mapContainer = ref<HTMLElement | null>(null);
@@ -26,6 +27,7 @@ async function initMap() {
     const lng = props.lng;
     const approximate = props.approximate ?? false;
     const name = props.name;
+    const polygon = props.polygon ?? null;
 
     // Double-rAF: wait for the browser to complete a full layout+paint cycle so
     // Leaflet reads the container's final dimensions, not its mid-update values.
@@ -41,6 +43,7 @@ async function initMap() {
         minZoom: 2,
         maxBounds: [[-85, -180], [85, 180]],
         maxBoundsViscosity: 1.0,
+        preferCanvas: true,
     });
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -49,16 +52,29 @@ async function initMap() {
         noWrap: true,
     }).addTo(map);
 
-    const icon = L.divIcon({
-        className: '',
-        html: '<div style="width:12px;height:12px;background:#1a9850;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',
-        iconSize: [12, 12],
-        iconAnchor: [6, 6],
-    });
+    if (polygon && polygon.length > 0) {
+        const rings = polygon.map(poly => poly.map(ring => ring.map(([pLng, pLat]) => [pLat, pLng] as [number, number])));
+        const shape = L.polygon(rings, {
+            color: '#1a9850',
+            weight: 2,
+            fillColor: '#1a9850',
+            fillOpacity: 0.2,
+        })
+            .bindPopup(`<strong style="font-size:12px">${name}</strong>`)
+            .addTo(map);
+        map.fitBounds(shape.getBounds(), { padding: [20, 20] });
+    } else {
+        const icon = L.divIcon({
+            className: '',
+            html: '<div style="width:12px;height:12px;background:#1a9850;border:2px solid #fff;border-radius:50%;box-shadow:0 1px 4px rgba(0,0,0,0.3)"></div>',
+            iconSize: [12, 12],
+            iconAnchor: [6, 6],
+        });
 
-    L.marker([lat, lng], { icon })
-        .bindPopup(`<strong style="font-size:12px">${name}</strong>`)
-        .addTo(map);
+        L.marker([lat, lng], { icon })
+            .bindPopup(`<strong style="font-size:12px">${name}</strong>`)
+            .addTo(map);
+    }
 
     map.invalidateSize();
     setTimeout(() => { map?.invalidateSize(); }, 300);

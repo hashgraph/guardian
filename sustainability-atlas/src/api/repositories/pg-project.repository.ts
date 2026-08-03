@@ -17,6 +17,8 @@ import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
 import { collectExternalDataBlockSchemas } from '../services/policy-graph.builder';
 
+type GeoJsonPolygonType = 'Polygon' | 'MultiPolygon';
+
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
 
@@ -554,7 +556,25 @@ export class PgProjectRepository extends ProjectRepository {
             }
         }
 
-        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas, issuanceEvents, issuanceCount);
+        // Full-precision boundary lives in its own table (see schema-bootstrap.ts
+        // for why) — sent to the frontend as-is, no point dropped. It's kept
+        // out of businessData specifically so this full-detail read never
+        // costs anything on the list/search path; it's a one-row lookup by
+        // primary key on this single project-detail fetch.
+        let polygon: string | null = null;
+        if (row.projectKey) {
+            const geometryRows: Array<{ geo_type: GeoJsonPolygonType; geojson: { coordinates: unknown } }> =
+                await this.dataSource.query(
+                    `SELECT geo_type, geojson FROM project_geometry WHERE project_key = $1 LIMIT 1`,
+                    [row.projectKey],
+                );
+            if (geometryRows.length > 0) {
+                const { geo_type, geojson } = geometryRows[0];
+                polygon = JSON.stringify({ type: geo_type, coordinates: geojson.coordinates });
+            }
+        }
+
+        return PgProjectRepository.mapRow(row, issuances, { totalIssued, totalRetired, totalActive }, policySchemas, issuanceEvents, issuanceCount, polygon);
     }
 
     async findActivity(sourceTimestamp: string): Promise<ActivityEventRow[]> {
@@ -831,6 +851,7 @@ export class PgProjectRepository extends ProjectRepository {
         policySchemas?: PolicySchemaRow[],
         issuanceEvents?: IssuanceEventRow[],
         issuanceCount?: number,
+        polygon?: string | null,
     ): ProjectRow {
         // When called from findAll(), lifecycle totals come from the lateral subquery columns on the raw row;
         // when called from findById(), they are passed explicitly as the lifecycle argument (which takes priority).
@@ -864,6 +885,7 @@ export class PgProjectRepository extends ProjectRepository {
             totalRetired: resolvedLifecycle?.totalRetired,
             totalActive: resolvedLifecycle?.totalActive,
             policySchemas,
+            polygon: polygon ?? null,
         };
     }
 }

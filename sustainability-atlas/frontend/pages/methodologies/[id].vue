@@ -1639,7 +1639,7 @@ function getResolvedField(fieldKey: string) {
                     :disabled="reparsePending || decodedData.decodeStatus !== 'success'"
                     @click="triggerReparse"
                   >
-                    <RotateCcw :class="['h-3.5 w-3.5', reparsePending ? 'animate-spin' : '']" />
+                    <RotateCcw :class="['h-3.5 w-3.5', reparsePending ? 'animate-spin [animation-direction:reverse]' : '']" />
                     {{ $t('methodologies.detail.decoded.actions.reparseProjects') }}
                   </Button>
                   <!-- Tooltip explaining why button is disabled when decode not successful -->
