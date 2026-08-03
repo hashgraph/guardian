@@ -614,7 +614,8 @@
                 "title": "Project Location",
                 "countryLevel": "Country-level location",
                 "unavailable": "Location data unavailable",
-                "approximate": "Approximate location"
+                "approximate": "Approximate location",
+                "polygon": "Project boundary (polygon)"
             },
             "documents": {
                 "empty": "No linked documents found for this project."

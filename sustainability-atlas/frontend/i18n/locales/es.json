@@ -614,7 +614,8 @@
                 "title": "Ubicación del proyecto",
                 "countryLevel": "Ubicación a nivel de país",
                 "unavailable": "Datos de ubicación no disponibles",
-                "approximate": "Ubicación aproximada"
+                "approximate": "Ubicación aproximada",
+                "polygon": "Límite del proyecto (polígono)"
             },
             "documents": {
                 "empty": "No se encontraron documentos vinculados para este proyecto."

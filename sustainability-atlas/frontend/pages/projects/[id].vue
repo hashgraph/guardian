@@ -479,7 +479,7 @@ const emissions = computed(() => {
                             {{ $t('projects.detail.location.title') }}
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">
-                            <template v-if="projectPolygon">Project boundary (polygon)</template>
+                            <template v-if="projectPolygon">{{ $t('projects.detail.location.polygon') }}</template>
                             <template v-else-if="effectiveLocation && !effectiveLocation.approximate">{{ effectiveLocation.lat.toFixed(4) }}, {{ effectiveLocation.lng.toFixed(4) }}</template>
                             <template v-else-if="effectiveLocation?.approximate">{{ $t('projects.detail.location.countryLevel') }}</template>
                             <span v-if="displayCountry"> · {{ displayCountry }}</span>
