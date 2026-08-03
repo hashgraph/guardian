@@ -19,7 +19,24 @@ import type {
     QueueStatusItemDto,
 } from '~/composables/api/useQueueStatusApi';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+
+const lastSyncedDateDisplay = computed(() => {
+    const raw = syncStatus.value?.lastSyncedAt;
+    if (!raw) return '—';
+    const dt = new Date(raw);
+    if (isNaN(dt.getTime())) return '—';
+    return dt.toLocaleDateString(localeTag.value, { month: 'long', day: 'numeric', year: 'numeric' });
+});
+
+const lastSyncedTimeDisplay = computed(() => {
+    const raw = syncStatus.value?.lastSyncedAt;
+    if (!raw) return '—';
+    const dt = new Date(raw);
+    if (isNaN(dt.getTime())) return '—';
+    return dt.toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', hour12: true });
+});
 const { network } = useNetwork();
 const config = useRuntimeConfig();
 // Sync page is PUBLIC (read-only). Guardian-sync data + all actions are admin-only.
@@ -846,7 +863,7 @@ function eventDetails(ev: { type: string; payload: Record<string, any> }): strin
 }
 
 function formatTs(ts: number): string {
-    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return new Date(ts).toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 }
 </script>
 
@@ -866,12 +883,12 @@ function formatTs(ts: number): string {
                     {{ $t('status.dataSyncedUpTo') }}
                 </span>
                 <div class="text-lg font-bold text-foreground mt-2">
-                    {{ syncStatus?.lastSyncedAt ? new Date(syncStatus.lastSyncedAt).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' }) : '—' }}
+                    {{ lastSyncedDateDisplay }}
                 </div>
                 <div class="flex items-center gap-1.5 mt-1">
                     <Clock class="h-3.5 w-3.5 text-muted-foreground" />
                     <span class="text-xs text-muted-foreground">
-                        {{ syncStatus?.lastSyncedAt ? new Date(syncStatus.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—' }}
+                        {{ lastSyncedTimeDisplay }}
                     </span>
                 </div>
             </div>
