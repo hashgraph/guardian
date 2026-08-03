@@ -2272,6 +2272,14 @@
         "queueStatusSub": "Background task worker queues running on NestJS + BullMQ",
         "totalWaiting": "Total Waiting",
         "totalFailed": "Total Failed",
+        "errors": {
+            "timeout": "Connection timed out during processing",
+            "networkError": "Network connection error / ECONNREFUSED",
+            "rateLimit": "Rate limit exceeded (HTTP 429)",
+            "ipfsError": "IPFS gateway / node fetch failure",
+            "stalled": "Job stalled on worker node",
+            "badGateway": "Bad gateway error (HTTP 502 / 503)"
+        },
         "columns": {
             "queue": "Queue",
             "waiting": "Waiting",

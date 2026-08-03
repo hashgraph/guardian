@@ -305,6 +305,18 @@ function formatLagHuman(seconds: number): string {
     return t('status.syncHealth.lagHour', { hours: Math.floor(seconds / 3600) });
 }
 
+function formatFailedReason(reason: string | null | undefined): string {
+    if (!reason) return t('status.failedDrawer.noReason');
+    const lower = reason.toLowerCase();
+    if (lower.includes('timeout')) return t('status.errors.timeout');
+    if (lower.includes('econnrefused') || lower.includes('network error') || lower.includes('fetch failed')) return t('status.errors.networkError');
+    if (lower.includes('rate limit') || lower.includes('429')) return t('status.errors.rateLimit');
+    if (lower.includes('ipfs')) return t('status.errors.ipfsError');
+    if (lower.includes('stalled')) return t('status.errors.stalled');
+    if (lower.includes('502') || lower.includes('503') || lower.includes('bad gateway')) return t('status.errors.badGateway');
+    return reason.length > 80 ? reason.slice(0, 80) + '…' : reason;
+}
+
 const lastSyncedDisplay = computed(() => {
     const raw = syncStatus.value?.lastSyncedAt ?? null;
     if (!raw) return '—';
@@ -1985,7 +1997,7 @@ function formatTs(ts: number): string {
                             >
                                 <div class="flex items-start justify-between gap-3">
                                     <p class="text-sm font-medium text-foreground truncate max-w-xs" :title="group.reason || $t('status.failedDrawer.noReason')">
-                                        {{ group.reason ? (group.reason.slice(0, 80) + (group.reason.length > 80 ? '…' : '')) : $t('status.failedDrawer.noReason') }}
+                                        {{ formatFailedReason(group.reason) }}
                                     </p>
                                     <span class="shrink-0 text-xs text-muted-foreground font-medium">
                                         {{ $t('status.failedDrawer.count', { count: group.count }) }}
@@ -2061,7 +2073,7 @@ function formatTs(ts: number): string {
                                 </div>
 
                                 <p class="text-sm text-foreground" :title="job.failedReason || $t('status.failedDrawer.noReason')">
-                                    {{ job.failedReason ? (job.failedReason.slice(0, 60) + (job.failedReason.length > 60 ? '…' : '')) : $t('status.failedDrawer.noReason') }}
+                                    {{ formatFailedReason(job.failedReason) }}
                                 </p>
 
                                 <div class="flex items-center gap-3 text-xs text-muted-foreground">

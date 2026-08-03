@@ -2271,6 +2271,14 @@
         "queueStatusSub": "Colas de procesamiento de tareas en segundo plano en NestJS + BullMQ",
         "totalWaiting": "Total en espera",
         "totalFailed": "Total fallidos",
+        "errors": {
+            "timeout": "Tiempo de espera de conexión agotado durante el procesamiento",
+            "networkError": "Error de conexión de red / ECONNREFUSED",
+            "rateLimit": "Límite de tarifa excedido (HTTP 429)",
+            "ipfsError": "Fallo de obtención del nodo / pasarela IPFS",
+            "stalled": "Trabajo estancado en el nodo de trabajador",
+            "badGateway": "Error de pasarela no válida (HTTP 502 / 503)"
+        },
         "columns": {
             "queue": "Cola",
             "waiting": "En espera",
