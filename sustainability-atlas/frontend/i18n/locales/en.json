@@ -1288,7 +1288,7 @@
         "subtitle": "Organizations developing and managing carbon offset projects",
         "searchPlaceholder": "Search developers...",
         "noMatch": "No developers match your filters",
-        "issuedTooltip": "Total issuances across all projects by this developer.",
+        "issuedTooltip": "Total mint amounts across all projects by this developer.",
         "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",
         "viewProjects": "View projects by {name}",
         "columns": {

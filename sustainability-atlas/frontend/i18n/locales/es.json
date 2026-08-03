@@ -1287,7 +1287,7 @@
         "subtitle": "Organizaciones que desarrollan y gestionan proyectos de compensación de carbono",
         "searchPlaceholder": "Buscar desarrolladores...",
         "noMatch": "Ningún desarrollador coincide con tus filtros",
-        "issuedTooltip": "Emisiones totales en todos los proyectos de este desarrollador.",
+        "issuedTooltip": "Cantidades totales de acuñación en todos los proyectos de este desarrollador.",
         "retiredTooltip": "Emisiones retiradas permanentemente (usadas para compensación). Las emisiones retiradas no pueden comercializarse ni reutilizarse.",
         "viewProjects": "Ver proyectos de {name}",
         "columns": {
