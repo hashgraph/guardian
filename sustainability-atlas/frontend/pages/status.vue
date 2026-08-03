@@ -132,8 +132,8 @@ const topicStatusOptions = computed<SingleSelectOption[]>(() => [
 
 const tokenTypeOptions = computed<SingleSelectOption[]>(() => [
     { value: '', label: t('status.allTypes') },
-    { value: 'FUNGIBLE_COMMON', label: t('issuances.filters.fungible') },
-    { value: 'NON_FUNGIBLE_UNIQUE', label: t('issuances.filters.nonFungible') },
+    { value: 'FUNGIBLE_COMMON', label: t('credits.tokenTypes.Fungible') },
+    { value: 'NON_FUNGIBLE_UNIQUE', label: t('credits.tokenTypes.Non-Fungible') },
 ]);
 
 const guardianEventOptions = computed<SingleSelectOption[]>(() => [
