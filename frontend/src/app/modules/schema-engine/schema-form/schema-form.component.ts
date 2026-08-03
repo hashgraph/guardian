@@ -7,7 +7,9 @@ import {
     SchemaRuleValidateResult,
     UnitSystem
 } from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
 import { Subject, Subscription, takeUntil } from 'rxjs';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
@@ -126,7 +128,8 @@ export class SchemaFormComponent implements OnInit {
 
     constructor(
         private ipfs: IPFSService,
-        protected changeDetectorRef: ChangeDetectorRef
+        protected changeDetectorRef: ChangeDetectorRef,
+        private readonly dialog: DialogService
     ) { }
 
     ngOnInit(): void {
@@ -343,10 +346,47 @@ export class SchemaFormComponent implements OnInit {
         if (event?.stopPropagation) {
             event.stopPropagation();
         }
+        const dependents = this.formModel?.rootForm?.getDependentArrays(item) || [];
+        if (!dependents.length) {
+            this.applyRemoveItem(item, listItem);
+            return;
+        }
+        this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete entry',
+                text: 'Linked entries will be deleted together with this one.',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        })!.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.applyRemoveItem(item, listItem);
+            }
+        });
+    }
+
+    private applyRemoveItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): void {
         this.formModel?.removeItem(item, listItem);
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
+    }
+
+    public isManagedArray(item: IFieldControl<any>): boolean {
+        return !!this.formModel?.rootForm?.isManagedArray(item);
+    }
+
+    public entryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        return this.formModel?.getEntryTitle(item, listItem)
+            || `${item.description} #${listItem.index2}`;
     }
 
     public patchSuggestValue(item: IFieldControl<any>) {
