@@ -499,6 +499,7 @@
         "expectedIssuanceYearTooltip": "Año en que se prevé que se emitan los créditos por primera vez — aplica a los proyectos en preemisión. Muestra «Por definir» cuando aún no hay una previsión disponible, y «—» para los proyectos ya emitidos.",
         "columns": {
             "project": "Proyecto",
+            "createdDate": "Fecha de creación",
             "country": "País",
             "registry": "Registro",
             "methodology": "Metodología",

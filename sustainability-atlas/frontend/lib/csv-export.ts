@@ -39,7 +39,7 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
         'Network', 'Name', 'Description', 'Country', 'Latitude', 'Longitude',
         'Methodology', 'Registry Name', 'Developer', 'Credits', 'Status', 'Vintage',
         'SDG', 'Co-benefits', 'Category', 'Sector', 'Sectoral Scope', 'Created At',
-        'Crediting Period Start', 'Crediting Period End', 'Issuance Count',
+        'Created Date', 'Crediting Period Start', 'Crediting Period End', 'Issuance Count',
         'Total Issued', 'Total Retired', 'Total Active',
         'Lifecycle Stage', 'Expected Issuance Year',
     ];
@@ -62,6 +62,7 @@ export function buildProjectCsvRows(projects: any[], network: string = ''): stri
         p.sector ?? '',
         p.sectoralScope ?? '',
         p.createdAt ?? '',
+        hederaTimestamp(p.sourceTimestamp),
         p.creditingPeriodStart ?? '',
         p.creditingPeriodEnd ?? '',
         p.issuanceCount ?? 0,

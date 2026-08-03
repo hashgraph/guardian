@@ -499,6 +499,7 @@
         "expectedIssuanceYearTooltip": "The year credits are first expected to be issued — applies to pre-issuance projects. Shows \"TBD\" when no forecast is available yet, and \"—\" for projects that have already issued.",
         "columns": {
             "project": "Project",
+            "createdDate": "Created Date",
             "country": "Country",
             "registry": "Registry",
             "methodology": "Methodology",
