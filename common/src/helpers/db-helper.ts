@@ -167,7 +167,10 @@ export class DataBaseHelper<T extends BaseEntity> extends AbstractDataBaseHelper
                 };
                 stream.on('error', done);
                 stream.write(content);
-                stream.end(() => done());
+                //forward the end callback's error too: it is the only signal when a stream
+                //reports failure through the callback instead of emitting 'error', which is
+                //how saveFileWithId used to surface it via end(buffer, (err) => ...)
+                stream.end((err?: any) => done(err));
             } catch (error) {
                 reject(error);
             }
