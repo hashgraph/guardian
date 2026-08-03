@@ -382,6 +382,9 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             return;
         }
 
+        // Show the failure before the redirect branches below navigate away.
+        this.toastService.processAsyncError(error);
+
         if (this.last) {
             this.redirect(this.last);
             return;
