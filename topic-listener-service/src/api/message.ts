@@ -53,7 +53,14 @@ export class Message {
             item.chunkTotal = 1;
         }
         item.type = item.chunkNumber === 1 ? 'Message' : 'Chunk';
+        //a re-fetched chunk must not be counted twice, otherwise the group overshoots
+        //chunkTotal and never reaches COMPRESSED
+        if (this.messages.some((m) => m.sequenceNumber === item.sequenceNumber)) {
+            return;
+        }
         this.messages.push(item);
+        //reassembly concatenates in array order, so keep chunks in sequence order
+        this.messages.sort((a, b) => a.sequenceNumber - b.sequenceNumber);
         this.compressMessages();
     }
 
@@ -66,7 +73,7 @@ export class Message {
         this.consensusTimestamp = first.consensusTimestamp;
         this.owner = first.owner;
 
-        if (first.chunkTotal === this.messages.length) {
+        if (this.messages.length >= first.chunkTotal) { //never stall on an over-full group
             this.status = 'COMPRESSED';
             this.data = this.compressData();
         } else {
