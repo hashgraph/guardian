@@ -328,7 +328,8 @@
         "status": {
             "Active": "Active",
             "Inactive": "Inactive"
-        }
+        },
+        "total": "Total"
     },
     "nav": {
         "dashboard": "Dashboard",
