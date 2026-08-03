@@ -1498,15 +1498,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@formulajs/formulajs@npm:4.6.0":
-  version: 4.6.0
-  resolution: "@formulajs/formulajs@npm:4.6.0"
+"@formulajs/formulajs@npm:4.6.1":
+  version: 4.6.1
+  resolution: "@formulajs/formulajs@npm:4.6.1"
   dependencies:
     bessel: "npm:^1.0.2"
     jstat: "npm:^1.9.6"
   bin:
     formulajs: bin/cli.js
-  checksum: 10c0/f9f1d94d44e03d5b31ebc0404cbed6b51a374351f0d87ac4d61d6c536007f23e60f836dc5ca577d3c3c45f32b3ea865533da1bc7cd34d3eba5cdef29ea0c148d
+  checksum: 10c0/e27c2662722aeb70ca0323db5af661b7016cbd01c156e575b4450e2dbee62871aa57f0323e2550e90596b86c95969be7c5851d24937c00c79ae8bfbebd82c53b
   languageName: node
   linkType: hard
 
@@ -1579,7 +1579,7 @@ __metadata:
     "@digitalbazaar/ed25519-verification-key-2018": "npm:4.0.0"
     "@digitalbazaar/security-context": "npm:1.0.1"
     "@digitalbazaar/vc": "npm:7.3.0"
-    "@formulajs/formulajs": "npm:4.6.0"
+    "@formulajs/formulajs": "npm:4.6.1"
     "@google-cloud/secret-manager": "npm:6.3.0"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/sdk": "npm:2.86.2"
@@ -9132,7 +9132,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "guardian-service@workspace:guardian-service"
   dependencies:
-    "@formulajs/formulajs": "npm:4.6.0"
+    "@formulajs/formulajs": "npm:4.6.1"
     "@guardian/common": "workspace:*"
     "@guardian/interfaces": "workspace:*"
     "@hiero-ledger/proto": "npm:2.31.0"
