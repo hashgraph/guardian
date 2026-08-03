@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { MV_REGISTRY_STATS_NAME } from '@shared/materialized-views';
 import {
@@ -14,6 +15,9 @@ import { REGISTRY_FIELD_SCHEMA } from './schemas/registry.schema';
 
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
+
+/** Ceiling on rows a single export may stream; exceeding it throws rather than truncating. */
+const EXPORT_MAX_ROWS = 100_000;
 
 /** Raw row shape for `findAllForExport` (see `RegistryExportRow` doc). */
 interface RawExportRow {
@@ -50,6 +54,8 @@ interface RawRow {
     project_count: string | null;
     issuance_count: string | null;
     user_count: string | null;
+    total_issued: string | null;
+    total_retired: string | null;
 }
 
 const SEARCH_TSVECTOR = `(
@@ -58,24 +64,57 @@ const SEARCH_TSVECTOR = `(
     setweight(to_tsvector('english', coalesce(bv."searchText", '')), 'C')
 )`;
 
+/**
+ * Selects one canonical row per registry.
+ *
+ * `business_view` is grained one row per Hedera message, so a registry that
+ * republishes its DID document yields several REGISTRY rows sharing one
+ * `registryDid`. The canonical pick is the newest `sourceTimestamp`; rows with
+ * a NULL `registryDid` have nothing to dedup against and are always kept.
+ *
+ * A non-correlated `DISTINCT ON` derived table, evaluated once and joined on
+ * `id`. Mirrors PgMethodologyRepository's CANONICAL_JOIN.
+ */
+const CANONICAL_JOIN = `
+    LEFT JOIN ${MV_REGISTRY_STATS_NAME} canon
+        ON canon."registryDid" = bv."registryDid"
+`;
+
 const REGISTRY_CANONICAL_DEDUP = `
-    (
-        bv."registryDid" IS NULL
-        OR bv.id = (
-            SELECT b2.id
-            FROM business_view b2
-            WHERE b2."viewType" = 'REGISTRY'
-              AND b2."registryDid" = bv."registryDid"
-            ORDER BY b2."sourceTimestamp"::numeric DESC, b2.id DESC
-            LIMIT 1
-        )
-    )
+    (bv."registryDid" IS NULL OR canon.canonical_id = bv.id)
 `;
 
 /** PostgreSQL implementation of the RegistryRepository; generic filter/sort logic is delegated to QueryBuilder + REGISTRY_FIELD_SCHEMA, while full-text search, MV joins, and ranking remain explicit since they don't fit the generic operator model. */
 export class PgRegistryRepository extends RegistryRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
+    }
+
+    /**
+     * Distinct registry display names, for filter dropdowns.
+     *
+     * `hideEmpty` mirrors the list endpoint's flag so the dropdown offers the
+     * same registries the list shows.
+     */
+    async findNameOptions(hideEmpty = true): Promise<string[]> {
+        const emptyClause = hideEmpty
+            ? `AND COALESCE(s.policy_count + s.project_count + s.issuance_count + s.user_count, 0) > 0`
+            : '';
+
+        const rows: Array<{ name: string }> = await this.dataSource.query(`
+            SELECT DISTINCT bv."displayName" AS name
+            FROM business_view bv
+            LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
+                ON s."registryDid" = bv."registryDid"
+            ${CANONICAL_JOIN}
+            WHERE bv."viewType" = 'REGISTRY'
+              AND ${REGISTRY_CANONICAL_DEDUP}
+              AND NULLIF(bv."displayName", '') IS NOT NULL
+              ${emptyClause}
+            ORDER BY name ASC
+        `);
+
+        return rows.map(r => r.name);
     }
 
     async findAll(query: RegistryListQuery): Promise<RegistryListResult> {
@@ -177,10 +216,13 @@ export class PgRegistryRepository extends RegistryRepository {
                 s.project_count,
                 s.issuance_count,
                 s.user_count,
+                s.total_issued,
+                s.total_retired,
                 ${rankExpr} AS search_rank
             FROM business_view bv
             LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
                 ON s."registryDid" = bv."registryDid"
+            ${CANONICAL_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -189,6 +231,7 @@ export class PgRegistryRepository extends RegistryRepository {
         // Count query reuses the same WHERE but no LIMIT/OFFSET, so slice the params back to before the additions.
         const countParams = params.slice(0, params.length - 2);
         // When hideEmpty is set the WHERE clause references the stats MV, so the count query needs the same LEFT JOIN.
+        // CANONICAL_JOIN is always needed — the dedup predicate references `canon.id` on every call.
         const countJoin = hideEmpty
             ? `LEFT JOIN ${MV_REGISTRY_STATS_NAME} s ON s."registryDid" = bv."registryDid"`
             : '';
@@ -196,6 +239,7 @@ export class PgRegistryRepository extends RegistryRepository {
             SELECT COUNT(*)::int AS total
             FROM business_view bv
             ${countJoin}
+            ${CANONICAL_JOIN}
             WHERE ${whereSql}
         `;
 
@@ -218,7 +262,9 @@ export class PgRegistryRepository extends RegistryRepository {
                 s.policy_count,
                 s.project_count,
                 s.issuance_count,
-                s.user_count
+                s.user_count,
+                s.total_issued,
+                s.total_retired
             FROM business_view bv
             LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
                 ON s."registryDid" = bv."registryDid"
@@ -242,7 +288,9 @@ export class PgRegistryRepository extends RegistryRepository {
                 s.policy_count,
                 s.project_count,
                 s.issuance_count,
-                s.user_count
+                s.user_count,
+                s.total_issued,
+                s.total_retired
             FROM business_view bv
             LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
                 ON s."registryDid" = bv."registryDid"
@@ -341,6 +389,7 @@ export class PgRegistryRepository extends RegistryRepository {
                 FROM business_view bv
                 LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
                     ON s."registryDid" = bv."registryDid"
+                ${CANONICAL_JOIN}
                 ${SOURCE_MESSAGE_JOIN}
                 WHERE ${whereSql}
                 ORDER BY bv."sourceTimestamp" ASC
@@ -351,6 +400,12 @@ export class PgRegistryRepository extends RegistryRepository {
             rows.push(...batch.map(PgRegistryRepository.mapExportRow));
 
             if (batch.length < EXPORT_BATCH_SIZE) break;
+            if (rows.length >= EXPORT_MAX_ROWS) {
+                throw new BadRequestException(
+                    `Export matched more than ${EXPORT_MAX_ROWS.toLocaleString()} rows. ` +
+                    'Narrow the filters (date range, registry, or search) and try again.',
+                );
+            }
         }
 
         return rows;
@@ -385,6 +440,8 @@ export class PgRegistryRepository extends RegistryRepository {
             projectCount: parseInt(row.project_count || '0', 10),
             issuanceCount: parseInt(row.issuance_count || '0', 10),
             userCount: parseInt(row.user_count || '0', 10),
+            totalIssued: parseInt(row.total_issued || '0', 10),
+            totalRetired: parseInt(row.total_retired || '0', 10),
         };
 
         return {

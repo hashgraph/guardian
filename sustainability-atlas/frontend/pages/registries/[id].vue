@@ -20,7 +20,7 @@ import {
 import { formatCredits } from '~/lib/format';
 import { allocateDonutColors, mergeTopBinsWithOther, DONUT_TOP_N, DONUT_OTHER_COLOR } from '~/lib/chart-colors';
 import type { MethodologyDto, MethodologiesResponse } from '~/composables/api/useMethodologiesApi';
-import type { CreditDto, CreditsResponse } from '~/composables/api/useCreditsApi';
+import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
 
 const { t, locale } = useI18n();
 const route = useRoute();
@@ -46,45 +46,12 @@ const registryId = computed(() => route.params.id as string);
 // Registry detail
 const { data: registry, pending, error } = useRegistryApi({ id: registryId, network });
 
-// Projects from global store filtered to this registry by DID (not name, to
-// handle multiple registries sharing the same display name).
-const { projects } = useProjects();
-const registryProjects = computed(() =>
-    registry.value
-        ? projects.value.filter(p => p.registryDid === registry.value!.did)
-        : [],
-);
+// Per-country and per-sector aggregates for this registry, grouped by the API.
+const summaryFilters = computed(() => ({ registryDid: registry.value?.did }));
+const { summary } = useDashboardSummary(summaryFilters);
 
-// Credits for this registry (fetched by DID once registry loads).
-// We sum the supply of project-linked credits only, consistent with the
-// linkedOnly=true navigation on the stat card.
-const registryCredits = ref<CreditDto[]>([]);
-
-if (import.meta.client) {
-    const config = useRuntimeConfig();
-    const creditsBaseURL = config.public.apiBaseUrl as string;
-
-    watch(
-        () => registry.value?.did,
-        async (did) => {
-            if (!did) return;
-            try {
-                const res = await $fetch<CreditsResponse>(
-                    `/api/v1/${network.value}/credits`,
-                    { baseURL: creditsBaseURL, query: { registryDid: did, limit: 500 } },
-                );
-                registryCredits.value = res.data ?? [];
-            } catch {
-                registryCredits.value = [];
-            }
-        },
-        { immediate: true },
-    );
-}
-
-const registryMinted = computed(() =>
-    registryCredits.value.filter(c => c.projectId).reduce((sum, c) => sum + c.supply, 0),
-);
+// Credit volume issued under this registry, precomputed in mv_registry_stats.
+const registryMinted = computed(() => registry.value?.stats?.totalIssued ?? 0);
 
 // Methodologies for this registry (fetched client-side once registry DID is known)
 const methodologies = ref<MethodologyDto[]>([]);
@@ -160,22 +127,20 @@ const registryTopicHashscanUrl = computed(() =>
         : null,
 );
 
-// Map points (projects with valid coordinates)
 const mapPoints = computed(() =>
-    registryProjects.value
-        .filter(p => p.lat !== 0 || p.lng !== 0)
-        .map(p => ({ lat: p.lat, lng: p.lng, name: p.name })),
+    summary.value.mapPoints.map(p => ({ lat: p.lat, lng: p.lng, name: p.name ?? '' })),
 );
 
 // Country choropleth data for ProjectMap
 const mapCountries = computed(() => {
     const counts: Record<string, { projects: number; credits: number; name: string }> = {};
-    for (const p of registryProjects.value) {
-        const code = p.countryCode ?? 'UNK';
-        if (code === 'UNK' || !p.country) continue;
-        if (!counts[code]) counts[code] = { projects: 0, credits: 0, name: p.country };
-        counts[code].projects++;
-        counts[code].credits += p.totalIssued ?? 0;
+    for (const row of summary.value.countries) {
+        const raw = row.country ?? '';
+        const code = COUNTRY_ALPHA3[raw] || 'UNK';
+        if (code === 'UNK' || !raw) continue;
+        if (!counts[code]) counts[code] = { projects: 0, credits: 0, name: raw };
+        counts[code].projects += row.projects;
+        counts[code].credits += row.credits;
     }
     return Object.entries(counts).map(([code, d]) => ({
         countryCode: code,
@@ -193,13 +158,15 @@ const activeMapDetail = computed(() => {
     const entry = mapCountries.value.find(c => c.countryCode === code);
     if (!entry) return null;
 
-    const countryProjects = registryProjects.value.filter(p => (p.countryCode ?? 'UNK') === code);
     const catCounts: Record<string, number> = {};
-    for (const p of countryProjects) {
-        const label = p.category || p.sector || 'Unknown';
-        catCounts[label] = (catCounts[label] ?? 0) + 1;
+    let total = 0;
+    for (const row of summary.value.countrySectors) {
+        if ((COUNTRY_ALPHA3[row.country ?? ''] || 'UNK') !== code) continue;
+        const label = row.label || 'Unknown';
+        catCounts[label] = (catCounts[label] ?? 0) + row.projectCount;
+        total += row.projectCount;
     }
-    const total = countryProjects.length || 1;
+    total = total || 1;
     const ordered = Object.entries(catCounts)
         .map(([label, count]) => ({ label, value: Math.round((count / total) * 100) }))
         .sort((a, b) => b.value - a.value);
@@ -242,9 +209,9 @@ const methodologySegments = computed(() => {
 // Projects by sector donut
 const sectorSegments = computed(() => {
     const sectorMap = new Map<string, number>();
-    for (const p of registryProjects.value) {
-        const s = p.sector?.trim() || 'Unknown';
-        sectorMap.set(s, (sectorMap.get(s) ?? 0) + 1);
+    for (const row of summary.value.sectors) {
+        const s = row.label?.trim() || 'Unknown';
+        sectorMap.set(s, (sectorMap.get(s) ?? 0) + row.projectCount);
     }
     const sorted = [...sectorMap.entries()].sort((a, b) => b[1] - a[1]);
     if (sorted.length === 0) return [];

@@ -3,8 +3,19 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 import { getDatabaseConfig, getConfiguredNetworks } from '@shared/config/database.config';
 
 /**
+ * Ceiling on how long an API query may run before Postgres cancels it.
+ * Keep below the reverse proxy's read timeout. Applied here only — the worker
+ * and guardian-sync are exempt (see database.config.ts).
+ */
+const DEFAULT_API_STATEMENT_TIMEOUT_MS = 15_000;
+
+/**
  * Holds one TypeORM DataSource per configured Hedera network.
  * Resolved at request time via the `network` path parameter.
+ *
+ * Note each network gets its own pool, so this process holds up to
+ * `networks × DB_POOL_MAX` connections — budget accordingly against
+ * Postgres `max_connections`.
  */
 @Injectable()
 export class NetworkDataSourceRegistry implements OnModuleInit, OnModuleDestroy {
@@ -17,9 +28,17 @@ export class NetworkDataSourceRegistry implements OnModuleInit, OnModuleDestroy 
     }
 
     async onModuleInit(): Promise<void> {
+        const statementTimeoutMs = parseInt(
+            process.env.API_STATEMENT_TIMEOUT_MS || String(DEFAULT_API_STATEMENT_TIMEOUT_MS),
+            10,
+        );
+
         for (const network of this.networks) {
             try {
-                const config = getDatabaseConfig(network, { synchronize: false }) as DataSourceOptions;
+                const config = getDatabaseConfig(network, {
+                    synchronize: false,
+                    statementTimeoutMs,
+                }) as DataSourceOptions;
                 const ds = new DataSource(config);
                 await ds.initialize();
                 this.dataSources.set(network, ds);

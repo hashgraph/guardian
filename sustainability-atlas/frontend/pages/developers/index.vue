@@ -3,30 +3,71 @@ import { Users } from 'lucide-vue-next';
 import type { FilterOption } from '~/components/shared/FilterBar.vue';
 
 const { t } = useI18n();
-const { developers, total, filterOptions } = useDevelopers();
+
+const currentPage = ref(1);
+const pageSize = ref(10);
+const searchQuery = ref('');
+const country = ref<string | undefined>(undefined);
+const sortKey = ref<DeveloperSortKey | null>('projects');
+const sortDir = ref<DeveloperSortDir | null>('desc');
+
+const { developers, total, totalPages } = useDevelopers({
+    page: currentPage,
+    limit: pageSize,
+    search: searchQuery,
+    country,
+    sortBy: sortKey,
+    sortDir,
+});
 
 function goToProjectsForDeveloper(name: string) {
     return navigateTo({ path: '/projects', query: { developer: name } });
 }
 
-const allDevelopers = computed(() => developers.value);
+function toggleSort(key: DeveloperSortKey) {
+    if (sortKey.value === key) {
+        sortDir.value = sortDir.value === 'asc' ? 'desc' : 'asc';
+    } else {
+        sortKey.value = key;
+        sortDir.value = 'desc';
+    }
+    currentPage.value = 1;
+}
 
-const { searchQuery, currentPage, paginated, filtered, totalPages, pageSize, activeFilters, sortKey, sortDir, toggleSort, setFilter, clearFilters } =
-    useFilteredPagination(allDevelopers, {
-        searchFields: ['name', 'country'],
-        pageSize: 10,
-        defaultSort: { key: 'projects', dir: 'desc' },
-    });
+// `status` is derived, not stored — every developer is reported Active — so it
+// is applied to the page rather than sent to the API.
+const STATUSES = ['Active', 'Inactive'] as const;
+const status = ref<string | undefined>(undefined);
+
+const rows = computed(() =>
+    status.value ? developers.value.filter(d => d.status === status.value) : developers.value,
+);
+
+const activeFilters = computed<Record<string, string>>(() => ({
+    ...(country.value ? { country: country.value } : {}),
+    ...(status.value ? { status: status.value } : {}),
+}));
+
+function setFilter(key: string, value: string) {
+    if (key === 'country') country.value = value || undefined;
+    if (key === 'status') status.value = value || undefined;
+    currentPage.value = 1;
+}
+
+function clearFilters() {
+    country.value = undefined;
+    status.value = undefined;
+    currentPage.value = 1;
+}
+
+watch([searchQuery, pageSize], () => { currentPage.value = 1; });
 
 const filters = computed<FilterOption[]>(() => [
     {
         key: 'status',
         label: t('developers.filters.status'),
         multiSelect: true,
-        options: filterOptions.value.statuses.map((s: string) => ({
-            value: s,
-            label: t(`common.status.${s}`),
-        })),
+        options: STATUSES.map(s => ({ value: s, label: t(`common.status.${s}`) })),
     },
 ]);
 
@@ -50,7 +91,7 @@ const statusColor: Record<string, string> = {
                 v-model="searchQuery"
                 :filters="filters"
                 :active-filters="activeFilters"
-                :result-count="filtered.length"
+                :result-count="rows.length"
                 :total-count="total"
                 :search-placeholder="$t('developers.searchPlaceholder')"
                 @filter="setFilter"
@@ -76,7 +117,7 @@ const statusColor: Record<string, string> = {
                     </thead>
                     <tbody class="divide-y">
                         <tr
-                            v-for="d in paginated"
+                            v-for="d in rows"
                             :key="d.id"
                             class="hover:bg-muted/30 transition-colors"
                         >
@@ -132,7 +173,7 @@ const statusColor: Record<string, string> = {
                                 </span>
                             </td>
                         </tr>
-                        <tr v-if="paginated.length === 0">
+                        <tr v-if="rows.length === 0">
                             <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">{{ $t('developers.noMatch') }}</td>
                         </tr>
                     </tbody>
@@ -142,7 +183,7 @@ const statusColor: Record<string, string> = {
             <Pagination
                 v-model:current-page="currentPage"
                 :total-pages="totalPages"
-                :total-items="filtered.length"
+                :total-items="total"
                 :page-size="pageSize"
             />
         </div>

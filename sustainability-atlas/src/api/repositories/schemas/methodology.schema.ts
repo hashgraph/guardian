@@ -32,7 +32,7 @@ export const METHODOLOGY_FIELD_SCHEMA: FieldSchema = {
         sortable: true,
     },
     registryName: {
-        sql: 'reg.registry_name',
+        sql: 'canon.registry_name',
         filter: 'ilike',
         sortable: true,
     },
@@ -68,15 +68,15 @@ export const METHODOLOGY_FIELD_SCHEMA: FieldSchema = {
 
     // ── Joined materialized view columns ────────────────────────────────
     projects: {
-        sql: 's.project_count',
+        sql: 'canon.project_count',
         sortable: true,
     },
     issuances: {
-        sql: 's.issuance_count',
+        sql: 'canon.issuance_count',
         sortable: true,
     },
     schemas: {
-        sql: 's.schema_count',
+        sql: 'canon.schema_count',
         sortable: true,
     },
 };

@@ -1312,6 +1312,8 @@
         "coverageTooltip": "Porcentaje del total de proyectos que contribuyen a este ODS. Un proyecto puede contribuir a varios ODS.",
         "viewProjects": "Ver proyectos etiquetados con {name}",
         "viewIssuances": "Ver emisiones de {name}",
+        "noMatch": "Ningún ODS coincide con tu búsqueda",
+        "loadFailed": "No se pudieron cargar los datos de ODS.",
         "columns": {
             "sdg": "ODS",
             "goal": "Objetivo",

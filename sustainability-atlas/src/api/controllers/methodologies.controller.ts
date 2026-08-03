@@ -52,6 +52,19 @@ export class MethodologiesController {
         return this.methodologiesService.findAll(network, query);
     }
 
+    @Get('options')
+    @ApiOperation({
+        summary: 'Distinct methodology names',
+        description:
+            'Returns just the distinct methodology display names, for filter dropdowns. ' +
+            'Cached for 60 seconds.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: [String] })
+    async findNameOptions(@Param('network') network: string): Promise<string[]> {
+        return this.methodologiesService.findNameOptions(network);
+    }
+
     @Get(':id')
     @ApiOperation({
         summary: 'Get a Methodology by topic ID',

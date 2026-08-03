@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
 import {
     DeveloperRepository,
     DeveloperListQuery,
@@ -65,10 +66,19 @@ export class PgDeveloperRepository extends DeveloperRepository {
             ? SORTABLE_COLUMNS[sortBy]
             : 'project_count';
         const direction = sortDir === 'asc' ? 'ASC' : 'DESC';
+        // Qualified with `agg.` deliberately. The SELECT below re-emits the
+        // numeric aggregates as ::text under the same names, and an unqualified
+        // ORDER BY binds to that text output column — sorting 50000 before 5.
+        // A qualified reference can't match an output alias, so it binds to the
+        // numeric input instead.
+        //
         // Nulls always last so empty-country / empty-issuance rows don't pin
         // themselves to the top when sorted ascending.
-        const orderBy = `${sortColumn} ${direction} NULLS LAST, developer ASC`;
+        const orderBy = `agg.${sortColumn} ${direction} NULLS LAST, agg.developer ASC`;
 
+        // Issued/retired totals come from mv_project_stats, keyed by projectKey
+        // and refreshed by MvRefreshProcessor. Its retired figure counts each
+        // (project, token) pair once and only for NON_FUNGIBLE_UNIQUE tokens.
         const baseCte = `
             WITH dev_projects AS (
                 SELECT
@@ -76,34 +86,26 @@ export class PgDeveloperRepository extends DeveloperRepository {
                     bv."businessData"->>'developer'       AS developer,
                     bv."businessData"->>'country'         AS country,
                     bv."businessData"->>'category'        AS category,
-                    reg."displayName"                     AS registry_name
+                    reg.registry_name                     AS registry_name
                 FROM business_view bv
-                LEFT JOIN LATERAL (
-                    SELECT "displayName"
-                    FROM business_view r
-                    WHERE r."viewType" = 'REGISTRY'
-                      AND r."registryDid" = bv."registryDid"
-                    ORDER BY r."createdAt" DESC NULLS LAST
-                    LIMIT 1
-                ) reg ON true
+                LEFT JOIN (
+                    SELECT DISTINCT ON ("registryDid")
+                           "registryDid",
+                           "displayName" AS registry_name
+                    FROM business_view
+                    WHERE "viewType" = 'REGISTRY'
+                    ORDER BY "registryDid", "createdAt" DESC NULLS LAST
+                ) reg ON reg."registryDid" = bv."registryDid"
                 WHERE bv."viewType" = 'PROJECT'
                   AND bv."businessData"->>'developer' IS NOT NULL
                   AND bv."businessData"->>'developer' <> ''
             ),
-            project_issued AS (
+            project_stats AS (
                 SELECT
-                    pml.project_key AS source_ts,
-                    COALESCE(SUM(pml.amount), 0)::numeric AS issued
-                FROM project_mint_link pml
-                GROUP BY pml.project_key
-            ),
-            project_retired AS (
-                SELECT
-                    pml.project_key AS source_ts,
-                    COUNT(*) FILTER (WHERE nc.deleted = true)::numeric AS retired
-                FROM project_mint_link pml
-                JOIN nft_cache nc ON nc."tokenId" = pml.token_id
-                GROUP BY pml.project_key
+                    "projectKey"              AS source_ts,
+                    total_issued::numeric     AS issued,
+                    total_retired::numeric    AS retired
+                FROM ${MV_PROJECT_STATS_NAME}
             ),
             agg AS (
                 SELECT
@@ -117,11 +119,10 @@ export class PgDeveloperRepository extends DeveloperRepository {
                     ARRAY_AGG(DISTINCT dp.category)
                         FILTER (WHERE dp.category IS NOT NULL AND dp.category <> '')
                         AS categories,
-                    COALESCE(SUM(pi.issued), 0)::numeric  AS total_issued,
-                    COALESCE(SUM(pr.retired), 0)::numeric AS total_retired
+                    COALESCE(SUM(ps.issued), 0)::numeric  AS total_issued,
+                    COALESCE(SUM(ps.retired), 0)::numeric AS total_retired
                 FROM dev_projects dp
-                LEFT JOIN project_issued  pi ON pi.source_ts = dp.source_ts
-                LEFT JOIN project_retired pr ON pr.source_ts = dp.source_ts
+                LEFT JOIN project_stats ps ON ps.source_ts = dp.source_ts
                 GROUP BY dp.developer
             )
         `;

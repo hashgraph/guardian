@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { MV_METHODOLOGY_STATS_NAME, MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
 import {
@@ -16,6 +17,9 @@ import { METHODOLOGY_FIELD_SCHEMA } from './schemas/methodology.schema';
 
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
+
+/** Ceiling on rows a single export may stream; exceeding it throws rather than truncating. */
+const EXPORT_MAX_ROWS = 100_000;
 
 /** Raw row shape for `findAllForExport` (see `MethodologyExportRow` doc). */
 interface RawExportRow {
@@ -56,16 +60,24 @@ interface RawRow {
     total_retired: string | null;
 }
 
-/** LATERAL subquery joined into both findAll and findById to look up the publishing registry's display name, using ORDER BY + LIMIT 1 to handle the rare case of multiple REGISTRY rows for one DID. */
+/**
+ * Looks up the publishing registry's display name.
+ *
+ * A non-correlated `DISTINCT ON` derived table (computed once over the small
+ * REGISTRY row set) picks the latest row per registryDid, handling the rare
+ * case of multiple REGISTRY rows for one DID — cheaper than the per-row
+ * correlated LATERAL this replaces, which re-ran the lookup for every
+ * METHODOLOGY row. Mirrors PgProjectRepository's REGISTRY_NAME_JOIN.
+ */
 const REGISTRY_NAME_JOIN = `
-    LEFT JOIN LATERAL (
-        SELECT "displayName" AS registry_name
+    LEFT JOIN (
+        SELECT DISTINCT ON ("registryDid")
+               "registryDid",
+               "displayName" AS registry_name
         FROM business_view
         WHERE "viewType" = 'REGISTRY'
-          AND "registryDid" = bv."registryDid"
-        ORDER BY "createdAt" DESC NULLS LAST
-        LIMIT 1
-    ) reg ON true
+        ORDER BY "registryDid", "createdAt" DESC NULLS LAST
+    ) reg ON reg."registryDid" = bv."registryDid"
 `;
 
 /** Brings in the decode status for the methodology's policy topic (businessData->>'topicId'); collapses via LATERAL — prefer the latest decoded row, fall back to the latest row of any status — since a policyTopicId can have N policy rows. */
@@ -80,13 +92,19 @@ const POLICY_DECODE_STATUS_JOIN = `
     ) p ON TRUE
 `;
 
-/** Effective decode status for display + filtering; maps policy.decodeStatus ('decoded'/'pending'/'failed') to the public API vocabulary ('success'/'pending'/'failed'). */
-const EFFECTIVE_DECODE_STATUS = `
+/** Maps policy.decodeStatus ('decoded'/'pending'/'failed') to the public API vocabulary ('success'/'pending'/'failed'). */
+const effectiveDecodeStatus = (col: string): string => `
     CASE
-        WHEN p."decodeStatus" = 'decoded' THEN 'success'
-        ELSE p."decodeStatus"
+        WHEN ${col} = 'decoded' THEN 'success'
+        ELSE ${col}
     END
 `;
+
+/** Over the stats MV's precomputed column — used by the list and export paths. */
+const EFFECTIVE_DECODE_STATUS = effectiveDecodeStatus('canon.decode_status');
+
+/** Over a live `policy` join — used by findById, which resolves one row exactly. */
+const EFFECTIVE_DECODE_STATUS_LIVE = effectiveDecodeStatus('p."decodeStatus"');
 
 const SEARCH_TSVECTOR = `(
     setweight(to_tsvector('english', coalesce(bv."displayName", '')), 'A') ||
@@ -99,18 +117,24 @@ const SOURCE_MESSAGE_JOIN = `
     LEFT JOIN message src_msg ON src_msg."consensusTimestamp" = bv."sourceTimestamp"
 `;
 
+/**
+ * Selects one canonical row per methodology.
+ *
+ * `business_view` is grained one row per Hedera message, so republishing a
+ * methodology yields several METHODOLOGY rows sharing one `relatedTopicId`.
+ * The canonical pick is the newest `sourceTimestamp`; rows with a NULL
+ * `relatedTopicId` have nothing to dedup against and are always kept.
+ *
+ * A non-correlated `DISTINCT ON` derived table, evaluated once and joined on
+ * `id`, so the dedup cost does not scale with the number of candidate rows.
+ */
+const CANONICAL_JOIN = `
+    LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} canon
+        ON canon."relatedTopicId" = bv."relatedTopicId"
+`;
+
 const METHODOLOGY_CANONICAL_DEDUP = `
-    (
-        bv."relatedTopicId" IS NULL
-        OR bv.id = (
-            SELECT b2.id
-            FROM business_view b2
-            WHERE b2."viewType" = 'METHODOLOGY'
-              AND b2."relatedTopicId" = bv."relatedTopicId"
-            ORDER BY b2."sourceTimestamp"::numeric DESC, b2.id DESC
-            LIMIT 1
-        )
-    )
+    (bv."relatedTopicId" IS NULL OR canon.canonical_id = bv.id)
 `;
 
 /**
@@ -141,6 +165,21 @@ const LIFECYCLE_JOIN = `
 export class PgMethodologyRepository extends MethodologyRepository {
     constructor(private readonly dataSource: DataSource) {
         super();
+    }
+
+    /** Distinct methodology display names, deduplicated to one row per canonical methodology. */
+    async findNameOptions(): Promise<string[]> {
+        const rows: Array<{ name: string }> = await this.dataSource.query(`
+            SELECT DISTINCT bv."displayName" AS name
+            FROM business_view bv
+            ${CANONICAL_JOIN}
+            WHERE bv."viewType" = 'METHODOLOGY'
+              AND ${METHODOLOGY_CANONICAL_DEDUP}
+              AND NULLIF(bv."displayName", '') IS NOT NULL
+            ORDER BY name ASC
+        `);
+
+        return rows.map(r => r.name);
     }
 
     async findAll(query: MethodologyListQuery): Promise<MethodologyListResult> {
@@ -223,40 +262,36 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
+        // Every per-methodology value comes from the stats MV, which is also the
+        // canonical-row source — so this is one join, with no per-row LATERAL
+        // and no derived table to re-sort for each candidate row.
         const rowsSql = `
             SELECT
                 bv.*,
-                s.project_count,
-                s.instance_project_count,
-                s.issuance_count,
-                s.instance_issuance_count,
-                s.schema_count,
-                reg.registry_name,
+                canon.project_count,
+                canon.instance_project_count,
+                canon.issuance_count,
+                canon.instance_issuance_count,
+                canon.schema_count,
+                canon.registry_name,
                 (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
-                p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
-                p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
-                lc_m.total_issued,
-                lc_m.total_retired,
+                canon.sectoral_scopes,
+                canon.emission_reduction_approach,
+                canon.total_issued,
+                canon.total_retired,
                 ${rankExpr} AS search_rank
             FROM business_view bv
-            LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
-                ON s."relatedTopicId" = bv."relatedTopicId"
-            ${REGISTRY_NAME_JOIN}
-            ${POLICY_DECODE_STATUS_JOIN}
-            ${LIFECYCLE_JOIN}
+            ${CANONICAL_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE and LATERAL join (so filters referencing `reg.registry_name` resolve
-        // correctly), but skips the stats MV join and the LIMIT/OFFSET params.
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM business_view bv
-            ${REGISTRY_NAME_JOIN}
-            ${POLICY_DECODE_STATUS_JOIN}
+            ${CANONICAL_JOIN}
             WHERE ${whereSql}
         `;
 
@@ -282,7 +317,7 @@ export class PgMethodologyRepository extends MethodologyRepository {
                 s.instance_issuance_count,
                 s.schema_count,
                 reg.registry_name,
-                (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
+                (${EFFECTIVE_DECODE_STATUS_LIVE}) AS decode_status,
                 p."sourceCid" AS policy_source_cid,
                 p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
                 p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach
@@ -498,18 +533,15 @@ export class PgMethodologyRepository extends MethodologyRepository {
             const batchSql = `
                 SELECT
                     bv."displayName" AS name,
-                    reg.registry_name,
+                    canon.registry_name,
                     bv."businessData"->'options'->>'version' AS version,
-                    p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
-                    COALESCE(s.project_count, 0) AS project_count,
+                    canon.emission_reduction_approach,
+                    COALESCE(canon.project_count, 0) AS project_count,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files AS "ipfsCids"
                 FROM business_view bv
-                LEFT JOIN ${MV_METHODOLOGY_STATS_NAME} s
-                    ON s."relatedTopicId" = bv."relatedTopicId"
-                ${REGISTRY_NAME_JOIN}
-                ${POLICY_DECODE_STATUS_JOIN}
+                ${CANONICAL_JOIN}
                 ${SOURCE_MESSAGE_JOIN}
                 WHERE ${whereSql}
                 ORDER BY bv."sourceTimestamp" ASC
@@ -520,6 +552,12 @@ export class PgMethodologyRepository extends MethodologyRepository {
             rows.push(...batch.map(PgMethodologyRepository.mapExportRow));
 
             if (batch.length < EXPORT_BATCH_SIZE) break;
+            if (rows.length >= EXPORT_MAX_ROWS) {
+                throw new BadRequestException(
+                    `Export matched more than ${EXPORT_MAX_ROWS.toLocaleString()} rows. ` +
+                    'Narrow the filters (date range, registry, or search) and try again.',
+                );
+            }
         }
 
         return rows;

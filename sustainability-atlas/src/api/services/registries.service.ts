@@ -1,15 +1,31 @@
 import { Injectable } from '@nestjs/common';
+import { RedisService } from '@shared/redis/redis.service';
 import { RegistryQueryDto, RegistryResponseDto } from '../dto/registry.dto';
 import { PaginatedResponse } from '../dto/pagination.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgRegistryRepository } from '../repositories/pg-registry.repository';
 import { RegistryRepository } from '../repositories/registry.repository';
 
+/** Matches MV_REFRESH_INTERVAL — dropdown options can't be fresher than the stats they're filtered by. */
+const OPTIONS_CACHE_TTL_SECONDS = 60;
+
 @Injectable()
 export class RegistriesService {
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
+        private readonly redis: RedisService,
     ) {}
+
+    /** Distinct registry names for filter dropdowns. Cached — the set changes only when the worker ingests a new registry. */
+    async findNameOptions(network: string, hideEmpty = true): Promise<string[]> {
+        const cacheKey = `registry-options:${network}:${hideEmpty ? '1' : '0'}`;
+        const cached = await this.redis.getJson<string[]>(cacheKey);
+        if (cached) return cached;
+
+        const names = await this.getRepository(network).findNameOptions(hideEmpty);
+        await this.redis.setJson(cacheKey, names, OPTIONS_CACHE_TTL_SECONDS);
+        return names;
+    }
 
     async findAll(
         network: string,

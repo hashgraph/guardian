@@ -33,6 +33,20 @@ export class RegistriesController {
         return this.registriesService.findAll(network, query);
     }
 
+    @Get('options')
+    @ApiOperation({
+        summary: 'Distinct registry names',
+        description:
+            'Returns just the distinct registry display names, for filter dropdowns. Avoids ' +
+            'paging the full list endpoint (and its jsonb payload) to derive a name list. ' +
+            'Cached for 60 seconds.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: [String] })
+    async findNameOptions(@Param('network') network: string): Promise<string[]> {
+        return this.registriesService.findNameOptions(network);
+    }
+
     @Get('id/:id')
     @ApiOperation({
         summary: 'Get a Standard Registry by ID',

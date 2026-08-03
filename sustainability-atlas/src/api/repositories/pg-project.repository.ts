@@ -1,3 +1,4 @@
+import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
 import {
@@ -18,6 +19,9 @@ import { collectExternalDataBlockSchemas } from '../services/policy-graph.builde
 
 /** Batch size for the internally-batched `findAllForExport` LIMIT/OFFSET loop. */
 const EXPORT_BATCH_SIZE = 2000;
+
+/** Ceiling on rows a single export may stream; exceeding it throws rather than truncating. */
+const EXPORT_MAX_ROWS = 100_000;
 
 /** Raw row shape for `findAllForExport` (see `ProjectExportRow` doc). */
 interface RawExportRow {
@@ -144,6 +148,7 @@ export class PgProjectRepository extends ProjectRepository {
             country: query.country,
             methodology: query.methodology,
             registry: query.registry,
+            registryDid: query.registryDid,
             developer: query.developer,
             vintage: query.vintage,
             status: query.status,
@@ -724,6 +729,12 @@ export class PgProjectRepository extends ProjectRepository {
             rows.push(...batch.map(PgProjectRepository.mapExportRow));
 
             if (batch.length < EXPORT_BATCH_SIZE) break;
+            if (rows.length >= EXPORT_MAX_ROWS) {
+                throw new BadRequestException(
+                    `Export matched more than ${EXPORT_MAX_ROWS.toLocaleString()} rows. ` +
+                    'Narrow the filters (date range, registry, or search) and try again.',
+                );
+            }
         }
 
         return rows;

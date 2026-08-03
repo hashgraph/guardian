@@ -10,8 +10,20 @@ export interface CreditListQuery {
     tokenId?: string;
     projectKey?: string;
     methodologyId?: string;
+    linkedOnly?: boolean;
+    supplyMin?: string;
+    supplyMax?: string;
+    mintDateFrom?: string;
+    mintDateTo?: string;
     sortBy?: string;
     sortDir?: 'asc' | 'desc';
+}
+
+/** Totals over the whole filtered issuance set, independent of the page being viewed. */
+export interface CreditStats {
+    totalSupply: number;
+    uniqueRegistries: number;
+    uniqueProjects: number;
 }
 
 export interface CreditRow {
@@ -108,6 +120,7 @@ export interface CreditRawDetail {
 /** Storage-agnostic repository contract. */
 export abstract class CreditRepository {
     abstract findAll(query: CreditListQuery): Promise<CreditListResult>;
+    abstract findStats(query: CreditListQuery): Promise<CreditStats>;
     abstract findRaw(tokenId: string): Promise<CreditRawDetail | null>;
     /** Full filtered dataset for the export engine — never capped at 1000 rows, never HTTP page-looped by the caller; implementations batch internally. */
     abstract findAllForExport(filters: CreditExportFilters): Promise<CreditExportRow[]>;

@@ -20,6 +20,12 @@ import { FieldSchema } from '../query-builder';
  * can reference them by name in a grouped query. They carry no filter operator
  * since aggregate expressions cannot appear in a WHERE clause.
  */
+/** Minted amount for a row: the attributed link amount, else the raw VC amount. */
+export const SUPPLY_EXPR = `COALESCE(pml.amount::numeric, (m.documents->'credentialSubject'->0->>'amount')::numeric)`;
+
+/** Mint timestamp for a row: the attributed link date, else the message consensus time. */
+export const MINT_DATE_EXPR = `COALESCE(pml.mint_date, to_timestamp(m."consensusTimestamp"::numeric))`;
+
 export const CREDIT_FIELD_SCHEMA: FieldSchema = {
     // ── Token identity ──────────────────────────────────────────────────
     tokenId: {
@@ -42,14 +48,38 @@ export const CREDIT_FIELD_SCHEMA: FieldSchema = {
         sortable: true,
     },
 
-    // ── Aggregates (SELECT aliases — sortable only) ─────────────────────
+    // ── Row values (SELECT aliases for sorting; the underlying expression is
+    //    repeated for filtering, since an alias can't appear in a WHERE) ─────
     supply: {
         sql: 'total_supply',
         sortable: true,
     },
+    /**
+     * Sorts on the message's consensus timestamp rather than the displayed
+     * `mint_date` alias. The alias is a COALESCE spanning `message` and
+     * `project_mint_link`, so no index can serve it and ordering by it forces a
+     * full join-and-sort of every mint event before the LIMIT. Consensus
+     * timestamp is monotonic and, where a link exists, tracks its mint_date.
+     */
     mintDate: {
-        sql: 'mint_date',
+        sql: 'm."consensusTimestamp"',
         sortable: true,
+    },
+    supplyMin: {
+        sql: SUPPLY_EXPR,
+        filter: 'gte',
+    },
+    supplyMax: {
+        sql: SUPPLY_EXPR,
+        filter: 'lte',
+    },
+    mintDateFrom: {
+        sql: MINT_DATE_EXPR,
+        filter: 'gte',
+    },
+    mintDateTo: {
+        sql: MINT_DATE_EXPR,
+        filter: 'lte',
     },
 
     // ── Attribution ─────────────────────────────────────────────────────
