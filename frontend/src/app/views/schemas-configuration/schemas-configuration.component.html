@@ -306,6 +306,14 @@
                                         <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
                                     }
                                 </button>
+                                <button class="sc-ctp-btn"
+                                    [class.active]="activeCanvasTab === 'links'"
+                                    (click)="activeCanvasTab = 'links'">
+                                    <i class="pi pi-link"></i>Repeatable links
+                                    @if (arrayDependencyCount) {
+                                        <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
+                                    }
+                                </button>
                             </div>
                         </div>
 
@@ -362,6 +370,9 @@
 
                         @if (activeCanvasTab === 'conditions') {
                             <ng-container *ngTemplateOutlet="conditionsCanvas"></ng-container>
+                        }
+                        @if (activeCanvasTab === 'links') {
+                            <ng-container *ngTemplateOutlet="arrayDependenciesCanvas"></ng-container>
                         }
                     </div>
 
@@ -1098,6 +1109,161 @@
              (click)="isDrilling ? addDrillField(defaultFieldType) : addField(defaultFieldType)">
             <i class="pi pi-plus"></i>
             Click to add a string field, or drag a type from the sidebar
+        </div>
+    </ng-template>
+
+    <ng-template #arrayDependenciesCanvas>
+        <div class="sc-array-link-canvas">
+            <div class="sc-array-link-scope-note">
+                <i class="pi pi-info-circle"></i>
+                Link repeatable sub-schema fields from parent to child. Entries stay paired by index.
+            </div>
+
+            @for (dependency of arrayDependencies; track dependency) {
+                <div class="sc-array-link-card">
+                    <div class="sc-array-link-paths">
+                        <div class="sc-array-link-path">
+                            <span class="sc-array-link-label">Source</span>
+                            <span class="sc-array-link-value"
+                                (mouseenter)="updateOverflowTitle($event, arrayDependencyDisplayLabel(dependency.on))">
+                                {{ arrayDependencyDisplayLabel(dependency.on) }}
+                            </span>
+                        </div>
+                        <i class="pi pi-arrow-right"></i>
+                        <div class="sc-array-link-path">
+                            <span class="sc-array-link-label">Dependent</span>
+                            <span class="sc-array-link-value"
+                                (mouseenter)="updateOverflowTitle($event, arrayDependencyDisplayLabel(dependency.field))">
+                                {{ arrayDependencyDisplayLabel(dependency.field) }}
+                            </span>
+                        </div>
+                        @if (dependency.title?.length) {
+                            <div class="sc-array-link-title">
+                                <span class="sc-array-link-label">Display name</span>
+                                <span class="sc-array-link-value"
+                                    (mouseenter)="updateOverflowTitle($event, arrayDependencyTitleDisplayLabel(dependency))">
+                                    {{ arrayDependencyTitleDisplayLabel(dependency) }}
+                                </span>
+                            </div>
+                        }
+                    </div>
+                    <button class="sc-array-link-remove" title="Remove link"
+                        (click)="removeArrayDependency(dependency)">
+                        <i class="pi pi-trash"></i>
+                    </button>
+                </div>
+            } @empty {
+                <div class="sc-array-link-empty">
+                    <i class="pi pi-link"></i>
+                    <span>No repeatable field links in this schema.</span>
+                </div>
+            }
+
+            <div class="sc-array-link-editor">
+                <div class="sc-array-link-editor-title">Add repeatable field link</div>
+                <div class="sc-array-link-editor-grid">
+                    <label>
+                        <span>Source array</span>
+                        <p-select
+                            class="guardian-dropdown"
+                            panelStyleClass="guardian-dropdown-panel sc-array-link-dropdown-panel"
+                            [options]="arrayDependencyFieldGroups"
+                            [group]="true"
+                            optionGroupLabel="label"
+                            optionGroupChildren="items"
+                            optionLabel="label"
+                            optionValue="pathStr"
+                            [filter]="true"
+                            filterBy="label"
+                            [resetFilterOnHide]="true"
+                            appendTo="body"
+                            placeholder="Select source array"
+                            [(ngModel)]="newArrayDependencyOn"
+                            (mousedown)="updateArrayLinkPanelWidth($event)"
+                            (onChange)="onArrayDependencySourceChange()">
+                            <ng-template pTemplate="selectedItem" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="group" let-group>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, group.label)">{{ group.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                        </p-select>
+                    </label>
+                    <label>
+                        <span>Dependent array</span>
+                        <p-select
+                            class="guardian-dropdown"
+                            panelStyleClass="guardian-dropdown-panel sc-array-link-dropdown-panel"
+                            [options]="arrayDependencyFieldGroups"
+                            [group]="true"
+                            optionGroupLabel="label"
+                            optionGroupChildren="items"
+                            optionLabel="label"
+                            optionValue="pathStr"
+                            [filter]="true"
+                            filterBy="label"
+                            [resetFilterOnHide]="true"
+                            appendTo="body"
+                            placeholder="Select dependent array"
+                            (mousedown)="updateArrayLinkPanelWidth($event)"
+                            [(ngModel)]="newArrayDependencyField">
+                            <ng-template pTemplate="selectedItem" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="group" let-group>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, group.label)">{{ group.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                        </p-select>
+                    </label>
+                    <label>
+                        <span>Entry display name <small>(optional)</small></span>
+                        <p-select
+                            class="guardian-dropdown"
+                            panelStyleClass="guardian-dropdown-panel sc-array-link-dropdown-panel"
+                            [options]="arrayDependencyTitleOptions"
+                            optionLabel="label"
+                            optionValue="pathStr"
+                            [showClear]="true"
+                            appendTo="body"
+                            placeholder="Select title field"
+                            [disabled]="!newArrayDependencyOn"
+                            (mousedown)="updateArrayLinkPanelWidth($event)"
+                            [(ngModel)]="newArrayDependencyTitle">
+                            <ng-template pTemplate="selectedItem" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                        </p-select>
+                        <small class="sc-array-link-field-hint">
+                            Uses this field's entered value to name linked entries. Leave empty for numbered titles.
+                        </small>
+                    </label>
+                </div>
+                <div class="sc-array-link-editor-actions">
+                    <span>Build chains top-down: add the parent link before using its child as a source.</span>
+                    <button class="sc-btn sc-btn-primary"
+                        [disabled]="!canAddArrayDependency()"
+                        (click)="addArrayDependency()">
+                        <i class="pi pi-plus"></i>Add link
+                    </button>
+                </div>
+            </div>
         </div>
     </ng-template>
 

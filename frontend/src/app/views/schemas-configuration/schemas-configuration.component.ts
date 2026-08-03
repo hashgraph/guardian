@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Subject, Subscription, forkJoin } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, ISchemaArrayDependency, relationAncestors, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -20,6 +20,16 @@ export interface DrillEntry {
     schemaIri: string;
 }
 
+interface ArrayDependencyFieldOption {
+    pathStr: string;
+    label: string;
+}
+
+interface ArrayDependencyFieldGroup {
+    label: string;
+    items: ArrayDependencyFieldOption[];
+}
+
 @Component({
     selector: 'app-schemas-configuration',
     templateUrl: './schemas-configuration.component.html',
@@ -34,7 +44,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
     public activeRpTab: 'settings' | 'logic' = 'settings';
-    public activeCanvasTab: 'fields' | 'conditions' = 'fields';
+    public activeCanvasTab: 'fields' | 'conditions' | 'links' = 'fields';
     public activeDrillTab: 'fields' | 'conditions' = 'fields';
 
     public schemas: Schema[] = [];
@@ -71,6 +81,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
+    public newArrayDependencyField: string | null = null;
+    public newArrayDependencyOn: string | null = null;
+    public newArrayDependencyTitle: string | null = null;
 
     public isDragOverCanvas: boolean = false;
     private _dragEnterCount: number = 0;
@@ -257,6 +270,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 return;
             }
             this.selectedSchema = schema;
+            this.resetArrayDependencyEditor();
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
             if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
@@ -462,6 +476,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.selectedSchema = schema;
                 this.drillStack = [];
                 this.activeCanvasTab = 'fields';
+                this.resetArrayDependencyEditor();
                 this.schemaPropsCollapsed = false;
             }
             return;
@@ -474,6 +489,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedSchema = schema; // optimistic: show header before fields load
         this.drillStack = [];
         this.activeCanvasTab = 'fields';
+        this.resetArrayDependencyEditor();
         this.schemaPropsCollapsed = false;
         void this.router.navigate(['/schema-configuration'], {
             queryParams: {
@@ -1123,6 +1139,223 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    private resetArrayDependencyEditor(): void {
+        this.newArrayDependencyField = null;
+        this.newArrayDependencyOn = null;
+        this.newArrayDependencyTitle = null;
+    }
+
+    private arrayDependencyFieldLabel(field: SchemaField): string {
+        const label = field.description || field.title || field.name;
+        return label === field.name ? field.name : `${label} (${field.name})`;
+    }
+
+    private collectArrayDependencyFieldGroups(
+        fields: SchemaField[],
+        prefix: string[],
+        labelPrefix: string,
+        maxDepth: number = 12,
+    ): ArrayDependencyFieldGroup[] {
+        if (prefix.length > maxDepth) { return []; }
+        const groups: ArrayDependencyFieldGroup[] = [];
+        const directItems: ArrayDependencyFieldOption[] = [];
+
+        for (const field of fields) {
+            if (field.readOnly || !field.isRef) { continue; }
+            const nestedFields = this.resolveRefSchema(field.type)?.fields ?? field.fields ?? [];
+            if (!nestedFields.length) { continue; }
+            const path = [...prefix, field.name];
+            if (field.isArray) {
+                directItems.push({
+                    pathStr: path.join('.'),
+                    label: this.arrayDependencyFieldLabel(field),
+                });
+                continue;
+            }
+            groups.push(...this.collectArrayDependencyFieldGroups(
+                nestedFields,
+                path,
+                `${labelPrefix} > ${this.arrayDependencyFieldLabel(field)}`,
+                maxDepth,
+            ));
+        }
+
+        if (directItems.length) {
+            groups.unshift({ label: labelPrefix, items: directItems });
+        }
+        return groups;
+    }
+
+    public get arrayDependencyFieldGroups(): ArrayDependencyFieldGroup[] {
+        const schema = this.selectedSchema;
+        if (!schema?.fields?.length) { return []; }
+        return this.collectArrayDependencyFieldGroups(
+            schema.fields,
+            [],
+            schema.name || 'This Schema',
+        );
+    }
+
+    private resolveArrayDependencyItemFields(path: string[]): SchemaField[] {
+        let fields = this.selectedSchema?.fields ?? [];
+        for (const name of path) {
+            const field = fields.find(item => item.name === name);
+            if (!field?.isRef) { return []; }
+            fields = this.resolveRefSchema(field.type)?.fields ?? field.fields ?? [];
+        }
+        return fields;
+    }
+
+    public get arrayDependencyTitleOptions(): ArrayDependencyFieldOption[] {
+        if (!this.newArrayDependencyOn) { return []; }
+        return this.resolveArrayDependencyItemFields(this.newArrayDependencyOn.split('.'))
+            .filter(field => !field.isRef && !field.isArray && !field.readOnly)
+            .map(field => ({
+                pathStr: field.name,
+                label: this.arrayDependencyFieldLabel(field),
+            }));
+    }
+
+    public arrayDependencyDisplayLabel(path: string[]): string {
+        const pathStr = path.join('.');
+        for (const group of this.arrayDependencyFieldGroups) {
+            const option = group.items.find(item => item.pathStr === pathStr);
+            if (option) { return option.label; }
+        }
+        return this.arrayDependencyLabel(path);
+    }
+
+    public arrayDependencyTitleDisplayLabel(dependency: ISchemaArrayDependency): string {
+        let fields = this.resolveArrayDependencyItemFields(dependency.on);
+        let field: SchemaField | undefined;
+        for (const name of dependency.title ?? []) {
+            field = fields.find(item => item.name === name);
+            if (!field) { return this.arrayDependencyLabel(dependency.title ?? []); }
+            fields = field.isRef
+                ? this.resolveRefSchema(field.type)?.fields ?? field.fields ?? []
+                : [];
+        }
+        return field
+            ? this.arrayDependencyFieldLabel(field)
+            : this.arrayDependencyLabel(dependency.title ?? []);
+    }
+
+    public updateOverflowTitle(event: MouseEvent, text: string): void {
+        const element = event.currentTarget;
+        if (!(element instanceof HTMLElement)) { return; }
+        if (element.scrollWidth > element.clientWidth || this.overflowsAncestor(element)) {
+            element.setAttribute('title', text);
+        } else {
+            element.removeAttribute('title');
+        }
+    }
+
+    private overflowsAncestor(element: HTMLElement): boolean {
+        const elementRect = element.getBoundingClientRect();
+        let parent = element.parentElement;
+        while (parent) {
+            const style = getComputedStyle(parent);
+            const clipsContent = style.overflowX === 'hidden' ||
+                style.overflowX === 'clip' ||
+                style.overflow === 'hidden' ||
+                style.overflow === 'clip';
+            if (clipsContent) {
+                const parentRect = parent.getBoundingClientRect();
+                if (elementRect.right > parentRect.right + 1 ||
+                    elementRect.left < parentRect.left - 1) {
+                    return true;
+                }
+            }
+            parent = parent.parentElement;
+        }
+        return false;
+    }
+
+    public updateArrayLinkPanelWidth(event: MouseEvent): void {
+        const element = event.currentTarget;
+        if (!(element instanceof HTMLElement)) { return; }
+        document.documentElement.style.setProperty(
+            '--sc-array-link-panel-width',
+            `${element.getBoundingClientRect().width}px`,
+        );
+    }
+
+    public get arrayDependencies(): ISchemaArrayDependency[] {
+        return this.selectedSchema?.arrayDependencies ?? [];
+    }
+
+    public get arrayDependencyCount(): number {
+        return this.arrayDependencies.length;
+    }
+
+    private createsArrayDependencyCycle(field: string, on: string): boolean {
+        const graph = new Map<string, string[]>();
+        for (const dependency of this.arrayDependencies) {
+            const source = dependency.on.join('.');
+            const targets = graph.get(source) ?? [];
+            targets.push(dependency.field.join('.'));
+            graph.set(source, targets);
+        }
+        const visited = new Set<string>();
+        const pending = [field];
+        while (pending.length) {
+            const current = pending.pop();
+            if (!current) { continue; }
+            if (current === on) { return true; }
+            if (visited.has(current)) { continue; }
+            visited.add(current);
+            pending.push(...(graph.get(current) ?? []));
+        }
+        return false;
+    }
+
+    public canAddArrayDependency(): boolean {
+        const field = this.newArrayDependencyField;
+        const on = this.newArrayDependencyOn;
+        if (!field || !on || field === on) { return false; }
+        const availablePaths = new Set(
+            this.arrayDependencyFieldGroups.flatMap(group => group.items.map(item => item.pathStr))
+        );
+        if (!availablePaths.has(field) || !availablePaths.has(on)) { return false; }
+        if (this.arrayDependencies.some(item => item.field.join('.') === field)) { return false; }
+        if (this.arrayDependencies.some(item => item.on.join('.') === field)) { return false; }
+        return !this.createsArrayDependencyCycle(field, on);
+    }
+
+    public addArrayDependency(): void {
+        const schema = this.selectedSchema;
+        const field = this.newArrayDependencyField;
+        const on = this.newArrayDependencyOn;
+        if (!schema || !field || !on || !this.canAddArrayDependency()) { return; }
+        const dependency: ISchemaArrayDependency = {
+            field: field.split('.'),
+            on: on.split('.'),
+            kind: 'array',
+        };
+        if (this.newArrayDependencyTitle) {
+            dependency.title = this.newArrayDependencyTitle.split('.');
+        }
+        schema.arrayDependencies = [...(schema.arrayDependencies ?? []), dependency];
+        this.resetArrayDependencyEditor();
+        this.markDirty();
+    }
+
+    public removeArrayDependency(dependency: ISchemaArrayDependency): void {
+        const schema = this.selectedSchema;
+        if (!schema) { return; }
+        schema.arrayDependencies = (schema.arrayDependencies ?? [])
+            .filter(item => item !== dependency);
+        this.markDirty();
+    }
+
+    public onArrayDependencySourceChange(): void {
+        this.newArrayDependencyTitle = null;
+    }
+
+    public arrayDependencyLabel(path: string[]): string {
+        return path.join(' › ');
+    }
+
     // Referenced sub-schemas may live only in _subSchemasByIri (the API's $defs for the
     // loaded schema), not in the paginated sidebar list, so resolve from both.
     private resolveRefSchema(iri: string): Schema | undefined {
@@ -1159,6 +1392,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
         ];
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -1166,6 +1400,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public drillTo(index: number): void {
         this.drillStack = this.drillStack.slice(0, index + 1);
         this.selectedField = null;
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -1174,6 +1409,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.drillStack = this.drillStack.slice(0, -1);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -1182,6 +1418,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.drillStack = [];
         this.selectedField = null;
         this.activeDrillTab = 'fields';
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }

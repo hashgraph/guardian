@@ -299,6 +299,60 @@ form {
     margin-bottom: 32px;
 }
 
+.array-dependencies-container {
+    border-radius: 8px;
+    border: 1px solid var(--guardian-grey-color-2, #e1e7ef);
+    background: var(--guardian-grey-background, #f9fafc);
+    margin-top: 10px;
+    margin-bottom: 16px;
+}
+
+.array-dependency-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 16px;
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+
+    &:not(:last-child) {
+        border-bottom: 1px solid var(--guardian-grey-color-2, #e1e7ef);
+    }
+
+    .guardian-icon-button {
+        margin-left: auto;
+    }
+}
+
+.array-dependency-path {
+    color: var(--guardian-font-color, #181818);
+    font-weight: 500;
+    word-break: break-all;
+}
+
+.array-dependency-separator {
+    color: var(--guardian-disabled-color, #848fa9);
+    font-weight: 400;
+    white-space: nowrap;
+}
+
+.array-dependency-editor {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+
+    .dropdown-field {
+        flex: 1 1 200px;
+        min-width: 200px;
+    }
+
+    .add-btn {
+        margin-bottom: 0;
+    }
+}
+
 .re-order-handler {
     position: absolute;
     left: -40px;

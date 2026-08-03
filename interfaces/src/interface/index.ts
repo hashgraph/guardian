@@ -19,6 +19,7 @@ export * from './retire-request.interface.js';
 export * from './retire-token-pool.interface.js';
 export * from './retire-token-request.interface.js';
 export * from './root-config.interface.js';
+export * from './schema-array-dependency.interface.js';
 export * from './schema-condition.interface.js';
 export * from './schema-document.interface.js';
 export * from './schema-field.interface.js';

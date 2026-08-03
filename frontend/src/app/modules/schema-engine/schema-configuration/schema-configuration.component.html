@@ -169,6 +169,98 @@
         </div>
         <div class="guardian-button-label">Add Field</div>
       </button>
+      <div class="configurator-block-title">Repeatable field links</div>
+      @if (arrayDependencies.length) {
+        <div class="array-dependencies-container">
+          @for (item of arrayDependencies; track item) {
+            <div class="array-dependency-item">
+              <span class="array-dependency-path">{{ arrayDependencyLabel(item.field) }}</span>
+              <span class="array-dependency-separator">depends on</span>
+              <span class="array-dependency-path">{{ arrayDependencyLabel(item.on) }}</span>
+              @if (item.title) {
+                <span class="array-dependency-separator">titled by</span>
+                <span class="array-dependency-path">{{ arrayDependencyLabel(item.title) }}</span>
+              }
+              <div
+                class="guardian-icon-button"
+                (click)="onRemoveArrayDependency(item)">
+                <svg-icon
+                  class="icon-btn"
+                  src="/assets/images/icons/delete.svg"
+                  svgClass="icon-color-delete">
+                </svg-icon>
+              </div>
+            </div>
+          }
+        </div>
+      }
+      <div class="array-dependency-editor">
+        <div class="dropdown-field guardian-input-container">
+          <label class="form-label">Dependent field</label>
+          <p-select
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel"
+            [options]="arrayFieldGroups"
+            [group]="true"
+            optionGroupLabel="label"
+            optionGroupChildren="items"
+            optionLabel="label"
+            optionValue="key"
+            dataKey="key"
+            appendTo="body"
+            placeholder="Dependent field"
+            [(ngModel)]="newDependencyField"
+            [ngModelOptions]="{standalone: true}">
+            <ng-template let-group pTemplate="group">
+              <span class="if-field-group-label">{{ group.label }}</span>
+            </ng-template>
+          </p-select>
+        </div>
+        <div class="dropdown-field guardian-input-container">
+          <label class="form-label">Source field</label>
+          <p-select
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel"
+            [options]="arrayFieldGroups"
+            [group]="true"
+            optionGroupLabel="label"
+            optionGroupChildren="items"
+            optionLabel="label"
+            optionValue="key"
+            dataKey="key"
+            appendTo="body"
+            placeholder="Source field"
+            [(ngModel)]="newDependencyOn"
+            [ngModelOptions]="{standalone: true}"
+            (onChange)="onDependencySourceChange()">
+            <ng-template let-group pTemplate="group">
+              <span class="if-field-group-label">{{ group.label }}</span>
+            </ng-template>
+          </p-select>
+        </div>
+        <div class="dropdown-field guardian-input-container">
+          <label class="form-label">Title field</label>
+          <p-select
+            class="guardian-dropdown"
+            panelStyleClass="guardian-dropdown-panel"
+            [options]="arrayTitleOptions"
+            optionLabel="label"
+            optionValue="key"
+            dataKey="key"
+            [showClear]="true"
+            appendTo="body"
+            placeholder="No title"
+            [(ngModel)]="newDependencyTitle"
+            [ngModelOptions]="{standalone: true}">
+          </p-select>
+        </div>
+        <button
+          class="guardian-button guardian-button-secondary add-btn"
+          [disabled]="!canAddArrayDependency()"
+          (click)="onAddArrayDependency()">
+          <div class="guardian-button-label">Add link</div>
+        </button>
+      </div>
       <div class="configurator-block-title">Conditions</div>
       @if (fields && fields.length > 0) {
         @if (conditions && conditions.length) {

@@ -12,6 +12,7 @@ import {
     DefaultFieldDictionary,
     FieldTypesDictionary,
     isAncestorType,
+    ISchemaArrayDependency,
     Schema,
     SchemaCategory,
     SchemaCondition,
@@ -63,6 +64,10 @@ export class SchemaConfigurationComponent implements OnInit {
     public started = false;
     public fields!: FieldControl[];
     public conditions!: ConditionControl[];
+    public arrayDependencies: ISchemaArrayDependency[] = [];
+    public newDependencyField: string | null = null;
+    public newDependencyOn: string | null = null;
+    public newDependencyTitle: string | null = null;
     public fieldsForm!: UntypedFormGroup;
     public conditionsForm!: UntypedFormGroup;
     public dataForm!: UntypedFormGroup;
@@ -360,6 +365,11 @@ export class SchemaConfigurationComponent implements OnInit {
 
         this.updateFieldControls(fields, conditionsFields);
         this.updateConditionControls(conditions);
+        this.arrayDependencies = (this._schema?.arrayDependencies || [])
+            .map((item) => ({ ...item }));
+        this.newDependencyField = null;
+        this.newDependencyOn = null;
+        this.newDependencyTitle = null;
         this.errors = errors;
         this.rebuildOptionCaches();
         this.resolveGeoDependencies();
@@ -1136,6 +1146,7 @@ export class SchemaConfigurationComponent implements OnInit {
             }
         }
 
+        schema.arrayDependencies = this.arrayDependencies;
         schema.update(fields, conditions);
         schema.updateRefs(this.subSchemas);
         return schema;
@@ -1650,6 +1661,194 @@ export class SchemaConfigurationComponent implements OnInit {
             groups.unshift({ label: labelPrefix, items: directItems });
         }
         return groups;
+    }
+
+    private collectArrayFieldGroups(
+        fields: SchemaField[],
+        prefix: string[],
+        labelPrefix: string,
+        maxDepth: number = 12,
+    ): ConditionFieldGroup[] {
+        if (prefix.length > maxDepth) { return []; }
+        const groups: ConditionFieldGroup[] = [];
+        const directItems: ConditionFieldOption[] = [];
+
+        for (const f of fields) {
+            if (f.readOnly || !f.isRef) { continue; }
+            const nestedSchema = this.subSchemas?.find(s => s.iri === f.type);
+            if (!nestedSchema?.fields?.length) { continue; }
+            const path = [...prefix, f.name];
+            if (f.isArray) {
+                directItems.push({
+                    key: path.join('.'),
+                    label: this.arrayFieldLabel(f.name, f.description, f.title),
+                    shortLabel: this.arrayFieldLabel(f.name, f.description, f.title),
+                    fieldPath: path,
+                    typeKey: '',
+                    required: f.required,
+                });
+                continue;
+            }
+            groups.push(...this.collectArrayFieldGroups(
+                nestedSchema.fields,
+                path,
+                `${labelPrefix} > ${this.arrayFieldLabel(f.name, f.description, f.title)}`,
+                maxDepth,
+            ));
+        }
+
+        if (directItems.length) {
+            groups.unshift({ label: labelPrefix, items: directItems });
+        }
+        return groups;
+    }
+
+    public get arrayFieldGroups(): ConditionFieldGroup[] {
+        const groups: ConditionFieldGroup[] = [];
+        const topItems: ConditionFieldOption[] = [];
+
+        for (const fc of this.fields || []) {
+            const typeKey = fc.controlType?.value;
+            const type = this.schemaTypeMap?.[typeKey];
+            if (!type?.isRef) { continue; }
+            const key = fc.controlKey?.value;
+            if (!key) { continue; }
+            const label = this.arrayFieldLabel(
+                key,
+                fc.controlDescription?.value,
+                fc.controlTitle?.value,
+            );
+            if (fc.controlArray?.value) {
+                topItems.push({
+                    key,
+                    label,
+                    shortLabel: label,
+                    fieldPath: [key],
+                    typeKey: '',
+                    required: !!fc.controlRequired?.value,
+                });
+                continue;
+            }
+            const subSchema = this.subSchemas?.find(s => s.iri === type.type);
+            if (!subSchema?.fields?.length) { continue; }
+            groups.push(...this.collectArrayFieldGroups(
+                subSchema.fields,
+                [key],
+                label,
+            ));
+        }
+
+        if (topItems.length) {
+            groups.unshift({ label: 'This Schema', items: topItems });
+        }
+        return groups;
+    }
+
+    public get arrayTitleOptions(): ConditionFieldOption[] {
+        if (!this.newDependencyOn) { return []; }
+        const fields = this.resolveArrayItemFields(this.newDependencyOn.split('.'));
+        return (fields || [])
+            .filter((f) => !f.isRef && !f.isArray && !f.readOnly)
+            .map((f) => ({
+                key: f.name,
+                label: this.arrayFieldLabel(f.name, f.description, f.title),
+                shortLabel: this.arrayFieldLabel(f.name, f.description, f.title),
+                fieldPath: [f.name],
+                typeKey: '',
+                required: f.required,
+            }));
+    }
+
+    private arrayFieldLabel(name: string, description?: string, title?: string): string {
+        const label = description || title || name;
+        return label === name ? name : `${label} (${name})`;
+    }
+
+    private resolveArrayItemFields(path: string[]): SchemaField[] | undefined {
+        if (!path.length) { return undefined; }
+        const rootKey = path[0];
+        const rootControl = (this.fields || [])
+            .find((fc) => fc.controlKey?.value === rootKey);
+        if (!rootControl) { return undefined; }
+        const rootType = this.schemaTypeMap?.[rootControl.controlType?.value];
+        if (!rootType?.isRef) { return undefined; }
+        let fields = this.subSchemas?.find(s => s.iri === rootType.type)?.fields;
+        for (let i = 1; i < path.length; i++) {
+            const field = fields?.find((f) => f.name === path[i]);
+            if (!field?.isRef) { return undefined; }
+            fields = this.subSchemas?.find(s => s.iri === field.type)?.fields;
+        }
+        return fields;
+    }
+
+    private createsArrayDependencyCycle(field: string, on: string): boolean {
+        const graph = new Map<string, string[]>();
+        for (const dependency of this.arrayDependencies) {
+            const source = dependency.on.join('.');
+            const targets = graph.get(source) || [];
+            targets.push(dependency.field.join('.'));
+            graph.set(source, targets);
+        }
+        const visited = new Set<string>();
+        const pending = [field];
+        while (pending.length) {
+            const current = pending.pop()!;
+            if (current === on) { return true; }
+            if (visited.has(current)) { continue; }
+            visited.add(current);
+            pending.push(...(graph.get(current) || []));
+        }
+        return false;
+    }
+
+    public canAddArrayDependency(): boolean {
+        if (!this.newDependencyField || !this.newDependencyOn) { return false; }
+        if (this.newDependencyField === this.newDependencyOn) { return false; }
+        const exists = this.arrayDependencies
+            .some(item => item.field.join('.') === this.newDependencyField);
+        if (exists) { return false; }
+        const alreadySource = this.arrayDependencies
+            .some(item => item.on.join('.') === this.newDependencyField);
+        if (alreadySource) { return false; }
+        return !this.createsArrayDependencyCycle(
+            this.newDependencyField,
+            this.newDependencyOn
+        );
+    }
+
+    public onAddArrayDependency(): void {
+        const field = this.newDependencyField;
+        const on = this.newDependencyOn;
+        if (!field || !on || !this.canAddArrayDependency()) { return; }
+        const dependency: ISchemaArrayDependency = {
+            field: field.split('.'),
+            on: on.split('.'),
+            kind: 'array'
+        };
+        if (this.newDependencyTitle) {
+            dependency.title = this.newDependencyTitle.split('.');
+        }
+        this.arrayDependencies.push(dependency);
+        this.newDependencyField = null;
+        this.newDependencyOn = null;
+        this.newDependencyTitle = null;
+        this.changeForm.emit(this);
+    }
+
+    public onRemoveArrayDependency(item: ISchemaArrayDependency): void {
+        const index = this.arrayDependencies.indexOf(item);
+        if (index >= 0) {
+            this.arrayDependencies.splice(index, 1);
+            this.changeForm.emit(this);
+        }
+    }
+
+    public onDependencySourceChange(): void {
+        this.newDependencyTitle = null;
+    }
+
+    public arrayDependencyLabel(path: string[]): string {
+        return path.join(' › ');
     }
 
     private computeFieldOptionGroups(condition: ConditionControl): ConditionFieldGroup[] {
