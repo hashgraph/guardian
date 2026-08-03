@@ -66,7 +66,7 @@ interface ICrossSchemaConditionItem {
     conditionInvert: boolean;
     field: SchemaField;
     fieldPath: string[];
-    visibility: boolean;
+    visibilityByEntry: Map<number | null, boolean>;
 }
 
 export class FieldForm {
@@ -261,11 +261,14 @@ export class FieldForm {
         return as === bs;
     }
 
-    private evaluateIf(expr: IConditionExpr): boolean {
+    private evaluateIf(expr: IConditionExpr, entryIndex: number | null = null): boolean {
         if (!expr || !expr.pairs?.length) return false;
 
         const test = (p: IConditionPair) => {
-            const c = p.path ? this.form.get(p.path) : this.form.controls[p.name];
+            const path = p.path && entryIndex !== null
+                ? this.injectEntryIndex(p.path, entryIndex)
+                : p.path;
+            const c = path ? this.form.get(path) : this.form.controls[p.name];
             if (!c) return false;
             return this.equalsLoosely(c.value, p.value);
         };
@@ -273,6 +276,56 @@ export class FieldForm {
         if (expr.op === 'SINGLE') return test(expr.pairs[0]);
         if (expr.op === 'AND') return expr.pairs.every(test);
         return expr.pairs.some(test);
+    }
+
+    private injectEntryIndex(path: string, entryIndex: number): string {
+        const segments = path.split('.');
+        const result: string[] = [];
+        let model: FieldForm | null = this;
+        for (const segment of segments) {
+            result.push(segment);
+            const ctrl: IFieldControl<any> | undefined = model?.fieldControls?.find(
+                c => c.name === segment
+            );
+            if (ctrl?.isArray && ctrl.isRef) {
+                result.push(String(entryIndex));
+                model = (ctrl.list?.[entryIndex]?.model as FieldForm) || null;
+            } else {
+                model = (ctrl?.model as FieldForm) || null;
+            }
+        }
+        return result.join('.');
+    }
+
+    private getGroupSize(fieldPath: string[]): number | null {
+        if (!fieldPath?.length) { return null; }
+        let model: FieldForm = this;
+        for (let i = 0; i < fieldPath.length - 1; i++) {
+            const ctrl = model.fieldControls?.find(c => c.name === fieldPath[i]);
+            if (!ctrl) { return null; }
+            if (ctrl.isArray && ctrl.isRef) {
+                return ctrl.list?.length || 0;
+            }
+            const next = ctrl.model as FieldForm | null;
+            if (!next) { return null; }
+            model = next;
+        }
+        return null;
+    }
+
+    private getEntryIndexes(item: ICrossSchemaConditionItem): (number | null)[] {
+        const targetSize = this.getGroupSize(item.fieldPath);
+        const ifSizes = item.expr.pairs
+            .map(p => this.getGroupSize(p.path ? p.path.split('.') : []))
+            .filter((size): size is number => size !== null);
+        if (targetSize === null && !ifSizes.length) {
+            return [null];
+        }
+        if (targetSize === null || !ifSizes.length) {
+            return [];
+        }
+        const size = Math.min(targetSize, ...ifSizes);
+        return Array.from({ length: size }, (_, index) => index);
     }
 
     private buildFields(fields: SchemaField[] | undefined): IFieldControl<any>[] | null {
@@ -340,7 +393,7 @@ export class FieldForm {
                         conditionInvert: invert,
                         field: target.field,
                         fieldPath: target.fieldPath,
-                        visibility: false,
+                        visibilityByEntry: new Map<number | null, boolean>(),
                     });
                 }
             };
@@ -356,20 +409,25 @@ export class FieldForm {
         }
 
         for (const item of this.crossSchemaItems) {
-            const childModel = this.resolveChildModel(item.fieldPath);
-            if (!childModel) { continue; }
-            const visible = this.checkCrossConditionValue(item);
-            item.visibility = visible;
-            if (visible) {
-                childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+            for (const entryIndex of this.getEntryIndexes(item)) {
+                const childModel = this.resolveChildModel(item.fieldPath, entryIndex);
+                if (!childModel) { continue; }
+                const visible = this.checkCrossConditionValue(item, entryIndex);
+                item.visibilityByEntry.set(entryIndex, visible);
+                if (visible) {
+                    childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                }
             }
         }
 
         return controls;
     }
 
-    private checkCrossConditionValue(item: ICrossSchemaConditionItem): boolean {
-        const ok = this.evaluateIf(item.expr);
+    private checkCrossConditionValue(
+        item: ICrossSchemaConditionItem,
+        entryIndex: number | null = null
+    ): boolean {
+        const ok = this.evaluateIf(item.expr, entryIndex);
         return item.conditionInvert ? !ok : ok;
     }
 
@@ -397,16 +455,18 @@ export class FieldForm {
     private rebuildCrossSchemaConditions(force: boolean = true): void {
         if (!this.crossSchemaItems.length) { return; }
         for (const item of this.crossSchemaItems) {
-            const childModel = this.resolveChildModel(item.fieldPath);
-            if (!childModel) { continue; }
-            const visible = this.checkCrossConditionValue(item);
-            const wasVisible = item.visibility;
-            if (force || visible !== wasVisible) {
-                item.visibility = visible;
-                if (visible) {
-                    childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
-                } else {
-                    childModel.removeParentControlledField(item.field.name);
+            for (const entryIndex of this.getEntryIndexes(item)) {
+                const childModel = this.resolveChildModel(item.fieldPath, entryIndex);
+                if (!childModel) { continue; }
+                const visible = this.checkCrossConditionValue(item, entryIndex);
+                const wasVisible = item.visibilityByEntry.get(entryIndex);
+                if (force || visible !== wasVisible) {
+                    item.visibilityByEntry.set(entryIndex, visible);
+                    if (visible) {
+                        childModel.addParentControlledField(item.field, this.getPresetForPath(item.fieldPath));
+                    } else {
+                        childModel.removeParentControlledField(item.field.name);
+                    }
                 }
             }
         }
@@ -502,13 +562,19 @@ export class FieldForm {
         return fallback;
     }
 
-    private resolveChildModel(fieldPath: string[]): FieldForm | null {
+    private resolveChildModel(fieldPath: string[], entryIndex: number | null = null): FieldForm | null {
         if (!fieldPath || fieldPath.length < 2) { return null; }
         let model: FieldForm = this;
         for (let i = 0; i < fieldPath.length - 1; i++) {
             const name = fieldPath[i];
             const ctrl = model.fieldControls?.find(c => c.name === name);
-            const next = ctrl?.model as FieldForm | null;
+            let next: FieldForm | null;
+            if (ctrl?.isArray && ctrl.isRef) {
+                if (entryIndex === null) { return null; }
+                next = (ctrl.list?.[entryIndex]?.model as FieldForm) || null;
+            } else {
+                next = (ctrl?.model as FieldForm) || null;
+            }
             if (!next) { return null; }
             model = next;
         }

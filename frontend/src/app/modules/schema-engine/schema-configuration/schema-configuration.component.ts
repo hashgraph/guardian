@@ -1407,8 +1407,22 @@ export class SchemaConfigurationComponent implements OnInit {
         return !this._hasStaleConditionSelections();
     }
 
+    private isPathInsideDeclaredGroup(path: string[]): boolean {
+        if (!this.arrayDependencies?.length || !path?.length) { return false; }
+        const declared = new Set<string>();
+        for (const dependency of this.arrayDependencies) {
+            declared.add(dependency.on.join('.'));
+            declared.add(dependency.field.join('.'));
+        }
+        for (let i = 1; i <= path.length; i++) {
+            if (declared.has(path.slice(0, i).join('.'))) { return true; }
+        }
+        return false;
+    }
+
     private startsWithArrayRefContainer(path: string[]): boolean {
         if (path.length <= 1) { return false; }
+        if (this.isPathInsideDeclaredGroup(path)) { return false; }
         const key = path[0];
         const isArrayRef = (fc: FieldControl) =>
             fc.controlKey?.value === key &&
@@ -1630,7 +1644,7 @@ export class SchemaConfigurationComponent implements OnInit {
         for (const f of fields) {
             if (f.readOnly) { continue; }
             if (f.isRef) {
-                if (f.isArray) { continue; }
+                if (f.isArray && !this.isPathInsideDeclaredGroup([...prefix, f.name])) { continue; }
                 const nestedSchema = this.subSchemas?.find(s => s.iri === f.type);
                 if (!nestedSchema?.fields?.length) { continue; }
                 groups.push(...this.collectNestedFieldGroups(
