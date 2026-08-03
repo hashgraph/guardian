@@ -104,4 +104,53 @@ describe('DataBaseHelper GridFS write error handling', () => {
             );
         });
     });
+
+    // Both BaseEntity._createFile and PolicyImportExport._createFile delegate here,
+    // so asserting the helper directly covers them too.
+    describe('writeToGridFS', () => {
+        it('resolves with the id of the stream it was given', async () => {
+            const id = new ObjectId();
+            const out = await DataBaseHelper.writeToGridFS(
+                'payload', 'label', () => new FakeUploadStream(id, 'ok')
+            );
+            assert.equal(out.toString(), id.toString());
+        });
+
+        it('writes the content to the stream', async () => {
+            const stream = new FakeUploadStream(new ObjectId(), 'ok');
+            await DataBaseHelper.writeToGridFS('payload', 'label', () => stream);
+            assert.deepEqual(stream.written, ['payload']);
+        });
+
+        it('REJECTS when the upload stream emits an error', async () => {
+            await assert.rejects(
+                DataBaseHelper.writeToGridFS('payload', 'label', () => new FakeUploadStream(new ObjectId(), 'error')),
+                /gridfs write failed/
+            );
+        });
+
+        it('rejects on null/undefined content and names the label', async () => {
+            const open = () => new FakeUploadStream(new ObjectId(), 'ok');
+            await assert.rejects(
+                DataBaseHelper.writeToGridFS(null, 'policy.zip', open),
+                /GridFS write \(policy\.zip\): content is null\/undefined/
+            );
+            await assert.rejects(DataBaseHelper.writeToGridFS(undefined, 'label', open), /null\/undefined/);
+        });
+
+        it('allows empty content (valid 0-length file, not null)', async () => {
+            const open = () => new FakeUploadStream(new ObjectId(), 'ok');
+            assert.ok(await DataBaseHelper.writeToGridFS('', 'label', open) instanceof ObjectId);
+            assert.ok(await DataBaseHelper.writeToGridFS(Buffer.alloc(0), 'label', open) instanceof ObjectId);
+        });
+
+        it('rejects instead of throwing when the stream cannot be opened', async () => {
+            await assert.rejects(
+                DataBaseHelper.writeToGridFS('payload', 'label', () => {
+                    throw new Error('gridFS is undefined');
+                }),
+                /gridFS is undefined/
+            );
+        });
+    });
 });
