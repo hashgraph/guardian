@@ -1146,6 +1146,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.newArrayDependencyField = null;
         this.newArrayDependencyOn = null;
         this.newArrayDependencyTitle = null;
+        this.resetArrayDependencyMappings();
+    }
+
+    private resetArrayDependencyMappings(): void {
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+        this.newArrayDependencyValueMappings = [];
     }
 
     private arrayDependencyFieldLabel(field: SchemaField): string {
@@ -1209,14 +1216,33 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return fields;
     }
 
-    public get arrayDependencyTitleOptions(): ArrayDependencyFieldOption[] {
-        if (!this.newArrayDependencyOn) { return []; }
-        return this.resolveArrayDependencyItemFields(this.newArrayDependencyOn.split('.'))
+    private arrayDependencyValueOptions(path: string | null): ArrayDependencyFieldOption[] {
+        if (!path) { return []; }
+        return this.resolveArrayDependencyItemFields(path.split('.'))
             .filter(field => !field.isRef && !field.isArray && !field.readOnly)
             .map(field => ({
                 pathStr: field.name,
                 label: this.arrayDependencyFieldLabel(field),
             }));
+    }
+
+    public get arrayDependencyTitleOptions(): ArrayDependencyFieldOption[] {
+        return this.arrayDependencyValueOptions(this.newArrayDependencyOn);
+    }
+
+    public get arrayDependencyMappingSourceOptions(): ArrayDependencyFieldOption[] {
+        return this.arrayDependencyValueOptions(this.newArrayDependencyOn);
+    }
+
+    public get arrayDependencyMappingTargetOptions(): ArrayDependencyFieldOption[] {
+        return this.arrayDependencyValueOptions(this.newArrayDependencyField);
+    }
+
+    public arrayDependencyMappingLabel(path: string[], scope: string | null): string {
+        const pathStr = path.join('.');
+        const option = this.arrayDependencyValueOptions(scope)
+            .find(item => item.pathStr === pathStr);
+        return option ? option.label : this.arrayDependencyLabel(path);
     }
 
     public arrayDependencyDisplayLabel(path: string[]): string {
@@ -1357,6 +1383,36 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onArrayDependencySourceChange(): void {
         this.newArrayDependencyTitle = null;
+        this.resetArrayDependencyMappings();
+    }
+
+    public onArrayDependencyTargetChange(): void {
+        this.resetArrayDependencyMappings();
+    }
+
+    public canAddArrayDependencyMapping(): boolean {
+        const source = this.newArrayDependencyMappingSource;
+        const target = this.newArrayDependencyMappingTarget;
+        if (!source || !target) { return false; }
+        return !this.newArrayDependencyValueMappings
+            .some(item => item.target.join('.') === target);
+    }
+
+    public addArrayDependencyMapping(): void {
+        const source = this.newArrayDependencyMappingSource;
+        const target = this.newArrayDependencyMappingTarget;
+        if (!source || !target || !this.canAddArrayDependencyMapping()) { return; }
+        this.newArrayDependencyValueMappings = [
+            ...this.newArrayDependencyValueMappings,
+            { source: source.split('.'), target: target.split('.') },
+        ];
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+    }
+
+    public removeArrayDependencyMapping(mapping: ISchemaArrayDependencyMapping): void {
+        this.newArrayDependencyValueMappings = this.newArrayDependencyValueMappings
+            .filter(item => item !== mapping);
     }
 
     public arrayDependencyLabel(path: string[]): string {

@@ -574,7 +574,7 @@ export class FieldForm {
     private subscribeArrayDependencyValues(): void {
         for (const dependency of (this.schema?.arrayDependencies || [])) {
             if (!dependency.valueMappings?.length) { continue; }
-            this.resolveArrayEntry(dependency.on)?.control.valueChanges
+            this.resolveArrayEntry(dependency.on)?.control.control.valueChanges
                 .pipe(takeUntil(this.destroy$))
                 .subscribe(() => this.syncArrayDependencyValues());
         }

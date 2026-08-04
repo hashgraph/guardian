@@ -1137,6 +1137,24 @@
                                 {{ arrayDependencyDisplayLabel(dependency.field) }}
                             </span>
                         </div>
+                        @if (dependency.valueMappings?.length) {
+                            <div class="sc-array-link-mappings">
+                                <span class="sc-array-link-label">Copied values</span>
+                                @for (mapping of dependency.valueMappings; track mapping) {
+                                    <div class="sc-array-link-mapping-pair">
+                                        <span class="sc-array-link-value"
+                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.source, dependency.on.join('.')))">
+                                            {{ arrayDependencyMappingLabel(mapping.source, dependency.on.join('.')) }}
+                                        </span>
+                                        <span class="sc-array-link-value sc-array-link-mapping-target"
+                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.target, dependency.field.join('.')))">
+                                            <i class="pi pi-arrow-down"></i>
+                                            {{ arrayDependencyMappingLabel(mapping.target, dependency.field.join('.')) }}
+                                        </span>
+                                    </div>
+                                }
+                            </div>
+                        }
                         @if (dependency.title?.length) {
                             <div class="sc-array-link-title">
                                 <span class="sc-array-link-label">Display name</span>
@@ -1212,7 +1230,8 @@
                             appendTo="body"
                             placeholder="Select dependent array"
                             (mousedown)="updateArrayLinkPanelWidth($event)"
-                            [(ngModel)]="newArrayDependencyField">
+                            [(ngModel)]="newArrayDependencyField"
+                            (onChange)="onArrayDependencyTargetChange()">
                             <ng-template pTemplate="selectedItem" let-option>
                                 <span class="sc-array-link-option-text"
                                     (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
@@ -1256,10 +1275,78 @@
                     </label>
                 </div>
                 <div class="sc-array-link-mapping-editor">
-                    <span>Copied values <small>(optional)</small></span>
-                    <p-select placeholder="Source field"></p-select>
-                    <i class="pi pi-arrow-right"></i>
-                    <p-select placeholder="Dependent field"></p-select>
+                    <span class="sc-array-link-mapping-caption">Copied values <small>(optional)</small></span>
+                    @if (newArrayDependencyValueMappings.length) {
+                        <div class="sc-array-link-mapping-list">
+                            @for (mapping of newArrayDependencyValueMappings; track mapping) {
+                                <div class="sc-array-link-mapping-item">
+                                    <div class="sc-array-link-mapping-pair">
+                                        <span class="sc-array-link-value"
+                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.source, newArrayDependencyOn))">
+                                            {{ arrayDependencyMappingLabel(mapping.source, newArrayDependencyOn) }}
+                                        </span>
+                                        <span class="sc-array-link-value sc-array-link-mapping-target"
+                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.target, newArrayDependencyField))">
+                                            <i class="pi pi-arrow-down"></i>
+                                            {{ arrayDependencyMappingLabel(mapping.target, newArrayDependencyField) }}
+                                        </span>
+                                    </div>
+                                    <button class="sc-array-link-remove" title="Remove pair"
+                                        (click)="removeArrayDependencyMapping(mapping)">
+                                        <i class="pi pi-trash"></i>
+                                    </button>
+                                </div>
+                            }
+                        </div>
+                    }
+                    <div class="sc-array-link-mapping-row">
+                        <p-select
+                            class="guardian-dropdown"
+                            panelStyleClass="guardian-dropdown-panel sc-array-link-dropdown-panel"
+                            [options]="arrayDependencyMappingSourceOptions"
+                            optionLabel="label"
+                            optionValue="pathStr"
+                            appendTo="body"
+                            placeholder="Source field"
+                            [disabled]="!newArrayDependencyOn"
+                            (mousedown)="updateArrayLinkPanelWidth($event)"
+                            [(ngModel)]="newArrayDependencyMappingSource">
+                            <ng-template pTemplate="selectedItem" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                        </p-select>
+                        <i class="pi pi-arrow-right"></i>
+                        <p-select
+                            class="guardian-dropdown"
+                            panelStyleClass="guardian-dropdown-panel sc-array-link-dropdown-panel"
+                            [options]="arrayDependencyMappingTargetOptions"
+                            optionLabel="label"
+                            optionValue="pathStr"
+                            appendTo="body"
+                            placeholder="Dependent field"
+                            [disabled]="!newArrayDependencyField"
+                            (mousedown)="updateArrayLinkPanelWidth($event)"
+                            [(ngModel)]="newArrayDependencyMappingTarget">
+                            <ng-template pTemplate="selectedItem" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                            <ng-template pTemplate="item" let-option>
+                                <span class="sc-array-link-option-text"
+                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                            </ng-template>
+                        </p-select>
+                        <button class="sc-btn"
+                            [disabled]="!canAddArrayDependencyMapping()"
+                            (click)="addArrayDependencyMapping()">
+                            <i class="pi pi-plus"></i>Add pair
+                        </button>
+                    </div>
                 </div>
                 <div class="sc-array-link-editor-actions">
                     <span>Build chains top-down: add the parent link before using its child as a source.</span>
