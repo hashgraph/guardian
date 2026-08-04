@@ -2265,23 +2265,27 @@ export class PolicyEngine extends NatsService {
         isDruRun: boolean = false,
         ignoreRules?: ReadonlyArray<IgnoreRule>
     ): Promise<ISerializedErrors> {
-        let policyId: string;
         if (typeof policy === 'string') {
-            policyId = policy
-            policy = await DatabaseServer.getPolicyById(policyId);
-        } else {
-            if (!policy.id) {
-                policy.id = GenerateUUIDv4();
-            }
-            policyId = policy.id.toString();
+            // Persisted policy: send only the id reference and let the handler reload it
+            // locally (policy-service has DB access), instead of shipping the full policy -
+            // including its potentially large config - over the message broker.
+            return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+                policyId: policy,
+                isDruRun,
+                ignoreRules,
+                reachability: true
+            });
         }
-        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+        if (!policy.id) {
+            policy.id = GenerateUUIDv4();
+        }
+        // Unsaved/in-memory policy (editor validation): send the full object as before.
+        return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
             policy,
             isDruRun,
             ignoreRules,
             reachability: true
         });
-        return result;
     }
 
     /**
