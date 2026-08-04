@@ -730,7 +730,7 @@
                     <div style="margin-right: 12px;">
                       @if (ifCanEdit(schema)) {
                         <div
-                          (click)="onEditSchema(schema)"
+                          (click)="onOpenInEditor(schema)"
                           class="btn-settings"
                           pTooltip="Edit"
                           tooltipStyleClass="guardian-tooltip"
@@ -831,7 +831,7 @@
 
       @if (ifCanEdit(element)) {
         <p-button
-          (click)="onOpenConfig(element)"
+          (click)="onOpenInEditor(element)"
           label="Configuration"
           icon="pi pi-cog"
           class="schema-menu-btn"

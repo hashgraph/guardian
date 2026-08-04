@@ -5,6 +5,7 @@ import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
 import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
+import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
@@ -120,6 +121,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get selectedSchemaId(): string | null {
         return this.selectedSchema?.id || (this.selectedSchema as any)?._id || null;
+    }
+
+    public get isNewVersionMode(): boolean {
+        if (this.isTemplateConfigMode) { return false; }
+        const id = this.selectedSchemaId;
+        return !!this.selectedSchema &&
+            this.selectedSchema.status === SchemaStatus.PUBLISHED &&
+            !!(id && this.dirtySchemaIds.has(id));
     }
 
     public get canPublish(): boolean {
@@ -468,6 +477,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private schemaService: SchemaService,
+        private tagsService: TagsService,
         private schemaTemplatesService: SchemaTemplatesService,
         private projectComparisonService: ProjectComparisonService,
         private dialogService: DialogService,
@@ -1102,7 +1112,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Phase 2: rebuild $defs via BFS through fields — avoids circular deps from $defs recursion.
         allSchemas.forEach(s => { if (s.document) { s.document.$defs = this._buildRefs(s); } });
         const createObs = toCreate.map(s =>
-            this.schemaService.create(s.category ?? this.getCategory(), s as unknown as ISchema, this.topic).pipe(
+            this.schemaService.create(s.category ?? this.getCategory(), s, this.topic).pipe(
                 map((schemas: ISchema[]) => {
                     const saved = schemas.find(r => r.uuid === s.uuid && r.topicId === this.topic);
                     const savedId = saved?.id || (saved as any)?._id;
@@ -1134,13 +1144,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (toNewVersion.length > 0) {
             const s = toNewVersion[0];
             const triggerNewVersion = () => {
-                this.schemaService.newVersion(s.category ?? this.getCategory(), s as unknown as ISchema)
+                this.schemaService.newVersion(s.category ?? this.getCategory(), s)
                     .pipe(takeUntil(this.destroy$))
                     .subscribe({
                         next: result => {
                             this.isSaving = false;
+                            const returnUrl = this.configurationRoute +
+                                '?type=' + (this.type || '') +
+                                (this.topic ? '&topic=' + this.topic : '');
                             void this.router.navigate(['task', result.taskId], {
-                                queryParams: { last: btoa(location.href) },
+                                queryParams: { last: btoa(returnUrl) },
                             });
                         },
                         error: () => { this.isSaving = false; },
@@ -1157,7 +1170,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const updateObs = toUpdate.map(s => this.schemaService.update(s as unknown as ISchema));
+        const updateObs = toUpdate.map(s => {
+            const id = s.id || s._id;
+            if (this.type === 'tag') { return this.tagsService.updateSchema(s, id); }
+            if (this.type === 'system') { return this.schemaService.updateSystemSchema(s, id); }
+            return this.schemaService.update(s);
+        });
         forkJoin([...createObs, ...updateObs])
             .pipe(takeUntil(this.destroy$))
             .subscribe({

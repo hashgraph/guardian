@@ -21,7 +21,6 @@ import { SchemaService } from '../../services/schema.service';
 import { PolicyEngineService } from '../../services/policy-engine.service';
 import { TagsService } from '../../services/tag.service';
 //modules
-import { SchemaDialog } from '../../modules/schema-engine/schema-dialog/schema-dialog.component';
 import { ImportSchemaDialog } from '../../modules/schema-engine/import-schema/import-schema-dialog.component';
 import { ExportSchemaDialog } from '../../modules/schema-engine/export-schema-dialog/export-schema-dialog.component';
 import { CompareSchemaDialog } from '../../modules/schema-engine/compare-schema-dialog/compare-schema-dialog.component';
@@ -866,124 +865,6 @@ export class SchemaConfigComponent implements OnInit {
         this.page = this.page.slice();
     }
 
-    private createSchema(schema: Schema | null): void {
-        if (!schema) {
-            return;
-        }
-
-        this.loading = true;
-        switch (this.type) {
-            case SchemaType.System: {
-                this.schemaService.createSystemSchemas(schema).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-            case SchemaType.Tag: {
-                this.tagsService.createSchema(schema).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-            case SchemaType.Module:
-            case SchemaType.Tool:
-            case SchemaType.Policy:
-            default: {
-                const category = this.getCategory();
-                this.schemaService.pushCreate(category, schema, schema.topicId).subscribe((result) => {
-                    const { taskId } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href)
-                        }
-                    });
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-        }
-    }
-
-    private updateSchema(id: string, schema: Schema | null): void {
-        if (!schema) {
-            return;
-        }
-
-        this.loading = true;
-        switch (this.type) {
-            case SchemaType.System: {
-                this.schemaService.updateSystemSchema(schema, id).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-            case SchemaType.Tag: {
-                this.tagsService.updateSchema(schema, id).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-            case SchemaType.Module:
-            case SchemaType.Tool:
-            case SchemaType.Policy:
-            default: {
-                this.schemaService.update(schema, id).subscribe((data) => {
-                    localStorage.removeItem('restoreSchemaData');
-                    this.loadSchemas();
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-        }
-    }
-
-    private newVersionSchema(id: string, schema: Schema | null): void {
-        if (!schema) {
-            return;
-        }
-
-        this.loading = true;
-        switch (this.type) {
-            case SchemaType.System: {
-                return;
-            }
-            case SchemaType.Tag: {
-                return;
-            }
-            case SchemaType.Module:
-            case SchemaType.Tool:
-            case SchemaType.Policy:
-            default: {
-                const category = this.getCategory();
-                this.schemaService.newVersion(category, schema, id).subscribe((result) => {
-                    const { taskId } = result;
-                    this.router.navigate(['task', taskId], {
-                        queryParams: {
-                            last: btoa(location.href)
-                        }
-                    });
-                }, (e) => {
-                    this.loadError(e);
-                });
-                break;
-            }
-        }
-    }
-
     private deleteSchema(id: string, includeChildren: boolean): void {
         if (!id) {
             return;
@@ -1152,38 +1033,6 @@ export class SchemaConfigComponent implements OnInit {
         }
     }
 
-    public onCreateSchemas(): void {
-        if (this.readonly) {
-            return;
-        }
-
-        const dialogRef = this.dialogService.open(SchemaDialog, {
-            showHeader: false,
-            header: 'New Schema',
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                type: 'new',
-                schemaType: this.type,
-                topicId: this.currentTopic,
-                policies: this.policies,
-                allPolicies: this.allPolicies,
-                modules: this.modules,
-                tools: this.draftTools,
-                properties: this.properties,
-                category: this.getCategory()
-            }
-        })!;
-        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
-            this.createSchema(schema);
-        });
-    }
-
-    public onOpenConfig(element: Schema): void {
-        return this.onEditDocument(element);
-    }
-
-    // Todo: remove/change temporary code
     public onNewInEditor(): void {
         const topic = this.currentTopic === SchemaConfigComponent.NOT_BINDED ? undefined : (this.currentTopic || undefined);
         this.router.navigate(['/schema-configuration'], {
@@ -1191,7 +1040,6 @@ export class SchemaConfigComponent implements OnInit {
         });
     }
 
-    // Todo: remove/change temporary code
     public onOpenInEditor(element: Schema): void {
         const id = element.id || (element as any)._id;
         const topic = element.topicId
@@ -1231,48 +1079,6 @@ export class SchemaConfigComponent implements OnInit {
             }
         })!;
         dialogRef.onClose.subscribe(async (result) => {
-        });
-    }
-
-    public onEditSchema(element: Schema): void {
-        if (this.type === SchemaType.System && !element.readonly && !element.active) {
-            return this.onEditDocument(element);
-        }
-        if (this.type === SchemaType.Tag && this.ifDraft(element)) {
-            return this.onEditDocument(element);
-        }
-        if (this.ifDraft(element)) {
-            return this.onEditDocument(element);
-        }
-        if (element.isCreator && !this.readonly) {
-            return this.onNewVersion(element);
-        }
-        if (!element.isCreator && !this.readonly) {
-            return this.onCloneSchema(element);
-        }
-    }
-
-    private onEditDocument(element: ISchema): void {
-        const dialogRef = this.dialogService.open(SchemaDialog, {
-            showHeader: false,
-            header: 'Edit Schema',
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                type: 'edit',
-                schemaType: this.type,
-                topicId: this.currentTopic,
-                policies: this.policies,
-                allPolicies: this.allPolicies,
-                modules: this.modules,
-                tools: this.draftTools,
-                properties: this.properties,
-                scheme: element,
-                category: this.getCategory()
-            }
-        })!;
-        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
-            this.updateSchema(String(element.id), schema);
         });
     }
 
@@ -1332,62 +1138,6 @@ export class SchemaConfigComponent implements OnInit {
                 }
             });
         }
-    }
-
-    private onNewVersion(element: Schema): void {
-        const dialogRef = this.dialogService.open(SchemaDialog, {
-            showHeader: false,
-            header: 'New Version',
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                type: 'version',
-                topicId: this.currentTopic,
-                schemaType: this.type,
-                policies: this.policies,
-                allPolicies: this.allPolicies,
-                modules: this.modules,
-                tools: this.draftTools,
-                properties: this.properties,
-                scheme: element,
-                category: this.getCategory(),
-            }
-        })!;
-        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
-            this.newVersionSchema(element.id, schema);
-        });
-    }
-
-    private onCloneSchema(element: Schema): void {
-        const newDocument: any = { ...element };
-        delete newDocument._id;
-        // delete newDocument.id;
-        delete newDocument.uuid;
-        delete newDocument.creator;
-        delete newDocument.owner;
-        // delete newDocument.version;
-        delete newDocument.previousVersion;
-        const dialogRef = this.dialogService.open(SchemaDialog, {
-            showHeader: false,
-            header: 'New Version',
-            width: '90%',
-            styleClass: 'guardian-dialog',
-            data: {
-                type: 'version',
-                topicId: this.currentTopic,
-                schemaType: this.type,
-                policies: this.policies,
-                allPolicies: this.allPolicies,
-                modules: this.modules,
-                tools: this.draftTools,
-                properties: this.properties,
-                scheme: newDocument,
-                category: this.getCategory()
-            }
-        })!;
-        dialogRef.onClose.subscribe(async (schema: Schema | null) => {
-            this.createSchema(schema);
-        });
     }
 
     public onCopySchema(element: Schema): void {

@@ -64,8 +64,8 @@
                         [class.clean]="!hasUnsavedChanges"
                         [disabled]="isTemplateReadonly || !hasUnsavedChanges || isSaving || (!isTemplateConfigMode && currentSchemaErrorCount > 0)"
                         (click)="saveAll()">
-                    <i class="pi pi-save"></i>
-                    Save all
+                    <i [class]="isNewVersionMode ? 'pi pi-copy' : 'pi pi-save'"></i>
+                    {{ isNewVersionMode ? 'New Version' : 'Save all' }}
                 </button>
                 @if (!isTemplateConfigMode) {
                 <button class="sc-btn"

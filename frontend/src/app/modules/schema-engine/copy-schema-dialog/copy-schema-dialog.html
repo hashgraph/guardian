@@ -23,7 +23,7 @@
           <label for="policyDropdown" class="form-label">* Policy</label>
           <p-select id="policyDropdown" formControlName="topicId" [options]="getPoliciesWithDefault()"
             optionLabel="name" optionValue="topicId" [appendTo]="'body'" placeholder="Select a policy"
-            (onChange)="onFilter($event)" class="full-width">
+            class="full-width">
           </p-select>
         </div>
       }
