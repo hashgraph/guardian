@@ -3285,7 +3285,7 @@
 
 .sc-array-link-card {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     padding: 12px 14px;
     border: 1px solid var(--guardian-border-color);
@@ -3309,18 +3309,12 @@
 
 .sc-array-link-mappings {
     min-width: 0;
-    width: 220px;
-    flex-shrink: 0;
-    margin-left: auto;
+    flex: 2 1 0;
     display: flex;
     flex-direction: column;
     gap: 6px;
     color: var(--guardian-font-color-secondary);
     font-size: 12px;
-}
-
-.sc-array-link-mappings + .sc-array-link-title {
-    margin-left: 12px;
 }
 
 .sc-array-link-path {
@@ -3342,8 +3336,7 @@
 
 .sc-array-link-title {
     min-width: 0;
-    max-width: 240px;
-    margin-left: auto;
+    flex: 1 1 0;
     color: var(--guardian-font-color-secondary);
     font-size: 12px;
     display: flex;
@@ -3493,10 +3486,17 @@
 
 .sc-array-link-mapping-pair {
     min-width: 0;
-    flex: 1 1 0;
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 6px;
+    row-gap: 2px;
+
+    > .sc-array-link-value {
+        width: auto;
+        max-width: 100%;
+        flex: 0 1 auto;
+    }
 }
 
 .sc-array-link-mapping-target {
@@ -3543,7 +3543,9 @@
         }
     }
 
+    .sc-array-link-mappings,
     .sc-array-link-title {
-        margin-left: 0;
+        flex: 1 1 auto;
+        width: 100%;
     }
 }

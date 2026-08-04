@@ -295,12 +295,12 @@
                             <div class="sc-canvas-tab-pill">
                                 <button class="sc-ctp-btn"
                                     [class.active]="activeCanvasTab === 'fields'"
-                                    (click)="activeCanvasTab = 'fields'">
+                                    (click)="setCanvasTab('fields')">
                                     <i class="pi pi-list"></i>Fields
                                 </button>
                                 <button class="sc-ctp-btn"
                                     [class.active]="activeCanvasTab === 'conditions'"
-                                    (click)="activeCanvasTab = 'conditions'">
+                                    (click)="setCanvasTab('conditions')">
                                     <i class="pi pi-code-branch"></i>Conditions
                                     @if (schemaConditionCount) {
                                         <span class="sc-ctp-count">{{ schemaConditionCount }}</span>
@@ -308,7 +308,7 @@
                                 </button>
                                 <button class="sc-ctp-btn"
                                     [class.active]="activeCanvasTab === 'links'"
-                                    (click)="activeCanvasTab = 'links'">
+                                    (click)="setCanvasTab('links')">
                                     <i class="pi pi-link"></i>Repeatable links
                                     @if (arrayDependencyCount) {
                                         <span class="sc-ctp-count">{{ arrayDependencyCount }}</span>
@@ -1125,7 +1125,7 @@
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Source</span>
                             <span class="sc-array-link-value"
-                                (mouseenter)="updateOverflowTitle($event, arrayDependencyDisplayLabel(dependency.on))">
+                                (mouseover)="updateOverflowTitle($event, arrayDependencyDisplayLabel(dependency.on))">
                                 {{ arrayDependencyDisplayLabel(dependency.on) }}
                             </span>
                         </div>
@@ -1133,7 +1133,7 @@
                         <div class="sc-array-link-path">
                             <span class="sc-array-link-label">Dependent</span>
                             <span class="sc-array-link-value"
-                                (mouseenter)="updateOverflowTitle($event, arrayDependencyDisplayLabel(dependency.field))">
+                                (mouseover)="updateOverflowTitle($event, arrayDependencyDisplayLabel(dependency.field))">
                                 {{ arrayDependencyDisplayLabel(dependency.field) }}
                             </span>
                         </div>
@@ -1143,12 +1143,12 @@
                                 @for (mapping of dependency.valueMappings; track mapping) {
                                     <div class="sc-array-link-mapping-pair">
                                         <span class="sc-array-link-value"
-                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.source, dependency.on.join('.')))">
+                                            (mouseover)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.source, dependency.on.join('.')))">
                                             {{ arrayDependencyMappingLabel(mapping.source, dependency.on.join('.')) }}
                                         </span>
                                         <span class="sc-array-link-value sc-array-link-mapping-target"
-                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.target, dependency.field.join('.')))">
-                                            <i class="pi pi-arrow-down"></i>
+                                            (mouseover)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.target, dependency.field.join('.')))">
+                                            <i class="pi pi-arrow-right"></i>
                                             {{ arrayDependencyMappingLabel(mapping.target, dependency.field.join('.')) }}
                                         </span>
                                     </div>
@@ -1159,7 +1159,7 @@
                             <div class="sc-array-link-title">
                                 <span class="sc-array-link-label">Display name</span>
                                 <span class="sc-array-link-value"
-                                    (mouseenter)="updateOverflowTitle($event, arrayDependencyTitleDisplayLabel(dependency))">
+                                    (mouseover)="updateOverflowTitle($event, arrayDependencyTitleDisplayLabel(dependency))">
                                     {{ arrayDependencyTitleDisplayLabel(dependency) }}
                                 </span>
                             </div>
@@ -1201,15 +1201,15 @@
                             (onChange)="onArrayDependencySourceChange()">
                             <ng-template pTemplate="selectedItem" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="group" let-group>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, group.label)">{{ group.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, group.label)">{{ group.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
                     </label>
@@ -1234,15 +1234,15 @@
                             (onChange)="onArrayDependencyTargetChange()">
                             <ng-template pTemplate="selectedItem" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="group" let-group>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, group.label)">{{ group.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, group.label)">{{ group.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
                     </label>
@@ -1262,11 +1262,11 @@
                             [(ngModel)]="newArrayDependencyTitle">
                             <ng-template pTemplate="selectedItem" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
                         <small class="sc-array-link-field-hint">
@@ -1282,12 +1282,12 @@
                                 <div class="sc-array-link-mapping-item">
                                     <div class="sc-array-link-mapping-pair">
                                         <span class="sc-array-link-value"
-                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.source, newArrayDependencyOn))">
+                                            (mouseover)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.source, newArrayDependencyOn))">
                                             {{ arrayDependencyMappingLabel(mapping.source, newArrayDependencyOn) }}
                                         </span>
                                         <span class="sc-array-link-value sc-array-link-mapping-target"
-                                            (mouseenter)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.target, newArrayDependencyField))">
-                                            <i class="pi pi-arrow-down"></i>
+                                            (mouseover)="updateOverflowTitle($event, arrayDependencyMappingLabel(mapping.target, newArrayDependencyField))">
+                                            <i class="pi pi-arrow-right"></i>
                                             {{ arrayDependencyMappingLabel(mapping.target, newArrayDependencyField) }}
                                         </span>
                                     </div>
@@ -1313,11 +1313,11 @@
                             [(ngModel)]="newArrayDependencyMappingSource">
                             <ng-template pTemplate="selectedItem" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
                         <i class="pi pi-arrow-right"></i>
@@ -1334,11 +1334,11 @@
                             [(ngModel)]="newArrayDependencyMappingTarget">
                             <ng-template pTemplate="selectedItem" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                             <ng-template pTemplate="item" let-option>
                                 <span class="sc-array-link-option-text"
-                                    (mouseenter)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                    (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
                             </ng-template>
                         </p-select>
                         <button class="sc-btn"

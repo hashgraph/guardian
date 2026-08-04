@@ -47,6 +47,35 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public activeCanvasTab: 'fields' | 'conditions' | 'links' = 'fields';
     public activeDrillTab: 'fields' | 'conditions' = 'fields';
 
+    private readonly canvasTabStorageKey = 'sc-active-canvas-tab';
+
+    public setCanvasTab(tab: 'fields' | 'conditions' | 'links'): void {
+        this.activeCanvasTab = tab;
+        try {
+            sessionStorage.setItem(this.canvasTabStorageKey, tab);
+        } catch {
+        }
+    }
+
+    private forgetCanvasTab(): void {
+        try {
+            sessionStorage.removeItem(this.canvasTabStorageKey);
+        } catch {
+        }
+    }
+
+    private restoreCanvasTab(): void {
+        let stored: string | null = null;
+        try {
+            stored = sessionStorage.getItem(this.canvasTabStorageKey);
+        } catch {
+            return;
+        }
+        if (stored === 'fields' || stored === 'conditions' || stored === 'links') {
+            this.activeCanvasTab = stored;
+        }
+    }
+
     public schemas: Schema[] = [];
     public schemasLoading: boolean = false;
     public schemaSearch: string = '';
@@ -222,6 +251,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     ) {}
 
     public ngOnInit(): void {
+        this.restoreCanvasTab();
+
         this.projectComparisonService.getProperties()
             .pipe(takeUntil(this.destroy$))
             .subscribe({ next: (p) => { this.properties = p || []; }, error: () => {} });
@@ -478,7 +509,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.selectedField = null;
                 this.selectedSchema = schema;
                 this.drillStack = [];
-                this.activeCanvasTab = 'fields';
+                this.setCanvasTab('fields');
                 this.resetArrayDependencyEditor();
                 this.schemaPropsCollapsed = false;
             }
@@ -491,7 +522,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
         this.drillStack = [];
-        this.activeCanvasTab = 'fields';
+        this.setCanvasTab('fields');
         this.resetArrayDependencyEditor();
         this.schemaPropsCollapsed = false;
         void this.router.navigate(['/schema-configuration'], {
@@ -2758,6 +2789,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public ngOnDestroy(): void {
         this.clearReorder();
+        this.forgetCanvasTab();
         this.destroy$.next();
         this.destroy$.complete();
     }
