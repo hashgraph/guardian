@@ -27,10 +27,12 @@ import {
     FormulaImportExport,
     getArtifactType,
     INotificationStep,
+    IPFS,
     IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
+    MockEntityType,
     MockHelper,
     MultiPolicy,
     NatsService,
@@ -51,7 +53,6 @@ import {
     Topic,
     TopicConfig,
     TopicHelper,
-    UrlType,
     Users,
     VcHelper
 } from '@guardian/common';
@@ -1130,12 +1131,15 @@ export class PolicyEngine extends NatsService {
     public async dryRunSchemas(
         model: Policy,
         user: IOwner,
-        messageServer: MessageServer,
+        accountId: string,
         mockId: string
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
 
-        // const draftSchemas: SchemaCollection[] = [];
+        const topicId = (model.topicId || '').toString();
+        const updatedSchemas: SchemaCollection[] = [];
+        const mockRows: any[] = [];
+
         for (const schema of schemas) {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 continue;
@@ -1143,32 +1147,40 @@ export class PolicyEngine extends NatsService {
 
             schema.context = generateSchemaContext(schema);
             SchemaHelper.updateIRI(schema);
-            await DatabaseServer.updateSchema(schema.id, schema);
+            updatedSchemas.push(schema);
 
             if (mockId) {
+                // Build the mock schema-publish records in-process with the final context CID
+                // already set, so no per-schema worker round-trip or replaceSchema read-back is
+                // needed. All rows are batch-inserted after the loop.
                 const message = new SchemaMessage(MessageAction.PublishSchema);
                 message.setDocument(schema);
                 message.setRelationships([]);
-                const result = await messageServer
-                    .sendMessage(message, {
-                        sendToIPFS: true,
-                        memo: null,
-                        userId: user.id,
-                        interception: user.id,
-                        mockId
-                    });
+                const [documentBuffer, contextBuffer] = await message.toDocuments();
 
-                const messageId = result.getId();
-                const contextCid = result.getContextUrl(UrlType.cid);
+                const documentCid = GenerateUUIDv4();
+                const contextCid = (schema.contextURL || '').replace('schema:', '');
+                message.setUrls([
+                    { cid: documentCid, url: IPFS.IPFS_PROTOCOL + documentCid },
+                    { cid: contextCid, url: schema.contextURL }
+                ]);
 
-                await MockHelper.replaceSchema(
-                    mockId,
-                    messageId,
-                    contextCid,
-                    schema.contextURL
-                );
+                const { transaction } = MockHelper.getMessageRecord(topicId, message.toMessage(), accountId);
+                if (documentBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: documentCid, document: MockHelper.getBuffer(documentBuffer) });
+                }
+                if (contextBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: contextCid, document: MockHelper.getBuffer(contextBuffer) });
+                }
+                mockRows.push({ type: MockEntityType.MESSAGE, transaction });
             }
         }
+
+        await DatabaseServer.updateSchemas(updatedSchemas);
+        if (mockRows.length) {
+            await DatabaseServer.saveMockBatch(mockId, mockRows);
+        }
+
         return model;
     }
 
@@ -1719,7 +1731,7 @@ export class PolicyEngine extends NatsService {
         });
 
         //'Publish' policy schemas
-        model = await this.dryRunSchemas(model, user, messageServer, mockId);
+        model = await this.dryRunSchemas(model, user, root.hederaAccountId, mockId);
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
 
