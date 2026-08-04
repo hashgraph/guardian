@@ -322,10 +322,14 @@
         "rawData": "Raw Data",
         "lines": "lines",
         "mdash": "—",
-        "total": "total",
-        "field": "field",
-        "fields": "fields",
-        "changed": "changed"
+        "refresh": "Refresh",
+        "cancel": "Cancel",
+        "unknownError": "Unknown error",
+        "status": {
+            "Active": "Active",
+            "Inactive": "Inactive"
+        },
+        "total": "Total"
     },
     "nav": {
         "dashboard": "Dashboard",
@@ -426,6 +430,7 @@
         "vintageDistributionSub": "Minted credits by vintage year",
         "vintages": "vintages",
         "projectsSuffix": "projects",
+        "projectsCount": "{count} projects",
         "noVintageData": "No vintage data matches the selected filters",
         "networkActivity": "Network Activity",
         "networkActivityTooltip": "The 10 most recent events on the Guardian network — project, methodology and registry registrations, credit issuance and retirement, and other network events (token creation, identity publication, verification, role grants). Refreshes automatically about every 25 seconds.",
@@ -499,6 +504,7 @@
         "expectedIssuanceYearTooltip": "The year credits are first expected to be issued — applies to pre-issuance projects. Shows \"TBD\" when no forecast is available yet, and \"—\" for projects that have already issued.",
         "columns": {
             "project": "Project",
+            "createdDate": "Created Date",
             "country": "Country",
             "registry": "Registry",
             "methodology": "Methodology",
@@ -543,7 +549,8 @@
             "Validation": "Validated",
             "Monitoring": "MRV Submitted",
             "Verified": "Verified",
-            "Issued": "Issued"
+            "Issued": "Issued",
+            "Completed": "Completed"
         },
         "milestones": {
             "title": "Milestone Tracker",
@@ -565,18 +572,73 @@
         "notFound": "Project not found",
         "details": {
             "projectDetails": "Project Details",
+            "keyFacts": "Key Facts",
             "projectName": "Project Name",
             "country": "Country",
             "status": "Status",
             "methodology": "Methodology",
+            "methodologyVersion": "Methodology Version",
             "registry": "Registry",
             "developer": "Developer",
             "sector": "Sector",
+            "sectoralScope": "Sectoral Scope",
+            "category": "Category",
             "vintage": "Vintage",
             "created": "Created",
-            "creditingPeriod": "Crediting Period"
+            "creditingPeriod": "Crediting Period",
+            "estimatedTotalCredits": "Estimated Total Credits"
         },
         "detail": {
+            "hedera": {
+                "title": "Hedera On-Chain References",
+                "verified": "Verified on Hedera",
+                "governedBy": "This project is governed by an on-chain Guardian policy anchored to the Hedera network.",
+                "instanceTopicId": "Instance Topic ID",
+                "policyTopicId": "Policy Topic ID",
+                "firstVcAnchoredAt": "First VC Anchored At",
+                "registryDid": "Registry DID"
+            },
+            "lifecycle": {
+                "transferred": "Transferred",
+                "transfers": "Transfers",
+                "retirements": "Retirements",
+                "from": "From",
+                "to": "To",
+                "quantity": "Quantity",
+                "date": "Date",
+                "beneficiary": "Beneficiary",
+                "reason": "Reason",
+                "empty": "No transfers or retirements recorded for this project yet."
+            },
+            "location": {
+                "title": "Project Location",
+                "countryLevel": "Country-level location",
+                "unavailable": "Location data unavailable",
+                "approximate": "Approximate location",
+                "polygon": "Project boundary (polygon)"
+            },
+            "documents": {
+                "empty": "No linked documents found for this project."
+            },
+            "mrv": {
+                "description": "Records submitted through this methodology's external/IoT data-ingestion mechanism (dMRV), separate from human-submitted documents.",
+                "empty": "No MRV external data submissions found for this project.",
+                "flattenedHint": "This schema has no per-submission fields of its own — each row below is one device/measurement entry; several rows can come from the same underlying submission (use \"Raw\" to see the full original document).",
+                "noMatchingRecords": "No records match these filters.",
+                "viewDeviceHistory": "View this device's history",
+                "columns": {
+                    "device": "Device / Measurement Point",
+                    "raw": "Raw"
+                },
+                "dataFlow": {
+                    "title": "Data Flow",
+                    "subtitle": "A snapshot of this project's monitoring activity and credit issuance so far — click through for the full issuance history.",
+                    "mrvData": "MRV Data",
+                    "recordCount": "{count} record | {count} records",
+                    "creditsIssued": "Credits Issued",
+                    "issuedSummary": "{total} issued · {count} issuance | {total} issued · {count} issuances"
+                }
+            },
             "linkedVcs": {
                 "title": "Linked Raw Data",
                 "subtitle": "Raw data documents that contributed to this project, grouped by schema. Empty schemas indicate fields that couldn't be extracted.",
@@ -584,6 +646,7 @@
                 "notTracked": "No linked raw data available — re-parse the methodology to populate.",
                 "viewJson": "View JSON",
                 "projectSchemaBadge": "Project schema",
+                "vcCount": "{count} VC | {count} VCs",
                 "columns": {
                     "timestamp": "Timestamp",
                     "topicId": "Topic ID",
@@ -599,10 +662,106 @@
                 "refreshIpfsTooltip": "Force re-fetch IPFS for every VC in this project's topic and reparse. Use when fields are missing because part of the VC chain never came down from IPFS.",
                 "refreshIpfsSuccess": "Queued {refreshed} IPFS fetch(es) and {reparse} reparse(s) — refresh in a few seconds",
                 "refreshIpfsEmpty": "Nothing to refresh — all VCs in this project's topic are already fetched and indexed",
-                "refreshIpfsError": "Failed to refresh IPFS"
+                "refreshIpfsError": "Failed to refresh IPFS",
+                "exportIwa": "Export as IWA",
+                "exportCadtrust": "Export as CADTrust",
+                "exportCdop": "Export as CDOP"
+            },
+            "canvas": {
+                "title": "Policy Flowchart",
+                "subtitle": "Role swimlanes of the methodology's documents, in the policy's authored step order. Pan and zoom to explore.",
+                "policyJson": "Policy JSON",
+                "projectKey": "Project Key",
+                "loading": "Loading methodology workflow…",
+                "loadingJson": "Loading policy.json…",
+                "empty": "No decoded methodology workflow available for this project yet.",
+                "action": "Action",
+                "document": "Document",
+                "latest": "latest",
+                "legend": {
+                    "flow": "Genuine flow event",
+                    "sequence": "Authored step order"
+                }
+            },
+            "trustChain": {
+                "title": "Project Pipeline & Trust Chain",
+                "subtitle": "Every credential in this project's lifecycle, in order.",
+                "empty": "No linked credentials found for this project yet."
+            },
+            "pipeline": {
+                "title": "Methodology Pipeline",
+                "subtitle": "One step per schema in this project's methodology lifecycle.",
+                "stepsCount": "{count} step | {count} steps",
+                "empty": "No linked schemas found for this project yet.",
+                "dataPresent": "Data present",
+                "awaitingData": "Awaiting data",
+                "documentCount": "{count} document | {count} documents",
+                "docTypes": {
+                    "pdd": "Project Design",
+                    "monitoringReport": "Monitoring",
+                    "unknown": "Document"
+                }
             },
             "issuances": {
-                "yearFilter": "Year"
+                "yearFilter": "Year",
+                "empty": "No issuances have been recorded for this project yet."
+            },
+            "tabs": {
+                "summary": "Summary",
+                "documents": "Detailed Information",
+                "issuances": "Issuances & Credits",
+                "mrv": "MRV External Data",
+                "advanced": "Advanced"
+            },
+            "mapping": {
+                "title": "Methodology Field Mapping",
+                "subtitle": "how project fields map to schema fields",
+                "loading": "Loading mapping…",
+                "notLinked": "Methodology version is not linked to this project yet. Click Re-extract above (or re-parse the methodology) to populate it.",
+                "error": "Failed to load methodology mapping.",
+                "noSchema": "No project schema has been confirmed for this methodology yet.",
+                "columns": {
+                    "projectField": "Project Field",
+                    "schemaField": "Schema Field"
+                },
+                "projectTitle": "Project Title",
+                "country": "Country",
+                "developer": "Developer",
+                "category": "Category",
+                "scale": "Scale",
+                "sector": "Sector",
+                "vintageRaw": "Vintage / Start Date",
+                "creditingPeriod": "Crediting Period",
+                "sdgOrCobenefits": "SDG / Co-benefits",
+                "projectLocation": "Project Location"
+            },
+            "relationships": {
+                "title": "Relationships",
+                "subtitle": "Entity relationships between Registry, Policy, Schema, Role, Raw Data, VP, and Token"
+            },
+            "emissions": {
+                "title": "Emission Parameters",
+                "baseline": "Baseline Emissions",
+                "project": "Project Emissions",
+                "leakage": "Leakage Emissions",
+                "baselineFactor": "Baseline Emission Factor"
+            },
+            "vcs": {
+                "loadError": "Failed to load VC document",
+                "rawVcTooltip": "Raw VC document on the blockchain",
+                "searchPlaceholder": "Search fields, values, tables...",
+                "loadingDocData": "Loading document data...",
+                "noMatchingFields": "No matching fields found in this schema.",
+                "recordNumber": "Record {number}",
+                "fieldsCount": "{count} field | {count} fields",
+                "entriesCount": "{count} entry | {count} entries",
+                "noFieldsAvailable": "No fields available.",
+                "onChainEvidence": "On-chain evidence",
+                "verifiableCredential": "Verifiable Credential",
+                "loadingOnChainDoc": "Loading on-chain document…",
+                "issuerDid": "Issuer DID",
+                "noReadableFields": "No readable fields in this credential.",
+                "noCredentialData": "No credential data."
             }
         },
         "compare": {
@@ -673,6 +832,10 @@
             "supply": "Mint Amount",
             "mintDate": "Mint Date",
             "hideUnlinked": "Hide issuances with no project link"
+        },
+        "tokenTypes": {
+            "Fungible": "Fungible",
+            "Non-Fungible": "Non-Fungible"
         },
         "tooltips": {
             "hideUnlinked": "Hides tokens that have not yet been matched to a project. Uncheck to see all indexed tokens including those still awaiting project attribution.",
@@ -883,7 +1046,8 @@
                     "saveNoChanges": "No changes to save",
                     "saveError": "Failed to save mapping",
                     "arrayIndexPlaceholder": "Index",
-                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record."
+                    "arrayIndexHint": "Pick a specific array element (0-based). Leave blank to join all values with commas. Falls back to all values if the chosen index isn't present on a given record.",
+                    "sectorLockedHint": "Sector is fixed by policy.json; mapping a field here has no effect."
                 }
             },
             "summary": {
@@ -915,6 +1079,7 @@
             },
             "linkedProjects": {
                 "title": "Linked Projects",
+                "projectCount": "{count} project | {count} projects",
                 "noTopicId": "No policy topic ID available for this methodology.",
                 "columns": {
                     "project": "Project",
@@ -956,7 +1121,24 @@
                 "issuances": "Total Minted Credits",
                 "issuancesSub": "Credits issued",
                 "trends": "Trends",
-                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced."
+                "trendsComingSoon": "Issuance over time, retirement trend, and geography charts will be available once live VC-Document data is fully synced.",
+                "linkedIssuances": "Linked Issuances",
+                "issuanceCount": "{count} issuance | {count} issuances",
+                "noIssuances": "No issuances have been recorded for this methodology yet.",
+                "creditLifecycle": "Credit Lifecycle",
+                "creditLifecycleSub": "Issuance → Transfers → Retirements",
+                "totalMintedCredits": "Total Minted Credits",
+                "retired": "Retired",
+                "active": "Active",
+                "pctRetired": "{pct}% retired",
+                "noLifecycle": "No transfers or retirements recorded for this methodology yet.",
+                "table": {
+                    "token": "Token",
+                    "tokenId": "Token ID",
+                    "type": "Type",
+                    "mintDate": "Mint Date",
+                    "rawData": "Raw Data"
+                }
             },
             "dashboard": {
                 "title": "Methodology Dashboard",
@@ -1083,6 +1265,8 @@
             },
             "hedera": {
                 "title": "Hedera On-Chain",
+                "verified": "Verified on Hedera",
+                "governedBy": "This registry is governed by an on-chain Guardian policy anchored to the Hedera network.",
                 "sourceTopic": "Source Topic ID",
                 "registryTopic": "Registry Topic ID",
                 "did": "Registry DID",
@@ -1116,7 +1300,7 @@
         "subtitle": "Organizations developing and managing carbon offset projects",
         "searchPlaceholder": "Search developers...",
         "noMatch": "No developers match your filters",
-        "issuedTooltip": "Total issuances across all projects by this developer.",
+        "issuedTooltip": "Total mint amounts across all projects by this developer.",
         "retiredTooltip": "Issuances permanently retired (used for offsetting). Retired issuances cannot be traded or reused.",
         "viewProjects": "View projects by {name}",
         "columns": {
@@ -1153,88 +1337,133 @@
             "countries": "Countries",
             "topMethodology": "Top Methodology",
             "coverage": "Coverage"
+        },
+        "names": {
+            "1": "No Poverty",
+            "2": "Zero Hunger",
+            "3": "Good Health and Well-being",
+            "4": "Quality Education",
+            "5": "Gender Equality",
+            "6": "Clean Water and Sanitation",
+            "7": "Affordable and Clean Energy",
+            "8": "Decent Work and Economic Growth",
+            "9": "Industry, Innovation and Infrastructure",
+            "10": "Reduced Inequalities",
+            "11": "Sustainable Cities and Communities",
+            "12": "Responsible Consumption and Production",
+            "13": "Climate Action",
+            "14": "Life Below Water",
+            "15": "Life on Land",
+            "16": "Peace, Justice and Strong Institutions",
+            "17": "Partnerships for the Goals"
         }
     },
     "analytics": {
-        "title": "Analytics",
-        "subtitle": "Network-wide sustainability metrics and trends",
-        "metrics": {
-            "totalIssuance": "Total Issuance",
-            "activeProjects": "Active Projects",
-            "retirements": "Retirements",
-            "avgProjectSize": "Avg. Project Size"
+        "title": "Carbon Market Analytics",
+        "subtitle": "Stakeholder-driven analytics across {count} projects on {network}",
+        "tabs": {
+            "overview": "Market Overview",
+            "overviewDesc": "Lifecycle, vintage, and pipeline pulse",
+            "buyer": "Buyer View",
+            "buyerDesc": "Supply, vintage, and SDG availability",
+            "developer": "Developer View",
+            "developerDesc": "Benchmark project scale and sector performance",
+            "registry": "Registry View",
+            "registryDesc": "Throughput, methodology adoption, geographic reach",
+            "impact": "Climate Impact",
+            "impactDesc": "SDG alignment, sector contribution, vintage concentration"
         },
-        "issuancesByMethodology": "Issuances by Methodology",
-        "issuancesByMethodologySub": "Distribution of issuances across methodology types"
-    },
-    "status": {
-        "title": "Sync Status",
-        "subtitle": "Data pipeline and worker queue metrics",
-        "dataSyncedUpTo": "Data Synced Up To",
-        "topicsIndexed": "Topics Indexed",
-        "topicsDiscovered": "discovered",
-        "messagesProcessed": "Messages Processed",
-        "pendingInQueue": "pending in queue",
-        "queueStatus": "Queue Status",
-        "queueStatusSub": "BullMQ worker queues",
-        "connectionLive": "Live",
-        "connectionPolling": "Polling",
-        "lastUpdated": "Last updated",
-        "totalWaiting": "Total Waiting",
-        "totalFailed": "Total Failed",
-        "columns": {
-            "queue": "Queue",
-            "waiting": "Waiting",
-            "active": "Active",
-            "completed": "Completed",
-            "failed": "Failed",
-            "delayed": "Delayed",
-            "concurrency": "Concurrency",
-            "status": "Status",
-            "actions": "Actions"
+        "kpis": {
+            "activeSupply": "Active Supply",
+            "activeSupplyHint": "Credits in circulation (issued − retired)",
+            "retirementRate": "Retirement Rate",
+            "retirementRateHint": "Issued credits that have been retired",
+            "pipelineProjects": "Pipeline Projects",
+            "pipelineProjectsHint": "Projects pre-issuance: registered → verified",
+            "avgVintageYear": "Avg Vintage Year",
+            "avgVintageYearHint": "Lower = older supply, higher = fresher",
+            "avgCreditingPeriod": "Avg Crediting Period",
+            "avgCreditingPeriodHint": "Mean project crediting period length",
+            "yearsSuffix": "yr"
         },
-        "queueStatuses": {
-            "active": "Active",
-            "idle": "Idle",
-            "paused": "Paused"
+        "lifecycle": {
+            "title": "Project Lifecycle Funnel",
+            "subtitle": "Distribution across the Guardian policy workflow stages"
         },
-        "actions": {
-            "pause": "Pause",
-            "resume": "Resume",
-            "viewFailures": "View failures",
-            "retryAll": "Retry all"
+        "vintage": {
+            "title": "Vintage Distribution",
+            "subtitle": "Credits issued grouped by project vintage year",
+            "noData": "No vintage data available"
         },
-        "failedDrawer": {
-            "title": "Failed jobs",
-            "byReason": "By reason",
-            "allFailed": "All failed",
-            "retryJob": "Retry",
-            "forceRetry": "Override retry limit (force)",
-            "budgetExhausted": "Retry budget exhausted",
-            "attempts": "Attempts",
-            "manualRetries": "Manual retries"
+        "supplyAge": {
+            "title": "Supply Age Profile",
+            "subtitle": "Distribution of issued credits by vintage age — fresher vintages are preferred by most corporate buyers",
+            "fresh": "≤ 2 years (Fresh)",
+            "recent": "3 – 5 years (Recent)",
+            "older": "6 – 10 years (Older)",
+            "legacy": "> 10 years (Legacy)"
         },
-        "syncHealth": {
-            "title": "Sync Health",
-            "lastSynced": "Last Synced",
-            "lag": "Lag",
-            "topics": "Topics",
-            "tokens": "Tokens"
+        "sectors": {
+            "topCreditsTitle": "Top Sectors by Credits Issued",
+            "availableSupplyTitle": "Available Supply by Sector",
+            "availableSupplySub": "Active credits (issued − retired)",
+            "avgSizeTitle": "Avg Project Size by Sector",
+            "avgSizeSub": "Mean credits issued per project — benchmark for scoping new projects",
+            "contributionTitle": "Sector Contribution to Total Supply"
         },
-        "activity": {
-            "title": "Recent Activity",
-            "events": "events",
-            "filterAll": "All",
-            "filterFailures": "Failures only",
-            "empty": "No recent events — waiting for queue activity...",
-            "emptyFailures": "No failures recorded in this session"
+        "countries": {
+            "topCreditsTitle": "Top Host Countries by Credits",
+            "projectsCount": "{count} proj",
+            "contributionTitle": "Country Contribution to Supply"
         },
-        "retryAll": {
-            "confirm": "Retry all failed jobs?",
-            "force": "Override retry limit (force)",
-            "result": "Retried {retried} jobs, skipped {skipped}"
+        "methodologies": {
+            "adoptionTitle": "Methodology Adoption",
+            "adoptionSub": "Most-used methodologies by credit volume",
+            "projectsCount": "{count}p"
+        },
+        "sdgs": {
+            "cobenefitTitle": "SDG Co-benefit Coverage",
+            "cobenefitSub": "Number of projects claiming each UN Sustainable Development Goal",
+            "alignmentTitle": "SDG Alignment Matrix",
+            "alignmentSub": "All 17 Sustainable Development Goals — coverage and credit volume",
+            "projectsLabel": "Projects",
+            "creditsLabel": "Credits",
+            "projectsCount": "{count} proj"
+        },
+        "statusDist": {
+            "title": "Status Distribution",
+            "subtitle": "Where projects sit in the policy workflow today"
+        },
+        "developers": {
+            "title": "Top Developer Leaderboard",
+            "subtitle": "Ranked by total credits issued — multi-country and multi-sector reach",
+            "noData": "No developer data available",
+            "columns": {
+                "rank": "Rank",
+                "developer": "Developer",
+                "projects": "Projects",
+                "countries": "Countries",
+                "sectors": "Sectors",
+                "credits": "Credits"
+            }
+        },
+        "registries": {
+            "throughputTitle": "Registry Throughput",
+            "throughputSub": "Average credits issued per project, by registry — proxy for project-quality scale",
+            "perProj": "/proj",
+            "heatmapTitle": "Pipeline Heatmap by Registry",
+            "heatmapSub": "Project count per lifecycle stage, top registries",
+            "colRegistry": "Registry",
+            "noHeatData": "No registry data",
+            "marketShareTitle": "Registry Market Share",
+            "marketShareSub": "Share of total credits issued"
+        },
+        "vintageConcentration": {
+            "title": "Vintage Concentration",
+            "subtitle": "Risk signal: heavy concentration in older vintages may indicate weaker baseline integrity under CCP / ICVCM principles"
         }
     },
+
     "vcViewer": {
         "rawDataOnBlockchain": "Raw Data on the blockchain",
         "searchInJson": "Search in JSON...",
@@ -2037,6 +2266,245 @@
                 "title": "That is it — help lives here",
                 "body": "Start this tour again any time from the Help button, and open the Glossary from the same menu if a term is unfamiliar. Enjoy exploring the Atlas."
             }
+        }
+    },
+    "status": {
+        "title": "Sync Status",
+        "subtitle": "Real-time background processing queues & data sync health across the Guardian network",
+        "dataSyncedUpTo": "Data synced up to",
+        "topicsIndexed": "Topics Indexed",
+        "topicsDiscovered": "topics discovered",
+        "messagesProcessed": "Messages Processed",
+        "pendingInQueue": "pending in queue",
+        "connectionLive": "Live",
+        "connectionPolling": "Polling fallback (30s interval)",
+        "lastUpdated": "Last updated",
+        "allStatuses": "All Statuses",
+        "allTypes": "All Types",
+        "allEvents": "All Events",
+        "allCategories": "All Categories",
+        "queueStatus": "Queue Status",
+        "queueStatusSub": "Background task worker queues running on NestJS + BullMQ",
+        "totalWaiting": "Total Waiting",
+        "totalFailed": "Total Failed",
+        "eventTypes": {
+            "block_complete": "Block Complete",
+            "token_minted": "Token Minted",
+            "ipfs_added_file": "IPFS File Added",
+            "block_event": "Block Event",
+            "policyReady": "Policy Ready",
+            "publishPolicies": "Publish Policies"
+        },
+        "messageTypes": {
+            "vcDocument": "VC Document",
+            "vpDocument": "VP Document",
+            "instancePolicy": "Instance Policy",
+            "standardRegistry": "Standard Registry",
+            "tag": "Tag",
+            "token": "Token",
+            "schema": "Schema",
+            "didDocument": "DID Document"
+        },
+        "errors": {
+            "timeout": "Connection timed out during processing",
+            "networkError": "Network connection error / ECONNREFUSED",
+            "rateLimit": "Rate limit exceeded (HTTP 429)",
+            "ipfsError": "IPFS gateway / node fetch failure",
+            "stalled": "Job stalled on worker node",
+            "badGateway": "Bad gateway error (HTTP 502 / 503)",
+            "connectionClosed": "Connection closed unexpectedly",
+            "dnsError": "DNS resolution failure / Host not found (ENOTFOUND)",
+            "badRequest": "Bad request (HTTP 400)",
+            "notFound": "Resource not found (HTTP 404)",
+            "serverError": "Internal server error (HTTP 500)",
+            "unauthorized": "Unauthorized / Forbidden access (HTTP 401 / 403)"
+        },
+        "columns": {
+            "queue": "Queue",
+            "waiting": "Waiting",
+            "active": "Active",
+            "completed": "Completed",
+            "failed": "Failed",
+            "delayed": "Delayed",
+            "concurrency": "Concurrency",
+            "status": "Status",
+            "actions": "Actions",
+            "topicId": "Topic ID",
+            "messages": "Messages",
+            "hasNext": "Has Next",
+            "lastUpdate": "Last Update",
+            "action": "Action",
+            "tokenId": "Token ID",
+            "serial": "Serial",
+            "type": "Type"
+        },
+        "syncOptions": {
+            "synced": "Synced",
+            "new": "New",
+            "disabled": "Disabled"
+        },
+        "ipfsStatus": {
+            "fetched": "Fetched",
+            "failed": "Failed",
+            "pending": "Pending"
+        },
+        "ipfsErrorCategories": {
+            "transient": "Transient",
+            "permanent": "Permanent",
+            "unknown": "Unknown"
+        },
+        "queueStatuses": {
+            "paused": "Paused",
+            "active": "Active",
+            "idle": "Idle"
+        },
+        "actions": {
+            "viewFailures": "View failures",
+            "retryAll": "Retry all",
+            "retry": "Retry"
+        },
+        "syncHealth": {
+            "title": "Sync Health & Micro-Services",
+            "lastSynced": "Last Synced Message",
+            "lag": "Network Lag",
+            "lagSec": "{seconds}s lag",
+            "lagMin": "{minutes}m lag",
+            "lagHour": "{hours}h lag",
+            "topics": "Tracked Topics",
+            "tokens": "Tracked Tokens",
+            "searchTopicPlaceholder": "Search topic ID…",
+            "requeueTopicLabel": "Requeue topic:",
+            "requeueTopicPlaceholder": "0.0.43065",
+            "fromStartLabel": "From start (re-process all messages)",
+            "queueButton": "Queue",
+            "noTopicsFound": "No topics found",
+            "requeueTooltip": "Requeue topic from current watermark",
+            "requeueButton": "Requeue",
+            "searchTokenPlaceholder": "Search token ID…",
+            "noTokensFound": "No tokens found"
+        },
+        "guardianSync": {
+            "title": "Guardian Sync",
+            "description": "Guardian event stream — enqueues targeted fetches into the queues above instead of blind polling.",
+            "instances": "Instances",
+            "noInstances": "No instances configured",
+            "connected": "Connected",
+            "reconnecting": "Reconnecting",
+            "recentTriggers": "Recent triggers",
+            "noTriggers": "No triggers recorded",
+            "heartbeat": "Heartbeat {time}.",
+            "columns": {
+                "instance": "Instance",
+                "aemEndpoint": "AEM Endpoint",
+                "status": "Status",
+                "events": "Events",
+                "lastEvent": "Last Event",
+                "lastSubject": "Last Subject",
+                "when": "When",
+                "event": "Event",
+                "ref": "Ref",
+                "action": "Action"
+            }
+        },
+        "ipfs": {
+            "title": "IPFS Documents",
+            "retryAllForTopic": "Retry All for Topic",
+            "filterTopicPlaceholder": "Filter by topic ID...",
+            "includeChildTopics": "Include child topics",
+            "noDocuments": "No IPFS documents found",
+            "copyCid": "Copy CID",
+            "copyCidV1": "Copy CID v1",
+            "columns": {
+                "cid": "CID",
+                "cidV1": "CID v1",
+                "topicId": "Topic ID",
+                "type": "Type",
+                "status": "Status",
+                "error": "Error",
+                "attempts": "Attempts",
+                "lastFailed": "Last Failed",
+                "actions": "Actions"
+            }
+        },
+        "maintenance": {
+            "title": "Maintenance",
+            "description": "Admin-only operations for re-processing policies and projects. Run re-decode first, then reparse to propagate updated field mappings.",
+            "redecodeAll": "Redecode All Policies",
+            "reparseAll": "Reparse All Projects"
+        },
+        "activity": {
+            "title": "Recent Activity Feed",
+            "events": "events",
+            "filterAll": "All events",
+            "filterFailures": "Failures only",
+            "empty": "No recent queue activity",
+            "emptyFailures": "No recent failures",
+            "bufferFull": "(buffer full — oldest may be lost)",
+            "labels": {
+                "jobFailed": "Job Failed",
+                "jobCompleted": "Job Completed",
+                "jobStalled": "Job Stalled",
+                "ipfsFetchFailed": "IPFS Fetch Failed",
+                "ipfsFetchRecovered": "IPFS Recovered",
+                "documentLoaded": "Document Loaded"
+            }
+        },
+        "retryAll": {
+            "confirm": "Retry All Failed Jobs",
+            "confirmBody": "Retry all {count} failed jobs in {baseName}? Jobs that have exceeded the {budget}-manual-retry budget will be skipped unless Force is checked.",
+            "force": "Force retry jobs that exceeded retry budget",
+            "result": "Queued {retried} failed jobs for retry ({skipped} skipped)"
+        },
+        "failedDrawer": {
+            "title": "Failed Jobs",
+            "byReason": "By Reason",
+            "allFailed": "All Failed",
+            "searchMatches": "{count} match on this page ({total} total) | {count} matches on this page ({total} total)",
+            "failedCount": "{count} failed job | {count} failed jobs",
+            "noGroupsFound": "No groups found",
+            "noFailedJobs": "No failed jobs",
+            "count": "Count: {count}",
+            "retryGroup": "Retry group",
+            "filterPlaceholder": "Filter by job ID or topic ID…",
+            "noSearchMatchesOnPage": "No jobs match \"{search}\" on this page",
+            "searchMatchesOnPage": "{count} match on this page — use pagination to search other pages | {count} matches on this page — use pagination to search other pages",
+            "attempts": "Attempts",
+            "manualRetries": "Manual retries",
+            "retryJob": "Retry job",
+            "forceRetry": "Force retry",
+            "budgetExhausted": "Manual retry budget exhausted. Check Force to override.",
+            "confirmRetryQuestion": "Confirm retry?",
+            "yesRetry": "Yes, retry",
+            "retriedState": "Retried",
+            "stackTrace": "Stack trace",
+            "noReason": "No reason provided",
+            "jobNotFailed": "Job is no longer in failed state, refreshing..."
+        },
+        "time": {
+            "justNow": "just now",
+            "sAgo": "{s}s ago",
+            "mAgo": "{m}m ago",
+            "hAgo": "{h}h ago",
+            "dAgo": "{d}d ago",
+            "never": "never"
+        },
+        "toasts": {
+            "invalidTopicFormat": "Invalid topic ID format. Expected \"0.0.X\".",
+            "topicQueued": "Topic {topicId} queued for sync",
+            "failedRequeue": "Failed to requeue {topicId}: {error}",
+            "failedPause": "Failed to pause {baseName}: {error}",
+            "failedResume": "Failed to resume {baseName}: {error}",
+            "retryAllFailed": "Retry all failed for {baseName}: {error}",
+            "jobQueuedRetry": "Job {id} queued for retry",
+            "retryFailed": "Retry failed",
+            "cidQueuedRetry": "CID {cid}… queued for retry",
+            "retryFailedWithError": "Retry failed: {error}",
+            "topicRetryAllQueued": "Retry queued for all failures on topic {topicId}",
+            "retryAllFailedWithError": "Retry all failed: {error}",
+            "redecodeEnqueued": "Re-decode enqueued: {enqueued}/{total} policies ({skipped} skipped)",
+            "redecodeFailed": "Re-decode failed: {error}",
+            "reparseEnqueued": "Reparse enqueued: {enqueued} VC jobs across {succeeded} methodologies",
+            "reparseFailed": "Reparse failed: {error}"
         }
     }
 }

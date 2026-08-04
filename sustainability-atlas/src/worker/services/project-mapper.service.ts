@@ -158,10 +158,15 @@ export class ProjectMapperService {
         // can't poison the project's country / name / etc. with its own
         // host_countries[].country (the root cause of "US, India" appearing
         // on projects whose project schema doesn't even define country).
+        // Field keys whose winning entry (for THIS VC's schema) was an explicit
+        // admin override (updateMapping()'s manualOverride flag) — grants
+        // per-field merge authority below, independent of isProjectSchema.
+        const explicitOverrideFields = new Set<string>();
         const crossSchemaFieldMap: Record<string, string> = {};
         for (const [fieldKey, entries] of Object.entries(policyMapping)) {
             if (!Array.isArray(entries)) continue;
             let fallback: string | null = null;
+            let fallbackIsOverride = false;
             for (const entry of entries) {
                 if (entry.schemaType === 'mintToken' || entry.schemaType === 'standardRegistry') continue;
                 if (entry.source !== 'schema' || !entry.schemaIri || !entry.fieldPath) continue;
@@ -169,13 +174,18 @@ export class ProjectMapperService {
                 if (schemaUuidFromIri !== vcSchemaUuid) continue;
                 if (entry.isProjectSchema === true) {
                     crossSchemaFieldMap[fieldKey] = entry.fieldPath;
+                    if (entry.manualOverride === true) explicitOverrideFields.add(fieldKey);
                     fallback = null;
                     break;
                 }
-                if (fallback === null) fallback = entry.fieldPath;
+                if (fallback === null) {
+                    fallback = entry.fieldPath;
+                    fallbackIsOverride = entry.manualOverride === true;
+                }
             }
             if (!(fieldKey in crossSchemaFieldMap) && fallback !== null) {
                 crossSchemaFieldMap[fieldKey] = fallback;
+                if (fallbackIsOverride) explicitOverrideFields.add(fieldKey);
             }
         }
 
@@ -441,34 +451,103 @@ export class ProjectMapperService {
             newFields._fromProjectSchema = true;
         }
 
-        if (name) newFields.name = name;
+        // businessData keys an admin explicitly remapped for THIS field, tagged
+        // at the same site the field's value is derived — avoids a second,
+        // separately-maintained fieldKey→businessData-key table that could drift
+        // from the translation logic below (several fields are not 1:1, e.g.
+        // sdgOrCobenefits → sdgs+cobenefits, geo → lat+lng). Forces the upsert to
+        // overwrite exactly these keys regardless of _fromProjectSchema, without
+        // granting the whole VC blanket override authority.
+        const overrideBusinessKeys = new Set<string>();
+
+        if (name) {
+            newFields.name = name;
+            if (explicitOverrideFields.has('name')) overrideBusinessKeys.add('name');
+        }
         const sourcesCountry = 'country' in crossSchemaFieldMap;
         if (country) {
             newFields.country = country;
             if (countries.length > 1) newFields.countries = countries;
+            if (explicitOverrideFields.has('country')) {
+                overrideBusinessKeys.add('country');
+                if (countries.length > 1) overrideBusinessKeys.add('countries');
+            }
         } else if (sourcesCountry && rawCountry) {
             newFields.country = null;
+            if (explicitOverrideFields.has('country')) overrideBusinessKeys.add('country');
         }
         if (lat !== null && lng !== null) {
             newFields.lat = lat;
             newFields.lng = lng;
+            if (explicitOverrideFields.has('geo')) {
+                overrideBusinessKeys.add('lat');
+                overrideBusinessKeys.add('lng');
+            }
         }
         if (resolved.name) {
             newFields.methodology = resolved.name;
             newFields.methodologyId = slugify(resolved.name);
         }
-        if (developer) newFields.developer = developer;
-        if (vintage) newFields.vintage = vintage;
-        if (sdgs.length > 0) newFields.sdgs = sdgs;
-        if (cobenefits) newFields.cobenefits = cobenefits;
-        if (extracted['scale']) newFields.scale = extracted['scale'];
-        if (extracted['category']) newFields.category = extracted['category'];
-        if (sector) newFields.sector = sector;
+        if (developer) {
+            newFields.developer = developer;
+            if (explicitOverrideFields.has('developer')) overrideBusinessKeys.add('developer');
+        }
+        // vintage/createdAt can also be seeded by the unrelated {from,to} fallback
+        // scan above — only tag as an override when the value actually came from
+        // the mapped vintageRaw field, otherwise an override on vintageRaw could
+        // wrongly force-overwrite an unrelated fallback-derived value.
+        if (vintage) {
+            newFields.vintage = vintage;
+            if (explicitOverrideFields.has('vintageRaw') && extracted['vintageRaw']) overrideBusinessKeys.add('vintage');
+        }
+        if (sdgs.length > 0) {
+            newFields.sdgs = sdgs;
+            if (explicitOverrideFields.has('sdgOrCobenefits')) overrideBusinessKeys.add('sdgs');
+        }
+        if (cobenefits) {
+            newFields.cobenefits = cobenefits;
+            if (explicitOverrideFields.has('sdgOrCobenefits')) overrideBusinessKeys.add('cobenefits');
+        }
+        if (extracted['scale']) {
+            newFields.scale = extracted['scale'];
+            if (explicitOverrideFields.has('scale')) overrideBusinessKeys.add('scale');
+        }
+        if (extracted['category']) {
+            newFields.category = extracted['category'];
+            if (explicitOverrideFields.has('category')) overrideBusinessKeys.add('category');
+        }
+        if (sector) {
+            newFields.sector = sector;
+            // Sector precedence unchanged: policy.json's methodology-derived
+            // scope still wins over the admin-mapped field whenever present
+            // (see the `sector = normalizeSector(methScopes) || ...` resolution
+            // above) — only tag as an override when the value actually came
+            // from the mapped field, i.e. policy.json had nothing.
+            if (explicitOverrideFields.has('sector') && !normalizeSector(methScopes) && rawSector) {
+                overrideBusinessKeys.add('sector');
+            }
+        }
         if (sectoralScope) newFields.sectoralScope = sectoralScope;
-        if (extracted['description']) newFields.description = extracted['description'];
-        if (createdAt) newFields.createdAt = createdAt;
-        if (creditingPeriodStart) newFields.creditingPeriodStart = creditingPeriodStart;
-        if (creditingPeriodEnd) newFields.creditingPeriodEnd = creditingPeriodEnd;
+        if (extracted['description']) {
+            newFields.description = extracted['description'];
+            if (explicitOverrideFields.has('description')) overrideBusinessKeys.add('description');
+        }
+        if (createdAt) {
+            newFields.createdAt = createdAt;
+            if (explicitOverrideFields.has('vintageRaw') && extracted['vintageRaw']) overrideBusinessKeys.add('createdAt');
+        }
+        if (creditingPeriodStart) {
+            newFields.creditingPeriodStart = creditingPeriodStart;
+            if (explicitOverrideFields.has('creditingPeriodStart') && extracted['creditingPeriodStart']) {
+                overrideBusinessKeys.add('creditingPeriodStart');
+            }
+        }
+        if (creditingPeriodEnd) {
+            newFields.creditingPeriodEnd = creditingPeriodEnd;
+            if (explicitOverrideFields.has('creditingPeriodEnd') && extracted['creditingPeriodEnd']) {
+                overrideBusinessKeys.add('creditingPeriodEnd');
+            }
+        }
         newFields.status = 'Issuing';
         newFields.decodeMethod = resolvedProject.method;
         // Method-specific resolution anchor (M1: dynamic topic id; M2/M3/M4: root
@@ -476,6 +555,9 @@ export class ProjectMapperService {
         // non-empty keys are written so later VCs don't clobber it with {}.
         if (resolvedProject.metadata && Object.keys(resolvedProject.metadata).length > 0) {
             newFields.metadata = resolvedProject.metadata;
+        }
+        if (overrideBusinessKeys.size > 0) {
+            newFields._explicitOverrideFields = [...overrideBusinessKeys];
         }
 
         // Track this VC's contribution. The SQL UPDATE below dedupes by
@@ -517,7 +599,10 @@ export class ProjectMapperService {
             WHERE "viewType" = 'PROJECT' AND "projectKey" IS NOT NULL
             DO UPDATE SET
                 -- Project-schema VCs override displayName; others fill gaps.
+                -- Explicit admin field overrides (see below) also force displayName
+                -- when the overridden field is the project's name.
                 "displayName"    = CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
+                                        OR EXCLUDED."businessData"->'_explicitOverrideFields' @> '"name"'::jsonb
                                         THEN COALESCE(NULLIF(EXCLUDED."displayName", ''), business_view."displayName")
                                         ELSE COALESCE(NULLIF(business_view."displayName", ''), EXCLUDED."displayName")
                                    END,
@@ -529,9 +614,18 @@ export class ProjectMapperService {
                     -- existing values are kept by reversing the operand order
                     -- so existing data takes precedence.
                     CASE WHEN (EXCLUDED."businessData"->>'_fromProjectSchema')::boolean IS TRUE
-                         THEN business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema')
-                         ELSE (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema') || business_view."businessData"
+                         THEN business_view."businessData" || (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema' - '_explicitOverrideFields')
+                         ELSE (EXCLUDED."businessData" - 'linkedVcs' - '_fromProjectSchema' - '_explicitOverrideFields') || business_view."businessData"
                     END
+                    -- Explicit per-field admin override: force-write exactly the
+                    -- keys the admin remapped, regardless of which CASE branch ran
+                    -- above. No-op when _explicitOverrideFields is absent (every VC
+                    -- of every policy with no manual edits).
+                    || (
+                        SELECT COALESCE(jsonb_object_agg(key, EXCLUDED."businessData"->key), '{}'::jsonb)
+                        FROM jsonb_array_elements_text(COALESCE(EXCLUDED."businessData"->'_explicitOverrideFields', '[]'::jsonb)) AS key
+                        WHERE EXCLUDED."businessData" ? key
+                    )
                 ) || jsonb_build_object(
                     -- Only add credits/vcCount when this VC isn't already linked.
                     -- Makes reparse-all idempotent — clicking it twice doesn't double credits.

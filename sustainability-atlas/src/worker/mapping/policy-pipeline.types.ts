@@ -25,6 +25,11 @@ export interface PolicyMappingEntry {
     fieldPath?: string;          // path within the schema document, dot-separated
     isProjectSchema?: boolean;   // priority hint, not a filter
     docType?: string;            // coarse Guardian document type (see DocumentType)
+    // True when this entry was written by an admin's manual field-mapping edit
+    // (PATCH :id/decoded). Grants per-field merge authority in project-mapper
+    // .service.ts independent of isProjectSchema — a manual edit picks a FIELD,
+    // not a schema classification.
+    manualOverride?: boolean;
 
     // when source = 'policyJson'
     policyJsonPath?: string;

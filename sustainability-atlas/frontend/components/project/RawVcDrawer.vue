@@ -139,9 +139,9 @@ const hashscanUrl = computed(() => (props.topicId ? `https://hashscan.io/${props
                     <div class="min-w-0">
                         <div class="flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider text-primary">
                             <ShieldCheck class="h-3.5 w-3.5" />
-                            On-chain evidence
+                            {{ $t('projects.detail.vcs.onChainEvidence') }}
                         </div>
-                        <h3 class="mt-1 truncate text-sm font-semibold text-foreground">{{ schemaName || 'Verifiable Credential' }}</h3>
+                        <h3 class="mt-1 truncate text-sm font-semibold text-foreground">{{ schemaName || $t('projects.detail.vcs.verifiableCredential') }}</h3>
                         <p class="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{{ formattedTimestamp }}</p>
                     </div>
                     <button class="shrink-0 text-muted-foreground transition-colors hover:text-foreground" @click="emit('close')">
@@ -153,14 +153,14 @@ const hashscanUrl = computed(() => (props.topicId ? `https://hashscan.io/${props
                 <div class="flex-1 space-y-4 overflow-y-auto px-5 py-4">
                     <div v-if="loading" class="flex items-center justify-center gap-2 py-10 text-xs text-muted-foreground">
                         <Loader2 class="h-4 w-4 animate-spin" />
-                        Loading on-chain document…
+                        {{ $t('projects.detail.vcs.loadingOnChainDoc') }}
                     </div>
                     <div v-else-if="error" class="py-10 text-center text-xs text-destructive">
-                        Failed to load the VC document.
+                        {{ $t('projects.detail.vcs.loadError') }}
                     </div>
                     <template v-else-if="credentialSubject">
                         <div v-if="issuer" class="rounded-lg border bg-muted/20 px-4 py-3">
-                            <div class="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Issuer DID</div>
+                            <div class="mb-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{{ $t('projects.detail.vcs.issuerDid') }}</div>
                             <code class="break-all font-mono text-xs text-foreground">{{ issuer }}</code>
                         </div>
 
@@ -174,7 +174,7 @@ const hashscanUrl = computed(() => (props.topicId ? `https://hashscan.io/${props
                                 <div class="break-words text-sm text-foreground">{{ f.value }}</div>
                             </div>
                             <div v-if="fields.length === 0" class="px-4 py-6 text-center text-xs text-muted-foreground">
-                                No readable fields in this credential.
+                                {{ $t('projects.detail.vcs.noReadableFields') }}
                             </div>
                         </div>
 
@@ -186,10 +186,10 @@ const hashscanUrl = computed(() => (props.topicId ? `https://hashscan.io/${props
                             class="inline-flex items-center gap-1.5 text-xs text-primary hover:underline"
                         >
                             <ExternalLink class="h-3.5 w-3.5" />
-                            View topic on HashScan
+                            {{ $t('common.viewOnHashScan') }}
                         </a>
                     </template>
-                    <div v-else class="py-10 text-center text-xs text-muted-foreground">No credential data.</div>
+                    <div v-else class="py-10 text-center text-xs text-muted-foreground">{{ $t('projects.detail.vcs.noCredentialData') }}</div>
                 </div>
             </div>
         </div>

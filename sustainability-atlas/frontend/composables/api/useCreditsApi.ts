@@ -7,7 +7,9 @@ export type CreditSortKey =
     | 'type'
     | 'supply'
     | 'registry'
-    | 'mintDate';
+    | 'mintDate'
+    | 'projectDisplay'
+    | 'methodologyDisplay';
 
 export type CreditSortDir = 'asc' | 'desc';
 

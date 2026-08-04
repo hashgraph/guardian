@@ -498,6 +498,14 @@ const formState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFie
 const formIndexState = ref<Record<ResolvedFieldKey, string>>({} as Record<ResolvedFieldKey, string>);
 const saveMappingPending = ref(false);
 
+// Sector is always resolved from the methodology's own policy.json
+// (sectoralScopes) when present — see project-mapper.service.ts's
+// `sector = normalizeSector(methScopes) || ...` precedence. Mapping a schema
+// field to "Sector" here would silently have no visible effect in that case,
+// so the row is disabled with an explanatory hint instead of letting an admin
+// edit a field that can never take effect.
+const sectorLockedByPolicyJson = computed(() => (methodology.value?.sectoralScopes?.length ?? 0) > 0);
+
 // Look up the schemaIri that owns a given fieldPath. For nested paths like
 // "projectSiteCountryarea", the backend stores it under a sub-schema IRI
 // (e.g., "#3cbd0aa8-...&1.0.0"). We scan availableSchemas to find which
@@ -546,12 +554,15 @@ function resolveFieldPathParts(key: ResolvedFieldKey): { base: string; index: st
     const iri = findOwningSchemaIri(baseKey, projectIri);
     return { base: `${iri}.${baseKey}`, index };
   }
-  const resolved = ps.resolvedFields as Record<string, { fieldKey: string } | null>;
+  const resolved = ps.resolvedFields as Record<string, { fieldKey: string; schemaIri: string } | null>;
   const rf = resolved[key];
   if (!rf) return { base: '', index: '' };
   const { base: baseKey, index } = splitArrayIndex(rf.fieldKey);
-  const iri = findOwningSchemaIri(baseKey, projectIri);
-  return { base: `${iri}.${baseKey}`, index };
+  // rf.schemaIri is the schema this field was actually saved under — use it
+  // directly rather than re-guessing via findOwningSchemaIri, which picks
+  // the first schema containing a matching field key and can land on the
+  // wrong schema when multiple schemas reuse the same generic key.
+  return { base: `${rf.schemaIri}.${baseKey}`, index };
 }
 
 function enterEditMode() {
@@ -1512,11 +1523,11 @@ function getResolvedField(fieldKey: string) {
               >
                 <img
                   :src="`/sdgs/E-WEB-Goal-${String(sdgId).padStart(2, '0')}.png`"
-                  :alt="`SDG ${sdgId}`"
+                  :alt="`${$t('sdgs.columns.sdg')} ${sdgId}`"
                   class="h-10 w-10 rounded"
                 />
                 <div>
-                  <div class="text-xs font-semibold text-foreground">SDG {{ sdgId }}</div>
+                  <div class="text-xs font-semibold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdgId }}</div>
                   <div class="text-[11px] text-muted-foreground">{{ getSDG(sdgId)?.name }}</div>
                 </div>
               </div>
@@ -1577,7 +1588,7 @@ function getResolvedField(fieldKey: string) {
                     'text-xs font-medium rounded-full px-2.5 py-1 capitalize',
                   ]"
                 >
-                  {{ decodedData.decodeStatus }}
+                  {{ $t('methodologies.decodeStatus.' + (decodedData.decodeStatus ?? 'unknown')) }}
                 </span>
                 <span
                   v-if="decodedData.decodeStatus === 'success'"
@@ -1811,6 +1822,7 @@ function getResolvedField(fieldKey: string) {
                             :groups="mappingOptionGroups"
                             :unmapped-label="$t('methodologies.detail.decoded.actions.unmapped')"
                             :placeholder="$t('common.searchEllipsis')"
+                            :disabled="row.fieldKey === 'sector' && sectorLockedByPolicyJson"
                           />
                           <input
                             v-if="isArrayPath(formState[row.fieldKey as ResolvedFieldKey])"
@@ -1821,6 +1833,12 @@ function getResolvedField(fieldKey: string) {
                             :title="$t('methodologies.detail.decoded.actions.arrayIndexHint')"
                             class="w-16 shrink-0 rounded-md border border-input bg-background px-2 py-1.5 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
                           />
+                        </div>
+                        <div
+                          v-if="row.fieldKey === 'sector' && sectorLockedByPolicyJson"
+                          class="text-xs text-muted-foreground mt-1"
+                        >
+                          {{ $t('methodologies.detail.decoded.actions.sectorLockedHint') }}
                         </div>
                       </template>
                       <template v-else>
@@ -2232,7 +2250,7 @@ function getResolvedField(fieldKey: string) {
                 class="w-32"
               />
               <span class="text-xs text-muted-foreground">
-                {{ linkedProjectsFiltered.length }} project{{ linkedProjectsFiltered.length !== 1 ? 's' : '' }}
+                {{ $t('methodologies.detail.linkedProjects.projectCount', { count: linkedProjectsFiltered.length }) }}
               </span>
             </div>
           </div>
@@ -2533,22 +2551,22 @@ function getResolvedField(fieldKey: string) {
           <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <Coins class="h-4 w-4 text-primary" />
-              Linked Issuances
+              {{ $t('methodologies.detail.analytics.linkedIssuances') }}
             </h2>
-            <span class="text-xs text-muted-foreground">{{ issuanceRows.length }} issuance(s)</span>
+            <span class="text-xs text-muted-foreground">{{ $t('methodologies.detail.analytics.issuanceCount', { count: issuanceRows.length }) }}</span>
           </div>
           <div v-if="issuanceRows.length > 0">
             <table class="w-full text-sm">
               <thead>
                 <tr class="border-b bg-muted/20">
-                  <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
-                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
-                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                  <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.token') }}</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.tokenId') }}</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.type') }}</th>
                   <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
                     <span class="inline-flex items-start justify-end gap-1">{{ $t('credits.columns.supply') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('credits.tooltips.mintAmount')" /></span></span>
                   </th>
-                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
-                  <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Raw Data</th>
+                  <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.mintDate') }}</th>
+                  <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.rawData') }}</th>
                 </tr>
               </thead>
               <tbody class="divide-y">
@@ -2573,7 +2591,7 @@ function getResolvedField(fieldKey: string) {
                         'text-xs font-medium rounded-full px-2 py-0.5',
                       ]"
                     >
-                      {{ c.type }}
+                      {{ c.type ? $t('credits.tokenTypes.' + c.type) : '-' }}
                     </span>
                   </td>
                   <td class="py-3 px-4 text-right tabular-nums font-medium">{{ formatNumber(c.supply) }}</td>
@@ -2581,7 +2599,7 @@ function getResolvedField(fieldKey: string) {
                   <td class="py-3 px-4 text-center">
                     <button
                       class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                      title="View Raw Data"
+                      :title="$t('common.viewRawData')"
                       @click="viewIssuanceVc(c)"
                     >
                       <FileJson class="h-3.5 w-3.5" />
@@ -2600,7 +2618,7 @@ function getResolvedField(fieldKey: string) {
             </div>
           </div>
           <div v-else class="px-5 py-8 text-center text-sm text-muted-foreground">
-            No issuances have been recorded for this methodology yet.
+            {{ $t('methodologies.detail.analytics.noIssuances') }}
           </div>
         </div>
 
@@ -2609,24 +2627,24 @@ function getResolvedField(fieldKey: string) {
           <div class="px-5 py-3.5 border-b bg-muted/30">
             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
               <GitBranch class="h-4 w-4 text-primary" />
-              Credit Lifecycle
+              {{ $t('methodologies.detail.analytics.creditLifecycle') }}
             </h2>
-            <p class="text-[11px] text-muted-foreground mt-0.5">Issuance → Transfers → Retirements</p>
+            <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('methodologies.detail.analytics.creditLifecycleSub') }}</p>
           </div>
 
           <!-- Lifecycle Summary Grid -->
           <div class="grid grid-cols-3 gap-px bg-border">
             <div class="bg-card px-5 py-4 text-center">
               <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalIssued) }}</div>
-              <div class="text-[11px] text-muted-foreground">Total Minted Credits</div>
+              <div class="text-[11px] text-muted-foreground">{{ $t('methodologies.detail.analytics.totalMintedCredits') }}</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
               <div class="text-lg font-semibold text-stat-rose tabular-nums">{{ formatNumber(lifecycleSummary.totalRetired) }}</div>
-              <div class="text-[11px] text-muted-foreground">Retired</div>
+              <div class="text-[11px] text-muted-foreground">{{ $t('methodologies.detail.analytics.retired') }}</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
               <div class="text-lg font-semibold text-stat-green tabular-nums">{{ formatNumber(lifecycleSummary.active) }}</div>
-              <div class="text-[11px] text-muted-foreground">Active</div>
+              <div class="text-[11px] text-muted-foreground">{{ $t('methodologies.detail.analytics.active') }}</div>
             </div>
           </div>
 
@@ -2637,32 +2655,32 @@ function getResolvedField(fieldKey: string) {
                 v-if="lifecycleSummary.totalIssued > 0"
                 class="bg-stat-rose transition-all"
                 :style="{ width: `${(lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100}%` }"
-                title="Retired"
+                :title="$t('methodologies.detail.analytics.retired')"
               />
               <div
                 v-if="lifecycleSummary.totalIssued > 0"
                 class="bg-stat-green transition-all"
                 :style="{ width: `${(lifecycleSummary.active / lifecycleSummary.totalIssued) * 100}%` }"
-                title="Active"
+                :title="$t('methodologies.detail.analytics.active')"
               />
             </div>
             <div class="flex items-center justify-between mt-1.5">
               <div class="flex items-center gap-3">
                 <span class="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <span class="h-2 w-2 rounded-full bg-stat-rose" /> Retired
+                  <span class="h-2 w-2 rounded-full bg-stat-rose" /> {{ $t('methodologies.detail.analytics.retired') }}
                 </span>
                 <span class="flex items-center gap-1 text-[10px] text-muted-foreground">
-                  <span class="h-2 w-2 rounded-full bg-stat-green" /> Active
+                  <span class="h-2 w-2 rounded-full bg-stat-green" /> {{ $t('methodologies.detail.analytics.active') }}
                 </span>
               </div>
               <span v-if="lifecycleSummary.totalIssued > 0" class="text-[10px] text-muted-foreground">
-                {{ ((lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100).toFixed(1) }}% retired
+                {{ $t('methodologies.detail.analytics.pctRetired', { pct: ((lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100).toFixed(1) }) }}
               </span>
             </div>
           </div>
 
           <div v-if="lifecycleSummary.totalIssued === 0" class="border-t px-5 py-6 text-center text-sm text-muted-foreground">
-            No transfers or retirements recorded for this methodology yet.
+            {{ $t('methodologies.detail.analytics.noLifecycle') }}
           </div>
         </div>
       </div>

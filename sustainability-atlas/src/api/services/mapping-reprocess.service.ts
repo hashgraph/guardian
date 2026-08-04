@@ -32,6 +32,12 @@ interface PolicyRow {
     policyMapping: Record<string, unknown> | null;
     instanceTopicId?: string | null;
     rawSchemaJson?: Record<string, unknown> | null;
+    // Guardian's own policy._id, stamped onto every VC issued under this
+    // version as credentialSubject.policyId (message.policyId). Globally
+    // UNIQUE across the policy table (uq_policy_policy_id), unlike
+    // policyTopicId which is shared by every republished version — used to
+    // scope reparseProjects()'s VC selection to exactly this version.
+    policyId?: string | null;
 }
 
 interface VcMessageRow {
@@ -195,7 +201,7 @@ export class MappingReprocessService {
     ): Promise<{ enqueued: number }> {
         const ds = this.dataSources.getDataSource(network);
         const resolved = await this.resolvePolicyVersion(network, methodologyId);
-        const { policyTopicId, instanceTopicId, decodeStatus } = resolved;
+        const { policyTopicId, instanceTopicId, decodeStatus, policyId } = resolved;
 
         if (decodeStatus !== 'decoded') {
             this.logger.log(
@@ -213,18 +219,18 @@ export class MappingReprocessService {
             return { enqueued: 0 };
         }
 
-        // Collect VC-Documents by walking the SPECIFIC VERSION's topic subtree
-        // (rooted at instanceTopicId, not the shared policyTopicId), rather
-        // than joining on message.policyId = policy.policyId. Those two
-        // columns are stamped independently — policy.policyId comes from
-        // policy.json's id (or a legacy policyTag when absent), while
-        // message.policyId is the VC's own credentialSubject.policyId,
-        // stamped later by the IPFS-fetch processor — and can diverge for
-        // legacy policies, silently matching zero rows here. This reuses the
-        // same topic-subtree pattern established in
-        // sync-scheduler.service.ts:backfillSuccessfulPolicyVcFetches and
-        // queue-status.controller.ts's topic-tree filter, decoupling VC
-        // selection from policy.policyId entirely.
+        // A VC belongs to this version if EITHER signal says so: its stamped
+        // message.policyId matches this version's own policy.policyId (the
+        // same signal normal ingestion trusts — cheap indexed equality, and
+        // safe across versions since policy.policyId is UNIQUE per row), OR
+        // its topic is a descendant of this version's instanceTopicId (the
+        // pre-existing recursive walk, which still catches legacy VCs that
+        // never got a policyId stamped). These two signals can disagree for
+        // a given project (see docs/reparse-multi-version-instance-topic-issue.md),
+        // so relying on only one used to miss projects silently. Matching
+        // both in a single query is also duplicate-safe — each
+        // consensusTimestamp is one row in `message`, so it's still returned
+        // at most once regardless of which branch matched it.
         const vcRows: VcMessageRow[] = await ds.query(
             `WITH RECURSIVE descendants AS (
                  SELECT $1::text AS "topicId"
@@ -236,9 +242,12 @@ export class MappingReprocessService {
              )
              SELECT m."consensusTimestamp"
              FROM message m
-             JOIN descendants d ON d."topicId" = m."topicId"
-             WHERE m.type = 'VC-Document' AND m.documents IS NOT NULL`,
-            [instanceTopicId],
+             WHERE m.type = 'VC-Document' AND m.documents IS NOT NULL
+               AND (
+                    m."topicId" IN (SELECT "topicId" FROM descendants)
+                 OR ($2::varchar IS NOT NULL AND m."policyId" = $2)
+               )`,
+            [instanceTopicId, policyId ?? null],
         );
 
         const queue = this.queueRegistry.getQueue(network, BASE_QUEUE_NAMES.PROJECT_REPARSE);
@@ -458,6 +467,24 @@ export class MappingReprocessService {
 
         const existingMapping = (policyRows[0].policyMapping ?? {}) as Record<string, unknown[]>;
 
+        // Snapshot which schemas are already classified as "the project schema"
+        // BEFORE merging, so a manual field-level remap can't silently promote an
+        // unrelated schema into that classification below — that reclassification
+        // is what perturbs projectKey derivation (base-resolver.ts's
+        // projectSchemaUuids()) on the next reparse and can turn an UPDATE into an
+        // INSERT for the same logical project.
+        const existingProjectSchemaIris = new Set<string>();
+        for (const entries of Object.values(existingMapping)) {
+            if (!Array.isArray(entries)) continue;
+            for (const entry of entries) {
+                if (entry && typeof entry === 'object' &&
+                    (entry as Record<string, unknown>)['isProjectSchema'] === true &&
+                    typeof (entry as Record<string, unknown>)['schemaIri'] === 'string') {
+                    existingProjectSchemaIris.add((entry as Record<string, unknown>)['schemaIri'] as string);
+                }
+            }
+        }
+
         // ── Validate field label keys ───────────────────────────────────────────
         const invalidLabels = Object.keys(body.fieldMap).filter(
             k => !MappingReprocessService.VALID_FIELD_LABELS.has(k),
@@ -549,16 +576,31 @@ export class MappingReprocessService {
                 fieldPath: parsed.fieldPath,
                 title: parsed.label,
                 description: '',
-                isProjectSchema: true,
+                // Preserve the existing classification instead of always forcing
+                // true — this field-mapping editor picks a FIELD, it shouldn't
+                // silently reclassify which schema is "the project schema" for
+                // dedup-key resolution (see snapshot above).
+                isProjectSchema: existingProjectSchemaIris.has(parsed.schemaIri),
+                // Marks this entry as an explicit admin override, independent of
+                // isProjectSchema — read by project-mapper.service.ts to grant
+                // per-field merge authority without promoting the whole schema.
+                manualOverride: true,
                 score: 999,
             };
-            const filtered = existing.filter(e => {
+            // Remove only the entry actually being superseded (the first
+            // non-mintToken/standardRegistry entry), not every other candidate —
+            // other schemas' entries for this same field key must survive so
+            // their VCs keep contributing it on reparse.
+            const supersededIdx = existing.findIndex(e => {
                 if (!e || typeof e !== 'object') return false;
                 const schemaType = (e as Record<string, unknown>)['schemaType'];
-                return schemaType === 'mintToken' || schemaType === 'standardRegistry';
+                return schemaType !== 'mintToken' && schemaType !== 'standardRegistry';
             });
+            const preserved = supersededIdx === -1
+                ? existing
+                : [...existing.slice(0, supersededIdx), ...existing.slice(supersededIdx + 1)];
 
-            mergedMapping[fieldKey] = [manualEntry, ...filtered];
+            mergedMapping[fieldKey] = [manualEntry, ...preserved];
         }
 
         for (const fieldKey of keysToUnset) {
@@ -1618,7 +1660,7 @@ export class MappingReprocessService {
         // exact row can still be targeted directly to self-heal.
         const policyRows: PolicyRow[] = await ds.query(
             `SELECT p.id, p."policyTopicId", p."instanceTopicId", p."sourceCid",
-                    p."decodeStatus", p."policyMapping", p."rawSchemaJson"
+                    p."decodeStatus", p."policyMapping", p."rawSchemaJson", p."policyId"
              FROM policy p
              WHERE p."policyTopicId" = $1
                AND (

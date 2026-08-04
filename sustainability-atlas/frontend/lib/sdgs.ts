@@ -27,3 +27,11 @@ export const SDG_LIST: SDG[] = [
 export function getSDG(id: number): SDG | undefined {
     return SDG_LIST.find(s => s.id === id);
 }
+
+export function getLocalizedSDGName(id: number, t?: (key: string) => string): string {
+    if (t) {
+        const translated = t(`sdgs.names.${id}`);
+        if (translated && translated !== `sdgs.names.${id}`) return translated;
+    }
+    return getSDG(id)?.name ?? '';
+}

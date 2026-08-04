@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { getSDG } from '~/lib/sdgs';
+import { getLocalizedSDGName } from '~/lib/sdgs';
+
+const { t } = useI18n();
 
 const props = defineProps<{
     ids: number[];
@@ -16,7 +18,7 @@ function sdgIcon(id: number): string {
 }
 
 function sdgLabel(id: number): string {
-    return `SDG ${id}: ${getSDG(id)?.name ?? ''}`;
+    return `${t('sdgs.columns.sdg')} ${id}: ${getLocalizedSDGName(id, t)}`;
 }
 
 // Teleported to <body> and positioned via getBoundingClientRect (same
@@ -61,7 +63,7 @@ function onLeave(): void {
             v-for="id in visible"
             :key="id"
             :src="sdgIcon(id)"
-            :alt="`SDG ${id}`"
+            :alt="`${$t('sdgs.columns.sdg')} ${id}`"
             class="h-7 w-7 min-w-7 object-contain shrink-0 rounded-sm cursor-default"
             @mouseenter="onEnter($event, id)"
             @mouseleave="onLeave"

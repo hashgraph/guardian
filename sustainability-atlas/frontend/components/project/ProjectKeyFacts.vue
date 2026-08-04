@@ -5,6 +5,7 @@ import { formatCredits } from '~/lib/format';
 import { formatDate } from '~/lib/format';
 import { useMethodologyApi } from '~/composables/api/useMethodologiesApi';
 import { IWA_TO_CADTRUST, IWA_TO_CDOP } from '~/lib/standard-field-mappings.generated';
+import { SECTOR_I18N_KEYS } from '~/types/enums';
 
 const props = defineProps<{
     project: Project;
@@ -12,7 +13,14 @@ const props = defineProps<{
     displayCountryCode: string;
 }>();
 
+const { t } = useI18n();
 const { network } = useNetwork();
+
+function translateSector(raw?: string): string {
+    if (!raw) return '—';
+    const key = SECTOR_I18N_KEYS[raw];
+    return key ? t(`dashboard.sectorTypes.${key}`) : raw;
+}
 
 const { data: methodologyDetail } = useMethodologyApi({
     id: computed(() => props.project.instanceTopicId ?? ''),
@@ -57,14 +65,14 @@ function tip(iwaPaths: string): string {
         <div class="px-5 py-3.5 border-b bg-muted/30">
             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Hash class="h-4 w-4 text-primary" />
-                Key Facts
+                {{ $t('projects.details.keyFacts') }}
             </h2>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2">
             <!-- Methodology -->
             <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Methodology
+                    {{ $t('projects.details.methodology') }}
                     <InfoTooltip :text="tip('QualityStandard.name')" />
                 </div>
                 <AppLink
@@ -80,7 +88,7 @@ function tip(iwaPaths: string): string {
             <!-- Methodology Version -->
             <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Methodology Version
+                    {{ $t('projects.details.methodologyVersion') }}
                     <InfoTooltip :text="tip('QualityStandard.version')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">{{ methodologyVersion }}</div>
@@ -89,7 +97,7 @@ function tip(iwaPaths: string): string {
             <!-- Registry -->
             <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Registry
+                    {{ $t('projects.details.registry') }}
                     <InfoTooltip :text="tip('OriginationProcessAgreement.name')" />
                 </div>
                 <AppLink
@@ -105,7 +113,7 @@ function tip(iwaPaths: string): string {
             <!-- Developer -->
             <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Developer
+                    {{ $t('projects.details.developer') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.developers')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">{{ project.developer || '—' }}</div>
@@ -114,7 +122,7 @@ function tip(iwaPaths: string): string {
             <!-- Country -->
             <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Country
+                    {{ $t('projects.details.country') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.country')" />
                 </div>
                 <div class="text-sm font-medium text-foreground flex items-center gap-1.5">
@@ -129,7 +137,7 @@ function tip(iwaPaths: string): string {
             <!-- Status -->
             <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Status
+                    {{ $t('projects.details.status') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.validations')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">
@@ -140,16 +148,16 @@ function tip(iwaPaths: string): string {
             <!-- Sector -->
             <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Sector
+                    {{ $t('projects.details.sector') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.projectScope')" />
                 </div>
-                <div class="text-sm font-medium text-foreground">{{ project.sector || '—' }}</div>
+                <div class="text-sm font-medium text-foreground">{{ translateSector(project.sector) }}</div>
             </div>
 
             <!-- Sectoral Scope -->
             <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Sectoral Scope
+                    {{ $t('projects.details.sectoralScope') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.projectType')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">{{ project.sectoralScope || '—' }}</div>
@@ -158,7 +166,7 @@ function tip(iwaPaths: string): string {
             <!-- Category -->
             <div class="bg-card px-5 py-4 border-b sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Category
+                    {{ $t('projects.details.category') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.classificationCategory')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">{{ project.category || '—' }}</div>
@@ -167,7 +175,7 @@ function tip(iwaPaths: string): string {
             <!-- Crediting Period -->
             <div class="bg-card px-5 py-4 border-b">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Crediting Period
+                    {{ $t('projects.details.creditingPeriod') }}
                     <InfoTooltip :text="tip('ImpactClaim.startDate,ImpactClaim.endDate')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">
@@ -180,7 +188,7 @@ function tip(iwaPaths: string): string {
             <!-- Vintage -->
             <div class="bg-card px-5 py-4 sm:border-r">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Vintage
+                    {{ $t('projects.details.vintage') }}
                     <InfoTooltip :text="tip('ActivityImpactModule.firstYearIssuance')" />
                 </div>
                 <div class="text-sm font-medium text-foreground">{{ project.vintage || '—' }}</div>
@@ -189,7 +197,7 @@ function tip(iwaPaths: string): string {
             <!-- Total Credits — last row, no border-b -->
             <div class="bg-card px-5 py-4">
                 <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1 flex items-center gap-1">
-                    Estimated Total Credits
+                    {{ $t('projects.details.estimatedTotalCredits') }}
                     <InfoTooltip :text="tip('ImpactClaim.quantity')" />
                 </div>
                 <div class="text-sm font-semibold text-foreground tabular-nums">{{ formatCredits(project.credits) }}</div>

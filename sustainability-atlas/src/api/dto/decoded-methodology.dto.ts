@@ -8,6 +8,9 @@ export class ResolvedFieldDto {
     @ApiProperty({ description: 'Schema field key (e.g. "G2")' })
     fieldKey: string;
 
+    @ApiProperty({ description: 'IRI of the schema this field actually belongs to' })
+    schemaIri: string;
+
     @ApiProperty({ description: 'Human-readable title from the schema (e.g. "Project Name")' })
     title: string;
 
@@ -237,42 +240,57 @@ export class DecodedMethodologyResponseDto {
 
         const config = row.projectSchemaConfig;
         const fieldMap = (config.fieldMap ?? {}) as Record<string, { title: string; description: string; isGeoJson?: boolean }>;
-        const resolvedFields = (config.resolvedFields ?? {}) as Record<string, string | null>;
+        const resolvedFields = (config.resolvedFields ?? {}) as Record<string, { fieldPath: string; schemaIri: string } | null>;
+        const geoSchemaIri = typeof config.geoSchemaIri === 'string' ? config.geoSchemaIri : (row.schemaId ?? '');
 
-        const globalFieldIndex = new Map<string, { title: string; description: string }>();
+        // Keyed by `${schemaIri}::${fieldKey}`, not bare fieldKey — Guardian
+        // schemas commonly reuse generic keys (e.g. "field5") across
+        // unrelated schemas in the same policy, so a lookup must pin down
+        // which schema the picked field actually came from or it can resolve
+        // the title from the wrong schema entirely.
+        const stripArrayIndex = (fieldPath: string): string => fieldPath.replace(/\.\d+$/, '');
+        const perSchemaFieldIndex = new Map<string, { title: string; description: string }>();
         for (const s of dto.availableSchemas) {
             for (const f of s.fields) {
-                if (!globalFieldIndex.has(f.fieldKey)) {
-                    globalFieldIndex.set(f.fieldKey, { title: f.title, description: f.description });
+                const key = `${s.schemaId}::${f.fieldKey}`;
+                if (!perSchemaFieldIndex.has(key)) {
+                    perSchemaFieldIndex.set(key, { title: f.title, description: f.description });
                 }
             }
         }
-        const stripArrayIndex = (fieldPath: string): string => fieldPath.replace(/\.\d+$/, '');
-        const lookupFieldDef = (fieldKey: string): { title: string; description: string } | null => {
+        const lookupFieldDef = (schemaIri: string, fieldKey: string): { title: string; description: string } | null => {
             const baseKey = stripArrayIndex(fieldKey);
-            const local = fieldMap[fieldKey] ?? fieldMap[baseKey];
-            if (local) return { title: local.title ?? fieldKey, description: local.description ?? '' };
-            const global = globalFieldIndex.get(fieldKey) ?? globalFieldIndex.get(baseKey);
-            if (global) return { title: global.title || fieldKey, description: global.description || '' };
-            return null;
+            return (
+                perSchemaFieldIndex.get(`${schemaIri}::${fieldKey}`) ??
+                perSchemaFieldIndex.get(`${schemaIri}::${baseKey}`) ??
+                null
+            );
         };
 
-        // Build reverse map: fieldKey → resolvedAs name
+        // Build reverse map: `${schemaIri}::${fieldKey}` → resolvedAs name.
+        // Schema-scoped for the same reason — a bare fieldKey key here would
+        // mark the project schema's OWN unrelated "field5" as "usedAs
+        // Country" whenever some OTHER schema's "field5" was actually picked
+        // for Country.
         const fieldKeyToResolvedAs = new Map<string, string>();
-        for (const [propName, fieldKey] of Object.entries(resolvedFields)) {
-            if (typeof fieldKey === 'string' && fieldKey) {
-                fieldKeyToResolvedAs.set(fieldKey, propName);
+        for (const [propName, entry] of Object.entries(resolvedFields)) {
+            if (entry && typeof entry.fieldPath === 'string' && typeof entry.schemaIri === 'string') {
+                fieldKeyToResolvedAs.set(`${entry.schemaIri}::${entry.fieldPath}`, propName);
             }
         }
 
         const geoKey = typeof config.geoKey === 'string' ? config.geoKey : '';
-        const geoFieldDef = lookupFieldDef(geoKey);
+        const geoFieldDef = geoKey ? lookupFieldDef(geoSchemaIri, geoKey) : null;
 
-        const buildResolvedField = (fieldKey: string | null | undefined): ResolvedFieldDto | null => {
-            if (!fieldKey) return null;
-            const def = lookupFieldDef(fieldKey);
-            if (!def) return null;
-            return { fieldKey, title: def.title, description: def.description };
+        const buildResolvedField = (entry: { fieldPath: string; schemaIri: string } | null | undefined): ResolvedFieldDto | null => {
+            if (!entry) return null;
+            const def = lookupFieldDef(entry.schemaIri, entry.fieldPath);
+            return {
+                fieldKey: entry.fieldPath,
+                schemaIri: entry.schemaIri,
+                title: def?.title ?? entry.fieldPath,
+                description: def?.description ?? '',
+            };
         };
 
         dto.projectSchema = {
@@ -302,7 +320,7 @@ export class DecodedMethodologyResponseDto {
                     fieldKey,
                     title: def.title ?? fieldKey,
                     description: def.description ?? '',
-                    resolvedAs: fieldKeyToResolvedAs.get(fieldKey) ?? null,
+                    resolvedAs: fieldKeyToResolvedAs.get(`${row.schemaId ?? ''}::${fieldKey}`) ?? null,
                 })),
         };
 

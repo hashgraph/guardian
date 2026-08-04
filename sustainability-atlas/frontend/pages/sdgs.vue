@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { formatCredits } from '~/lib/format';
+import { getLocalizedSDGName } from '~/lib/sdgs';
+
+const { t } = useI18n();
 
 function goToProjectsForSdg(sdgId: number) {
     return navigateTo({ path: '/projects', query: { sdgs: String(sdgId) } });
@@ -10,7 +13,7 @@ const { sdgStats, totalProjects, pending, failed, refresh } = useSdgStats();
 const allSdgs = computed(() => sdgStats.value.map(s => ({
     id: String(s.id),
     sdgId: s.id,
-    name: s.name,
+    name: getLocalizedSDGName(s.id, t),
     color: s.color,
     projects: s.projects,
     issuances: s.issuances,
@@ -84,7 +87,7 @@ function sdgIcon(id: number): string {
                                 <div class="group relative inline-block">
                                     <img
                                         :src="sdgIcon(s.sdgId)"
-                                        :alt="`SDG ${s.sdgId}`"
+                                        :alt="`${$t('sdgs.columns.sdg')} ${s.sdgId}`"
                                         class="h-9 w-9 rounded-sm"
                                     />
                                 </div>
@@ -92,7 +95,7 @@ function sdgIcon(id: number): string {
                             <td class="py-3 px-4">
                                 <div>
                                     <span class="font-medium text-foreground">{{ s.name }}</span>
-                                    <p class="text-[11px] text-muted-foreground/60">SDG {{ s.sdgId }}</p>
+                                    <p class="text-[11px] text-muted-foreground/60">{{ $t('sdgs.columns.sdg') }} {{ s.sdgId }}</p>
                                 </div>
                             </td>
                             <td class="py-3 px-4 text-center tabular-nums font-medium">
