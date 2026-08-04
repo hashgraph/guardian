@@ -1,6 +1,7 @@
 import pdfMake = require('pdfmake');
 import { Injectable, Logger } from '@nestjs/common';
 import type { TDocumentDefinitions } from 'pdfmake/interfaces';
+import { RedisService } from '@shared/redis/redis.service';
 import { SystemDataSource } from '@api/database/system-database.module';
 import { User } from '@shared/entities/auth/user.entity';
 import { AuditLog } from '@shared/entities/auth/audit-log.entity';
@@ -48,6 +49,10 @@ interface ReportContext {
     generatedBy?: ImpactSummaryGeneratedBy;
 }
 
+// Matches DashboardService's CACHE_TTL_SECONDS / MV_REFRESH_INTERVAL, so a cached
+// summary is never staler than the materialized views its numbers are read from.
+const CACHE_TTL_SECONDS = 60;
+
 /**
  * Resolves the per-network DataSource and delegates to PgImpactSummaryRepository — thin pass-through, matching
  * `SdgsService`/`DashboardService`'s `getRepository(network)` convention. All aggregation SQL lives in the
@@ -61,12 +66,28 @@ export class ImpactSummaryService {
     constructor(
         private readonly dataSources: NetworkDataSourceRegistry,
         private readonly systemDataSource: SystemDataSource,
+        private readonly redis: RedisService,
     ) {}
 
+    /**
+     * Cached with the same 60s-TTL Redis pattern as DashboardService — the underlying
+     * repository call runs 7 aggregate queries over `business_view`, which is expensive
+     * on testnet-scale data and is called on every Impact Summary page load AND every
+     * PDF/XLSX/CSV generation (via gatherReportContext). Report IDs and PDF/XLSX/CSV
+     * rendering stay live/uncached; only this aggregate is cached, so the numbers
+     * themselves never change — only how often they're recomputed from scratch.
+     */
     async getSummary(network: string): Promise<ImpactSummaryResponseDto> {
+        const cacheKey = `impact-summary:${network}`;
+        const cached = await this.redis.getJson<ImpactSummaryResponseDto>(cacheKey);
+        if (cached) return cached;
+
         const repo = this.getRepository(network);
         const row = await repo.getSummary(network);
-        return buildImpactSummaryResponse(row, network);
+        const result = buildImpactSummaryResponse(row, network);
+
+        await this.redis.setJson(cacheKey, result, CACHE_TTL_SECONDS);
+        return result;
     }
 
     /**

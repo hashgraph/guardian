@@ -532,6 +532,8 @@ export class PgCreditRepository extends CreditRepository {
             token_symbol: row.token_symbol ?? null,
             token_type: PgCreditRepository.normaliseType(row.token_type_raw, null),
             emissions_reduced: row.emissions_reduced != null ? parseFloat(row.emissions_reduced) : null,
+            // Same UTC basis as `reporting_year` below, so the date's year and the year column always agree.
+            issuance_date: mintDate ? mintDate.toISOString().slice(0, 10) : null,
             reporting_year: mintDate ? mintDate.getUTCFullYear() : null,
             mitigation_type: PgCreditRepository.extractEmissionReductionApproach(row.mitigation_type_raw),
             standard: row.standard ?? null,

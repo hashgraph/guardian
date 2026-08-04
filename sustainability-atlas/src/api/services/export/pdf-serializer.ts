@@ -1,6 +1,6 @@
 import pdfMake = require('pdfmake');
 import type { Content, TableCell, TDocumentDefinitions, TFontDictionary } from 'pdfmake/interfaces';
-import { Serializer, SerializedExport } from './serializer.interface';
+import { Serializer, SerializedExport, ExportRowCountMeta } from './serializer.interface';
 
 /**
  * `pdfmake`'s CJS export is a class instance (`module.exports = new pdfmake()`); `import pdfMake from 'pdfmake'` /
@@ -50,8 +50,13 @@ function valueCell(value: string): TableCell {
 
 /** `pdfmake` tabular dataset-export serializer. Renders `fields`/`rows` as a single header+body table — the generic "PDF of this filtered dataset" export, distinct from the curated Impact Summary report template (`src/api/services/impact-summary/pdf-template.ts`). */
 export class PdfSerializer implements Serializer {
-    async serialize(fields: string[], rows: Record<string, unknown>[], datasetTitle: string): Promise<SerializedExport> {
-        const docDefinition = this.buildDocDefinition(fields, rows, datasetTitle);
+    async serialize(
+        fields: string[],
+        rows: Record<string, unknown>[],
+        datasetTitle: string,
+        rowCountMeta?: ExportRowCountMeta,
+    ): Promise<SerializedExport> {
+        const docDefinition = this.buildDocDefinition(fields, rows, datasetTitle, rowCountMeta);
         pdfMake.setFonts(PDF_FONTS);
         const content = await pdfMake.createPdf(docDefinition).getBuffer();
 
@@ -66,6 +71,7 @@ export class PdfSerializer implements Serializer {
         fields: string[],
         rows: Record<string, unknown>[],
         datasetTitle: string,
+        rowCountMeta?: ExportRowCountMeta,
     ): TDocumentDefinitions {
         // Record-block (key-value) layout instead of a wide table: shows every field readably regardless of how
         // many are selected, since a wide table can't fit on a page and clips the right-hand columns. Empty
@@ -75,9 +81,11 @@ export class PdfSerializer implements Serializer {
                 ? rows.map((row, idx) => this.recordBlock(fields, row, idx))
                 : [{ text: 'No records match the selected filters.', style: 'subtitle' }];
 
+        const isCapped = !!rowCountMeta && rowCountMeta.totalMatching > rowCountMeta.shown;
+
         return {
             pageSize: 'A4',
-            pageMargins: [32, 32, 32, 36],
+            pageMargins: [32, 32, 32, isCapped ? 46 : 36],
             defaultStyle: { font: PDF_FONT_FAMILY, fontSize: 9 },
             styles: {
                 title: { fontSize: 15, bold: true, margin: [0, 0, 0, 2] },
@@ -86,6 +94,7 @@ export class PdfSerializer implements Serializer {
                 kvLabel: { bold: true, color: '#6b7280', fontSize: 8 },
                 kvValue: { fontSize: 9, color: '#111827' },
                 kvLink: { fontSize: 9, color: '#2563eb', decoration: 'underline' },
+                footerNote: { fontSize: 7, color: '#b45309', italics: true },
             },
             content: [
                 { text: datasetTitle, style: 'title' },
@@ -95,6 +104,16 @@ export class PdfSerializer implements Serializer {
                 },
                 ...records,
             ],
+            // Only rendered when the export was truncated by EXPORT_ROW_CAP — an untruncated export needs no note.
+            footer: isCapped
+                ? {
+                    margin: [32, 4, 32, 0],
+                    text:
+                        `Showing ${rowCountMeta!.shown.toLocaleString()} of ${rowCountMeta!.totalMatching.toLocaleString()} total records. ` +
+                        'Download the complete dataset via the public API with an API key — see the API documentation.',
+                    style: 'footerNote',
+                }
+                : undefined,
         };
     }
 

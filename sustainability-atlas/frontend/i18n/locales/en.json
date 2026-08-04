@@ -1715,13 +1715,11 @@
         },
         "tabs": {
             "exportData": "Export Data",
-            "impactSummary": "Impact Summary",
-            "disclosureGuidance": "Disclosure Guidance"
+            "impactSummary": "Impact Summary"
         },
         "placeholders": {
             "exportData": "Export configuration and field selection are coming soon.",
-            "impactSummary": "The Impact Summary generator is coming soon.",
-            "disclosureGuidance": "Disclosure guidance and framework references are coming soon."
+            "impactSummary": "The Impact Summary generator is coming soon."
         },
         "recentExports": {
             "title": "Recent Exports",
@@ -1760,37 +1758,6 @@
                 "geoTitle": "Geographic Distribution",
                 "verified": "Data verified on Hedera {network}",
                 "generatedAt": "Generated {date}"
-            }
-        },
-        "disclosure": {
-            "entriesTitle": "Definitions & Calculation Guidance",
-            "searchPlaceholder": "Search guidance…",
-            "noResults": "No guidance matches your search.",
-            "tags": { "term": "Term", "verification": "Verification", "policy": "Policy" },
-            "entries": {
-                "emissionsReduced": {
-                    "title": "Emissions Reduced",
-                    "body": "The quantity of greenhouse gas emissions avoided or removed, expressed in tonnes of CO₂ equivalent (tCO₂e), as reported by the issuing project.",
-                    "formula": "emissions_reduced (tCO₂e) = Σ verified emission reductions per issuance"
-                },
-                "vintageYear": {
-                    "title": "Vintage Year",
-                    "body": "The calendar year in which the underlying emission reduction or removal activity occurred. For credits, the reporting year is the calendar year of the on-chain minting activity."
-                },
-                "howToVerify": {
-                    "title": "How to Verify",
-                    "body": "Every exported record includes traceability references. Use the verification URL to open the corresponding transaction, token or topic on the Hedera network explorer (HashScan) for independent confirmation."
-                }
-            },
-            "verificationStatus": {
-                "title": "Verification Status",
-                "body": "All records are anchored on the Hedera network and independently verifiable on-chain.",
-                "hashscanLink": "View on HashScan"
-            },
-            "assurance": {
-                "title": "Assurance & Independent Verification",
-                "body": "Figures are compiled from on-chain data and issuer disclosures. Retirement figures are inferred from token-deletion activity, not a dedicated retirement ledger, and should be treated accordingly.",
-                "blockItemProof": "Block Item Proofs for independent cryptographic validation of distributed-ledger records are planned for Q3 2026."
             }
         },
         "datasets": {
@@ -1841,6 +1808,10 @@
             "emissionsReduced": {
                 "label": "Emissions Reduced",
                 "description": "tCO₂e sequestered or avoided"
+            },
+            "issuanceDate": {
+                "label": "Issuance Date",
+                "description": "Date the credits were minted on-chain (UTC)"
             },
             "reportingYear": {
                 "label": "Reporting Year",
@@ -1935,6 +1906,15 @@
             "successToast": "Export downloaded successfully."
         }
     },
+    "exportLimit": {
+        "title": "Download limited to {limit} records",
+        "body": "This matches {total} records, but downloads are capped at {limit} at a time. The first {limit} (by your current sort) will download now.",
+        "apiHint": "To get the complete dataset, use the public API with an API key — see the",
+        "apiLinkText": "API documentation",
+        "cancel": "Cancel",
+        "proceed": "Download first {limit}",
+        "pdfFooterNote": "Showing {shown} of {total} total records — download the complete dataset via the public API."
+    },
     "glossary": {
         "emissionsReduced": "tCO₂e sequestered or avoided by the project.",
         "reportingYear": "Calendar year the underlying activity or credit generation occurred.",
@@ -1954,19 +1934,12 @@
         "resultCountInCategory": "{count} terms in {category}",
         "noResults": "No terms match \"{query}\"",
         "relatedLabel": "Related:",
-        "whereShownTitle": "Where this shows up",
-        "whereShownSubtitle": "Info icons next to field labels open a quick definition inline — no need to leave the page",
         "categories": {
             "all": "All Terms",
             "carbon": "Carbon Markets",
             "chain": "Blockchain & Hedera",
             "sdg": "SDG",
             "platform": "Platform & Data"
-        },
-        "demo": {
-            "registries": "Registries",
-            "methodologies": "Methodologies",
-            "issuances": "Total Issuances"
         },
         "terms": {
             "issuance": {
@@ -2097,7 +2070,7 @@
             "fungible": {
                 "term": "Fungible Token",
                 "short": "An interchangeable unit of credit — any one is equal in value to another.",
-                "long": "Most carbon credits are fungible: 1 tCO2e from a batch is treated the same as any other, making them easy to trade and pool."
+                "long": "1 tCO2e from a fungible batch is treated the same as any other, making them easy to trade and pool."
             },
             "token-supply": {
                 "term": "Token Supply",
@@ -2109,15 +2082,15 @@
                 "short": "The all-time sum of every mint transaction for a token.",
                 "long": "Total minted (all) includes activity outside any single tracked project, while total minted (project) scopes it to one project — the two can diverge."
             },
-            "instance-topic-id": {
-                "term": "Instance Topic ID",
-                "short": "The Hedera topic recording one specific project's policy execution.",
-                "long": "Each project instance writes its own sequence of verification steps to this topic, distinct from the shared policy definition's topic."
-            },
             "policy-topic-id": {
                 "term": "Policy Topic ID",
-                "short": "The Hedera topic recording the shared policy workflow definition a project runs on.",
-                "long": "Multiple projects can run under the same published policy and share its policy topic ID, while each keeps its own instance topic."
+                "short": "The Hedera topic created the moment a registry drafts a policy — its permanent home across every version.",
+                "long": "A policy topic is created once, when the policy is first drafted, and never changes after that. Each time the registry publishes a new version, Guardian just posts another record to this same topic — so the policy topic ID is how you find a methodology's full version history in one place."
+            },
+            "instance-topic-id": {
+                "term": "Instance Topic ID",
+                "short": "The Hedera topic created fresh each time a policy is published — the live workspace for that one version.",
+                "long": "Publishing a policy version spins up a brand-new instance topic as a child of the policy topic. Everything that actually happens under that version — project submissions, monitoring reports, verifications, mints — is recorded here. Because every republish gets its own instance topic, older and newer versions of the same policy never mix their activity, even though they share one policy topic."
             },
             "root-vc": {
                 "term": "Root VC",

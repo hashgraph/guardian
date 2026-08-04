@@ -10,6 +10,8 @@ export interface ImpactSummarySdgRow {
     color: string;
     /** Number of PROJECT rows tagged with this SDG. */
     projectCount: number;
+    /** Number of mint (issuance) events across projects tagged with this SDG. */
+    issuances: number;
     /** Total credits (ER_y, self-reported) summed across projects tagged with this SDG. */
     credits: number;
 }
@@ -49,6 +51,18 @@ export interface ImpactSummaryMethodologyRow {
     creditsIssued: number;
 }
 
+/**
+ * Projects grouped by derived lifecycle stage, read from `mv_project_lifecycle` — the same precomputed
+ * classification the Projects list and the analytics lifecycle chart use, so the Impact Summary can never
+ * disagree with them. Counts the same PROJECT-row population as `activeProjects`, so the stage counts always
+ * sum to exactly that figure.
+ */
+export interface ImpactSummaryLifecycleRow {
+    /** `Registered` | `Validation` | `Monitoring` | `Verified` | `Issued`, or `Unclassified` for a PROJECT row the MV carries no stage for (no projectKey, or the MV has not refreshed since the row appeared). */
+    stage: string;
+    projectCount: number;
+}
+
 /** One row of the "Credits by Project" PDF sample table — a top-N slice (by credits desc), not the full project list (see ProjectRepository for that). */
 export interface ImpactSummaryProjectRow {
     name: string | null;
@@ -68,6 +82,8 @@ export interface ImpactSummaryRow {
     activeProjects: number;
     /** Distinct non-'Unknown' countries across PROJECT rows. */
     activeCountries: number;
+    /** Projects per derived lifecycle stage (mv_project_lifecycle); sums to `activeProjects`. */
+    lifecycleStages: ImpactSummaryLifecycleRow[];
     sdgContributions: ImpactSummarySdgRow[];
     geographicDistribution: ImpactSummaryGeoRow[];
     /** Raw per-sector rows (Unknown already bucketed at query time); top-N/"Others" collapse happens in the service. */

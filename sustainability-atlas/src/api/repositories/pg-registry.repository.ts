@@ -84,6 +84,48 @@ const REGISTRY_CANONICAL_DEDUP = `
     (bv."registryDid" IS NULL OR canon.canonical_id = bv.id)
 `;
 
+/**
+ * Canonical REGISTRY rows for findAll/findAllForExport, driven from the small
+ * mv_registry_stats canonical set (joined to business_view by primary key)
+ * instead of scanning every business_view row and filtering by viewType. On
+ * testnet, republish churn means raw REGISTRY rows can outnumber canonical
+ * registries by 100-200x (8,851 raw vs 38 canonical, confirmed live) —
+ * driving from the small side lets Postgres's planner pick an indexed lookup
+ * instead of a full-table seq scan, which is what previously dominated
+ * list/count/export latency there. Mirrors PgMethodologyRepository's
+ * METHODOLOGY_CANDIDATE_CTE, including the UNION ALL fallback branch for the
+ * (structurally possible but never observed) REGISTRY row with no
+ * registryDid, which mv_registry_stats can't key and therefore has nothing
+ * to dedup against.
+ */
+const REGISTRY_CANDIDATE_CTE = `
+    WITH candidate AS (
+        SELECT
+            bv.*,
+            s.policy_count,
+            s.project_count,
+            s.issuance_count,
+            s.user_count,
+            s.total_issued,
+            s.total_retired
+        FROM ${MV_REGISTRY_STATS_NAME} s
+        JOIN business_view bv ON bv.id = s.canonical_id
+
+        UNION ALL
+
+        SELECT
+            bv.*,
+            NULL::bigint AS policy_count,
+            NULL::bigint AS project_count,
+            NULL::numeric AS issuance_count,
+            NULL::bigint AS user_count,
+            NULL::bigint AS total_issued,
+            NULL::bigint AS total_retired
+        FROM business_view bv
+        WHERE bv."viewType" = 'REGISTRY' AND bv."registryDid" IS NULL
+    )
+`;
+
 /** PostgreSQL implementation of the RegistryRepository; generic filter/sort logic is delegated to QueryBuilder + REGISTRY_FIELD_SCHEMA, while full-text search, MV joins, and ranking remain explicit since they don't fit the generic operator model. */
 export class PgRegistryRepository extends RegistryRepository {
     constructor(private readonly dataSource: DataSource) {
@@ -122,9 +164,6 @@ export class PgRegistryRepository extends RegistryRepository {
         const offset = (page - 1) * limit;
 
         const builder = new QueryBuilder(REGISTRY_FIELD_SCHEMA);
-        builder.addClause(`bv."viewType" = 'REGISTRY'`);
-        // Keep one row per registry so duplicate-message rows (same registryDid) don't surface as repeated list entries.
-        builder.addClause(REGISTRY_CANONICAL_DEDUP);
 
         // Generic filters: every filterable field defined in the schema is wired automatically.
         builder.addFilters({
@@ -136,11 +175,12 @@ export class PgRegistryRepository extends RegistryRepository {
             law: query.law,
         });
 
-        // Hide registries with no activity (policies/projects/issuances/users all zero); the MV is left-joined
-        // in the row query but not the count query, so the JOIN is added to the count query below when set.
+        // Hide registries with no activity (policies/projects/issuances/users all zero) —
+        // against the candidate CTE's own stat columns, same NULL-for-unmatched semantics
+        // as the pre-rewrite LEFT JOIN.
         if (hideEmpty) {
             builder.addClause(`COALESCE(
-                s.policy_count + s.project_count + s.issuance_count + s.user_count,
+                bv.policy_count + bv.project_count + bv.issuance_count + bv.user_count,
                 0
             ) > 0`);
         }
@@ -210,19 +250,9 @@ export class PgRegistryRepository extends RegistryRepository {
         const offsetParam = builder.nextParam(offset);
 
         const rowsSql = `
-            SELECT
-                bv.*,
-                s.policy_count,
-                s.project_count,
-                s.issuance_count,
-                s.user_count,
-                s.total_issued,
-                s.total_retired,
-                ${rankExpr} AS search_rank
-            FROM business_view bv
-            LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
-                ON s."registryDid" = bv."registryDid"
-            ${CANONICAL_JOIN}
+            ${REGISTRY_CANDIDATE_CTE}
+            SELECT bv.*, ${rankExpr} AS search_rank
+            FROM candidate bv
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -230,16 +260,10 @@ export class PgRegistryRepository extends RegistryRepository {
 
         // Count query reuses the same WHERE but no LIMIT/OFFSET, so slice the params back to before the additions.
         const countParams = params.slice(0, params.length - 2);
-        // When hideEmpty is set the WHERE clause references the stats MV, so the count query needs the same LEFT JOIN.
-        // CANONICAL_JOIN is always needed — the dedup predicate references `canon.id` on every call.
-        const countJoin = hideEmpty
-            ? `LEFT JOIN ${MV_REGISTRY_STATS_NAME} s ON s."registryDid" = bv."registryDid"`
-            : '';
         const countSql = `
+            ${REGISTRY_CANDIDATE_CTE}
             SELECT COUNT(*)::int AS total
-            FROM business_view bv
-            ${countJoin}
-            ${CANONICAL_JOIN}
+            FROM candidate bv
             WHERE ${whereSql}
         `;
 
@@ -308,8 +332,8 @@ export class PgRegistryRepository extends RegistryRepository {
     /** Full filtered, `registryDid`-deduped registries dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
     async findAllForExport(filters: RegistryExportFilters): Promise<RegistryExportRow[]> {
         const builder = new QueryBuilder(REGISTRY_FIELD_SCHEMA);
-        builder.addClause(`bv."viewType" = 'REGISTRY'`);
-        builder.addClause(REGISTRY_CANONICAL_DEDUP);
+        // viewType='REGISTRY' and the canonical-row dedup are baked into
+        // REGISTRY_CANDIDATE_CTE below.
 
         builder.addFilters({
             displayName: filters.displayName,
@@ -322,7 +346,7 @@ export class PgRegistryRepository extends RegistryRepository {
 
         if (filters.hideEmpty) {
             builder.addClause(`COALESCE(
-                s.policy_count + s.project_count + s.issuance_count + s.user_count,
+                bv.policy_count + bv.project_count + bv.issuance_count + bv.user_count,
                 0
             ) > 0`);
         }
@@ -375,21 +399,19 @@ export class PgRegistryRepository extends RegistryRepository {
             const params = [...baseParams, EXPORT_BATCH_SIZE, offset];
 
             const batchSql = `
+                ${REGISTRY_CANDIDATE_CTE}
                 SELECT
                     bv."displayName",
                     bv."registryDid",
                     COALESCE(bv."businessData"->>'geography', bv."businessData"->'options'->>'geography') AS geography,
                     COALESCE(bv."businessData"->>'law', bv."businessData"->'options'->>'law') AS law,
-                    COALESCE(s.project_count, 0) AS project_count,
-                    COALESCE(s.policy_count, 0) AS methodology_count,
-                    COALESCE(s.issuance_count, 0) AS number_of_issuances,
+                    COALESCE(bv.project_count, 0) AS project_count,
+                    COALESCE(bv.policy_count, 0) AS methodology_count,
+                    COALESCE(bv.issuance_count, 0) AS number_of_issuances,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files AS "ipfsCids"
-                FROM business_view bv
-                LEFT JOIN ${MV_REGISTRY_STATS_NAME} s
-                    ON s."registryDid" = bv."registryDid"
-                ${CANONICAL_JOIN}
+                FROM candidate bv
                 ${SOURCE_MESSAGE_JOIN}
                 WHERE ${whereSql}
                 ORDER BY bv."sourceTimestamp" ASC

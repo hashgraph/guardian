@@ -83,6 +83,9 @@ const CREDIT_FIELDS: readonly ExportFieldDefinition[] = [
     { key: 'token_symbol', labelKey: 'reports.fields.tokenSymbol', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'token_type', labelKey: 'reports.fields.tokenType', group: 'PROJECT_IDENTIFIERS', required: false, defaultSelected: true },
     { key: 'emissions_reduced', labelKey: 'reports.fields.emissionsReduced', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
+    // The date the credits were minted on-chain — `issuance_date` is the day-precision form of the same
+    // mint timestamp `reporting_year` takes its year from, so the two can never disagree.
+    { key: 'issuance_date', labelKey: 'reports.fields.issuanceDate', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'reporting_year', labelKey: 'reports.fields.reportingYear', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'standard', labelKey: 'reports.fields.standard', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },
     { key: 'mint_amount', labelKey: 'reports.fields.mintAmount', group: 'ESG_CLIMATE_DATA', required: false, defaultSelected: true },

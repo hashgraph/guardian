@@ -138,6 +138,67 @@ const METHODOLOGY_CANONICAL_DEDUP = `
 `;
 
 /**
+ * Canonical METHODOLOGY rows for findAll/findAllForExport, driven from the
+ * small mv_methodology_stats canonical set (joined to business_view by
+ * primary key) instead of scanning every business_view row and filtering by
+ * viewType. On testnet, republish churn means raw METHODOLOGY rows can
+ * outnumber canonical methodologies by 100-200x (19,887 raw vs ~106
+ * canonical, confirmed live) — driving from the small side lets Postgres's
+ * planner pick an indexed lookup instead of a full-table seq scan, which is
+ * what previously dominated list/count/export latency on testnet.
+ *
+ * UNIONed with the (structurally possible but never observed) case of a
+ * METHODOLOGY row with no relatedTopicId: mv_methodology_stats can't key
+ * such a row, so it has nothing to dedup against — this branch preserves the
+ * pre-rewrite dedup clause's "always kept" rule for it. Both branches select
+ * the identical column list so the UNION output is a drop-in replacement for
+ * the old `business_view bv LEFT JOIN mv_methodology_stats canon` shape;
+ * everything downstream (filters, search, sort, mapRow) is unchanged.
+ */
+const METHODOLOGY_CANDIDATE_CTE = `
+    WITH candidate AS (
+        SELECT
+            bv.*,
+            canon.project_count,
+            canon.instance_project_count,
+            canon.issuance_count,
+            canon.instance_issuance_count,
+            canon.schema_count,
+            canon.registry_name,
+            (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
+            canon.sectoral_scopes,
+            canon.emission_reduction_approach,
+            canon.total_issued,
+            canon.total_retired
+        FROM ${MV_METHODOLOGY_STATS_NAME} canon
+        JOIN business_view bv ON bv.id = canon.canonical_id
+
+        UNION ALL
+
+        SELECT
+            bv.*,
+            NULL::bigint AS project_count,
+            NULL::bigint AS instance_project_count,
+            NULL::bigint AS issuance_count,
+            NULL::bigint AS instance_issuance_count,
+            NULL::bigint AS schema_count,
+            reg.registry_name,
+            (${EFFECTIVE_DECODE_STATUS_LIVE}) AS decode_status,
+            p."policyMapping"->'sectoralScopes' AS sectoral_scopes,
+            p."policyMapping"->'emissionReductionApproach' AS emission_reduction_approach,
+            NULL::bigint AS total_issued,
+            NULL::bigint AS total_retired
+        FROM business_view bv
+        ${REGISTRY_NAME_JOIN}
+        ${POLICY_DECODE_STATUS_JOIN}
+        WHERE bv."viewType" = 'METHODOLOGY' AND bv."relatedTopicId" IS NULL
+    )
+`;
+
+/** Over the candidate CTE's already-effective-mapped decode_status column — used by findAll/findAllForExport's decodeStatus filter (no need to re-wrap in the success/pending/failed CASE). */
+const CANDIDATE_DECODE_STATUS = `bv."decode_status"`;
+
+/**
  * LATERAL subquery that computes totalIssued/totalRetired for each methodology in the list.
  *
  * Sums the already-precomputed per-project ${MV_PROJECT_STATS_NAME} (issued/retired via
@@ -187,9 +248,6 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const offset = (page - 1) * limit;
 
         const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
-        builder.addClause(`bv."viewType" = 'METHODOLOGY'`);
-        // Keep one row per methodology so duplicate-message rows (same relatedTopicId) don't surface as repeated list entries.
-        builder.addClause(METHODOLOGY_CANONICAL_DEDUP);
 
         // Generic filters: every filterable field defined in the schema is wired automatically.
         builder.addFilters({
@@ -202,21 +260,21 @@ export class PgMethodologyRepository extends MethodologyRepository {
             policyTopicId: query.policyTopicId,
         });
 
-        // decodeStatus filter uses the EFFECTIVE status so 'success' includes policies whose schemas are imported
-        // even if a recent retry flipped status to 'failed'; supports pipe-separated multi-values (e.g. "success|failed").
+        // decodeStatus filter matches against the candidate CTE's already-effective-mapped
+        // decode_status column; supports pipe-separated multi-values (e.g. "success|failed").
         if (query.decodeStatus?.length) {
             const statuses = query.decodeStatus;
             const hasUnknown = statuses.includes('unknown');
             const otherStatuses = statuses.filter(s => s !== 'unknown');
 
             const clauses: string[] = [];
-            if (hasUnknown) clauses.push(`(${EFFECTIVE_DECODE_STATUS}) IS NULL`);
+            if (hasUnknown) clauses.push(`(${CANDIDATE_DECODE_STATUS}) IS NULL`);
             if (otherStatuses.length === 1) {
                 const p = builder.nextParam(otherStatuses[0]);
-                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ${p}`);
+                clauses.push(`(${CANDIDATE_DECODE_STATUS}) = ${p}`);
             } else if (otherStatuses.length > 1) {
                 const p = builder.nextParam(otherStatuses);
-                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ANY(${p}::text[])`);
+                clauses.push(`(${CANDIDATE_DECODE_STATUS}) = ANY(${p}::text[])`);
             }
 
             if (clauses.length > 0) {
@@ -262,26 +320,10 @@ export class PgMethodologyRepository extends MethodologyRepository {
         const limitParam = builder.nextParam(limit);
         const offsetParam = builder.nextParam(offset);
 
-        // Every per-methodology value comes from the stats MV, which is also the
-        // canonical-row source — so this is one join, with no per-row LATERAL
-        // and no derived table to re-sort for each candidate row.
         const rowsSql = `
-            SELECT
-                bv.*,
-                canon.project_count,
-                canon.instance_project_count,
-                canon.issuance_count,
-                canon.instance_issuance_count,
-                canon.schema_count,
-                canon.registry_name,
-                (${EFFECTIVE_DECODE_STATUS}) AS decode_status,
-                canon.sectoral_scopes,
-                canon.emission_reduction_approach,
-                canon.total_issued,
-                canon.total_retired,
-                ${rankExpr} AS search_rank
-            FROM business_view bv
-            ${CANONICAL_JOIN}
+            ${METHODOLOGY_CANDIDATE_CTE}
+            SELECT bv.*, ${rankExpr} AS search_rank
+            FROM candidate bv
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
@@ -289,9 +331,9 @@ export class PgMethodologyRepository extends MethodologyRepository {
 
         const countParams = params.slice(0, params.length - 2);
         const countSql = `
+            ${METHODOLOGY_CANDIDATE_CTE}
             SELECT COUNT(*)::int AS total
-            FROM business_view bv
-            ${CANONICAL_JOIN}
+            FROM candidate bv
             WHERE ${whereSql}
         `;
 
@@ -474,8 +516,8 @@ export class PgMethodologyRepository extends MethodologyRepository {
     /** Full filtered, `relatedTopicId`-deduped methodologies dataset for the export engine; batches internally via a LIMIT/OFFSET loop ordered by `sourceTimestamp`. */
     async findAllForExport(filters: MethodologyExportFilters): Promise<MethodologyExportRow[]> {
         const builder = new QueryBuilder(METHODOLOGY_FIELD_SCHEMA);
-        builder.addClause(`bv."viewType" = 'METHODOLOGY'`);
-        builder.addClause(METHODOLOGY_CANONICAL_DEDUP);
+        // viewType='METHODOLOGY' and the canonical-row dedup are baked into
+        // METHODOLOGY_CANDIDATE_CTE below.
 
         builder.addFilters({
             name: filters.name,
@@ -493,13 +535,13 @@ export class PgMethodologyRepository extends MethodologyRepository {
             const otherStatuses = statuses.filter(s => s !== 'unknown');
 
             const clauses: string[] = [];
-            if (hasUnknown) clauses.push(`(${EFFECTIVE_DECODE_STATUS}) IS NULL`);
+            if (hasUnknown) clauses.push(`(${CANDIDATE_DECODE_STATUS}) IS NULL`);
             if (otherStatuses.length === 1) {
                 const p = builder.nextParam(otherStatuses[0]);
-                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ${p}`);
+                clauses.push(`(${CANDIDATE_DECODE_STATUS}) = ${p}`);
             } else if (otherStatuses.length > 1) {
                 const p = builder.nextParam(otherStatuses);
-                clauses.push(`(${EFFECTIVE_DECODE_STATUS}) = ANY(${p}::text[])`);
+                clauses.push(`(${CANDIDATE_DECODE_STATUS}) = ANY(${p}::text[])`);
             }
 
             if (clauses.length > 0) {
@@ -531,17 +573,17 @@ export class PgMethodologyRepository extends MethodologyRepository {
             const params = [...baseParams, EXPORT_BATCH_SIZE, offset];
 
             const batchSql = `
+                ${METHODOLOGY_CANDIDATE_CTE}
                 SELECT
                     bv."displayName" AS name,
-                    canon.registry_name,
+                    bv.registry_name,
                     bv."businessData"->'options'->>'version' AS version,
-                    canon.emission_reduction_approach,
-                    COALESCE(canon.project_count, 0) AS project_count,
+                    bv.emission_reduction_approach,
+                    COALESCE(bv.project_count, 0) AS project_count,
                     bv."relatedTopicId",
                     src_msg."dataSource",
                     src_msg.files AS "ipfsCids"
-                FROM business_view bv
-                ${CANONICAL_JOIN}
+                FROM candidate bv
                 ${SOURCE_MESSAGE_JOIN}
                 WHERE ${whereSql}
                 ORDER BY bv."sourceTimestamp" ASC

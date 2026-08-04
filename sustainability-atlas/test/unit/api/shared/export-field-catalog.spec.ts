@@ -58,11 +58,23 @@ describe('export field catalog', () => {
 
     it('exposes the expected fields on the credits (Issuances) dataset', () => {
         const creditKeys = new Set(getExportFieldKeys('credits'));
-        for (const key of ['emissions_reduced', 'reporting_year', 'standard', 'mint_amount', 'token_name', 'token_symbol', 'token_type']) {
+        for (const key of ['emissions_reduced', 'issuance_date', 'reporting_year', 'standard', 'mint_amount', 'token_name', 'token_symbol', 'token_type']) {
             expect(creditKeys.has(key)).toBe(true);
         }
         expect(creditKeys.has('mitigation_type')).toBe(false);
         expect(creditKeys.has('vintage')).toBe(false);
+    });
+
+    it('ships issuance_date pre-checked, and only on the Issuances dataset', () => {
+        const issuanceDate = getExportFields('credits').find((f) => f.key === 'issuance_date');
+        expect(issuanceDate).toBeDefined();
+        expect(issuanceDate!.defaultSelected).toBe(true);
+        expect(issuanceDate!.group).toBe('ESG_CLIMATE_DATA');
+
+        // The other three datasets have no mint event to date, so the column would always be blank there.
+        for (const dataset of ['projects', 'methodologies', 'registries'] as ExportDataset[]) {
+            expect(getExportFieldKeys(dataset)).not.toContain('issuance_date');
+        }
     });
 
     it('adds the dataset-specific fields per', () => {

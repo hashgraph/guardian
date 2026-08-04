@@ -127,6 +127,8 @@ const PDF_STYLES: StyleDictionary = {
     quadBody: { fontSize: 9, color: COLORS.muted },
     bannerTitle: { fontSize: 11, bold: true, color: COLORS.greenDark },
     bannerBody: { fontSize: 9, color: COLORS.body },
+    // Slightly smaller than bannerBody so a full DID needs fewer wrapped lines. See DID_FONT_SIZE.
+    didValue: { fontSize: 8, color: COLORS.body },
 };
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -616,6 +618,25 @@ function metricCard(value: string, label: string, sublabel: string): Content {
     );
 }
 
+/** `metricSublabel`'s size, needed here to measure a sublabel before committing to it. Keep in sync with PDF_STYLES. */
+const METRIC_SUBLABEL_FONT_SIZE = 7;
+
+/**
+ * "Active Projects" sublabel, derived from the real lifecycle-stage breakdown (`mv_project_lifecycle`)
+ * rather than the fixed "Verified · Issuing" caption this replaced — that caption named two stages
+ * unconditionally, whether or not any project was at either of them. The full stage breakdown is rendered
+ * by `buildLifecycleCard()`; this tile only carries the headline "how many of them actually issued".
+ */
+function activeProjectsSublabel(summary: ImpactSummaryResponseDto): string {
+    const issued = summary.lifecycleStages.find((s) => s.stage === 'Issued')?.projectCount ?? 0;
+    const full = `${formatNumber(issued)} of ${formatNumber(summary.activeProjects)} issued`;
+    // The tile's background is a fixed-height canvas rect, so a sublabel that wraps escapes its own border
+    // (same hazard as the "Total Transfer" caption below). Drop to the short form rather than let that happen.
+    return measureText(full, METRIC_SUBLABEL_FONT_SIZE) <= METRIC_INNER_WIDTH
+        ? full
+        : `${formatNumber(issued)} issued`;
+}
+
 /**
  * 5 tiles matching the reference design's Key Portfolio Metrics row. Item-7 fix: "Total Retired" no
  * longer carries the "(inferred)" qualifier in its label — the inference methodology is still fully
@@ -635,7 +656,7 @@ function buildMetricCards(summary: ImpactSummaryResponseDto): Content {
             // Sublabel kept short deliberately: "No on-chain transfer record" measures 85pt against the
             // tile's 78pt inner width and wraps out of the tile's fixed-height rounded panel.
             metricCard('Not tracked', 'Total Transfer', 'No transfer record'),
-            metricCard(formatNumber(summary.activeProjects), 'Active Projects', 'Verified · Issuing'),
+            metricCard(formatNumber(summary.activeProjects), 'Active Projects', activeProjectsSublabel(summary)),
         ],
         columnGap: METRIC_GAP,
         margin: [0, 16, 0, 0],
@@ -660,6 +681,46 @@ function truncateDid(did: string | null | undefined, visibleChars = 22): string 
     return `${did.slice(0, visibleChars)}...`;
 }
 
+/** Must match the `didValue` style's fontSize — used to measure the DID before laying it out. */
+const DID_FONT_SIZE = 8;
+
+/**
+ * Wraps a long unbroken identifier so it stays fully visible inside `maxWidth`.
+ *
+ * pdfmake cannot break a DID on its own: `did:hedera:testnet:...` contains no spaces, and under the Unicode
+ * line-breaking rules its `:` `;` `.` separators are all infix separators, which are explicitly *not* break
+ * opportunities. Left alone, a long DID renders as one line that runs straight out of its cell — so the break
+ * points are inserted here, after each separator, with a hard character cut as the last resort for a run that
+ * has no separators at all. Only newlines are added; no character of the original is dropped or replaced.
+ */
+function wrapIdentifier(value: string, maxWidth: number, fontSize: number): string {
+    const chunks = value.match(/[^:;_.]*[:;_.]?/g)?.filter((c) => c.length > 0) ?? [value];
+    const lines: string[] = [];
+    let line = '';
+
+    const flushOverflow = () => {
+        while (measureText(line, fontSize) > maxWidth && line.length > 1) {
+            let cut = line.length - 1;
+            while (cut > 1 && measureText(line.slice(0, cut), fontSize) > maxWidth) cut--;
+            lines.push(line.slice(0, cut));
+            line = line.slice(cut);
+        }
+    };
+
+    for (const chunk of chunks) {
+        if (line && measureText(line + chunk, fontSize) > maxWidth) {
+            lines.push(line);
+            line = chunk;
+        } else {
+            line += chunk;
+        }
+        flushOverflow();
+    }
+    if (line) lines.push(line);
+
+    return lines.join('\n');
+}
+
 /**
  * Picks one representative registry DID for the "Registry DID" captions: the scope's named registry if it
  * matches a row in `registryBreakdown`, else the first row that has a DID, else `null`. Never fabricates a DID.
@@ -677,9 +738,10 @@ function sectionHeader(text: string): Content {
     return { text, style: 'sectionHeader' };
 }
 
-/** Shaded, bordered content card — same table-cell trick as `metricCard()`/`badge()` above, restyled with a hairline border to match the reference design's white bordered cards. */
-function card(content: Content[]): Content {
+/** Shaded, bordered content card — same table-cell trick as `metricCard()`/`badge()` above, restyled with a hairline border to match the reference design's white bordered cards. `margin` is only needed where two cards sit under one section heading and would otherwise share an edge; every other card is separated by its `sectionHeader`'s own margin. */
+function card(content: Content[], margin?: Margins): Content {
     return {
+        ...(margin ? { margin } : {}),
         table: {
             widths: ['*'],
             body: [
@@ -795,6 +857,48 @@ function tableHeaderCell(text: string, alignment: 'left' | 'center' | 'right' = 
 
 function tableCell(text: string, alignment: 'left' | 'center' | 'right' = 'left'): Content {
     return { text, style: 'tableCellText', alignment };
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// Project Lifecycle
+// ─────────────────────────────────────────────────────────────────────────
+
+/**
+ * Colour ramp along the pipeline, palest at 'Registered' and strongest at 'Issued', so the bar block reads
+ * as a progression rather than as unrelated categories. Indexed by the stage's position in the DTO's
+ * pipeline-ordered array, not by stage name, so an extra trailing bucket ('Unclassified') still gets a colour.
+ */
+const LIFECYCLE_COLORS = [COLORS.mutedLight, COLORS.muted, COLORS.amber, COLORS.green, COLORS.greenDark];
+
+/**
+ * Projects per derived lifecycle stage, rendered under the existing "Credit Lifecycle & Sector Breakdown"
+ * heading — which named a lifecycle but, until this card, carried only the sector bars.
+ *
+ * Source is `mv_project_lifecycle` via `summary.lifecycleStages`, the same precomputed classification the
+ * Projects page filters on, so the two can't disagree. Stages with no projects are already dropped upstream
+ * (`buildLifecycleStages`), so an early-stage-only portfolio doesn't render a column of zeroes.
+ */
+function buildLifecycleCard(summary: ImpactSummaryResponseDto): Content {
+    const rows = summary.lifecycleStages;
+    return card([
+        { text: 'Projects by Lifecycle Stage', style: 'cardTitle' },
+        ...(rows.length > 0
+            ? rows.map((s, i) =>
+                barRow(
+                    s.stage,
+                    s.percentage,
+                    `${formatNumber(s.projectCount)} ${s.projectCount === 1 ? 'project' : 'projects'} · ${s.percentage}%`,
+                    LIFECYCLE_COLORS[i % LIFECYCLE_COLORS.length],
+                ),
+            )
+            : [{ text: 'No project lifecycle data available.', style: 'footerNote' }]),
+        {
+            text:
+                'Stage is derived from the verification documents each project has actually submitted on-chain ' +
+                '(Registered -> Validation -> Monitoring -> Verified -> Issued), not from a self-declared status field.',
+            style: 'noteText',
+        },
+    ], [0, 0, 0, 12]);
 }
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -995,11 +1099,20 @@ function sdgRowHeight(row: ImpactSummaryResponseDto['sdgContributions']): number
         ...row.map((s) => wrappedLineCount(s.name, SDG_NAME_FONT_SIZE, SDG_NAME_WIDTH, true)),
     );
     const nameHeight = maxLines * lineHeight(SDG_NAME_FONT_SIZE);
-    const countHeight = 1 + lineHeight(SDG_COUNT_FONT_SIZE);
+    // Two count lines (projects, then issuances) — each carries its own 1pt top margin.
+    const countHeight = SDG_COUNT_LINES * (1 + lineHeight(SDG_COUNT_FONT_SIZE));
     return Math.ceil(SDG_PAD_Y * 2 + nameHeight + countHeight);
 }
 
-/** A colored, rounded number badge + goal name + project count, matching the reference design's chip cards. */
+/** Count lines rendered under each goal name. Must match the number of lines `sdgCard()` emits, or chips clip. */
+const SDG_COUNT_LINES = 2;
+
+/**
+ * A colored, rounded number badge + goal name + the two counts behind the goal: how many projects claim it,
+ * and how many issuance (mint) events those projects have recorded. Both are shown because they answer
+ * different questions and can diverge sharply — a goal claimed by many projects that have issued nothing
+ * reads very differently from one claimed by a single heavily-issuing project.
+ */
 function sdgCard(sdg: ImpactSummaryResponseDto['sdgContributions'][number], height: number): Content {
     const numberBadge = roundedPanel(
         { text: String(sdg.sdgId), color: COLORS.white, bold: true, fontSize: 9, alignment: 'center' },
@@ -1017,7 +1130,12 @@ function sdgCard(sdg: ImpactSummaryResponseDto['sdgContributions'][number], heig
                     stack: [
                         { text: sdg.name, style: 'sdgName' },
                         {
-                            text: `${sdg.projectCount} ${sdg.projectCount === 1 ? 'project' : 'projects'}`,
+                            text: `${formatNumber(sdg.projectCount)} ${sdg.projectCount === 1 ? 'project' : 'projects'}`,
+                            style: 'sdgCount',
+                            margin: [0, 1, 0, 0] as Margins,
+                        },
+                        {
+                            text: `${formatNumber(sdg.issuances)} ${sdg.issuances === 1 ? 'issuance' : 'issuances'}`,
                             style: 'sdgCount',
                             margin: [0, 1, 0, 0] as Margins,
                         },
@@ -1032,14 +1150,25 @@ function sdgCard(sdg: ImpactSummaryResponseDto['sdgContributions'][number], heig
     );
 }
 
-/** Card grid (chunked 4-per-row) + "N of 17 SDGs addressed" footer, from `summary.sdgContributions` (already sorted by SDG number). */
+/**
+ * Card grid (chunked 4-per-row), from `summary.sdgContributions` (already sorted by SDG number).
+ *
+ * The caption block above and below the grid exists because the numbers alone are ambiguous: it was not clear
+ * from the chips what was being counted, nor which goal the closing line was ranking on. So the caption now
+ * says explicitly what population the grid covers, and the closing line names its own ranking metric.
+ *
+ * Note on the denominator: the repository returns only goals with at least one tagged project, so this can
+ * never render all 17. The caption previously claimed "All 17 SDGs" alongside a "0 with 0 projects" tally
+ * that was structurally always zero — it now reports the addressed count against 17 and says the rest are
+ * omitted, which is what the data actually supports.
+ */
 function buildSdgSection(summary: ImpactSummaryResponseDto): Content[] {
     const sdgs = summary.sdgContributions;
     if (sdgs.length === 0) {
         return [{ text: 'No SDG contributions recorded.', style: 'footerNote' }];
     }
 
-    const topGoal = [...sdgs].sort((a, b) => b.credits - a.credits || b.projectCount - a.projectCount)[0];
+    const topGoal = [...sdgs].sort((a, b) => b.issuances - a.issuances || b.credits - a.credits || b.projectCount - a.projectCount)[0];
     // Chips carry their own explicit width, so a short final row keeps its chip size instead of stretching
     // to fill the row — no filler column needed.
     const rows = chunk(sdgs, SDG_CARDS_PER_ROW).map((row) => {
@@ -1051,20 +1180,32 @@ function buildSdgSection(summary: ImpactSummaryResponseDto): Content[] {
         } as Content;
     });
 
-    const withProjects = sdgs.filter((s) => s.projectCount > 0).length;
-    const withoutProjects = sdgs.length - withProjects;
+    const totalIssuances = sdgs.reduce((sum, s) => sum + s.issuances, 0);
 
     // Wrapped in a card like every other data section — and required for the grid to line up, since
     // SDG_CHIP_WIDTH is derived from a card's inner width, not the full content width.
     return [
         card([
             {
-                text: `All 17 SDGs · ${withProjects} addressed, ${withoutProjects} with 0 projects`,
+                text: `${sdgs.length} of the 17 UN Sustainable Development Goals addressed · ${formatNumber(totalIssuances)} issuances in total`,
                 style: 'cardTitle',
+                margin: [0, 0, 0, 3] as Margins,
+            },
+            {
+                text:
+                    'Each goal shows the number of projects claiming a contribution to it, and the issuance (mint) ' +
+                    'events those projects have recorded on-chain. Goals no project has claimed are omitted. ' +
+                    'A project may claim several goals, so these counts overlap and do not sum to the portfolio total.',
+                style: 'footerNote',
+                margin: [0, 0, 0, 10] as Margins,
             },
             ...rows,
             {
-                text: `Top goal: SDG ${topGoal.sdgId} ${topGoal.name} (${topGoal.projectCount} ${topGoal.projectCount === 1 ? 'project' : 'projects'})`,
+                text:
+                    `Most issuances: SDG ${topGoal.sdgId} ${topGoal.name} — ` +
+                    `${formatNumber(topGoal.issuances)} ${topGoal.issuances === 1 ? 'issuance' : 'issuances'} ` +
+                    `across ${formatNumber(topGoal.projectCount)} ${topGoal.projectCount === 1 ? 'project' : 'projects'} ` +
+                    `(${formatNumber(topGoal.credits)} tCO2e).`,
                 style: 'noteText',
             },
         ]),
@@ -1118,6 +1259,12 @@ function buildDisclosureNotesSection(summary: ImpactSummaryResponseDto, network:
 // Closing attribution card
 // ─────────────────────────────────────────────────────────────────────────
 
+/** Right-hand "Generated by" column of the closing banner; the left column takes what's left. */
+const BANNER_META_WIDTH = 170;
+const BANNER_CELL_PAD = 14;
+/** Usable text width of the banner's left cell — the budget the wrapped Registry DID has to fit inside. */
+const BANNER_TEXT_WIDTH = CONTENT_WIDTH - BANNER_META_WIDTH - BANNER_CELL_PAD * 2;
+
 /**
  * Light green-tint attribution card (restyled from the old bright-green "Data Verified" banner to fit
  * the new cream palette) + Registry DID + right-aligned "Generated by" block. `generatedBy` comes from
@@ -1130,12 +1277,16 @@ function buildClosingAttribution(
     scope: ImpactSummaryReportScope | undefined,
     generatedBy: ImpactSummaryGeneratedBy | undefined,
 ): Content {
-    const registryDid = truncateDid(pickRegistryDid(summary, scope), 28);
+    // Printed in full, never truncated. A DID is the one value in this report a reader has to be able to copy
+    // and resolve; an ellipsis makes it useless for exactly the verification this banner is claiming. It sits
+    // on its own line, pre-wrapped, so the full string stays inside the cell instead of running out of it.
+    const rawDid = pickRegistryDid(summary, scope);
+    const registryDid = rawDid ? wrapIdentifier(rawDid, BANNER_TEXT_WIDTH, DID_FONT_SIZE) : '--';
 
     return {
         margin: [0, 18, 0, 0],
         table: {
-            widths: ['*', 170],
+            widths: ['*', BANNER_META_WIDTH],
             body: [
                 [
                     {
@@ -1144,14 +1295,21 @@ function buildClosingAttribution(
                             {
                                 text:
                                     `All figures in this report are derived from Hedera Guardian on-chain records ` +
-                                    `and are independently verifiable via HashScan. Registry DID: ${registryDid}`,
+                                    `and are independently verifiable via HashScan.`,
                                 style: 'bannerBody',
+                                margin: [0, 4, 0, 0],
+                            },
+                            {
+                                text: [
+                                    { text: 'Registry DID: ', style: 'metaLabel' },
+                                    { text: registryDid, style: 'didValue' },
+                                ],
                                 margin: [0, 4, 0, 0],
                             },
                         ],
                         fillColor: COLORS.greenTint,
                         border: [false, false, false, false],
-                        margin: [14, 14, 14, 14],
+                        margin: [BANNER_CELL_PAD, BANNER_CELL_PAD, BANNER_CELL_PAD, BANNER_CELL_PAD],
                     },
                     {
                         stack: [
@@ -1161,7 +1319,7 @@ function buildClosingAttribution(
                         ],
                         fillColor: COLORS.greenTint,
                         border: [false, false, false, false],
-                        margin: [14, 14, 14, 14],
+                        margin: [BANNER_CELL_PAD, BANNER_CELL_PAD, BANNER_CELL_PAD, BANNER_CELL_PAD],
                     },
                 ],
             ],
@@ -1197,8 +1355,9 @@ export function buildImpactSummaryPdfDocDefinition(params: ImpactSummaryPdfParam
             buildBadgeRowAndMeta(summary, reportId, network, generatedAt),
             buildMetricCards(summary),
 
-            // Credits by Sector
+            // Project Lifecycle + Credits by Sector
             sectionHeader('Credit Lifecycle & Sector Breakdown'),
+            buildLifecycleCard(summary),
             buildSectorCard(summary),
 
             // Geographic Distribution

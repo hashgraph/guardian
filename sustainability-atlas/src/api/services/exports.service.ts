@@ -32,12 +32,18 @@ import { PgMethodologyRepository } from '../repositories/pg-methodology.reposito
 import { RegistryRepository } from '../repositories/registry.repository';
 import { PgRegistryRepository } from '../repositories/pg-registry.repository';
 
+/** Hard ceiling on rows a single export file contains; matches the table CSV buttons' cap so the "download more via the API" messaging is consistent everywhere. Reports/Export Data can otherwise match tens of thousands of rows on testnet, which is both slow to generate and slow for a browser to download/open. */
+export const EXPORT_ROW_CAP = 1000;
+
 /** Result of one generation — the controller wraps this in a StreamableFile. */
 export interface GeneratedExport {
     content: Buffer;
     mime: string;
     filename: string;
+    /** Rows actually included in the file (<= EXPORT_ROW_CAP). */
     recordCount: number;
+    /** True count of rows matching the filters, before the EXPORT_ROW_CAP truncation. */
+    totalMatching: number;
 }
 
 /** Raw identifiers every `findAllForExport` row carries alongside its dataset-specific catalog-keyed fields; consumed by `applyTraceabilityFields` below to synthesize the 4 dataset-agnostic Traceability References columns in one shared place. */
@@ -86,11 +92,16 @@ export class ExportsService {
         const fields = this.resolveFields(dataset, query.fields);
         const filters = this.extractFilters(query);
 
-        const rows = await this.fetchRowsForExport(dataset, network, filters);
+        const allRows = await this.fetchRowsForExport(dataset, network, filters);
+        const totalMatching = allRows.length;
+        const rows = allRows.slice(0, EXPORT_ROW_CAP);
 
         const serializer = this.selectSerializer(query.format);
         const datasetTitle = getDatasetDisplayName(dataset);
-        const { content, mime, extension } = await serializer.serialize(fields, rows, datasetTitle);
+        const { content, mime, extension } = await serializer.serialize(fields, rows, datasetTitle, {
+            totalMatching,
+            shown: rows.length,
+        });
         const filename = `${dataset}-export-${this.timestampSlug()}.${extension}`;
 
         await this.auditExport({
@@ -104,7 +115,7 @@ export class ExportsService {
             fieldCount: fields.length,
         });
 
-        return { content, mime, filename, recordCount: rows.length };
+        return { content, mime, filename, recordCount: rows.length, totalMatching };
     }
 
     /**

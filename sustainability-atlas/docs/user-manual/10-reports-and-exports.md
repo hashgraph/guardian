@@ -2,10 +2,9 @@
 
 **Requires a signed-in account.**
 
-This chapter covers the Reports page: building a configured export of a dataset, generating an impact
-summary, and the disclosure guidance that explains how the figures should be interpreted. It ends
-with a short comparison against the **Download Data** buttons found on the list pages, because
-choosing between the two is the main question people have.
+This chapter covers the Reports page: building a configured export of a dataset and generating an
+impact summary. It ends with a short comparison against the **Download Data** buttons found on the
+list pages, because choosing between the two is the main question people have.
 
 ## Before the tabs
 
@@ -16,7 +15,7 @@ Three cards sit at the top of the page:
   total field count. The number always matches the "ESG Climate Data" group in the field picker below.
 - **Last Export** — when you last exported anything, or *No exports yet*.
 
-Below them, three tabs: **Export Data**, **Impact Summary** and **Disclosure Guidance**.
+Below them, two tabs: **Export Data** and **Impact Summary**.
 
 ## Export Data
 
@@ -87,26 +86,6 @@ preview that appears is titled *Portfolio Impact Overview* and covers:
 
 If the selected network has no impact data yet, the preview says so instead of rendering an empty
 document.
-
-## Disclosure Guidance
-
-This tab does not generate anything. It explains what the numbers mean and where they come from.
-
-**Definitions & Calculation Guidance** is a searchable set of entries, each tagged as a *Term* or a
-*Verification* note, with topic keywords shown when an entry is expanded:
-
-- **Emissions Reduced** — what the quantity means, with the formula used to arrive at it;
-- **Vintage Year** — the calendar year of the underlying reduction, as distinct from the issuance
-  year;
-- **How to Verify** — how to use the traceability references in an export to check a record
-  independently.
-
-Two closing sections explain **Verification Status** — that records are anchored on Hedera and can be
-checked on HashScan — and **Assurance & Independent Verification**, which is honest about what the
-figures are: compiled from on-chain data and issuer disclosures, with block item proofs available for
-independent cryptographic validation.
-
-If you are being asked "where did this number come from", this tab is the answer to give.
 
 ## Reports exports vs. Download Data
 

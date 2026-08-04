@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, StreamableFile, UseGuards, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Param, Query, Res, StreamableFile, UseGuards, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiProduces, ApiCookieAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -11,6 +11,11 @@ import {
     PaginatedExportHistoryDto,
     EXPORT_DATASETS,
 } from '../dto/export.dto';
+
+/** Express res.setHeader structural shape — same minimal-interface pattern as AuthController's MinimalResponse, avoiding a direct `express` import for one method. */
+interface MinimalResponse {
+    setHeader(name: string, value: string): unknown;
+}
 
 /** ESG/compliance dataset export engine; generated files are streamed and never persisted server-side, with each generation best-effort audit-logged to `audit_log`. */
 @ApiTags('exports')
@@ -50,8 +55,10 @@ export class ExportsController {
         summary: 'Download a filtered dataset export (CSV/XLSX/PDF)',
         description:
             'Streams a freshly generated export file for the given dataset, scoped by the same ' +
-            'filters as the corresponding list endpoint (the full filtered dataset, not capped at ' +
-            '1000 rows), in the requested format with the selected export-field-catalog columns. ' +
+            'filters as the corresponding list endpoint, in the requested format with the selected ' +
+            'export-field-catalog columns. Capped at 1,000 rows per file — the `X-Total-Matching` ' +
+            'response header carries the true match count so callers can detect truncation; use the ' +
+            'public API with an API key to fetch the complete dataset beyond the first 1,000. ' +
             'Best-effort audit-logs the generation on every call; the file itself is not persisted.',
     })
     @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'], description: 'Hedera network' })
@@ -66,9 +73,14 @@ export class ExportsController {
         @Param('dataset') dataset: string,
         @Query() query: ExportQueryDto,
         @CurrentUser() user: AuthenticatedUser,
+        @Res({ passthrough: true }) res: MinimalResponse,
     ): Promise<StreamableFile> {
         const resolvedDataset = this.resolveDataset(dataset);
         const result = await this.exportsService.generate(network, resolvedDataset, query, user);
+        res.setHeader('X-Total-Matching', String(result.totalMatching));
+        // Exposed so the browser fetch() in useExportsApi.ts can read it — otherwise CORS hides
+        // every response header except the handful on the default allow-list.
+        res.setHeader('Access-Control-Expose-Headers', 'Content-Disposition, X-Total-Matching');
         return new StreamableFile(result.content, {
             type: result.mime,
             disposition: `attachment; filename="${result.filename}"`,

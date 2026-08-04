@@ -12,6 +12,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
     'update:dataset': [value: ExportDataset];
+    'update:recordCount': [value: number];
 }>();
 
 const { t } = useI18n();
@@ -51,6 +52,7 @@ const { data: countData, pending: countPending } = await useAsyncData<{ meta: { 
 );
 
 const recordCount = computed(() => countData.value?.meta?.total ?? 0);
+watch(recordCount, (value) => emit('update:recordCount', value), { immediate: true });
 </script>
 
 <template>

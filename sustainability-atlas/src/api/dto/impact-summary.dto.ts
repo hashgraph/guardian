@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import {
     ImpactSummaryRow,
     ImpactSummarySectorRow,
+    ImpactSummaryLifecycleRow,
 } from '../repositories/impact-summary.repository';
 
 /** Response shapes + the pure row->DTO builder for the Impact Summary aggregate, mirroring sdg.dto.ts's convention of co-locating the shaping helper next to the response classes it builds. */
@@ -22,8 +23,22 @@ export class ImpactSummarySdgDto {
     @ApiProperty({ description: 'Number of PROJECT rows tagged with this SDG' })
     projectCount: number;
 
+    @ApiProperty({ description: 'Number of mint (issuance) events across projects tagged with this SDG' })
+    issuances: number;
+
     @ApiProperty({ description: 'Total credits (self-reported ER_y) summed across projects tagged with this SDG' })
     credits: number;
+}
+
+export class ImpactSummaryLifecycleDto {
+    @ApiProperty({ description: 'Derived lifecycle stage: Registered | Validation | Monitoring | Verified | Issued, or Unclassified' })
+    stage: string;
+
+    @ApiProperty({ description: 'Number of PROJECT rows at this stage' })
+    projectCount: number;
+
+    @ApiProperty({ description: 'Share of activeProjects at this stage, 0-100' })
+    percentage: number;
 }
 
 export class ImpactSummaryGeoDto {
@@ -159,6 +174,14 @@ export class ImpactSummaryResponseDto {
     @ApiProperty({ description: "Number of distinct countries across PROJECT rows (excludes the 'Unknown' bucket)" })
     activeCountries: number;
 
+    @ApiProperty({
+        type: [ImpactSummaryLifecycleDto],
+        description:
+            'Projects per derived lifecycle stage (mv_project_lifecycle), in pipeline order ' +
+            'Registered -> Validation -> Monitoring -> Verified -> Issued. Counts sum to activeProjects.',
+    })
+    lifecycleStages: ImpactSummaryLifecycleDto[];
+
     @ApiProperty({ type: [ImpactSummarySdgDto], description: 'SDGs with at least one tagged project, sorted by SDG number' })
     sdgContributions: ImpactSummarySdgDto[];
 
@@ -203,6 +226,29 @@ const RETIREMENT_METHODOLOGY_NOTE =
 function pct(part: number, total: number): number {
     if (!total) return 0;
     return Math.round((part / total) * 1000) / 10; // one decimal place
+}
+
+/**
+ * Pipeline order for the lifecycle stages, matching `LIFECYCLE_STAGE_CASE`'s progression. The repository
+ * groups by stage, so rows arrive in whatever order Postgres produced them; a lifecycle read out of sequence
+ * is actively misleading, hence the explicit ordering here rather than a sort on count.
+ */
+const LIFECYCLE_STAGE_ORDER = ['Registered', 'Validation', 'Monitoring', 'Verified', 'Issued'] as const;
+
+/** Orders stages by pipeline progression, appending any stage the ordering doesn't name (currently only 'Unclassified') last, and drops empty stages so the PDF doesn't render a row of zeroes. */
+function buildLifecycleStages(rows: ImpactSummaryLifecycleRow[], activeProjects: number): ImpactSummaryLifecycleDto[] {
+    const known = LIFECYCLE_STAGE_ORDER.map((stage) => rows.find((r) => r.stage === stage)).filter(
+        (r): r is ImpactSummaryLifecycleRow => !!r,
+    );
+    const extra = rows.filter((r) => !LIFECYCLE_STAGE_ORDER.includes(r.stage as (typeof LIFECYCLE_STAGE_ORDER)[number]));
+
+    return [...known, ...extra]
+        .filter((r) => r.projectCount > 0)
+        .map((r) => ({
+            stage: r.stage,
+            projectCount: r.projectCount,
+            percentage: pct(r.projectCount, activeProjects),
+        }));
 }
 
 /** Collapses raw per-sector rows into the top-N named sectors plus an 'Others' bucket and an 'Unknown' bucket; all buckets, named or synthetic, are interleaved by amount in the final sort. */
@@ -266,6 +312,7 @@ export function buildImpactSummaryResponse(row: ImpactSummaryRow, network: strin
         retirementMethodologyNote: RETIREMENT_METHODOLOGY_NOTE,
         activeProjects: row.activeProjects,
         activeCountries: row.activeCountries,
+        lifecycleStages: buildLifecycleStages(row.lifecycleStages, row.activeProjects),
         sdgContributions: row.sdgContributions,
         geographicDistribution: row.geographicDistribution.map((g) => ({
             country: g.country,

@@ -450,12 +450,13 @@ const skeletonRows = computed(() =>
 );
 
 const downloading = ref(false);
+const { dialogOpen: exportLimitOpen, pendingTotal: exportLimitTotal, confirmIfCapped, onConfirm: confirmExportLimit, onCancel: cancelExportLimit } = useExportLimit();
 
 async function downloadProjects() {
   if (downloading.value) return;
   downloading.value = true;
   try {
-    const { fetchAllPages } = useApiDownload();
+    const { fetchCappedRows } = useApiDownload();
     const af = activeFilters.value;
     const query: Record<string, string | number> = {};
     const search = searchQuery.value?.trim();
@@ -472,10 +473,15 @@ async function downloadProjects() {
     if (af.expectedIssuanceYear) query.expectedIssuanceYearRange = af.expectedIssuanceYear;
     if (registryDidFilter.value) query.registryDid = registryDidFilter.value;
     if (methodologyIdFilter.value) query.methodologyId = methodologyIdFilter.value;
+    if (apiSortBy.value && apiSortDir.value) {
+      query.sortBy = apiSortBy.value;
+      query.sortDir = apiSortDir.value;
+    }
 
-    let mapped = (
-      await fetchAllPages(`/api/v1/${network.value}/projects`, query)
-    ).map(mapApiProject).map((p) => ({
+    const { data: capped, total } = await fetchCappedRows(`/api/v1/${network.value}/projects`, query);
+    if (!(await confirmIfCapped(total))) return;
+
+    let mapped = capped.map(mapApiProject).map((p) => ({
       ...p,
       createdDate: hederaTimestamp(p.sourceTimestamp),
     }));
@@ -864,6 +870,7 @@ async function downloadProjects() {
       :data="vcViewerData"
       @close="vcViewerOpen = false"
     />
+    <ExportLimitDialog :open="exportLimitOpen" :total="exportLimitTotal" @confirm="confirmExportLimit" @cancel="cancelExportLimit" />
   </div>
 
   <!-- Floating comparison bar -->

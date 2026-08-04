@@ -7,10 +7,12 @@ import { FieldSchema } from '../query-builder';
  * PgRegistryRepository's QueryBuilder will pick it up automatically.
  *
  * Notes:
- *   - `bv` is the alias used for `business_view` in the repository's queries.
+ *   - `bv` is the alias used for `business_view` in the repository's queries
+ *     (findAll/findAllForExport read it off PgRegistryRepository's
+ *     REGISTRY_CANDIDATE_CTE, which flattens the mv_registry_stats join
+ *     under the same `bv` alias — there is no separate MV alias in scope).
  *   - jsonb fields are extracted via `->'options'->>'key'` paths.
- *   - Stat fields like `policy_count` come from the joined `mv_registry_stats`
- *     materialized view (alias `s`).
+ *   - Stat fields like `policy_count` come from mv_registry_stats.
  */
 export const REGISTRY_FIELD_SCHEMA: FieldSchema = {
     // ── Plain columns ───────────────────────────────────────────────────
@@ -64,16 +66,19 @@ export const REGISTRY_FIELD_SCHEMA: FieldSchema = {
     },
 
     // ── Joined materialized view columns ────────────────────────────────
+    // Sourced from mv_registry_stats, but read off the candidate CTE's `bv`
+    // alias (see PgRegistryRepository.REGISTRY_CANDIDATE_CTE) — there is no
+    // separate `s` alias in scope in findAll's rowsSql/countSql.
     policies: {
-        sql: 's.policy_count',
+        sql: 'bv.policy_count',
         sortable: true,
     },
     projects: {
-        sql: 's.project_count',
+        sql: 'bv.project_count',
         sortable: true,
     },
     issuances: {
-        sql: 's.issuance_count',
+        sql: 'bv.issuance_count',
         sortable: true,
     },
 };

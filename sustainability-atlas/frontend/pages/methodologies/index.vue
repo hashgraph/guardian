@@ -346,12 +346,13 @@ const skeletonRows = computed(() =>
 );
 
 const downloading = ref(false);
+const { dialogOpen: exportLimitOpen, pendingTotal: exportLimitTotal, confirmIfCapped, onConfirm: confirmExportLimit, onCancel: cancelExportLimit } = useExportLimit();
 
 async function downloadMethodologies() {
     if (downloading.value) return;
     downloading.value = true;
     try {
-        const { fetchAllPages } = useApiDownload();
+        const { fetchCappedRows } = useApiDownload();
         const query: Record<string, string | number> = {};
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
@@ -362,8 +363,14 @@ async function downloadMethodologies() {
             const trimmed = String(raw).trim();
             if (trimmed) query[key] = trimmed;
         }
+        if (apiSortBy.value && apiSortDir.value) {
+            query.sortBy = apiSortBy.value;
+            query.sortDir = apiSortDir.value;
+        }
 
-        let allData = await fetchAllPages(`/api/v1/${network.value}/methodologies`, query);
+        const { data: capped, total } = await fetchCappedRows(`/api/v1/${network.value}/methodologies`, query);
+        if (!(await confirmIfCapped(total))) return;
+        let allData = capped;
 
         if (sortKey.value && sortDir.value) {
             const getter = SORT_FIELD_MAP[sortKey.value] ?? ((m: any) => (m as any)[sortKey.value as string] ?? '');
@@ -701,5 +708,6 @@ async function downloadMethodologies() {
         :total-items="totalCount"
       />
     </div>
+    <ExportLimitDialog :open="exportLimitOpen" :total="exportLimitTotal" @confirm="confirmExportLimit" @cancel="cancelExportLimit" />
   </div>
 </template>

@@ -10,12 +10,14 @@ const props = defineProps<{
     fieldKeys: string[];
     format: ExportFormat;
     scopeFilters: ScopeFilters;
+    recordCount: number;
 }>();
 
 const emit = defineEmits<{ exported: [] }>();
 
 const { t } = useI18n();
 const { downloadExport } = useExportsApi();
+const { dialogOpen: exportLimitOpen, pendingTotal: exportLimitTotal, confirmIfCapped, onConfirm: confirmExportLimit, onCancel: cancelExportLimit } = useExportLimit();
 
 const MAX_VISIBLE = 8;
 
@@ -51,6 +53,7 @@ const canExport = computed(() => props.fieldKeys.length > 0 && !exporting.value)
 
 async function onExport() {
     if (!canExport.value) return;
+    if (!(await confirmIfCapped(props.recordCount))) return;
     exporting.value = true;
     try {
         const scopeParams = buildExportScopeParams(props.dataset, props.scopeFilters);
@@ -100,5 +103,7 @@ async function onExport() {
             <Download v-else class="h-4 w-4" />
             {{ exporting ? $t('reports.preview.exporting') : $t('reports.preview.exportButton') }}
         </Button>
+
+        <ExportLimitDialog :open="exportLimitOpen" :total="exportLimitTotal" @confirm="confirmExportLimit" @cancel="cancelExportLimit" />
     </div>
 </template>

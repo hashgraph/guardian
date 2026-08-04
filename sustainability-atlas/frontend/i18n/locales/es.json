@@ -1713,13 +1713,11 @@
         },
         "tabs": {
             "exportData": "Exportar Datos",
-            "impactSummary": "Resumen de Impacto",
-            "disclosureGuidance": "Orientación de Divulgación"
+            "impactSummary": "Resumen de Impacto"
         },
         "placeholders": {
             "exportData": "La configuración de exportación y la selección de campos estarán disponibles próximamente.",
-            "impactSummary": "El generador de Resumen de Impacto estará disponible próximamente.",
-            "disclosureGuidance": "La orientación de divulgación y las referencias de marcos estarán disponibles próximamente."
+            "impactSummary": "El generador de Resumen de Impacto estará disponible próximamente."
         },
         "recentExports": {
             "title": "Exportaciones Recientes",
@@ -1758,37 +1756,6 @@
                 "geoTitle": "Distribución Geográfica",
                 "verified": "Datos verificados en Hedera {network}",
                 "generatedAt": "Generado {date}"
-            }
-        },
-        "disclosure": {
-            "entriesTitle": "Definiciones y Guía de Cálculo",
-            "searchPlaceholder": "Buscar guía…",
-            "noResults": "Ninguna guía coincide con su búsqueda.",
-            "tags": { "term": "Término", "verification": "Verificación", "policy": "Política" },
-            "entries": {
-                "emissionsReduced": {
-                    "title": "Emisiones Reducidas",
-                    "body": "La cantidad de emisiones de gases de efecto invernadero evitadas o removidas, expresada en toneladas de CO₂ equivalente (tCO₂e), según lo informado por el proyecto emisor.",
-                    "formula": "emisiones_reducidas (tCO₂e) = Σ reducciones de emisiones verificadas por emisión"
-                },
-                "vintageYear": {
-                    "title": "Año de Cosecha (Vintage)",
-                    "body": "El año calendario en que ocurrió la actividad de reducción o remoción de emisiones subyacente. Para los créditos, el año de informe es el año calendario de la actividad de acuñación en cadena."
-                },
-                "howToVerify": {
-                    "title": "Cómo Verificar",
-                    "body": "Cada registro exportado incluye referencias de trazabilidad. Utilice la URL de verificación para abrir la transacción, el token o el tema correspondiente en el explorador de la red Hedera (HashScan) para una confirmación independiente."
-                }
-            },
-            "verificationStatus": {
-                "title": "Estado de Verificación",
-                "body": "Todos los registros están anclados en la red Hedera y son verificables de forma independiente en cadena.",
-                "hashscanLink": "Ver en HashScan"
-            },
-            "assurance": {
-                "title": "Garantía y Verificación Independiente",
-                "body": "Las cifras se compilan a partir de datos en cadena y divulgaciones de los emisores. Las cifras de retiro se infieren de la actividad de eliminación de tokens, no de un libro de retiros dedicado, y deben tratarse en consecuencia.",
-                "blockItemProof": "Las Pruebas de Elementos de Bloque para la validación criptográfica independiente de los registros del libro mayor distribuido están planificadas para el T3 2026."
             }
         },
         "datasets": {
@@ -1839,6 +1806,10 @@
             "emissionsReduced": {
                 "label": "Emisiones reducidas",
                 "description": "tCO₂e secuestradas o evitadas"
+            },
+            "issuanceDate": {
+                "label": "Fecha de emisión",
+                "description": "Fecha en que los créditos se acuñaron en cadena (UTC)"
             },
             "reportingYear": {
                 "label": "Año de reporte",
@@ -1933,6 +1904,15 @@
             "successToast": "Exportación descargada correctamente."
         }
     },
+    "exportLimit": {
+        "title": "Descarga limitada a {limit} registros",
+        "body": "Esto coincide con {total} registros, pero las descargas están limitadas a {limit} a la vez. Los primeros {limit} (según tu orden actual) se descargarán ahora.",
+        "apiHint": "Para obtener el conjunto de datos completo, usa la API pública con una clave de API — consulta la",
+        "apiLinkText": "documentación de la API",
+        "cancel": "Cancelar",
+        "proceed": "Descargar los primeros {limit}",
+        "pdfFooterNote": "Mostrando {shown} de {total} registros totales — descarga el conjunto de datos completo a través de la API pública."
+    },
     "glossary": {
         "emissionsReduced": "tCO₂e secuestradas o evitadas por el proyecto.",
         "reportingYear": "Año calendario en que ocurrió la actividad o generación del crédito.",
@@ -1952,19 +1932,12 @@
         "resultCountInCategory": "{count} términos en {category}",
         "noResults": "Ningún término coincide con \"{query}\"",
         "relatedLabel": "Relacionados:",
-        "whereShownTitle": "Dónde aparece esto",
-        "whereShownSubtitle": "Los íconos de información junto a las etiquetas de campo abren una definición rápida en línea — sin salir de la página",
         "categories": {
             "all": "Todos los términos",
             "carbon": "Mercados de carbono",
             "chain": "Blockchain y Hedera",
             "sdg": "ODS",
             "platform": "Plataforma y datos"
-        },
-        "demo": {
-            "registries": "Registros",
-            "methodologies": "Metodologías",
-            "issuances": "Emisiones totales"
         },
         "terms": {
             "issuance": {
@@ -2095,7 +2068,7 @@
             "fungible": {
                 "term": "Token Fungible",
                 "short": "Una unidad de crédito intercambiable — cualquiera equivale en valor a otra.",
-                "long": "La mayoría de los créditos de carbono son fungibles: 1 tCO2e de un lote se trata igual que cualquier otro, lo que facilita su comercio y agrupación."
+                "long": "1 tCO2e de un lote fungible se trata igual que cualquier otro, lo que facilita su comercio y agrupación."
             },
             "token-supply": {
                 "term": "Suministro de token",
@@ -2107,15 +2080,15 @@
                 "short": "La suma histórica de todas las transacciones de acuñación de un token.",
                 "long": "El total acuñado (todos) incluye actividad fuera de cualquier proyecto rastreado, mientras que el total acuñado (proyecto) se limita a un proyecto — ambos pueden diferir."
             },
-            "instance-topic-id": {
-                "term": "ID de tópico de instancia",
-                "short": "El tópico de Hedera que registra la ejecución de política de un proyecto específico.",
-                "long": "Cada instancia de proyecto escribe su propia secuencia de pasos de verificación en este tópico, distinto del tópico de la definición de política compartida."
-            },
             "policy-topic-id": {
                 "term": "ID de tópico de política",
-                "short": "El tópico de Hedera que registra la definición del flujo de política compartido en el que se ejecuta un proyecto.",
-                "long": "Varios proyectos pueden ejecutarse bajo la misma política publicada y compartir su ID de tópico de política, mientras cada uno mantiene su propio tópico de instancia."
+                "short": "El tópico de Hedera creado en el momento en que un registro redacta una política — su hogar permanente en todas las versiones.",
+                "long": "Un tópico de política se crea una sola vez, cuando la política se redacta por primera vez, y no cambia después. Cada vez que el registro publica una nueva versión, Guardian simplemente añade otro registro a este mismo tópico — por eso el ID de tópico de política es cómo se encuentra el historial completo de versiones de una metodología en un solo lugar."
+            },
+            "instance-topic-id": {
+                "term": "ID de tópico de instancia",
+                "short": "El tópico de Hedera creado de nuevo cada vez que se publica una política — el espacio de trabajo activo de esa versión.",
+                "long": "Publicar una versión de política crea un tópico de instancia completamente nuevo como hijo del tópico de política. Todo lo que realmente ocurre bajo esa versión — envíos de proyectos, informes de monitoreo, verificaciones, acuñaciones — se registra aquí. Como cada nueva publicación obtiene su propio tópico de instancia, las versiones antiguas y nuevas de la misma política nunca mezclan su actividad, aunque compartan un mismo tópico de política."
             },
             "root-vc": {
                 "term": "VC raíz",

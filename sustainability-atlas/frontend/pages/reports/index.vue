@@ -1,5 +1,5 @@
 <script setup lang="ts">
-/** Reports & Export page shell: header, stat cards, and the 3-tab nav (Export Data / Impact Summary / Disclosure Guidance). */
+/** Reports & Export page shell: header, stat cards, and the 2-tab nav (Export Data / Impact Summary). */
 import type { TabItem } from '~/components/ui/Tabs.vue';
 import type { ExportDataset, ExportFormat } from '~/types/reports';
 import { getDefaultSelectedFieldKeys } from '~/lib/export-field-catalog';
@@ -10,13 +10,12 @@ definePageMeta({ middleware: 'auth' });
 
 const { t } = useI18n();
 
-type ReportsTab = 'export-data' | 'impact-summary' | 'disclosure-guidance';
+type ReportsTab = 'export-data' | 'impact-summary';
 const activeTab = ref<ReportsTab>('export-data');
 
 const tabs = computed<TabItem[]>(() => [
     { value: 'export-data', label: t('reports.tabs.exportData') },
     { value: 'impact-summary', label: t('reports.tabs.impactSummary') },
-    { value: 'disclosure-guidance', label: t('reports.tabs.disclosureGuidance') },
 ]);
 
 function onUpdateTab(value: string) {
@@ -28,6 +27,10 @@ const exportDataset = ref<ExportDataset>('credits');
 const scopeFilters = ref<ScopeFilters>({});
 const selectedFields = ref<string[]>(getDefaultSelectedFieldKeys(exportDataset.value));
 const exportFormat = ref<ExportFormat>('xlsx'); // mockup default for Export Data (Impact Summary defaults to PDF instead)
+// ScopeRow's own live "records matching" count, reused so Export Data's download button
+// warns via the same 1,000-record cap dialog the table pages use, instead of only
+// finding out after the file has already been generated.
+const scopeRecordCount = ref(0);
 
 // Switching datasets resets scope + field selection to that dataset's own defaults, since carrying over stale filters/keys would silently produce an invalid export request.
 watch(exportDataset, (dataset) => {
@@ -61,7 +64,7 @@ function onExported() {
             <Tabs :tabs="tabs" :model-value="activeTab" @update:model-value="onUpdateTab">
                 <template #export-data>
                     <div class="space-y-4">
-                        <ScopeRow v-model:dataset="exportDataset" v-model="scopeFilters" />
+                        <ScopeRow v-model:dataset="exportDataset" v-model="scopeFilters" @update:record-count="scopeRecordCount = $event" />
 
                         <FieldPicker :dataset="exportDataset" v-model="selectedFields" />
 
@@ -72,6 +75,7 @@ function onExported() {
                                 :field-keys="selectedFields"
                                 :format="exportFormat"
                                 :scope-filters="scopeFilters"
+                                :record-count="scopeRecordCount"
                                 @exported="onExported"
                             />
                         </div>
@@ -87,9 +91,6 @@ function onExported() {
                         <ImpactSummaryConfig />
                         <ImpactSummaryPreview />
                     </div>
-                </template>
-                <template #disclosure-guidance>
-                    <DisclosureGuidance />
                 </template>
             </Tabs>
         </div>

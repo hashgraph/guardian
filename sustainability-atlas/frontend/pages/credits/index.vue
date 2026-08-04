@@ -254,12 +254,13 @@ const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null)
 const typeColor: Record<string, string> = { Fungible: 'bg-stat-blue/10 text-stat-blue', 'Non-Fungible': 'bg-stat-amber/10 text-stat-amber' };
 
 const downloading = ref(false);
+const { dialogOpen: exportLimitOpen, pendingTotal: exportLimitTotal, confirmIfCapped, onConfirm: confirmExportLimit, onCancel: cancelExportLimit } = useExportLimit();
 
 async function downloadCredits() {
     if (downloading.value) return;
     downloading.value = true;
     try {
-        const { fetchAllPages } = useApiDownload();
+        const { fetchCappedRows } = useApiDownload();
         const af = activeFilters.value;
         const query: Record<string, string | number> = {};
         const search = searchQuery.value?.trim();
@@ -272,7 +273,9 @@ async function downloadCredits() {
         if (methodologyIdFilter.value) query.methodologyId = methodologyIdFilter.value;
         if (registryDidFilter.value) query.registryDid = registryDidFilter.value;
 
-        let allData = await fetchAllPages(`/api/v1/${network.value}/credits`, query);
+        const { data: capped, total } = await fetchCappedRows(`/api/v1/${network.value}/credits`, query);
+        if (!(await confirmIfCapped(total))) return;
+        let allData = capped;
 
         // Apply client-side-only hideUnlinked filter
         if (hideUnlinked.value) allData = allData.filter(c => c.projectId);
@@ -532,5 +535,6 @@ async function downloadCredits() {
         </div>
 
         <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
+        <ExportLimitDialog :open="exportLimitOpen" :total="exportLimitTotal" @confirm="confirmExportLimit" @cancel="cancelExportLimit" />
     </div>
 </template>

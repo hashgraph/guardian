@@ -74,6 +74,8 @@ export interface CreditExportRow {
     token_symbol: string | null;
     token_type: 'Fungible' | 'Non-Fungible' | null;
     emissions_reduced: number | null;
+    /** Mint date as a `YYYY-MM-DD` UTC date string — the day-precision form of the same timestamp `reporting_year` takes its year from. Emitted as a string, not a `Date`, so CSV/XLSX/PDF all render the same day with no timezone re-interpretation. */
+    issuance_date: string | null;
     reporting_year: number | null;
     mitigation_type: string | null;
     standard: string | null;

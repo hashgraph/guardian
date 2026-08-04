@@ -262,12 +262,13 @@ const tagsAsList = (tags: string | null): string[] => {
 };
 
 const downloading = ref(false);
+const { dialogOpen: exportLimitOpen, pendingTotal: exportLimitTotal, confirmIfCapped, onConfirm: confirmExportLimit, onCancel: cancelExportLimit } = useExportLimit();
 
 async function downloadRegistries() {
     if (downloading.value) return;
     downloading.value = true;
     try {
-        const { fetchAllPages } = useApiDownload();
+        const { fetchCappedRows } = useApiDownload();
         const query: Record<string, string | number | boolean> = {};
         const search = searchQuery.value?.trim();
         if (search) query.search = search;
@@ -284,8 +285,16 @@ async function downloadRegistries() {
             if (ts.from) query.createdAtFrom = ts.from;
             if (ts.to) query.createdAtTo = ts.to;
         }
+        // Fetch already in the on-screen sort order when the API supports it, so a
+        // >1000-match cap keeps the same "first N" the user would expect from the table.
+        if (apiSortBy.value && apiSortDir.value) {
+            query.sortBy = apiSortBy.value;
+            query.sortDir = apiSortDir.value;
+        }
 
-        let allData = await fetchAllPages(`/api/v1/${network.value}/registries`, query);
+        const { data: capped, total } = await fetchCappedRows(`/api/v1/${network.value}/registries`, query);
+        if (!(await confirmIfCapped(total))) return;
+        let allData = capped;
 
         if (sortKey.value && sortDir.value) {
             const getter = SORT_FIELD_MAP[sortKey.value] ?? ((r: any) => (r as any)[sortKey.value as string] ?? '');
@@ -540,5 +549,6 @@ function viewRegistry(r: RegistryDto) {
         </div>
 
         <VcJsonViewer :open="vcViewerOpen" :title="vcViewerTitle" :data="vcViewerData" @close="vcViewerOpen = false" />
+        <ExportLimitDialog :open="exportLimitOpen" :total="exportLimitTotal" @confirm="confirmExportLimit" @cancel="cancelExportLimit" />
     </div>
 </template>

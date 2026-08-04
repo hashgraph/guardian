@@ -116,8 +116,20 @@ export interface ImpactSummarySdg {
     color: string;
     /** Number of PROJECT rows tagged with this SDG. */
     projectCount: number;
+    /** Number of mint (issuance) events across projects tagged with this SDG. */
+    issuances: number;
     /** Total credits (self-reported ER_y) summed across projects tagged with this SDG. */
     credits: number;
+}
+
+/** Mirrors `ImpactSummaryLifecycleDto` (impact-summary.dto.ts). */
+export interface ImpactSummaryLifecycle {
+    /** Derived lifecycle stage: Registered | Validation | Monitoring | Verified | Issued, or Unclassified. */
+    stage: string;
+    /** Number of PROJECT rows at this stage. */
+    projectCount: number;
+    /** Share of activeProjects at this stage, 0-100. */
+    percentage: number;
 }
 
 /** Mirrors `ImpactSummaryGeoDto` (impact-summary.dto.ts). */
@@ -180,6 +192,8 @@ export interface ImpactSummary {
     activeProjects: number;
     /** Number of distinct countries across PROJECT rows (excludes the 'Unknown' bucket). */
     activeCountries: number;
+    /** Projects per derived lifecycle stage (mv_project_lifecycle), in pipeline order. Counts sum to activeProjects. */
+    lifecycleStages: ImpactSummaryLifecycle[];
     /** SDGs with at least one tagged project, sorted by SDG number. */
     sdgContributions: ImpactSummarySdg[];
     /** Credits issued per country, sorted descending. */

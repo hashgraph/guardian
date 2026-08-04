@@ -31,7 +31,8 @@ export function countImpactSummaryRows(summary: ImpactSummaryResponseDto): numbe
         summary.geographicDistribution.length +
         summary.sectorBreakdown.length +
         summary.registryBreakdown.length +
-        summary.sdgContributions.length
+        summary.sdgContributions.length +
+        summary.lifecycleStages.length
     );
 }
 
@@ -130,11 +131,32 @@ function addSdgSheet(workbook: ExcelJS.Workbook, summary: ImpactSummaryResponseD
         { header: 'SDG ID', key: 'sdgId', width: 10 },
         { header: 'Name', key: 'name', width: 34 },
         { header: 'Project Count', key: 'projectCount', width: 16 },
+        { header: 'Issuances', key: 'issuances', width: 14 },
         { header: 'Credits', key: 'credits', width: 16 },
     ];
     sheet.getRow(1).font = { bold: true };
     for (const row of summary.sdgContributions) {
-        sheet.addRow({ sdgId: row.sdgId, name: row.name, projectCount: row.projectCount, credits: row.credits });
+        sheet.addRow({
+            sdgId: row.sdgId,
+            name: row.name,
+            projectCount: row.projectCount,
+            issuances: row.issuances,
+            credits: row.credits,
+        });
+    }
+}
+
+/** Projects per derived lifecycle stage (mv_project_lifecycle), in pipeline order. Counts sum to Active Projects on the Overview sheet. */
+function addLifecycleSheet(workbook: ExcelJS.Workbook, summary: ImpactSummaryResponseDto): void {
+    const sheet = workbook.addWorksheet('Project Lifecycle');
+    sheet.columns = [
+        { header: 'Lifecycle Stage', key: 'stage', width: 20 },
+        { header: 'Project Count', key: 'projectCount', width: 16 },
+        { header: 'Percentage', key: 'percentage', width: 14 },
+    ];
+    sheet.getRow(1).font = { bold: true };
+    for (const row of summary.lifecycleStages) {
+        sheet.addRow(row);
     }
 }
 
@@ -145,6 +167,7 @@ export async function buildImpactSummaryWorkbookBuffer(params: ImpactSummaryTabu
     workbook.created = params.generatedAt;
 
     addOverviewSheet(workbook, params);
+    addLifecycleSheet(workbook, params.summary);
     addGeoSheet(workbook, params.summary);
     addSectorSheet(workbook, params.summary);
     addRegistrySheet(workbook, params.summary);
@@ -203,6 +226,13 @@ export function buildImpactSummaryCsvBuffer(params: ImpactSummaryTabularParams):
     lines.push(csvRow(['Retirement Methodology Note', summary.retirementMethodologyNote]));
     lines.push('');
 
+    lines.push('# Project Lifecycle');
+    lines.push(csvRow(['Lifecycle Stage', 'Project Count', 'Percentage']));
+    for (const row of summary.lifecycleStages) {
+        lines.push(csvRow([row.stage, row.projectCount, row.percentage]));
+    }
+    lines.push('');
+
     lines.push('# Geographic Distribution');
     lines.push(csvRow(['Country', 'Project Count', 'Credits Issued', 'Percentage']));
     for (const row of summary.geographicDistribution) {
@@ -225,9 +255,9 @@ export function buildImpactSummaryCsvBuffer(params: ImpactSummaryTabularParams):
     lines.push('');
 
     lines.push('# SDG Contributions');
-    lines.push(csvRow(['SDG ID', 'Name', 'Project Count', 'Credits']));
+    lines.push(csvRow(['SDG ID', 'Name', 'Project Count', 'Issuances', 'Credits']));
     for (const row of summary.sdgContributions) {
-        lines.push(csvRow([row.sdgId, row.name, row.projectCount, row.credits]));
+        lines.push(csvRow([row.sdgId, row.name, row.projectCount, row.issuances, row.credits]));
     }
     lines.push('');
 

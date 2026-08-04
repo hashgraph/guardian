@@ -40,7 +40,7 @@ lower level than the feature requires. Chapter 15 lists the common cases.
 | [07 — Registries, developers and SDGs](07-registries-developers-sdgs.md) | The three reference catalogues and how to follow a count through to a filtered project list. |
 | [08 — Analytics](08-analytics.md) | The five stakeholder views and the question each one answers. |
 | [09 — Portfolio](09-portfolio.md) | Your private dashboard: the watchlist, the Widget Library, custom charts and how the layout is saved. |
-| [10 — Reports and exports](10-reports-and-exports.md) | Configured dataset exports, impact summaries, disclosure guidance, and how these differ from Download Data. |
+| [10 — Reports and exports](10-reports-and-exports.md) | Configured dataset exports, impact summaries, and how these differ from Download Data. |
 | [11 — Account and security](11-account-and-security.md) | Your profile, password, request limits, API keys, activity log and the product tour card. |
 | [12 — Sync status](12-sync-status.md) | What synchronisation means, how to read the queue, event log, topics and tokens. |
 | [13 — Administration](13-administration.md) | User Management and the admin-only actions scattered through the rest of the app. |

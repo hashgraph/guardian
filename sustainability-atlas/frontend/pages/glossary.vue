@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Search, ChevronDown } from 'lucide-vue-next';
-import { formatNumber } from '~/lib/format';
 import { GLOSSARY_TERMS, GLOSSARY_CATEGORIES, type GlossaryCategory } from '~/lib/glossary-terms';
 
 const { t } = useI18n();
@@ -81,12 +80,6 @@ async function jumpTo(id: string) {
     await nextTick();
     document.getElementById(`term-${id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
-
-const demoCards = computed(() => [
-    { key: 'registries', label: t('glossaryPage.demo.registries'), value: formatNumber(38), tooltip: t('glossaryPage.terms.registry.short') },
-    { key: 'methodologies', label: t('glossaryPage.demo.methodologies'), value: formatNumber(128), tooltip: t('glossaryPage.terms.methodology.short') },
-    { key: 'issuances', label: t('glossaryPage.demo.issuances'), value: formatNumber(194827), tooltip: t('glossaryPage.terms.issuance.short') },
-]);
 </script>
 
 <template>
@@ -180,21 +173,6 @@ const demoCards = computed(() => [
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Where this shows up -->
-        <div class="border-t px-6 py-6">
-            <h2 class="text-base font-semibold text-foreground">{{ $t('glossaryPage.whereShownTitle') }}</h2>
-            <p class="text-xs text-muted-foreground mt-1 mb-4">{{ $t('glossaryPage.whereShownSubtitle') }}</p>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div v-for="d in demoCards" :key="d.key" class="rounded-xl border bg-card p-4">
-                    <div class="flex items-center gap-1.5 text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                        {{ d.label }}
-                        <InfoTooltip :text="d.tooltip" />
-                    </div>
-                    <div class="text-2xl font-bold text-foreground mt-1.5">{{ d.value }}</div>
                 </div>
             </div>
         </div>
