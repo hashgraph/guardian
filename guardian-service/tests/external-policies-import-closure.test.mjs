@@ -2,9 +2,14 @@ import { assert } from 'chai';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { loadAPI, Interfaces, MessageResponse, MessageError } from './_handler-harness.mjs';
+import { PolicyImportExportHelper } from '../dist/helpers/import-helpers/index.js';
+
+// The production errorsMessage(), used verbatim by the handler stubs below so the
+// suite can never assert diagnosability the shipped code does not provide.
+const realErrorsMessage = (errors) => PolicyImportExportHelper.errorsMessage(errors);
 
 // Regression tests: an external (VIEW) policy whose tool closure fails to import
-// must not be approved.
+// must not be approved, and the reason must reach the operator.
 //
 // A policy zip carries its tools as messageId REFERENCES only - their schemas are
 // re-fetched from Hedera+IPFS per tool at import time. When those fetches fail,
@@ -101,9 +106,11 @@ before(async function () {
                     store.importCalls++;
                     return { policy: store.importedPolicy, errors: store.importErrors };
                 },
-                errorsMessage(errors) {
-                    return errors.map((e) => `${e.type}:${e.name}:${e.error}`).join('; ');
-                },
+                // Delegate to the REAL implementation. A hand-written stub here
+                // was richer than production (it interpolated e.error, which
+                // errorsMessage did not), so the "surfaces the underlying error"
+                // assertion passed against a message the operator never saw.
+                errorsMessage: realErrorsMessage,
             },
         },
         [policyEnginePath]: {
@@ -137,6 +144,45 @@ beforeEach(() => {
         asyncErrors: [],
         asyncPromises: [],
     };
+});
+
+describe('@unit PolicyImportExportHelper.errorsMessage carries the cause ', () => {
+    // errorsMessage builds the string an operator actually sees - it becomes the
+    // MessageError returned to the API. It used to emit component NAMES only, so
+    // preserving the real error inside the structured errors array was invisible
+    // at the boundary: every failure read as 'tools: ["Tool A","Tool B"];'
+    // whether the package 404'd, timed out, or was rejected.
+
+    it('includes the underlying error for tools, not just the name', () => {
+        const message = PolicyImportExportHelper.errorsMessage(TOOL_ERRORS);
+        assert.include(message, 'Tool A');
+        assert.include(message, 'Request failed with status code 404');
+    });
+
+    it('includes the underlying error for schemas too', () => {
+        const message = PolicyImportExportHelper.errorsMessage([
+            { type: 'schema', name: 'Schema A', error: 'Invalid schema IRI' },
+        ]);
+        assert.include(message, 'Schema A');
+        assert.include(message, 'Invalid schema IRI');
+    });
+
+    it('still groups by component type', () => {
+        const message = PolicyImportExportHelper.errorsMessage([
+            ...TOOL_ERRORS,
+            { type: 'schema', name: 'S1', error: 'boom' },
+            { type: 'other', name: 'O1', error: 'bang' },
+        ]);
+        assert.include(message, 'schemas:');
+        assert.include(message, 'tools:');
+        assert.include(message, 'others:');
+    });
+
+    it('degrades to the bare name when no cause was captured', () => {
+        const message = PolicyImportExportHelper.errorsMessage([{ type: 'tool', name: 'Tool A' }]);
+        assert.include(message, 'Tool A');
+        assert.notInclude(message, 'undefined');
+    });
 });
 
 describe('@unit APPROVE_EXTERNAL_POLICY does not approve a partial import ', () => {
