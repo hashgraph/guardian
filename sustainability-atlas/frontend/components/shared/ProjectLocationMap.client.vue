@@ -119,13 +119,13 @@ onUnmounted(() => {
             v-if="!hasLocation"
             class="absolute inset-0 flex items-center justify-center text-sm text-muted-foreground"
         >
-            Location data unavailable
+            {{ $t('projects.detail.location.unavailable') }}
         </div>
         <div
             v-if="hasLocation && approximate"
             class="absolute bottom-2 left-2 z-[1000] rounded bg-background/80 px-2 py-0.5 text-[10px] text-muted-foreground backdrop-blur-sm"
         >
-            Approximate location
+            {{ $t('projects.detail.location.approximate') }}
         </div>
     </div>
 </template>

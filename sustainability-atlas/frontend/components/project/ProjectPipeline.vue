@@ -28,17 +28,19 @@ interface StepCard {
 
 interface DocTypeMeta { label: string; icon: unknown; color: string }
 
-const DOC_TYPE_META: Record<string, DocTypeMeta> = {
-    registration:       { label: 'Registration',  icon: FileText,    color: 'text-primary bg-primary/10' },
-    pdd:                { label: 'Project Design', icon: BookOpen,    color: 'text-primary bg-primary/10' },
-    validationReport:   { label: 'Validation',     icon: ShieldCheck, color: 'text-amber-600 bg-amber-50' },
-    monitoringReport:   { label: 'Monitoring',     icon: Activity,    color: 'text-sky-600 bg-sky-50' },
-    verificationReport: { label: 'Verification',   icon: BadgeCheck,  color: 'text-emerald-600 bg-emerald-50' },
-    unknown:            { label: 'Document',        icon: FileText,    color: 'text-muted-foreground bg-muted' },
-};
+const { t } = useI18n();
+
+const DOC_TYPE_META = computed<Record<string, DocTypeMeta>>(() => ({
+    registration:       { label: t('projects.milestones.registration'),  icon: FileText,    color: 'text-primary bg-primary/10' },
+    pdd:                { label: t('projects.detail.pipeline.docTypes.pdd'), icon: BookOpen,    color: 'text-primary bg-primary/10' },
+    validationReport:   { label: t('projects.milestones.validation'),     icon: ShieldCheck, color: 'text-amber-600 bg-amber-50' },
+    monitoringReport:   { label: t('projects.detail.pipeline.docTypes.monitoringReport'),     icon: Activity,    color: 'text-sky-600 bg-sky-50' },
+    verificationReport: { label: t('projects.milestones.verification'),   icon: BadgeCheck,  color: 'text-emerald-600 bg-emerald-50' },
+    unknown:            { label: t('projects.detail.pipeline.docTypes.unknown'),        icon: FileText,    color: 'text-muted-foreground bg-muted' },
+}));
 
 function metaFor(docType: string): DocTypeMeta {
-    return DOC_TYPE_META[docType] ?? DOC_TYPE_META.unknown;
+    return DOC_TYPE_META.value[docType] ?? DOC_TYPE_META.value.unknown;
 }
 
 // ── Step rank (lifecycle order) ───────────────────────────────────────────────
@@ -121,17 +123,17 @@ function openDrawer(step: StepCard) {
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <h2 class="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <Activity class="h-4 w-4 text-primary" />
-                    Methodology Pipeline
-                    <span class="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{{ steps.length }} steps</span>
+                    {{ $t('projects.detail.pipeline.title') }}
+                    <span class="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground">{{ $t('projects.detail.pipeline.stepsCount', { count: steps.length }) }}</span>
                 </h2>
                 <ChevronDown :class="['h-4 w-4 text-muted-foreground transition-transform', open ? 'rotate-180' : '']" />
             </div>
-            <p class="mt-0.5 text-[11px] text-muted-foreground">One step per schema in this project's methodology lifecycle.</p>
+            <p class="mt-0.5 text-[11px] text-muted-foreground">{{ $t('projects.detail.pipeline.subtitle') }}</p>
         </div>
 
         <!-- Empty state -->
         <div v-if="open && steps.length === 0" class="px-5 py-10 text-center text-sm text-muted-foreground">
-            No linked schemas found for this project yet.
+            {{ $t('projects.detail.pipeline.empty') }}
         </div>
 
         <!-- Step list -->
@@ -159,7 +161,7 @@ function openDrawer(step: StepCard) {
                                         v-if="step.isProjectSchema"
                                         class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary"
                                     >
-                                        Project Schema
+                                        {{ $t('projects.detail.linkedVcs.projectSchemaBadge') }}
                                     </span>
                                 </div>
 
@@ -171,18 +173,18 @@ function openDrawer(step: StepCard) {
                                     <template v-if="step.vcCount > 0">
                                         <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-emerald-500" />
                                         <span class="text-[11px] text-emerald-700">
-                                            Data present &middot; {{ formatTimestamp(step.latestVc?.consensusTimestamp ?? '') }}
+                                            {{ $t('projects.detail.pipeline.dataPresent') }} &middot; {{ formatTimestamp(step.latestVc?.consensusTimestamp ?? '') }}
                                         </span>
                                     </template>
                                     <template v-else>
                                         <Circle class="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
-                                        <span class="text-[11px] text-muted-foreground">Awaiting data</span>
+                                        <span class="text-[11px] text-muted-foreground">{{ $t('projects.detail.pipeline.awaitingData') }}</span>
                                     </template>
                                 </div>
 
                                 <!-- Document count -->
                                 <p v-if="step.vcCount > 0" class="mt-0.5 text-[11px] tabular-nums text-muted-foreground">
-                                    {{ step.vcCount }} document{{ step.vcCount === 1 ? '' : 's' }}
+                                    {{ $t('projects.detail.pipeline.documentCount', { count: step.vcCount }) }}
                                 </p>
                             </div>
 
@@ -190,7 +192,7 @@ function openDrawer(step: StepCard) {
                             <button
                                 v-if="step.vcCount > 0"
                                 class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                                title="View raw VC"
+                                :title="$t('common.viewRawData')"
                                 @click="openDrawer(step)"
                             >
                                 <Info class="h-4 w-4" />

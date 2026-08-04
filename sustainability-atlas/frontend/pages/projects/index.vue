@@ -14,7 +14,8 @@ import {
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
 import { formatCredits } from "~/lib/format";
 import { naturalCompare, decodeMultiValue } from "~/lib/utils";
-import { SDG_LIST } from "~/lib/sdgs";
+import { SDG_LIST, getLocalizedSDGName } from "~/lib/sdgs";
+import { SECTOR_I18N_KEYS } from "~/types/enums";
 import { generateProjectVc } from "~/lib/mock-vc";
 import { getMethodologyLongName } from "~/lib/methodologies";
 import { LIFECYCLE_STAGES, lifecycleStageColor } from "~/lib/lifecycle";
@@ -30,6 +31,12 @@ import type { SavedSearchCriteria } from "~/composables/useSavedSearches";
 import SavedSearchesRow from "~/components/saved-search/SavedSearchesRow.vue";
 
 const { t } = useI18n();
+
+function translateSector(raw: string): string {
+  if (!raw) return "";
+  const key = SECTOR_I18N_KEYS[raw];
+  return key ? t(`dashboard.sectorTypes.${key}`) : raw;
+}
 const { network } = useNetwork();
 const { projects, total, truncated, filterOptions, pending } = useProjects();
 const {
@@ -208,7 +215,10 @@ const filters = computed<FilterOption[]>(() => [
     key: "status",
     label: t("projects.filters.status"),
     multiSelect: true,
-    options: filterOptions.value.statuses.map((s) => ({ value: s, label: s })),
+    options: filterOptions.value.statuses.map((s) => ({
+      value: s,
+      label: t(`projects.lifecycleStages.${s}`),
+    })),
   },
   {
     key: "registry",
@@ -260,7 +270,7 @@ const filters = computed<FilterOption[]>(() => [
     key: "sector",
     label: t("projects.filters.sector"),
     multiSelect: true,
-    options: filterOptions.value.sectors.map((s) => ({ value: s, label: s })),
+    options: filterOptions.value.sectors.map((s) => ({ value: s, label: translateSector(s) })),
   },
   {
     key: "sectoralScope",
@@ -287,7 +297,7 @@ const filters = computed<FilterOption[]>(() => [
     multiSelect: true,
     options: SDG_LIST.map((s) => ({
       value: String(s.id),
-      label: `SDG ${s.id}: ${s.name}`,
+      label: `${t("sdgs.columns.sdg")} ${s.id}: ${getLocalizedSDGName(s.id, t)}`,
       icon: `/sdgs/E-WEB-Goal-${String(s.id).padStart(2, "0")}.png`,
     })),
   },
@@ -719,7 +729,7 @@ async function downloadProjects() {
                   </td>
 
                   <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs truncate">
-                    <TruncatedText :text="p.sector" />
+                    <TruncatedText :text="translateSector(p.sector)" />
                   </td>
                   
                   <td class="py-3.5 px-4 align-middle text-center tabular-nums font-semibold text-sm">

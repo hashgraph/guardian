@@ -67,7 +67,7 @@ const filters = computed<FilterOption[]>(() => [
         key: 'status',
         label: t('developers.filters.status'),
         multiSelect: true,
-        options: STATUSES.map(s => ({ value: s, label: s })),
+        options: STATUSES.map(s => ({ value: s, label: t(`common.status.${s}`) })),
     },
 ]);
 
@@ -169,7 +169,7 @@ const statusColor: Record<string, string> = {
                             </td>
                             <td class="py-3 px-4">
                                 <span :class="[statusColor[d.status], 'text-xs font-medium rounded-full px-2 py-0.5']">
-                                    {{ d.status }}
+                                    {{ $t(`common.status.${d.status}`) }}
                                 </span>
                             </td>
                         </tr>

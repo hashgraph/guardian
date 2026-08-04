@@ -60,18 +60,20 @@ const hasDeviceDimension = computed(() => (data.value?.devices.length ?? 0) > 0)
 // "Stage"/"Expected Issuance Year" etc.) — device is a plain single-select,
 // the from/to date range is FilterBar's built-in combined "daterange" pill
 // (one button, a small from/to popover) rather than two separate inputs.
+const { t } = useI18n();
+
 const filterFields = computed<FilterOption[]>(() => {
     const fields: FilterOption[] = [];
     if (hasDeviceDimension.value) {
         fields.push({
             key: 'device',
-            label: 'Device / Measurement Point',
+            label: t('projects.detail.mrv.columns.device'),
             options: (data.value?.devices ?? []).map((d) => ({ value: d, label: d })),
             searchable: (data.value?.devices.length ?? 0) > 8,
         });
     }
     if (data.value?.dateColumnKey) {
-        fields.push({ key: 'dateRange', label: 'Date Range', type: 'daterange' as const, options: [] });
+        fields.push({ key: 'dateRange', label: t('common.dateRange'), type: 'daterange' as const, options: [] });
     }
     return fields;
 });
@@ -209,13 +211,12 @@ function formatCell(value: string, col: MrvColumn): string {
                     @clear="clearFilters"
                 />
                 <span v-if="loading" class="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground ml-auto">
-                    <Loader2 class="h-3 w-3 animate-spin" /> Loading…
+                    <Loader2 class="h-3 w-3 animate-spin" /> {{ $t('common.loading') }}
                 </span>
             </div>
 
             <p v-if="data?.flattened" class="px-5 pt-2.5 text-[11px] text-muted-foreground">
-                This schema has no per-submission fields of its own — each row below is one device/measurement entry;
-                several rows can come from the same underlying submission (use "Raw" to see the full original document).
+                {{ $t('projects.detail.mrv.flattenedHint') }}
             </p>
 
             <!-- Table -->
@@ -235,17 +236,17 @@ function formatCell(value: string, col: MrvColumn): string {
                                 </span>
                             </th>
                             <th v-if="hasDeviceDimension" class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">
-                                Device / Measurement Point
+                                {{ $t('projects.detail.mrv.columns.device') }}
                             </th>
                             <th class="text-center py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider whitespace-nowrap w-16">
-                                Raw
+                                {{ $t('projects.detail.mrv.columns.raw') }}
                             </th>
                         </tr>
                     </thead>
                     <tbody class="divide-y">
                         <tr v-if="!loading && data && data.rows.length === 0">
                             <td :colspan="(data.columns.length) + (hasDeviceDimension ? 2 : 1)" class="py-8 text-center text-xs text-muted-foreground">
-                                No records match these filters.
+                                {{ $t('projects.detail.mrv.noMatchingRecords') }}
                             </td>
                         </tr>
                         <tr v-for="row in data?.rows ?? []" :key="rowKey(row)" class="hover:bg-muted/20">
@@ -263,7 +264,7 @@ function formatCell(value: string, col: MrvColumn): string {
                                         v-for="label in deviceLabelsFor(row)"
                                         :key="label"
                                         class="text-[11px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5 hover:bg-primary/20 transition-colors"
-                                        title="View this device's history"
+                                        :title="$t('projects.detail.mrv.viewDeviceHistory')"
                                         @click="drillIntoDevice(label)"
                                     >
                                         {{ label }}
@@ -274,7 +275,7 @@ function formatCell(value: string, col: MrvColumn): string {
                             <td class="py-2 px-4 text-center">
                                 <button
                                     class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                    title="View raw VC document"
+                                    :title="$t('common.viewRawData')"
                                     @click="emit('view-record', row.consensusTimestamp)"
                                 >
                                     <FileJson class="h-3.5 w-3.5" />

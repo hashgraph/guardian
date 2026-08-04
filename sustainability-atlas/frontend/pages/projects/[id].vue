@@ -10,11 +10,12 @@ import type { Component } from 'vue';
 import type { Credit, VcDocData } from '~/types/models';
 import { formatCredits } from '~/lib/format';
 import { exportProject, type ExportFormat } from '~/lib/project-export';
-import { getSDG } from '~/lib/sdgs';
+import { getSDG, getLocalizedSDGName } from '~/lib/sdgs';
 import { useDecodedMethodologyApi } from '~/composables/api/useDecodedMethodologyApi';
 import { COUNTRY_ALPHA3 } from '~/composables/useProjects';
 import { nominatimReverse, nominatimCountryCenter } from '~/composables/useNominatim';
 
+const { t } = useI18n();
 const route = useRoute();
 const { network } = useNetwork();
 const projectId = computed(() => route.params.id as string);
@@ -68,14 +69,14 @@ function setTab(key: TabKey) {
 
 const tabs = computed(() => {
     const list: { key: TabKey; label: string; icon: Component }[] = [
-        { key: 'summary',   label: 'Summary',              icon: FolderKanban },
-        { key: 'documents', label: 'Detailed Information',  icon: FileText },
-        { key: 'issuances', label: 'Issuances & Credits',  icon: Coins },
+        { key: 'summary',   label: t('projects.detail.tabs.summary'),              icon: FolderKanban },
+        { key: 'documents', label: t('projects.detail.tabs.documents'),  icon: FileText },
+        { key: 'issuances', label: t('projects.detail.tabs.issuances'),  icon: Coins },
     ];
     if (project.value?.hasMrvData) {
-        list.push({ key: 'mrv', label: 'MRV External Data', icon: CloudDownload });
+        list.push({ key: 'mrv', label: t('projects.detail.tabs.mrv'), icon: CloudDownload });
     }
-    list.push({ key: 'advanced', label: 'Advanced', icon: Shield });
+    list.push({ key: 'advanced', label: t('projects.detail.tabs.advanced'), icon: Shield });
     return list;
 });
 
@@ -190,13 +191,12 @@ async function handleViewVcJson(consensusTimestamp: string) {
         vcViewerOpen.value = true;
     } catch {
         const { toast } = await import('vue-sonner');
-        toast.error('Failed to load VC document');
+        toast.error(t('projects.detail.vcs.loadError'));
     }
 }
 
 // ─── Re-extract action ────────────────────────────────────────────────────────
 
-const { t } = useI18n();
 // Re-extract / refresh-IPFS are admin-only maintenance actions (spec).
 const { isAdmin } = useAuth();
 const { header: csrfHeader } = useCsrf();
@@ -285,17 +285,17 @@ const methodologyMappingRows = computed(() => {
     if (!ps) return [];
     const rf = ps.resolvedFields;
     return [
-        { label: 'Project Title',         field: rf.name },
-        { label: 'Country',               field: rf.country },
-        { label: 'Developer',             field: rf.developer },
-        { label: 'Category',              field: rf.category },
-        { label: 'Scale',                 field: rf.scale },
-        { label: 'Sector',                field: rf.sector },
-        { label: 'Vintage / Start Date',  field: rf.vintageRaw },
-        { label: 'Crediting Period',      field: rf.creditingPeriod },
-        { label: 'SDG / Co-benefits',     field: rf.sdgOrCobenefits },
+        { label: t('projects.detail.mapping.projectTitle'),         field: rf.name },
+        { label: t('projects.detail.mapping.country'),               field: rf.country },
+        { label: t('projects.detail.mapping.developer'),             field: rf.developer },
+        { label: t('projects.detail.mapping.category'),              field: rf.category },
+        { label: t('projects.detail.mapping.scale'),                 field: rf.scale },
+        { label: t('projects.detail.mapping.sector'),                field: rf.sector },
+        { label: t('projects.detail.mapping.vintageRaw'),  field: rf.vintageRaw },
+        { label: t('projects.detail.mapping.creditingPeriod'),      field: rf.creditingPeriod },
+        { label: t('projects.detail.mapping.sdgOrCobenefits'),     field: rf.sdgOrCobenefits },
         {
-            label: 'Project Location',
+            label: t('projects.detail.mapping.projectLocation'),
             field: ps.geoKey
                 ? { fieldKey: ps.geoKey, title: ps.geoFieldTitle ?? ps.geoKey, description: '' }
                 : null,
@@ -447,7 +447,7 @@ const emissions = computed(() => {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Globe class="h-4 w-4 text-primary" />
-                            Sustainable Development Goals
+                            {{ $t('sdgs.title') }}
                         </h2>
                     </div>
                     <div class="px-5 py-5">
@@ -459,12 +459,12 @@ const emissions = computed(() => {
                             >
                                 <img
                                     :src="`/sdgs/E-WEB-Goal-${String(sdgId).padStart(2, '0')}.png`"
-                                    :alt="`SDG ${sdgId}`"
+                                    :alt="`${$t('sdgs.columns.sdg')} ${sdgId}`"
                                     class="h-10 w-10 rounded"
                                 />
                                 <div>
-                                    <div class="text-xs font-semibold text-foreground">SDG {{ sdgId }}</div>
-                                    <div class="text-[11px] text-muted-foreground">{{ getSDG(sdgId)?.name }}</div>
+                                    <div class="text-xs font-semibold text-foreground">{{ $t('sdgs.columns.sdg') }} {{ sdgId }}</div>
+                                    <div class="text-[11px] text-muted-foreground">{{ getLocalizedSDGName(sdgId, t) }}</div>
                                 </div>
                             </div>
                         </div>
@@ -476,12 +476,12 @@ const emissions = computed(() => {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <MapPin class="h-4 w-4 text-primary" />
-                            Project Location
+                            {{ $t('projects.detail.location.title') }}
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">
-                            <template v-if="projectPolygon">Project boundary (polygon)</template>
+                            <template v-if="projectPolygon">{{ $t('projects.detail.location.polygon') }}</template>
                             <template v-else-if="effectiveLocation && !effectiveLocation.approximate">{{ effectiveLocation.lat.toFixed(4) }}, {{ effectiveLocation.lng.toFixed(4) }}</template>
-                            <template v-else-if="effectiveLocation?.approximate">Country-level location</template>
+                            <template v-else-if="effectiveLocation?.approximate">{{ $t('projects.detail.location.countryLevel') }}</template>
                             <span v-if="displayCountry"> · {{ displayCountry }}</span>
                         </p>
                     </div>
@@ -550,7 +550,7 @@ const emissions = computed(() => {
                     :pending="vcDataPending"
                     :open-schema="vcSchemaOpen"
                     :open-record="vcRecordOpen"
-                    empty-message="No linked documents found for this project."
+                    :empty-message="$t('projects.detail.documents.empty')"
                     @toggle-schema="toggleSchema"
                     @toggle-record="(key) => vcRecordOpen[key] = !(vcRecordOpen[key] ?? true)"
                 />
@@ -559,7 +559,7 @@ const emissions = computed(() => {
             <!-- ── Tab: MRV External Data (VCs from externalDataBlock-bound schemas) ── -->
             <div v-else-if="activeTab === 'mrv'" class="p-6 space-y-4">
                 <p class="text-xs text-muted-foreground">
-                    Records submitted through this methodology's external/IoT data-ingestion mechanism (dMRV), separate from human-submitted documents.
+                    {{ $t('projects.detail.mrv.description') }}
                 </p>
 
                 <!-- Data Flow — honest project-level summary, not a fabricated per-record trace -->
@@ -567,18 +567,18 @@ const emissions = computed(() => {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <GitBranch class="h-4 w-4 text-primary" />
-                            Data Flow
+                            {{ $t('projects.detail.mrv.dataFlow.title') }}
                         </h2>
                         <p class="text-[11px] text-muted-foreground mt-0.5">
-                            A snapshot of this project's monitoring activity and credit issuance so far — click through for the full issuance history.
+                            {{ $t('projects.detail.mrv.dataFlow.subtitle') }}
                         </p>
                     </div>
                     <div class="px-5 py-5 flex items-center gap-3 flex-wrap">
                         <div class="flex items-center gap-2.5 rounded-lg border bg-muted/20 px-3.5 py-2.5">
                             <Radio class="h-4 w-4 text-primary shrink-0" />
                             <div>
-                                <div class="text-xs font-semibold text-foreground">MRV Data</div>
-                                <div class="text-[11px] text-muted-foreground">{{ mrvTotalRecords }} record{{ mrvTotalRecords !== 1 ? 's' : '' }}</div>
+                                <div class="text-xs font-semibold text-foreground">{{ $t('projects.detail.mrv.dataFlow.mrvData') }}</div>
+                                <div class="text-[11px] text-muted-foreground">{{ $t('projects.detail.mrv.dataFlow.recordCount', { count: mrvTotalRecords }) }}</div>
                             </div>
                         </div>
                         <ArrowRight class="h-4 w-4 text-muted-foreground shrink-0" />
@@ -588,8 +588,8 @@ const emissions = computed(() => {
                         >
                             <Coins class="h-4 w-4 text-primary shrink-0" />
                             <div>
-                                <div class="text-xs font-semibold text-foreground">Credits Issued</div>
-                                <div class="text-[11px] text-muted-foreground">{{ project.totalIssued ?? 0 }} issued &middot; {{ project.issuanceCount ?? 0 }} issuance(s)</div>
+                                <div class="text-xs font-semibold text-foreground">{{ $t('projects.detail.mrv.dataFlow.creditsIssued') }}</div>
+                                <div class="text-[11px] text-muted-foreground">{{ $t('projects.detail.mrv.dataFlow.issuedSummary', { total: project.totalIssued ?? 0, count: project.issuanceCount ?? 0 }) }}</div>
                             </div>
                         </button>
                     </div>
@@ -605,7 +605,7 @@ const emissions = computed(() => {
                     />
                 </template>
                 <div v-else class="rounded-xl border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
-                    No MRV external data submissions found for this project.
+                    {{ $t('projects.detail.mrv.empty') }}
                 </div>
             </div>
 
@@ -620,7 +620,7 @@ const emissions = computed(() => {
                             @click="triggerReextract"
                         >
                             <RotateCcw :class="['h-4 w-4 text-primary', reextractPending ? 'animate-spin' : '']" />
-                            Re-extract
+                            {{ $t('projects.detail.actions.reextract') }}
                         </button>
                         <button
                             :disabled="refreshIpfsPending"
@@ -628,7 +628,7 @@ const emissions = computed(() => {
                             @click="triggerRefreshIpfs"
                         >
                             <CloudDownload :class="['h-4 w-4 text-primary', refreshIpfsPending ? 'animate-spin' : '']" />
-                            Refresh IPFS
+                            {{ $t('projects.detail.actions.refreshIpfs') }}
                         </button>
                         <div class="w-px h-6 bg-border" />
                     </template>
@@ -637,21 +637,21 @@ const emissions = computed(() => {
                         @click="exportProject(project!, 'iwa', network)"
                     >
                         <Download class="h-4 w-4 text-primary" />
-                        Export as IWA
+                        {{ $t('projects.detail.actions.exportIwa') }}
                     </button>
                     <button
                         class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         @click="exportProject(project!, 'cadtrust', network)"
                     >
                         <Download class="h-4 w-4 text-primary" />
-                        Export as CADTrust
+                        {{ $t('projects.detail.actions.exportCadtrust') }}
                     </button>
                     <button
                         class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
                         @click="exportProject(project!, 'cdop', network)"
                     >
                         <Download class="h-4 w-4 text-primary" />
-                        Export as CDOP
+                        {{ $t('projects.detail.actions.exportCdop') }}
                     </button>
                 </div>
 
@@ -680,7 +680,7 @@ const emissions = computed(() => {
                         <div class="min-w-0">
                             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                                 <Layers class="h-4 w-4 text-primary" />
-                                Methodology Field Mapping
+                                {{ $t('projects.detail.mapping.title') }}
                             </h2>
                             <p class="text-[11px] text-muted-foreground mt-0.5">
                                 <AppLink
@@ -692,7 +692,7 @@ const emissions = computed(() => {
                                     {{ fullMethodologyName }}
                                 </AppLink>
                                 <span v-else>{{ fullMethodologyName }}</span>
-                                — how project fields map to schema fields
+                                — {{ $t('projects.detail.mapping.subtitle') }}
                             </p>
                         </div>
                         <ChevronDown
@@ -702,22 +702,22 @@ const emissions = computed(() => {
                     </div>
                     <div v-if="methodologyMappingOpen">
                         <div v-if="decodedMethodology.pending.value" class="px-5 py-6 text-center text-xs text-muted-foreground">
-                            Loading mapping…
+                            {{ $t('projects.detail.mapping.loading') }}
                         </div>
                         <div v-else-if="!project.instanceTopicId" class="px-5 py-6 text-xs text-muted-foreground">
-                            Methodology version is not linked to this project yet. Click <strong class="text-foreground">Re-extract</strong> above (or re-parse the methodology) to populate it.
+                            {{ $t('projects.detail.mapping.notLinked') }}
                         </div>
                         <div v-else-if="decodedMethodology.error.value" class="px-5 py-6 text-xs text-destructive">
-                            Failed to load methodology mapping.
+                            {{ $t('projects.detail.mapping.error') }}
                         </div>
                         <div v-else-if="!decodedMethodology.data.value?.projectSchema" class="px-5 py-6 text-xs text-muted-foreground">
-                            No project schema has been confirmed for this methodology yet.
+                            {{ $t('projects.detail.mapping.noSchema') }}
                         </div>
                         <table v-else class="w-full text-sm">
                             <thead>
                                 <tr class="bg-muted/20 border-b">
-                                    <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider w-1/3">Project Field</th>
-                                    <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Schema Field</th>
+                                    <th class="text-left py-2.5 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider w-1/3">{{ $t('projects.detail.mapping.columns.projectField') }}</th>
+                                    <th class="text-left py-2.5 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.mapping.columns.schemaField') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
@@ -746,9 +746,9 @@ const emissions = computed(() => {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <Network class="h-4 w-4 text-primary" />
-                            Relationships
+                            {{ $t('projects.detail.relationships.title') }}
                         </h2>
-                        <p class="text-[11px] text-muted-foreground mt-0.5">Entity relationships between Registry, Policy, Schema, Role, Raw Data, VP, and Token</p>
+                        <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('projects.detail.relationships.subtitle') }}</p>
                     </div>
                     <div class="px-5 py-5">
                         <ClientOnly>
@@ -766,24 +766,24 @@ const emissions = computed(() => {
                     <div class="px-5 py-3.5 border-b bg-muted/30">
                         <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                             <BarChart3 class="h-4 w-4 text-primary" />
-                            Emission Parameters
+                            {{ $t('projects.detail.emissions.title') }}
                         </h2>
                     </div>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-px bg-border">
                         <div class="bg-card px-5 py-5">
-                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Baseline Emissions</div>
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.emissions.baseline') }}</div>
                             <div class="text-lg font-semibold text-foreground tabular-nums">{{ emissions.baseline }}</div>
                         </div>
                         <div class="bg-card px-5 py-5">
-                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Project Emissions</div>
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.emissions.project') }}</div>
                             <div class="text-lg font-semibold text-foreground tabular-nums">{{ emissions.project }}</div>
                         </div>
                         <div class="bg-card px-5 py-5">
-                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Leakage Emissions</div>
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.emissions.leakage') }}</div>
                             <div class="text-lg font-semibold text-foreground tabular-nums">{{ emissions.leakage }}</div>
                         </div>
                         <div class="bg-card px-5 py-5">
-                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Baseline Emission Factor</div>
+                            <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.emissions.baselineFactor') }}</div>
                             <div class="text-lg font-semibold text-foreground tabular-nums">{{ emissions.baselineEmissionFactor }}</div>
                         </div>
                     </div>

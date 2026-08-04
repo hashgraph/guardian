@@ -473,7 +473,7 @@ function getChartRawData(cfg: CustomChartConfig): { label: string; value: number
     }
     if (xAxis === 'sdg') {
         return filteredSdgStats.value.map(s => ({
-            label: `SDG ${s.id}`,
+            label: `${t('sdgs.columns.sdg')} ${s.id}`,
             value: yAxis === 'credits' ? s.credits : s.projects,
         }));
     }

@@ -9,8 +9,30 @@ export function useDashboard(filters?: Ref<{ developer?: string; registry?: stri
     const { summary, pending } = useDashboardSummary(filters);
     const { mintStats, buildMintSeries, mintedBySector, mintedByRegistry } = useMintStats(filters);
     const { activityItems: recentActivity } = useNetworkActivity(undefined, filters);
-    const { t } = useI18n();
+    const { t, locale } = useI18n();
 
+    function relativeTime(dateStr: string): string {
+        const now = Date.now();
+        const then = new Date(dateStr).getTime();
+        if (isNaN(then)) return dateStr;
+        const diffMs = now - then;
+        const diffMin = Math.floor(diffMs / 60_000);
+        if (diffMin < 1) return t('dashboard.activity.justNow');
+        if (diffMin < 60) return diffMin === 1
+            ? t('dashboard.activity.minuteAgo', { n: diffMin })
+            : t('dashboard.activity.minutesAgo', { n: diffMin });
+        const diffHr = Math.floor(diffMin / 60);
+        if (diffHr < 24) return diffHr === 1
+            ? t('dashboard.activity.hourAgo', { n: diffHr })
+            : t('dashboard.activity.hoursAgo', { n: diffHr });
+        const diffDay = Math.floor(diffHr / 24);
+        if (diffDay < 30) return diffDay === 1
+            ? t('dashboard.activity.dayAgo', { n: diffDay })
+            : t('dashboard.activity.daysAgo', { n: diffDay });
+        const d = new Date(dateStr);
+        const loc = locale.value === 'es' ? 'es-ES' : 'en-US';
+        return d.toLocaleDateString(loc, { month: 'short', day: 'numeric' });
+    }
     // Options come from the API computed over the unfiltered project set, so
     // selecting a value never collapses the list to that single option.
     const developerOptions = computed(() =>

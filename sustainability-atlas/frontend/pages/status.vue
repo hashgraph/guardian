@@ -19,7 +19,24 @@ import type {
     QueueStatusItemDto,
 } from '~/composables/api/useQueueStatusApi';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const localeTag = computed(() => (locale.value === 'es' ? 'es-ES' : 'en-US'));
+
+const lastSyncedDateDisplay = computed(() => {
+    const raw = syncStatus.value?.lastSyncedAt;
+    if (!raw) return '—';
+    const dt = new Date(raw);
+    if (isNaN(dt.getTime())) return '—';
+    return dt.toLocaleDateString(localeTag.value, { month: 'long', day: 'numeric', year: 'numeric' });
+});
+
+const lastSyncedTimeDisplay = computed(() => {
+    const raw = syncStatus.value?.lastSyncedAt;
+    if (!raw) return '—';
+    const dt = new Date(raw);
+    if (isNaN(dt.getTime())) return '—';
+    return dt.toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', hour12: true });
+});
 const { network } = useNetwork();
 const config = useRuntimeConfig();
 // Sync page is PUBLIC (read-only). Guardian-sync data + all actions are admin-only.
@@ -106,54 +123,54 @@ function clearTopicFilters() {
 }
 
 // ─── Filter dropdown options ───────────────────────────────────────────────────
-const topicStatusOptions: SingleSelectOption[] = [
-    { value: '', label: 'All statuses' },
-    { value: 'SYNCED', label: 'Synced' },
-    { value: 'NEW', label: 'New' },
-    { value: 'DISABLED', label: 'Disabled' },
-];
+const topicStatusOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('status.allStatuses') },
+    { value: 'SYNCED', label: t('status.syncOptions.synced') },
+    { value: 'NEW', label: t('status.syncOptions.new') },
+    { value: 'DISABLED', label: t('status.syncOptions.disabled') },
+]);
 
-const tokenTypeOptions: SingleSelectOption[] = [
-    { value: '', label: 'All types' },
-    { value: 'FUNGIBLE_COMMON', label: 'Fungible' },
-    { value: 'NON_FUNGIBLE_UNIQUE', label: 'Non-Fungible' },
-];
+const tokenTypeOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('status.allTypes') },
+    { value: 'FUNGIBLE_COMMON', label: t('credits.tokenTypes.Fungible') },
+    { value: 'NON_FUNGIBLE_UNIQUE', label: t('credits.tokenTypes.Non-Fungible') },
+]);
 
-const guardianEventOptions: SingleSelectOption[] = [
-    { value: '', label: 'All events' },
-    { value: 'block_complete', label: 'block_complete' },
-    { value: 'token_minted', label: 'token_minted' },
-    { value: 'ipfs_added_file', label: 'ipfs_added_file' },
-    { value: 'block_event', label: 'block_event' },
-    { value: 'policy-event-policy-ready', label: 'policy-ready' },
-    { value: 'policy-engine-event-publish-policies', label: 'publish-policies' },
-];
+const guardianEventOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('status.allEvents') },
+    { value: 'block_complete', label: t('status.eventTypes.block_complete') },
+    { value: 'token_minted', label: t('status.eventTypes.token_minted') },
+    { value: 'ipfs_added_file', label: t('status.eventTypes.ipfs_added_file') },
+    { value: 'block_event', label: t('status.eventTypes.block_event') },
+    { value: 'policy-event-policy-ready', label: t('status.eventTypes.policyReady') },
+    { value: 'policy-engine-event-publish-policies', label: t('status.eventTypes.publishPolicies') },
+]);
 
-const ipfsMessageTypeOptions: SingleSelectOption[] = [
-    { value: '', label: 'All types' },
-    { value: 'VC-Document', label: 'VC-Document' },
-    { value: 'VP-Document', label: 'VP-Document' },
-    { value: 'Instance-Policy', label: 'Instance-Policy' },
-    { value: 'Standard Registry', label: 'Standard Registry' },
-    { value: 'Tag', label: 'Tag' },
-    { value: 'Token', label: 'Token' },
-    { value: 'Schema', label: 'Schema' },
-    { value: 'DID-Document', label: 'DID-Document' },
-];
+const ipfsMessageTypeOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('status.allTypes') },
+    { value: 'VC-Document', label: t('status.messageTypes.vcDocument') },
+    { value: 'VP-Document', label: t('status.messageTypes.vpDocument') },
+    { value: 'Instance-Policy', label: t('status.messageTypes.instancePolicy') },
+    { value: 'Standard Registry', label: t('status.messageTypes.standardRegistry') },
+    { value: 'Tag', label: t('status.messageTypes.tag') },
+    { value: 'Token', label: t('status.messageTypes.token') },
+    { value: 'Schema', label: t('status.messageTypes.schema') },
+    { value: 'DID-Document', label: t('status.messageTypes.didDocument') },
+]);
 
-const ipfsStatusOptions: SingleSelectOption[] = [
-    { value: '', label: 'All statuses' },
-    { value: 'fetched', label: 'Fetched' },
-    { value: 'failed', label: 'Failed' },
-    { value: 'pending', label: 'Pending' },
-];
+const ipfsStatusOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('status.allStatuses') },
+    { value: 'fetched', label: t('status.ipfsStatus.fetched') },
+    { value: 'failed', label: t('status.ipfsStatus.failed') },
+    { value: 'pending', label: t('status.ipfsStatus.pending') },
+]);
 
-const ipfsErrorCategoryOptions: SingleSelectOption[] = [
-    { value: '', label: 'All categories' },
-    { value: 'transient', label: 'Transient' },
-    { value: 'permanent', label: 'Permanent' },
-    { value: 'unknown', label: 'Unknown' },
-];
+const ipfsErrorCategoryOptions = computed<SingleSelectOption[]>(() => [
+    { value: '', label: t('status.allCategories') },
+    { value: 'transient', label: t('status.ipfsErrorCategories.transient') },
+    { value: 'permanent', label: t('status.ipfsErrorCategories.permanent') },
+    { value: 'unknown', label: t('status.ipfsErrorCategories.unknown') },
+]);
 
 // ─── Requeue topic (manual sync trigger) ─────────────────────────────────────
 
@@ -164,7 +181,7 @@ const requeuePending = ref<Record<string, boolean>>({});
 async function requeueTopic(topicId: string, fromStart: boolean) {
     if (!topicId) return;
     if (!/^0\.0\.\d+$/.test(topicId.trim())) {
-        await showToast('Invalid topic ID format. Expected "0.0.<number>".', 'error');
+        await showToast(t('status.toasts.invalidTopicFormat'), 'error');
         return;
     }
     requeuePending.value[topicId] = true;
@@ -179,14 +196,14 @@ async function requeueTopic(topicId: string, fromStart: boolean) {
                 headers: csrfHeader(),
             },
         );
-        await showToast(`Topic ${topicId} queued for sync`);
+        await showToast(t('status.toasts.topicQueued', { topicId }));
         // Reset input and refresh the topics list
         if (topicId === requeueInput.value.trim()) {
             requeueInput.value = '';
             requeueFromStart.value = false;
         }
     } catch (err: any) {
-        await showToast(`Failed to requeue ${topicId}: ${err?.message ?? 'Unknown error'}`, 'error');
+        await showToast(t('status.toasts.failedRequeue', { topicId, error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         requeuePending.value[topicId] = false;
     }
@@ -280,29 +297,63 @@ function formatRelativeTime(ts: string | null): string {
     if (!ts) return '—';
     const diff = Date.now() - new Date(ts).getTime();
     const s = Math.floor(diff / 1000);
-    if (s < 60) return `${s}s ago`;
+    if (s < 60) return t('status.time.sAgo', { s });
     const m = Math.floor(s / 60);
-    if (m < 60) return `${m}m ago`;
+    if (m < 60) return t('status.time.mAgo', { m });
     const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
+    if (h < 24) return t('status.time.hAgo', { h });
+    return t('status.time.dAgo', { d: Math.floor(h / 24) });
 }
 
 function formatRelativeMs(ms: number | null): string {
-    if (!ms) return 'never';
+    if (!ms) return t('status.time.never');
     const s = Math.floor((Date.now() - ms) / 1000);
-    if (s < 60) return `${s}s ago`;
+    if (s < 60) return t('status.time.sAgo', { s });
     const m = Math.floor(s / 60);
-    if (m < 60) return `${m}m ago`;
+    if (m < 60) return t('status.time.mAgo', { m });
     const h = Math.floor(m / 60);
-    if (h < 24) return `${h}h ago`;
-    return `${Math.floor(h / 24)}d ago`;
+    if (h < 24) return t('status.time.hAgo', { h });
+    return t('status.time.dAgo', { d: Math.floor(h / 24) });
 }
 
 function formatLagHuman(seconds: number): string {
-    if (seconds < 60) return `${seconds}s lag`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m lag`;
-    return `${Math.floor(seconds / 3600)}h lag`;
+    if (seconds < 60) return t('status.syncHealth.lagSec', { seconds });
+    if (seconds < 3600) return t('status.syncHealth.lagMin', { minutes: Math.floor(seconds / 60) });
+    return t('status.syncHealth.lagHour', { hours: Math.floor(seconds / 3600) });
+}
+
+function formatMessageType(type: string | null | undefined): string {
+    if (!type) return '—';
+    const keyMap: Record<string, string> = {
+        'VC-Document': 'vcDocument',
+        'VP-Document': 'vpDocument',
+        'Instance-Policy': 'instancePolicy',
+        'Standard Registry': 'standardRegistry',
+        'Tag': 'tag',
+        'Token': 'token',
+        'Schema': 'schema',
+        'DID-Document': 'didDocument',
+    };
+    const key = keyMap[type];
+    return key ? t(`status.messageTypes.${key}`) : type;
+}
+
+function formatFailedReason(reason: string | null | undefined): string {
+    if (!reason) return t('status.failedDrawer.noReason');
+    const lower = reason.toLowerCase();
+    if (lower.includes('timeout') || lower.includes('etimedout')) return t('status.errors.timeout');
+    if (lower.includes('econnrefused') || lower.includes('network error') || lower.includes('fetch failed')) return t('status.errors.networkError');
+    if (lower.includes('connection is closed') || lower.includes('connection closed') || lower.includes('socket closed') || lower.includes('econnreset')) return t('status.errors.connectionClosed');
+    if (lower.includes('enotfound') || lower.includes('getaddrinfo') || lower.includes('dns')) return t('status.errors.dnsError');
+    if (lower.includes('rate limit') || lower.includes('429')) return t('status.errors.rateLimit');
+    if (lower.includes('ipfs')) return t('status.errors.ipfsError');
+    if (lower.includes('stalled')) return t('status.errors.stalled');
+    if (lower.includes('502') || lower.includes('503') || lower.includes('bad gateway')) return t('status.errors.badGateway');
+    if (lower.includes('400') || lower.includes('bad request')) return t('status.errors.badRequest');
+    if (lower.includes('404') || lower.includes('not found')) return t('status.errors.notFound');
+    if (lower.includes('500') || lower.includes('internal server error')) return t('status.errors.serverError');
+    if (lower.includes('401') || lower.includes('403') || lower.includes('unauthorized') || lower.includes('forbidden')) return t('status.errors.unauthorized');
+    return reason.length > 80 ? reason.slice(0, 80) + '…' : reason;
 }
 
 const lastSyncedDisplay = computed(() => {
@@ -339,7 +390,7 @@ async function pauseQueue(baseName: string) {
         });
         await refreshQueues();
     } catch (err: any) {
-        showToast(`Failed to pause ${baseName}: ${err?.message ?? 'Unknown error'}`, 'error');
+        showToast(t('status.toasts.failedPause', { baseName, error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         actionPending.value[baseName] = false;
     }
@@ -354,7 +405,7 @@ async function resumeQueue(baseName: string) {
         });
         await refreshQueues();
     } catch (err: any) {
-        showToast(`Failed to resume ${baseName}: ${err?.message ?? 'Unknown error'}`, 'error');
+        showToast(t('status.toasts.failedResume', { baseName, error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         actionPending.value[baseName] = false;
     }
@@ -410,7 +461,7 @@ async function confirmRetryAll() {
     } catch (err: any) {
         retryAllState.value = null;
         showToast(
-            `Retry all failed for ${baseName}: ${err?.message ?? 'Unknown error'}`,
+            t('status.toasts.retryAllFailed', { baseName, error: err?.message ?? t('common.unknownError') }),
             'error',
         );
     }
@@ -569,7 +620,7 @@ async function confirmRetryJob(job: FailedJobDto) {
         );
         state.done = true;
         state.confirming = false;
-        showToast(`Job ${job.id} queued for retry`);
+        showToast(t('status.toasts.jobQueuedRetry', { id: job.id }));
         // Refresh after short delay so animation can play
         setTimeout(() => refreshFailed(), 800);
     } catch (err: any) {
@@ -577,10 +628,10 @@ async function confirmRetryJob(job: FailedJobDto) {
         if (status === 429) {
             state.error = t('status.failedDrawer.budgetExhausted');
         } else if (status === 409) {
-            state.error = 'Job is no longer in failed state, refreshing...';
+            state.error = t('status.failedDrawer.jobNotFailed');
             setTimeout(() => refreshFailed(), 800);
         } else {
-            state.error = err?.message ?? 'Retry failed';
+            state.error = err?.message ?? t('status.toasts.retryFailed');
         }
         state.pending = false;
         state.confirming = false;
@@ -677,10 +728,10 @@ async function retryIpfsFailure(cid: string) {
             credentials: 'include',
             headers: csrfHeader(),
         });
-        showToast(`CID ${cid.slice(0, 20)}… queued for retry`);
+        showToast(t('status.toasts.cidQueuedRetry', { cid: cid.slice(0, 20) }));
         await refreshIpfsFailures();
     } catch (err: any) {
-        showToast(`Retry failed: ${err?.message ?? 'Unknown error'}`, 'error');
+        showToast(t('status.toasts.retryFailedWithError', { error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         ipfsRetryPending.value[cid] = false;
     }
@@ -702,10 +753,10 @@ async function retryAllIpfsForTopic() {
             credentials: 'include',
             headers: csrfHeader(),
         });
-        showToast(`Retry queued for all failures on topic ${ipfsTopicFilter.value}`);
+        showToast(t('status.toasts.topicRetryAllQueued', { topicId: ipfsTopicFilter.value }));
         await refreshIpfsFailures();
     } catch (err: any) {
-        showToast(`Retry all failed: ${err?.message ?? 'Unknown error'}`, 'error');
+        showToast(t('status.toasts.retryAllFailedWithError', { error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         ipfsRetryAllTopicPending.value = false;
     }
@@ -738,9 +789,9 @@ async function triggerRedecodeAll() {
                 headers: csrfHeader(),
             },
         );
-        showToast(`Re-decode enqueued: ${result.enqueued}/${result.total} policies (${result.skipped} skipped)`);
+        showToast(t('status.toasts.redecodeEnqueued', { enqueued: result.enqueued, total: result.total, skipped: result.skipped }));
     } catch (err: any) {
-        showToast(`Re-decode failed: ${err?.message ?? 'Unknown error'}`, 'error');
+        showToast(t('status.toasts.redecodeFailed', { error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         redecodeAllPending.value = false;
     }
@@ -758,9 +809,9 @@ async function triggerReparseAll() {
                 headers: csrfHeader(),
             },
         );
-        showToast(`Reparse enqueued: ${result.enqueued} VC jobs across ${result.succeeded} methodologies`);
+        showToast(t('status.toasts.reparseEnqueued', { enqueued: result.enqueued, succeeded: result.succeeded }));
     } catch (err: any) {
-        showToast(`Reparse failed: ${err?.message ?? 'Unknown error'}`, 'error');
+        showToast(t('status.toasts.reparseFailed', { error: err?.message ?? t('common.unknownError') }), 'error');
     } finally {
         reparseAllPending.value = false;
     }
@@ -799,12 +850,12 @@ const eventBadgeClass: Record<string, string> = {
 
 function eventLabel(type: string): string {
     const map: Record<string, string> = {
-        'job-failed': 'Job Failed',
-        'job-completed': 'Job Completed',
-        'job-stalled': 'Job Stalled',
-        'ipfs-fetch-failed': 'IPFS Fetch Failed',
-        'ipfs-fetch-recovered': 'IPFS Recovered',
-        'document-loaded': 'Document Loaded',
+        'job-failed': t('status.activity.labels.jobFailed'),
+        'job-completed': t('status.activity.labels.jobCompleted'),
+        'job-stalled': t('status.activity.labels.jobStalled'),
+        'ipfs-fetch-failed': t('status.activity.labels.ipfsFetchFailed'),
+        'ipfs-fetch-recovered': t('status.activity.labels.ipfsFetchRecovered'),
+        'document-loaded': t('status.activity.labels.documentLoaded'),
     };
     return map[type] ?? type;
 }
@@ -834,7 +885,7 @@ function eventDetails(ev: { type: string; payload: Record<string, any> }): strin
 }
 
 function formatTs(ts: number): string {
-    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    return new Date(ts).toLocaleTimeString(localeTag.value, { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
 }
 </script>
 
@@ -854,12 +905,12 @@ function formatTs(ts: number): string {
                     {{ $t('status.dataSyncedUpTo') }}
                 </span>
                 <div class="text-lg font-bold text-foreground mt-2">
-                    {{ syncStatus?.lastSyncedAt ? new Date(syncStatus.lastSyncedAt).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' }) : '—' }}
+                    {{ lastSyncedDateDisplay }}
                 </div>
                 <div class="flex items-center gap-1.5 mt-1">
                     <Clock class="h-3.5 w-3.5 text-muted-foreground" />
                     <span class="text-xs text-muted-foreground">
-                        {{ syncStatus?.lastSyncedAt ? new Date(syncStatus.lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '—' }}
+                        {{ lastSyncedTimeDisplay }}
                     </span>
                 </div>
             </div>
@@ -906,7 +957,7 @@ function formatTs(ts: number): string {
                 </div>
                 <span class="text-xs text-muted-foreground">
                     {{ $t('status.lastUpdated') }}:
-                    {{ secondsSinceUpdate === 0 ? 'just now' : `${secondsSinceUpdate}s ago` }}
+                    {{ secondsSinceUpdate === 0 ? $t('status.time.justNow') : $t('status.time.sAgo', { s: secondsSinceUpdate }) }}
                 </span>
             </div>
         </div>
@@ -924,7 +975,7 @@ function formatTs(ts: number): string {
                     @click="refreshQueues"
                 >
                     <RefreshCw class="h-3.5 w-3.5" :class="{ 'animate-spin': queuePending }" />
-                    Refresh
+                    {{ $t('common.refresh') }}
                 </button>
             </div>
 
@@ -957,7 +1008,7 @@ function formatTs(ts: number): string {
                             <!-- Empty state -->
                             <tr v-else-if="mergedQueues.length === 0 && !queuePending">
                                 <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">
-                                    No queues found
+                                    {{ $t('common.noResults') }}
                                 </td>
                             </tr>
 
@@ -1122,7 +1173,7 @@ function formatTs(ts: number): string {
                             <input
                                 v-model="topicSearch"
                                 type="text"
-                                placeholder="Search topic ID…"
+                                :placeholder="$t('status.syncHealth.searchTopicPlaceholder')"
                                 class="h-8 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
                             />
                             <SingleSelect
@@ -1137,17 +1188,17 @@ function formatTs(ts: number): string {
                                 @click="clearTopicFilters"
                             >
                                 <X class="h-3.5 w-3.5" />
-                                Clear
+                                {{ $t('common.clear') }}
                             </button>
                         </div>
 
                         <!-- Manual requeue (admin-only action) -->
                         <div v-if="isAdmin" class="flex items-center gap-2 flex-wrap mb-2 rounded-md border border-dashed bg-muted/20 px-3 py-2">
-                            <span class="text-xs font-medium text-muted-foreground">Requeue topic:</span>
+                            <span class="text-xs font-medium text-muted-foreground">{{ $t('status.syncHealth.requeueTopicLabel') }}</span>
                             <input
                                 v-model="requeueInput"
                                 type="text"
-                                placeholder="0.0.43065"
+                                :placeholder="$t('status.syncHealth.requeueTopicPlaceholder')"
                                 class="h-8 rounded-md border border-input bg-card px-3 font-mono text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-40"
                                 @keyup.enter="requeueTopic(requeueInput, requeueFromStart)"
                             />
@@ -1157,7 +1208,7 @@ function formatTs(ts: number): string {
                                     type="checkbox"
                                     class="h-3.5 w-3.5 rounded border-border accent-primary"
                                 />
-                                From start (re-process all messages)
+                                {{ $t('status.syncHealth.fromStartLabel') }}
                             </label>
                             <button
                                 :disabled="!requeueInput.trim() || !!requeuePending[requeueInput.trim()]"
@@ -1166,27 +1217,27 @@ function formatTs(ts: number): string {
                             >
                                 <Loader2 v-if="requeuePending[requeueInput.trim()]" class="h-3 w-3 animate-spin" />
                                 <RefreshCw v-else class="h-3 w-3" />
-                                Queue
+                                {{ $t('status.syncHealth.queueButton') }}
                             </button>
                         </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b bg-muted/30">
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Topic ID</th>
-                                        <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Messages</th>
-                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Has Next</th>
-                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                                        <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Update</th>
-                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.topicId') }}</th>
+                                        <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.messages') }}</th>
+                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.hasNext') }}</th>
+                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.status') }}</th>
+                                        <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.lastUpdate') }}</th>
+                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
                                     <tr v-if="topicsPending">
-                                        <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">Loading…</td>
+                                        <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">{{ $t('common.loading') }}</td>
                                     </tr>
                                     <tr v-else-if="(syncTopicsData?.topics ?? []).length === 0">
-                                        <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">No topics found</td>
+                                        <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">{{ $t('status.syncHealth.noTopicsFound') }}</td>
                                     </tr>
                                     <tr v-for="topic in (syncTopicsData?.topics ?? [])" :key="topic.topicId" class="hover:bg-muted/20">
                                         <td class="py-2 px-3 font-mono text-xs">{{ topic.topicId }}</td>
@@ -1196,7 +1247,7 @@ function formatTs(ts: number): string {
                                                 class="text-xs rounded-full px-2 py-0.5 font-medium"
                                                 :class="topic.hasNext ? 'bg-stat-amber/10 text-stat-amber' : 'bg-muted text-muted-foreground'"
                                             >
-                                                {{ topic.hasNext ? 'Yes' : 'No' }}
+                                                {{ topic.hasNext ? $t('common.yes') : $t('common.no') }}
                                             </span>
                                         </td>
                                         <td class="py-2 px-3 text-center">
@@ -1207,13 +1258,13 @@ function formatTs(ts: number): string {
                                             <button
                                                 v-if="isAdmin"
                                                 :disabled="!!requeuePending[topic.topicId]"
-                                                title="Requeue topic from current watermark"
+                                                :title="$t('status.syncHealth.requeueTooltip')"
                                                 class="inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground disabled:opacity-40 disabled:cursor-not-allowed"
                                                 @click="requeueTopic(topic.topicId, false)"
                                             >
                                                 <Loader2 v-if="requeuePending[topic.topicId]" class="h-3 w-3 animate-spin" />
                                                 <RefreshCw v-else class="h-3 w-3" />
-                                                Requeue
+                                                {{ $t('status.syncHealth.requeueButton') }}
                                             </button>
                                             <span v-else class="text-xs text-muted-foreground">—</span>
                                         </td>
@@ -1243,7 +1294,7 @@ function formatTs(ts: number): string {
                             <input
                                 v-model="tokenSearch"
                                 type="text"
-                                placeholder="Search token ID…"
+                                :placeholder="$t('status.syncHealth.searchTokenPlaceholder')"
                                 class="h-8 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-48"
                             />
                             <SingleSelect
@@ -1258,25 +1309,25 @@ function formatTs(ts: number): string {
                                 @click="clearTokenFilters"
                             >
                                 <X class="h-3.5 w-3.5" />
-                                Clear
+                                {{ $t('common.clear') }}
                             </button>
                         </div>
                         <div class="rounded-lg border bg-card overflow-hidden">
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b bg-muted/30">
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
-                                        <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Serial</th>
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Has Next</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.tokenId') }}</th>
+                                        <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.serial') }}</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.type') }}</th>
+                                        <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.columns.hasNext') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
                                     <tr v-if="tokensPending">
-                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">Loading…</td>
+                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">{{ $t('common.loading') }}</td>
                                     </tr>
                                     <tr v-else-if="(syncTokensData?.tokens ?? []).length === 0">
-                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">No tokens found</td>
+                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">{{ $t('status.syncHealth.noTokensFound') }}</td>
                                     </tr>
                                     <tr v-for="token in (syncTokensData?.tokens ?? [])" :key="token.tokenId" class="hover:bg-muted/20">
                                         <td class="py-2 px-3 font-mono text-xs">{{ token.tokenId }}</td>
@@ -1287,7 +1338,7 @@ function formatTs(ts: number): string {
                                                 class="text-xs rounded-full px-2 py-0.5 font-medium"
                                                 :class="token.hasNext ? 'bg-stat-amber/10 text-stat-amber' : 'bg-muted text-muted-foreground'"
                                             >
-                                                {{ token.hasNext ? 'Yes' : 'No' }}
+                                                {{ token.hasNext ? $t('common.yes') : $t('common.no') }}
                                             </span>
                                         </td>
                                     </tr>
@@ -1318,7 +1369,7 @@ function formatTs(ts: number): string {
                         class="inline-block h-2 w-2 rounded-full"
                         :class="guardianSync.instances.some((i) => i.connected) ? 'bg-stat-green animate-pulse' : 'bg-stat-amber'"
                     />
-                    <h2 class="text-base font-semibold text-foreground">Guardian Sync</h2>
+                    <h2 class="text-base font-semibold text-foreground">{{ $t('status.guardianSync.title') }}</h2>
                     <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
                         {{ guardianSync.instances.length }}
                     </span>
@@ -1339,13 +1390,13 @@ function formatTs(ts: number): string {
             >
                 <div v-if="guardianSyncPanelOpen" class="px-6 pb-6 space-y-4">
                     <p class="text-xs text-muted-foreground">
-                        Guardian event stream — enqueues targeted fetches into the queues above instead of blind polling.
+                        {{ $t('status.guardianSync.description') }}
                     </p>
 
                     <!-- Instances table -->
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <h3 class="text-sm font-semibold text-foreground">Instances</h3>
+                            <h3 class="text-sm font-semibold text-foreground">{{ $t('status.guardianSync.instances') }}</h3>
                             <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
                                 {{ guardianSync.instances.length }}
                             </span>
@@ -1354,17 +1405,17 @@ function formatTs(ts: number): string {
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b bg-muted/30">
-                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Instance</th>
-                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">AEM Endpoint</th>
-                                    <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                                    <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Events</th>
-                                    <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Event</th>
-                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Subject</th>
+                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.instance') }}</th>
+                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.aemEndpoint') }}</th>
+                                    <th class="text-center py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.status') }}</th>
+                                    <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.events') }}</th>
+                                    <th class="text-right py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.lastEvent') }}</th>
+                                    <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.lastSubject') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
                                 <tr v-if="guardianSync.instances.length === 0">
-                                    <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">No instances configured</td>
+                                    <td colspan="6" class="py-6 text-center text-xs text-muted-foreground">{{ $t('status.guardianSync.noInstances') }}</td>
                                 </tr>
                                 <tr v-for="inst in guardianSync.instances" :key="inst.id" class="hover:bg-muted/20">
                                     <td class="py-2 px-3 font-mono text-xs text-foreground">{{ inst.id }}</td>
@@ -1375,7 +1426,7 @@ function formatTs(ts: number): string {
                                             :class="inst.connected ? 'bg-stat-green/10 text-stat-green' : 'bg-stat-amber/10 text-stat-amber'"
                                         >
                                             <span class="inline-block h-1.5 w-1.5 rounded-full" :class="inst.connected ? 'bg-stat-green' : 'bg-stat-amber'" />
-                                            {{ inst.connected ? 'Connected' : 'Reconnecting' }}
+                                            {{ inst.connected ? $t('status.guardianSync.connected') : $t('status.guardianSync.reconnecting') }}
                                         </span>
                                     </td>
                                     <td class="py-2 px-3 text-right tabular-nums">{{ inst.eventsProcessed.toLocaleString() }}</td>
@@ -1390,7 +1441,7 @@ function formatTs(ts: number): string {
                     <!-- Recent triggers table -->
                     <div>
                         <div class="flex items-center gap-2 mb-2">
-                            <h3 class="text-sm font-semibold text-foreground">Recent triggers</h3>
+                            <h3 class="text-sm font-semibold text-foreground">{{ $t('status.guardianSync.recentTriggers') }}</h3>
                             <span class="inline-flex items-center justify-center rounded-full bg-muted text-muted-foreground text-xs font-medium px-2 py-0.5 min-w-6">
                                 {{ (guardianEventsData?.total ?? 0).toLocaleString() }}
                             </span>
@@ -1407,15 +1458,15 @@ function formatTs(ts: number): string {
                             <table class="w-full text-sm">
                                 <thead>
                                     <tr class="border-b bg-muted/30">
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">When</th>
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Event</th>
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Ref</th>
-                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Action</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.when') }}</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.event') }}</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.ref') }}</th>
+                                        <th class="text-left py-2 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.guardianSync.columns.action') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y">
                                     <tr v-if="(guardianEventsData?.events ?? []).length === 0">
-                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">No triggers recorded</td>
+                                        <td colspan="4" class="py-6 text-center text-xs text-muted-foreground">{{ $t('status.guardianSync.noTriggers') }}</td>
                                     </tr>
                                     <tr v-for="(ev, i) in (guardianEventsData?.events ?? [])" :key="i" class="hover:bg-muted/20">
                                         <td class="py-2 px-3 text-muted-foreground text-xs whitespace-nowrap">{{ formatRelativeMs(new Date(ev.createdAt).getTime()) }}</td>
@@ -1437,7 +1488,7 @@ function formatTs(ts: number): string {
                     </div>
 
                     <p class="text-[11px] text-muted-foreground mt-2">
-                        Heartbeat {{ formatRelativeMs(guardianSync.updatedAt) }}.
+                        {{ $t('status.guardianSync.heartbeat', { time: formatRelativeMs(guardianSync.updatedAt) }) }}
                     </p>
                 </div>
             </Transition>
@@ -1452,7 +1503,7 @@ function formatTs(ts: number): string {
                 <div class="flex items-center gap-2">
                     <FileWarning class="h-4 w-4 text-muted-foreground" />
                     <div>
-                        <h2 class="text-base font-semibold text-foreground">IPFS Documents</h2>
+                        <h2 class="text-base font-semibold text-foreground">{{ $t('status.ipfs.title') }}</h2>
                     </div>
                     <span
                         v-if="ipfsFailuresTotal > 0"
@@ -1476,7 +1527,7 @@ function formatTs(ts: number): string {
                     >
                         <Loader2 v-if="ipfsRetryAllTopicPending" class="h-3 w-3 animate-spin" />
                         <RefreshCw v-else class="h-3 w-3" />
-                        Retry All for Topic
+                        {{ $t('status.ipfs.retryAllForTopic') }}
                     </button>
                     <ChevronDown
                         class="h-4 w-4 text-muted-foreground transition-transform"
@@ -1499,7 +1550,7 @@ function formatTs(ts: number): string {
                         <input
                             v-model="ipfsTopicFilterRaw"
                             type="text"
-                            placeholder="Filter by topic ID..."
+                            :placeholder="$t('status.ipfs.filterTopicPlaceholder')"
                             class="h-9 rounded-md border border-input bg-card px-3 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-56"
                         />
                         <label
@@ -1511,7 +1562,7 @@ function formatTs(ts: number): string {
                                 type="checkbox"
                                 class="rounded border-input"
                             />
-                            Include child topics
+                            {{ $t('status.ipfs.includeChildTopics') }}
                         </label>
                         <!-- Message type filter -->
                         <SingleSelect
@@ -1541,7 +1592,7 @@ function formatTs(ts: number): string {
                             @click="clearIpfsFilters"
                         >
                             <X class="h-3.5 w-3.5" />
-                            Clear
+                            {{ $t('common.clear') }}
                         </button>
                         <button
                             class="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors ml-auto"
@@ -1549,7 +1600,7 @@ function formatTs(ts: number): string {
                             @click="refreshIpfsFailures()"
                         >
                             <RefreshCw class="h-3.5 w-3.5" :class="{ 'animate-spin': ipfsFailuresPending }" />
-                            Refresh
+                            {{ $t('common.refresh') }}
                         </button>
                     </div>
 
@@ -1558,15 +1609,15 @@ function formatTs(ts: number): string {
                         <table class="w-full text-sm">
                             <thead>
                                 <tr class="border-b bg-muted/30">
-                                    <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">CID</th>
-                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">CID v1</th>
-                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Topic ID</th>
-                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                                    <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Error</th>
-                                    <th class="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Attempts</th>
-                                    <th class="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Last Failed</th>
-                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                    <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.cid') }}</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.cidV1') }}</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.topicId') }}</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.type') }}</th>
+                                    <th class="text-center py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.status') }}</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.error') }}</th>
+                                    <th class="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.attempts') }}</th>
+                                    <th class="text-right py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.lastFailed') }}</th>
+                                    <th class="text-left py-2.5 px-3 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('status.ipfs.columns.actions') }}</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y">
@@ -1588,7 +1639,7 @@ function formatTs(ts: number): string {
                                 <!-- Empty state -->
                                 <tr v-else-if="ipfsFailures.length === 0 && !ipfsFailuresPending">
                                     <td colspan="9" class="py-12 text-center text-sm text-muted-foreground">
-                                        No IPFS documents found
+                                        {{ $t('status.ipfs.noDocuments') }}
                                     </td>
                                 </tr>
 
@@ -1604,7 +1655,7 @@ function formatTs(ts: number): string {
                                             <span :title="row.cid" class="block truncate font-mono text-xs text-foreground">{{ row.cid }}</span>
                                             <button
                                                 class="opacity-0 group-hover:opacity-100 transition-opacity flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                title="Copy CID"
+                                                :title="$t('status.ipfs.copyCid')"
                                                 @click.stop="copyToClipboard(row.cid)"
                                             >
                                                 <Check v-if="copiedValue === row.cid" class="h-3 w-3 text-stat-green" />
@@ -1619,7 +1670,7 @@ function formatTs(ts: number): string {
                                             <span :title="row.cidV1" class="block truncate font-mono text-xs text-muted-foreground">{{ row.cidV1 }}</span>
                                             <button
                                                 class="opacity-0 group-hover:opacity-100 transition-opacity flex h-5 w-5 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-foreground"
-                                                title="Copy CID v1"
+                                                :title="$t('status.ipfs.copyCidV1')"
                                                 @click.stop="copyToClipboard(row.cidV1)"
                                             >
                                                 <Check v-if="copiedValue === row.cidV1" class="h-3 w-3 text-stat-green" />
@@ -1635,7 +1686,7 @@ function formatTs(ts: number): string {
 
                                     <!-- Message type -->
                                     <td class="py-3 px-3 text-xs text-muted-foreground">
-                                        <span v-if="row.messageType" class="bg-muted rounded px-1.5 py-0.5 text-xs">{{ row.messageType }}</span>
+                                        <span v-if="row.messageType" class="bg-muted rounded px-1.5 py-0.5 text-xs">{{ formatMessageType(row.messageType) }}</span>
                                         <span v-else class="text-muted-foreground">—</span>
                                     </td>
 
@@ -1645,7 +1696,7 @@ function formatTs(ts: number): string {
                                             class="inline-flex items-center text-xs font-medium rounded-full px-2 py-0.5 capitalize"
                                             :class="ipfsStatusBadgeClass(row.status)"
                                         >
-                                            {{ row.status }}
+                                            {{ $t('status.ipfsStatus.' + row.status) }}
                                         </span>
                                     </td>
 
@@ -1684,7 +1735,7 @@ function formatTs(ts: number): string {
                                         >
                                             <Loader2 v-if="ipfsRetryPending[row.cid]" class="h-3 w-3 animate-spin" />
                                             <RefreshCw v-else class="h-3 w-3" />
-                                            Retry
+                                            {{ $t('status.actions.retry') }}
                                         </button>
                                     </td>
                                 </tr>
@@ -1714,7 +1765,7 @@ function formatTs(ts: number): string {
             >
                 <div class="flex items-center gap-2">
                     <Settings class="h-4 w-4 text-muted-foreground" />
-                    <h2 class="text-base font-semibold text-foreground">Maintenance</h2>
+                    <h2 class="text-base font-semibold text-foreground">{{ $t('status.maintenance.title') }}</h2>
                 </div>
                 <ChevronDown
                     class="h-4 w-4 text-muted-foreground transition-transform"
@@ -1732,7 +1783,7 @@ function formatTs(ts: number): string {
             >
                 <div v-if="maintenancePanelOpen" class="px-6 pb-6 space-y-3">
                     <p class="text-xs text-muted-foreground">
-                        Admin-only operations for re-processing policies and projects. Run re-decode first, then reparse to propagate updated field mappings.
+                        {{ $t('status.maintenance.description') }}
                     </p>
                     <div class="flex flex-wrap gap-3">
                         <button
@@ -1742,7 +1793,7 @@ function formatTs(ts: number): string {
                         >
                             <Loader2 v-if="redecodeAllPending" class="h-4 w-4 animate-spin" />
                             <RefreshCw v-else class="h-4 w-4" />
-                            Redecode All Policies
+                            {{ $t('status.maintenance.redecodeAll') }}
                         </button>
                         <button
                             class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm border border-border hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1751,7 +1802,7 @@ function formatTs(ts: number): string {
                         >
                             <Loader2 v-if="reparseAllPending" class="h-4 w-4 animate-spin" />
                             <RefreshCw v-else class="h-4 w-4" />
-                            Reparse All Projects
+                            {{ $t('status.maintenance.reparseAll') }}
                         </button>
                     </div>
                 </div>
@@ -1765,7 +1816,7 @@ function formatTs(ts: number): string {
                     <h2 class="text-base font-semibold text-foreground">{{ $t('status.activity.title') }}</h2>
                     <p class="text-xs text-muted-foreground mt-0.5">
                         {{ filteredEvents.length }} {{ $t('status.activity.events') }}
-                        <span v-if="recentEvents.length >= 50" class="text-stat-amber"> (buffer full — oldest may be lost)</span>
+                        <span v-if="recentEvents.length >= 50" class="text-stat-amber"> {{ $t('status.activity.bufferFull') }}</span>
                     </p>
                 </div>
                 <!-- Filter toggle -->
@@ -1852,11 +1903,13 @@ function formatTs(ts: number): string {
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h3 class="font-semibold text-foreground">{{ $t('status.retryAll.confirm') }}</h3>
-                            <p class="text-sm text-muted-foreground mt-1">
-                                Retry all {{ retryAllState.failedCount }} failed jobs in
-                                <code class="font-mono text-xs bg-muted px-1 rounded">{{ retryAllState.baseName }}</code>?
-                                Jobs that have exceeded the {{ MANUAL_RETRY_BUDGET }}-manual-retry budget will be skipped unless Force is checked.
-                            </p>
+                            <i18n-t keypath="status.retryAll.confirmBody" tag="p" class="text-sm text-muted-foreground mt-1">
+                                <template #count>{{ retryAllState.failedCount }}</template>
+                                <template #baseName>
+                                    <code class="font-mono text-xs bg-muted px-1 rounded">{{ retryAllState.baseName }}</code>
+                                </template>
+                                <template #budget>{{ MANUAL_RETRY_BUDGET }}</template>
+                            </i18n-t>
                         </div>
                         <button class="text-muted-foreground hover:text-foreground" @click="cancelRetryAll">
                             <X class="h-4 w-4" />
@@ -1877,7 +1930,7 @@ function formatTs(ts: number): string {
                             class="rounded px-3 py-1.5 text-sm border border-border hover:bg-muted transition-colors"
                             @click="cancelRetryAll"
                         >
-                            Cancel
+                            {{ $t('common.cancel') }}
                         </button>
                         <button
                             class="rounded px-3 py-1.5 text-sm bg-stat-rose text-white hover:bg-stat-rose/90 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
@@ -1886,7 +1939,7 @@ function formatTs(ts: number): string {
                         >
                             <Loader2 v-if="retryAllState.pending" class="h-3.5 w-3.5 animate-spin" />
                             <RefreshCw v-else class="h-3.5 w-3.5" />
-                            Retry All
+                            {{ $t('status.actions.retryAll') }}
                         </button>
                     </div>
                 </div>
@@ -1923,11 +1976,10 @@ function formatTs(ts: number): string {
                             </h2>
                             <p class="text-xs text-muted-foreground mt-0.5">
                                 <template v-if="drawerSearch">
-                                    {{ filteredFailedJobs.length }} match{{ filteredFailedJobs.length === 1 ? '' : 'es' }} on this page
-                                    <span class="text-muted-foreground/60">({{ failedJobs?.total ?? 0 }} total)</span>
+                                    {{ $t('status.failedDrawer.searchMatches', { count: filteredFailedJobs.length, total: failedJobs?.total ?? 0 }) }}
                                 </template>
                                 <template v-else>
-                                    {{ failedJobs?.total ?? 0 }} failed job{{ (failedJobs?.total ?? 0) === 1 ? '' : 's' }}
+                                    {{ $t('status.failedDrawer.failedCount', { count: failedJobs?.total ?? 0 }) }}
                                 </template>
                             </p>
                         </div>
@@ -1974,7 +2026,7 @@ function formatTs(ts: number): string {
                             </div>
 
                             <div v-else-if="failedGroups?.length === 0" class="py-12 text-center text-sm text-muted-foreground">
-                                No groups found
+                                {{ $t('status.failedDrawer.noGroupsFound') }}
                             </div>
 
                             <div
@@ -1983,11 +2035,11 @@ function formatTs(ts: number): string {
                                 class="rounded-lg border bg-card p-4 space-y-2"
                             >
                                 <div class="flex items-start justify-between gap-3">
-                                    <p class="text-sm font-medium text-foreground truncate max-w-xs" :title="group.reason">
-                                        {{ group.reason.slice(0, 80) }}{{ group.reason.length > 80 ? '…' : '' }}
+                                    <p class="text-sm font-medium text-foreground truncate max-w-xs" :title="group.reason || $t('status.failedDrawer.noReason')">
+                                        {{ formatFailedReason(group.reason) }}
                                     </p>
                                     <span class="shrink-0 text-xs text-muted-foreground font-medium">
-                                        Count: {{ group.count }}
+                                        {{ $t('status.failedDrawer.count', { count: group.count }) }}
                                     </span>
                                 </div>
                                 <div class="flex flex-wrap gap-1">
@@ -2005,7 +2057,7 @@ function formatTs(ts: number): string {
                                     @click="openRetryAll({ baseName: drawerBaseName!, fullName: '', counts: { waiting: 0, active: 0, completed: 0, failed: group.count, delayed: 0, paused: 0 }, config: { concurrency: 1, attempts: 3, backoffType: '', backoffDelay: 0 }, isPaused: false })"
                                 >
                                     <RefreshCw class="h-3 w-3" />
-                                    Retry group
+                                    {{ $t('status.failedDrawer.retryGroup') }}
                                 </button>
                             </div>
 
@@ -2028,12 +2080,12 @@ function formatTs(ts: number): string {
                                 <input
                                     v-model="drawerSearch"
                                     type="text"
-                                    placeholder="Filter by job ID or topic ID…"
+                                    :placeholder="$t('status.failedDrawer.filterPlaceholder')"
                                     class="w-full h-8 rounded border border-border bg-muted/30 px-3 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
                                 />
                                 <p v-if="drawerSearch && !failedPending" class="mt-1 text-xs text-muted-foreground">
-                                    <template v-if="filteredFailedJobs.length === 0">No jobs match "{{ drawerSearch }}" on this page</template>
-                                    <template v-else>{{ filteredFailedJobs.length }} match{{ filteredFailedJobs.length === 1 ? '' : 'es' }} on this page — use pagination to search other pages</template>
+                                    <template v-if="filteredFailedJobs.length === 0">{{ $t('status.failedDrawer.noSearchMatchesOnPage', { search: drawerSearch }) }}</template>
+                                    <template v-else>{{ $t('status.failedDrawer.searchMatchesOnPage', { count: filteredFailedJobs.length }) }}</template>
                                 </p>
                             </div>
 
@@ -2045,7 +2097,7 @@ function formatTs(ts: number): string {
                             </div>
 
                             <div v-else-if="failedJobs?.items?.length === 0" class="py-12 text-center text-sm text-muted-foreground">
-                                No failed jobs
+                                {{ $t('status.failedDrawer.noFailedJobs') }}
                             </div>
 
                             <div
@@ -2059,8 +2111,8 @@ function formatTs(ts: number): string {
                                     <span class="text-xs text-muted-foreground shrink-0">{{ formatRelativeTime(new Date(job.finishedOn ?? job.timestamp).toISOString()) }}</span>
                                 </div>
 
-                                <p class="text-sm text-foreground" :title="job.failedReason">
-                                    {{ job.failedReason.slice(0, 60) }}{{ job.failedReason.length > 60 ? '…' : '' }}
+                                <p class="text-sm text-foreground" :title="job.failedReason || $t('status.failedDrawer.noReason')">
+                                    {{ formatFailedReason(job.failedReason) }}
                                 </p>
 
                                 <div class="flex items-center gap-3 text-xs text-muted-foreground">
@@ -2107,7 +2159,7 @@ function formatTs(ts: number): string {
 
                                     <!-- Confirmation inline -->
                                     <template v-else-if="jobRetryStates[job.id]?.confirming">
-                                        <span class="text-xs text-muted-foreground">Confirm retry?</span>
+                                        <span class="text-xs text-muted-foreground">{{ $t('status.failedDrawer.confirmRetryQuestion') }}</span>
                                         <button
                                             class="inline-flex items-center gap-1 text-xs rounded px-2 py-1 bg-primary text-primary-foreground hover:bg-primary/90 transition-colors disabled:opacity-50"
                                             :disabled="jobRetryStates[job.id]?.pending"
@@ -2115,20 +2167,20 @@ function formatTs(ts: number): string {
                                         >
                                             <Loader2 v-if="jobRetryStates[job.id]?.pending" class="h-3 w-3 animate-spin" />
                                             <CheckCircle2 v-else class="h-3 w-3" />
-                                            Yes, retry
+                                            {{ $t('status.failedDrawer.yesRetry') }}
                                         </button>
                                         <button
                                             class="text-xs rounded px-2 py-1 border border-border hover:bg-muted transition-colors"
                                             @click="cancelRetry(job.id)"
                                         >
-                                            Cancel
+                                            {{ $t('common.cancel') }}
                                         </button>
                                     </template>
 
                                     <!-- Done state -->
                                     <span v-else-if="jobRetryStates[job.id]?.done" class="text-xs text-stat-green flex items-center gap-1">
                                         <CheckCircle2 class="h-3 w-3" />
-                                        Retried
+                                        {{ $t('status.failedDrawer.retriedState') }}
                                     </span>
                                 </div>
 
@@ -2139,7 +2191,7 @@ function formatTs(ts: number): string {
 
                                 <!-- Stacktrace collapsible -->
                                 <details v-if="job.stacktrace?.length" class="text-xs">
-                                    <summary class="cursor-pointer text-muted-foreground hover:text-foreground select-none">Stack trace</summary>
+                                    <summary class="cursor-pointer text-muted-foreground hover:text-foreground select-none">{{ $t('status.failedDrawer.stackTrace') }}</summary>
                                     <pre class="mt-2 p-2 bg-muted rounded text-[10px] overflow-x-auto max-h-32 font-mono whitespace-pre-wrap break-all">{{ job.stacktrace.join('\n') }}</pre>
                                 </details>
                             </div>
@@ -2165,7 +2217,7 @@ function formatTs(ts: number): string {
                             @click="drawerTab === 'byReason' ? refreshGroups() : refreshFailed()"
                         >
                             <RefreshCw class="h-3.5 w-3.5" :class="{ 'animate-spin': failedPending || groupsPending }" />
-                            Refresh
+                            {{ $t('common.refresh') }}
                         </button>
                         <button
                             class="text-sm rounded px-3 py-1.5 border border-border hover:bg-muted transition-colors"
