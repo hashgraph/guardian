@@ -1516,6 +1516,12 @@
                                             [disabled]="!getCrossTargetPSelectGroups().length"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
+                                            <ng-template pTemplate="item" let-option>
+                                                <span class="sc-cond-opt-label">{{ option.label }}</span>
+                                                @if (option.isBlock) {
+                                                    <span class="sc-cond-opt-block-badge">Sub-schema</span>
+                                                }
+                                            </ng-template>
                                         </p-select>
                                     </div>
                                 </div>
@@ -1587,6 +1593,12 @@
                                             [disabled]="!getCrossTargetPSelectGroups().length"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
+                                            <ng-template pTemplate="item" let-option>
+                                                <span class="sc-cond-opt-label">{{ option.label }}</span>
+                                                @if (option.isBlock) {
+                                                    <span class="sc-cond-opt-block-badge">Sub-schema</span>
+                                                }
+                                            </ng-template>
                                         </p-select>
                                     </div>
                                 </div>

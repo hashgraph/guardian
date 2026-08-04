@@ -2271,19 +2271,31 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public condThenRefVal: Record<number, string | null> = {};
     public condElseRefVal: Record<number, string | null> = {};
 
-    public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
+    public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
         const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
-        const result: { label: string; items: { pathStr: string; label: string }[] }[] = [];
+        const result: { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] = [];
 
         const nestLabel = (name: string, depth: number) =>
             depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
 
         const traverse = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
-            const items: { pathStr: string; label: string }[] = [];
+            const items: { pathStr: string; label: string; isBlock?: boolean }[] = [];
             for (const f of fields) {
-                if (f.readOnly || (f.isRef && f.type)) { continue; }
+                if (f.readOnly) { continue; }
+                if (f.isRef && f.type) {
+                    const ref = schemaByIri.get(f.type);
+                    const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                    if (refFields.length) {
+                        items.push({
+                            pathStr: [...pathParts, f.name].join('.'),
+                            label: f.description || f.title || f.name,
+                            isBlock: true
+                        });
+                    }
+                    continue;
+                }
                 items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
             }
             if (items.length) {
@@ -2314,13 +2326,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
         this.addThenTarget(cond, pathStr);
-        this.condThenRefVal[ci] = null;
+        setTimeout(() => { this.condThenRefVal[ci] = null; });
     }
 
     public onCondElseRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
         this.addElseTarget(cond, pathStr);
-        this.condElseRefVal[ci] = null;
+        setTimeout(() => { this.condElseRefVal[ci] = null; });
     }
 
     public addThenTarget(cond: SchemaCondition, pathStr: string): void {

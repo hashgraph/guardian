@@ -2724,6 +2724,24 @@
     gap: 6px;
 }
 
+.sc-cond-opt-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sc-cond-opt-block-badge {
+    flex-shrink: 0;
+    margin-left: 8px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 500;
+    white-space: nowrap;
+    background: var(--guardian-primary-background, #E1E7FA);
+    color: var(--color-primary, #4169E2);
+}
+
 .sc-cond-te-item {
     display: flex;
     align-items: center;
