@@ -10,6 +10,7 @@ import {
     ActivityEventDto,
     BatchProjectsDto,
     ProjectIdsDto,
+    ProjectFilterOptionsDto,
 } from '../dto/project.dto';
 import { AdditionalDetailsSchemaDto } from '../dto/additional-details.dto';
 import { MrvDataQueryDto, MrvDataResponseDto } from '../dto/mrv-data.dto';
@@ -46,6 +47,20 @@ export class ProjectsController {
         @Query() query: ProjectQueryDto,
     ) {
         return this.projectsService.findAll(network, query);
+    }
+
+    @Get('filter-options')
+    @ApiOperation({
+        summary: 'Distinct filter-dropdown option values',
+        description:
+            'Registries, developers, statuses, sectors, sectoral scopes, and vintages across ' +
+            'the whole (unfiltered) project set — backs the list page\'s filter dropdowns ' +
+            'without requiring the client to load every project.',
+    })
+    @ApiParam({ name: 'network', enum: ['mainnet', 'testnet', 'previewnet'] })
+    @ApiResponse({ status: 200, type: ProjectFilterOptionsDto })
+    async getFilterOptions(@Param('network') network: string): Promise<ProjectFilterOptionsDto> {
+        return this.projectsService.getFilterOptions(network);
     }
 
     @Get('ids')

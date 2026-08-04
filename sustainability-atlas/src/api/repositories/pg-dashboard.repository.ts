@@ -1,5 +1,6 @@
 import { DataSource } from 'typeorm';
 import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
+import { SCHEMA_DOC_TYPES_SQL, LIFECYCLE_STAGE_CASE } from '@shared/sql/lifecycle-classification.sql';
 
 export interface MintAggRow {
     sector: string;
@@ -154,39 +155,6 @@ export class PgDashboardRepository {
 
         return { from, where: conditions.join(' AND '), params };
     }
-
-    /**
-     * Document type per (policy topic, bare schema UUID).
-     *
-     * policyMapping carries full IRIs of the form `#<uuid>&<version>` while a
-     * project's linkedVcs entries carry only the uuid, so the IRI is trimmed to
-     * make the two joinable.
-     */
-    private static readonly SCHEMA_DOC_TYPES_SQL = `
-        SELECT DISTINCT
-            p."policyTopicId"                                    AS policy_topic_id,
-            split_part(ltrim(e->>'schemaIri', '#'), '&', 1)      AS schema_uuid,
-            e->>'docType'                                        AS doc_type
-        FROM policy p,
-             LATERAL jsonb_each(COALESCE(p."policyMapping", '{}'::jsonb)) AS kv(k, v),
-             LATERAL jsonb_array_elements(
-                 CASE WHEN jsonb_typeof(kv.v) = 'array' THEN kv.v ELSE '[]'::jsonb END
-             ) AS e
-        WHERE p."decodeStatus" = 'decoded'
-          AND e ? 'schemaIri'
-          AND e ? 'docType'
-    `;
-
-    /** Resolves a per_project row's boolean flags into a lifecycle stage label. */
-    private static readonly LIFECYCLE_STAGE_CASE = `
-        CASE
-            WHEN issued           THEN 'Issued'
-            WHEN has_verification THEN 'Verified'
-            WHEN has_monitoring   THEN 'Monitoring'
-            WHEN has_validation   THEN 'Validation'
-            ELSE 'Registered'
-        END
-    `;
 
     /** Issued-credit expression shared by every aggregate, so the tiles, country table and breakdowns always agree. */
     private static readonly CREDITS_EXPR = `
@@ -357,7 +325,7 @@ export class PgDashboardRepository {
         const scope = this.buildProjectScope(query);
 
         const sql = `
-            WITH schema_doc_types AS (${PgDashboardRepository.SCHEMA_DOC_TYPES_SQL}),
+            WITH schema_doc_types AS (${SCHEMA_DOC_TYPES_SQL}),
             per_project AS (
                 SELECT
                     bv.id                                                        AS row_id,
@@ -379,7 +347,7 @@ export class PgDashboardRepository {
                 GROUP BY bv.id, ps.total_issued, ps.issuance_count
             )
             SELECT
-                ${PgDashboardRepository.LIFECYCLE_STAGE_CASE}    AS label,
+                ${LIFECYCLE_STAGE_CASE}    AS label,
                 COUNT(*)::bigint                                 AS projects,
                 COALESCE(SUM(credits), 0)::bigint                AS credits,
                 COUNT(DISTINCT methodology_id)::bigint           AS methodologies
@@ -509,7 +477,7 @@ export class PgDashboardRepository {
         const scope = this.buildProjectScope(query);
 
         const sql = `
-            WITH schema_doc_types AS (${PgDashboardRepository.SCHEMA_DOC_TYPES_SQL}),
+            WITH schema_doc_types AS (${SCHEMA_DOC_TYPES_SQL}),
             per_project AS (
                 SELECT
                     bv.id                                                        AS row_id,
@@ -531,7 +499,7 @@ export class PgDashboardRepository {
             )
             SELECT
                 registry,
-                ${PgDashboardRepository.LIFECYCLE_STAGE_CASE} AS status,
+                ${LIFECYCLE_STAGE_CASE} AS status,
                 COUNT(*)::bigint                              AS projects
             FROM per_project
             GROUP BY registry, status

@@ -29,7 +29,8 @@ export type FilterOperator =
     | 'gte'
     | 'lt'
     | 'lte'
-    | 'contains-any';
+    | 'contains-any'
+    | 'between';
 
 export interface FieldDefinition {
     /**
@@ -256,6 +257,24 @@ export class QueryBuilder {
             case 'lte':
                 this.params.push(value);
                 return `${sql} <= $${this.paramIdx++}`;
+
+            case 'between': {
+                // "min|max" pair — same delimiter convention as the frontend's
+                // yearrange/daterange filters (NOT decodeMultiValue, which has
+                // different OR-list semantics). Either bound may be empty for
+                // an open-ended range.
+                const [minRaw, maxRaw] = String(value).split('|');
+                const clauses: string[] = [];
+                if (minRaw !== undefined && minRaw !== '') {
+                    this.params.push(minRaw);
+                    clauses.push(`${sql} >= $${this.paramIdx++}`);
+                }
+                if (maxRaw !== undefined && maxRaw !== '') {
+                    this.params.push(maxRaw);
+                    clauses.push(`${sql} <= $${this.paramIdx++}`);
+                }
+                return clauses.length > 0 ? `(${clauses.join(' AND ')})` : null;
+            }
 
             default:
                 return null;

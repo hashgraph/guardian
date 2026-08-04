@@ -1,6 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
-import { MV_PROJECT_STATS_NAME } from '@shared/materialized-views';
+import { MV_PROJECT_STATS_NAME, MV_PROJECT_LIFECYCLE_NAME } from '@shared/materialized-views';
 import {
     ProjectRepository,
     ProjectListQuery,
@@ -12,6 +12,7 @@ import {
     PolicySchemaRow,
     ProjectExportFilters,
     ProjectExportRow,
+    ProjectFilterOptionsRow,
 } from './project.repository';
 import { QueryBuilder } from './query-builder';
 import { PROJECT_FIELD_SCHEMA } from './schemas/project.schema';
@@ -59,6 +60,10 @@ interface RawRow {
     // pg returns bigint columns as strings
     total_issued: string | null;
     total_retired: string | null;
+    // mv_project_lifecycle-sourced (findAll's rowsSql only — findById never
+    // joins it, so these are undefined there).
+    lifecycleStage?: string | null;
+    expectedIssuanceYear?: string | null;
 }
 
 const SEARCH_TSVECTOR = `(
@@ -89,6 +94,12 @@ const REGISTRY_NAME_JOIN = `
 const PROJECT_STATS_JOIN = `
     LEFT JOIN ${MV_PROJECT_STATS_NAME} ps
         ON ps."projectKey" = bv."projectKey"
+`;
+
+/** Precomputed lifecycle stage / expected issuance year — see mv_project_lifecycle. Used for list filtering/sorting; findById does not join this (it computes the richer per-VC detail live). */
+const PROJECT_LIFECYCLE_JOIN = `
+    LEFT JOIN ${MV_PROJECT_LIFECYCLE_NAME} lc
+        ON lc."projectKey" = bv."projectKey"
 `;
 
 /** LATERAL: resolve the project's methodology (by instance topic match, with a displayName fallback) plus its `emissionReductionApproach`, mirroring `PgMethodologyRepository`/`PgCreditRepository`'s identical lookups. Used only by `findAllForExport` for the `mitigation_type`/`standard` catalog columns. */
@@ -158,7 +169,28 @@ export class PgProjectRepository extends ProjectRepository {
             instanceTopicId: query.instanceTopicId,
             sourceTimestamp: query.sourceTimestamps,
             sdgs: query.sdgs,
+            sector: query.sector,
+            sectoralScope: query.sectoralScope,
+            vintageYear: query.vintageRange,
+            lifecycleStage: query.lifecycleStage,
+            expectedIssuanceYear: query.expectedIssuanceYearRange,
         });
+
+        // Scoped-view deep link: matches instanceTopicId OR policyTopicId —
+        // not expressible via the generic AND-only per-field filter model.
+        if (query.methodologyId) {
+            const p = builder.nextParam(query.methodologyId);
+            builder.addClause(`(bv."businessData"->>'instanceTopicId' = ${p} OR bv."businessData"->>'policyTopicId' = ${p})`);
+        }
+
+        // `isPipeline` has no own column — it's the negation of "issued" that
+        // mv_project_lifecycle already resolved into lifecycle_stage. Fixed
+        // literal comparison, no injected value, no param needed.
+        if (query.isPipeline === 'true') {
+            builder.addClause(`lc.lifecycle_stage != 'Issued'`);
+        } else if (query.isPipeline === 'false') {
+            builder.addClause(`lc.lifecycle_stage = 'Issued'`);
+        }
 
         // Full-text search with ranking: tsvector covers displayName/registryDid/searchText, ILIKE is a fast
         // prefix fallback for partial matches tsquery doesn't catch, and similarity() adds typo-tolerance via pg_trgm.
@@ -205,19 +237,26 @@ export class PgProjectRepository extends ProjectRepository {
                 COALESCE(ps.issuance_count, 0) AS issuance_count,
                 COALESCE(ps.total_issued, 0)   AS total_issued,
                 COALESCE(ps.total_retired, 0)  AS total_retired,
+                lc.lifecycle_stage             AS "lifecycleStage",
+                lc.expected_issuance_year      AS "expectedIssuanceYear",
                 ${rankExpr} AS search_rank
             FROM business_view bv
             ${REGISTRY_NAME_JOIN}
             ${PROJECT_STATS_JOIN}
+            ${PROJECT_LIFECYCLE_JOIN}
             WHERE ${whereSql}
             ORDER BY ${orderBy}
             LIMIT ${limitParam} OFFSET ${offsetParam}
         `;
 
-        // Count query reuses the same WHERE but skips LIMIT/OFFSET; the registry-name LATERAL is only included
-        // when the `registry` filter references it, avoiding that subquery's cost on large unfiltered PROJECT sets.
+        // Count query reuses the same WHERE but skips LIMIT/OFFSET; joins are only
+        // included when a filter actually references them, avoiding their cost on
+        // large unfiltered PROJECT sets.
         const countParams = params.slice(0, params.length - 2);
-        const countJoin = query.registry ? REGISTRY_NAME_JOIN : '';
+        const countJoin = [
+            query.registry ? REGISTRY_NAME_JOIN : '',
+            (query.lifecycleStage || query.expectedIssuanceYearRange || query.isPipeline) ? PROJECT_LIFECYCLE_JOIN : '',
+        ].join('\n');
         const countSql = `
             SELECT COUNT(*)::int AS total
             FROM business_view bv
@@ -225,9 +264,32 @@ export class PgProjectRepository extends ProjectRepository {
             WHERE ${whereSql}
         `;
 
-        const [rawRows, countResult]: [RawRow[], Array<{ total: number }>] = await Promise.all([
+        // Summary aggregates for the current filter set (issuances/countries/registries
+        // shown in the results banner) — reuses the same WHERE the count query does.
+        // Always includes every join (unlike countSql's conditional joins) since
+        // whereSql can reference any of reg/ps/lc regardless of which filter fired,
+        // and omitting one here throws "missing FROM-clause entry" the moment a
+        // filter that needs it is active.
+        const summarySql = `
+            SELECT
+                SUM(COALESCE(ps.issuance_count, 0))::bigint                        AS total_issuances,
+                COUNT(DISTINCT NULLIF(bv."businessData"->>'country', ''))::int     AS unique_countries,
+                COUNT(DISTINCT reg.registry_name)::int                             AS unique_registries
+            FROM business_view bv
+            ${REGISTRY_NAME_JOIN}
+            ${PROJECT_STATS_JOIN}
+            ${PROJECT_LIFECYCLE_JOIN}
+            WHERE ${whereSql}
+        `;
+
+        const [rawRows, countResult, summaryResult]: [
+            RawRow[],
+            Array<{ total: number }>,
+            Array<{ total_issuances: string | null; unique_countries: number; unique_registries: number }>,
+        ] = await Promise.all([
             this.dataSource.query(rowsSql, params),
             this.dataSource.query(countSql, countParams),
+            this.dataSource.query(summarySql, countParams),
         ]);
 
         // Batch-loads each distinct policy's schema names + policyMapping in one indexed query (names extracted
@@ -294,6 +356,11 @@ export class PgProjectRepository extends ProjectRepository {
                 schemasByTopic.get((row.businessData as Record<string, any> | null)?.['policyTopicId'] ?? ''),
             )),
             total: countResult[0]?.total ?? 0,
+            summary: {
+                totalIssuances: Number(summaryResult[0]?.total_issuances ?? 0),
+                uniqueCountries: summaryResult[0]?.unique_countries ?? 0,
+                uniqueRegistries: summaryResult[0]?.unique_registries ?? 0,
+            },
         };
     }
 
@@ -695,7 +762,19 @@ export class PgProjectRepository extends ProjectRepository {
             status: filters.status,
             policyTopicId: filters.policyTopicId,
             instanceTopicId: filters.instanceTopicId,
+            sector: filters.sector,
+            sectoralScope: filters.sectoralScope,
+            vintageYear: filters.vintageRange,
+            sdgs: filters.sdgs,
+            lifecycleStage: filters.lifecycleStage,
+            expectedIssuanceYear: filters.expectedIssuanceYearRange,
         });
+
+        if (filters.isPipeline === 'true') {
+            builder.addClause(`lc.lifecycle_stage != 'Issued'`);
+        } else if (filters.isPipeline === 'false') {
+            builder.addClause(`lc.lifecycle_stage = 'Issued'`);
+        }
 
         if (filters.search) {
             const term = filters.search.trim();
@@ -738,6 +817,7 @@ export class PgProjectRepository extends ProjectRepository {
                 FROM business_view bv
                 ${REGISTRY_NAME_JOIN}
                 ${PROJECT_STATS_JOIN}
+                ${PROJECT_LIFECYCLE_JOIN}
                 ${METHODOLOGY_JOIN}
                 ${SOURCE_MESSAGE_JOIN}
                 WHERE ${whereSql}
@@ -758,6 +838,38 @@ export class PgProjectRepository extends ProjectRepository {
         }
 
         return rows;
+    }
+
+    /** Distinct filter-dropdown option values across the whole (unfiltered) PROJECT set — mirrors PgDashboardRepository.getFilterOptions(). */
+    async getFilterOptions(): Promise<ProjectFilterOptionsRow> {
+        const sql = `
+            SELECT
+                ARRAY_AGG(DISTINCT registry_name)   FILTER (WHERE registry_name <> '')   AS registries,
+                ARRAY_AGG(DISTINCT developer)        FILTER (WHERE developer <> '')       AS developers,
+                ARRAY_AGG(DISTINCT status)           FILTER (WHERE status <> '')          AS statuses,
+                ARRAY_AGG(DISTINCT sector)           FILTER (WHERE sector <> '')          AS sectors,
+                ARRAY_AGG(DISTINCT "sectoralScope")  FILTER (WHERE "sectoralScope" <> '') AS "sectoralScopes",
+                ARRAY_AGG(DISTINCT vintage)          FILTER (WHERE vintage <> '')         AS vintages,
+                ARRAY_AGG(DISTINCT country)          FILTER (WHERE country <> '')         AS countries
+            FROM (
+                SELECT
+                    COALESCE(reg.registry_name, '')                    AS registry_name,
+                    COALESCE(bv."businessData"->>'developer', '')      AS developer,
+                    COALESCE(bv."businessData"->>'status', '')         AS status,
+                    COALESCE(bv."businessData"->>'sector', '')         AS sector,
+                    COALESCE(bv."businessData"->>'sectoralScope', '')  AS "sectoralScope",
+                    COALESCE(bv."businessData"->>'vintage', '')        AS vintage,
+                    COALESCE(bv."businessData"->>'country', '')        AS country
+                FROM business_view bv
+                ${REGISTRY_NAME_JOIN}
+                WHERE bv."viewType" = 'PROJECT'
+            ) opts
+        `;
+
+        const rows: ProjectFilterOptionsRow[] = await this.dataSource.query(sql);
+        return rows[0] ?? {
+            registries: [], developers: [], statuses: [], sectors: [], sectoralScopes: [], vintages: [], countries: [],
+        };
     }
 
     private static mapExportRow(row: RawExportRow): ProjectExportRow {
@@ -886,6 +998,8 @@ export class PgProjectRepository extends ProjectRepository {
             totalActive: resolvedLifecycle?.totalActive,
             policySchemas,
             polygon: polygon ?? null,
+            lifecycleStage: row.lifecycleStage ?? null,
+            expectedIssuanceYear: row.expectedIssuanceYear ?? null,
         };
     }
 }
