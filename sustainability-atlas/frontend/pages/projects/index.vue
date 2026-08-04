@@ -11,9 +11,12 @@ import {
   Loader2,
   Save,
 } from "lucide-vue-next";
+import { useDebounceFn } from "@vueuse/core";
 import type { FilterOption } from "~/components/shared/FilterBar.vue";
+import type { SortDirection } from "~/composables/useFilteredPagination";
+import type { ProjectSortKey } from "~/composables/api/useProjectsApi";
 import { formatCredits } from "~/lib/format";
-import { naturalCompare, decodeMultiValue } from "~/lib/utils";
+import { naturalCompare } from "~/lib/utils";
 import { SDG_LIST, getLocalizedSDGName } from "~/lib/sdgs";
 import { SECTOR_I18N_KEYS } from "~/types/enums";
 import { generateProjectVc } from "~/lib/mock-vc";
@@ -31,6 +34,8 @@ import type { SavedSearchCriteria } from "~/composables/useSavedSearches";
 import SavedSearchesRow from "~/components/saved-search/SavedSearchesRow.vue";
 
 const { t } = useI18n();
+const route = useRoute();
+const router = useRouter();
 
 function translateSector(raw: string): string {
   if (!raw) return "";
@@ -38,7 +43,7 @@ function translateSector(raw: string): string {
   return key ? t(`dashboard.sectorTypes.${key}`) : raw;
 }
 const { network } = useNetwork();
-const { projects, total, truncated, filterOptions, pending } = useProjects();
+
 const {
   selectedEntries,
   canAdd,
@@ -48,7 +53,180 @@ const {
   clearAll,
   goToCompare,
 } = useProjectComparison();
-const { resolvedCode, resolvedName } = useGeocodedCountries(projects);
+
+const registryDidFilter = computed(() =>
+  typeof route.query.registryDid === "string" ? route.query.registryDid : null,
+);
+const methodologyIdFilter = computed(() =>
+  typeof route.query.methodologyId === "string" ? route.query.methodologyId : null,
+);
+
+type ColumnKey =
+  | "name" | "country" | "registry" | "methodology" | "sector"
+  | "issuanceCount" | "lifecycleStage" | "expectedIssuanceYear" | "createdDate";
+
+const columnToApiSort: Record<ColumnKey, ProjectSortKey | null> = {
+  name: "name",
+  country: "country",
+  registry: "registry",
+  methodology: "methodology",
+  sector: "sector",
+  issuanceCount: "issuanceCount",
+  lifecycleStage: "lifecycleStage",
+  expectedIssuanceYear: "expectedIssuanceYear",
+  createdDate: "sourceTimestamp",
+};
+
+const currentPage = ref(
+  route.query.page ? parseInt(route.query.page as string) || 1 : 1,
+);
+const pageSize = ref(10);
+
+const searchQuery = ref(typeof route.query.q === "string" ? route.query.q : "");
+const apiSearch = ref(searchQuery.value);
+const debouncedSetSearch = useDebounceFn((val: string) => {
+  apiSearch.value = val;
+}, 300);
+
+function initialFiltersFromQuery(): Record<string, string> {
+  const reserved = new Set(["q", "page", "sort", "dir", "network", "registryDid", "methodologyId"]);
+  const initial: Record<string, string> = {};
+  for (const [key, val] of Object.entries(route.query)) {
+    if (!reserved.has(key) && typeof val === "string" && val) initial[key] = val;
+  }
+  return initial;
+}
+const activeFilters = ref<Record<string, string>>(initialFiltersFromQuery());
+
+const sortKey = ref<ColumnKey | null>(
+  (route.query.sort as ColumnKey) || "createdDate",
+);
+const sortDir = ref<SortDirection>(
+  (route.query.dir as SortDirection) || "desc",
+);
+
+function syncToUrl() {
+  const q: Record<string, string> = {};
+  if (searchQuery.value.trim()) q.q = searchQuery.value.trim();
+  if (currentPage.value > 1) q.page = String(currentPage.value);
+  const isDefaultSort = sortKey.value === "createdDate" && sortDir.value === "desc";
+  if (sortKey.value && sortDir.value && !isDefaultSort) {
+    q.sort = sortKey.value;
+    q.dir = sortDir.value;
+  }
+  for (const [key, val] of Object.entries(activeFilters.value)) {
+    if (val && val !== "all") q[key] = val;
+  }
+  if (registryDidFilter.value) q.registryDid = registryDidFilter.value;
+  if (methodologyIdFilter.value) q.methodologyId = methodologyIdFilter.value;
+  const currentNetwork = route.query.network;
+  if (currentNetwork) q.network = currentNetwork as string;
+  router.replace({ query: q });
+}
+
+watch(searchQuery, (val) => {
+  debouncedSetSearch(val);
+  currentPage.value = 1;
+  syncToUrl();
+});
+
+function setFilter(key: string, value: string) {
+  const next = { ...activeFilters.value };
+  if (!value || value === "all") delete next[key];
+  else next[key] = value;
+  activeFilters.value = next;
+  currentPage.value = 1;
+  syncToUrl();
+}
+
+function clearFilters() {
+  activeFilters.value = {};
+  searchQuery.value = "";
+  apiSearch.value = "";
+  currentPage.value = 1;
+  syncToUrl();
+}
+
+function toggleSort(key: string) {
+  const col = key as ColumnKey;
+  if (sortKey.value === col) {
+    if (sortDir.value === "asc") {
+      sortDir.value = "desc";
+    } else if (sortDir.value === "desc") {
+      sortKey.value = null;
+      sortDir.value = null;
+    } else {
+      sortDir.value = "asc";
+    }
+  } else {
+    sortKey.value = col;
+    sortDir.value = "asc";
+  }
+  currentPage.value = 1;
+  syncToUrl();
+}
+
+watch(pageSize, () => { currentPage.value = 1; });
+watch(currentPage, () => { syncToUrl(); });
+watch(network, () => { currentPage.value = 1; });
+
+const apiSortBy = computed<ProjectSortKey | null>(() =>
+  sortKey.value ? columnToApiSort[sortKey.value] : null,
+);
+const apiSortDir = computed<"asc" | "desc" | null>(() =>
+  sortDir.value === "asc" || sortDir.value === "desc" ? sortDir.value : null,
+);
+
+const apiFilters = computed<Record<string, any>>(() => {
+  const a = activeFilters.value;
+  const f: Record<string, any> = {};
+  if (a.registry) f.registry = a.registry;
+  if (a.country) f.country = a.country;
+  if (a.vintage) f.vintageRange = a.vintage;
+  if (a.sector) f.sector = a.sector;
+  if (a.sectoralScope) f.sectoralScope = a.sectoralScope;
+  if (a.developer) f.developer = a.developer;
+  if (a.sdgs) f.sdgs = a.sdgs;
+  if (a.lifecycleStage) f.lifecycleStage = a.lifecycleStage;
+  if (a.isPipeline) f.isPipeline = a.isPipeline;
+  if (a.expectedIssuanceYear) f.expectedIssuanceYearRange = a.expectedIssuanceYear;
+  if (registryDidFilter.value) f.registryDid = registryDidFilter.value;
+  if (methodologyIdFilter.value) f.methodologyId = methodologyIdFilter.value;
+  return f;
+});
+
+const { data, pending } = useProjectsApi({
+  page: currentPage,
+  limit: pageSize,
+  search: apiSearch,
+  network,
+  sortBy: apiSortBy,
+  sortDir: apiSortDir,
+  filters: apiFilters,
+});
+
+const { filterOptions } = useProjectFilterOptions(network);
+
+const meta = computed(() =>
+  data.value?.meta ?? { page: 1, limit: pageSize.value, total: 0, totalPages: 1 },
+);
+const totalPages = computed(() => meta.value.totalPages || 1);
+const total = computed(() => meta.value.total || 0);
+const summaryStats = computed(() =>
+  data.value?.summary ?? { totalIssuances: 0, uniqueCountries: 0, uniqueRegistries: 0 },
+);
+
+const hasActiveFilter = computed(() =>
+  !!searchQuery.value.trim()
+  || Object.keys(activeFilters.value).length > 0
+  || !!registryDidFilter.value
+  || !!methodologyIdFilter.value,
+);
+
+// --- Row mapping ---
+
+const rawProjects = computed<Project[]>(() => (data.value?.data ?? []).map(mapApiProject));
+const { resolvedCode, resolvedName } = useGeocodedCountries(rawProjects);
 
 const INVALID_COUNTRY = new Set([
   "not applicable",
@@ -94,98 +272,29 @@ function viewVc(p: Project) {
   vcViewerOpen.value = true;
 }
 
-function isPipelineStage(p: { lifecycleStage?: string }): boolean {
-  return p.lifecycleStage !== "Issued";
-}
-
-const allProjects = computed(() =>
-  projects.value.map((p) => ({
+const pageProjects = computed(() =>
+  rawProjects.value.map((p) => ({
     ...p,
     creditsFormatted: formatCredits(p.credits),
     methodologyLong: getMethodologyLongName(p.methodologyId, p.methodology),
-    // Override country with the resolved display name so filters and sorting
-    // use the same value that appears in the column (not raw coordinates).
+    // Override country with the resolved display name so the cell shows a
+    // clean name even though the server-side country FILTER (above) matches
+    // the raw stored value.
     country: displayCountry(p) ?? "",
-    isPipeline: isPipelineStage(p),
     createdDate: hederaTimestamp(p.sourceTimestamp),
   })),
 );
 
-const countryFilterOptions = computed(() =>
-  [...new Set(allProjects.value.map((p) => p.country).filter(Boolean))].sort(
-    naturalCompare,
-  ),
-);
-
-// Navigation from a registry-scoped link (e.g. the Registry detail page's
-// "Projects" card) filters by DID — registries aren't unique by name (the
-// registries list can hold multiple entries sharing a display name with
-// different DIDs), so name-based matching would silently mix in projects
-// from the wrong registry. Narrowed here, before useFilteredPagination, so
-// the manual filters/search/sort and all result counts stay consistent with
-// the scoped set. Separate from the manual `registry` FilterBar filter below.
-const route = useRoute();
-const registryDidFilter = computed(() =>
-  typeof route.query.registryDid === "string" ? route.query.registryDid : null,
-);
-const methodologyIdFilter = computed(() =>
-  typeof route.query.methodologyId === "string" ? route.query.methodologyId : null,
-);
-
-const scopedProjects = computed(() => {
-  let list = allProjects.value;
-  if (registryDidFilter.value) {
-    list = list.filter((p) => p.registryDid === registryDidFilter.value);
-  }
-  if (methodologyIdFilter.value) {
-    list = list.filter(
-      (p) =>
-        p.instanceTopicId === methodologyIdFilter.value ||
-        p.methodologyId === methodologyIdFilter.value ||
-        p.policyTopicId === methodologyIdFilter.value
-    );
-  }
-  return list;
-});
+const paginated = pageProjects;
 
 const registryFilterName = computed(() => {
   if (!registryDidFilter.value) return null;
-  return scopedProjects.value[0]?.registry ?? null;
+  return paginated.value[0]?.registry ?? null;
 });
 
 const methodologyFilterName = computed(() => {
   if (!methodologyIdFilter.value) return null;
-  return scopedProjects.value[0]?.methodology ?? null;
-});
-
-const {
-  searchQuery,
-  currentPage,
-  paginated,
-  filtered,
-  totalPages,
-  pageSize,
-  activeFilters,
-  sortKey,
-  sortDir,
-  toggleSort,
-  setFilter,
-  clearFilters,
-  applyPreset,
-} = useFilteredPagination(scopedProjects, {
-  searchFields: [
-    "name",
-    "country",
-    "methodology",
-    "registry",
-    "sector",
-    "sectoralScope",
-    "developer",
-  ],
-  pageSize: 10,
-  defaultSort: { key: "createdDate", dir: "desc" },
-  arrayFields: ["sdgs"],
-  excludeFromQuery: ["registryDid", "methodologyId"],
+  return paginated.value[0]?.methodology ?? null;
 });
 
 // applyPreset()'s sort.key is typed against this page's specific row union
@@ -195,31 +304,28 @@ const {
 // search was saved — so the cast here is safe, matching the `sortKey as
 // string | null` cast already used elsewhere in this file's template.
 function applySavedSearch(criteria: SavedSearchCriteria) {
-  applyPreset(criteria as any);
+  searchQuery.value = criteria.search || "";
+  apiSearch.value = criteria.search || "";
+  activeFilters.value = { ...(criteria.filters || {}) };
+  if (criteria.sort) {
+    sortKey.value = criteria.sort.key as ColumnKey;
+    sortDir.value = criteria.sort.dir;
+  } else {
+    sortKey.value = null;
+    sortDir.value = null;
+  }
+  currentPage.value = 1;
+  syncToUrl();
 }
 
 const { isAuthenticated } = useAuth();
 const savedSearchesRef = ref<InstanceType<typeof SavedSearchesRow> | null>(null);
 
-// Summary statistics for filtered results
-const summaryStats = computed(() => {
-  const f = filtered.value;
-  const totalIssuances = f.reduce((sum, p) => sum + (p.issuanceCount ?? 0), 0);
-  const uniqueCountries = new Set(f.map((p) => p.country)).size;
-  const uniqueRegistries = new Set(f.map((p) => p.registry)).size;
-  return { totalIssuances, uniqueCountries, uniqueRegistries };
-});
+const countryFilterOptions = computed(() =>
+  [...filterOptions.value.countries].sort(naturalCompare),
+);
 
 const filters = computed<FilterOption[]>(() => [
-  {
-    key: "status",
-    label: t("projects.filters.status"),
-    multiSelect: true,
-    options: filterOptions.value.statuses.map((s) => ({
-      value: s,
-      label: t(`projects.lifecycleStages.${s}`),
-    })),
-  },
   {
     key: "registry",
     label: t("projects.filters.registry"),
@@ -354,10 +460,18 @@ async function downloadProjects() {
     const query: Record<string, string | number> = {};
     const search = searchQuery.value?.trim();
     if (search) query.search = search;
-    if (af.status) query.status = af.status;
     if (af.registry) query.registry = af.registry;
     if (af.country) query.country = af.country;
     if (af.developer) query.developer = af.developer;
+    if (af.sector) query.sector = af.sector;
+    if (af.sectoralScope) query.sectoralScope = af.sectoralScope;
+    if (af.sdgs) query.sdgs = af.sdgs;
+    if (af.vintage) query.vintageRange = af.vintage;
+    if (af.lifecycleStage) query.lifecycleStage = af.lifecycleStage;
+    if (af.isPipeline) query.isPipeline = af.isPipeline;
+    if (af.expectedIssuanceYear) query.expectedIssuanceYearRange = af.expectedIssuanceYear;
+    if (registryDidFilter.value) query.registryDid = registryDidFilter.value;
+    if (methodologyIdFilter.value) query.methodologyId = methodologyIdFilter.value;
 
     let mapped = (
       await fetchAllPages(`/api/v1/${network.value}/projects`, query)
@@ -365,57 +479,6 @@ async function downloadProjects() {
       ...p,
       createdDate: hederaTimestamp(p.sourceTimestamp),
     }));
-
-    if (af.sector) {
-      const sectors = decodeMultiValue(af.sector).map((s: string) =>
-        s.trim().toLowerCase(),
-      );
-      mapped = mapped.filter((p) =>
-        sectors.some((s) => (p.sector ?? "").toLowerCase().includes(s)),
-      );
-    }
-    if (af.sectoralScope) {
-      const scope = af.sectoralScope.toLowerCase();
-      mapped = mapped.filter((p) =>
-        (p.sectoralScope ?? "").toLowerCase().includes(scope),
-      );
-    }
-    if (af.sdgs) {
-      const selectedSdgs = decodeMultiValue(af.sdgs).map((s: string) => s.trim());
-      mapped = mapped.filter(
-        (p) =>
-          Array.isArray(p.sdgs) &&
-          selectedSdgs.some((s) => p.sdgs.map(String).includes(s)),
-      );
-    }
-    if (af.vintage) {
-      const [from, to] = af.vintage.split("|");
-      mapped = mapped.filter((p) => {
-        const v = String(p.vintage ?? "");
-        if (from && v < from) return false;
-        if (to && v > to) return false;
-        return true;
-      });
-    }
-    if (af.isPipeline) {
-      mapped = mapped.filter(
-        (p) => String(isPipelineStage(p)) === af.isPipeline,
-      );
-    }
-    if (af.lifecycleStage) {
-      const stages = af.lifecycleStage.split("|").filter(Boolean);
-      mapped = mapped.filter((p) => stages.includes(String(p.lifecycleStage)));
-    }
-    if (af.expectedIssuanceYear) {
-      const [from, to] = af.expectedIssuanceYear.split("|");
-      mapped = mapped.filter((p) => {
-        const y = p.expectedIssuanceYear;
-        if (!y) return false;
-        if (from && y < from) return false;
-        if (to && y > to) return false;
-        return true;
-      });
-    }
 
     if (sortKey.value && sortDir.value) {
       const key = sortKey.value as string;
@@ -476,7 +539,7 @@ async function downloadProjects() {
         v-model="searchQuery"
         :filters="filters"
         :active-filters="activeFilters"
-        :result-count="filtered.length"
+        :result-count="total"
         :total-count="total"
         :search-placeholder="$t('projects.searchPlaceholder')"
         @filter="setFilter"
@@ -533,33 +596,25 @@ async function downloadProjects() {
       </div>
     </div>
 
-    <div v-if="truncated" class="px-4 sm:px-6 pb-3">
-      <div class="rounded-xl border border-stat-amber/30 bg-stat-amber/10 px-4 py-2.5 text-xs text-foreground">
-        Showing the first {{ projects.length.toLocaleString() }} of
-        {{ total.toLocaleString() }} projects. Filters, search and totals below apply
-        to the loaded subset only — narrow the search to see the rest.
-      </div>
-    </div>
-
     <!-- Summary Stats -->
-    <div v-if="filtered.length !== total" class="px-4 sm:px-6 pb-4">
+    <div v-if="hasActiveFilter" class="px-4 sm:px-6 pb-4">
       <div class="flex flex-wrap items-center gap-y-1.5 gap-x-4 rounded-xl border bg-muted/40 px-4 py-2.5 text-xs">
         <span class="font-semibold text-foreground">
-          {{ $t("projects.projectsFound", { count: filtered.length }) }}
+          {{ $t("projects.projectsFound", { count: total }) }}
         </span>
         <span class="text-muted-foreground hidden sm:inline">&middot;</span>
         <span class="text-muted-foreground">
-          {{ $t("projects.totalIssuances") }} 
+          {{ $t("projects.totalIssuances") }}
           <strong class="text-foreground ml-0.5 font-semibold">{{ formatCredits(summaryStats.totalIssuances) }}</strong>
         </span>
         <span class="text-muted-foreground hidden sm:inline">&middot;</span>
         <span class="text-muted-foreground">
-          {{ $t("projects.countries") }} 
+          {{ $t("projects.countries") }}
           <strong class="text-foreground ml-0.5 font-semibold">{{ summaryStats.uniqueCountries }}</strong>
         </span>
         <span class="text-muted-foreground hidden sm:inline">&middot;</span>
         <span class="text-muted-foreground">
-          {{ $t("projects.registries") }} 
+          {{ $t("projects.registries") }}
           <strong class="text-foreground ml-0.5 font-semibold">{{ summaryStats.uniqueRegistries }}</strong>
         </span>
       </div>
@@ -731,7 +786,7 @@ async function downloadProjects() {
                   <td class="py-3.5 px-4 align-middle text-muted-foreground text-xs truncate">
                     <TruncatedText :text="translateSector(p.sector)" />
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle text-center tabular-nums font-semibold text-sm">
                     <AppLink
                       v-if="p.projectKey && p.issuanceCount"
@@ -743,7 +798,7 @@ async function downloadProjects() {
                     </AppLink>
                     <span v-else class="text-muted-foreground/60">{{ formatCredits(p.issuanceCount ?? 0) }}</span>
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle whitespace-nowrap">
                     <span
                       :class="[
@@ -754,7 +809,7 @@ async function downloadProjects() {
                       {{ $t(`projects.lifecycleStages.${p.lifecycleStage}`) }}
                     </span>
                   </td>
-                  
+
                   <td class="py-3.5 px-4 align-middle text-muted-foreground font-medium">
                     {{ p.lifecycleStage !== "Issued" ? p.expectedIssuanceYear ?? $t("projects.tbd") : "—" }}
                   </td>
@@ -768,7 +823,7 @@ async function downloadProjects() {
                       <SdgBadges :ids="p.sdgs" :max="2" />
                     </div>
                   </td>
-                  
+
                   <td class="w-px py-3.5 px-3 align-middle text-center">
                     <div class="flex items-center justify-center min-w-max mx-auto">
                       <button
@@ -781,7 +836,7 @@ async function downloadProjects() {
                   </td>
                 </tr>
               </template>
-              
+
               <tr v-if="paginated.length === 0 && !pending">
                 <td
                   colspan="12"
@@ -799,7 +854,7 @@ async function downloadProjects() {
         v-model:current-page="currentPage"
         v-model:page-size="pageSize"
         :total-pages="totalPages"
-        :total-items="filtered.length"
+        :total-items="total"
       />
     </div>
 

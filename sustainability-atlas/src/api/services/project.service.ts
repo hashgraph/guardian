@@ -1,6 +1,12 @@
 import { Injectable } from '@nestjs/common';
-import { ProjectQueryDto, ProjectResponseDto, ActivityEventDto, ProjectIdsDto } from '../dto/project.dto';
-import { PaginatedResponse } from '../dto/pagination.dto';
+import {
+    ProjectQueryDto,
+    ProjectResponseDto,
+    ActivityEventDto,
+    ProjectIdsDto,
+    PaginatedProjectsDto,
+    ProjectFilterOptionsDto,
+} from '../dto/project.dto';
 import { NetworkDataSourceRegistry } from '../database/network-datasource.registry';
 import { PgProjectRepository } from '../repositories/pg-project.repository';
 import { ProjectRepository } from '../repositories/project.repository';
@@ -19,7 +25,7 @@ export class ProjectsService {
     async findAll(
         network: string,
         query: ProjectQueryDto,
-    ): Promise<PaginatedResponse<ProjectResponseDto>> {
+    ): Promise<PaginatedProjectsDto> {
         const repo = this.getRepository(network);
         const page = query.page ?? 1;
         const limit = query.limit ?? 20;
@@ -41,10 +47,26 @@ export class ProjectsService {
             policyTopicId: query.policyTopicId,
             instanceTopicId: query.instanceTopicId,
             sdgs: query.sdgs,
+            sector: query.sector,
+            sectoralScope: query.sectoralScope,
+            vintageRange: query.vintageRange,
+            methodologyId: query.methodologyId,
+            lifecycleStage: query.lifecycleStage,
+            expectedIssuanceYearRange: query.expectedIssuanceYearRange,
+            isPipeline: query.isPipeline,
         });
 
         const data = result.rows.map(row => ProjectResponseDto.fromRow(row, network, false));
-        return new PaginatedResponse(data, result.total, page, limit);
+        return {
+            data,
+            meta: { page, limit, total: result.total, totalPages: Math.ceil(result.total / limit) },
+            summary: result.summary,
+        };
+    }
+
+    async getFilterOptions(network: string): Promise<ProjectFilterOptionsDto> {
+        const repo = this.getRepository(network);
+        return repo.getFilterOptions();
     }
 
     /**
@@ -80,6 +102,13 @@ export class ProjectsService {
             policyTopicId: query.policyTopicId,
             instanceTopicId: query.instanceTopicId,
             sdgs: query.sdgs,
+            sector: query.sector,
+            sectoralScope: query.sectoralScope,
+            vintageRange: query.vintageRange,
+            methodologyId: query.methodologyId,
+            lifecycleStage: query.lifecycleStage,
+            expectedIssuanceYearRange: query.expectedIssuanceYearRange,
+            isPipeline: query.isPipeline,
         });
         const items = result.rows.map(row => {
             const dto = ProjectResponseDto.fromRow(row, network, false);

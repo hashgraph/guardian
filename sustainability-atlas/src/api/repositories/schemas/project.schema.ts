@@ -31,7 +31,10 @@ export const PROJECT_FIELD_SCHEMA: FieldSchema = {
     registry: {
         sql: `reg.registry_name`,
         filter: 'ilike',
-        sortable: false,
+        // REGISTRY_NAME_JOIN is unconditionally present in the rows query
+        // (only the count query's join is conditional on the `registry`
+        // filter being set, which sorting doesn't touch), so this is free.
+        sortable: true,
     },
     /**
      * Exact-match scope by publishing registry DID. Unlike `registry` (a name
@@ -55,9 +58,26 @@ export const PROJECT_FIELD_SCHEMA: FieldSchema = {
         filter: 'eq',
         sortable: true,
     },
+    // Separate from `vintage` (exact-match string, kept as-is for backward
+    // compat) — a numeric-cast field solely for the range filter, matching
+    // the "credits" field's existing cast-in-sql precedent below.
+    vintageYear: {
+        sql: `NULLIF(bv."businessData"->>'vintage','')::int`,
+        filter: 'between',
+    },
     status: {
         sql: `bv."businessData"->>'status'`,
         filter: 'eq',
+        sortable: false,
+    },
+    sector: {
+        sql: `bv."businessData"->>'sector'`,
+        filter: 'ilike',
+        sortable: true,
+    },
+    sectoralScope: {
+        sql: `bv."businessData"->>'sectoralScope'`,
+        filter: 'ilike',
         sortable: false,
     },
     policyTopicId: {
@@ -75,9 +95,29 @@ export const PROJECT_FIELD_SCHEMA: FieldSchema = {
         filter: 'eq',
         sortable: true,
     },
+    // Sort-only — backed by PROJECT_STATS_JOIN's `ps` alias (mv_project_stats),
+    // already unconditionally joined in findAll's rows query.
+    issuanceCount: {
+        sql: `COALESCE(ps.issuance_count, 0)`,
+        sortable: true,
+    },
     sdgs: {
         sql: `bv."businessData"->'sdgs'`,
         filter: 'contains-any',
+    },
+    // Backed by mv_project_lifecycle's `lc` alias — see PROJECT_LIFECYCLE_JOIN
+    // in pg-project.repository.ts. `isPipeline` has no own column (it's
+    // `lifecycle_stage != 'Issued'`) and is handled as a one-off clause in
+    // the repository instead.
+    lifecycleStage: {
+        sql: `lc.lifecycle_stage`,
+        filter: 'eq',
+        sortable: true,
+    },
+    expectedIssuanceYear: {
+        sql: `NULLIF(lc.expected_issuance_year, '')::int`,
+        filter: 'between',
+        sortable: true,
     },
 
     // ── Plain columns ───────────────────────────────────────────────────

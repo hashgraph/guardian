@@ -95,14 +95,17 @@ function updatePosition() {
 
 function toggle() {
     if (props.disabled) return;
-    open.value = !open.value;
     if (open.value) {
-        search.value = '';
-        nextTick(() => {
-            updatePosition();
-            searchInput.value?.focus();
-        });
+        open.value = false;
+        return;
     }
+    // Position before opening so focus() below doesn't scroll to an unpositioned panel.
+    search.value = '';
+    updatePosition();
+    open.value = true;
+    nextTick(() => {
+        searchInput.value?.focus({ preventScroll: true });
+    });
 }
 
 function select(value: string) {

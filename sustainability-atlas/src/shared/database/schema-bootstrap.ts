@@ -178,6 +178,27 @@ export async function bootstrapSchema(dataSource: DataSource): Promise<void> {
         WHERE "viewType" = 'PROJECT'
     `);
 
+    // Backs the Projects list's sector/sectoralScope filters, now that they're
+    // real server-side query params instead of client-side-only filtering.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_project_sector
+        ON business_view ((("businessData"->>'sector')))
+        WHERE "viewType" = 'PROJECT'
+    `);
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_project_sectoral_scope
+        ON business_view ((("businessData"->>'sectoralScope')))
+        WHERE "viewType" = 'PROJECT'
+    `);
+
+    // Btree on the vintage-year cast expression — unlike the ilike/GIN filters
+    // above, a range predicate (>=/<=) can actually use a btree index.
+    await dataSource.query(`
+        CREATE INDEX IF NOT EXISTS idx_business_view_project_vintage_year
+        ON business_view (((NULLIF("businessData"->>'vintage', '')::int)))
+        WHERE "viewType" = 'PROJECT'
+    `);
+
     // Expression index on CREDIT rows' businessData->>'tokenId', backing the
     // credits list's token->registry LATERAL lookup in O(log n).
     await dataSource.query(`

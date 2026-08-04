@@ -221,6 +221,75 @@ export class ProjectQueryDto extends PaginationQueryDto {
     @IsOptional()
     @IsString()
     sdgs?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by sector (partial match). Supports a `|`-delimited list.' })
+    @IsOptional()
+    @IsString()
+    sector?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by sectoral scope (partial match). Supports a `|`-delimited list.' })
+    @IsOptional()
+    @IsString()
+    sectoralScope?: string;
+
+    @ApiPropertyOptional({ description: 'Vintage year range as "min|max" — either bound may be omitted, e.g. "2018|" or "|2024".' })
+    @IsOptional()
+    @IsString()
+    vintageRange?: string;
+
+    @ApiPropertyOptional({ description: 'Scoped-view deep link: matches a project whose instanceTopicId OR policyTopicId equals this value.' })
+    @IsOptional()
+    @IsString()
+    methodologyId?: string;
+
+    @ApiPropertyOptional({ description: 'Filter by lifecycle stage (Registered | Validation | Monitoring | Verified | Issued). Supports a `|`-delimited list.' })
+    @IsOptional()
+    @IsString()
+    lifecycleStage?: string;
+
+    @ApiPropertyOptional({ description: 'Expected issuance year range as "min|max" — either bound may be omitted.' })
+    @IsOptional()
+    @IsString()
+    expectedIssuanceYearRange?: string;
+
+    @ApiPropertyOptional({ enum: ['true', 'false'], description: '"true" = not yet issued (pipeline), "false" = issued.' })
+    @IsOptional()
+    @IsString()
+    isPipeline?: string;
+}
+
+export class ProjectFilterOptionsDto {
+    @ApiProperty({ type: [String] })
+    registries: string[];
+
+    @ApiProperty({ type: [String] })
+    developers: string[];
+
+    @ApiProperty({ type: [String] })
+    statuses: string[];
+
+    @ApiProperty({ type: [String] })
+    sectors: string[];
+
+    @ApiProperty({ type: [String] })
+    sectoralScopes: string[];
+
+    @ApiProperty({ type: [String] })
+    vintages: string[];
+
+    @ApiProperty({ type: [String], description: 'Raw stored country values (not geocoded/display-resolved)' })
+    countries: string[];
+}
+
+export class ProjectListSummaryDto {
+    @ApiProperty({ description: 'Sum of issuance counts across every project matching the current filters' })
+    totalIssuances: number;
+
+    @ApiProperty({ description: 'Distinct country count across every project matching the current filters' })
+    uniqueCountries: number;
+
+    @ApiProperty({ description: 'Distinct registry count across every project matching the current filters' })
+    uniqueRegistries: number;
 }
 
 export class ProjectIdNameDto {
@@ -546,32 +615,50 @@ export class ProjectResponseDto {
             return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0];
         };
 
-        // A stage is reached only when the project actually has a VC of that
-        // docType. Schemas the policy defines but the project never submitted
-        // are carried as zero-VC entries (for the detail phantom-schema view) —
-        // they must NOT advance the stage, or every project under a policy would
-        // inherit that policy's most-advanced document type.
-        const hasVerification = allLinkedSchemas.some(s => s.docType === 'verificationReport' && s.vcCount > 0);
-        const hasMonitoring = allLinkedSchemas.some(s => s.docType === 'monitoringReport' && s.vcCount > 0);
-        const hasValidation = allLinkedSchemas.some(s => s.docType === 'validationReport' && s.vcCount > 0);
+        // List rows (full=false) get lifecycleStage/expectedIssuanceYear from
+        // mv_project_lifecycle — the same classification, precomputed — and skip
+        // the linkedVcs/policySchemas walk below entirely (a perf win too, since
+        // it used to run on every list row regardless of `full`). The detail page
+        // (full=true), and any list row the MV hasn't caught up to yet (e.g. a
+        // project created since the last refresh), fall through to the original
+        // Node computation, unchanged.
+        let lifecycleStage: string;
+        let expectedIssuanceYear: string | null;
+        // Hoisted for the full-only milestones block further below, which
+        // needs the actual mint event, not just its year.
+        let firstIssuanceEvent: IssuanceEventRow | null = null;
 
-        const lifecycleStage = isIssued ? 'Issued'
-            : hasVerification ? 'Verified'
-            : hasMonitoring ? 'Monitoring'
-            : hasValidation ? 'Validation'
-            : 'Registered';
+        if (!full && row.lifecycleStage) {
+            lifecycleStage = row.lifecycleStage;
+            expectedIssuanceYear = row.expectedIssuanceYear ?? null;
+        } else {
+            // A stage is reached only when the project actually has a VC of that
+            // docType. Schemas the policy defines but the project never submitted
+            // are carried as zero-VC entries (for the detail phantom-schema view) —
+            // they must NOT advance the stage, or every project under a policy would
+            // inherit that policy's most-advanced document type.
+            const hasVerification = allLinkedSchemas.some(s => s.docType === 'verificationReport' && s.vcCount > 0);
+            const hasMonitoring = allLinkedSchemas.some(s => s.docType === 'monitoringReport' && s.vcCount > 0);
+            const hasValidation = allLinkedSchemas.some(s => s.docType === 'validationReport' && s.vcCount > 0);
 
-        const firstIssuanceEvent = (row.issuanceEvents ?? []).find(e => e.mintDate) ?? null;
-        const creditingPeriodStartYear = typeof data['creditingPeriodStart'] === 'string' ? data['creditingPeriodStart'].match(/\d{4}/)?.[0] ?? null : null;
-        const vintageYear = typeof data['vintage'] === 'string' ? data['vintage'].match(/\d{4}/)?.[0] ?? null : null;
+            lifecycleStage = isIssued ? 'Issued'
+                : hasVerification ? 'Verified'
+                : hasMonitoring ? 'Monitoring'
+                : hasValidation ? 'Validation'
+                : 'Registered';
 
-        // Only real, dynamically-extracted fields feed this — no guessed cadence.
-        // Issued projects use their actual first-issuance year (detail only);
-        // pipeline projects use the crediting-period start or vintage year
-        // (vintage maps to the IWA firstYearIssuance forecast field), else "TBD".
-        const expectedIssuanceYear = isIssued
-            ? (firstIssuanceEvent?.mintDate?.slice(0, 4) ?? null)
-            : creditingPeriodStartYear ?? vintageYear ?? null;
+            firstIssuanceEvent = (row.issuanceEvents ?? []).find(e => e.mintDate) ?? null;
+            const creditingPeriodStartYear = typeof data['creditingPeriodStart'] === 'string' ? data['creditingPeriodStart'].match(/\d{4}/)?.[0] ?? null : null;
+            const vintageYear = typeof data['vintage'] === 'string' ? data['vintage'].match(/\d{4}/)?.[0] ?? null : null;
+
+            // Only real, dynamically-extracted fields feed this — no guessed cadence.
+            // Issued projects use their actual first-issuance year (detail only);
+            // pipeline projects use the crediting-period start or vintage year
+            // (vintage maps to the IWA firstYearIssuance forecast field), else "TBD".
+            expectedIssuanceYear = isIssued
+                ? (firstIssuanceEvent?.mintDate?.slice(0, 4) ?? null)
+                : creditingPeriodStartYear ?? vintageYear ?? null;
+        }
 
         // §3.4 — credits is reported-to-date, never a forward projection (F5); only totalIssued qualifies.
         const projectedVolume = isIssued ? totalIssued : null;
@@ -696,4 +783,7 @@ export class PaginatedProjectsDto {
 
     @ApiProperty()
     meta: { page: number; limit: number; total: number; totalPages: number };
+
+    @ApiProperty({ type: ProjectListSummaryDto, description: 'Aggregates over every project matching the current filters, not just this page' })
+    summary: ProjectListSummaryDto;
 }
