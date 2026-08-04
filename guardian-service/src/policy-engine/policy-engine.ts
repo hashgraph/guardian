@@ -1165,21 +1165,21 @@ export class PolicyEngine extends NatsService {
                     { cid: contextCid, url: schema.contextURL }
                 ]);
 
-                const { transaction } = MockHelper.getMessageRecord(topicId, message.toMessage(), accountId);
                 if (documentBuffer) {
                     mockRows.push({ type: MockEntityType.FILE, cid: documentCid, document: MockHelper.getBuffer(documentBuffer) });
                 }
                 if (contextBuffer) {
                     mockRows.push({ type: MockEntityType.FILE, cid: contextCid, document: MockHelper.getBuffer(contextBuffer) });
                 }
-                mockRows.push({ type: MockEntityType.MESSAGE, transaction });
+                mockRows.push(MockHelper.getMessageRecord(topicId, message.toMessage(), accountId));
             }
         }
 
-        await DatabaseServer.updateSchemas(updatedSchemas);
-        if (mockRows.length) {
-            await DatabaseServer.saveMockBatch(mockId, mockRows);
-        }
+        // Independent bulk writes to different collections - run them concurrently.
+        await Promise.all([
+            DatabaseServer.updateSchemas(updatedSchemas),
+            DatabaseServer.saveMockBatch(mockId, mockRows)
+        ]);
 
         return model;
     }

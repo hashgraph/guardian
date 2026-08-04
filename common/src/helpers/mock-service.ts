@@ -499,32 +499,16 @@ export class MockHelper {
     } {
         if (type === 'TopicMessageSubmitTransaction') {
             const t = transaction as TopicMessageSubmitTransaction;
-            const timestamp = MockHelper.getTimestamp();
-            const consensusTimestamp = MockHelper.timestampToString(timestamp);
-            const topicId = t.topicId?.toString();
             const messageBytes = t.getMessage();
             const message = messageBytes ? Buffer.from(messageBytes).toString('utf8') : '';
-            const base64 = Buffer.from(message, 'utf8').toString('base64');
-
-            return {
-                type: MockEntityType.MESSAGE,
-                transaction: {
-                    id: consensusTimestamp,
-                    consensus_timestamp: consensusTimestamp,
-                    topicId,
-                    topic_id: topicId,
-                    payer_account_id: accountId,
-                    sequence_number: 1,
-                    message: base64
-                }
-            }
+            return MockHelper.getMessageRecord(t.topicId?.toString(), message, accountId);
         }
         throw new Error('Invalid Type');
     }
 
     /**
-     * getRecord('TopicMessageSubmitTransaction', ...) built from primitives (no Transaction
-     * object), so it can be produced in-process instead of round-tripping through the worker.
+     * Build the TopicMessageSubmitTransaction mock record from primitives (no Transaction
+     * object), so it can be produced in-process. Shared by getRecord and the dry-run fast path.
      */
     public static getMessageRecord(
         topicId: string,
