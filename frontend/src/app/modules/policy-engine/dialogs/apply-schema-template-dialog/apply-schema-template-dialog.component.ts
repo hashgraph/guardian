@@ -32,8 +32,21 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
     public mode: 'apply' | 'update' = 'apply';
     public list: SchemaTemplateGridItem[] = [];
     public selectedTemplateId: string | null = null;
-    public updatePreview: SchemaTemplateUpdatePreview | null = null;
     public resolutions: Record<string, SchemaTemplateUpdateResolutionAction> = {};
+    public visibleChanges: SchemaTemplateUpdatePreview['changes'] = [];
+    public visibleChangesCount: number = 0;
+    public visibleConflicts: SchemaTemplateUpdateConflict[] = [];
+    public visibleConflictsCount: number = 0;
+    public diffGroups: SchemaTemplateDiffGroup[] = [];
+
+    private _updatePreview: SchemaTemplateUpdatePreview | null = null;
+    public get updatePreview(): SchemaTemplateUpdatePreview | null {
+        return this._updatePreview;
+    }
+    public set updatePreview(value: SchemaTemplateUpdatePreview | null) {
+        this._updatePreview = value;
+        this._recomputeDerivedState();
+    }
     public readonly resolutionAction = SchemaTemplateUpdateResolutionAction;
     public filtersForm = new UntypedFormGroup({
         name: new UntypedFormControl('')
@@ -164,14 +177,14 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
         return this.mode === 'update' ? 'Update' : 'Apply';
     }
 
-    public get visibleChanges(): SchemaTemplateUpdatePreview['changes'] {
-        const changes = this.updatePreview?.changes || [];
+    private _recomputeDerivedState(): void {
+        const changes = this._updatePreview?.changes || [];
         const schemasWithFieldChanges = new Set(
             changes
                 .filter((change) => !this.isSchemaChange(change.type))
                 .map((change) => change.schemaName || 'Template')
         );
-        return changes.filter((change) => {
+        this.visibleChanges = changes.filter((change) => {
             if (change.type !== 'SCHEMA_UPDATE') {
                 return true;
             }
@@ -180,22 +193,11 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             }
             return this.hasDetails(change);
         });
-    }
-
-    public get visibleChangesCount(): number {
-        return this.visibleChanges.length;
-    }
-
-    public get visibleConflicts(): SchemaTemplateUpdateConflict[] {
-        return (this.updatePreview?.conflicts || [])
+        this.visibleChangesCount = this.visibleChanges.length;
+        this.visibleConflicts = (this._updatePreview?.conflicts || [])
             .filter((conflict) => (conflict.allowedActions || []).length > 1);
-    }
+        this.visibleConflictsCount = this.visibleConflicts.length;
 
-    public get visibleConflictsCount(): number {
-        return this.visibleConflicts.length;
-    }
-
-    public get diffGroups(): SchemaTemplateDiffGroup[] {
         const groups = new Map<string, SchemaTemplateDiffGroup>();
         for (const change of this.visibleChanges) {
             const key = change.schemaName || 'Template';
@@ -207,10 +209,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
                     changesCount: 0
                 });
             }
-            const group = groups.get(key);
-            if (!group) {
-                continue;
-            }
+            const group = groups.get(key)!;
             if (this.isSchemaChange(change.type)) {
                 group.schemaChanges.push(change);
             } else {
@@ -218,7 +217,7 @@ export class ApplySchemaTemplateDialog implements OnInit, OnDestroy {
             }
             group.changesCount += 1;
         }
-        return Array.from(groups.values());
+        this.diffGroups = Array.from(groups.values());
     }
 
     public isSchemaChange(type: string): boolean {

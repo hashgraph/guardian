@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ISchemaTemplate, ModuleStatus, UserPermissions } from '@guardian/interfaces';
 import { DialogService } from 'primeng/dynamicdialog';
@@ -6,6 +6,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
 import { ImportEntityDialog, ImportEntityType, IImportEntityResult } from 'src/app/modules/common/import-entity-dialog/import-entity-dialog.component';
 import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
 import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
+import { Subject, takeUntil } from 'rxjs';
 import { ProfileService } from 'src/app/services/profile.service';
 import { SchemaTemplateGridItem, SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
@@ -21,7 +22,7 @@ interface TemplateForm {
     styleUrls: ['./schema-templates.component.scss'],
     standalone: false
 })
-export class SchemaTemplatesComponent implements OnInit {
+export class SchemaTemplatesComponent implements OnInit, OnDestroy {
     public loading: boolean = true;
     public templates: SchemaTemplateGridItem[] = [];
     public total: number = 0;
@@ -32,14 +33,7 @@ export class SchemaTemplatesComponent implements OnInit {
     public textSearch: string = '';
     public publishMenuSelector: any = null;
 
-    private readonly draftStatusOptions = [{
-        id: 'Publish',
-        title: 'Publish',
-        description: 'Release version into public domain.',
-        color: '#4caf50',
-    }];
-
-    private readonly publishErrorStatusOptions = [{
+    private readonly publishStatusOptions = [{
         id: 'Publish',
         title: 'Publish',
         description: 'Release version into public domain.',
@@ -49,6 +43,7 @@ export class SchemaTemplatesComponent implements OnInit {
     public showTemplateDialog: boolean = false;
     public saving: boolean = false;
     public form: TemplateForm = this.getEmptyForm();
+    private readonly destroy$ = new Subject<void>();
 
     constructor(
         private readonly profileService: ProfileService,
@@ -64,18 +59,21 @@ export class SchemaTemplatesComponent implements OnInit {
         this.loadProfile();
     }
 
+    public ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
+    }
+
     public get canCreate(): boolean {
         return this.isConfirmed && this.user.TEMPLATES_TEMPLATE_CREATE;
     }
 
-    public canEdit(template: SchemaTemplateGridItem): boolean {
-        return this.isConfirmed &&
-            this.user.TEMPLATES_TEMPLATE_READ;
+    public canEdit(): boolean {
+        return this.isConfirmed && this.user.TEMPLATES_TEMPLATE_READ;
     }
 
-    public canExport(template: SchemaTemplateGridItem): boolean {
-        return this.isConfirmed &&
-            this.user.TEMPLATES_TEMPLATE_READ;
+    public canExport(): boolean {
+        return this.isConfirmed && this.user.TEMPLATES_TEMPLATE_READ;
     }
 
     public canDelete(template: SchemaTemplateGridItem): boolean {
@@ -102,14 +100,14 @@ export class SchemaTemplatesComponent implements OnInit {
     }
 
     public openEditDialog(template: SchemaTemplateGridItem): void {
-        if (!this.canEdit(template)) {
+        if (!this.canEdit()) {
             return;
         }
         this.openTemplateConfiguration(template);
     }
 
     public exportTemplate(template: SchemaTemplateGridItem): void {
-        if (!this.canExport(template)) {
+        if (!this.canExport()) {
             return;
         }
         const id = template.id || (template as any)._id;
@@ -403,11 +401,8 @@ export class SchemaTemplatesComponent implements OnInit {
             );
     }
 
-    public getStatusOptions(template: SchemaTemplateGridItem): any[] {
-        if (template.status === ModuleStatus.PUBLISH_ERROR) {
-            return this.publishErrorStatusOptions;
-        }
-        return this.draftStatusOptions;
+    public getStatusOptions(): any[] {
+        return this.publishStatusOptions;
     }
 
     public getStatusName(template: SchemaTemplateGridItem): string {
@@ -426,7 +421,7 @@ export class SchemaTemplatesComponent implements OnInit {
 
     private loadProfile(): void {
         this.loading = true;
-        this.profileService.getProfile().subscribe({
+        this.profileService.getProfile().pipe(takeUntil(this.destroy$)).subscribe({
             next: (profile) => {
                 this.isConfirmed = !!profile?.confirmed;
                 this.user = new UserPermissions(profile);
@@ -444,7 +439,7 @@ export class SchemaTemplatesComponent implements OnInit {
 
     private loadTemplates(): void {
         this.loading = true;
-        this.templatesService.page(this.pageIndex, this.pageSize, this.textSearch).subscribe({
+        this.templatesService.page(this.pageIndex, this.pageSize, this.textSearch).pipe(takeUntil(this.destroy$)).subscribe({
             next: (response) => {
                 this.templates = response.body || [];
                 this.total = Number(response.headers.get('X-Total-Count') || this.templates.length);

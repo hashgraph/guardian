@@ -614,6 +614,7 @@ function normalizeTemplateConfigKeys(
         if (!normalized.schemas[stableKey] && normalized.schemas[dbKey]) {
             normalized.schemas[stableKey] = cloneJson(normalized.schemas[dbKey]);
         }
+        delete normalized.schemas[dbKey];
     }
     return normalized;
 }
@@ -2074,7 +2075,6 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                 item.name = template.name;
                 item.description = template.description;
                 item.config = template.config || {};
-                item.version = template.version;
 
                 const result = await DatabaseServer.updateSchemaTemplate(item);
                 return new MessageResponse(result);

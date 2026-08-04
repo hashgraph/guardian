@@ -62,6 +62,7 @@ import { FilterObject } from '@mikro-orm/core';
 @Controller()
 export class SchemaService { }
 
+
 interface TemplateSchemaValidationContext {
     schemaConfig: ISchemaTemplateSchemaConfig;
 }
@@ -393,9 +394,7 @@ async function applyPolicySchemaGridFilters(
     }
 
     const schemas = await DatabaseServer.getSchemas(filter, {
-        orderBy: { createDate: 'DESC' },
-        limit: 10000,
-        offset: 0
+        orderBy: { createDate: 'DESC' }
     });
     const schemasByTopic = new Map<string, SchemaCollection[]>();
     for (const schema of schemas) {
@@ -1525,8 +1524,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                     let schemas = await DatabaseServer.getSchemas(filter, {
                         orderBy: { createDate: 'DESC' },
-                        limit: 10000,
-                        offset: 0,
                         fields
                     });
                     schemas = schemas.filter((s) => {

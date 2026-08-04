@@ -849,9 +849,6 @@ export class SchemaTemplatesApi {
             const taskManager = new TaskManager();
             const task = taskManager.start(TaskAction.UPDATE_APPLIED_SCHEMA_TEMPLATE, user.id);
             RunFunctionAsync<ServiceError>(async () => {
-                taskManager.addStatus(task.taskId, 'Preview template changes', StatusType.PROCESSING);
-                await guardians.previewSchemaTemplateUpdate(templateId, policyId, owner);
-                taskManager.addStatus(task.taskId, 'Preview template changes', StatusType.COMPLETED);
                 taskManager.addStatus(task.taskId, 'Update policy schemas', StatusType.PROCESSING);
                 const result = await guardians.updateAppliedSchemaTemplate(templateId, policyId, owner, body);
                 taskManager.addStatus(task.taskId, 'Update policy schemas', StatusType.COMPLETED);
