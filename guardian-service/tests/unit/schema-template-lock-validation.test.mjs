@@ -116,6 +116,41 @@ describe('validateTemplateSchemaUpdateByConfig', () => {
         );
     });
 
+    it('locks a template field when no config entry exists (default-locked)', () => {
+        const next = schema({
+            document: schemaDocument({
+                field_1: {
+                    title: 'Field 1',
+                    description: 'Changed',
+                    type: 'string',
+                    templateFieldId: 'template-field-1',
+                },
+            }),
+        });
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(schema(), next, {}),
+            /locked by schema template and cannot be edited/
+        );
+    });
+
+    it('rejects removing a locked template field', () => {
+        const next = schema({
+            document: schemaDocument({}),
+        });
+
+        assert.throws(
+            () => validateTemplateSchemaUpdateByConfig(schema(), next, {
+                fields: {
+                    'template-field-1': {
+                        locked: true,
+                    },
+                },
+            }),
+            /locked by schema template and cannot be (edited|removed)/
+        );
+    });
+
     it('allows editing an existing custom field even when new custom fields are locked', () => {
         const previous = schema({
             document: schemaDocument({

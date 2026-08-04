@@ -103,11 +103,11 @@
           <div class="group-header">Details</div>
           <div class="field-container">
             <div class="field-header">Description</div>
-            <div class="field-value">{{ policy.description || 'N\\A' }}</div>
+            <div class="field-value">{{ policy.description || 'N/A' }}</div>
           </div>
           <div class="field-container">
             <div class="field-header">Version</div>
-            <div class="field-value">{{ policy.version || 'N\\A' }}</div>
+            <div class="field-value">{{ policy.version || 'N/A' }}</div>
             @if (newVersions.length) {
               <div class="field-value">
                 <app-new-versions
@@ -121,11 +121,11 @@
           </div>
           <div class="field-container">
             <div class="field-header">Tag</div>
-            <div class="field-value">{{ policy.policyTag || 'N\\A' }}</div>
+            <div class="field-value">{{ policy.policyTag || 'N/A' }}</div>
           </div>
           <div class="field-container">
             <div class="field-header">Creator</div>
-            <div class="field-value" [title]="policy.owner">{{ policy.owner || 'N\\A' }}</div>
+            <div class="field-value" [title]="policy.owner">{{ policy.owner || 'N/A' }}</div>
           </div>
           <div class="field-container">
             <div class="field-header">Involved Roles</div>
@@ -221,7 +221,7 @@
                 <div>
                   <div class="schema-template-panel__eyebrow">Schema Template</div>
                   <div class="schema-template-panel__title">
-                    {{ schemaTemplate.templateName || 'N\\A' }}
+                    {{ schemaTemplate.templateName || 'N/A' }}
                     @if (schemaTemplate.templateVersion) {
                       <span>v{{schemaTemplate.templateVersion}}</span>
                     }
@@ -337,11 +337,11 @@
           <div class="group-header">Details</div>
           <div class="field-container">
             <div class="field-header">Description</div>
-            <div class="field-value">{{ module.description || 'N\\A' }}</div>
+            <div class="field-value">{{ module.description || 'N/A' }}</div>
           </div>
           <div class="field-container">
             <div class="field-header">Creator</div>
-            <div class="field-value" [title]="module.owner">{{ module.owner || 'N\\A' }}</div>
+            <div class="field-value" [title]="module.owner">{{ module.owner || 'N/A' }}</div>
           </div>
         </div>
       </div>
@@ -353,15 +353,15 @@
           <div class="group-header">Details</div>
           <div class="field-container">
             <div class="field-header">Name</div>
-            <div class="field-value">{{ tool.name || 'N\\A' }}</div>
+            <div class="field-value">{{ tool.name || 'N/A' }}</div>
           </div>
           <div class="field-container">
             <div class="field-header">Description</div>
-            <div class="field-value">{{ tool.description || 'N\\A' }}</div>
+            <div class="field-value">{{ tool.description || 'N/A' }}</div>
           </div>
           <div class="field-container">
             <div class="field-header">Creator</div>
-            <div class="field-value" [title]="tool.owner">{{ tool.owner || 'N\\A' }}</div>
+            <div class="field-value" [title]="tool.owner">{{ tool.owner || 'N/A' }}</div>
           </div>
           @if (!isFile) {
             <div class="field-container">

@@ -683,34 +683,6 @@ const routes: Routes = [
         }
     },
     {
-        path: 'schema-templates',
-        component: SchemaRulesComponent,
-        canActivate: [PermissionsGuard],
-        data: {
-            roles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.USER
-            ],
-            permissions: [
-                Permissions.SCHEMAS_RULE_READ
-            ]
-        }
-    },
-    {
-        path: 'schema-templates/:templateId',
-        component: SchemaRuleConfigurationComponent,
-        canActivate: [PermissionsGuard],
-        data: {
-            roles: [
-                UserRole.STANDARD_REGISTRY,
-                UserRole.USER
-            ],
-            permissions: [
-                Permissions.SCHEMAS_RULE_READ
-            ]
-        }
-    },
-    {
         path: 'policy-labels',
         component: PolicyLabelsComponent,
         canActivate: [PermissionsGuard],

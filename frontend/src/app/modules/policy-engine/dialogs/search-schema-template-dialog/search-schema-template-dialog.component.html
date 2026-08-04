@@ -50,9 +50,9 @@
         <div class="grid-body">
           @for (item of list; track item) {
             <div class="grid-row">
-              <div class="col-250">{{item.messageId || 'N\\A'}}</div>
+              <div class="col-250">{{item.messageId || 'N/A'}}</div>
               <div class="col-auto">{{item.name}}</div>
-              <div class="col-120">{{item.status || 'N\\A'}}</div>
+              <div class="col-120">{{item.status || 'N/A'}}</div>
               <div class="col-120 button-col">
                 <button
                   (click)="onSelect(item)"

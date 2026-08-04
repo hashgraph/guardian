@@ -420,12 +420,27 @@ async function getPoliciesUsingSchemaTemplate(
 }
 
 async function addSchemaCounts(templates: SchemaTemplate[]): Promise<any[]> {
+    const ownerPoliciesCache = new Map<string, any[]>();
+    const getCachedPolicies = async (owner: string) => {
+        if (!ownerPoliciesCache.has(owner)) {
+            const policies = await DatabaseServer.getPolicies(
+                { owner },
+                { fields: ['id', 'name', 'schemaTemplate'] } as any
+            );
+            ownerPoliciesCache.set(owner, policies as any[]);
+        }
+        return ownerPoliciesCache.get(owner)!;
+    };
+
     const result = [];
     for (const template of templates) {
         const item: any = template;
-        const usedByPolicies = template.owner
-            ? await getPoliciesUsingSchemaTemplate(template, template.owner)
-            : [];
+        const allPolicies = template.owner ? await getCachedPolicies(template.owner) : [];
+        const usedByPolicies = allPolicies.filter((policy) => {
+            const binding = policy?.schemaTemplate;
+            return binding?.templateId === template.id ||
+                binding?.templateId === template.id?.toString();
+        });
         item.schemasCount = template.topicId
             ? await DatabaseServer.getSchemasCount({
                 topicId: template.topicId,
@@ -464,6 +479,7 @@ async function publishSchemaTemplate(
     notifier.start();
 
     let template: SchemaTemplate | null = null;
+    let validationPassed = false;
     try {
         notifier.startStep(STEP_VALIDATE);
         template = await DatabaseServer.getSchemaTemplateById(id);
@@ -504,6 +520,7 @@ async function publishSchemaTemplate(
         }
         await normalizeSchemaTemplateConfig(template);
         notifier.completeStep(STEP_VALIDATE);
+        validationPassed = true;
 
         notifier.startStep(STEP_GENERATE_FILE);
         template.version = version;
@@ -566,7 +583,7 @@ async function publishSchemaTemplate(
         notifier.complete();
         return result;
     } catch (error) {
-        if (template) {
+        if (template && validationPassed) {
             template.status = ModuleStatus.PUBLISH_ERROR;
             await DatabaseServer.updateSchemaTemplate(template);
         }
@@ -1892,6 +1909,7 @@ export async function schemaTemplatesAPI(logger: PinoLogger): Promise<void> {
                     }
                 });
             } catch (error) {
+                await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageResponse({ status: 'not-found' });
             }
         });
