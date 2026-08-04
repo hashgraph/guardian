@@ -74,7 +74,7 @@
                     <i class="pi pi-download"></i>
                     Export
                 </button>
-                @if (!isTemplateMode) {
+                @if (showPublish) {
                 <button class="sc-btn sc-btn-primary"
                     [disabled]="!canPublish"
                     (click)="onPublish()">

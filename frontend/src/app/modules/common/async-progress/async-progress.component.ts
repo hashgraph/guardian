@@ -435,7 +435,11 @@ export class AsyncProgressComponent implements OnInit, OnDestroy {
             case TaskAction.IMPORT_SCHEMA_FILE:
             case TaskAction.IMPORT_SCHEMA_MESSAGE:
                 if (this.last) {
-                    this.redirect(this.last);
+                    const schemaId = typeof result === 'string' && result ? result : null;
+                    const lastWithSchema = schemaId
+                        ? this.last + (this.last.includes('?') ? '&' : '?') + 'schemaId=' + schemaId
+                        : this.last;
+                    this.redirect(lastWithSchema);
                     return;
                 }
                 setTimeout(() => {

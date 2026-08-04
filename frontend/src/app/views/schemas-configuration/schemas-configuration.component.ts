@@ -133,10 +133,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public get canPublish(): boolean {
         if (!this.selectedSchemaId) { return false; }
-        if (this.isTemplateMode) { return false; }
-        if (this.type === 'tag' || this.type === 'system') { return false; }
+        if (this.isTemplateMode || this.type === 'system') { return false; }
         const s = this.selectedSchema?.status;
         return s === SchemaStatus.DRAFT || s === SchemaStatus.UNPUBLISHED;
+    }
+
+    public get showPublish(): boolean {
+        return !this.isTemplateMode &&
+            this.type !== 'system' &&
+            this.selectedSchema?.status !== SchemaStatus.PUBLISHED;
     }
 
     public get canPublishTemplate(): boolean {
@@ -1149,7 +1154,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     .subscribe({
                         next: result => {
                             this.isSaving = false;
-                            const returnUrl = this.configurationRoute +
+                            const returnUrl = location.origin + this.configurationRoute +
                                 '?type=' + (this.type || '') +
                                 (this.topic ? '&topic=' + this.topic : '');
                             void this.router.navigate(['task', result.taskId], {
@@ -3007,6 +3012,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onPublish(): void {
+        if (this.type === 'tag') { this.onPublishTag(); return; }
         const id = this.selectedSchemaId;
         if (!id || !this.canPublish) { return; }
         const dialogRef = this.dialogService.open(SetVersionDialog, {
@@ -3026,6 +3032,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     });
                 });
         });
+    }
+
+    public onPublishTag(): void {
+        const id = this.selectedSchemaId;
+        if (!id || !this.canPublish) { return; }
+        this.tagsService.publishSchema(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => { this.schemaLoad$.next(id); },
+                error: () => {},
+            });
     }
 
     public onPublishTemplate(): void {
