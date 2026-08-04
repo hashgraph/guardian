@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hiero-ledger/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, IPFSOptions, MockEntityType, MockHelper, MockType, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -313,6 +313,19 @@ export class MessageServer {
             }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
+        } else if (this.dryRun && options.mockId) {
+            // Dry-run mock ADD_FILE: run it in-process instead of a worker round-trip.
+            // The worker's mock path only forwards the file to MockHelper.execute (generate a
+            // cid + saveMock the content so a later dry-run GET_FILE reads it back) via a
+            // MOCK_EVENT_EXECUTE message - nothing there needs the worker. Calling MockHelper
+            // directly removes two broker round-trips per file, which dominate the dry-run
+            // switch for schema-heavy policies.
+            const cid = await MockHelper.execute({
+                mockId: options.mockId,
+                type: MockType.ADD_FILE,
+                data: { type: MockEntityType.FILE, content: MockHelper.getBuffer(file) }
+            });
+            return { cid, url: IPFS.IPFS_PROTOCOL + cid };
         } else {
             // <-- Steps
             const STEP_SEND_FILE = 'Send file';
