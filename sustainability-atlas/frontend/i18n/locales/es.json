@@ -322,10 +322,14 @@
         "rawData": "Datos brutos",
         "lines": "líneas",
         "mdash": "—",
-        "total": "total",
-        "field": "campo",
-        "fields": "campos",
-        "changed": "cambiado"
+        "refresh": "Actualizar",
+        "cancel": "Cancelar",
+        "unknownError": "Error desconocido",
+        "status": {
+            "Active": "Activo",
+            "Inactive": "Inactivo"
+        },
+        "total": "Total"
     },
     "nav": {
         "dashboard": "Panel",
@@ -426,6 +430,7 @@
         "vintageDistributionSub": "Créditos emitidos por año de añada",
         "vintages": "añadas",
         "projectsSuffix": "proyectos",
+        "projectsCount": "{count} proyectos",
         "noVintageData": "No hay datos de añada que coincidan con los filtros seleccionados",
         "networkActivity": "Actividad de la red",
         "networkActivityTooltip": "Los 10 eventos más recientes en la red de Guardian: registros de proyectos, metodologías y registros, emisión y retiro de créditos, y otros eventos de red (creación de tokens, publicación de identidad, verificación, concesión de roles). Se actualiza automáticamente cada 25 segundos aproximadamente.",
@@ -544,7 +549,8 @@
             "Validation": "Validado",
             "Monitoring": "MRV enviado",
             "Verified": "Verificado",
-            "Issued": "Emitido"
+            "Issued": "Emitido",
+            "Completed": "Completado"
         },
         "milestones": {
             "title": "Seguimiento de hitos",
@@ -566,18 +572,73 @@
         "notFound": "Proyecto no encontrado",
         "details": {
             "projectDetails": "Detalles del proyecto",
+            "keyFacts": "Datos clave",
             "projectName": "Nombre del proyecto",
             "country": "País",
             "status": "Estado",
             "methodology": "Metodología",
+            "methodologyVersion": "Versión de la metodología",
             "registry": "Registro",
             "developer": "Desarrollador",
             "sector": "Sector",
+            "sectoralScope": "Alcance sectorial",
+            "category": "Categoría",
             "vintage": "Añada",
             "created": "Creado",
-            "creditingPeriod": "Período de acreditación"
+            "creditingPeriod": "Período de acreditación",
+            "estimatedTotalCredits": "Total de créditos estimados"
         },
         "detail": {
+            "hedera": {
+                "title": "Referencias on-chain de Hedera",
+                "verified": "Verificado en Hedera",
+                "governedBy": "Este proyecto se rige por una política de Guardian on-chain anclada a la red Hedera.",
+                "instanceTopicId": "ID de tópico de la instancia",
+                "policyTopicId": "ID de tópico de la política",
+                "firstVcAnchoredAt": "Primer VC anclado el",
+                "registryDid": "DID del Registro"
+            },
+            "lifecycle": {
+                "transferred": "Transferidos",
+                "transfers": "Transferencias",
+                "retirements": "Retiros",
+                "from": "Desde",
+                "to": "Hacia",
+                "quantity": "Cantidad",
+                "date": "Fecha",
+                "beneficiary": "Beneficiario",
+                "reason": "Razón",
+                "empty": "Aún no se han registrado transferencias o retiros para este proyecto."
+            },
+            "location": {
+                "title": "Ubicación del proyecto",
+                "countryLevel": "Ubicación a nivel de país",
+                "unavailable": "Datos de ubicación no disponibles",
+                "approximate": "Ubicación aproximada",
+                "polygon": "Límite del proyecto (polígono)"
+            },
+            "documents": {
+                "empty": "No se encontraron documentos vinculados para este proyecto."
+            },
+            "mrv": {
+                "description": "Registros enviados mediante el mecanismo de ingestión de datos externo/IoT de esta metodología (dMRV), separados de los documentos enviados por humanos.",
+                "empty": "No se encontraron envíos de datos externos de MRV para este proyecto.",
+                "flattenedHint": "Este esquema no tiene campos propios por envío — cada fila a continuación es una entrada de dispositivo/medición; varias filas pueden provenir del mismo envío subyacente (use \"En bruto\" para ver el documento original completo).",
+                "noMatchingRecords": "Ningún registro coincide con estos filtros.",
+                "viewDeviceHistory": "Ver historial de este dispositivo",
+                "columns": {
+                    "device": "Dispositivo / Punto de medición",
+                    "raw": "En bruto"
+                },
+                "dataFlow": {
+                    "title": "Flujo de datos",
+                    "subtitle": "Un resumen de la actividad de monitoreo de este proyecto y emisión de créditos hasta el momento — haga clic para ver el historial completo de emisiones.",
+                    "mrvData": "Datos de MRV",
+                    "recordCount": "{count} registro | {count} registros",
+                    "creditsIssued": "Créditos emitidos",
+                    "issuedSummary": "{total} emitidos · {count} emisión | {total} emitidos · {count} emisiones"
+                }
+            },
             "linkedVcs": {
                 "title": "Datos en bruto vinculados",
                 "subtitle": "Documentos de datos en bruto que contribuyeron a este proyecto, agrupados por esquema. Los esquemas vacíos indican campos que no pudieron extraerse.",
@@ -585,6 +646,7 @@
                 "notTracked": "No hay datos en bruto vinculados disponibles — vuelva a analizar la metodología para poblarlos.",
                 "viewJson": "Ver JSON",
                 "projectSchemaBadge": "Esquema de proyecto",
+                "vcCount": "{count} VC | {count} VCs",
                 "columns": {
                     "timestamp": "Marca de tiempo",
                     "topicId": "ID de tópico",
@@ -595,10 +657,111 @@
                 "reextract": "Re-extraer",
                 "reextractSuccess": "Re-extrayendo desde {count} VC(s) — actualice en unos segundos",
                 "reextractEmpty": "Nada que re-extraer — aún no hay VCs vinculados a este proyecto",
-                "reextractError": "Error al re-extraer"
+                "reextractError": "Error al re-extraer",
+                "refreshIpfs": "Refrescar IPFS",
+                "refreshIpfsTooltip": "Forzar la reobtención desde IPFS para cada VC en el tópico de este proyecto y volver a analizar.",
+                "refreshIpfsSuccess": "Encoladas {refreshed} obtenciones de IPFS y {reparse} reanálisis — actualice en unos segundos",
+                "refreshIpfsEmpty": "Nada que refrescar — todos los VCs ya están obtenidos e indexados",
+                "refreshIpfsError": "Error al refrescar IPFS",
+                "exportIwa": "Exportar como IWA",
+                "exportCadtrust": "Exportar como CADTrust",
+                "exportCdop": "Exportar como CDOP"
+            },
+            "canvas": {
+                "title": "Diagrama de flujo de política",
+                "subtitle": "Carriles por rol de los documentos de la metodología, en el orden de pasos creado por la política. Desplace y amplíe para explorar.",
+                "policyJson": "JSON de la política",
+                "projectKey": "Clave del proyecto",
+                "loading": "Cargando flujo de trabajo de la metodología…",
+                "loadingJson": "Cargando policy.json…",
+                "empty": "Aún no hay un flujo de trabajo de metodología decodificado disponible para este proyecto.",
+                "action": "Acción",
+                "document": "Documento",
+                "latest": "último",
+                "legend": {
+                    "flow": "Evento de flujo genuino",
+                    "sequence": "Orden de pasos definido"
+                }
+            },
+            "trustChain": {
+                "title": "Pipeline y cadena de confianza del proyecto",
+                "subtitle": "Cada credencial en el ciclo de vida de este proyecto, en orden.",
+                "empty": "Aún no se encontraron credenciales vinculadas para este proyecto."
+            },
+            "pipeline": {
+                "title": "Pipeline de metodología",
+                "subtitle": "Un paso por esquema en el ciclo de vida de la metodología de este proyecto.",
+                "stepsCount": "{count} paso | {count} pasos",
+                "empty": "Aún no se encontraron esquemas vinculados para este proyecto.",
+                "dataPresent": "Datos presentes",
+                "awaitingData": "Esperando datos",
+                "documentCount": "{count} documento | {count} documentos",
+                "docTypes": {
+                    "pdd": "Diseño del proyecto",
+                    "monitoringReport": "Monitoreo",
+                    "unknown": "Documento"
+                }
             },
             "issuances": {
-                "yearFilter": "Año"
+                "yearFilter": "Año",
+                "empty": "Aún no se han registrado emisiones para este proyecto."
+            },
+            "tabs": {
+                "summary": "Resumen",
+                "documents": "Información detallada",
+                "issuances": "Emisiones y créditos",
+                "mrv": "Datos externos MRV",
+                "advanced": "Avanzado"
+            },
+            "mapping": {
+                "title": "Mapeo de campos de metodología",
+                "subtitle": "cómo se mapean los campos del proyecto a los campos del esquema",
+                "loading": "Cargando mapeo…",
+                "notLinked": "La versión de la metodología aún no está vinculada a este proyecto. Haz clic en Re-extraer arriba (o vuelve a analizar la metodología) para poblarla.",
+                "error": "Error al cargar el mapeo de metodología.",
+                "noSchema": "Aún no se ha confirmado ningún esquema de proyecto para esta metodología.",
+                "columns": {
+                    "projectField": "Campo del proyecto",
+                    "schemaField": "Campo del esquema"
+                },
+                "projectTitle": "Título del proyecto",
+                "country": "País",
+                "developer": "Desarrollador",
+                "category": "Categoría",
+                "scale": "Escala",
+                "sector": "Sector",
+                "vintageRaw": "Añada / Fecha de inicio",
+                "creditingPeriod": "Período de acreditación",
+                "sdgOrCobenefits": "ODS / Co-beneficios",
+                "projectLocation": "Ubicación del proyecto"
+            },
+            "relationships": {
+                "title": "Relaciones",
+                "subtitle": "Relaciones de entidades entre Registro, Política, Esquema, Rol, Datos brutos, VP y Token"
+            },
+            "emissions": {
+                "title": "Parámetros de emisión",
+                "baseline": "Emisiones de línea base",
+                "project": "Emisiones del proyecto",
+                "leakage": "Emisiones de fuga",
+                "baselineFactor": "Factor de emisión de línea base"
+            },
+            "vcs": {
+                "loadError": "Error al cargar el documento VC",
+                "rawVcTooltip": "Documento VC en bruto en la cadena de bloques",
+                "searchPlaceholder": "Buscar campos, valores, tablas...",
+                "loadingDocData": "Cargando datos del documento...",
+                "noMatchingFields": "No se encontraron campos coincidentes en este esquema.",
+                "recordNumber": "Registro {number}",
+                "fieldsCount": "{count} campo | {count} campos",
+                "entriesCount": "{count} entrada | {count} entradas",
+                "noFieldsAvailable": "No hay campos disponibles.",
+                "onChainEvidence": "Evidencia on-chain",
+                "verifiableCredential": "Credencial Verificable",
+                "loadingOnChainDoc": "Cargando documento on-chain…",
+                "issuerDid": "DID del Emisor",
+                "noReadableFields": "No hay campos legibles en esta credencial.",
+                "noCredentialData": "Sin datos de credencial."
             }
         },
         "compare": {
@@ -652,6 +815,10 @@
         "filteredBySdg": "Mostrando emisiones del ODS {sdg}",
         "clearSdgFilter": "Quitar filtro",
         "supplyTooltip": "Suministro total de tokens acuñado en Hedera. Para tokens fungibles es el suministro total. Para NFTs es el número de serials únicos.",
+        "tokenTypes": {
+            "Fungible": "Fungible",
+            "Non-Fungible": "No fungible"
+        },
         "columns": {
             "token": "Token",
             "symbol": "Símbolo",
@@ -870,17 +1037,16 @@
                     "cancel": "Cancelar",
                     "unmapped": "— Ninguno —",
                     "rerunSuccess": "Decodificador reencolado — actualice en unos segundos",
-                    "rerunError": "No se pudo reencolar el decodificador",
-                    "reparseSuccess": "Se reencolaron {count} VC(s) para volver a analizar",
+                    "rerunError": "Error al reencolar el decodificador",
+                    "reparseSuccess": "{count} proyecto(s) reencolado(s) para volver a analizar",
                     "reparseEmpty": "Nada que volver a analizar — decodifique primero o no hay VC en caché",
-                    "reparseError": "No se pudo reencolar el reanálisis de proyectos",
+                    "reparseError": "Error al reencolar el reanálisis de proyectos",
                     "reparseDisabledHint": "Decodifique la política correctamente antes de volver a analizar los proyectos",
                     "saveSuccess": "Mapeo actualizado",
                     "saveNoChanges": "No hay cambios para guardar",
-                    "saveError": "No se pudo guardar el mapeo",
+                    "saveError": "Error al guardar el mapeo",
                     "arrayIndexPlaceholder": "Índice",
-                    "arrayIndexHint": "Elija un elemento específico del arreglo (empezando en 0). Déjelo en blanco para unir todos los valores con comas. Si el índice elegido no está presente en un registro dado, se usan todos los valores.",
-                    "sectorLockedHint": "El sector lo fija el policy.json; asignar un campo aquí no tiene efecto."
+                    "arrayIndexHint": "Elija un elemento específico del arreglo (basado en 0). Déjelo en blanco para unir todos los valores con comas. Si el índice elegido no está presente en un registro dado, se utilizarán todos los valores por defecto."
                 }
             },
             "summary": {
@@ -912,6 +1078,7 @@
             },
             "linkedProjects": {
                 "title": "Proyectos vinculados",
+                "projectCount": "{count} proyecto | {count} proyectos",
                 "noTopicId": "No hay ID de tópico de política disponible para esta metodología.",
                 "columns": {
                     "project": "Proyecto",
@@ -939,8 +1106,8 @@
                 "registryDid": "DID del Registro",
                 "network": "Red",
                 "downloadPolicy": "Descargar paquete de política (.zip)",
-                "downloadPending": "Preparando descarga… (obtenerla de IPFS puede tardar un momento)",
-                "downloadNotReady": "El paquete de política aún no está listo — la política no se ha decodificado por completo. Inténtalo de nuevo más tarde.",
+                "downloadPending": "Preparando descarga… (la obtención desde IPFS puede tardar un momento)",
+                "downloadNotReady": "El paquete de política aún no está listo — la política no se ha decodificado por completo. Inténtalo más tarde.",
                 "downloadError": "No se pudo descargar el paquete de política. Inténtalo de nuevo.",
                 "downloadAuthRequired": "Inicia sesión para descargar el paquete de política.",
                 "downloadRateLimited": "Has alcanzado el límite de descargas. Espera un momento e inténtalo de nuevo."
@@ -950,10 +1117,27 @@
                 "schemaCountSub": "Formularios de datos en esta política",
                 "projects": "Proyectos",
                 "projectsSub": "Registrados bajo esta metodología",
-                "issuances": "Total de créditos emitidos",
+                "issuances": "Emisiones",
                 "issuancesSub": "Créditos emitidos",
                 "trends": "Tendencias",
-                "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados."
+                "trendsComingSoon": "Los gráficos de emisiones a lo largo del tiempo, tendencia de retiros y geografía estarán disponibles una vez que los datos de los documentos VC en vivo estén completamente sincronizados.",
+                "linkedIssuances": "Emisiones vinculadas",
+                "issuanceCount": "{count} emisión | {count} emisiones",
+                "noIssuances": "Aún no se han registrado emisiones para esta metodología.",
+                "creditLifecycle": "Ciclo de vida del crédito",
+                "creditLifecycleSub": "Emisión → Transferencias → Retiros",
+                "totalMintedCredits": "Total de créditos emitidos",
+                "retired": "Retirados",
+                "active": "Activos",
+                "pctRetired": "{pct}% retirados",
+                "noLifecycle": "Aún no se han registrado transferencias o retiros para esta metodología.",
+                "table": {
+                    "token": "Token",
+                    "tokenId": "ID de token",
+                    "type": "Tipo",
+                    "mintDate": "Fecha de emisión",
+                    "rawData": "Datos brutos"
+                }
             },
             "dashboard": {
                 "title": "Panel de metodología",
@@ -1043,7 +1227,8 @@
             "geography": "Geografía",
             "law": "Ley",
             "registryDid": "DID del Registro",
-            "createdDate": "Fecha de creación"
+            "createdDate": "Fecha de creación",
+            "hideEmpty": "Ocultar registros sin metodologías, proyectos, usuarios o emisiones"
         },
         "errors": {
             "loadFailed": "Error al cargar los registros."
@@ -1051,7 +1236,8 @@
         "tooltips": {
             "viewMethodologies": "Ver metodologías de este registro",
             "viewProjects": "Ver proyectos de este registro",
-            "viewIssuances": "Ver emisiones de este registro"
+            "viewIssuances": "Ver emisiones de este registro",
+            "hideEmpty": "Activado por defecto. Oculta los registros con 0 metodologías, 0 proyectos, 0 usuarios y 0 emisiones — el mismo conjunto contabilizado en la tarjeta de estadísticas de 'Registros' del panel. Desmarque esta opción para ver todos los registros indexados, incluidos aquellos que son solo anuncios y que aún no tienen actividad en la cadena."
         },
         "detail": {
             "breadcrumb": "Registros",
@@ -1077,6 +1263,8 @@
             },
             "hedera": {
                 "title": "En Cadena Hedera",
+                "verified": "Verificado en Hedera",
+                "governedBy": "Este registro se rige por una política de Guardian en cadena anclada a la red Hedera.",
                 "sourceTopic": "ID de Tema Fuente",
                 "registryTopic": "ID de Tema del Registro",
                 "did": "DID del Registro",
@@ -1110,7 +1298,7 @@
         "subtitle": "Organizaciones que desarrollan y gestionan proyectos de compensación de carbono",
         "searchPlaceholder": "Buscar desarrolladores...",
         "noMatch": "Ningún desarrollador coincide con tus filtros",
-        "issuedTooltip": "Emisiones totales en todos los proyectos de este desarrollador.",
+        "issuedTooltip": "Cantidades totales de acuñación en todos los proyectos de este desarrollador.",
         "retiredTooltip": "Emisiones retiradas permanentemente (usadas para compensación). Las emisiones retiradas no pueden comercializarse ni reutilizarse.",
         "viewProjects": "Ver proyectos de {name}",
         "columns": {
@@ -1147,88 +1335,133 @@
             "countries": "Países",
             "topMethodology": "Metodología principal",
             "coverage": "Cobertura"
+},
+        "names": {
+            "1": "Fin de la pobreza",
+            "2": "Hambre cero",
+            "3": "Salud y bienestar",
+            "4": "Educación de calidad",
+            "5": "Igualdad de género",
+            "6": "Agua limpia y saneamiento",
+            "7": "Energía asequible y no contaminante",
+            "8": "Trabajo decente y crecimiento económico",
+            "9": "Industria, innovación e infraestructura",
+            "10": "Reducción de las desigualdades",
+            "11": "Ciudades y comunidades sostenibles",
+            "12": "Producción y consumo responsables",
+            "13": "Acción por el clima",
+            "14": "Vida submarina",
+            "15": "Vida de ecosistemas terrestres",
+            "16": "Paz, justicia e instituciones sólidas",
+            "17": "Alianzas para lograr los objetivos"
         }
     },
     "analytics": {
-        "title": "Analíticas",
-        "subtitle": "Métricas y tendencias de sostenibilidad en toda la red",
-        "metrics": {
-            "totalIssuance": "Emisión total",
-            "activeProjects": "Proyectos activos",
-            "retirements": "Retiros",
-            "avgProjectSize": "Tamaño medio de proyecto"
+        "title": "Analítica del Mercado de Carbono",
+        "subtitle": "Analítica orientada a las partes interesadas a través de {count} proyectos en {network}",
+        "tabs": {
+            "overview": "Resumen del Mercado",
+            "overviewDesc": "Ciclo de vida, añada y pulso de la canalización",
+            "buyer": "Vista del Comprador",
+            "buyerDesc": "Oferta, añada y disponibilidad de ODS",
+            "developer": "Vista del Desarrollador",
+            "developerDesc": "Referenciar la escala de proyectos y el rendimiento del sector",
+            "registry": "Vista del Registro",
+            "registryDesc": "Rendimiento, adopción de metodologías, alcance geográfico",
+            "impact": "Impacto Climático",
+            "impactDesc": "Alineación con ODS, contribución sectorial, concentración de añadas"
         },
-        "issuancesByMethodology": "Emisiones por metodología",
-        "issuancesByMethodologySub": "Distribución de emisiones entre tipos de metodología"
-    },
-    "status": {
-        "title": "Estado de sincronización",
-        "subtitle": "Métricas del pipeline de datos y las colas de trabajadores",
-        "dataSyncedUpTo": "Datos sincronizados hasta",
-        "topicsIndexed": "Tópicos indexados",
-        "topicsDiscovered": "descubiertos",
-        "messagesProcessed": "Mensajes procesados",
-        "pendingInQueue": "pendientes en cola",
-        "queueStatus": "Estado de las colas",
-        "queueStatusSub": "Colas de trabajadores BullMQ",
-        "connectionLive": "En vivo",
-        "connectionPolling": "Sondeando",
-        "lastUpdated": "Última actualización",
-        "totalWaiting": "Total en espera",
-        "totalFailed": "Total fallidos",
-        "columns": {
-            "queue": "Cola",
-            "waiting": "En espera",
-            "active": "Activas",
-            "completed": "Completadas",
-            "failed": "Fallidas",
-            "delayed": "Diferidas",
-            "concurrency": "Concurrencia",
-            "status": "Estado",
-            "actions": "Acciones"
+        "kpis": {
+            "activeSupply": "Oferta Activa",
+            "activeSupplyHint": "Créditos en circulación (emitidos − retirados)",
+            "retirementRate": "Tasa de Retiro",
+            "retirementRateHint": "Créditos emitidos que han sido retirados",
+            "pipelineProjects": "Proyectos en Desarrollo",
+            "pipelineProjectsHint": "Proyectos pre-emisión: registrados → verificados",
+            "avgVintageYear": "Año Promedio de Añada",
+            "avgVintageYearHint": "Menor = oferta más antigua, mayor = más reciente",
+            "avgCreditingPeriod": "Período Promedio de Acreditación",
+            "avgCreditingPeriodHint": "Duración media del período de acreditación del proyecto",
+            "yearsSuffix": "años"
         },
-        "queueStatuses": {
-            "active": "Activa",
-            "idle": "Inactiva",
-            "paused": "En pausa"
+        "lifecycle": {
+            "title": "Embudos de Ciclo de Vida del Proyecto",
+            "subtitle": "Distribución a través de las etapas del flujo de trabajo de la política Guardian"
         },
-        "actions": {
-            "pause": "Pausar",
-            "resume": "Reanudar",
-            "viewFailures": "Ver fallos",
-            "retryAll": "Reintentar todo"
+        "vintage": {
+            "title": "Distribución por Añada",
+            "subtitle": "Créditos emitidos agrupados por año de añada del proyecto",
+            "noData": "Sin datos de añada disponibles"
         },
-        "failedDrawer": {
-            "title": "Trabajos fallidos",
-            "byReason": "Por motivo",
-            "allFailed": "Todos los fallidos",
-            "retryJob": "Reintentar",
-            "forceRetry": "Ignorar límite de reintentos (forzar)",
-            "budgetExhausted": "Presupuesto de reintentos agotado",
-            "attempts": "Intentos",
-            "manualRetries": "Reintentos manuales"
+        "supplyAge": {
+            "title": "Perfil de Antigüedad de la Oferta",
+            "subtitle": "Distribución de créditos emitidos por antigüedad de añada — las añadas más recientes son preferidas por la mayoría de los compradores corporativos",
+            "fresh": "≤ 2 años (Reciente)",
+            "recent": "3 – 5 años (Moderada)",
+            "older": "6 – 10 años (Antigua)",
+            "legacy": "> 10 años (Heredada)"
         },
-        "syncHealth": {
-            "title": "Salud de sincronización",
-            "lastSynced": "Última sincronización",
-            "lag": "Retraso",
-            "topics": "Tópicos",
-            "tokens": "Tokens"
+        "sectors": {
+            "topCreditsTitle": "Principales Sectores por Créditos Emitidos",
+            "availableSupplyTitle": "Oferta Disponible por Sector",
+            "availableSupplySub": "Créditos activos (emitidos − retirados)",
+            "avgSizeTitle": "Tamaño Promedio del Proyecto por Sector",
+            "avgSizeSub": "Promedio de créditos emitidos por proyecto — referencia para evaluar nuevos proyectos",
+            "contributionTitle": "Contribución del Sector a la Oferta Total"
         },
-        "activity": {
-            "title": "Actividad reciente",
-            "events": "eventos",
-            "filterAll": "Todos",
-            "filterFailures": "Solo fallos",
-            "empty": "Sin eventos recientes — esperando actividad de las colas...",
-            "emptyFailures": "No se registraron fallos en esta sesión"
+        "countries": {
+            "topCreditsTitle": "Principales Países Anfitriones por Créditos",
+            "projectsCount": "{count} proy",
+            "contributionTitle": "Contribución del País a la Oferta"
         },
-        "retryAll": {
-            "confirm": "¿Reintentar todos los trabajos fallidos?",
-            "force": "Ignorar límite de reintentos (forzar)",
-            "result": "Reintentados {retried} trabajos, omitidos {skipped}"
+        "methodologies": {
+            "adoptionTitle": "Adopción de Metodologías",
+            "adoptionSub": "Metodologías más utilizadas por volumen de crédito",
+            "projectsCount": "{count}p"
+        },
+        "sdgs": {
+            "cobenefitTitle": "Cobertura de Co-beneficios ODS",
+            "cobenefitSub": "Número de proyectos que afirman contribuir a cada Objetivo de Desarrollo Sostenible de la ONU",
+            "alignmentTitle": "Matriz de Alineación con ODS",
+            "alignmentSub": "Los 17 Objetivos de Desarrollo Sostenible — cobertura y volumen de créditos",
+            "projectsLabel": "Proyectos",
+            "creditsLabel": "Créditos",
+            "projectsCount": "{count} proy"
+        },
+        "statusDist": {
+            "title": "Distribución del Estado",
+            "subtitle": "Dónde se sitúan los proyectos en el flujo de trabajo de la política hoy"
+        },
+        "developers": {
+            "title": "Clasificación de los Principales Desarrolladores",
+            "subtitle": "Clasificados por créditos totales emitidos — alcance multipaís y multisectorial",
+            "noData": "Sin datos de desarrolladores disponibles",
+            "columns": {
+                "rank": "Posición",
+                "developer": "Desarrollador",
+                "projects": "Proyectos",
+                "countries": "Países",
+                "sectors": "Sectores",
+                "credits": "Créditos"
+            }
+        },
+        "registries": {
+            "throughputTitle": "Rendimiento del Registro",
+            "throughputSub": "Promedio de créditos emitidos por proyecto, por registro — indicador de escala de calidad del proyecto",
+            "perProj": "/proy",
+            "heatmapTitle": "Mapa de Calor de la Canalización por Registro",
+            "heatmapSub": "Recuento de proyectos por etapa del ciclo de vida, principales registros",
+            "colRegistry": "Registro",
+            "noHeatData": "Sin datos del registro",
+            "marketShareTitle": "Cuota de Mercado del Registro",
+            "marketShareSub": "Cuota del total de créditos emitidos"
+        },
+        "vintageConcentration": {
+            "title": "Concentración de Añadas",
+            "subtitle": "Señal de riesgo: una fuerte concentración en añadas más antiguas puede indicar una menor integridad de la línea de base según los principios CCP / ICVCM"
         }
     },
+
     "vcViewer": {
         "rawDataOnBlockchain": "Datos brutos en la blockchain",
         "searchInJson": "Buscar en JSON...",
@@ -2031,6 +2264,245 @@
                 "title": "Eso es todo: la ayuda está aquí",
                 "body": "Puedes volver a iniciar este recorrido cuando quieras desde el botón de Ayuda, y abrir el Glosario desde ese mismo menú si algún término no te resulta familiar. Disfruta explorando el Atlas."
             }
+        }
+    },
+    "status": {
+        "title": "Estado de Sincronización",
+        "subtitle": "Colas de procesamiento en segundo plano y salud de sincronización de datos en tiempo real en la red Guardian",
+        "dataSyncedUpTo": "Datos sincronizados hasta",
+        "topicsIndexed": "Temas Indexados",
+        "topicsDiscovered": "temas descubiertos",
+        "messagesProcessed": "Mensajes Procesados",
+        "pendingInQueue": "pendientes en cola",
+        "connectionLive": "En Vivo",
+        "connectionPolling": "Sondeo de respaldo (intervalo de 30s)",
+        "lastUpdated": "Última actualización",
+        "allStatuses": "Todos los estados",
+        "allTypes": "Todos los tipos",
+        "allEvents": "Todos los eventos",
+        "allCategories": "Todas las categorías",
+        "queueStatus": "Estado de las Colas",
+        "queueStatusSub": "Colas de procesamiento de tareas en segundo plano en NestJS + BullMQ",
+        "totalWaiting": "Total en espera",
+        "totalFailed": "Total fallidos",
+        "eventTypes": {
+            "block_complete": "Bloque completado",
+            "token_minted": "Token acuñado",
+            "ipfs_added_file": "Archivo añadido a IPFS",
+            "block_event": "Evento de bloque",
+            "policyReady": "Política lista",
+            "publishPolicies": "Publicar políticas"
+        },
+        "messageTypes": {
+            "vcDocument": "Documento VC",
+            "vpDocument": "Documento VP",
+            "instancePolicy": "Política de instancia",
+            "standardRegistry": "Registro estándar",
+            "tag": "Etiqueta",
+            "token": "Token",
+            "schema": "Esquema",
+            "didDocument": "Documento DID"
+        },
+        "errors": {
+            "timeout": "Tiempo de espera de conexión agotado durante el procesamiento",
+            "networkError": "Error de conexión de red / ECONNREFUSED",
+            "rateLimit": "Límite de tarifa excedido (HTTP 429)",
+            "ipfsError": "Fallo de obtención del nodo / pasarela IPFS",
+            "stalled": "Trabajo estancado en el nodo de trabajador",
+            "badGateway": "Error de pasarela no válida (HTTP 502 / 503)",
+            "connectionClosed": "Conexión cerrada inesperadamente",
+            "dnsError": "Fallo de resolución DNS / Host no encontrado (ENOTFOUND)",
+            "badRequest": "Solicitud no válida (HTTP 400)",
+            "notFound": "Recurso no encontrado (HTTP 404)",
+            "serverError": "Error interno del servidor (HTTP 500)",
+            "unauthorized": "Acceso no autorizado / prohibido (HTTP 401 / 403)"
+        },
+        "columns": {
+            "queue": "Cola",
+            "waiting": "En espera",
+            "active": "Activo",
+            "completed": "Completado",
+            "failed": "Fallido",
+            "delayed": "Retrasado",
+            "concurrency": "Concurrencia",
+            "status": "Estado",
+            "actions": "Acciones",
+            "topicId": "ID del Tema",
+            "messages": "Mensajes",
+            "hasNext": "Tiene Siguiente",
+            "lastUpdate": "Última Actualización",
+            "action": "Acción",
+            "tokenId": "ID del Token",
+            "serial": "Serie",
+            "type": "Tipo"
+        },
+        "syncOptions": {
+            "synced": "Sincronizado",
+            "new": "Nuevo",
+            "disabled": "Deshabilitado"
+        },
+        "ipfsStatus": {
+            "fetched": "Obtenido",
+            "failed": "Fallido",
+            "pending": "Pendiente"
+        },
+        "ipfsErrorCategories": {
+            "transient": "Transitorio",
+            "permanent": "Permanente",
+            "unknown": "Desconocido"
+        },
+        "queueStatuses": {
+            "paused": "Pausado",
+            "active": "Activo",
+            "idle": "Inactivo"
+        },
+        "actions": {
+            "viewFailures": "Ver fallos",
+            "retryAll": "Reintentar todo",
+            "retry": "Reintentar"
+        },
+        "syncHealth": {
+            "title": "Salud de Sincronización y Microservicios",
+            "lastSynced": "Último Mensaje Sincronizado",
+            "lag": "Retraso de Red",
+            "lagSec": "{seconds}s de retraso",
+            "lagMin": "{minutes}m de retraso",
+            "lagHour": "{hours}h de retraso",
+            "topics": "Temas Rastreados",
+            "tokens": "Tokens Rastreados",
+            "searchTopicPlaceholder": "Buscar ID del tema…",
+            "requeueTopicLabel": "Reencolar tema:",
+            "requeueTopicPlaceholder": "0.0.43065",
+            "fromStartLabel": "Desde el inicio (reprocesar todos los mensajes)",
+            "queueButton": "Encolar",
+            "noTopicsFound": "No se encontraron temas",
+            "requeueTooltip": "Reencolar tema desde la marca de agua actual",
+            "requeueButton": "Reencolar",
+            "searchTokenPlaceholder": "Buscar ID del token…",
+            "noTokensFound": "No se encontraron tokens"
+        },
+        "guardianSync": {
+            "title": "Guardian Sync",
+            "description": "Flujo de eventos de Guardian — encola lecturas dirigidas en las colas anteriores en lugar de sondeo a ciegas.",
+            "instances": "Instancias",
+            "noInstances": "No hay instancias configuradas",
+            "connected": "Conectado",
+            "reconnecting": "Reconectando",
+            "recentTriggers": "Disparadores recientes",
+            "noTriggers": "No se registraron disparadores",
+            "heartbeat": "Latido {time}.",
+            "columns": {
+                "instance": "Instancia",
+                "aemEndpoint": "Endpoint AEM",
+                "status": "Estado",
+                "events": "Eventos",
+                "lastEvent": "Último Evento",
+                "lastSubject": "Último Asunto",
+                "when": "Cuándo",
+                "event": "Evento",
+                "ref": "Ref",
+                "action": "Acción"
+            }
+        },
+        "ipfs": {
+            "title": "Documentos IPFS",
+            "retryAllForTopic": "Reintentar Todo para el Tema",
+            "filterTopicPlaceholder": "Filtrar por ID de tema...",
+            "includeChildTopics": "Incluir temas hijos",
+            "noDocuments": "No se encontraron documentos IPFS",
+            "copyCid": "Copiar CID",
+            "copyCidV1": "Copiar CID v1",
+            "columns": {
+                "cid": "CID",
+                "cidV1": "CID v1",
+                "topicId": "ID del Tema",
+                "type": "Tipo",
+                "status": "Estado",
+                "error": "Error",
+                "attempts": "Intentos",
+                "lastFailed": "Último Fallo",
+                "actions": "Acciones"
+            }
+        },
+        "maintenance": {
+            "title": "Mantenimiento",
+            "description": "Operaciones exclusivas de administrador para reprocesar políticas y proyectos. Ejecute la redecodificación primero y luego el reanálisis para propagar los mapeos de campos actualizados.",
+            "redecodeAll": "Redecodificar Todas las Políticas",
+            "reparseAll": "Reanalizar Todos los Proyectos"
+        },
+        "activity": {
+            "title": "Feed de Actividad Reciente",
+            "events": "eventos",
+            "filterAll": "Todos los eventos",
+            "filterFailures": "Solo fallos",
+            "empty": "No hay actividad reciente en las colas",
+            "emptyFailures": "Sin fallos recientes",
+            "bufferFull": "(búfer lleno — los más antiguos pueden perderse)",
+            "labels": {
+                "jobFailed": "Trabajo Fallido",
+                "jobCompleted": "Trabajo Completado",
+                "jobStalled": "Trabajo Estancado",
+                "ipfsFetchFailed": "Fallo al Obtener IPFS",
+                "ipfsFetchRecovered": "IPFS Recuperado",
+                "documentLoaded": "Documento Cargado"
+            }
+        },
+        "retryAll": {
+            "confirm": "Reintentar Todos los Trabajos Fallidos",
+            "confirmBody": "¿Reintentar los {count} trabajos fallidos en {baseName}? Los trabajos que hayan superado el presupuesto de {budget} reintentos manuales se omitirán a menos que marque Forzar.",
+            "force": "Forzar reintento de trabajos que superaron el presupuesto",
+            "result": "Se encolaron {retried} trabajos fallidos para reintentar ({skipped} omitidos)"
+        },
+        "failedDrawer": {
+            "title": "Trabajos Fallidos",
+            "byReason": "Por Motivo",
+            "allFailed": "Todos los Fallidos",
+            "searchMatches": "{count} coincidencia en esta página ({total} total) | {count} coincidencias en esta página ({total} total)",
+            "failedCount": "{count} trabajo fallido | {count} trabajos fallidos",
+            "noGroupsFound": "No se encontraron grupos",
+            "noFailedJobs": "No hay trabajos fallidos",
+            "count": "Cantidad: {count}",
+            "retryGroup": "Reintentar grupo",
+            "filterPlaceholder": "Filtrar por ID de trabajo o ID de tema…",
+            "noSearchMatchesOnPage": "Ningún trabajo coincide con \"{search}\" en esta página",
+            "searchMatchesOnPage": "{count} coincidencia en esta página — use la paginación para buscar en otras páginas | {count} coincidencias en esta página — use la paginación para buscar en otras páginas",
+            "attempts": "Intentos",
+            "manualRetries": "Reintentos manuales",
+            "retryJob": "Reintentar trabajo",
+            "forceRetry": "Forzar reintento",
+            "budgetExhausted": "Presupuesto de reintentos manuales agotado. Marque Forzar para anular.",
+            "confirmRetryQuestion": "¿Confirmar reintento?",
+            "yesRetry": "Sí, reintentar",
+            "retriedState": "Reintentado",
+            "stackTrace": "Traza de la pila",
+            "noReason": "Sin motivo proporcionado",
+            "jobNotFailed": "El trabajo ya no está en estado fallido, actualizando..."
+        },
+        "time": {
+            "justNow": "ahora mismo",
+            "sAgo": "hace {s}s",
+            "mAgo": "hace {m}m",
+            "hAgo": "hace {h}h",
+            "dAgo": "hace {d}d",
+            "never": "nunca"
+        },
+        "toasts": {
+            "invalidTopicFormat": "Formato de ID de tema no válido. Se esperaba \"0.0.X\".",
+            "topicQueued": "Tema {topicId} encolado para sincronización",
+            "failedRequeue": "Error al reencolar {topicId}: {error}",
+            "failedPause": "Error al pausar {baseName}: {error}",
+            "failedResume": "Error al reanudar {baseName}: {error}",
+            "retryAllFailed": "Error al reintentar todo para {baseName}: {error}",
+            "jobQueuedRetry": "Trabajo {id} encolado para reintento",
+            "retryFailed": "Error en el reintento",
+            "cidQueuedRetry": "CID {cid}… encolado para reintento",
+            "retryFailedWithError": "Error en el reintento: {error}",
+            "topicRetryAllQueued": "Reintento encolado para todos los fallos en el tema {topicId}",
+            "retryAllFailedWithError": "Error al reintentar todo: {error}",
+            "redecodeEnqueued": "Redecodificación encolada: {enqueued}/{total} políticas ({skipped} omitidas)",
+            "redecodeFailed": "Error en la redecodificación: {error}",
+            "reparseEnqueued": "Reanálisis encolado: {enqueued} trabajos de VC en {succeeded} metodologías",
+            "reparseFailed": "Error en el reanálisis: {error}"
         }
     }
 }

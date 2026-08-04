@@ -108,7 +108,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
         <div class="px-5 py-3.5 border-b bg-muted/30 flex items-center justify-between">
             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Coins class="h-4 w-4 text-primary" />
-                Linked Issuances
+                {{ $t('methodologies.detail.analytics.linkedIssuances') }}
             </h2>
             <div class="flex items-center gap-2">
                 <SingleSelect
@@ -118,7 +118,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
                     highlight-active
                     class="w-32"
                 />
-                <span class="text-xs text-muted-foreground">{{ badgeCount }} issuance(s)</span>
+                <span class="text-xs text-muted-foreground">{{ $t('methodologies.detail.analytics.issuanceCount', { count: badgeCount }) }}</span>
             </div>
         </div>
 
@@ -127,15 +127,15 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b bg-muted/20">
-                        <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
-                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
-                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
-                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                        <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.mintDate') }}</th>
+                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.token') }}</th>
+                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.tokenId') }}</th>
+                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.type') }}</th>
                         <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <span class="inline-flex items-start justify-end gap-1">Mint Amount <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('credits.tooltips.mintAmount')" /></span></span>
+                            <span class="inline-flex items-start justify-end gap-1">{{ $t('credits.columns.supply') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('credits.tooltips.mintAmount')" /></span></span>
                         </th>
                         <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <span class="inline-flex items-start gap-1">Raw Data <span class="mt-0.5 shrink-0"><InfoTooltip text="Raw VC document on the blockchain" /></span></span>
+                            <span class="inline-flex items-start gap-1">{{ $t('credits.columns.rawData') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('projects.detail.vcs.rawVcTooltip')" /></span></span>
                         </th>
                     </tr>
                 </thead>
@@ -157,7 +157,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
                                 v-if="e.type"
                                 :class="[eventTypeLabel(e.type) === 'Fungible' ? 'bg-primary/10 text-primary' : 'bg-chart-4/10 text-chart-4', 'text-xs font-medium rounded-full px-2 py-0.5']"
                             >
-                                {{ eventTypeLabel(e.type) }}
+                                {{ $t('credits.tokenTypes.' + eventTypeLabel(e.type)) }}
                             </span>
                             <span v-else class="text-muted-foreground">—</span>
                         </td>
@@ -167,7 +167,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
                         <td class="py-3 px-4 text-center">
                             <button
                                 class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                title="View Raw Data"
+                                :title="$t('common.viewRawData')"
                                 @click="emit('view-vc', makeEventCredit(e))"
                             >
                                 <FileJson class="h-3.5 w-3.5" />
@@ -192,13 +192,13 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b bg-muted/20">
-                        <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token</th>
-                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Token ID</th>
-                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
+                        <th class="text-left py-2.5 px-5 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.token') }}</th>
+                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('methodologies.detail.analytics.table.tokenId') }}</th>
+                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.type') }}</th>
                         <th class="text-right py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.supply') }}</th>
-                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Mint Date</th>
+                        <th class="text-left py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">{{ $t('credits.columns.mintDate') }}</th>
                         <th class="text-center py-2.5 px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                            <span class="inline-flex items-start gap-1">Raw Data <span class="mt-0.5 shrink-0"><InfoTooltip text="Raw VC document on the blockchain" /></span></span>
+                            <span class="inline-flex items-start gap-1">{{ $t('credits.columns.rawData') }} <span class="mt-0.5 shrink-0"><InfoTooltip :text="$t('projects.detail.vcs.rawVcTooltip')" /></span></span>
                         </th>
                     </tr>
                 </thead>
@@ -213,7 +213,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
                         </td>
                         <td class="py-3 px-4">
                             <span :class="[c.type === 'Fungible' ? 'bg-primary/10 text-primary' : 'bg-chart-4/10 text-chart-4', 'text-xs font-medium rounded-full px-2 py-0.5']">
-                                {{ c.type }}
+                                {{ $t('credits.tokenTypes.' + c.type) }}
                             </span>
                         </td>
                         <td class="py-3 px-4 text-right tabular-nums font-medium">{{ formatNumber(c.supply) }}</td>
@@ -221,7 +221,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
                         <td class="py-3 px-4 text-center">
                             <button
                                 class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-                                title="View Raw Data"
+                                :title="$t('common.viewRawData')"
                                 @click="emit('view-vc', c)"
                             >
                                 <FileJson class="h-3.5 w-3.5" />
@@ -242,7 +242,7 @@ const yearOptions = computed<SingleSelectOption[]>(() => [
 
         <!-- Empty state -->
         <div v-else class="px-5 py-8 text-center text-sm text-muted-foreground">
-            No issuances have been made for this project yet.
+            {{ $t('projects.detail.issuances.empty') }}
         </div>
     </div>
 </template>

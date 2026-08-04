@@ -247,7 +247,7 @@ async function openPolicyJson() {
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <h2 class="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <FileText class="h-4 w-4 text-primary" />
-                    Policy Flowchart
+                    {{ $t('projects.detail.canvas.title') }}
                 </h2>
                 <div class="flex items-center gap-2">
                     <span
@@ -258,37 +258,37 @@ async function openPolicyJson() {
                     </span>
                     <button
                         class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                        title="View the raw policy.json"
+                        :title="$t('common.viewRawData')"
                         @click="openPolicyJson"
                     >
                         <Braces class="h-3.5 w-3.5" />
-                        Policy JSON
+                        {{ $t('projects.detail.canvas.policyJson') }}
                     </button>
                 </div>
             </div>
             <p class="mt-0.5 text-[11px] text-muted-foreground">
-                Role swimlanes of the methodology's documents, in the policy's authored step order. Pan and zoom to explore.
+                {{ $t('projects.detail.canvas.subtitle') }}
             </p>
             <div v-if="project.projectKey || anchor" class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
                 <span v-if="project.projectKey" class="flex items-center gap-1.5">
-                    <span class="font-medium uppercase tracking-wider">Project key</span>
+                    <span class="font-medium uppercase tracking-wider">{{ $t('projects.detail.canvas.projectKey') }}</span>
                     <code class="max-w-[320px] truncate rounded bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] text-foreground" :title="project.projectKey">{{ project.projectKey }}</code>
                 </span>
                 <span v-if="anchor" class="flex items-center gap-1.5">
                     <span class="font-medium uppercase tracking-wider">{{ anchor.label }}</span>
                     <code class="rounded bg-muted/60 px-1.5 py-0.5 font-mono text-[10px] text-foreground" :title="anchor.value">{{ anchor.value }}</code>
                 </span>
-            </div>
+                </div>
         </div>
 
         <!-- Loading -->
         <div v-if="loading" class="flex items-center justify-center gap-2 py-12 text-xs text-muted-foreground">
-            <Loader2 class="h-4 w-4 animate-spin" /> Loading methodology workflow…
+            <Loader2 class="h-4 w-4 animate-spin" /> {{ $t('projects.detail.canvas.loading') }}
         </div>
 
         <!-- Empty -->
         <div v-else-if="nodes.length === 0" class="px-5 py-10 text-center text-sm text-muted-foreground">
-            No decoded methodology workflow available for this project yet.
+            {{ $t('projects.detail.canvas.empty') }}
         </div>
 
         <!-- Canvas -->
@@ -314,7 +314,7 @@ async function openPolicyJson() {
                                 <component :is="data.category === 'action' ? Coins : FileText" class="h-3.5 w-3.5" />
                             </span>
                             <span class="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
-                                {{ data.category === 'action' ? 'Action' : 'Document' }}
+                                {{ data.category === 'action' ? $t('projects.detail.canvas.action') : $t('projects.detail.canvas.document') }}
                             </span>
                         </div>
 
@@ -326,15 +326,15 @@ async function openPolicyJson() {
                                     <CheckCircle2 class="h-3.5 w-3.5 shrink-0 text-emerald-500" />
                                     <span
                                         class="truncate text-[11px] text-emerald-700"
-                                        :title="`${data.vcCount} record(s) · latest ${formatTimestamp(data.latestVc?.consensusTimestamp ?? '')}`"
+                                        :title="`${data.vcCount} record(s) · ${$t('projects.detail.canvas.latest')} ${formatTimestamp(data.latestVc?.consensusTimestamp ?? '')}`"
                                     >
-                                        <template v-if="data.vcCount > 1">×{{ data.vcCount }} · latest {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}</template>
-                                        <template v-else>Data present · {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}</template>
+                                        <template v-if="data.vcCount > 1">×{{ data.vcCount }} · {{ $t('projects.detail.canvas.latest') }} {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}</template>
+                                        <template v-else>{{ $t('projects.detail.pipeline.dataPresent') }} · {{ formatTimestamp(data.latestVc?.consensusTimestamp ?? '') }}</template>
                                     </span>
                                 </template>
                                 <template v-else>
                                     <Circle class="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
-                                    <span class="text-[11px] text-muted-foreground">Awaiting data</span>
+                                    <span class="text-[11px] text-muted-foreground">{{ $t('projects.detail.pipeline.awaitingData') }}</span>
                                 </template>
                             </div>
                             <button
@@ -354,9 +354,9 @@ async function openPolicyJson() {
 
         <!-- Legend -->
         <div v-if="nodes.length > 0" class="flex flex-wrap items-center gap-4 border-t px-5 py-2 text-[11px] text-muted-foreground">
-            <span class="flex items-center gap-1.5"><span class="inline-block h-0 w-5 border-t-2 border-primary" /> Genuine flow event</span>
-            <span class="flex items-center gap-1.5"><span class="inline-block h-0 w-5 border-t-2 border-dashed border-border" /> Authored step order</span>
-            <span class="flex items-center gap-1.5"><CheckCircle2 class="h-3 w-3 text-emerald-500" /> Data present</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block h-0 w-5 border-t-2 border-primary" /> {{ $t('projects.detail.canvas.legend.flow') }}</span>
+            <span class="flex items-center gap-1.5"><span class="inline-block h-0 w-5 border-t-2 border-dashed border-border" /> {{ $t('projects.detail.canvas.legend.sequence') }}</span>
+            <span class="flex items-center gap-1.5"><CheckCircle2 class="h-3 w-3 text-emerald-500" /> {{ $t('projects.detail.pipeline.dataPresent') }}</span>
         </div>
     </div>
 
@@ -378,7 +378,7 @@ async function openPolicyJson() {
             <div class="relative z-10 flex h-full w-full max-w-2xl flex-col border-l bg-card shadow-xl">
                 <div class="flex items-center justify-between gap-3 border-b bg-muted/30 px-5 py-4">
                     <h3 class="flex items-center gap-2 text-sm font-semibold text-foreground">
-                        <Braces class="h-4 w-4 text-primary" /> Policy JSON
+                        <Braces class="h-4 w-4 text-primary" /> {{ $t('projects.detail.canvas.policyJson') }}
                     </h3>
                     <button class="text-muted-foreground transition-colors hover:text-foreground" @click="jsonOpen = false">
                         <X class="h-4 w-4" />
@@ -386,7 +386,7 @@ async function openPolicyJson() {
                 </div>
                 <div class="flex-1 overflow-auto p-4">
                     <div v-if="jsonLoading" class="flex items-center justify-center gap-2 py-10 text-xs text-muted-foreground">
-                        <Loader2 class="h-4 w-4 animate-spin" /> Loading policy.json…
+                        <Loader2 class="h-4 w-4 animate-spin" /> {{ $t('projects.detail.canvas.loadingJson') }}
                     </div>
                     <pre v-else class="whitespace-pre-wrap break-words rounded-lg bg-muted/30 p-3 font-mono text-[11px] leading-relaxed text-foreground">{{ policyJson }}</pre>
                 </div>

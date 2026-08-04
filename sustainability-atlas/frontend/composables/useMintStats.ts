@@ -41,10 +41,12 @@ export function useMintStats(filters?: Ref<{ registry?: string; developer?: stri
 
     const mintStats = computed<DashboardMintStatsDto>(() => data.value ?? EMPTY);
 
+    const { locale } = useI18n();
+
     // Build a time-bucketed series (monthly → quarterly → yearly) from the
     // monthly series returned by the API, matching useDashboard's period API.
     function buildMintSeries(period: 'monthly' | 'quarterly' | 'yearly'): { label: string; value: number }[] {
-        return bucketMintSeries(mintStats.value.mintSeries, period);
+        return bucketMintSeries(mintStats.value.mintSeries, period, locale.value);
     }
 
     // Quick lookup: minted amount by sector label

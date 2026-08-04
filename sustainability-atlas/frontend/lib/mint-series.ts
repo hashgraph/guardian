@@ -14,10 +14,13 @@ const QUARTER_NAMES = ['Q1', 'Q2', 'Q3', 'Q4'];
 export function bucketMintSeries(
     monthly: MonthlyAmount[],
     period: 'monthly' | 'quarterly' | 'yearly',
+    locale?: string,
 ): { label: string; value: number }[] {
     if (monthly.length === 0) return [];
 
     const buckets = new Map<string, { sortKey: string; label: string; value: number }>();
+    const localeTag = locale === 'es' ? 'es-ES' : (locale || 'en-US');
+    const monthFormatter = new Intl.DateTimeFormat(localeTag, { month: 'short' });
 
     for (const entry of monthly) {
         const d = new Date(entry.month);
@@ -35,7 +38,9 @@ export function bucketMintSeries(
             label = `${QUARTER_NAMES[q]} '${yy}`;
         } else {
             sortKey = entry.month.slice(0, 7);
-            label = `${MONTH_NAMES[d.getMonth()]} '${yy}`;
+            const mName = monthFormatter.format(d);
+            const capitalizedM = mName.charAt(0).toUpperCase() + mName.slice(1).replace('.', '');
+            label = `${capitalizedM} '${yy}`;
         }
 
         if (!buckets.has(sortKey)) buckets.set(sortKey, { sortKey, label, value: 0 });

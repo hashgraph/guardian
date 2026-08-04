@@ -3,6 +3,8 @@ import { ChevronDown, Database, FileText, Layers, Loader2, Search, X } from 'luc
 import type { LinkedSchema, VcDocData, VcField, VcGroup } from '~/types/models';
 import InfoTooltip from '~/components/shared/InfoTooltip.vue';
 
+const { t } = useI18n();
+
 const props = withDefaults(defineProps<{
     schemas: LinkedSchema[];
     dataBySchema: Record<string, VcDocData[]>;
@@ -11,9 +13,9 @@ const props = withDefaults(defineProps<{
     openRecord: Record<string, boolean>;
     emptyMessage: string;
     searchPlaceholder?: string;
-}>(), {
-    searchPlaceholder: 'Search fields, values, tables...',
-});
+}>(), {});
+
+const effectiveSearchPlaceholder = computed(() => props.searchPlaceholder || t('projects.detail.vcs.searchPlaceholder'));
 
 const emit = defineEmits<{
     'toggle-schema': [schemaUuid: string];
@@ -87,7 +89,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
             <input
                 v-model="searchQuery"
                 type="text"
-                :placeholder="searchPlaceholder"
+                :placeholder="effectiveSearchPlaceholder"
                 class="w-full h-9 rounded-lg border border-input bg-card pl-9 pr-9 text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring"
             />
             <button
@@ -128,14 +130,14 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                                 <span
                                     v-if="schema.isProjectSchema"
                                     class="text-[10px] font-medium bg-primary/10 text-primary rounded-full px-2 py-0.5"
-                                >Project Schema</span>
+                                >{{ $t('projects.detail.linkedVcs.projectSchemaBadge') }}</span>
                                 <span
                                     class="text-[10px] font-medium rounded-full px-2 py-0.5"
                                     :class="schema.vcCount > 0
                                         ? 'bg-stat-green/10 text-stat-green'
                                         : 'bg-muted text-muted-foreground'"
                                 >
-                                    {{ schema.vcCount }} record{{ schema.vcCount !== 1 ? 's' : '' }}
+                                    {{ $t('projects.detail.mrv.dataFlow.recordCount', { count: schema.vcCount }) }}
                                 </span>
                             </div>
                         </div>
@@ -153,7 +155,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                     <div class="border-t px-5 py-6 text-center">
                         <div class="inline-flex items-center gap-2 text-xs text-muted-foreground">
                             <Loader2 class="h-3.5 w-3.5 animate-spin" />
-                            Loading document data...
+                            {{ $t('projects.detail.vcs.loadingDocData') }}
                         </div>
                     </div>
                 </template>
@@ -163,7 +165,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                         v-if="getFilteredDocs(schema.schemaUuid).length === 0 && searchQuery.trim()"
                         class="border-t px-5 py-6 text-center text-xs text-muted-foreground"
                     >
-                        No matching fields found in this schema.
+                        {{ $t('projects.detail.vcs.noMatchingFields') }}
                     </div>
                     <div
                         v-for="(doc, vcIdx) in getFilteredDocs(schema.schemaUuid)"
@@ -178,8 +180,8 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                             <div class="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-[11px] font-bold shrink-0">
                                 {{ vcIdx + 1 }}
                             </div>
-                            <span class="text-sm font-semibold text-foreground flex-1">Record {{ vcIdx + 1 }}</span>
-                            <span class="text-[10px] text-muted-foreground mr-2">{{ doc.fields.length + doc.groups.reduce((s, g) => s + g.fields.length, 0) }} fields</span>
+                            <span class="text-sm font-semibold text-foreground flex-1">{{ $t('projects.detail.vcs.recordNumber', { number: vcIdx + 1 }) }}</span>
+                            <span class="text-[10px] text-muted-foreground mr-2">{{ $t('projects.detail.vcs.fieldsCount', { count: doc.fields.length + doc.groups.reduce((s, g) => s + g.fields.length, 0) }) }}</span>
                             <ChevronDown
                                 class="h-3.5 w-3.5 text-muted-foreground transition-transform shrink-0"
                                 :class="(openRecord[`${schema.schemaUuid}-${vcIdx}`] ?? true) ? 'rotate-180' : ''"
@@ -210,7 +212,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                                 <div class="px-5 py-2.5 bg-muted/40 flex items-center gap-2 border-b">
                                     <Database class="h-3.5 w-3.5 text-primary/60" />
                                     <span class="text-xs font-semibold text-foreground">{{ tbl.label }}</span>
-                                    <span class="text-[10px] text-muted-foreground">{{ tbl.rows.length }} entries</span>
+                                    <span class="text-[10px] text-muted-foreground">{{ $t('projects.detail.vcs.entriesCount', { count: tbl.rows.length }) }}</span>
                                 </div>
                                 <div class="overflow-x-auto">
                                     <table class="w-full text-sm">
@@ -248,7 +250,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                                 <div class="px-5 py-2.5 bg-muted/40 flex items-center gap-2 border-b">
                                     <Layers class="h-3.5 w-3.5 text-primary/60" />
                                     <span class="text-xs font-semibold text-foreground">{{ group.title }}</span>
-                                    <span class="text-[10px] text-muted-foreground">{{ group.fields.length }} fields</span>
+                                    <span class="text-[10px] text-muted-foreground">{{ $t('projects.detail.vcs.fieldsCount', { count: group.fields.length }) }}</span>
                                 </div>
                                 <div v-if="group.fields.length > 0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-border">
                                     <div
@@ -272,7 +274,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                                     <div class="px-5 py-2 bg-muted/20 flex items-center gap-2 border-b">
                                         <Database class="h-3 w-3 text-muted-foreground" />
                                         <span class="text-[11px] font-medium text-foreground">{{ tbl.label }}</span>
-                                        <span class="text-[10px] text-muted-foreground">{{ tbl.rows.length }} entries</span>
+                                        <span class="text-[10px] text-muted-foreground">{{ $t('projects.detail.vcs.entriesCount', { count: tbl.rows.length }) }}</span>
                                     </div>
                                     <div class="overflow-x-auto">
                                         <table class="w-full text-sm">
@@ -300,7 +302,7 @@ function getFilteredDocs(schemaUuid: string): VcDocData[] {
                             </div>
 
                             <div v-if="doc.fields.length === 0 && doc.groups.length === 0 && doc.tables.length === 0" class="px-5 py-6 text-center text-xs text-muted-foreground">
-                                No fields available.
+                                {{ $t('projects.detail.vcs.noFieldsAvailable') }}
                             </div>
                         </template>
                     </div>

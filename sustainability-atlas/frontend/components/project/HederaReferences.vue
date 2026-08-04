@@ -42,7 +42,7 @@ async function copyToClipboard(text: string) {
         <div class="px-5 py-3.5 border-b bg-muted/30">
             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                 <Shield class="h-4 w-4 text-primary" />
-                Hedera On-Chain References
+                {{ $t('projects.detail.hedera.title') }}
             </h2>
         </div>
         <div class="px-5 py-4 space-y-4">
@@ -50,8 +50,8 @@ async function copyToClipboard(text: string) {
             <div class="flex items-center gap-3 rounded-lg bg-emerald-50 border border-emerald-200 px-4 py-3">
                 <CheckCircle2 class="h-5 w-5 text-emerald-600 shrink-0" />
                 <div>
-                    <div class="text-sm font-medium text-emerald-800">Verified on Hedera</div>
-                    <div class="text-xs text-emerald-700">This project is governed by an on-chain Guardian policy anchored to the Hedera network.</div>
+                    <div class="text-sm font-medium text-emerald-800">{{ $t('projects.detail.hedera.verified') }}</div>
+                    <div class="text-xs text-emerald-700">{{ $t('projects.detail.hedera.governedBy') }}</div>
                 </div>
             </div>
 
@@ -59,12 +59,12 @@ async function copyToClipboard(text: string) {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-border rounded-lg overflow-hidden border">
                 <!-- Instance Topic ID -->
                 <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Instance Topic ID</div>
+                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.hedera.instanceTopicId') }}</div>
                     <div class="flex items-center gap-2 flex-wrap">
                         <code class="text-sm font-mono text-foreground">{{ project.topicId ?? '—' }}</code>
                         <button
                             v-if="project.topicId"
-                            title="Copy"
+                            :title="$t('common.copy')"
                             @click="copyToClipboard(project.topicId)"
                         >
                             <Check v-if="copiedValue === project.topicId" class="h-3.5 w-3.5 text-emerald-500" />
@@ -85,12 +85,12 @@ async function copyToClipboard(text: string) {
 
                 <!-- Policy Topic ID -->
                 <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Policy Topic ID</div>
+                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.hedera.policyTopicId') }}</div>
                     <div class="flex items-center gap-2 flex-wrap">
                         <code class="text-sm font-mono text-foreground">{{ project.policyTopicId ?? '—' }}</code>
                         <button
                             v-if="project.policyTopicId"
-                            title="Copy"
+                            :title="$t('common.copy')"
                             @click="copyToClipboard(project.policyTopicId)"
                         >
                             <Check v-if="copiedValue === project.policyTopicId" class="h-3.5 w-3.5 text-emerald-500" />
@@ -111,19 +111,19 @@ async function copyToClipboard(text: string) {
 
                 <!-- First VC Anchored At -->
                 <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">First VC Anchored At</div>
+                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.hedera.firstVcAnchoredAt') }}</div>
                     <div class="text-sm text-foreground">{{ vcTimestamp ?? '—' }}</div>
                 </div>
 
                 <!-- Registry DID -->
                 <div class="bg-card px-5 py-4">
-                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">Registry DID</div>
+                    <div class="text-[11px] font-medium text-muted-foreground uppercase tracking-wider mb-1">{{ $t('projects.detail.hedera.registryDid') }}</div>
                     <div class="flex items-start gap-2">
                         <code class="text-xs font-mono text-muted-foreground break-all flex-1">{{ project.registryDid ?? '—' }}</code>
                         <button
                             v-if="project.registryDid"
                             class="shrink-0 mt-0.5"
-                            title="Copy"
+                            :title="$t('common.copy')"
                             @click="copyToClipboard(project.registryDid)"
                         >
                             <Check v-if="copiedValue === project.registryDid" class="h-3.5 w-3.5 text-emerald-500" />

@@ -25,28 +25,28 @@ const linkedRetirements = computed(() => [] as any[]);
         <div class="px-5 py-3.5 border-b bg-muted/30">
             <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
                 <GitBranch class="h-4 w-4 text-primary" />
-                Credit Lifecycle
+                {{ $t('methodologies.detail.analytics.creditLifecycle') }}
             </h2>
-            <p class="text-[11px] text-muted-foreground mt-0.5">Issuance → Transfers → Retirements</p>
+            <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('methodologies.detail.analytics.creditLifecycleSub') }}</p>
         </div>
 
         <!-- Lifecycle Summary Bar -->
         <div class="grid grid-cols-4 gap-px bg-border">
             <div class="bg-card px-5 py-4 text-center">
                 <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalIssued) }}</div>
-                <div class="text-[11px] text-muted-foreground">Total Minted Credits</div>
+                <div class="text-[11px] text-muted-foreground">{{ $t('methodologies.detail.analytics.totalMintedCredits') }}</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
                 <div class="text-lg font-semibold text-foreground tabular-nums">{{ formatNumber(lifecycleSummary.totalTransferred) }}</div>
-                <div class="text-[11px] text-muted-foreground">Transferred</div>
+                <div class="text-[11px] text-muted-foreground">{{ $t('projects.detail.lifecycle.transferred') }}</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
                 <div class="text-lg font-semibold text-stat-rose tabular-nums">{{ formatNumber(lifecycleSummary.totalRetired) }}</div>
-                <div class="text-[11px] text-muted-foreground">Retired</div>
+                <div class="text-[11px] text-muted-foreground">{{ $t('methodologies.detail.analytics.retired') }}</div>
             </div>
             <div class="bg-card px-5 py-4 text-center">
                 <div class="text-lg font-semibold text-stat-green tabular-nums">{{ formatNumber(lifecycleSummary.active) }}</div>
-                <div class="text-[11px] text-muted-foreground">Active</div>
+                <div class="text-[11px] text-muted-foreground">{{ $t('methodologies.detail.analytics.active') }}</div>
             </div>
         </div>
 
@@ -57,26 +57,26 @@ const linkedRetirements = computed(() => [] as any[]);
                     v-if="lifecycleSummary.totalIssued > 0"
                     class="bg-stat-rose transition-all"
                     :style="{ width: `${(lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100}%` }"
-                    title="Retired"
+                    :title="$t('methodologies.detail.analytics.retired')"
                 />
                 <div
                     v-if="lifecycleSummary.totalIssued > 0"
                     class="bg-stat-green transition-all"
                     :style="{ width: `${(lifecycleSummary.active / lifecycleSummary.totalIssued) * 100}%` }"
-                    title="Active"
+                    :title="$t('methodologies.detail.analytics.active')"
                 />
             </div>
             <div class="flex items-center justify-between mt-1.5">
                 <div class="flex items-center gap-3">
                     <span class="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <span class="h-2 w-2 rounded-full bg-stat-rose" /> Retired
+                        <span class="h-2 w-2 rounded-full bg-stat-rose" /> {{ $t('methodologies.detail.analytics.retired') }}
                     </span>
                     <span class="flex items-center gap-1 text-[10px] text-muted-foreground">
-                        <span class="h-2 w-2 rounded-full bg-stat-green" /> Active
+                        <span class="h-2 w-2 rounded-full bg-stat-green" /> {{ $t('methodologies.detail.analytics.active') }}
                     </span>
                 </div>
                 <span v-if="lifecycleSummary.totalIssued > 0" class="text-[10px] text-muted-foreground">
-                    {{ ((lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100).toFixed(1) }}% retired
+                    {{ $t('methodologies.detail.analytics.pctRetired', { pct: ((lifecycleSummary.totalRetired / lifecycleSummary.totalIssued) * 100).toFixed(1) }) }}
                 </span>
             </div>
         </div>
@@ -85,17 +85,17 @@ const linkedRetirements = computed(() => [] as any[]);
         <div v-if="linkedTransfers.length > 0" class="border-t">
             <div class="px-5 py-2.5 bg-muted/20 flex items-center gap-2">
                 <Repeat class="h-3.5 w-3.5 text-stat-blue" />
-                <span class="text-xs font-semibold text-foreground">Transfers</span>
+                <span class="text-xs font-semibold text-foreground">{{ $t('projects.detail.lifecycle.transfers') }}</span>
                 <span class="text-[11px] text-muted-foreground">({{ linkedTransfers.length }})</span>
             </div>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b bg-muted/10">
-                        <th class="text-left py-2 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">From</th>
-                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">To</th>
-                        <th class="text-right py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Quantity</th>
-                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th class="text-left py-2 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.from') }}</th>
+                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.to') }}</th>
+                        <th class="text-right py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.quantity') }}</th>
+                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.date') }}</th>
+                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.details.status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -123,17 +123,17 @@ const linkedRetirements = computed(() => [] as any[]);
         <div v-if="linkedRetirements.length > 0" class="border-t">
             <div class="px-5 py-2.5 bg-muted/20 flex items-center gap-2">
                 <Flame class="h-3.5 w-3.5 text-stat-rose" />
-                <span class="text-xs font-semibold text-foreground">Retirements</span>
+                <span class="text-xs font-semibold text-foreground">{{ $t('projects.detail.lifecycle.retirements') }}</span>
                 <span class="text-[11px] text-muted-foreground">({{ linkedRetirements.length }})</span>
             </div>
             <table class="w-full text-sm">
                 <thead>
                     <tr class="border-b bg-muted/10">
-                        <th class="text-left py-2 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Beneficiary</th>
-                        <th class="text-right py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Quantity</th>
-                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Reason</th>
-                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Date</th>
-                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                        <th class="text-left py-2 px-5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.beneficiary') }}</th>
+                        <th class="text-right py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.quantity') }}</th>
+                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.reason') }}</th>
+                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.detail.lifecycle.date') }}</th>
+                        <th class="text-left py-2 px-4 text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{{ $t('projects.details.status') }}</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y">
@@ -153,7 +153,7 @@ const linkedRetirements = computed(() => [] as any[]);
         </div>
 
         <div v-if="linkedTransfers.length === 0 && linkedRetirements.length === 0" class="border-t px-5 py-6 text-center text-sm text-muted-foreground">
-            No transfers or retirements recorded for this project yet.
+            {{ $t('projects.detail.lifecycle.empty') }}
         </div>
     </div>
 </template>

@@ -5,6 +5,7 @@ import type { Project } from '~/types/models';
 const props = defineProps<{ project: Project }>();
 
 const { network } = useNetwork();
+const { t } = useI18n();
 
 interface PipelineStep {
     docType: string;
@@ -25,17 +26,17 @@ const DOC_TYPE_RANK: Record<string, number> = {
 };
 
 interface DocTypeMeta { label: string; icon: unknown; color: string }
-const DOC_TYPE_META: Record<string, DocTypeMeta> = {
-    registration:       { label: 'Registration',  icon: FileText,   color: 'text-primary bg-primary/10' },
-    pdd:                { label: 'Project Design', icon: BookOpen,   color: 'text-primary bg-primary/10' },
-    validationReport:   { label: 'Validation',    icon: ShieldCheck, color: 'text-amber-600 bg-amber-50' },
-    monitoringReport:   { label: 'Monitoring',    icon: Activity,    color: 'text-sky-600 bg-sky-50' },
-    verificationReport: { label: 'Verification',  icon: BadgeCheck,  color: 'text-emerald-600 bg-emerald-50' },
-    unknown:            { label: 'Document',       icon: FileText,    color: 'text-muted-foreground bg-muted' },
-};
+const DOC_TYPE_META = computed<Record<string, DocTypeMeta>>(() => ({
+    registration:       { label: t('projects.milestones.registration'),  icon: FileText,   color: 'text-primary bg-primary/10' },
+    pdd:                { label: t('projects.detail.pipeline.docTypes.pdd'), icon: BookOpen,   color: 'text-primary bg-primary/10' },
+    validationReport:   { label: t('projects.milestones.validation'),    icon: ShieldCheck, color: 'text-amber-600 bg-amber-50' },
+    monitoringReport:   { label: t('projects.detail.pipeline.docTypes.monitoringReport'),    icon: Activity,    color: 'text-sky-600 bg-sky-50' },
+    verificationReport: { label: t('projects.milestones.verification'),  icon: BadgeCheck,  color: 'text-emerald-600 bg-emerald-50' },
+    unknown:            { label: t('projects.detail.pipeline.docTypes.unknown'),       icon: FileText,    color: 'text-muted-foreground bg-muted' },
+}));
 
 function metaFor(docType: string): DocTypeMeta {
-    return DOC_TYPE_META[docType] ?? DOC_TYPE_META.unknown;
+    return DOC_TYPE_META.value[docType] ?? DOC_TYPE_META.value.unknown;
 }
 
 const steps = computed<PipelineStep[]>(() => {
@@ -86,13 +87,13 @@ function openDrawer(step: PipelineStep) {
         <div class="border-b bg-muted/30 px-5 py-3.5">
             <h2 class="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <Activity class="h-4 w-4 text-primary" />
-                Project Pipeline & Trust Chain
+                {{ $t('projects.detail.trustChain.title') }}
             </h2>
-            <p class="mt-0.5 text-[11px] text-muted-foreground">Every credential in this project's lifecycle, in order.</p>
+            <p class="mt-0.5 text-[11px] text-muted-foreground">{{ $t('projects.detail.trustChain.subtitle') }}</p>
         </div>
 
         <div v-if="steps.length === 0" class="px-5 py-10 text-center text-sm text-muted-foreground">
-            No linked credentials found for this project yet.
+            {{ $t('projects.detail.trustChain.empty') }}
         </div>
 
         <div v-else class="px-5 py-5">
@@ -111,14 +112,14 @@ function openDrawer(step: PipelineStep) {
                             <div class="min-w-0">
                                 <div class="flex flex-wrap items-center gap-2">
                                     <span class="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{{ metaFor(step.docType).label }}</span>
-                                    <span v-if="step.isProjectSchema" class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">Project Schema</span>
+                                    <span v-if="step.isProjectSchema" class="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">{{ $t('projects.detail.linkedVcs.projectSchemaBadge') }}</span>
                                 </div>
                                 <h3 class="mt-0.5 truncate text-sm font-semibold text-foreground">{{ step.schemaName }}</h3>
                                 <p class="mt-0.5 text-[11px] tabular-nums text-muted-foreground">{{ formatTimestamp(step.consensusTimestamp) }}</p>
                             </div>
                             <button
                                 class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
-                                title="View raw VC"
+                                :title="$t('common.viewRawData')"
                                 @click="openDrawer(step)"
                             >
                                 <Info class="h-4 w-4" />
