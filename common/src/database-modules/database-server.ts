@@ -4855,6 +4855,22 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Save many Mock rows in a single batch insert
+     * @param dryRun
+     * @param rows array of { type, ...data }
+     */
+    public static async saveMockBatch(
+        dryRun: string,
+        rows: any[]
+    ): Promise<void> {
+        if (!rows || !rows.length) {
+            return;
+        }
+        const items = DatabaseServer.addDryRunId(rows, dryRun, 'Mock', false) as DryRun[];
+        await new DataBaseHelper(DryRun).insertMany(items);
+    }
+
+    /**
      * Save Mock
      * @param dryRun
      * @param type
