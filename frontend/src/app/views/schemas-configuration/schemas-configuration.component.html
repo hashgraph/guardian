@@ -1410,10 +1410,18 @@
                                     [filter]="true"
                                     filterBy="label"
                                     [resetFilterOnHide]="true"
+                                    [virtualScroll]="true"
+                                    [virtualScrollItemSize]="38"
                                     appendTo="body"
                                     placeholder="Select field…"
                                     [ngModel]="getIfRowFieldPath(row)"
                                     (onChange)="setIfRowField(cond, ri, $event.value)">
+                                    <ng-template pTemplate="item" let-option>
+                                        <span class="sc-cond-opt-row">
+                                            <span class="sc-cond-opt-label"
+                                                (mouseover)="updateOverflowTitle($event, option.label)">{{ option.label }}</span>
+                                        </span>
+                                    </ng-template>
                                 </p-select>
                                 <span class="sc-cond-op-eq">=</span>
                                 <div class="sc-cond-val-wrap">
@@ -1426,6 +1434,9 @@
                                             placeholder="Select value…"
                                             [ngModel]="getIfRowValue(row)"
                                             (onChange)="setIfRowValue(cond, ri, $event.value)">
+                                            <ng-template pTemplate="item" let-option>
+                                                <span (mouseover)="updateOverflowTitle($event, option)">{{ option }}</span>
+                                            </ng-template>
                                         </p-select>
                                     } @else {
                                         <input class="sc-cond-val-inp" type="text" placeholder="value"

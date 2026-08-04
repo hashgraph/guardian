@@ -2238,7 +2238,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
+    private conditionFieldGroupsCache: { label: string; items: { pathStr: string; label: string }[] }[] | null = null;
+    private conditionFieldGroupsCacheSchema: Schema | null = null;
+    private conditionFieldGroupsCacheSchemas: Schema[] | null = null;
+    private conditionFieldGroupsCacheVersion = -1;
+
     public getConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
+        const schema = this.currentContextSchema;
+        if (this.conditionFieldGroupsCache
+            && this.conditionFieldGroupsCacheSchema === schema
+            && this.conditionFieldGroupsCacheSchemas === this.schemas
+            && this.conditionFieldGroupsCacheVersion === this.schemaEditVersion) {
+            return this.conditionFieldGroupsCache;
+        }
+        const groups = this.buildConditionFieldPSelectGroups();
+        this.conditionFieldGroupsCache = groups;
+        this.conditionFieldGroupsCacheSchema = schema;
+        this.conditionFieldGroupsCacheSchemas = this.schemas;
+        this.conditionFieldGroupsCacheVersion = this.schemaEditVersion;
+        return groups;
+    }
+
+    private buildConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
         const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
