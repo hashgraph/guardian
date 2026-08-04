@@ -226,6 +226,10 @@ export async function getSchemaCategory(topicId: string): Promise<SchemaCategory
         if (item) {
             return SchemaCategory.TOOL;
         }
+        const template = await DatabaseServer.getSchemaTemplate({ topicId });
+        if (template) {
+            return SchemaCategory.TEMPLATE;
+        }
     }
     return SchemaCategory.POLICY;
 }
@@ -235,6 +239,10 @@ export async function getSchemaTarget(topicId: string): Promise<any> {
         const tool = await DatabaseServer.getTool({ topicId });
         if (tool) {
             return { category: SchemaCategory.TOOL, target: tool };
+        }
+        const template = await DatabaseServer.getSchemaTemplate({ topicId });
+        if (template) {
+            return { category: SchemaCategory.TEMPLATE, target: template };
         }
         const policy = await DatabaseServer.getPolicy({ topicId });
         if (policy) {

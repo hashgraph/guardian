@@ -1,4 +1,4 @@
-import { IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate } from '../index.js';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate } from '../index.js';
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { Schema } from '../models/schema.js';
 import geoJson from './geojson-schema/geo-json.js';
@@ -9,6 +9,182 @@ import SentinelHubSchema from './sentinel-hub/sentinel-hub-schema.js';
  * Schema helper class
  */
 export class SchemaHelper {
+    private static readonly SCHEMA_FIELD_RUNTIME_KEYS = new Set([
+        'path',
+        'fullPath',
+        'fullType',
+        'arrayLvl',
+        'errors'
+    ]);
+
+    /**
+     * Clone schema values without runtime-only field properties and circular references.
+     * @param value
+     * @param ignoredKeys
+     * @param seen
+     */
+    public static cloneSchemaRuntimeValue(
+        value: any,
+        ignoredKeys: Set<string> = SchemaHelper.SCHEMA_FIELD_RUNTIME_KEYS,
+        seen: WeakSet<object> = new WeakSet()
+    ): any {
+        if (!value || typeof value !== 'object') {
+            return value;
+        }
+        if (seen.has(value)) {
+            return undefined;
+        }
+        seen.add(value);
+        try {
+            if (Array.isArray(value)) {
+                return value
+                    .map((item) => SchemaHelper.cloneSchemaRuntimeValue(item, ignoredKeys, seen))
+                    .filter((item) => item !== undefined);
+            }
+            const result: any = {};
+            for (const [key, child] of Object.entries(value)) {
+                if (ignoredKeys.has(key) || child === undefined) {
+                    continue;
+                }
+                const cloned = SchemaHelper.cloneSchemaRuntimeValue(child, ignoredKeys, seen);
+                if (cloned !== undefined) {
+                    result[key] = cloned;
+                }
+            }
+            return result;
+        } finally {
+            seen.delete(value);
+        }
+    }
+
+    /**
+     * Stable JSON stringifier for hash and equality checks.
+     * @param value
+     */
+    public static stableStringify(value: any): string {
+        if (Array.isArray(value)) {
+            return `[${value.map((item) => SchemaHelper.stableStringify(item)).join(',')}]`;
+        }
+        if (value && typeof value === 'object') {
+            const entries = Object.keys(value)
+                .filter((key) => value[key] !== undefined)
+                .sort()
+                .map((key) => `${JSON.stringify(key)}:${SchemaHelper.stableStringify(value[key])}`);
+            return `{${entries.join(',')}}`;
+        }
+        return JSON.stringify(value);
+    }
+
+    /**
+     * Walk through every JSON schema property, including nested object and array item properties.
+     * @param document
+     * @param visitor
+     * @param path
+     */
+    public static walkDocumentProperties(
+        document: any,
+        visitor: (property: any, path: string[], name: string) => void,
+        path: string[] = []
+    ): void {
+        if (!document || typeof document !== 'object') {
+            return;
+        }
+        const properties = document.properties;
+        if (!properties || typeof properties !== 'object') {
+            return;
+        }
+        for (const [name, property] of Object.entries<any>(properties)) {
+            const fieldPath = [...path, name];
+            visitor(property, fieldPath, name);
+            const target = property?.type === SchemaDataTypes.array ? property.items : property;
+            SchemaHelper.walkDocumentProperties(target, visitor, fieldPath);
+        }
+    }
+
+    /**
+     * Collect template field ids by field path and as a set.
+     * @param document
+     */
+    public static collectTemplateFieldIds(document: any): {
+        byPath: Map<string, string>,
+        ids: Set<string>
+    } {
+        const byPath = new Map<string, string>();
+        const ids = new Set<string>();
+        SchemaHelper.walkDocumentProperties(document, (property, path) => {
+            if (property?.templateFieldId) {
+                const id = String(property.templateFieldId);
+                byPath.set(path.join('.'), id);
+                ids.add(id);
+            }
+        });
+        return { byPath, ids };
+    }
+
+    /**
+     * Create stable template field ids for every field in a template schema.
+     * @param document
+     * @param previousDocument
+     */
+    public static prepareTemplateFieldIds(document: any, previousDocument?: any): void {
+        SchemaHelper.syncTemplateFieldIds(document, previousDocument, true);
+    }
+
+    /**
+     * Preserve template field ids for fields copied from a template schema.
+     * @param document
+     * @param previousDocument
+     */
+    public static preserveTemplateFieldIds(document: any, previousDocument?: any): void {
+        SchemaHelper.syncTemplateFieldIds(document, previousDocument, false);
+    }
+
+    /**
+     * Remove all template field ids from a schema document.
+     * @param document
+     */
+    public static removeTemplateFieldIds(document: any): void {
+        SchemaHelper.walkDocumentProperties(document, (property) => {
+            delete property.templateFieldId;
+        });
+    }
+
+    /**
+     * Ensure every field in a template schema has a template field id.
+     * @param document
+     */
+    public static ensureTemplateFieldIds(document: any): boolean {
+        let changed = false;
+        SchemaHelper.walkDocumentProperties(document, (property) => {
+            if (!property.templateFieldId) {
+                property.templateFieldId = GenerateUUIDv4();
+                changed = true;
+            }
+        });
+        return changed;
+    }
+
+    private static syncTemplateFieldIds(
+        document: any,
+        previousDocument: any,
+        createMissing: boolean
+    ): void {
+        const previous = SchemaHelper.collectTemplateFieldIds(previousDocument);
+        SchemaHelper.walkDocumentProperties(document, (property, path) => {
+            const incoming = property?.templateFieldId ? String(property.templateFieldId) : '';
+            const previousByPath = previous.byPath.get(path.join('.'));
+            if (incoming && previous.ids.has(incoming)) {
+                property.templateFieldId = incoming;
+            } else if (previousByPath) {
+                property.templateFieldId = previousByPath;
+            } else if (createMissing) {
+                property.templateFieldId = GenerateUUIDv4();
+            } else {
+                delete property.templateFieldId;
+            }
+        });
+    }
+
     /**
      * Parse Property
      * @param name
@@ -17,6 +193,7 @@ export class SchemaHelper {
     public static parseProperty(name: string, property: any): SchemaField {
         const field: SchemaField = {
             name: null,
+            templateFieldId: null,
             title: null,
             description: null,
             type: null,
@@ -45,6 +222,7 @@ export class SchemaHelper {
             _property = _property.oneOf[0];
         }
         field.name = name;
+        field.templateFieldId = property.templateFieldId || _property.templateFieldId || null;
         field.title = property.title || _property.title || name;
         field.description = property.description || _property.description || name;
         field.isArray = _property.type === SchemaDataTypes.array;
@@ -158,6 +336,9 @@ export class SchemaHelper {
         property.title = field.title || name;
         property.description = field.description || name;
         property.readOnly = !!field.readOnly;
+        if (field.templateFieldId) {
+            property.templateFieldId = field.templateFieldId;
+        }
 
         if (field.examples) {
             property.examples = field.examples;

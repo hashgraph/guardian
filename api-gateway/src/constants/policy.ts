@@ -10,6 +10,7 @@ export const REQUIRED_PROPS = {
     OWNER: 'owner',
     CREATOR: 'creator',
     MESSAGE_ID: 'messageId',
+    SCHEMA_TEMPLATE: 'schemaTemplate',
     DISCONTINUED_DATE: 'discontinuedDate',
     AVAILABILITY: 'availability',
     ORIGINAL_CHANGED: 'originalChanged'

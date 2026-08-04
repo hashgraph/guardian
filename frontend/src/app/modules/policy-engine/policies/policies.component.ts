@@ -56,6 +56,8 @@ import { UserPolicyDialog } from '../dialogs/user-policy-dialog/user-policy-dial
 import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { confirmDryRun } from '../dialogs/dry-run-dialog/dry-run-dialog.component';
 import { ExternalPoliciesService } from 'src/app/services/external-policy.service';
+import { ApplySchemaTemplateDialog } from '../dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
 class MenuButton {
     public readonly visible: boolean;
@@ -111,6 +113,16 @@ const columns = [{
     }
 }, {
     id: 'topic',
+    permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
+        return (
+            user.POLICIES_POLICY_CREATE ||
+            user.POLICIES_POLICY_UPDATE ||
+            user.POLICIES_POLICY_REVIEW ||
+            user.POLICIES_POLICY_DELETE
+        )
+    }
+}, {
+    id: 'template',
     permissions: (user: UserPermissions, type: 'local' | 'remote' | 'disconnected') => {
         return (
             user.POLICIES_POLICY_CREATE ||
@@ -580,6 +592,30 @@ export class PoliciesComponent implements OnInit {
                         icon: 'import-xls',
                         color: 'primary-color',
                         click: () => this.importFromExcel(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT || this.hasAppliedSchemaTemplate(policy),
+                        tooltip: 'Apply Schema Template',
+                        icon: 'link',
+                        color: 'primary-color',
+                        click: () => this.openApplySchemaTemplateDialog(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
+                        tooltip: 'Update Schema Template',
+                        icon: 'refresh',
+                        color: 'primary-color',
+                        click: () => this.openUpdateSchemaTemplateDialog(policy)
+                    }),
+                    new MenuButton({
+                        visible: this.user.POLICIES_POLICY_UPDATE && this.user.TEMPLATES_TEMPLATE_READ,
+                        disabled: policy.status !== PolicyStatus.DRAFT || !this.hasAppliedSchemaTemplate(policy),
+                        tooltip: 'Detach Schema Template',
+                        icon: 'link-break',
+                        color: 'primary-color',
+                        click: () => this.detachSchemaTemplate(policy)
                     })
                 ]
             }, {
@@ -726,6 +762,7 @@ export class PoliciesComponent implements OnInit {
         private dialogService: DialogService,
         private toastService: ToastService,
         private schemaService: SchemaService,
+        private schemaTemplatesService: SchemaTemplatesService,
         private wizardService: WizardService,
         private tokenService: TokenService,
         private contractSerivce: ContractService,
@@ -1328,13 +1365,14 @@ export class PoliciesComponent implements OnInit {
                 const versionOfTopicId = result.versionOfTopicId || null;
                 const demo = result.demo || false;
                 const tools = result.tools;
+                const schemaTemplate = result.schemaTemplate;
                 const importRecords = !!result.importRecords;
                 const originalTracking = !!result.originalTracking;
 
                 this.loading = true;
                 if (type == 'message') {
                     this.policyEngineService
-                        .pushImportByMessage(data, versionOfTopicId, { tools, importRecords }, demo, originalTracking)
+                        .pushImportByMessage(data, versionOfTopicId, { tools, schemaTemplate, importRecords }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$))
                         .subscribe((result) => {
                             const { taskId, expectation } = result;
@@ -1349,7 +1387,7 @@ export class PoliciesComponent implements OnInit {
                         });
                 } else if (type == 'file') {
                     this.policyEngineService
-                        .pushImportByFile(data, versionOfTopicId, { tools }, demo, originalTracking)
+                        .pushImportByFile(data, versionOfTopicId, { tools, schemaTemplate }, demo, originalTracking)
                         .pipe(takeUntil(this._destroy$)).subscribe((result) => {
                             const { taskId, expectation } = result;
                             this.router.navigate(['task', taskId], {
@@ -1871,6 +1909,110 @@ export class PoliciesComponent implements OnInit {
                 styleClass: 'guardian-dialog',
             })!
             .onClose.pipe(takeUntil(this._destroy$)).subscribe();
+    }
+
+    private hasAppliedSchemaTemplate(policy: any): boolean {
+        const binding = policy?.schemaTemplate;
+        return !!(
+            binding?.templateId ||
+            binding?.snapshotId ||
+            Object.keys(binding?.schemaMap || {}).length
+        );
+    }
+
+    public getSchemaTemplateLabel(policy: any): string {
+        const binding = policy?.schemaTemplate;
+        if (!binding?.templateName) {
+            return '';
+        }
+        return binding.templateVersion
+            ? `${binding.templateName} v${binding.templateVersion}`
+            : binding.templateName;
+    }
+
+    public openApplySchemaTemplateDialog(policy: any): void {
+        this.policyMenu?.hide();
+        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
+            showHeader: false,
+            width: '720px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy
+            }
+        })!;
+        this.redirectToTaskOnClose(dialogRef);
+    }
+
+    public openUpdateSchemaTemplateDialog(policy: any): void {
+        this.policyMenu?.hide();
+        const dialogRef = this.dialogService.open(ApplySchemaTemplateDialog, {
+            showHeader: false,
+            width: '820px',
+            styleClass: 'guardian-dialog',
+            data: {
+                policy,
+                mode: 'update'
+            }
+        })!;
+        this.redirectToTaskOnClose(dialogRef);
+    }
+
+    private redirectToTaskOnClose(dialogRef: any): void {
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((task: any) => {
+            if (!task?.taskId) {
+                return;
+            }
+            void this.router.navigate(['task', task.taskId], {
+                queryParams: {
+                    last: btoa(location.href)
+                }
+            });
+        });
+    }
+
+    public detachSchemaTemplate(policy: any): void {
+        this.policyMenu?.hide();
+        const templateName = policy.schemaTemplate?.templateName || 'schema template';
+        const dialogRef = this.dialogService.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Detach Schema Template',
+                text: `Detach "${templateName}" from this policy?`,
+                details: [
+                    'The imported from template schemas will remain in the policy.',
+                    'Template locks and field restrictions will be removed.'
+                ],
+                buttons: [{
+                    name: 'Cancel',
+                    class: 'secondary'
+                }, {
+                    name: 'Detach',
+                    class: 'primary'
+                }]
+            },
+        })!;
+        dialogRef.onClose.pipe(takeUntil(this._destroy$)).subscribe((result) => {
+            if (result !== 'Detach') {
+                return;
+            }
+            this.schemaTemplatesService.pushDetach(policy.id).subscribe({
+                next: (task) => {
+                    if (!task?.taskId) {
+                        return;
+                    }
+                    void this.router.navigate(['task', task.taskId], {
+                        queryParams: {
+                            last: btoa(location.href)
+                        }
+                    });
+                },
+                error: ({ message }) => {
+                    this.toastService.error(message);
+                }
+            });
+        });
     }
 
     public onChangeStatus(event: any, policy: any): void {

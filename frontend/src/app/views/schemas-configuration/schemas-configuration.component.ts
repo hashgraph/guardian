@@ -1,10 +1,11 @@
 import { ChangeDetectorRef, Component, ElementRef, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
-import { EMPTY, Subject, Subscription, forkJoin } from 'rxjs';
+import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
+import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
 import { DialogService } from 'primeng/dynamicdialog';
 import { SchemaDeleteDialogComponent } from 'src/app/modules/schema-engine/schema-delete-dialog/schema-delete-dialog.component';
@@ -12,7 +13,10 @@ import { ExportSchemaDialog } from 'src/app/modules/schema-engine/export-schema-
 import { SetVersionDialog } from 'src/app/modules/schema-engine/set-version-dialog/set-version-dialog.component';
 import { EnumEditorDialog } from 'src/app/modules/schema-engine/enum-editor-dialog/enum-editor-dialog.component';
 import { CodeEditorDialogComponent } from 'src/app/modules/policy-engine/dialogs/code-editor-dialog/code-editor-dialog.component';
+import { ExportPolicyDialog } from 'src/app/modules/policy-engine/dialogs/export-policy-dialog/export-policy-dialog.component';
+import { PublishSchemaTemplateDialog } from 'src/app/modules/policy-engine/dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { FieldTypeUI, FIELD_TYPES_UI } from 'src/app/modules/schema-engine/field-type-ui';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
 export interface DrillEntry {
     fieldLabel: string;
@@ -29,6 +33,9 @@ export interface DrillEntry {
 export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public type: string = '';
     public topic: string = '';
+    public templateId: string = '';
+    public schemaTemplate: ISchemaTemplate | null = null;
+    public templateLoading: boolean = false;
     public schemaLoading: boolean = false;
 
     public activeTab: 'builder' | 'preview' = 'builder';
@@ -42,6 +49,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public schemaSearch: string = '';
     public readonly schemaSearch$ = new Subject<string>();
     private readonly _cancelLoadSchemas$ = new Subject<void>();
+    private loadedTemplateId: string = '';
+    private loadedAppliedTemplateId: string = '';
+    private pendingTemplateSchemaId: string = '';
     public schemasPage: number = 0;
     public schemasPageSize: number = 50;
     public schemasTotal: number = 0;
@@ -71,6 +81,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
+    public templateConfigSaving: boolean = false;
+    private templateConfigDirty: boolean = false;
 
     public isDragOverCanvas: boolean = false;
     private _dragEnterCount: number = 0;
@@ -97,18 +109,290 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private _mouseUpListener: ((e: MouseEvent) => void) | null = null;
 
     public get hasUnsavedChanges(): boolean {
+        if (this.isTemplateConfigMode) {
+            return this.templateConfigDirty;
+        }
         return this.dirtySchemaIds.size > 0;
+    }
+
+    public get showTopSaveActions(): boolean {
+        return !!this.selectedSchema || this.isTemplateConfigMode;
     }
 
     public get selectedSchemaId(): string | null {
         return this.selectedSchema?.id || (this.selectedSchema as any)?._id || null;
     }
 
+    public get isNewVersionMode(): boolean {
+        if (this.isTemplateConfigMode) { return false; }
+        const id = this.selectedSchemaId;
+        return !!this.selectedSchema &&
+            this.selectedSchema.status === SchemaStatus.PUBLISHED &&
+            !!(id && this.dirtySchemaIds.has(id));
+    }
+
     public get canPublish(): boolean {
         if (!this.selectedSchemaId) { return false; }
-        if (this.type === 'tag' || this.type === 'system') { return false; }
+        if (this.isTemplateMode || this.type === 'system') { return false; }
         const s = this.selectedSchema?.status;
         return s === SchemaStatus.DRAFT || s === SchemaStatus.UNPUBLISHED;
+    }
+
+    public get showPublish(): boolean {
+        return !this.isTemplateMode &&
+            this.type !== 'system' &&
+            this.selectedSchema?.status !== SchemaStatus.PUBLISHED;
+    }
+
+    public get canPublishTemplate(): boolean {
+        if (!this.isTemplateConfigMode || !this.schemaTemplate?.id) { return false; }
+        const status = this.schemaTemplate.status;
+        return status === ModuleStatus.DRAFT || status === ModuleStatus.PUBLISH_ERROR;
+    }
+
+    public get canExportTemplate(): boolean {
+        return this.isTemplateConfigMode && !!this.schemaTemplate?.id;
+    }
+
+    public get isTemplateReadonly(): boolean {
+        return this.isTemplateMode && this.schemaTemplate?.status === ModuleStatus.PUBLISHED;
+    }
+
+    public get canCreateTemplateNewVersion(): boolean {
+        return this.isTemplateConfigMode &&
+            !!this.schemaTemplate?.id &&
+            this.schemaTemplate.status === ModuleStatus.PUBLISHED;
+    }
+
+    public get isTemplateMode(): boolean {
+        return this.type === 'template' || this.router.url.startsWith('/schema-template-configuration');
+    }
+
+    public get isTemplateConfigMode(): boolean {
+        return this.router.url.startsWith('/schema-template-configuration');
+    }
+
+    public get breadcrumbRootLabel(): string {
+        return this.isTemplateMode ? 'Templates' : 'Schemas';
+    }
+
+    public get breadcrumbRootTitle(): string {
+        return this.isTemplateMode ? 'Back to schema templates' : 'Back to schemas';
+    }
+
+    public get breadcrumbTemplateLabel(): string {
+        return this.schemaTemplate?.name || 'Schema Template';
+    }
+
+    public get isTemplateBreadcrumbLink(): boolean {
+        return this.isTemplateMode && !this.isTemplateConfigMode;
+    }
+
+    private get configurationRoute(): string {
+        return this.isTemplateConfigMode ? '/schema-template-configuration' : '/schema-configuration';
+    }
+
+    private getSchemaConfigKey(schema: Schema | null | undefined): string {
+        return (schema as any)?.templateSchemaId || schema?.id || (schema as any)?._id || '';
+    }
+
+    private getFieldConfigKey(field: SchemaField | null | undefined): string {
+        return (field as any)?.templateFieldId || field?.name || '';
+    }
+
+    public get selectedSchemaConfig(): any {
+        const key = this.getSchemaConfigKey(this.selectedSchema);
+        if (!key) {
+            return null;
+        }
+        const configs = this.schemaTemplate?.config?.schemas;
+        return configs?.[key] || (this.selectedSchemaId ? configs?.[this.selectedSchemaId] : null) || null;
+    }
+
+    public get selectedFieldConfig(): any {
+        const fieldKey = this.selectedFieldPath;
+        if (!fieldKey) {
+            return null;
+        }
+        const fields = this.selectedSchemaConfig?.fields;
+        return fields?.[fieldKey] || (this.selectedField?.name ? fields?.[this.selectedField.name] : null) || null;
+    }
+
+    public get selectedFieldPath(): string {
+        return this.getFieldConfigKey(this.selectedField);
+    }
+
+    public get canAddCustomFieldsToSelectedSchema(): boolean {
+        return !this.selectedSchemaConfig?.customFieldsLocked;
+    }
+
+    public get canChangeSelectedSchemaSettings(): boolean {
+        return !this.selectedSchemaConfig?.schemaSettingsLocked;
+    }
+
+    public get canAddFieldToSelectedSchema(): boolean {
+        const schema = this.currentContextSchema;
+        return !!schema &&
+            !this.isTemplateReadonly &&
+            !this.isTemplateConfigMode &&
+            !this.isTemplateConfigPendingForSchema(schema) &&
+            !this.isTemplateSchemaCustomFieldsLocked(schema);
+    }
+
+    public get canEditSelectedFieldInTemplate(): boolean {
+        return this.selectedFieldConfig?.locked === false;
+    }
+
+    public get selectedFieldLocked(): boolean {
+        return this.isTemplateReadonly || (!!this.selectedField && this.isTemplateFieldLocked(this.selectedField));
+    }
+
+    public get selectedSchemaSettingsLocked(): boolean {
+        return this.isTemplateReadonly || (!!this.selectedSchema && this.isTemplateSchemaSettingsLocked(this.selectedSchema));
+    }
+
+    public get hasAppliedTemplate(): boolean {
+        return !this.isTemplateMode && !!this.schemaTemplate;
+    }
+
+    public get appliedTemplateLabel(): string {
+        return this.schemaTemplate?.name || 'Schema template';
+    }
+
+    public get appliedTemplateVersion(): string {
+        return this.schemaTemplate?.version || '';
+    }
+
+    public isTemplateFieldLocked(field: SchemaField): boolean {
+        if (this.isTemplateReadonly) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        const schema = this.getSchemaForFieldLocks();
+        const schemaConfig = this.getSchemaTemplateConfig(schema);
+        const fieldKey = this.getFieldConfigKey(field);
+        const legacyFieldKey = field.name || '';
+        const isAppliedTemplateField = !this.isTemplateConfigMode && !!(field as any)?.templateFieldId;
+
+        if (!fieldKey) {
+            return true;
+        }
+        if (!schemaConfig) {
+            return false;
+        }
+        const fieldConfig = schemaConfig?.fields?.[fieldKey]
+            || (legacyFieldKey ? schemaConfig?.fields?.[legacyFieldKey] : null);
+        if (!this.isTemplateConfigMode && isAppliedTemplateField && fieldConfig?.locked === false) {
+            return false;
+        }
+        if (!this.isTemplateConfigMode && isAppliedTemplateField) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !fieldConfig) {
+            return false;
+        }
+        return fieldConfig?.locked !== false;
+    }
+
+    public isTemplateSchemaCustomFieldsLocked(schema: Schema): boolean {
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        return this.getSchemaTemplateConfig(schema)?.customFieldsLocked === true;
+    }
+
+    public isTemplateSchemaDeleteLocked(schema: Schema): boolean {
+        if (this.isTemplateReadonly) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        if (!this.isTemplateMode && !!schema.templateId) {
+            return true;
+        }
+        return false;
+    }
+
+    public isTemplateSchemaSettingsLocked(schema: Schema): boolean {
+        if (this.isTemplateReadonly) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        const config = this.getSchemaTemplateConfig(schema);
+        return !!config?.schemaSettingsLocked;
+    }
+
+    public isTemplateSchemaLocked(schema: Schema): boolean {
+        if (this.isTemplateReadonly) {
+            return true;
+        }
+        if (!this.isTemplateConfigMode && !this.hasAppliedTemplateConfig) {
+            return false;
+        }
+        if (!this.isTemplateMode && !!schema.templateId) {
+            return true;
+        }
+        const config = this.getSchemaTemplateConfig(schema);
+        return !!(
+            config?.schemaSettingsLocked ||
+            config?.customFieldsLocked
+        );
+    }
+
+    public getTemplateSchemaLockTooltip(schema: Schema): string {
+        if (!this.isTemplateMode && !!schema.templateId) {
+            return 'Detach template before deleting this schema';
+        }
+        const config = this.getSchemaTemplateConfig(schema);
+        if (config?.schemaSettingsLocked) {
+            return 'Schema settings are locked';
+        }
+        if (config?.customFieldsLocked) {
+            return 'Custom fields are locked';
+        }
+        return 'Schema is locked';
+    }
+
+    public get hasAppliedTemplateConfig(): boolean {
+        return !this.isTemplateMode && !!this.schemaTemplate?.config;
+    }
+
+    private isTemplateConfigPendingForSchema(schema: Schema | null | undefined): boolean {
+        const loadedTemplateId = this.schemaTemplate?.id || (this.schemaTemplate as any)?._id;
+        return !this.isTemplateMode &&
+            !!schema?.templateId &&
+            (!this.schemaTemplate || loadedTemplateId !== schema.templateId);
+    }
+
+    private getSchemaForFieldLocks(): Schema | null {
+        if (this.isDrilling && this.currentDrilledSchemaIri) {
+            return this.schemas.find(s => s.iri === this.currentDrilledSchemaIri) ?? this.selectedSchema;
+        }
+        return this.selectedSchema;
+    }
+
+    private getSchemaTemplateConfig(schema: Schema | null | undefined): any | null {
+        const schemaKey = this.getSchemaConfigKey(schema);
+        const legacySchemaKey = schema?.id || (schema as any)?._id;
+        if (!schemaKey) {
+            return null;
+        }
+        const schemas = this.schemaTemplate?.config?.schemas;
+        const config = schemas?.[schemaKey]
+            || (legacySchemaKey ? this.schemaTemplate?.config?.schemas?.[legacySchemaKey] : null)
+            || null;
+        if (config) {
+            return config;
+        }
+        if ((this.isTemplateConfigMode && this.schemaTemplate) || (!this.isTemplateMode && schema?.templateId && this.schemaTemplate)) {
+            return {};
+        }
+        return null;
     }
 
     public hoveredSchemaId: string | null = null;
@@ -198,6 +482,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         private route: ActivatedRoute,
         private router: Router,
         private schemaService: SchemaService,
+        private tagsService: TagsService,
+        private schemaTemplatesService: SchemaTemplatesService,
         private projectComparisonService: ProjectComparisonService,
         private dialogService: DialogService,
         private _elRef: ElementRef,
@@ -244,6 +530,14 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                             rawSubSchemas: (data.subSchemas || []).map((s: any) => new Schema(s)),
                         };
                     }),
+                    switchMap((data) => {
+                        const templateId = data.schema?.templateId || '';
+                        if (!templateId || this.isTemplateMode) {
+                            return of({ ...data, appliedTemplate: null });
+                        }
+                        return this.loadAppliedSchemaTemplateByPolicyTopic(templateId, data.schema?.topicId || this.topic)
+                            .pipe(map((appliedTemplate) => ({ ...data, appliedTemplate })));
+                    }),
                     catchError(() => {
                         this.schemaLoading = false;
                         return EMPTY;
@@ -251,10 +545,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 );
             }),
             takeUntil(this.destroy$)
-        ).subscribe(({ schema, subSchemas, rawSubSchemas }) => {
+        ).subscribe(({ schema, subSchemas, rawSubSchemas, appliedTemplate }) => {
             if (!schema) {
                 this.schemaLoading = false;
                 return;
+            }
+            if (!this.isTemplateMode) {
+                this.schemaTemplate = appliedTemplate;
             }
             this.selectedSchema = schema;
             this.schemaLoading = false;
@@ -282,11 +579,23 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.route.queryParamMap.pipe(
             takeUntil(this.destroy$)
         ).subscribe(params => {
-            this.type = params.get('type') || '';
+            this.type = params.get('type') || (this.router.url.startsWith('/schema-template-configuration') ? 'template' : '');
             this.topic = params.get('topic') || '';
+            this.templateId = params.get('templateId') || '';
             const schemaId = params.get('schemaId') || '';
             const mode = params.get('mode') || '';
+            if (this.isTemplateConfigMode) {
+                this.activeSideTab = 'schemas';
+                this.activeCanvasTab = 'fields';
+                this.activeDrillTab = 'fields';
+                this.activeTab = 'builder';
+            }
+            this.loadSchemaTemplate();
             if (schemaId) {
+                if (this.isTemplateMode && this.templateId && !this.topic) {
+                    this.pendingTemplateSchemaId = schemaId;
+                    return;
+                }
                 this.schemaLoad$.next(schemaId);
             } else {
                 if (this.topic && !this.schemasFetched) {
@@ -475,25 +784,272 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.drillStack = [];
         this.activeCanvasTab = 'fields';
         this.schemaPropsCollapsed = false;
-        void this.router.navigate(['/schema-configuration'], {
+        void this.router.navigate([this.configurationRoute], {
             queryParams: {
                 schemaId: id,
                 type: this.type || undefined,
                 topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
             },
             replaceUrl: false
         });
     }
 
     public goBack(): void {
+        if (this.isTemplateConfigMode) {
+            void this.router.navigate(['/schema-templates']);
+            return;
+        }
+        if (this.isTemplateMode) {
+            void this.router.navigate(['/schema-template-configuration'], {
+                queryParams: {
+                    type: 'template',
+                    topic: this.topic || undefined,
+                    templateId: this.templateId || undefined,
+                },
+            });
+            return;
+        }
         const queryParams: Record<string, string> = {};
         if (this.type) { queryParams.type = this.type; }
         if (this.topic) { queryParams.topic = this.topic; }
         void this.router.navigate(['/schemas'], { queryParams });
     }
 
+    public goToBreadcrumbRoot(): void {
+        if (this.isTemplateMode) {
+            void this.router.navigate(['/schema-templates']);
+            return;
+        }
+        this.goBack();
+    }
+
+    public goToTemplateConfiguration(): void {
+        if (!this.isTemplateMode || this.isTemplateConfigMode) {
+            return;
+        }
+        void this.router.navigate(['/schema-template-configuration'], {
+            queryParams: {
+                type: 'template',
+                topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
+            },
+        });
+    }
+
+    private loadSchemaTemplate(): void {
+        if (!this.isTemplateMode || !this.templateId || this.templateId === this.loadedTemplateId) {
+            return;
+        }
+        this.loadedTemplateId = this.templateId;
+        this.templateLoading = true;
+        this.schemaTemplatesService.getById(this.templateId)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (template) => {
+                    this.schemaTemplate = template;
+                    this.templateLoading = false;
+                    if (!this.topic && template.topicId) {
+                        this.topic = template.topicId;
+                        if (!this.schemasFetched) {
+                            this.loadSchemas(this.topic);
+                        }
+                        if (this.pendingTemplateSchemaId) {
+                            const schemaId = this.pendingTemplateSchemaId;
+                            this.pendingTemplateSchemaId = '';
+                            this.schemaLoad$.next(schemaId);
+                        }
+                    }
+                },
+                error: () => {
+                    this.schemaTemplate = null;
+                    this.templateLoading = false;
+                },
+            });
+    }
+
+    private loadAppliedSchemaTemplate(): void {
+        if (this.isTemplateMode) {
+            return;
+        }
+        const templateId = this.selectedSchema?.templateId ||
+            this.schemas.find(schema => !!schema.templateId)?.templateId ||
+            '';
+        if (!templateId) {
+            this.loadedAppliedTemplateId = '';
+            this.schemaTemplate = null;
+            return;
+        }
+        this.loadAppliedSchemaTemplateByPolicyTopic(templateId, this.selectedSchema?.topicId || this.topic)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((template) => {
+                this.schemaTemplate = template;
+            });
+    }
+
+    private loadAppliedSchemaTemplateByPolicyTopic(
+        templateId: string,
+        topicId: string
+    ): Observable<ISchemaTemplate | null> {
+        const cacheKey = `${templateId}:${topicId}`;
+        if (cacheKey === this.loadedAppliedTemplateId && this.schemaTemplate) {
+            return of(this.schemaTemplate);
+        }
+        if (!topicId) {
+            return of(null);
+        }
+        this.loadedAppliedTemplateId = cacheKey;
+        return this.schemaTemplatesService.getAppliedByPolicyTopic(topicId).pipe(
+            map((template) => template
+                ? ({
+                    ...template,
+                    config: template.config || { schemas: {} }
+                } as ISchemaTemplate)
+                : null
+            ),
+            catchError(() => {
+                this.loadedAppliedTemplateId = '';
+                return of(null);
+            })
+        );
+    }
+
+    public toggleCanAddCustomFieldsToSelectedSchema(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.customFieldsLocked = !config.customFieldsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleCanChangeSelectedSchemaSettings(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedSchemaConfig();
+        if (!config) {
+            return;
+        }
+        config.schemaSettingsLocked = !config.schemaSettingsLocked;
+        this.templateConfigDirty = true;
+    }
+
+    public toggleCanEditSelectedFieldInTemplate(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        const config = this.ensureSelectedFieldConfig();
+        if (!config) {
+            return;
+        }
+        config.locked = this.canEditSelectedFieldInTemplate;
+        this.templateConfigDirty = true;
+    }
+
+    public markTemplateDirty(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        this.templateConfigDirty = true;
+    }
+
+    public setTemplateName(name: string): void {
+        if (this.isTemplateReadonly || !this.schemaTemplate) {
+            return;
+        }
+        this.schemaTemplate.name = name;
+        this.markTemplateDirty();
+    }
+
+    public setTemplateDescription(description: string): void {
+        if (this.isTemplateReadonly || !this.schemaTemplate) {
+            return;
+        }
+        this.schemaTemplate.description = description;
+        this.markTemplateDirty();
+    }
+
+    public saveTemplateConfig(): void {
+        if (this.isTemplateReadonly || !this.schemaTemplate?.id || this.templateConfigSaving || !this.templateConfigDirty) {
+            return;
+        }
+        this.templateConfigSaving = true;
+        if (this.isTemplateConfigMode) {
+            this.isSaving = true;
+        }
+        const currentTemplate = this.schemaTemplate;
+        this.schemaTemplatesService.update(this.schemaTemplate.id, {
+            name: this.schemaTemplate.name,
+            description: this.schemaTemplate.description,
+            config: this.schemaTemplate.config || {}
+        })
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: (template) => {
+                    this.schemaTemplate = {
+                        ...currentTemplate,
+                        ...template,
+                        config: template?.config || currentTemplate.config || {}
+                    };
+                    this.templateConfigDirty = false;
+                    this.templateConfigSaving = false;
+                    if (this.isTemplateConfigMode) {
+                        this.isSaving = false;
+                    }
+                },
+                error: () => {
+                    this.templateConfigSaving = false;
+                    if (this.isTemplateConfigMode) {
+                        this.isSaving = false;
+                    }
+                },
+            });
+    }
+
+    private ensureSelectedSchemaConfig(): any | null {
+        const schemaKey = this.getSchemaConfigKey(this.selectedSchema);
+        if (!this.schemaTemplate || !schemaKey) {
+            return null;
+        }
+        this.schemaTemplate.config = this.schemaTemplate.config || {};
+        this.schemaTemplate.config.schemas = this.schemaTemplate.config.schemas || {};
+        const legacySchemaKey = this.selectedSchemaId;
+        if (!this.schemaTemplate.config.schemas[schemaKey] && legacySchemaKey) {
+            this.schemaTemplate.config.schemas[schemaKey] = this.schemaTemplate.config.schemas[legacySchemaKey] || {};
+            if (legacySchemaKey !== schemaKey) {
+                delete this.schemaTemplate.config.schemas[legacySchemaKey];
+            }
+        }
+        this.schemaTemplate.config.schemas[schemaKey] = this.schemaTemplate.config.schemas[schemaKey] || {};
+        return this.schemaTemplate.config.schemas[schemaKey];
+    }
+
+    private ensureSelectedFieldConfig(): any | null {
+        const schemaConfig = this.ensureSelectedSchemaConfig();
+        if (!schemaConfig || !this.selectedFieldPath) {
+            return null;
+        }
+        schemaConfig.fields = schemaConfig.fields || {};
+        const fieldKey = this.selectedFieldPath;
+        const legacyFieldKey = this.selectedField?.name || '';
+        if (!schemaConfig.fields[fieldKey] && legacyFieldKey) {
+            schemaConfig.fields[fieldKey] = schemaConfig.fields[legacyFieldKey] || {};
+            if (legacyFieldKey !== fieldKey) {
+                delete schemaConfig.fields[legacyFieldKey];
+            }
+        }
+        schemaConfig.fields[fieldKey] = schemaConfig.fields[fieldKey] || {};
+        return schemaConfig.fields[fieldKey];
+    }
+
     public markDirty(): void {
-        // Mark both root and drilled sub-schema dirty: root needs $defs rebuilt on save.
+        if (this.isTemplateReadonly) {
+            return;
+        }
         if (this.isDrilling) {
             const contextIri = this.currentDrilledSchemaIri;
             const subSchema = contextIri ? this.schemas.find(s => s.iri === contextIri) : null;
@@ -504,6 +1060,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             } else if (subUuid) {
                 this.dirtySchemaIds.add(`new:${subUuid}`);
             }
+            return;
         }
         const rootId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         if (rootId) {
@@ -514,6 +1071,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public saveAll(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        if (this.isTemplateConfigMode) {
+            this.saveTemplateConfig();
+            return;
+        }
         if (!this.hasUnsavedChanges || this.isSaving || !this.allDirtySchemasValid) { return; }
         // Iterate dirtyIds and prefer selectedSchema over the sidebar copy to avoid
         // saving a stale object when loadSchemas() ran after the user started editing.
@@ -553,7 +1117,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Phase 2: rebuild $defs via BFS through fields — avoids circular deps from $defs recursion.
         allSchemas.forEach(s => { if (s.document) { s.document.$defs = this._buildRefs(s); } });
         const createObs = toCreate.map(s =>
-            this.schemaService.create(s.category ?? this.getCategory(), s as unknown as ISchema, this.topic).pipe(
+            this.schemaService.create(s.category ?? this.getCategory(), s, this.topic).pipe(
                 map((schemas: ISchema[]) => {
                     const saved = schemas.find(r => r.uuid === s.uuid && r.topicId === this.topic);
                     const savedId = saved?.id || (saved as any)?._id;
@@ -566,7 +1130,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         if (this.selectedSchema === s) {
                             void this.router.navigate([], {
                                 relativeTo: this.route,
-                                queryParams: { schemaId: savedId, type: this.type || undefined, topic: this.topic || undefined },
+                                queryParams: {
+                                    schemaId: savedId,
+                                    type: this.type || undefined,
+                                    topic: this.topic || undefined,
+                                    templateId: this.templateId || undefined,
+                                },
                                 replaceUrl: true,
                             });
                         }
@@ -580,13 +1149,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (toNewVersion.length > 0) {
             const s = toNewVersion[0];
             const triggerNewVersion = () => {
-                this.schemaService.newVersion(s.category ?? this.getCategory(), s as unknown as ISchema)
+                this.schemaService.newVersion(s.category ?? this.getCategory(), s)
                     .pipe(takeUntil(this.destroy$))
                     .subscribe({
                         next: result => {
                             this.isSaving = false;
+                            const returnUrl = location.origin + this.configurationRoute +
+                                '?type=' + (this.type || '') +
+                                (this.topic ? '&topic=' + this.topic : '');
                             void this.router.navigate(['task', result.taskId], {
-                                queryParams: { last: btoa(location.href) },
+                                queryParams: { last: btoa(returnUrl) },
                             });
                         },
                         error: () => { this.isSaving = false; },
@@ -603,7 +1175,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             return;
         }
 
-        const updateObs = toUpdate.map(s => this.schemaService.update(s as unknown as ISchema));
+        const updateObs = toUpdate.map(s => {
+            const id = s.id || s._id;
+            if (this.type === 'tag') { return this.tagsService.updateSchema(s, id); }
+            if (this.type === 'system') { return this.schemaService.updateSystemSchema(s, id); }
+            return this.schemaService.update(s);
+        });
         forkJoin([...createObs, ...updateObs])
             .pipe(takeUntil(this.destroy$))
             .subscribe({
@@ -617,7 +1194,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addField(ft: FieldTypeUI): void {
+        if (this.isTemplateConfigMode) {
+            return;
+        }
         if (!this.selectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) { return; }
         if (this.isDrilling) { this.addDrillField(ft); return; }
         const newField = this.buildNewField(ft);
         if (this.sidebarDropIndex !== -1) {
@@ -640,6 +1221,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public deleteField(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (this.isTemplateFieldLocked(field)) { return; }
         if (!this.selectedSchema?.fields) { return; }
         const idx = this.selectedSchema.fields.indexOf(field);
         if (idx !== -1) {
@@ -654,6 +1236,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public duplicateField(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (this.isTemplateFieldLocked(field)) { return; }
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const targetFields = this.isDrilling ? this.drillCurrentFields : this.selectedSchema?.fields;
         if (!targetFields) { return; }
         const existingNames = new Set(targetFields.map(f => f.name));
@@ -666,6 +1250,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (Array.isArray(f.enum)) { clone.enum = [...f.enum]; }
         if (Array.isArray(f.fields)) { clone.fields = [...f.fields]; }
         if (Array.isArray(f.availableOptions)) { clone.availableOptions = [...f.availableOptions]; }
+        this.clearTemplateFieldMetadata(clone);
         const srcIdx = targetFields.indexOf(field);
         if (srcIdx !== -1) {
             targetFields.splice(srcIdx + 1, 0, clone as SchemaField);
@@ -674,6 +1259,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         }
         this.selectedField = clone as SchemaField;
         this.markDirty();
+    }
+
+    private clearTemplateFieldMetadata(field: any): void {
+        delete field.templateFieldId;
+        if (Array.isArray(field.fields)) {
+            field.fields.forEach((child: any) => this.clearTemplateFieldMetadata(child));
+        }
     }
 
     public selectField(field: SchemaField): void {
@@ -1020,6 +1612,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return ft?.key || 'string';
     }
 
+    public canEnterSubSchema(field: SchemaField): boolean {
+        if (!field || this.getFieldCurrentType(field) !== 'sub-schema') {
+            return false;
+        }
+        return this.schemas.some(schema => !!schema.iri && schema.iri === field.type);
+    }
+
     private get currentFieldScope(): SchemaField[] {
         return this.isDrilling
             ? this.drillCurrentFields
@@ -1100,6 +1699,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         f.pattern = ft.pattern || '';
         f.customType = ft.customType || '';
         f.unitSystem = ft.unitSystem || '';
+        delete f.fields;
         delete f.enum;
         if (ft.key === 'enum') { f.enum = []; }
         if (SchemasConfigurationComponent.NON_UPDATABLE_TYPES.has(ft.key)) { f.isUpdatable = false; }
@@ -1111,10 +1711,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public changeSubSchemaRef(schema: Schema): void {
-        if (!this.selectedField || !this.selectedField.isRef) { return; }
+        if (!this.selectedField) { return; }
         const oldIri = (this.selectedField as any).type;
         const f = this.selectedField as any;
+        f.isRef = true;
         f.type = schema.iri || '';
+        f.customType = 'subSchema';
+        f.format = '';
+        f.pattern = '';
+        f.unitSystem = '';
         f.fields = schema.fields ? [...schema.fields] : [];
         // If the changed field's old IRI appears in the drill stack, those entries are stale — close.
         if (oldIri && this.drillStack.some(e => e.schemaIri === oldIri)) {
@@ -1144,6 +1749,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public enterSubSchema(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (!this.canEnterSubSchema(field)) { return; }
         this.selectedField = null;
         // Use Schema.fields from this.schemas so edits are tracked on the sub-schema entity.
         // Fall back to field.fields (parseFields clone) for built-in refs (GeoJSON, Sentinel).
@@ -1161,6 +1767,15 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         ];
         this._parentLoadId = null;
         this.loadParentSchemas();
+    }
+
+    public enterTemplateSubSchema(field: SchemaField, event: Event): void {
+        event.stopPropagation();
+        if (!this.canEnterSubSchema(field)) { return; }
+        const subSchema = this.schemas.find(s => s.iri === field.type);
+        if (subSchema) {
+            this.switchSchema(subSchema);
+        }
     }
 
     public drillTo(index: number): void {
@@ -1187,6 +1802,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public addDrillField(ft: FieldTypeUI): void {
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const newField = this.buildNewField(ft, this.drillCurrentFields);
         if (this.sidebarDropIndex !== -1) {
             const at = this.sidebarDropPos === 'bot' ? this.sidebarDropIndex + 1 : this.sidebarDropIndex;
@@ -1200,6 +1816,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public deleteDrillField(field: SchemaField, event: Event): void {
         event.stopPropagation();
+        if (this.isTemplateFieldLocked(field)) { return; }
         const idx = this.drillCurrentFields.indexOf(field);
         if (idx !== -1) {
             this.removeGeoDependenciesByField(field, this.drillCurrentFields);
@@ -1210,6 +1827,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onFieldTypeDragStart(event: DragEvent, ft: FieldTypeUI): void {
+        if (!this.canAddFieldToSelectedSchema) {
+            event.preventDefault();
+            return;
+        }
         this._dragFieldType = ft;
         this._dragSchema = null;
         event.dataTransfer!.effectAllowed = 'copy';
@@ -1251,6 +1872,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public canDragSchema(schema: Schema): boolean {
+        if (!this.canAddFieldToSelectedSchema) { return false; }
         const selId = this.selectedSchema?.id || (this.selectedSchema as any)?._id;
         const schId = schema.id || (schema as any)._id;
         if (selId && selId === schId) { return false; }
@@ -1302,6 +1924,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onCardMouseDown(event: MouseEvent, field: SchemaField, fields: SchemaField[]): void {
         if ((event.target as HTMLElement).closest('button')) { return; }
+        if (this.isTemplateFieldLocked(field)) { return; }
         event.preventDefault();
         if (this._mouseMoveListener) { this.clearReorder(); }
         const card = event.currentTarget as HTMLElement;
@@ -1337,6 +1960,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private onDocMouseUp(event: MouseEvent): void {
+        if (this.reorderField && this.isTemplateFieldLocked(this.reorderField)) {
+            this.clearReorder();
+            return;
+        }
         if (this.isDragActive && this.reorderField && this._dragFields) {
             const fields = this._dragFields;
             const srcIdx = fields.indexOf(this.reorderField);
@@ -1417,13 +2044,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onCanvasDragEnter(event: DragEvent): void {
+        if (this.isTemplateConfigMode) { return; }
         if (!this._dragFieldType && !this._dragSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) {
+            this.isDragOverCanvas = false;
+            this.sidebarDropIndex = -1;
+            return;
+        }
         this._dragEnterCount++;
         this.isDragOverCanvas = true;
     }
 
     public onCanvasDragOver(event: DragEvent): void {
+        if (this.isTemplateConfigMode) { return; }
         if (!this._dragFieldType && !this._dragSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) {
+            this.isDragOverCanvas = false;
+            this.sidebarDropIndex = -1;
+            if (event.dataTransfer) {
+                event.dataTransfer.dropEffect = 'none';
+            }
+            return;
+        }
         event.preventDefault();
         event.dataTransfer!.dropEffect = 'copy';
         this.updateSidebarDropIndicator(event.clientY);
@@ -1462,9 +2104,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public onCanvasDrop(event: DragEvent): void {
         event.preventDefault();
+        if (this.isTemplateConfigMode) { return; }
         this._dragEnterCount = 0;
         this.isDragOverCanvas = false;
         if (!this.selectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) {
+            this._dragFieldType = null;
+            this._dragSchema = null;
+            this.sidebarDropIndex = -1;
+            return;
+        }
         if (this._dragFieldType) {
             if (this.isDrilling) { this.addDrillField(this._dragFieldType); }
             else { this.addField(this._dragFieldType); }
@@ -1478,6 +2127,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private addDrillSchemaField(schema: Schema): void {
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const existingNames = new Set((this.drillCurrentFields ?? []).map((f: SchemaField) => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }
@@ -1515,6 +2165,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     private addSchemaField(schema: Schema): void {
         if (!this.selectedSchema) { return; }
+        if (!this.canAddFieldToSelectedSchema) { return; }
         const existingNames = new Set((this.selectedSchema.fields ?? []).map((f: SchemaField) => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }
@@ -1551,8 +2202,27 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onNewSchema(): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        if (this.isTemplateConfigMode) {
+            this.openTemplateSchemaEditor({ mode: 'new' });
+            return;
+        }
         this.newSchemaName = '';
         this.showNewSchemaDialog = true;
+    }
+
+    public openTemplateSchemaEditor(options: { schema?: Schema; mode?: 'new' }): void {
+        void this.router.navigate(['/schema-configuration'], {
+            queryParams: {
+                schemaId: options.schema ? (options.schema.id || (options.schema as any)._id) : undefined,
+                mode: options.mode,
+                type: 'template',
+                topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
+            },
+        });
     }
 
     public saveNewSchema(): void {
@@ -1563,6 +2233,9 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         schema.entity = SchemaEntity.NONE;
         schema.category = this.getCategory();
         schema.topicId = this.topic || '';
+        if (this.templateId) {
+            schema.templateId = this.templateId;
+        }
         schema.status = SchemaStatus.DRAFT;
         schema.fields = [];
         schema.conditions = [];
@@ -1578,7 +2251,11 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         // Clear schemaId from URL — queryParamMap skips the selectedSchema reset for in-memory entries.
         void this.router.navigate([], {
             relativeTo: this.route,
-            queryParams: { type: this.type || undefined, topic: this.topic || undefined },
+            queryParams: {
+                type: this.type || undefined,
+                topic: this.topic || undefined,
+                templateId: this.templateId || undefined,
+            },
             replaceUrl: true,
         });
     }
@@ -2126,17 +2803,40 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.schemaService.getSchemasByPage({
             category: this.getCategory(),
             topicId,
+            templateId: this.templateId || undefined,
             pageIndex: this.schemasPage,
             pageSize: this.schemasPageSize,
             search,
         })
-            .pipe(takeUntil(this._cancelLoadSchemas$), takeUntil(this.destroy$))
-            .subscribe({
-                next: (response: HttpResponse<ISchema[]>) => {
-                    const total = Number(response.headers?.get('X-Total-Count') || 0);
+            .pipe(
+                map((response: HttpResponse<ISchema[]>) => {
                     const items = (response.body || [])
                         .map(s => { try { return new Schema(s); } catch { return null; } })
                         .filter((s): s is Schema => s !== null);
+                    return {
+                        response,
+                        items,
+                        templateId: this.selectedSchema?.templateId ||
+                            items.find(schema => !!schema.templateId)?.templateId ||
+                            ''
+                    };
+                }),
+                switchMap((data) => {
+                    if (!data.templateId || this.isTemplateMode) {
+                        return of({ ...data, appliedTemplate: null });
+                    }
+                    return this.loadAppliedSchemaTemplateByPolicyTopic(data.templateId, this.topic)
+                        .pipe(map((appliedTemplate) => ({ ...data, appliedTemplate })));
+                }),
+                takeUntil(this._cancelLoadSchemas$),
+                takeUntil(this.destroy$)
+            )
+            .subscribe({
+                next: ({ response, items, appliedTemplate }) => {
+                    if (!this.isTemplateMode) {
+                        this.schemaTemplate = appliedTemplate;
+                    }
+                    const total = Number(response.headers?.get('X-Total-Count') || 0);
                     this.schemasTotal = total;
                     if (search) {
                         items.sort((a, b) => this.rankMatch(b.name || '', search) - this.rankMatch(a.name || '', search));
@@ -2155,6 +2855,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         this.schemasLoading = false;
                     }
                     this.schemasFetched = true;
+                    this.loadAppliedSchemaTemplate();
                     if (this.selectedSchema) { this.upsertInSidebar(this.selectedSchema); }
                 },
                 error: () => {
@@ -2172,9 +2873,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         const existingNames = new Set((contextFields ?? this.selectedSchema?.fields ?? []).map(f => f.name));
         let idx = 1;
         while (existingNames.has(`field_${idx}`)) { idx++; }
+        const name = `field_${idx}`;
         const field: any = {
-            name: `field_${idx}`,
-            title: ft.label,
+            name,
+            title: name,
             description: '',
             required: false,
             isArray: false,
@@ -2207,12 +2909,19 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             case 'module':  return SchemaCategory.MODULE;
             case 'tag':     return SchemaCategory.TAG;
             case 'system':  return SchemaCategory.SYSTEM;
+            case 'template': return SchemaCategory.TEMPLATE;
             case 'policy':
             default:        return SchemaCategory.POLICY;
         }
     }
 
     public onDeleteSchema(schema: Schema): void {
+        if (this.isTemplateReadonly) {
+            return;
+        }
+        if (this.isTemplateSchemaDeleteLocked(schema)) {
+            return;
+        }
         const dirtyKey = `new:${(schema as any).uuid}`;
         if (this.newSchemaKeys.has(dirtyKey)) {
             const wasSelected = this.selectedSchema === schema;
@@ -2230,6 +2939,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                         schemaId: nextId || undefined,
                         type: this.type || undefined,
                         topic: this.topic || undefined,
+                        templateId: this.templateId || undefined,
                     },
                     replaceUrl: true,
                 });
@@ -2268,6 +2978,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                                     schemaId: nextId || undefined,
                                     type: this.type || undefined,
                                     topic: this.topic || undefined,
+                                    templateId: this.templateId || undefined,
                                 },
                             });
                             returnUrl = location.origin + this.router.serializeUrl(urlTree);
@@ -2301,6 +3012,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     }
 
     public onPublish(): void {
+        if (this.type === 'tag') { this.onPublishTag(); return; }
         const id = this.selectedSchemaId;
         if (!id || !this.canPublish) { return; }
         const dialogRef = this.dialogService.open(SetVersionDialog, {
@@ -2320,6 +3032,54 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     });
                 });
         });
+    }
+
+    public onPublishTag(): void {
+        const id = this.selectedSchemaId;
+        if (!id || !this.canPublish) { return; }
+        this.tagsService.publishSchema(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+                next: () => { this.schemaLoad$.next(id); },
+                error: () => {},
+            });
+    }
+
+    public onPublishTemplate(): void {
+        const id = this.schemaTemplate?.id;
+        if (!id || !this.canPublishTemplate) { return; }
+        const dialogRef = this.dialogService.open(PublishSchemaTemplateDialog, {
+            showHeader: false,
+            header: 'Publish Schema Template',
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                template: this.schemaTemplate
+            },
+        });
+        if (!dialogRef) { return; }
+        dialogRef.onClose.pipe(takeUntil(this.destroy$)).subscribe((options: { templateVersion: string } | null) => {
+            if (!options) { return; }
+            this.schemaTemplatesService.pushPublish(id, options)
+                .pipe(takeUntil(this.destroy$))
+                .subscribe(result => {
+                    void this.router.navigate(['task', result.taskId], {
+                        queryParams: { last: btoa(location.href) },
+                    });
+                });
+        });
+    }
+
+    public onCreateTemplateNewVersion(): void {
+        const id = this.schemaTemplate?.id;
+        if (!id || !this.canCreateTemplateNewVersion) { return; }
+        this.schemaTemplatesService.pushNewVersion(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(result => {
+                void this.router.navigate(['task', result.taskId], {
+                    queryParams: { last: btoa(location.href) },
+                });
+            });
     }
 
     public setPreviewPill(pill: 'submitter' | 'readonly'): void {
@@ -2348,6 +3108,24 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                     width: '700px',
                     styleClass: 'custom-dialog',
                     data: { schema },
+                });
+            });
+    }
+
+    public onExportTemplate(): void {
+        const id = this.schemaTemplate?.id;
+        if (!id || !this.canExportTemplate) { return; }
+        this.schemaTemplatesService.exportInMessage(id)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe(schemaTemplate => {
+                this.dialogService.open(ExportPolicyDialog, {
+                    showHeader: false,
+                    header: 'Export Schema Template',
+                    width: '700px',
+                    styleClass: 'guardian-dialog',
+                    data: {
+                        schemaTemplate
+                    },
                 });
             });
     }

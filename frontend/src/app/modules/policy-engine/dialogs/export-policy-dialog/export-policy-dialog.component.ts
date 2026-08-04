@@ -3,6 +3,7 @@ import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { ToolsService } from 'src/app/services/tools.service';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 /**
  * Export schema dialog.
  */
@@ -18,6 +19,7 @@ export class ExportPolicyDialog {
     public policy!: any;
     public module!: any;
     public tool!: any;
+    public schemaTemplate!: any;
     public header!: any;
 
     constructor(
@@ -25,11 +27,13 @@ export class ExportPolicyDialog {
         public config: DynamicDialogConfig,
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
-        private toolsService: ToolsService
+        private toolsService: ToolsService,
+        private schemaTemplatesService: SchemaTemplatesService
     ) {
         this.policy = this.config.data.policy;
         this.module = this.config.data.module;
         this.tool = this.config.data.tool;
+        this.schemaTemplate = this.config.data.schemaTemplate;
         this.header = this.config.header;
     }
 
@@ -41,7 +45,8 @@ export class ExportPolicyDialog {
         return (
             (this.policy && this.policy.messageId) ||
             (this.module && this.module.messageId) ||
-            (this.tool && this.tool.messageId)
+            (this.tool && this.tool.messageId) ||
+            (this.schemaTemplate && this.schemaTemplate.messageId)
         )
     }
 
@@ -49,7 +54,8 @@ export class ExportPolicyDialog {
         return (
             (this.policy) ||
             (this.module) ||
-            (this.tool)
+            (this.tool) ||
+            (this.schemaTemplate)
         )
     }
 
@@ -66,6 +72,10 @@ export class ExportPolicyDialog {
             this.handleCopyToClipboard(this.tool.messageId)
             return;
         }
+        if (this.schemaTemplate) {
+            this.handleCopyToClipboard(this.schemaTemplate.messageId)
+            return;
+        }
     }
 
     public onSave(): void {
@@ -79,6 +89,10 @@ export class ExportPolicyDialog {
         }
         if (this.tool) {
             this.toolToFile()
+            return;
+        }
+        if (this.schemaTemplate) {
+            this.schemaTemplateToFile()
             return;
         }
     }
@@ -162,6 +176,25 @@ export class ExportPolicyDialog {
                     this.loading = false;
                 }, 500);
             }, error => {
+                this.loading = false;
+            });
+    }
+
+    private schemaTemplateToFile() {
+        this.loading = true;
+        this.schemaTemplatesService.exportInFile(this.schemaTemplate.id)
+            .subscribe(fileBuffer => {
+                let downloadLink = document.createElement('a');
+                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
+                    type: 'application/guardian-schema-template'
+                }));
+                downloadLink.setAttribute('download', `${this.schemaTemplate.name}.template`);
+                document.body.appendChild(downloadLink);
+                downloadLink.click();
+                setTimeout(() => {
+                    this.loading = false;
+                }, 500);
+            }, () => {
                 this.loading = false;
             });
     }

@@ -23,6 +23,7 @@ export * from './schema-condition.interface.js';
 export * from './schema-document.interface.js';
 export * from './schema-field.interface.js';
 export * from './schema.interface.js';
+export * from './schema-template.interface.js';
 export * from './standard-registry-response.interface.js';
 export * from './suggestions-order-priority.js';
 export * from './token.interface.js';

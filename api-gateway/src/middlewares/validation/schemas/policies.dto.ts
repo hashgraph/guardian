@@ -344,6 +344,16 @@ export class PolicyDTO {
     tools?: PolicyToolDTO[];
 
     @ApiProperty({
+        type: 'object',
+        additionalProperties: true,
+        nullable: true,
+        description: 'Server-managed schema template binding. Ignored by normal policy update endpoints.'
+    })
+    @IsOptional()
+    @IsObject()
+    schemaTemplate?: any;
+
+    @ApiProperty({
         type: String,
         example: Examples.DATE
     })

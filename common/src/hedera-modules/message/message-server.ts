@@ -21,6 +21,7 @@ import { TokenMessage } from './token-message.js';
 import { ModuleMessage } from './module-message.js';
 import { TagMessage } from './tag-message.js';
 import { ToolMessage } from './tool-message.js';
+import { SchemaTemplateMessage } from './schema-template-message.js';
 import { RoleMessage } from './role-message.js';
 import { GuardianRoleMessage } from './guardian-role-message.js';
 import { UserPermissionsMessage } from './user-permissions-message.js';
@@ -475,6 +476,9 @@ export class MessageServer {
             case MessageType.Tool:
                 message = ToolMessage.fromMessageObject(json);
                 break;
+            case MessageType.SchemaTemplate:
+                message = SchemaTemplateMessage.fromMessageObject(json);
+                break;
             case MessageType.Tag:
                 message = TagMessage.fromMessageObject(json);
                 break;
@@ -572,6 +576,9 @@ export class MessageServer {
                 break;
             case MessageType.Tool:
                 message = ToolMessage.fromJson(json);
+                break;
+            case MessageType.SchemaTemplate:
+                message = SchemaTemplateMessage.fromJson(json);
                 break;
             case MessageType.Tag:
                 message = TagMessage.fromJson(json);
