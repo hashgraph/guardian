@@ -5,7 +5,7 @@ import { Ed25519Signature2018 } from '@digitalbazaar/ed25519-signature-2018';
 import { Ed25519VerificationKey2018 } from '@digitalbazaar/ed25519-verification-key-2018';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { SchemaValidationResult } from './schema-validation-result.js';
-import { GenerateUUIDv4, ICredentialSubject, IVC, Schema, SignatureType } from '@guardian/interfaces';
+import { GenerateUUIDv4, ICredentialSubject, ISchemaArrayDependency, IVC, Schema, SchemaHelper, SignatureType } from '@guardian/interfaces';
 import { VcDocument } from './vc-document.js';
 import { VpDocument } from './vp-document.js';
 import { VcSubject } from './vc-subject.js';
@@ -601,7 +601,7 @@ export class VCJS {
         const valid = validate(subject);
         let errors = this.enhanceConditionErrors(validate.errors as any[], schema);
         const geoErrors = validateGeoConsistency(subject, schemaObject?.fields || []);
-        const groupErrors = validateArrayGroups(subject, schemaObject?.arrayDependencies || []);
+        const groupErrors = validateArrayGroups(subject, this.readArrayDependencies(schema));
         errors = [...(errors || []), ...geoErrors, ...groupErrors];
 
         return new SchemaValidationResult(
@@ -609,6 +609,19 @@ export class VCJS {
             'JSON_SCHEMA_VALIDATION_ERROR',
             errors as any
         );
+    }
+
+    /**
+     * Read array dependencies from the loaded schema document
+     * @param schema
+     */
+    private readArrayDependencies(schema: any): ISchemaArrayDependency[] {
+        try {
+            const { arrayDependencies } = SchemaHelper.parseSchemaComment(schema?.$comment);
+            return Array.isArray(arrayDependencies) ? arrayDependencies : [];
+        } catch (error) {
+            return [];
+        }
     }
 
     /**
