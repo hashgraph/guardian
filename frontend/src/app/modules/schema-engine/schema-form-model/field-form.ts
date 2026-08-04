@@ -484,6 +484,9 @@ export class FieldForm {
                 }
             }
         }
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.rootForm.syncArrayDependencyValues();
+        }
     }
 
     private resolveArrayEntry(fieldPath: string[]): IArrayGroupEntry | null {
@@ -1302,6 +1305,9 @@ export class FieldForm {
         this.rebuildCrossSchemaConditions(true);
         if (this.rootForm !== this) {
             this.rootForm.rebuildCrossSchemaConditions(true);
+        }
+        if (this.rootForm.schema?.arrayDependencies?.length) {
+            this.rootForm.syncArrayDependencyValues();
         }
     }
 
