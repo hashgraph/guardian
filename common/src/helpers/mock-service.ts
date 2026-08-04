@@ -522,6 +522,36 @@ export class MockHelper {
         throw new Error('Invalid Type');
     }
 
+    /**
+     * getRecord('TopicMessageSubmitTransaction', ...) built from primitives (no Transaction
+     * object), so it can be produced in-process instead of round-tripping through the worker.
+     */
+    public static getMessageRecord(
+        topicId: string,
+        message: string,
+        accountId: string
+    ): {
+        type: MockEntityType,
+        transaction: any
+    } {
+        const timestamp = MockHelper.getTimestamp();
+        const consensusTimestamp = MockHelper.timestampToString(timestamp);
+        const base64 = Buffer.from(message ?? '', 'utf8').toString('base64');
+
+        return {
+            type: MockEntityType.MESSAGE,
+            transaction: {
+                id: consensusTimestamp,
+                consensus_timestamp: consensusTimestamp,
+                topicId,
+                topic_id: topicId,
+                payer_account_id: accountId,
+                sequence_number: 1,
+                message: base64
+            }
+        };
+    }
+
     private static getTimestamp(): Timestamp {
         const time = Date.now();
         const seconds = Math.floor(time / 100);
