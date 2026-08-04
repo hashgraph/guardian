@@ -78,10 +78,43 @@ const hoveredPos = computed(() => {
         y: center + r * Math.sin(hoveredArc.value.midAngle),
     };
 });
+
+// Ref on the chart wrapper so we can convert SVG-local coordinates into
+// viewport coordinates for the teleported tooltip.
+const chartEl = ref<HTMLElement | null>(null);
+
+// Recomputed on scroll/resize since getBoundingClientRect() is viewport-relative.
+const viewportTick = ref(0);
+function bumpViewportTick() {
+    viewportTick.value++;
+}
+
+const tooltipPos = computed(() => {
+    // Reference viewportTick so this recomputes on scroll/resize even
+    // though its value itself is unused.
+    void viewportTick.value;
+
+    if (!hoveredPos.value || !chartEl.value) return null;
+    const rect = chartEl.value.getBoundingClientRect();
+    return {
+        x: rect.left + (hoveredPos.value.x / size) * rect.width,
+        y: rect.top + (hoveredPos.value.y / size) * rect.height,
+    };
+});
+
+onMounted(() => {
+    window.addEventListener('scroll', bumpViewportTick, true);
+    window.addEventListener('resize', bumpViewportTick);
+});
+
+onBeforeUnmount(() => {
+    window.removeEventListener('scroll', bumpViewportTick, true);
+    window.removeEventListener('resize', bumpViewportTick);
+});
 </script>
 
 <template>
-    <div class="relative inline-flex items-center justify-center">
+    <div ref="chartEl" class="relative inline-flex items-center justify-center">
         <svg :width="size" :height="size" :viewBox="`0 0 ${size} ${size}`" @mouseleave="hoveredIndex = null">
             <template v-if="isHollow">
                 <!-- Background circle -->
@@ -116,21 +149,24 @@ const hoveredPos = computed(() => {
                 />
             </template>
         </svg>
+    </div>
 
-        <!-- HTML tooltip — same floating-tooltip technique used by
-             TrendLineChart/RadarChart (SVG can't contain the shared
-             InfoTooltip component, which renders an HTML <span>). -->
+    <!-- Teleported to <body> so the tooltip escapes any overflow-hidden /
+         stacking-context ancestor (e.g. the map panel it used to render
+         behind). Positioned in viewport coordinates via getBoundingClientRect,
+         not as a percentage of the chart's own local size. -->
+    <Teleport to="body">
         <div
-            v-if="hoveredArc && hoveredPos"
-            class="absolute pointer-events-none z-10 -translate-x-1/2 -translate-y-full"
+            v-if="hoveredArc && tooltipPos"
+            class="fixed pointer-events-none z-[9999] -translate-x-1/2 -translate-y-full"
             :style="{
-                left: `${(hoveredPos.x / size) * 100}%`,
-                top: `calc(${(hoveredPos.y / size) * 100}% - 8px)`,
+                left: `${tooltipPos.x}px`,
+                top: `${tooltipPos.y - 8}px`,
             }"
         >
             <div class="bg-foreground/90 text-background text-[11px] font-semibold px-2 py-1 rounded whitespace-nowrap shadow-sm">
                 {{ hoveredArc.label }}: {{ (hoveredArc.pct * 100).toFixed(1) }}%
             </div>
         </div>
-    </div>
+    </Teleport>
 </template>

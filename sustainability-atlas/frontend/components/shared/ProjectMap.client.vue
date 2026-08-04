@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import L from 'leaflet';
 
+const { t } = useI18n();
+
 export interface CountryData {
     country: string;
     countryCode: string;
@@ -174,7 +176,7 @@ function renderPoints() {
             .bindPopup(`
                 <div style="font-size:12px;line-height:1.6">
                     <strong>${pt.name}</strong>
-                    ${pt.credits ? `<br><span style="color:#666">Issuances:</span> <strong>${pt.credits}</strong>` : ''}
+                    ${pt.credits ? `<br><span style="color:#666">${t('dashboard.stats.totalIssuances')}:</span> <strong>${pt.credits}</strong>` : ''}
                 </div>
             `)
             .addTo(pointsLayer);
