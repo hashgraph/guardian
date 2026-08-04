@@ -2724,7 +2724,18 @@
     gap: 6px;
 }
 
+.sc-cond-opt-row {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-width: 0;
+    height: 22px;
+}
+
 .sc-cond-opt-label {
+    display: block;
+    flex: 1 1 auto;
+    min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;

@@ -511,7 +511,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         void this.router.navigate(['/schemas'], { queryParams });
     }
 
+    public schemaEditVersion = 0;
+
     public markDirty(): void {
+        this.schemaEditVersion++;
         // Mark both root and drilled sub-schema dirty: root needs $defs rebuilt on save.
         if (this.isDrilling) {
             const contextIri = this.currentDrilledSchemaIri;
@@ -2271,7 +2274,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public condThenRefVal: Record<number, string | null> = {};
     public condElseRefVal: Record<number, string | null> = {};
 
+    private crossTargetGroupsCache: { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] | null = null;
+    private crossTargetGroupsCacheSchema: Schema | null = null;
+    private crossTargetGroupsCacheSchemas: Schema[] | null = null;
+    private crossTargetGroupsCacheVersion = -1;
+
     public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
+        const schema = this.currentContextSchema;
+        if (this.crossTargetGroupsCache
+            && this.crossTargetGroupsCacheSchema === schema
+            && this.crossTargetGroupsCacheSchemas === this.schemas
+            && this.crossTargetGroupsCacheVersion === this.schemaEditVersion) {
+            return this.crossTargetGroupsCache;
+        }
+        const groups = this.buildCrossTargetPSelectGroups();
+        this.crossTargetGroupsCache = groups;
+        this.crossTargetGroupsCacheSchema = schema;
+        this.crossTargetGroupsCacheSchemas = this.schemas;
+        this.crossTargetGroupsCacheVersion = this.schemaEditVersion;
+        return groups;
+    }
+
+    private buildCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
         const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));

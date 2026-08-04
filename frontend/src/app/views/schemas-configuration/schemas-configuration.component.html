@@ -1511,16 +1511,21 @@
                                             [filter]="true"
                                             filterBy="label,pathStr"
                                             [resetFilterOnHide]="true"
+                                            [virtualScroll]="true"
+                                            [virtualScrollItemSize]="38"
                                             appendTo="body"
                                             [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
                                             [disabled]="!getCrossTargetPSelectGroups().length"
                                             [(ngModel)]="condThenRefVal[ci]"
                                             (onChange)="onCondThenRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
-                                                <span class="sc-cond-opt-label">{{ option.label }}</span>
-                                                @if (option.isBlock) {
-                                                    <span class="sc-cond-opt-block-badge">Sub-schema</span>
-                                                }
+                                                <span class="sc-cond-opt-row">
+                                                    <span class="sc-cond-opt-label"
+                                                        (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' — Sub-schema' : option.label)">{{ option.label }}</span>
+                                                    @if (option.isBlock) {
+                                                        <span class="sc-cond-opt-block-badge">Sub-schema</span>
+                                                    }
+                                                </span>
                                             </ng-template>
                                         </p-select>
                                     </div>
@@ -1588,16 +1593,21 @@
                                             [filter]="true"
                                             filterBy="label,pathStr"
                                             [resetFilterOnHide]="true"
+                                            [virtualScroll]="true"
+                                            [virtualScrollItemSize]="38"
                                             appendTo="body"
                                             [placeholder]="getCrossTargetPSelectGroups().length ? 'Ref field' : '(no sub-schema fields)'"
                                             [disabled]="!getCrossTargetPSelectGroups().length"
                                             [(ngModel)]="condElseRefVal[ci]"
                                             (onChange)="onCondElseRefChange(cond, ci, $event.value)">
                                             <ng-template pTemplate="item" let-option>
-                                                <span class="sc-cond-opt-label">{{ option.label }}</span>
-                                                @if (option.isBlock) {
-                                                    <span class="sc-cond-opt-block-badge">Sub-schema</span>
-                                                }
+                                                <span class="sc-cond-opt-row">
+                                                    <span class="sc-cond-opt-label"
+                                                        (mouseover)="updateOverflowTitle($event, option.isBlock ? option.label + ' — Sub-schema' : option.label)">{{ option.label }}</span>
+                                                    @if (option.isBlock) {
+                                                        <span class="sc-cond-opt-block-badge">Sub-schema</span>
+                                                    }
+                                                </span>
                                             </ng-template>
                                         </p-select>
                                     </div>

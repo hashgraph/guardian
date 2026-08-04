@@ -256,6 +256,34 @@
             text-overflow: ellipsis;
         }
     }
+
+    &.sc-cond-panel {
+        width: 550px;
+        max-width: calc(100vw - 32px);
+
+        .p-virtualscroller-content {
+            width: 100%;
+        }
+
+        .p-select-option {
+            overflow: hidden;
+            max-width: 100%;
+        }
+
+        .p-select-option>.sc-cond-opt-row {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            min-width: 0;
+            max-width: none;
+            overflow: visible;
+            text-overflow: clip;
+        }
+
+        .p-virtualscroller {
+            overflow-x: hidden;
+        }
+    }
 }
 
 .guardian-page .p-select {
