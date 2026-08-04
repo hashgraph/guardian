@@ -87,6 +87,17 @@ describe('schema template snapshot helpers', () => {
         assert.equal(snapshot.schemas['template-schema-child'].fields.length, 1);
     });
 
+    it('produces different hashes for different content', () => {
+        const config = { schemas: { a: { customFieldsLocked: true } } };
+        const schemasA = { schemas: { a: { templateSchemaId: 'a', name: 'A', fields: [] } } };
+        const schemasB = { schemas: { a: { templateSchemaId: 'a', name: 'B', fields: [] } } };
+
+        assert.notEqual(
+            createTemplateStateHash(config, schemasA),
+            createTemplateStateHash(config, schemasB)
+        );
+    });
+
     it('hashes template state deterministically regardless of object key order', () => {
         const leftConfig = {
             schemas: {
@@ -154,6 +165,26 @@ describe('schema template update diff helpers', () => {
             SchemaHelper.stableStringify(normalizeFieldForDiff(previous)),
             SchemaHelper.stableStringify(normalizeFieldForDiff(next))
         );
+    });
+
+    it('formats boolean field properties as Yes/No', () => {
+        const base = {
+            name: 'field_1',
+            description: 'Label',
+            type: 'string',
+            comment: JSON.stringify({ term: 'field_1', '@id': 'schema:s#field_1' })
+        };
+
+        const details = buildFieldChangeDetails(
+            { ...base, isArray: false, readOnly: false, hidden: false, autocalculate: false },
+            { ...base, isArray: true, readOnly: true, hidden: true, autocalculate: true }
+        );
+
+        const byLabel = Object.fromEntries(details.map((d) => [d.label, d]));
+        assert.deepEqual(byLabel['Array'],        { label: 'Array',        before: 'No', after: 'Yes' });
+        assert.deepEqual(byLabel['Read only'],    { label: 'Read only',    before: 'No', after: 'Yes' });
+        assert.deepEqual(byLabel['Hidden'],       { label: 'Hidden',       before: 'No', after: 'Yes' });
+        assert.deepEqual(byLabel['Autocalculate'],{ label: 'Autocalculate',before: 'No', after: 'Yes' });
     });
 
     it('reports concrete field setting changes without N/A placeholders', () => {
