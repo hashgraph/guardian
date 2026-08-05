@@ -49,6 +49,18 @@
             </p-select>
           </div>
         }
+        @if (isPolicy) {
+        <label class="schema-filter-checkbox">
+            <p-checkbox (onChange)="onFilter($event)" [(ngModel)]="templateSchemasOnly" [binary]="true">
+            </p-checkbox>
+            <span>From template</span>
+        </label>
+        <label class="schema-filter-checkbox">
+            <p-checkbox (onChange)="onFilter($event)" [(ngModel)]="unusedInPolicyOnly" [binary]="true">
+            </p-checkbox>
+            <span>Unused in policy</span>
+        </label>
+        }
         @if (isTool) {
           <div class="topic-search">
             <p-select
@@ -213,6 +225,9 @@
                   <th class="header-cell-text" style="min-width: 100px;">
                     Entity
                   </th>
+                  <th class="header-cell-text" style="min-width: 140px;">
+                    Template
+                  </th>
                   <th class="header-cell-text" style="min-width: 185px;">
                     Tags
                   </th>
@@ -256,7 +271,7 @@
               @if ((!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)) {
                 <tr [ttRow]="rowNode" class="guardian-grid-row" [class.grey-row]="(!rowData.isParent || (rowData.isParent && rowData.topicId) && !isModule)" [attr.schema-status]="rowData.status">
                   @if (rowData.isParent) {
-                    <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 8 : (type === 'tool' ? 4 : 3)">
+                    <td class="row-cell-text parent-row-cell" [attr.colspan]="type === 'policy' ? 9 : (type === 'tool' ? 4 : 3)">
                       <div class="parent-row-content">
                         <span class="parent-row-name">
                           <a (click)="onSelectFilter(rowData.topicId)" class="filter-link">
@@ -330,6 +345,9 @@
                       <td class="row-cell-text">
                         <span class="text-truncate">{{ rowData.entity }}</span>
                       </td>
+                      <td class="row-cell-text" [pTooltip]="getSchemaTemplateLabel(rowData) || '–'">
+                        <span class="text-truncate">{{ getSchemaTemplateLabel(rowData) || '–' }}</span>
+                      </td>
                       <td class="row-cell-text" style="min-width: 185px;">
                         @if (user.TAGS_TAG_READ) {
                           <tags-explorer
@@ -387,14 +405,14 @@
                         <div class="operations-row-container">
                           @if (user.SCHEMAS_SCHEMA_REVIEW) {
                             <div>
-                              @if (rowData.status == 'DRAFT') {
+                              @if (rowData.status == 'DRAFT' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
                                   class="btn-approve">Publish
                                 </div>
                               }
-                              @if (rowData.status == 'UNPUBLISHED') {
+                              @if (rowData.status == 'UNPUBLISHED' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
@@ -445,14 +463,14 @@
                         <div class="operations-row-container">
                           @if (user.SCHEMAS_SCHEMA_REVIEW) {
                             <div>
-                              @if (rowData.status == 'DRAFT') {
+                              @if (rowData.status == 'DRAFT' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
                                   class="btn-approve">Publish
                                 </div>
                               }
-                              @if (rowData.status == 'UNPUBLISHED') {
+                              @if (rowData.status == 'UNPUBLISHED' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
@@ -504,14 +522,14 @@
                         <div class="operations-row-container">
                           @if (user.SCHEMAS_SCHEMA_REVIEW) {
                             <div>
-                              @if (rowData.status == 'DRAFT') {
+                              @if (rowData.status == 'DRAFT' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
                                   class="btn-approve">Publish
                                 </div>
                               }
-                              @if (rowData.status == 'UNPUBLISHED') {
+                              @if (rowData.status == 'UNPUBLISHED' && canPublishSchema(rowData)) {
                                 <div
                                   (click)="onPublish(rowData)"
                                   [attr.disabled]="rowData.topicId === 'draft'"
@@ -712,7 +730,7 @@
                     <div style="margin-right: 12px;">
                       @if (ifCanEdit(schema)) {
                         <div
-                          (click)="onEditSchema(schema)"
+                          (click)="onOpenInEditor(schema)"
                           class="btn-settings"
                           pTooltip="Edit"
                           tooltipStyleClass="guardian-tooltip"
@@ -813,7 +831,7 @@
 
       @if (ifCanEdit(element)) {
         <p-button
-          (click)="onOpenConfig(element)"
+          (click)="onOpenInEditor(element)"
           label="Configuration"
           icon="pi pi-cog"
           class="schema-menu-btn"

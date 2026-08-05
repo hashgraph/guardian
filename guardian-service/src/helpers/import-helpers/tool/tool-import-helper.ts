@@ -52,11 +52,14 @@ export async function importSubTools(
             }
             index++;
         } catch (error) {
+            // Keep the underlying cause. Flattening every failure to 'Invalid
+            // tool' makes a transient IPFS/Hedera error undiagnosable - the real
+            // status only survives as an unattributed worker log line.
             errors.push({
                 type: 'tool',
                 name: message.name,
                 messageId: message.messageId,
-                error: 'Invalid tool'
+                error: error?.message || String(error) || 'Invalid tool'
             });
         }
     }

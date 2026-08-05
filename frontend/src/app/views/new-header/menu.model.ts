@@ -34,6 +34,10 @@ const NAVBAR_MENU_STANDARD_REGISTRY: NavbarMenuItem[] = [
                 routerLink: '/schema-rules'
             },
             {
+                title: 'Schema Templates',
+                routerLink: '/schema-templates'
+            },
+            {
                 title: 'Artifacts',
                 routerLink: '/artifacts'
             },
@@ -183,6 +187,15 @@ function customMenu(user: UserPermissions): NavbarMenuItem[] {
             childItems.push({
                 title: 'Schema Rules',
                 routerLink: '/schema-rules'
+            });
+        }
+        if (
+            user.SCHEMAS_SCHEMA_READ ||
+            user.SCHEMAS_SYSTEM_SCHEMA_READ
+        ) {
+            childItems.push({
+                title: 'Schema Templates',
+                routerLink: '/schema-templates'
             });
         }
         if (user.ARTIFACTS_FILE_READ) {

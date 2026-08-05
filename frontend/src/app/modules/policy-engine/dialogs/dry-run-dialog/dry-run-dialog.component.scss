@@ -1,0 +1,104 @@
+.dialog-body {
+    position: relative;
+    padding: 14px 0 8px 0;
+    font-family: Inter, sans-serif;
+    font-style: normal;
+}
+
+.intro-text {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+    color: var(--guardian-font-color, #23252E);
+}
+
+.mock-option {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 20px;
+    padding: 12px 14px;
+    border: 1px solid var(--guardian-border-color, #E1E7EF);
+    border-radius: 8px;
+    cursor: pointer;
+
+    .mock-option-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .mock-option-title {
+        font-size: 14px;
+        font-weight: 500;
+        line-height: 18px;
+        color: var(--guardian-font-color, #23252E);
+    }
+
+    .mock-option-sub {
+        font-size: 13px;
+        font-weight: 400;
+        line-height: 16px;
+        color: var(--color-grey-5, #848FA9);
+        padding-top: 4px;
+    }
+}
+
+.mock-hint {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 16px;
+    color: var(--color-grey-5, #848FA9);
+
+    svg-icon {
+        flex-shrink: 0;
+        line-height: 0;
+    }
+}
+
+.dialog-footer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 24px;
+}
+
+.mute-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--guardian-font-color, #23252E);
+
+    ::ng-deep .p-checkbox {
+        display: flex;
+        align-items: center;
+    }
+
+    span {
+        line-height: 24px;
+    }
+}
+
+.action-buttons {
+    user-select: none;
+
+    .dialog-button-wide button {
+        min-width: 150px;
+    }
+}
+
+.icon-color-info {
+    fill: var(--color-grey-5, #848FA9);
+    color: var(--color-grey-5, #848FA9);
+}

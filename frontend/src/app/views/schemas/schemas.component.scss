@@ -33,7 +33,7 @@
 
 .actions-controls-container {
     display: flex;
-    height: 60px;
+    min-height: 60px;
 }
 
 .toolbar-icons {
@@ -403,6 +403,8 @@ a {
 
 .policy-dropdown-container {
     display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
 }
 
 .policy-dropdown {
@@ -631,7 +633,18 @@ a {
 
 .topic-search {
     width: 400px;
-    margin-right: 16px;
+}
+
+.schema-filter-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    color: var(--color-grey-6, #23252E);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .text-search {

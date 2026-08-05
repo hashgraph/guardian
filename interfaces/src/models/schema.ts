@@ -128,6 +128,14 @@ export class Schema implements ISchema {
      */
     public category?: SchemaCategory;
     /**
+     * Schema template id
+     */
+    public templateId?: string;
+    /**
+     * Stable schema id inside a schema template
+     */
+    public templateSchemaId?: string;
+    /**
      * Parent component
      */
     public component?: string;
@@ -173,6 +181,8 @@ export class Schema implements ISchema {
             this.creator = schema.creator || '';
             this.owner = schema.owner || '';
             this.topicId = schema.topicId || '';
+            this.templateId = schema.templateId || '';
+            this.templateSchemaId = schema.templateSchemaId || '';
             this.messageId = schema.messageId || '';
             this.documentURL = schema.documentURL || '';
             this.contextURL = schema.contextURL || '';

@@ -1,6 +1,6 @@
 import { AccountId, PrivateKey, TopicId, } from '@hiero-ledger/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, IPFSOptions, MockEntityType, MockHelper, MockType, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
@@ -21,6 +21,7 @@ import { TokenMessage } from './token-message.js';
 import { ModuleMessage } from './module-message.js';
 import { TagMessage } from './tag-message.js';
 import { ToolMessage } from './tool-message.js';
+import { SchemaTemplateMessage } from './schema-template-message.js';
 import { RoleMessage } from './role-message.js';
 import { GuardianRoleMessage } from './guardian-role-message.js';
 import { UserPermissionsMessage } from './user-permissions-message.js';
@@ -313,6 +314,15 @@ export class MessageServer {
             }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
+        } else if (this.dryRun && options.mockId) {
+            // Dry-run mock file: record in-process (same saveMock the worker's mock path does),
+            // skipping the per-file worker round-trip that dominates schema-heavy dry-run switches.
+            const cid = await MockHelper.execute({
+                mockId: options.mockId,
+                type: MockType.ADD_FILE,
+                data: { type: MockEntityType.FILE, content: MockHelper.getBuffer(file) }
+            });
+            return { cid, url: IPFS.IPFS_PROTOCOL + cid };
         } else {
             // <-- Steps
             const STEP_SEND_FILE = 'Send file';
@@ -466,6 +476,9 @@ export class MessageServer {
             case MessageType.Tool:
                 message = ToolMessage.fromMessageObject(json);
                 break;
+            case MessageType.SchemaTemplate:
+                message = SchemaTemplateMessage.fromMessageObject(json);
+                break;
             case MessageType.Tag:
                 message = TagMessage.fromMessageObject(json);
                 break;
@@ -564,6 +577,9 @@ export class MessageServer {
             case MessageType.Tool:
                 message = ToolMessage.fromJson(json);
                 break;
+            case MessageType.SchemaTemplate:
+                message = SchemaTemplateMessage.fromJson(json);
+                break;
             case MessageType.Tag:
                 message = TagMessage.fromJson(json);
                 break;
@@ -636,30 +652,42 @@ export class MessageServer {
         }
         const time = await this.messageStartLog('Hedera', options.userId);
         const buffer = message.toMessage();
-        const timestamp = await new Workers().addRetryableTask({
-            type: WorkerTaskType.SEND_HEDERA,
-            data: {
-                topicId: this.topicId,
-                buffer,
-                submitKey: this.submitKey,
-                clientOptions: this.clientOptions,
-                network: Environment.network,
-                localNodeAddress: Environment.localNodeAddress,
-                localNodeProtocol: Environment.localNodeProtocol,
-                signOptions: this.signOptions,
-                memo: message.getMemo(),
+        let timestamp: string;
+        if (this.dryRun && options.mockId) {
+            // Dry-run mock message: record in-process (same saveMock the worker's mock path does),
+            // skipping the per-message worker round-trip that dominates schema-heavy dry-run switches.
+            const record = await MockHelper.execute({
+                mockId: options.mockId,
+                type: MockType.EXECUTE_AND_RECORD,
+                data: MockHelper.getMessageRecord(this.topicId.toString(), buffer, this.operatorId)
+            });
+            timestamp = record.consensus_timestamp;
+        } else {
+            timestamp = await new Workers().addRetryableTask({
+                type: WorkerTaskType.SEND_HEDERA,
+                data: {
+                    topicId: this.topicId,
+                    buffer,
+                    submitKey: this.submitKey,
+                    clientOptions: this.clientOptions,
+                    network: Environment.network,
+                    localNodeAddress: Environment.localNodeAddress,
+                    localNodeProtocol: Environment.localNodeProtocol,
+                    signOptions: this.signOptions,
+                    memo: message.getMemo(),
+                    dryRun: this.dryRun,
+                    payload: { userId: options.userId },
+                }
+            }, {
+                priority: 10,
+                attempts: 0,
+                userId: options.userId,
+                interception: options.interception,
+                registerCallback: true,
                 dryRun: this.dryRun,
-                payload: { userId: options.userId },
-            }
-        }, {
-            priority: 10,
-            attempts: 0,
-            userId: options.userId,
-            interception: options.interception,
-            registerCallback: true,
-            dryRun: this.dryRun,
-            mockId: options.mockId,
-        });
+                mockId: options.mockId,
+            });
+        }
 
         await this.messageEndLog(time, 'Hedera', options.userId);
         message.setId(timestamp);
