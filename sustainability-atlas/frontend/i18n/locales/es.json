@@ -1468,7 +1468,8 @@
         "matchCount": "{current} de {total}",
         "noMatches": "0 resultados",
         "prevMatch": "Coincidencia anterior",
-        "nextMatch": "Coincidencia siguiente"
+        "nextMatch": "Coincidencia siguiente",
+        "largePayloadWarning": "Documento grande ({size}) — se muestra una vista simplificada. Use la búsqueda o descargue el archivo completo a continuación."
     },
     "relationshipDiagram": {
         "registry": "Registro",

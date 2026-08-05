@@ -40,8 +40,9 @@ groups:
 - **Project Identifiers** and **Identifiers** — names and reference values: project name, registry,
   developer, country.
 - **ESG Climate Data** — the substantive figures: **Emissions Reduced** (tCO₂e sequestered or
-  avoided), **Reporting Year**, **Mitigation Type** (avoidance, removal or reduction), **Standard /
-  Methodology**, and **Vintage**.
+  avoided), **Reporting Year**, **Standard / Methodology**, and **Vintage**. On the **Issuances**
+  dataset this group also carries **Issuance Date** — the UTC calendar day the credits were minted
+  on-chain, and the day whose year **Reporting Year** reports.
 - **Traceability References** — the fields that let a third party check your figures independently:
   **Transaction ID** (the Hedera on-chain reference), **Registry Record ID**, **Verification URL**
   and **Source System ID**.
@@ -83,6 +84,18 @@ preview that appears is titled *Portfolio Impact Overview* and covers:
 - **Active Projects** and **Countries**;
 - **SDG Contributions** and **Geographic Distribution** sections;
 - a footer confirming the network the data was verified on and when the summary was generated.
+
+The generated PDF carries two things the preview does not:
+
+- **Projects by Lifecycle Stage** — how many projects sit at each of *Registered*, *Validation*,
+  *Monitoring*, *Verified* and *Issued*. The stage is derived from the verification documents a
+  project has actually submitted on-chain, not from a self-declared status field, and it is the same
+  classification the Projects page filters on. The counts always add up to the **Active Projects**
+  figure above them.
+- Each SDG carries both a **project count** and an **issuance count**, because the two can diverge
+  sharply — a goal claimed by many projects that have issued nothing reads very differently from one
+  claimed by a single heavily-issuing project. A project may claim several goals, so these counts
+  overlap and deliberately do not sum to the portfolio total.
 
 If the selected network has no impact data yet, the preview says so instead of rendering an empty
 document.

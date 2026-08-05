@@ -923,10 +923,17 @@ function buildSectorCard(summary: ImpactSummaryResponseDto): Content {
 const GEO_TOP_N = 8;
 
 function buildGeoCard(summary: ImpactSummaryResponseDto): Content {
+    const total = summary.geographicDistribution.length;
     const rows = summary.geographicDistribution.slice(0, GEO_TOP_N);
+    // Only claim a top-N slice when one was actually taken: with 6 countries in the data this used to
+    // read "top 8 of 6 countries", which describes a truncation that never happened.
+    const caption =
+        total > GEO_TOP_N
+            ? `Ranked by tCO2e · top ${GEO_TOP_N} of ${total} countries`
+            : `Ranked by tCO2e · all ${total} ${total === 1 ? 'country' : 'countries'}`;
     return card([
         { text: 'Geographic Distribution', style: 'cardTitle' },
-        { text: `Ranked by tCO2e · top ${GEO_TOP_N} of ${summary.geographicDistribution.length} countries`, style: 'footerNote', margin: [0, 0, 0, 10] },
+        { text: caption, style: 'footerNote', margin: [0, 0, 0, 10] },
         ...(rows.length > 0
             ? rows.map((g) => barRow(g.country, g.percentage, `${formatNumber(g.creditsIssued)} tCO2e`, COLORS.greenDark))
             : [{ text: 'No geographic data available.', style: 'footerNote' }]),

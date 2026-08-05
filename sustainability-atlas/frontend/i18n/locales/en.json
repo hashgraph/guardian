@@ -1470,7 +1470,8 @@
         "matchCount": "{current} of {total}",
         "noMatches": "0 results",
         "prevMatch": "Previous match",
-        "nextMatch": "Next match"
+        "nextMatch": "Next match",
+        "largePayloadWarning": "Large document ({size}) — showing a simplified view. Use search or download the full file below."
     },
     "relationshipDiagram": {
         "registry": "Registry",

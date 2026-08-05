@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { X, Copy, Check, Download, FileJson, ChevronUp, ChevronDown } from 'lucide-vue-next';
+import { X, Copy, Check, Download, FileJson, ChevronUp, ChevronDown, AlertTriangle } from 'lucide-vue-next';
+import { useVirtualList } from '@vueuse/core';
+import { useJsonPayloadView, formatBytes } from '~/composables/useJsonPayloadView';
 
 const props = defineProps<{
     open: boolean;
@@ -24,12 +26,25 @@ const preRef = ref<HTMLPreElement | null>(null);
 let markEls: HTMLElement[] = [];
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
 
-const jsonString = computed(() => {
-    if (!props.data) return '';
-    return JSON.stringify(props.data, null, 2);
+const { jsonString, sizeBytes, isLarge, lines, downloadJson: downloadJsonBlob } = useJsonPayloadView(() => props.data);
+const sizeLabel = computed(() => formatBytes(sizeBytes.value));
+const lineCount = computed(() => (isLarge.value ? lines.value.length : (jsonString.value ? jsonString.value.split('\n').length : 0)));
+
+const { list: virtualLines, containerProps, wrapperProps, scrollTo } = useVirtualList(lines, { itemHeight: 20 });
+
+const matchingLineIndices = computed(() => {
+    if (!isLarge.value) return [];
+    const q = debouncedQuery.value.trim().toLowerCase();
+    if (!q) return [];
+    const out: number[] = [];
+    lines.value.forEach((line, i) => {
+        if (line.toLowerCase().includes(q)) out.push(i);
+    });
+    return out;
 });
 
 const highlightedJson = computed(() => {
+    if (isLarge.value) return '';
     let json = jsonString.value;
     if (!json) return '';
 
@@ -69,7 +84,21 @@ function applyActiveMark(scroll: boolean) {
     }
 }
 
+function scrollToMatch() {
+    if (currentMatchIndex.value < 1) return;
+    const idx = matchingLineIndices.value[currentMatchIndex.value - 1];
+    if (idx === undefined) return;
+    scrollTo(idx);
+}
+
 function refreshMatches() {
+    if (isLarge.value) {
+        totalMatches.value = matchingLineIndices.value.length;
+        currentMatchIndex.value = totalMatches.value > 0 ? 1 : 0;
+        scrollToMatch();
+        return;
+    }
+
     const root = preRef.value;
     markEls = root ? Array.from(root.querySelectorAll<HTMLElement>('mark')) : [];
     totalMatches.value = markEls.length;
@@ -81,14 +110,14 @@ function nextMatch() {
     if (totalMatches.value === 0) return;
     currentMatchIndex.value =
         currentMatchIndex.value >= totalMatches.value ? 1 : currentMatchIndex.value + 1;
-    applyActiveMark(true);
+    if (isLarge.value) scrollToMatch(); else applyActiveMark(true);
 }
 
 function prevMatch() {
     if (totalMatches.value === 0) return;
     currentMatchIndex.value =
         currentMatchIndex.value <= 1 ? totalMatches.value : currentMatchIndex.value - 1;
-    applyActiveMark(true);
+    if (isLarge.value) scrollToMatch(); else applyActiveMark(true);
 }
 
 async function copyToClipboard() {
@@ -98,13 +127,7 @@ async function copyToClipboard() {
 }
 
 function downloadJson() {
-    const blob = new Blob([jsonString.value], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${props.title.replace(/\s+/g, '-').toLowerCase()}-vc.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadJsonBlob(`${props.title.replace(/\s+/g, '-').toLowerCase()}-vc.json`);
 }
 
 function onKeydown(e: KeyboardEvent) {
@@ -122,7 +145,7 @@ watch(searchQuery, (val) => {
     }, 200);
 });
 
-watch(highlightedJson, () => {
+watch([highlightedJson, matchingLineIndices], () => {
     refreshMatches();
 }, { flush: 'post' });
 
@@ -254,18 +277,34 @@ onBeforeUnmount(() => {
                     </div>
 
                     <!-- JSON Content -->
-                    <div class="flex-1 overflow-auto p-5">
+                    <div v-if="!isLarge" class="flex-1 overflow-auto p-5">
                         <pre
                             ref="preRef"
                             class="text-[12px] leading-relaxed font-mono whitespace-pre-wrap break-words"
                             v-html="highlightedJson"
                         />
                     </div>
+                    <div v-else class="flex-1 flex flex-col min-h-0">
+                        <div class="mx-5 mt-3 mb-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800 shrink-0">
+                            <AlertTriangle class="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                            <p class="font-medium">{{ $t('vcViewer.largePayloadWarning', { size: sizeLabel }) }}</p>
+                        </div>
+                        <div v-bind="containerProps" class="flex-1 min-h-0 mx-5 mb-5 rounded-lg border bg-muted/20">
+                            <div v-bind="wrapperProps">
+                                <div
+                                    v-for="item in virtualLines"
+                                    :key="item.index"
+                                    class="px-3 text-[12px] leading-5 font-mono whitespace-pre"
+                                    style="height: 20px;"
+                                >{{ item.data }}</div>
+                            </div>
+                        </div>
+                    </div>
 
                     <!-- Footer -->
                     <div class="flex items-center justify-between px-5 py-2.5 border-t shrink-0 text-[11px] text-muted-foreground">
-                        <span>{{ jsonString.split('\n').length }} {{ $t('common.lines') }}</span>
-                        <span>{{ (jsonString.length / 1024).toFixed(1) }} KB</span>
+                        <span>{{ lineCount }} {{ $t('common.lines') }}</span>
+                        <span>{{ sizeLabel }}</span>
                     </div>
                 </div>
             </div>

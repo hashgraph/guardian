@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {
-    FileJson, ExternalLink,
+    FileJson, ExternalLink, Loader2,
 } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
 import { lifecycleStageColor } from '~/lib/lifecycle';
@@ -11,6 +11,7 @@ const props = defineProps<{
     displayCountry: string;
     displayCountryCode: string;
     hashscanTopicUrl: string;
+    loading?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -51,10 +52,12 @@ const { t } = useI18n();
                     {{ $t('common.viewOnExplorer') }}
                 </a>
                 <button
-                    class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors"
+                    class="inline-flex items-center gap-2 rounded-lg border bg-card px-3 py-2 text-sm font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                    :disabled="loading"
                     @click="emit('view-raw-data')"
                 >
-                    <FileJson class="h-4 w-4 text-primary" />
+                    <Loader2 v-if="loading" class="h-4 w-4 text-primary animate-spin" />
+                    <FileJson v-else class="h-4 w-4 text-primary" />
                     {{ $t('common.viewRawData') }}
                 </button>
             </div>
