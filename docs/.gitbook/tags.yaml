@@ -1,6 +1,3 @@
-- tag: guide
-  label: Guide
-  icon: lighthouse
 - tag: template
   label: Template
   icon: cards-blank
@@ -10,3 +7,6 @@
 - tag: new
   label: New
   icon: sparkles
+- tag: guide
+  label: Guide
+  icon: lighthouse
