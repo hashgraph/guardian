@@ -149,6 +149,11 @@
         }
     }
 
+    &.guardian-geo-dropdown-panel p-scroller .p-select-list {
+        padding: 0;
+        gap: 0;
+    }
+
     .p-select-option {
         height: 40px;
         padding: 12px 16px !important;
@@ -291,6 +296,13 @@
 .policy-status-select.guardian-status-select.p-select {
     width: 150px !important;
     min-width: 150px;
+    height: 32px !important;
+    min-height: 32px !important;
+}
+
+.tool-status-select.guardian-status-select.p-select {
+    height: 32px !important;
+    min-height: 32px !important;
 }
 
 .guardian-dropdown-status.guardian-status-select.p-select {

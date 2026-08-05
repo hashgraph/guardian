@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@formulajs/formulajs": "4.6.0",
+        "@formulajs/formulajs": "4.6.1",
         "@guardian/common": "workspace:*",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/proto": "2.31.0",

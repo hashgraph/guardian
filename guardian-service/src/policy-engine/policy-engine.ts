@@ -27,10 +27,12 @@ import {
     FormulaImportExport,
     getArtifactType,
     INotificationStep,
+    IPFS,
     IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
+    MockEntityType,
     MockHelper,
     MultiPolicy,
     NatsService,
@@ -51,7 +53,6 @@ import {
     Topic,
     TopicConfig,
     TopicHelper,
-    UrlType,
     Users,
     VcHelper
 } from '@guardian/common';
@@ -100,6 +101,31 @@ export enum PolicyAccessCode {
     AVAILABLE = 0,
     NOT_EXIST = 1,
     UNAVAILABLE = 2
+}
+
+export async function validatePolicySchemaTemplateBeforePublish(model: Policy): Promise<void> {
+    const binding = model.schemaTemplate;
+    const hasTemplateBinding = !!(
+        binding?.templateId ||
+        binding?.snapshotId ||
+        Object.keys(binding?.schemaMap || {}).length
+    );
+    if (!hasTemplateBinding) {
+        return;
+    }
+    if (!binding?.templateId) {
+        throw new Error(
+            'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
+            'Select a published schema template or detach it from the policy.'
+        );
+    }
+    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+    if (!template || template.status !== ModuleStatus.PUBLISHED) {
+        throw new Error(
+            'Policy cannot be published while it uses a draft schema template. ' +
+            'Publish the schema template first or detach it from the policy.'
+        );
+    }
 }
 
 /**
@@ -1195,12 +1221,15 @@ export class PolicyEngine extends NatsService {
     public async dryRunSchemas(
         model: Policy,
         user: IOwner,
-        messageServer: MessageServer,
+        accountId: string,
         mockId: string
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
 
-        // const draftSchemas: SchemaCollection[] = [];
+        const topicId = (model.topicId || '').toString();
+        const updatedSchemas: SchemaCollection[] = [];
+        const mockRows: any[] = [];
+
         for (const schema of schemas) {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 continue;
@@ -1208,33 +1237,45 @@ export class PolicyEngine extends NatsService {
 
             schema.context = generateSchemaContext(schema);
             SchemaHelper.updateIRI(schema);
-            await DatabaseServer.updateSchema(schema.id, schema);
+            updatedSchemas.push(schema);
 
             if (mockId) {
+                // Build the mock schema-publish records in-process with the final context CID
+                // already set, so no per-schema worker round-trip or replaceSchema read-back is
+                // needed. All rows are batch-inserted after the loop.
                 const message = new SchemaMessage(MessageAction.PublishSchema);
                 message.setDocument(schema);
                 message.setRelationships([]);
-                const result = await messageServer
-                    .sendMessage(message, {
-                        sendToIPFS: true,
-                        memo: null,
-                        userId: user.id,
-                        interception: user.id,
-                        mockId
-                    });
+                const [documentBuffer, contextBuffer] = await message.toDocuments();
 
-                const messageId = result.getId();
-                const contextCid = result.getContextUrl(UrlType.cid);
+                const documentCid = GenerateUUIDv4();
+                const contextCid = (schema.contextURL || '').replace('schema:', '');
+                message.setUrls([
+                    { cid: documentCid, url: IPFS.IPFS_PROTOCOL + documentCid },
+                    { cid: contextCid, url: schema.contextURL }
+                ]);
 
-                await MockHelper.replaceSchema(
-                    mockId,
-                    messageId,
-                    contextCid,
-                    schema.contextURL
-                );
+                if (documentBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: documentCid, document: MockHelper.getBuffer(documentBuffer) });
+                }
+                if (contextBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: contextCid, document: MockHelper.getBuffer(contextBuffer) });
+                }
+                mockRows.push(MockHelper.getMessageRecord(topicId, message.toMessage(), accountId));
             }
         }
+
+        // Independent bulk writes to different collections - run them concurrently.
+        await Promise.all([
+            DatabaseServer.updateSchemas(updatedSchemas),
+            DatabaseServer.saveMockBatch(mockId, mockRows)
+        ]);
+
         return model;
+    }
+
+    private async validateSchemaTemplateBeforePublish(model: Policy): Promise<void> {
+        await validatePolicySchemaTemplateBeforePublish(model);
     }
 
     /**
@@ -1291,6 +1332,8 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
         notifier.addStep(STEP_SAVE, 2);
         notifier.start();
+
+        await this.validateSchemaTemplateBeforePublish(model);
 
         model.version = version;
         model.availability = availability;
@@ -1784,7 +1827,7 @@ export class PolicyEngine extends NatsService {
         });
 
         //'Publish' policy schemas
-        model = await this.dryRunSchemas(model, user, messageServer, mockId);
+        model = await this.dryRunSchemas(model, user, root.hederaAccountId, mockId);
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
 
@@ -2330,23 +2373,27 @@ export class PolicyEngine extends NatsService {
         isDruRun: boolean = false,
         ignoreRules?: ReadonlyArray<IgnoreRule>
     ): Promise<ISerializedErrors> {
-        let policyId: string;
         if (typeof policy === 'string') {
-            policyId = policy
-            policy = await DatabaseServer.getPolicyById(policyId);
-        } else {
-            if (!policy.id) {
-                policy.id = GenerateUUIDv4();
-            }
-            policyId = policy.id.toString();
+            // Persisted policy: send only the id reference and let the handler reload it
+            // locally (policy-service has DB access), instead of shipping the full policy -
+            // including its potentially large config - over the message broker.
+            return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+                policyId: policy,
+                isDruRun,
+                ignoreRules,
+                reachability: true
+            });
         }
-        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+        if (!policy.id) {
+            policy.id = GenerateUUIDv4();
+        }
+        // Unsaved/in-memory policy (editor validation): send the full object as before.
+        return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
             policy,
             isDruRun,
             ignoreRules,
             reachability: true
         });
-        return result;
     }
 
     /**

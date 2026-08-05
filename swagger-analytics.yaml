@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.2.0
 paths:
   /analytics/report:
     get:
@@ -210,16 +210,16 @@ paths:
 info:
   title: Guardian
   description: >-
-    The Guardian is a modular open-source solution that includes best-in-class
-    identity management and decentralized ledger technology (DLT) libraries. At
-    the heart of the Guardian solution is a sophisticated Policy Workflow Engine
-    (PWE) that enables applications to offer a requirements-based tokenization
-    implementation.
+    The Guardian is an innovative open-source platform that streamlines the
+    creation, management, and verification of digital environmental assets. It
+    leverages a customizable Policy Workflow Engine and Web3 technology to
+    ensure transparent and fraud-proof operations, making it a key tool for
+    transforming sustainability practices and carbon markets.
   version: 3.6.0
   contact:
     name: API developer
-    url: https://envisionblockchain.com
-    email: info@envisionblockchain.com
+    url: https://hashgraph.com
+    email: guardian@hashgraph.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html

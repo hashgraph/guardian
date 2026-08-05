@@ -633,6 +633,36 @@ export interface ToolMessageBody extends MessageBody {
 }
 
 /**
+ * Schema template message body
+ */
+export interface SchemaTemplateMessageBody extends MessageBody {
+    /**
+     * UUID
+     */
+    uuid: string;
+    /**
+     * Name
+     */
+    name: string;
+    /**
+     * Description
+     */
+    description: string;
+    /**
+     * Owner
+     */
+    owner: string;
+    /**
+     * Topic id
+     */
+    topicId: string;
+    /**
+     * Version
+     */
+    version: string;
+}
+
+/**
  * Contract message body
  */
 export interface ContractMessageBody extends MessageBody {

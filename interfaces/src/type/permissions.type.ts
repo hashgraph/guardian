@@ -21,6 +21,7 @@ export enum PermissionCategories {
     TOKENS = 'TOKENS',
     AUDIT = 'AUDIT',
     TOOLS = 'TOOLS',
+    TEMPLATES = 'TEMPLATES',
     PERMISSIONS = 'PERMISSIONS',
     ACCESS = 'ACCESS',
     DELEGATION = 'DELEGATION',
@@ -43,6 +44,7 @@ export enum PermissionEntities {
     RECORD = 'RECORD',
     POLICY = 'POLICY',
     TOOL = 'TOOL',
+    TEMPLATE = 'TEMPLATE',
     DOCUMENT = 'DOCUMENT',
     SCHEMA = 'SCHEMA',
     MODULE = 'MODULE',
@@ -203,6 +205,12 @@ export enum Permissions {
     TOOLS_TOOL_DELETE = 'TOOLS_TOOL_DELETE',
     TOOLS_TOOL_REVIEW = 'TOOLS_TOOL_REVIEW',
     TOOL_MIGRATION_CREATE = 'TOOL_MIGRATION_CREATE',
+    //TEMPLATES
+    TEMPLATES_TEMPLATE_READ = 'TEMPLATES_TEMPLATE_READ',
+    TEMPLATES_TEMPLATE_CREATE = 'TEMPLATES_TEMPLATE_CREATE',
+    TEMPLATES_TEMPLATE_UPDATE = 'TEMPLATES_TEMPLATE_UPDATE',
+    TEMPLATES_TEMPLATE_DELETE = 'TEMPLATES_TEMPLATE_DELETE',
+    TEMPLATES_TEMPLATE_REVIEW = 'TEMPLATES_TEMPLATE_REVIEW',
     //TOKENS
     TOKENS_TOKEN_READ = 'TOKENS_TOKEN_READ',
     TOKENS_TOKEN_CREATE = 'TOKENS_TOKEN_CREATE',
@@ -1025,6 +1033,56 @@ export const PermissionsArray: {
                 Permissions.TOOLS_TOOL_READ
             ]
         },
+        //TEMPLATES
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_READ,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.READ,
+            disabled: false
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_CREATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.CREATE,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ
+            ]
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_UPDATE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.UPDATE,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_DELETE,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.DELETE,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ
+            ]
+        },
+        {
+            name: Permissions.TEMPLATES_TEMPLATE_REVIEW,
+            category: PermissionCategories.SCHEMAS,
+            entity: PermissionEntities.TEMPLATE,
+            action: PermissionActions.REVIEW,
+            disabled: false,
+            dependOn: [
+                Permissions.TEMPLATES_TEMPLATE_READ,
+                Permissions.SCHEMAS_SCHEMA_READ
+            ]
+        },
         //TOKENS
         {
             name: Permissions.TOKENS_TOKEN_READ,
@@ -1583,6 +1641,11 @@ export const SRDefaultPermission: Permissions[] = [
     Permissions.TOOLS_TOOL_DELETE,
     Permissions.TOOLS_TOOL_REVIEW,
     Permissions.TOOL_MIGRATION_CREATE,
+    Permissions.TEMPLATES_TEMPLATE_READ,
+    Permissions.TEMPLATES_TEMPLATE_CREATE,
+    Permissions.TEMPLATES_TEMPLATE_UPDATE,
+    Permissions.TEMPLATES_TEMPLATE_DELETE,
+    Permissions.TEMPLATES_TEMPLATE_REVIEW,
     Permissions.TOKENS_TOKEN_READ,
     Permissions.TOKENS_TOKEN_CREATE,
     Permissions.TOKENS_TOKEN_UPDATE,

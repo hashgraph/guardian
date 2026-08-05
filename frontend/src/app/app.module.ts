@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, provideAppInitializer } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi, withJsonpSupport } from '@angular/common/http';
@@ -22,6 +22,7 @@ import { ProfileService } from './services/profile.service';
 import { TokenService } from './services/token.service';
 import { SchemaService } from './services/schema.service';
 import { HandleErrorsService } from './services/handle-errors.service';
+import { refreshAccessTokenOnStartup } from './services/refresh-access-token.initializer';
 import { AuditService } from './services/audit.service';
 import { CredentialsService } from './services/credentials.service';
 import { PolicyEngineService } from './services/policy-engine.service';
@@ -68,6 +69,7 @@ import { DetailsLogDialog } from './views/admin/details-log-dialog/details-log-d
 import { ServiceStatusComponent } from './views/admin/service-status/service-status.component';
 import { SchemaConfigComponent } from './views/schemas/schemas.component';
 import { SchemasConfigurationComponent } from './views/schemas-configuration/schemas-configuration.component';
+import { SchemaTemplatesComponent } from './views/schema-templates/schema-templates.component';
 import { NotificationsComponent } from './views/notifications/notifications.component';
 import { RolesViewComponent } from './views/roles/roles-view.component';
 import { UsersManagementComponent } from './views/user-management/user-management.component';
@@ -106,6 +108,7 @@ import { QRCodeComponent } from 'angularx-qrcode';
 import { MeecoVCSubmitDialogComponent } from './components/meeco-vc-submit-dialog/meeco-vc-submit-dialog.component';
 import { CompareStorage } from './services/compare-storage.service';
 import { ToolsService } from './services/tools.service';
+import { SchemaTemplatesService } from './services/schema-templates.service';
 import { NewHeaderComponent } from './views/new-header/new-header.component';
 import { SearchResultCardComponent } from './components/search-result-card/search-result-card.component';
 import { PolicyAISearchComponent } from './views/policy-search/policy-ai-search/policy-ai-search.component';
@@ -223,6 +226,7 @@ const GuardianPreset = definePreset(Aura, {
         InfoComponent,
         SchemaConfigComponent,
         SchemasConfigurationComponent,
+        SchemaTemplatesComponent,
         BrandingComponent,
         SuggestionsConfigurationComponent,
         StandardRegistryCardComponent,
@@ -306,6 +310,9 @@ const GuardianPreset = definePreset(Aura, {
         MenubarModule
     ],
     providers: [
+        // Refresh the access token from the stored refresh token before the app
+        // boots, so the initial requests aren't sent with an expired token.
+        provideAppInitializer(refreshAccessTokenOnStartup),
         MessageService,
         WebSocketService,
         AuthService,
@@ -330,6 +337,7 @@ const GuardianPreset = definePreset(Aura, {
         ContractService,
         ModulesService,
         ToolsService,
+        SchemaTemplatesService,
         MapService,
         TagsService,
         ThemeService,
@@ -357,6 +365,10 @@ const GuardianPreset = definePreset(Aura, {
             provide: BLOCK_TYPE_TIPS,
             useValue: BLOCK_TYPE_TIPS_VALUE
         },
+        // Order matters: AuthInterceptor must run inside HandleErrorsService so
+        // it can refresh-and-retry a 401 before the error interceptor sees it.
+        // Reversing these would let HandleErrorsService log the user out before
+        // the refresh gets a chance, disabling refresh-on-401.
         {
             provide: HTTP_INTERCEPTORS,
             useClass: HandleErrorsService,

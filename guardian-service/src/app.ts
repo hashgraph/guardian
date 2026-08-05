@@ -77,6 +77,7 @@ import { initMathjs } from './utils/formula.js';
 import { formulasAPI } from './api/formulas.service.js';
 import { externalPoliciesAPI } from './api/external-policies.service.js';
 import { policyDataAPI } from './api/policy-data.service.js';
+import { schemaTemplatesAPI } from './api/schema-template.service.js';
 
 export const obj = {};
 
@@ -196,6 +197,7 @@ Promise.all([
         await policyLabelsAPI(logger);
         await formulasAPI(logger);
         await externalPoliciesAPI(logger);
+        await schemaTemplatesAPI(logger);
         await credentialAPI(logger);
         await policyDataAPI(dataBaseServer, logger);
     } catch (error) {

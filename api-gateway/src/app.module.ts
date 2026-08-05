@@ -53,6 +53,7 @@ import { ExternalPoliciesApi } from './api/service/external-policy.js';
 import { CredentialsApi } from './api/service/credentials.js';
 import { PolicyDataApi } from './api/service/policy-data.js';
 import { OrganizationApi } from './api/service/organization.js';
+import { SchemaTemplatesApi } from './api/service/schema-template.js';
 
 // const JSON_REQUEST_LIMIT = process.env.JSON_REQUEST_LIMIT || '1mb';
 // const RAW_REQUEST_LIMIT = process.env.RAW_REQUEST_LIMIT || '1gb';
@@ -116,7 +117,8 @@ import { OrganizationApi } from './api/service/organization.js';
         WorkerTasksController,
         CredentialsApi,
         OrganizationApi,
-        PolicyDataApi
+        PolicyDataApi,
+        SchemaTemplatesApi
     ],
     providers: [
         LoggerService,

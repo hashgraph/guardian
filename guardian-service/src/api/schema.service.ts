@@ -14,17 +14,22 @@ import {
     PinoLogger,
     RunFunctionAsync,
     Schema as SchemaCollection,
+    ImportExportUtils,
     Users,
     XlsxToJson
 } from '@guardian/common';
 import {
     IOwner,
+    GenerateUUIDv4,
     ISchema,
+    ISchemaTemplateConfig,
+    ISchemaTemplateSchemaConfig,
     IChildSchemaDeletionBlock,
     MessageAPI,
     ModuleStatus,
     Schema,
     SchemaCategory,
+    SchemaField,
     SchemaHelper,
     SchemaNode,
     SchemaStatus,
@@ -47,6 +52,7 @@ import {
     updateSchemaDefs,
     updateToolConfig
 } from '../helpers/import-helpers/index.js'
+import { validateSchemaDependencies } from '../helpers/import-helpers/schema/schema-dependency-validator.js';
 import { getPageOptions } from './helpers/index.js';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -55,6 +61,417 @@ import { FilterObject } from '@mikro-orm/core';
 
 @Controller()
 export class SchemaService { }
+
+
+interface TemplateSchemaValidationContext {
+    schemaConfig: ISchemaTemplateSchemaConfig;
+}
+
+function getSchemaFields(schema: ISchema): SchemaField[] {
+    return new Schema(schema, true).fields || [];
+}
+
+function flattenFields(fields: SchemaField[], result: SchemaField[] = []): SchemaField[] {
+    for (const field of fields || []) {
+        result.push(field);
+        if (Array.isArray(field.fields)) {
+            flattenFields(field.fields, result);
+        }
+    }
+    return result;
+}
+
+function getFieldConfig(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): any {
+    const templateFieldId = field.templateFieldId || '';
+    const name = field.name || '';
+    return (templateFieldId ? schemaConfig.fields?.[templateFieldId] : null)
+        || (name ? schemaConfig.fields?.[name] : null)
+        || null;
+}
+
+function isTemplateFieldLocked(schemaConfig: ISchemaTemplateSchemaConfig, field: SchemaField): boolean {
+    if (!field.templateFieldId) {
+        return false;
+    }
+    return getFieldConfig(schemaConfig, field)?.locked !== false;
+}
+
+function fieldComparableHash(field: SchemaField): string {
+    return SchemaHelper.stableStringify(SchemaHelper.cloneSchemaRuntimeValue(field));
+}
+
+function getConfigForTemplateSchema(
+    config: ISchemaTemplateConfig | null | undefined,
+    schema: ISchema
+): ISchemaTemplateSchemaConfig {
+    const schemas = config?.schemas;
+    if (!schemas) {
+        return {};
+    }
+    return schemas[schema.templateSchemaId || '']
+        || schemas[schema.id || '']
+        || schemas[(schema as any)._id || '']
+        || {};
+}
+
+async function getTemplateSchemaValidationContext(
+    schema: ISchema
+): Promise<TemplateSchemaValidationContext | null> {
+    if (
+        schema.category !== SchemaCategory.POLICY ||
+        !schema.topicId ||
+        !schema.templateId ||
+        !schema.templateSchemaId
+    ) {
+        return null;
+    }
+
+    const policy = await DatabaseServer.getPolicy({ topicId: schema.topicId });
+    if (!policy?.schemaTemplate?.templateId) {
+        return null;
+    }
+
+    let config: ISchemaTemplateConfig | null | undefined;
+    if (policy.schemaTemplate.snapshotId) {
+        const snapshot = await DatabaseServer.getSchemaTemplateSnapshotById(policy.schemaTemplate.snapshotId);
+        config = snapshot?.config;
+    }
+    if (!config) {
+        const template = await DatabaseServer.getSchemaTemplateById(policy.schemaTemplate.templateId);
+        config = template?.config;
+    }
+
+    return {
+        schemaConfig: getConfigForTemplateSchema(config, schema)
+    };
+}
+
+async function validateTemplateSchemaDelete(schema: ISchema): Promise<void> {
+    if (schema.category === SchemaCategory.TEMPLATE) {
+        if (!schema.templateId) {
+            throw new Error('Schema template id is required.');
+        }
+        const template = await DatabaseServer.getSchemaTemplateById(schema.templateId);
+        if (!template) {
+            throw new Error('Invalid schema template.');
+        }
+        if (template.status === ModuleStatus.PUBLISHED) {
+            throw new Error(`Schema template "${template.name}" is published and cannot be edited.`);
+        }
+        return;
+    }
+
+    const context = await getTemplateSchemaValidationContext(schema);
+    if (!context) {
+        return;
+    }
+    throw new Error(`Schema "${schema.name}" belongs to an applied schema template. Detach the template before deleting this schema.`);
+}
+
+function getSchemaSettingsHash(schema: ISchema): string {
+    return SchemaHelper.stableStringify({
+        name: schema.name,
+        description: schema.description,
+        entity: schema.entity
+    });
+}
+
+export function validateTemplateSchemaUpdateByConfig(
+    previous: ISchema,
+    next: ISchema,
+    schemaConfig: ISchemaTemplateSchemaConfig
+): void {
+    if (schemaConfig.schemaSettingsLocked && getSchemaSettingsHash(previous) !== getSchemaSettingsHash(next)) {
+        throw new Error(`Schema settings for "${previous.name}" are locked by schema template and cannot be edited.`);
+    }
+
+    const previousFields = flattenFields(getSchemaFields(previous));
+    const nextFields = flattenFields(getSchemaFields(next));
+    const previousTemplateFields = new Map<string, SchemaField>();
+    const nextTemplateFields = new Map<string, SchemaField>();
+    const previousCustomPaths = new Set<string>();
+
+    for (const field of previousFields) {
+        if (field.templateFieldId) {
+            previousTemplateFields.set(field.templateFieldId, field);
+        } else if (field.path) {
+            previousCustomPaths.add(field.path);
+        }
+    }
+    for (const field of nextFields) {
+        if (field.templateFieldId) {
+            nextTemplateFields.set(field.templateFieldId, field);
+        }
+    }
+
+    for (const previousField of previousTemplateFields.values()) {
+        if (!isTemplateFieldLocked(schemaConfig, previousField)) {
+            continue;
+        }
+        const nextField = nextTemplateFields.get(previousField.templateFieldId);
+        if (!nextField) {
+            throw new Error(`Field "${previousField.title || previousField.name}" is locked by schema template and cannot be removed.`);
+        }
+        if (fieldComparableHash(previousField) !== fieldComparableHash(nextField)) {
+            throw new Error(`Field "${previousField.title || previousField.name}" is locked by schema template and cannot be edited.`);
+        }
+    }
+
+    if (schemaConfig.customFieldsLocked) {
+        for (const field of nextFields) {
+            if (!field.templateFieldId && field.path && !previousCustomPaths.has(field.path)) {
+                throw new Error(`Schema "${previous.name}" does not allow custom fields because it is locked by schema template.`);
+            }
+        }
+    }
+}
+
+async function validateTemplateSchemaUpdate(previous: ISchema, next: ISchema): Promise<void> {
+    const context = await getTemplateSchemaValidationContext(previous);
+    if (!context) {
+        return;
+    }
+
+    validateTemplateSchemaUpdateByConfig(previous, next, context.schemaConfig);
+}
+
+function normalizeSchemaReference(value: unknown): string[] {
+    if (typeof value !== 'string' || !value) {
+        return [];
+    }
+    const result = new Set<string>([value]);
+    if (value.startsWith('#')) {
+        result.add(value.substring(1));
+    } else {
+        result.add(`#${value}`);
+    }
+    return Array.from(result);
+}
+
+function addSchemaReference(map: Map<string, SchemaCollection>, schema: SchemaCollection): void {
+    const keys = [
+        schema.id,
+        (schema as any)._id,
+        schema.uuid,
+        schema.iri,
+        schema.document?.$id
+    ];
+    for (const key of keys) {
+        for (const normalized of normalizeSchemaReference(key)) {
+            map.set(normalized, schema);
+        }
+    }
+}
+
+function getSchemaRefFields(schema: SchemaCollection): SchemaField[] {
+    try {
+        return new Schema(schema, true)
+            .getFields()
+            .filter((field) => !!field.isRef && !!field.type);
+    } catch {
+        return [];
+    }
+}
+
+function getStoredSchemaDefs(schema: SchemaCollection): string[] {
+    if (!schema.defs) {
+        return [];
+    }
+    return Array.isArray(schema.defs) ? schema.defs : [schema.defs];
+}
+
+function collectDocumentSchemaReferences(document: any, refs: Set<string>): void {
+    if (!document || typeof document !== 'object') {
+        return;
+    }
+
+    if (typeof document.$ref === 'string') {
+        normalizeSchemaReference(document.$ref).forEach((ref) => refs.add(ref));
+    }
+
+    if (typeof document.type === 'string' && document.type.startsWith('#')) {
+        normalizeSchemaReference(document.type).forEach((ref) => refs.add(ref));
+    }
+
+    for (const value of Object.values(document)) {
+        collectDocumentSchemaReferences(value, refs);
+    }
+}
+
+export function getSchemaReferenceIris(schema: SchemaCollection): Set<string> {
+    const refs = new Set<string>();
+
+    for (const def of getStoredSchemaDefs(schema)) {
+        normalizeSchemaReference(def).forEach((ref) => refs.add(ref));
+    }
+
+    collectDocumentSchemaReferences(schema.document, refs);
+
+    for (const field of getSchemaRefFields(schema)) {
+        normalizeSchemaReference(field.type).forEach((ref) => refs.add(ref));
+    }
+
+    return refs;
+}
+
+function getSchemaDependencyScopeFilter(schema: SchemaCollection, owner: IOwner): any {
+    const filter: any = {
+        owner: owner.owner,
+        readonly: false,
+        system: false,
+        status: ModuleStatus.DRAFT
+    };
+
+    if (schema.topicId) {
+        filter.topicId = schema.topicId;
+    }
+    if (schema.category) {
+        filter.category = schema.category;
+    }
+    if (schema.category === SchemaCategory.TEMPLATE && schema.templateId) {
+        filter.templateId = schema.templateId;
+    }
+
+    return filter;
+}
+
+async function getUsedPolicySchemaIds(
+    topicId: string,
+    schemas: SchemaCollection[]
+): Promise<Set<string>> {
+    const policy = await DatabaseServer.getPolicy({ topicId });
+    if (!policy) {
+        return new Set<string>();
+    }
+
+    const schemaByReference = new Map<string, SchemaCollection>();
+    for (const schema of schemas) {
+        addSchemaReference(schemaByReference, schema);
+    }
+
+    const initialReferences = ImportExportUtils.findAllSchemas(policy.config);
+    if (policy.projectSchema) {
+        initialReferences.push(policy.projectSchema);
+    }
+
+    const usedIds = new Set<string>();
+    const queue = initialReferences.flatMap((value) => normalizeSchemaReference(value));
+    const visitedReferences = new Set<string>();
+
+    while (queue.length) {
+        const reference = queue.shift() || '';
+        if (!reference || visitedReferences.has(reference)) {
+            continue;
+        }
+        visitedReferences.add(reference);
+
+        const schema = schemaByReference.get(reference);
+        if (!schema) {
+            continue;
+        }
+
+        usedIds.add(String(schema.id || (schema as any)._id));
+        for (const field of getSchemaRefFields(schema)) {
+            queue.push(...normalizeSchemaReference(field.type));
+        }
+    }
+
+    return usedIds;
+}
+
+async function applyPolicySchemaGridFilters(
+    filter: any,
+    options: {
+        templateSchemasOnly?: boolean,
+        unusedInPolicyOnly?: boolean
+    }
+): Promise<void> {
+    if (
+        filter.category !== SchemaCategory.POLICY ||
+        (!options.templateSchemasOnly && !options.unusedInPolicyOnly)
+    ) {
+        return;
+    }
+
+    const schemas = await DatabaseServer.getSchemas(filter, {
+        orderBy: { createDate: 'DESC' }
+    });
+    const schemasByTopic = new Map<string, SchemaCollection[]>();
+    for (const schema of schemas) {
+        if (!schema.topicId) {
+            continue;
+        }
+        if (!schemasByTopic.has(schema.topicId)) {
+            schemasByTopic.set(schema.topicId, []);
+        }
+        schemasByTopic.get(schema.topicId)!.push(schema);
+    }
+
+    const usedIds = new Set<string>();
+    if (options.unusedInPolicyOnly) {
+        for (const [topicId, topicSchemas] of schemasByTopic.entries()) {
+            const topicUsedIds = await getUsedPolicySchemaIds(topicId, topicSchemas);
+            for (const id of topicUsedIds) {
+                usedIds.add(id);
+            }
+        }
+    }
+
+    const ids = schemas
+        .filter((schema) => {
+            const fromTemplate = !!(schema.templateId || schema.templateSchemaId);
+            if (options.templateSchemasOnly && !fromTemplate) {
+                return false;
+            }
+            const id = String(schema.id || (schema as any)._id);
+            if (options.unusedInPolicyOnly && usedIds.has(id)) {
+                return false;
+            }
+            (schema as any).usedInPolicyFlow = usedIds.has(id);
+            return true;
+        })
+        .map((schema) => schema.id || (schema as any)._id)
+        .filter((id) => !!id);
+
+    filter._id = { $in: ids };
+}
+
+function prepareSchemaTemplateMetadata(item: ISchema, previous?: ISchema): void {
+    if (item.category === SchemaCategory.TEMPLATE) {
+        item.templateSchemaId = previous?.templateSchemaId || GenerateUUIDv4();
+        SchemaHelper.prepareTemplateFieldIds(item.document, previous?.document);
+    } else if (previous?.templateSchemaId) {
+        item.templateId = previous.templateId;
+        item.templateSchemaId = previous.templateSchemaId;
+        SchemaHelper.preserveTemplateFieldIds(item.document, previous.document);
+    } else if (item.category === SchemaCategory.POLICY && item.templateId && item.templateSchemaId) {
+        // Policy schema copied from a schema template. Its document already carries
+        // templateFieldId values from the template and must keep them.
+    } else {
+        delete item.templateId;
+        delete item.templateSchemaId;
+        SchemaHelper.removeTemplateFieldIds(item.document);
+    }
+}
+
+async function resolveTemplateSchemaContext(item: ISchema, owner: IOwner): Promise<void> {
+    if (item.category !== SchemaCategory.TEMPLATE) {
+        return;
+    }
+    if (!item.templateId) {
+        throw new Error('Schema template id is required.');
+    }
+    const template = await DatabaseServer.getSchemaTemplateById(item.templateId);
+    if (!template || template.owner !== owner.owner) {
+        throw new Error('Invalid schema template.');
+    }
+    if (template.status === ModuleStatus.PUBLISHED) {
+        throw new Error('Schema template published.');
+    }
+    if (!template.topicId || item.topicId !== template.topicId) {
+        throw new Error('Invalid schema template topic.');
+    }
+}
 
 /**
  * Connect to the message broker methods of working with schemas.
@@ -74,6 +491,8 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
         }) => {
             try {
                 const { item, owner } = msg;
+                await resolveTemplateSchemaContext(item, owner);
+                prepareSchemaTemplateMetadata(item);
                 await createSchemaAndArtifacts(item.category, item, owner, NewNotifier.empty());
                 const schemas = await DatabaseServer.getSchemas({ owner: owner.owner }, { limit: 100 });
                 return new MessageResponse(schemas);
@@ -90,9 +509,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
             task: any
         }) => {
             const { item, owner, task } = msg;
-            const notifier = await NewNotifier.create(task);
-            RunFunctionAsync(async () => {
-                const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
+                const notifier = await NewNotifier.create(task);
+                RunFunctionAsync(async () => {
+                    await resolveTemplateSchemaContext(item, owner);
+                    prepareSchemaTemplateMetadata(item);
+                    const schema = await createSchemaAndArtifacts(item.category, item, owner, notifier);
                 notifier.result(schema.id);
             }, async (error) => {
                 await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
@@ -144,10 +565,28 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 if (checkForCircularDependency(row)) {
                     throw new Error(`There is circular dependency in schema: ${row.iri}`);
                 }
-                row.name = item.name;
-                row.description = item.description;
-                row.entity = item.entity;
-                row.document = item.document;
+                const previous = {
+                    templateId: row.templateId,
+                    templateSchemaId: row.templateSchemaId,
+                    document: row.document
+                } as ISchema;
+                const next = {
+                    ...row,
+                    name: item.name,
+                    description: item.description,
+                    entity: item.entity,
+                    document: item.document ? JSON.parse(JSON.stringify(item.document)) : item.document
+                } as ISchema;
+                validateSchemaDependencies(next);
+                await resolveTemplateSchemaContext(next, owner);
+                prepareSchemaTemplateMetadata(next, previous);
+                await validateTemplateSchemaUpdate(row, next);
+                row.name = next.name;
+                row.description = next.description;
+                row.entity = next.entity;
+                row.document = next.document;
+                row.templateId = next.templateId;
+                row.templateSchemaId = next.templateSchemaId;
                 row.status = SchemaStatus.DRAFT;
                 row.errors = [];
                 SchemaHelper.setVersion(row, row.version, row.version);
@@ -235,17 +674,13 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     return new MessageError('Schema is not found');
                 }
 
-                return new MessageResponse(await DatabaseServer.getSchemas({
-                    defs: schema.iri,
-                    owner: owner.owner
-                }, {
-                    fields: [
-                        'name',
-                        'version',
-                        'sourceVersion',
-                        'status'
-                    ]
-                }));
+                const candidates = await DatabaseServer.getSchemas(getSchemaDependencyScopeFilter(schema, owner));
+                const parents = candidates.filter((item) =>
+                    item.iri !== schema.iri &&
+                    getSchemaReferenceIris(item).has(schema.iri)
+                );
+
+                return new MessageResponse(parents);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
                 return new MessageError(error);
@@ -292,8 +727,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const schemaDefIds = new Set<string>();
 
                 for (const schema of schemas) {
-                    const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
-                    defs.forEach(def => schemaDefIds.add(def));
+                    getSchemaReferenceIris(schema).forEach(def => schemaDefIds.add(def));
                 }
                 const childSchemasFilter: any = {
                     iri: { $in: [...schemaDefIds] },
@@ -301,8 +735,14 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 }
                 const childSchemasDefs = await DatabaseServer.getSchemas(childSchemasFilter, {
                     fields: [
+                        'id',
                         'iri',
                         'name',
+                        'owner',
+                        'topicId',
+                        'category',
+                        'templateId',
+                        'templateSchemaId',
                         'version',
                         'sourceVersion',
                         'status'
@@ -320,13 +760,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         if (policySchemas.has(topicId)) {
                             allPolicySchemas = policySchemas.get(topicId);
                         } else {
-                            const policySchemasFilter: any = {
-                                topicId,
-                                readonly: false,
-                                system: false,
-                                status: ModuleStatus.DRAFT,
-                                category: SchemaCategory.POLICY
-                            }
+                            const policySchemasFilter = getSchemaDependencyScopeFilter(schema, owner);
                             allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
                             policySchemas.set(topicId, allPolicySchemas);
                         }
@@ -337,9 +771,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     && !childSchemas.has(policySchema.iri)
                                     && !schemas.some(item => item.iri === policySchema.iri)) {
 
-                                    const schemaDefs = policySchema.defs ? (Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs]) : [];
+                                    const schemaDefs = getSchemaReferenceIris(policySchema);
 
-                                    if (schemaDefs.includes(schema.iri)) {
+                                    if (schemaDefs.has(schema.iri)) {
                                         const alreadyExist = blockedChildren.find(x => x.schema.iri === schema.iri);
                                         if (alreadyExist) {
                                             alreadyExist.blockingSchemas.push(policySchema);
@@ -353,7 +787,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                         }
                                     } else {
                                         for (const childSchema of Array.from(childSchemas.values())) {
-                                            if (!schemaDefs.includes(childSchema.iri)) {
+                                            if (!schemaDefs.has(childSchema.iri)) {
                                                 continue;
                                             }
 
@@ -382,9 +816,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
 
                     for (const blockedChild of blockedChildren) {
                         const blockedSchema = blockedChild.schema as SchemaCollection;
-                        const schemaDefs = blockedSchema.defs ? (Array.isArray(blockedSchema.defs) ? blockedSchema.defs : [blockedSchema.defs]) : [];
+                        const schemaDefs = getSchemaReferenceIris(blockedSchema);
 
-                        if (schemaDefs.includes(childSchema.iri)) {
+                        if (schemaDefs.has(childSchema.iri)) {
                             const alreadyExist = blockedChildren.find(x => x.schema.iri === childSchema.iri);
                             if (alreadyExist) {
                                 if (!alreadyExist.blockingSchemas.some(s => s.iri === blockedSchema.iri)) {
@@ -901,6 +1335,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     if (tool && tool.status === ModuleStatus.PUBLISHED) {
                         delete filter.owner;
                     }
+                } else if (options.templateId) {
+                    filter.category = SchemaCategory.TEMPLATE;
+                    const template = await DatabaseServer.getSchemaTemplateById(options.templateId);
+                    filter.topicId = template?.topicId;
+                    filter.templateId = template?.id;
                 }
                 if (options.topicId) {
                     if (options.topicId === 'not-binded') {
@@ -966,9 +1405,12 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 policyId?: string,
                 moduleId?: string,
                 toolId?: string,
+                templateId?: string,
                 topicId?: string,
                 search?: string
-                searchOptions?: string[]
+                searchOptions?: string[],
+                templateSchemasOnly?: boolean,
+                unusedInPolicyOnly?: boolean
             },
             owner: IOwner,
         }) => {
@@ -1015,6 +1457,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     if (tool && tool.status === ModuleStatus.PUBLISHED) {
                         delete filter.owner;
                     }
+                } else if (options.templateId) {
+                    filter.category = SchemaCategory.TEMPLATE;
+                    const template = await DatabaseServer.getSchemaTemplateById(options.templateId);
+                    filter.topicId = template?.topicId;
+                    filter.templateId = template?.id;
                 } else if (Array.isArray(options.category)) {
                     filter.category = { $in: options.category };
                 } else if (typeof options.category === 'string') {
@@ -1077,8 +1524,6 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     }
                     let schemas = await DatabaseServer.getSchemas(filter, {
                         orderBy: { createDate: 'DESC' },
-                        limit: 10000,
-                        offset: 0,
                         fields
                     });
                     schemas = schemas.filter((s) => {
@@ -1119,6 +1564,11 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     const ids = schemas.map((s) => s._id);
                     filter._id = { $in: ids };
                 }
+
+                await applyPolicySchemaGridFilters(filter, {
+                    templateSchemasOnly: options.templateSchemasOnly,
+                    unusedInPolicyOnly: options.unusedInPolicyOnly
+                });
 
                 const [items, count] = await DatabaseServer.getSchemasAndCount(filter, otherOptions);
                 const pipeline = [
@@ -1191,7 +1641,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     nameMaps.set(topicId, 'Current');
                 }
 
-                let parents: any[];
+                let parents: any[] = [];
                 const options = {
                     fields: [
                         'name',
@@ -1365,8 +1815,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 const schemaDefIds = new Set<string>();
 
                 for (const schema of schemas) {
-                    const defs = schema.defs ? (Array.isArray(schema.defs) ? schema.defs : [schema.defs]) : [];
-                    defs.forEach(def => schemaDefIds.add(def));
+                    getSchemaReferenceIris(schema).forEach(def => schemaDefIds.add(def));
                 }
                 const childSchemasFilter: any = {
                     iri: { $in: [...schemaDefIds] },
@@ -1393,13 +1842,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                         if (policySchemas.has(topicId)) {
                             allPolicySchemas = policySchemas.get(topicId);
                         } else {
-                            const policySchemasFilter: any = {
-                                topicId,
-                                readonly: false,
-                                system: false,
-                                status: ModuleStatus.DRAFT,
-                                category: SchemaCategory.POLICY
-                            }
+                            const policySchemasFilter = getSchemaDependencyScopeFilter(schema, owner);
                             allPolicySchemas = await DatabaseServer.getSchemas(policySchemasFilter);
                             policySchemas.set(topicId, allPolicySchemas);
                         }
@@ -1410,9 +1853,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                     && !childSchemas.has(policySchema.iri)
                                     && !schemas.some(item => item.iri === policySchema.iri)) {
 
-                                    const schemaDefs = policySchema.defs ? (Array.isArray(policySchema.defs) ? policySchema.defs : [policySchema.defs]) : [];
+                                    const schemaDefs = getSchemaReferenceIris(policySchema);
 
-                                    if (schemaDefs.includes(schema.iri)) {
+                                    if (schemaDefs.has(schema.iri)) {
                                         const alreadyExist = blockedChildren.find(x => x.schema.iri === schema.iri);
                                         if (alreadyExist) {
                                             if (!alreadyExist.blockingSchemas.some(s => s.iri === policySchema.iri)) {
@@ -1428,7 +1871,7 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                                         }
                                     } else {
                                         for (const childSchema of Array.from(childSchemas.values())) {
-                                            if (!schemaDefs.includes(childSchema.iri)) {
+                                            if (!schemaDefs.has(childSchema.iri)) {
                                                 continue;
                                             }
 
@@ -1456,9 +1899,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 for (const childSchema of Array.from(childSchemas.values())) {
                     for (const blockedChild of blockedChildren) {
                         const blockedSchema = blockedChild.schema as SchemaCollection;
-                        const schemaDefs = blockedSchema.defs ? (Array.isArray(blockedSchema.defs) ? blockedSchema.defs : [blockedSchema.defs]) : [];
+                        const schemaDefs = getSchemaReferenceIris(blockedSchema);
 
-                        if (schemaDefs.includes(childSchema.iri)) {
+                        if (schemaDefs.has(childSchema.iri)) {
                             const alreadyExist = blockedChildren.find(x => x.schema.iri === childSchema.iri);
                             if (alreadyExist) {
                                 if (!alreadyExist.blockingSchemas.some(s => s.iri === blockedSchema.iri)) {
@@ -1505,6 +1948,10 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                     stepMap.set(schema.id, deleteSchemaStep);
 
                     schemasToDelete.push(schema);
+                }
+
+                for (const schema of schemasToDelete) {
+                    await validateTemplateSchemaDelete(schema);
                 }
 
                 for (const schema of schemasToDelete) {
@@ -1556,6 +2003,9 @@ export async function schemaAPI(logger: PinoLogger): Promise<void> {
                 });
                 if (schemasToDelete?.length <= 0) {
                     return new MessageError('Schemas not found', 404);
+                }
+                for (const schema of schemasToDelete) {
+                    await validateTemplateSchemaDelete(schema);
                 }
                 for (const schema of schemasToDelete) {
                     await deleteSchema(

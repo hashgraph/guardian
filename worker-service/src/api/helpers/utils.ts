@@ -2,16 +2,38 @@ import { TimeoutError } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 
-const TRANSIENT_STATUS_CODES = new Set<number>([502, 503, 504]);
+// 429 included: the mirror node rate limit is per source IP and is shared with every
+// other process behind it, so a throttled GET is transient rather than fatal.
+const TRANSIENT_STATUS_CODES = new Set<number>([429, 502, 503, 504]);
 const TRANSIENT_ERROR_CODES = new Set<string>(['ECONNABORTED', 'ETIMEDOUT', 'ECONNRESET']);
+const MAX_RETRY_AFTER_MS = 60 * 1000;
 
-// Retry 5xx gateway errors and network timeouts, but not 4xx (e.g. 404 must fail fast).
+// Retry 5xx gateway errors, 429 throttling and network timeouts, but not the rest of
+// the 4xx range (e.g. 404 must fail fast).
 function isTransientError(error: any): boolean {
     const status = error?.response?.status;
     if (typeof status === 'number') {
         return TRANSIENT_STATUS_CODES.has(status);
     }
     return !error?.response || TRANSIENT_ERROR_CODES.has(error?.code);
+}
+
+// `Retry-After` in seconds or as an HTTP date, in ms; null when absent/unusable.
+function getRetryAfterMs(error: any): number | null {
+    const value = error?.response?.headers?.['retry-after'];
+    if (value === undefined || value === null) {
+        return null;
+    }
+    const seconds = Number(value);
+    if (isFinite(seconds)) {
+        return seconds > 0 ? Math.min(seconds * 1000, MAX_RETRY_AFTER_MS) : null;
+    }
+    const date = Date.parse(String(value));
+    if (isFinite(date)) {
+        const wait = date - Date.now();
+        return wait > 0 ? Math.min(wait, MAX_RETRY_AFTER_MS) : null;
+    }
+    return null;
 }
 
 function delay(ms: number): Promise<void> {
@@ -43,7 +65,8 @@ export async function axiosGetWithRetry(
             if (attempt >= attempts || !isTransientError(error)) {
                 break;
             }
-            await delay(baseDelay * Math.pow(2, attempt - 1));
+            //a throttled response tells us how long to wait; honour it over our own backoff
+            await delay(getRetryAfterMs(error) ?? baseDelay * Math.pow(2, attempt - 1));
         }
     }
     const reason = lastError?.message || 'Unknown error';

@@ -110,6 +110,7 @@ import { SelectSchema } from './helpers/select-schema/select-schema.component';
 import { PolicyTestResult } from './helpers/policy-test-result/policy-test-result.component';
 import { PublishPolicyDialog } from './dialogs/publish-policy-dialog/publish-policy-dialog.component';
 import { SearchToolDialog } from './dialogs/search-tool-dialog/search-tool-dialog.component';
+import { SearchSchemaTemplateDialog } from './dialogs/search-schema-template-dialog/search-schema-template-dialog.component';
 //Modules
 import { ModulesListComponent } from './modules-list/modules-list.component';
 import { ToolsListComponent } from './tools-list/tools-list.component';
@@ -172,6 +173,7 @@ import { IgnoreRulesDialog } from './dialogs/ignore-rules-dialog/ignore-rules-di
 import { PolicyRepositoryComponent } from './policy-repository/policy-repository.component';
 import { WipeConfigComponent } from './policy-configuration/blocks/tokens/wipe-config/wipe-config.component';
 import { PublishToolDialog } from './dialogs/publish-tool-dialog/publish-tool-dialog.component';
+import { PublishSchemaTemplateDialog } from './dialogs/publish-schema-template-dialog/publish-schema-template-dialog.component';
 import { SaveToolDialog } from './dialogs/save-tool-dialog/save-tool-dialog.component';
 import { UserPolicyDialog } from './dialogs/user-policy-dialog/user-policy-dialog.component';
 import { GlobalEventsWriterBlockComponent} from './policy-viewer/blocks/global-events-writer-block/global-events-writer-block.component';
@@ -189,7 +191,9 @@ import { PolicyParameterPropertyComponent } from 'src/app/components/policy-para
 import { PolicyParametersConfigDialog } from './dialogs/policy-parameters-config-dialog/policy-parameters-config-dialog.component';
 import { ParameterDocumentPathComponent } from './helpers/parameter-document-path/parameter-document-path.component';
 import { MockDialog } from './dialogs/mock-dialog/mock-dialog.component';
+import { DryRunDialog } from './dialogs/dry-run-dialog/dry-run-dialog.component';
 import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-automation/policy-test-automation-popup.component';
+import { ApplySchemaTemplateDialog } from './dialogs/apply-schema-template-dialog/apply-schema-template-dialog.component';
 
 @NgModule({
     declarations: [
@@ -266,6 +270,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         PolicyTestResult,
         PublishPolicyDialog,
         PublishToolDialog,
+        PublishSchemaTemplateDialog,
         CreateTokenConfigComponent,
         CreateTokenBlockComponent,
         MultiPolicyDialogComponent,
@@ -314,6 +319,7 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         SearchExternalPolicyDialog,
         TestCodeDialog,
         SearchToolDialog,
+        SearchSchemaTemplateDialog,
         RestoreSavepointDialog,
         AddSavepointDialog,
         IgnoreRulesDialog,
@@ -334,7 +340,9 @@ import { PolicyTestAutomationPopupComponent } from './policy-viewer/policy-test-
         PolicyParameterPropertyComponent,
         ParameterDocumentPathComponent,
         MockDialog,
-        PolicyTestAutomationPopupComponent
+        DryRunDialog,
+        PolicyTestAutomationPopupComponent,
+        ApplySchemaTemplateDialog
     ],
     imports: [
         CommonModule,

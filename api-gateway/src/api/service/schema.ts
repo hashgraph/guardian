@@ -430,6 +430,13 @@ export class SchemaApi {
         example: Examples.DB_ID_3
     })
     @ApiQuery({
+        name: 'templateId',
+        type: String,
+        description: 'Schema template id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
         name: 'topicId',
         type: String,
         description: 'Topic id',
@@ -476,6 +483,7 @@ export class SchemaApi {
         @Query('policyId') policyId?: string,
         @Query('moduleId') moduleId?: string,
         @Query('toolId') toolId?: string,
+        @Query('templateId') templateId?: string,
         @Query('topicId') topicId?: string
     ): Promise<SchemaDTO[]> {
         try {
@@ -501,10 +509,14 @@ export class SchemaApi {
             if (toolId) {
                 options.toolId = toolId;
             }
+            if (templateId) {
+                options.templateId = templateId;
+            }
             const { items, count } = await guardians.getSchemasByOwner(options, owner);
             SchemaHelper.updatePermission(items, owner);
-            req.locals = SchemaUtils.toOld(items);
-            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+            const result = SchemaUtils.toOld(items);
+            req.locals = result;
+            return res.header('X-Total-Count', count).send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -570,6 +582,13 @@ export class SchemaApi {
         example: Examples.DB_ID
     })
     @ApiQuery({
+        name: 'templateId',
+        type: String,
+        description: 'Schema template id',
+        required: false,
+        example: Examples.DB_ID
+    })
+    @ApiQuery({
         name: 'topicId',
         type: String,
         description: 'Topic id. Use `not-binded` to return policy schemas not bound to any policy topic.',
@@ -630,9 +649,12 @@ export class SchemaApi {
         @Query('policyId') policyId: string,
         @Query('moduleId') moduleId: string,
         @Query('toolId') toolId: string,
+        @Query('templateId') templateId: string,
         @Query('topicId') topicId: string,
         @Query('search') search: string,
         @Query('searchOptions') searchOptions: string[] | string,
+        @Query('templateSchemasOnly') templateSchemasOnly: string,
+        @Query('unusedInPolicyOnly') unusedInPolicyOnly: string,
         @Response() res: any
     ): Promise<SchemaDTO[]> {
         try {
@@ -658,6 +680,9 @@ export class SchemaApi {
             if (toolId) {
                 options.toolId = toolId;
             }
+            if (templateId) {
+                options.templateId = templateId;
+            }
             if (search) {
                 options.search = search;
             }
@@ -667,6 +692,12 @@ export class SchemaApi {
                 } else if (typeof searchOptions === 'string') {
                     options.searchOptions = searchOptions.split(',');
                 }
+            }
+            if (templateSchemasOnly === 'true') {
+                options.templateSchemasOnly = true;
+            }
+            if (unusedInPolicyOnly === 'true') {
+                options.unusedInPolicyOnly = true;
             }
             options.fields = Object.values(SCHEMA_REQUIRED_PROPS)
 
@@ -780,8 +811,9 @@ export class SchemaApi {
             }
             const { items, count } = await guardians.getSchemasByOwner(options, owner);
             SchemaHelper.updatePermission(items, owner);
-            req.locals = SchemaUtils.toOld(items);
-            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+            const result = SchemaUtils.toOld(items);
+            req.locals = result;
+            return res.header('X-Total-Count', count).send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }
@@ -984,11 +1016,12 @@ export class SchemaApi {
         Permissions.POLICIES_POLICY_UPDATE,
         Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE,
+        Permissions.TEMPLATES_TEMPLATE_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
         summary: 'Returns schemas for the selected topic and related tool topics.',
-        description: 'Returns schemas for the specified policy or tool topic, including related tool schemas discovered from that parent entity.' + ONLY_SR,
+        description: 'Returns schemas for the specified policy, tool, or template topic. Policy topics include related tool schemas discovered from that parent entity.' + ONLY_SR,
     })
     @ApiQuery({
         name: 'topicId',
@@ -999,8 +1032,8 @@ export class SchemaApi {
     })
     @ApiQuery({
         name: 'category',
-        enum: [SchemaCategory.POLICY, SchemaCategory.TOOL],
-        description: 'Determines which parent entity type is used to resolve related tool topics. Does not directly filter the returned schemas by category. Supported values: POLICY, TOOL.',
+        enum: [SchemaCategory.POLICY, SchemaCategory.TOOL, SchemaCategory.TEMPLATE],
+        description: 'Determines which parent entity type is used to resolve related schemas. Supported values: POLICY, TOOL, TEMPLATE.',
         required: false,
         example: SchemaCategory.POLICY
     })
@@ -1059,6 +1092,7 @@ export class SchemaApi {
         Permissions.POLICIES_POLICY_UPDATE,
         Permissions.MODULES_MODULE_UPDATE,
         Permissions.TOOLS_TOOL_UPDATE,
+        Permissions.TEMPLATES_TEMPLATE_UPDATE,
         // UserRole.STANDARD_REGISTRY,
     )
     @ApiOperation({
@@ -1074,8 +1108,8 @@ export class SchemaApi {
     })
     @ApiQuery({
         name: 'category',
-        enum: [SchemaCategory.POLICY, SchemaCategory.TOOL],
-        description: 'Determines which parent entity type is used to resolve related tool topics. Does not directly filter the returned schemas by category. Supported values: POLICY, TOOL.',
+        enum: [SchemaCategory.POLICY, SchemaCategory.TOOL, SchemaCategory.TEMPLATE],
+        description: 'Determines which parent entity type is used to resolve related schemas. Supported values: POLICY, TOOL, TEMPLATE.',
         required: false,
         example: SchemaCategory.POLICY
     })
@@ -1202,6 +1236,9 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             newSchema.topicId = topicId;
             newSchema.category = newSchema.category || SchemaCategory.POLICY;
+            if (newSchema.category === SchemaCategory.TEMPLATE && !newSchema.templateId) {
+                throw new HttpException('Schema template id is required.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
             SchemaHelper.checkSchemaKey(newSchema);
 
             SchemaHelper.updateOwner(newSchema, owner);
@@ -1345,6 +1382,9 @@ export class SchemaApi {
             taskManager.addStatus(task.taskId, 'Check schema version', StatusType.PROCESSING);
             newSchema.topicId = topicId;
             newSchema.category = newSchema.category || SchemaCategory.POLICY;
+            if (newSchema.category === SchemaCategory.TEMPLATE && !newSchema.templateId) {
+                throw new HttpException('Schema template id is required.', HttpStatus.UNPROCESSABLE_ENTITY);
+            }
             SchemaHelper.checkSchemaKey(newSchema);
             SchemaHelper.updateOwner(newSchema, owner);
 
@@ -2738,8 +2778,9 @@ export class SchemaApi {
             const owner = new EntityOwner(user);
             const { items, count } = await guardians.getSystemSchemas(user, pageIndex, pageSize);
             items.forEach((s) => { s.readonly = s.readonly || s.owner !== owner.owner });
-            req.locals = SchemaUtils.toOld(items);
-            return res.header('X-Total-Count', count).send(SchemaUtils.toOld(items));
+            const result = SchemaUtils.toOld(items);
+            req.locals = result;
+            return res.header('X-Total-Count', count).send(result);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
         }

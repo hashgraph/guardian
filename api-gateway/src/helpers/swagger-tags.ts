@@ -1,3 +1,5 @@
+import { OpenAPIObject } from '@nestjs/swagger';
+
 interface SwaggerTag {
     name: string;
     description?: string;
@@ -7,7 +9,18 @@ interface SwaggerTag {
     'x-parent'?: string;
 }
 
-export const swaggerTags: SwaggerTag[] = [
+interface ScalarTag {
+    name: string;
+    description?: string;
+    'x-displayName'?: string;
+}
+
+interface ScalarTagGroup {
+    name: string;
+    tags: string[];
+}
+
+const swaggerTags: SwaggerTag[] = [
     // --- Guardian Schemas (pure container) ---
     {
         name: 'guardian-schemas',
@@ -303,3 +316,51 @@ export const swaggerTags: SwaggerTag[] = [
         'x-page-description': 'White-label branding assets and configuration.',
     },
 ];
+
+/**
+ * Attaches Scalar-ready tag metadata to an OpenAPI document, derived from the
+ * curated {@link swaggerTags} hierarchy (`x-parent` / `x-page-*` extensions):
+ *  - `document.tags`: the leaf tags actually attached to operations, each with a
+ *    display-friendly `x-displayName` and its description.
+ *  - `document['x-tagGroups']`: one group per top-level container, listing its
+ *    child tags in declaration order.
+ *
+ * Container tags carry no operations, so they only surface as group headers.
+ * Owning the attachment here keeps the OpenAPI extension keys and the required
+ * cast in one place instead of leaking them into service bootstrap code.
+ */
+export function applyScalarTagMetadata(document: OpenAPIObject): void {
+    const groups = new Map<string, ScalarTagGroup>();
+    const tags: ScalarTag[] = [];
+
+    // Register containers (tags without a parent) as groups, preserving order.
+    for (const tag of swaggerTags) {
+        if (!tag['x-parent']) {
+            groups.set(tag.name, { name: tag['x-page-title'] ?? tag.name, tags: [] });
+        }
+    }
+
+    // Expose each leaf tag as a real tag and assign it to its parent group.
+    for (const tag of swaggerTags) {
+        const parent = tag['x-parent'];
+        if (!parent) {
+            continue;
+        }
+        groups.get(parent)?.tags.push(tag.name);
+        tags.push({
+            name: tag.name,
+            description: tag['x-page-description'],
+            'x-displayName': tag['x-page-title'],
+        });
+    }
+
+    // Drop empty groups (containers that ended up without any children).
+    const xTagGroups = [...groups.values()].filter((group) => group.tags.length > 0);
+
+    const target = document as OpenAPIObject & {
+        tags?: ScalarTag[];
+        'x-tagGroups'?: ScalarTagGroup[];
+    };
+    target.tags = tags;
+    target['x-tagGroups'] = xTagGroups;
+}

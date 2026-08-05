@@ -33,7 +33,7 @@
 
 .actions-controls-container {
     display: flex;
-    height: 60px;
+    min-height: 60px;
 }
 
 .toolbar-icons {
@@ -403,6 +403,8 @@ a {
 
 .policy-dropdown-container {
     display: flex;
+    flex-wrap: wrap;
+    gap: 12px 16px;
 }
 
 .policy-dropdown {
@@ -631,7 +633,18 @@ a {
 
 .topic-search {
     width: 400px;
-    margin-right: 16px;
+}
+
+.schema-filter-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 40px;
+    color: var(--color-grey-6, #23252E);
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .text-search {
@@ -818,6 +831,15 @@ a {
     }
 
     ::ng-deep .guardian-grid-table {
+        // Reserve the vertical scrollbar gutter on both the header and the
+        // body so their tables keep identical content widths and the columns
+        // stay aligned (the CSS max-height below scrolls the body without
+        // triggering PrimeNG's own scrollbar compensation).
+        .p-treetable-scrollable-header,
+        .p-treetable-scrollable-body {
+            scrollbar-gutter: stable;
+        }
+
         .p-treetable-scrollable-body {
             max-height: calc(100vh - var(--header-height) - 435px);
         }

@@ -1,7 +1,7 @@
 {
     "author": "Hashgraph <guardian@hashgraph.com>",
     "dependencies": {
-        "@aws-sdk/client-secrets-manager": "3.1079.0",
+        "@aws-sdk/client-secrets-manager": "3.1100.0",
         "@azure/identity": "^4.10.0",
         "@azure/keyvault-secrets": "^4.9.0",
         "@digitalbazaar/credentials-context": "3.2.0",
@@ -9,7 +9,7 @@
         "@digitalbazaar/ed25519-verification-key-2018": "4.0.0",
         "@digitalbazaar/security-context": "1.0.1",
         "@digitalbazaar/vc": "7.3.0",
-        "@formulajs/formulajs": "4.6.0",
+        "@formulajs/formulajs": "4.6.1",
         "@google-cloud/secret-manager": "6.3.0",
         "@guardian/interfaces": "workspace:*",
         "@hiero-ledger/sdk": "2.86.2",
@@ -32,7 +32,7 @@
         "exceljs": "^4.4.0",
         "express": "5.2.1",
         "geotiff": "^2.1.4-beta.1",
-        "js-base64": "3.9.1",
+        "js-base64": "3.9.2",
         "jsonld-signatures": "11.5.0",
         "jsonld-signatures-v7": "npm:jsonld-signatures@7.0.0",
         "jszip": "^3.10.1",

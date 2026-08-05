@@ -14,6 +14,9 @@ import {
     IRetireRequest,
     ISchema,
     ISchemaDeletionPreview,
+    ISchemaTemplate,
+    ISchemaTemplateUpdateOptions,
+    ISchemaTemplateUpdatePreview,
     IToken,
     ITokenInfo,
     IUser,
@@ -2445,6 +2448,247 @@ export class Guardians extends NatsService {
         owner: IOwner
     ): Promise<any> {
         return await this.sendMessage(MessageAPI.UPDATE_TOOL, { id, tool, owner });
+    }
+
+    /**
+     * Create schema template
+     * @param template
+     * @param owner
+     * @returns template
+     */
+    public async createSchemaTemplate(template: ISchemaTemplate, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_TEMPLATE, { template, owner });
+    }
+
+    /**
+     * Create schema template draft version
+     * @param id
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async createSchemaTemplateVersionAsync(id: string, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.CREATE_SCHEMA_TEMPLATE_VERSION, { id, owner, task });
+    }
+
+    /**
+     * Return schema templates
+     * @param filters
+     * @param owner
+     * @returns schema templates
+     */
+    public async getSchemaTemplates(filters: IFilter, owner: IOwner): Promise<ResponseAndCount<ISchemaTemplate>> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TEMPLATES, { filters, owner });
+    }
+
+    /**
+     * Return schema template by id
+     * @param id
+     * @param owner
+     * @returns schema template
+     */
+    public async getSchemaTemplateById(id: string, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.GET_SCHEMA_TEMPLATE, { id, owner });
+    }
+
+    /**
+     * Return applied schema template state by policy topic
+     * @param topicId
+     * @param owner
+     * @returns applied schema template state
+     */
+    public async getAppliedSchemaTemplateByPolicyTopic(topicId: string, owner: IOwner): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.GET_APPLIED_SCHEMA_TEMPLATE, { topicId, owner });
+    }
+
+    /**
+     * Check schema template message availability
+     * @param messageId
+     * @param owner
+     * @returns template availability metadata
+     */
+    public async checkSchemaTemplate(messageId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.CHECK_SCHEMA_TEMPLATE, { messageId, owner });
+    }
+
+    /**
+     * Update schema template
+     * @param id
+     * @param template
+     * @param owner
+     * @returns template
+     */
+    public async updateSchemaTemplate(
+        id: string,
+        template: ISchemaTemplate,
+        owner: IOwner
+    ): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.UPDATE_SCHEMA_TEMPLATE, { id, template, owner });
+    }
+
+    /**
+     * Delete schema template
+     * @param id
+     * @param owner
+     * @returns operation success
+     */
+    public async deleteSchemaTemplate(id: string, owner: IOwner): Promise<boolean> {
+        return await this.sendMessage(MessageAPI.DELETE_SCHEMA_TEMPLATE, { id, owner });
+    }
+
+    /**
+     * Publish schema template
+     * @param id
+     * @param owner
+     * @param body
+     * @returns published template
+     */
+    public async publishSchemaTemplate(
+        id: string,
+        owner: IOwner,
+        body: { templateVersion: string }
+    ): Promise<ISchemaTemplate> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_TEMPLATE, { id, owner, body });
+    }
+
+    /**
+     * Publish schema template async
+     * @param id
+     * @param owner
+     * @param body
+     * @param task
+     * @returns task
+     */
+    public async publishSchemaTemplateAsync(
+        id: string,
+        owner: IOwner,
+        body: { templateVersion: string },
+        task: NewTask
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_SCHEMA_TEMPLATE_ASYNC, { id, owner, body, task });
+    }
+
+    /**
+     * Export schema template file
+     * @param id
+     * @param owner
+     * @returns schema template archive
+     */
+    public async exportSchemaTemplateFile(id: string, owner: IOwner): Promise<any> {
+        const file = await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_EXPORT_FILE, { id, owner }) as any;
+        return Buffer.from(file, 'base64');
+    }
+
+    /**
+     * Export schema template message metadata
+     * @param id
+     * @param owner
+     * @returns schema template metadata
+     */
+    public async exportSchemaTemplateMessage(id: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_EXPORT_MESSAGE, { id, owner });
+    }
+
+    /**
+     * Preview schema template file
+     * @param zip
+     * @param owner
+     * @returns schema template preview
+     */
+    public async previewSchemaTemplateFile(zip: any, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_PREVIEW, { zip, owner });
+    }
+
+    /**
+     * Preview schema template message
+     * @param messageId
+     * @param owner
+     * @returns schema template preview
+     */
+    public async previewSchemaTemplateMessage(messageId: string, owner: IOwner): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_PREVIEW, { messageId, owner });
+    }
+
+    /**
+     * Import schema template file async
+     * @param zip
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async importSchemaTemplateFileAsync(zip: any, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_FILE_ASYNC, { zip, owner, task });
+    }
+
+    /**
+     * Import schema template message async
+     * @param messageId
+     * @param owner
+     * @param task
+     * @returns task
+     */
+    public async importSchemaTemplateMessageAsync(messageId: string, owner: IOwner, task: NewTask): Promise<any> {
+        return await this.sendMessage(MessageAPI.SCHEMA_TEMPLATE_IMPORT_MESSAGE_ASYNC, { messageId, owner, task });
+    }
+
+    /**
+     * Apply schema template to policy
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @returns updated policy
+     */
+    public async applySchemaTemplate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.APPLY_SCHEMA_TEMPLATE, { templateId, policyId, owner });
+    }
+
+    /**
+     * Preview applied schema template update
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @returns update preview
+     */
+    public async previewSchemaTemplateUpdate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner
+    ): Promise<ISchemaTemplateUpdatePreview> {
+        return await this.sendMessage(MessageAPI.PREVIEW_SCHEMA_TEMPLATE_UPDATE, { templateId, policyId, owner });
+    }
+
+    /**
+     * Update applied schema template on policy
+     * @param templateId
+     * @param policyId
+     * @param owner
+     * @param options
+     * @returns updated policy
+     */
+    public async updateAppliedSchemaTemplate(
+        templateId: string,
+        policyId: string,
+        owner: IOwner,
+        options?: ISchemaTemplateUpdateOptions
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.UPDATE_APPLIED_SCHEMA_TEMPLATE, { templateId, policyId, owner, options });
+    }
+
+    /**
+     * Detach schema template from policy
+     * @param policyId
+     * @param owner
+     * @returns updated policy
+     */
+    public async detachSchemaTemplate(
+        policyId: string,
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.DETACH_SCHEMA_TEMPLATE, { policyId, owner });
     }
 
     /**

@@ -27,8 +27,11 @@ const FIELD_TYPE_ADDONS: Record<string, UIAddon> = {
     'GeoJSON':       { key: 'geo',           icon: 'pi-map-marker',          group: 'Simple Types' },
     'SentinelHUB':   { key: 'sentinel',      icon: 'pi-globe',               group: 'Simple Types' },
     'Table':         { key: 'table',         icon: 'pi-table',               group: 'Simple Types' },
-    'Postfix':       { key: 'postfix',       icon: 'pi-hashtag',             group: 'Units of Measure' },
-    'Prefix':        { key: 'prefix',        icon: 'pi-hashtag',             group: 'Units of Measure' },
+    'Country':       { key: 'country',       icon: 'pi-flag',                group: 'Geographic' },
+    'Continent':     { key: 'continent',     icon: 'pi-globe',               group: 'Geographic' },
+    'State/Province': { key: 'state',         icon: 'pi-map-marker',          group: 'Geographic' },
+    'postfix':       { key: 'postfix',       icon: 'pi-hashtag',             group: 'Units of Measure', label: 'Postfix' },
+    'prefix':        { key: 'prefix',        icon: 'pi-hashtag',             group: 'Units of Measure', label: 'Prefix' },
     'hederaAccount': { key: 'hederaAccount', icon: 'pi-id-card',             group: 'Hedera',           label: 'Account' },
 };
 
@@ -47,10 +50,23 @@ export interface FieldTypeUI {
 }
 
 const DEFAULT_ADDON: UIAddon = { key: '', icon: 'pi-question-circle', group: 'Simple Types' };
+const GEOGRAPHIC_TYPE_ORDER = new Map([
+    ['Continent', 0],
+    ['Country', 1],
+    ['State/Province', 2],
+]);
 
 export const FIELD_TYPES_UI: FieldTypeUI[] = [
     ...[...FieldTypesDictionary.FieldTypes, ...FieldTypesDictionary.CustomFieldTypes]
-        .map((e): FieldTypeUI => {
+        .map((definition, index) => ({ definition, index }))
+        .sort((a, b) => {
+            const aOrder = GEOGRAPHIC_TYPE_ORDER.get(a.definition.name);
+            const bOrder = GEOGRAPHIC_TYPE_ORDER.get(b.definition.name);
+            return aOrder !== undefined && bOrder !== undefined
+                ? aOrder - bOrder
+                : a.index - b.index;
+        })
+        .map(({ definition: e }): FieldTypeUI => {
             const addon = FIELD_TYPE_ADDONS[e.name] ?? DEFAULT_ADDON;
             return {
                 key: addon.key || e.name.toLowerCase().replace(/\s+/g, ''),
