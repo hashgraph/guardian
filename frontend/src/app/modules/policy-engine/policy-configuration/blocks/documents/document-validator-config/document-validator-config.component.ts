@@ -64,6 +64,11 @@ export class DocumentValidatorConfigComponent implements OnInit {
         { label: 'Variable (Input Doc)', value: 'variable' },
     ];
 
+    conditionValueSourceOptions = [
+        { label: 'Value', value: 'value' },
+        { label: 'Document Field', value: 'document' },
+    ];
+
     conditionSourceOptions = [
         { label: 'Value', value: 'value' },
         { label: 'Input Document', value: 'document' },
@@ -109,9 +114,10 @@ export class DocumentValidatorConfigComponent implements OnInit {
     // Same-doc conditions
     addCondition() {
         this.properties.conditions.push({
-            value: '',
             field: '',
             type: 'equal',
+            valueSource: 'value',
+            value: '',
         })
         this.propHidden.conditionsGroup = false;
     }

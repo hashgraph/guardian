@@ -444,41 +444,147 @@ export class PolicyUtils {
      * @param document
      * @param filter
      */
+    /**
+     * Resolve a dot-notation field path against a document.
+     * Unlike getObjectValue, when an intermediate value is an array the
+     * remainder of the path is mapped over each element, returning an
+     * array of leaf values (enabling broadcast / pairwise comparison).
+     */
+    public static resolveFieldPath(data: any, field: string): any {
+        if (!field || data === null || data === undefined) {
+            return null;
+        }
+        const dot = field.indexOf('.');
+        const key = dot === -1 ? field : field.slice(0, dot);
+        const rest = dot === -1 ? null : field.slice(dot + 1);
+
+        if (Array.isArray(data)) {
+            if (key === 'L') {
+                const value = data[data.length - 1];
+                if (rest === null) { return value ?? null; }
+                return PolicyUtils.resolveFieldPath(value, rest);
+            }
+            const idx = Number(key);
+            if (Number.isInteger(idx) && idx >= 0 && String(idx) === key) {
+                const value = data[idx];
+                if (rest === null) { return value ?? null; }
+                return PolicyUtils.resolveFieldPath(value, rest);
+            }
+            return data.map((item) => PolicyUtils.resolveFieldPath(item, field));
+        }
+
+        const value = data[key];
+        if (rest === null) {
+            return value ?? null;
+        }
+        return PolicyUtils.resolveFieldPath(value, rest);
+    }
+
+    private static compareScalarPair(left: any, type: string, right: any): boolean {
+        switch (type) {
+            case 'equal':    return PolicyUtils.coerceComparable(left) === PolicyUtils.coerceComparable(right);
+            case 'not_equal': return PolicyUtils.coerceComparable(left) !== PolicyUtils.coerceComparable(right);
+            case 'in': {
+                const list = String(right).split(',').map((v: string) => v.trim());
+                return list.includes(String(left));
+            }
+            case 'not_in': {
+                const list = String(right).split(',').map((v: string) => v.trim());
+                return !list.includes(String(left));
+            }
+            case 'gt':  return PolicyUtils.coerceComparable(left) > PolicyUtils.coerceComparable(right);
+            case 'gte': return PolicyUtils.coerceComparable(left) >= PolicyUtils.coerceComparable(right);
+            case 'lt':  return PolicyUtils.coerceComparable(left) < PolicyUtils.coerceComparable(right);
+            case 'lte': return PolicyUtils.coerceComparable(left) <= PolicyUtils.coerceComparable(right);
+            default:    return false;
+        }
+    }
+
+    private static evaluateFieldCondition(left: any, type: string, right: any): boolean {
+        const leftIsArray  = Array.isArray(left);
+        const rightIsArray = Array.isArray(right);
+
+        if (leftIsArray && rightIsArray) {
+            // pairwise — both sides from same-length array traversal
+            if (left.length !== right.length) { return false; }
+            return left.every((l: any, i: number) =>
+                PolicyUtils.evaluateFieldCondition(l, type, right[i])
+            );
+        }
+        if (leftIsArray) {
+            // recurse — handles both flat [10, 5] and nested [[[10, 5]]] uniformly
+            return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
+        }
+        if (rightIsArray) {
+            // 'in'/'not_in' against a resolved array: membership check
+            if (type === 'in')     { return right.flat(Infinity).includes(left); }
+            if (type === 'not_in') { return !right.flat(Infinity).includes(left); }
+            // for other operators recurse
+            return right.every((r: any) => PolicyUtils.evaluateFieldCondition(left, type, r));
+        }
+        return PolicyUtils.compareScalarPair(left, type, right);
+    }
+
     public static checkDocumentField(document: any, filter: any): boolean {
-        if (document) {
-            const value = PolicyUtils.getObjectValue(document, filter.field);
-            switch (filter.type) {
-                case 'equal':
-                    return filter.value === value;
-                case 'not_equal':
-                    return filter.value !== value;
-                case 'in': {
-                    if (Array.isArray(value)) {
-                        return value.indexOf(filter.value) > -1;
-                    }
-                    const list = String(filter.value).split(',').map((v: string) => v.trim());
-                    return list.includes(String(value));
+        if (!document) { return false; }
+
+        // New-style condition (valueSource explicitly set): array-aware resolution
+        if (filter.valueSource !== undefined) {
+            const left  = PolicyUtils.resolveFieldPath(document, filter.field);
+            const right = filter.valueSource === 'document'
+                ? PolicyUtils.resolveFieldPath(document, filter.value)
+                : filter.value;
+            return PolicyUtils.evaluateFieldCondition(left, filter.type, right);
+        }
+
+        // Legacy path — unchanged, keeps old policies working exactly as before
+        const value = PolicyUtils.getObjectValue(document, filter.field);
+        switch (filter.type) {
+            case 'equal':    return filter.value === value;
+            case 'not_equal': return filter.value !== value;
+            case 'in': {
+                if (Array.isArray(value)) { return value.indexOf(filter.value) > -1; }
+                const list = String(filter.value).split(',').map((v: string) => v.trim());
+                return list.includes(String(value));
+            }
+            case 'not_in': {
+                if (Array.isArray(value)) { return value.indexOf(filter.value) === -1; }
+                const list = String(filter.value).split(',').map((v: string) => v.trim());
+                return !list.includes(String(value));
+            }
+            case 'gt':  return PolicyUtils.coerceComparable(value) > PolicyUtils.coerceComparable(filter.value);
+            case 'gte': return PolicyUtils.coerceComparable(value) >= PolicyUtils.coerceComparable(filter.value);
+            case 'lt':  return PolicyUtils.coerceComparable(value) < PolicyUtils.coerceComparable(filter.value);
+            case 'lte': return PolicyUtils.coerceComparable(value) <= PolicyUtils.coerceComparable(filter.value);
+            default:    return false;
+        }
+    }
+
+    public static firstFailingPair(left: any, type: string, right: any): [any, any] {
+        const leftIsArray  = Array.isArray(left);
+        const rightIsArray = Array.isArray(right);
+
+        if (leftIsArray && rightIsArray && left.length === right.length) {
+            for (let i = 0; i < left.length; i++) {
+                if (!PolicyUtils.evaluateFieldCondition(left[i], type, right[i])) {
+                    return PolicyUtils.firstFailingPair(left[i], type, right[i]);
                 }
-                case 'not_in': {
-                    if (Array.isArray(value)) {
-                        return value.indexOf(filter.value) === -1;
-                    }
-                    const list = String(filter.value).split(',').map((v: string) => v.trim());
-                    return !list.includes(String(value));
+            }
+        } else if (leftIsArray) {
+            for (const l of left) {
+                if (!PolicyUtils.evaluateFieldCondition(l, type, right)) {
+                    return PolicyUtils.firstFailingPair(l, type, right);
                 }
-                case 'gt':
-                    return PolicyUtils.coerceComparable(value) > PolicyUtils.coerceComparable(filter.value);
-                case 'gte':
-                    return PolicyUtils.coerceComparable(value) >= PolicyUtils.coerceComparable(filter.value);
-                case 'lt':
-                    return PolicyUtils.coerceComparable(value) < PolicyUtils.coerceComparable(filter.value);
-                case 'lte':
-                    return PolicyUtils.coerceComparable(value) <= PolicyUtils.coerceComparable(filter.value);
-                default:
-                    return false;
+            }
+        } else if (rightIsArray) {
+            for (const r of right) {
+                if (!PolicyUtils.evaluateFieldCondition(left, type, r)) {
+                    return PolicyUtils.firstFailingPair(left, type, r);
+                }
             }
         }
-        return false;
+
+        return [left, right];
     }
 
     /**

@@ -98,13 +98,20 @@
         </td>
         <td class="propRowCell">
           @if (condition.field && condition.type && condition.value) {
-            <span [title]="condition.field + ' ' + condition.type + ' ' + condition.value">
-              {{ condition.field }} {{ condition.type }} {{ condition.value }}
+            <span [title]="condition.field + ' ' + condition.type + ' ' + (condition.valueSource === 'document' ? '[field] ' : '') + condition.value">
+              {{ condition.field }} {{ condition.type }} {{ condition.valueSource === 'document' ? '[field] ' : '' }}{{ condition.value }}
             </span>
           }
           <span class="remove-prop" [attr.readonly]="readonly" (click)="$event.stopPropagation(); removeCondition(i)">
             <i class="pi pi-trash"></i>
           </span>
+        </td>
+      </tr>
+      <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
+        <td class="propRowCol"></td>
+        <td class="propRowCell cellName">Field</td>
+        <td class="propRowCell field">
+          <document-path [(value)]="condition.field" [readonly]="readonly" (change)="onSave()"></document-path>
         </td>
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
@@ -124,16 +131,27 @@
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Field</td>
-        <td class="propRowCell field">
-          <document-path [(value)]="condition.field" [readonly]="readonly" (change)="onSave()"></document-path>
+        <td class="propRowCell cellName">Value Type</td>
+        <td class="propRowCell">
+          <p-select
+            panelStyleClass="pc-select-panel"
+            [(ngModel)]="condition.valueSource"
+            [disabled]="readonly"
+            (onChange)="onSave()"
+            [appendTo]="'body'"
+            [options]="conditionValueSourceOptions">
+          </p-select>
         </td>
       </tr>
       <tr class="propRow" lvl="1" [attr.collapse]="propHidden.conditionsGroup || propHidden.conditions[i]">
         <td class="propRowCol"></td>
         <td class="propRowCell cellName">Value</td>
-        <td class="propRowCell">
-          <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
+        <td class="propRowCell field">
+          @if (condition.valueSource === 'document') {
+            <document-path [(value)]="condition.value" [readonly]="readonly" (change)="onSave()"></document-path>
+          } @else {
+            <input class="prop-input" [(ngModel)]="condition.value" [readonly]="readonly" (blur)="onSave()">
+          }
         </td>
       </tr>
     }
