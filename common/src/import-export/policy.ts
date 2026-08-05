@@ -546,64 +546,8 @@ export class PolicyImportExport {
             delete token._propHash;
         });
 
-        const schemaIds = new Map();
-        const tokenIds = new Map();
-
-        let tokenCounter = 0;
-        let schemaCounter = 0;
-
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}#${schema.uuid}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}#`, `#`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`schema:${schema.uuid}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`#${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`#${schema.uuid}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(`${schema.uuid}&${schema.version}`, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.schemas.forEach(schema => {
-            schemaIds.set(schema.uuid, `@${schemaCounter}`);
-            schemaCounter++;
-        });
-
-        schemaCounter = 0;
-        components.tokens.forEach(token => {
-            tokenIds.set(token.tokenId, `@token${tokenCounter}`)
-            tokenCounter++;
-        });
+        // Build ref maps before deleting version (some forms embed it).
+        const { groups, tokenIds } = PolicyImportExport.buildRefGroups(components.schemas, components.tokens);
 
         components.schemas.forEach(schema => {
             delete schema.version;
@@ -612,19 +556,84 @@ export class PolicyImportExport {
 
         let componentsJson = JSON.stringify(components);
         componentsJson = PolicyImportExport.removeIpfsFromJson(componentsJson);
-        schemaIds.forEach((value, key)  => {
-            componentsJson = componentsJson.replaceAll(key, value);
-        });
 
-        tokenIds.forEach((value, key)  => {
-            componentsJson = componentsJson.replaceAll(key, value);
-        });
+        const normalized = PolicyImportExport.applyRefGroups(componentsJson, groups, tokenIds);
 
-        return JSON.parse(componentsJson);
+        return JSON.parse(normalized);
     }
 
     private static removeIpfsFromJson(json: string): string {
         return json.replace(/ipfs:\/\/[^\s"#&]+/g, '');
+    }
+
+    /**
+     * Build one ref map per textual reference form, mapping each schema to a positional tag
+     * (`@<index>`) so equivalent policies hash equally. Ordered most-specific-first, since a
+     * later form can match an earlier form's output (`schema:${uuid}#` -> `#`, then `#${uuid}`).
+     */
+    private static buildRefGroups(
+        schemas: Schema[],
+        tokens: Token[]
+    ): { groups: Map<string, string>[]; tokenIds: Map<string, string> } {
+        const g1 = new Map<string, string>(); // schema:${uuid}#${uuid}
+        const g2 = new Map<string, string>(); // schema:${uuid}&${version}
+        const g3 = new Map<string, string>(); // schema:${uuid}#
+        const g4 = new Map<string, string>(); // schema:${uuid}
+        const g5 = new Map<string, string>(); // #${uuid}&${version}
+        const g6 = new Map<string, string>(); // #${uuid}
+        const g7 = new Map<string, string>(); // ${uuid}&${version}
+        const g8 = new Map<string, string>(); // ${uuid}
+        const tokenIds = new Map<string, string>();
+
+        schemas.forEach((schema, index) => {
+            const tag = `@${index}`;
+            g1.set(`schema:${schema.uuid}#${schema.uuid}`, tag);
+            g2.set(`schema:${schema.uuid}&${schema.version}`, tag);
+            g3.set(`schema:${schema.uuid}#`, `#`);
+            g4.set(`schema:${schema.uuid}`, tag);
+            g5.set(`#${schema.uuid}&${schema.version}`, tag);
+            g6.set(`#${schema.uuid}`, tag);
+            g7.set(`${schema.uuid}&${schema.version}`, tag);
+            g8.set(`${schema.uuid}`, tag);
+        });
+
+        tokens.forEach((token, index) => {
+            tokenIds.set(token.tokenId, `@token${index}`);
+        });
+
+        return { groups: [g1, g2, g3, g4, g5, g6, g7, g8], tokenIds };
+    }
+
+    /**
+     * Apply each ref map in a single pass via one alternation regex of its exact keys, in
+     * insertion order. Reproduces the original per-key `replaceAll` sequence byte-for-byte
+     * (same substrings and prefix precedence) but avoids the O(schemas^2) full-string rescans.
+     */
+    private static applyRefGroups(
+        json: string,
+        groups: Map<string, string>[],
+        tokenIds: Map<string, string>
+    ): string {
+        let result = json;
+        for (const map of groups) {
+            if (map.size === 0) {
+                continue;
+            }
+            const pattern = Array.from(map.keys(), PolicyImportExport.escapeRegExp).join('|');
+            const regex = new RegExp(pattern, 'g');
+            // Every match is verbatim one of this map's keys, so the lookup is always defined.
+            result = result.replace(regex, (match) => map.get(match));
+        }
+
+        tokenIds.forEach((value, key) => {
+            result = result.replaceAll(key, value);
+        });
+
+        return result;
+    }
+
+    private static escapeRegExp(value: string): string {
+        return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     private static preparePolicyComponents(components: IPolicyComponents): IPolicyComponents {
