@@ -418,20 +418,25 @@ export class BlockTreeGenerator extends NatsService {
 
         this.getPolicyMessages(PolicyEvents.EXECUTE_GRID_ACTION, policyId, async (msg: any) => {
             try {
-                const { user, gridId, recordId, actionId, body, syncEvents, history } = msg;
+                const { user, gridId, recordId, actionId, body, syncEvents } = msg;
                 const userFull = await this.getUser(policyInstance, user);
+
                 const resolution = GridActionResolver.resolveAction(policyId, gridId, actionId);
+                if (!resolution) {
+                    return new MessageError('Action not found', 404);
+                }
+
                 const actionstep = new RecordActionStep(
                     (recordActionId, actionTimestamp) =>
                         RecordUtils.RecordSetBlockData(
                             policyId, userFull,
-                            resolution?.actionBlock as IPolicyInterfaceBlock,
+                            resolution.actionBlock as IPolicyInterfaceBlock,
                             body, recordActionId, actionTimestamp
                         ),
-                    0, syncEvents, history
+                    0, syncEvents
                 );
                 const result = await GridActionResolver.executeAction(
-                    policyId, gridId, recordId, actionId, body, userFull, actionstep
+                    policyId, gridId, recordId, actionId, body, userFull, actionstep, resolution
                 );
                 actionstep.finish();
                 return new MessageResponse(result);

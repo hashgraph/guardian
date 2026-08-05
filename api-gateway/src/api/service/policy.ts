@@ -2,7 +2,7 @@ import { Auth, AuthUser } from '#auth';
 import { CACHE, POLICY_REQUIRED_PROPS, PREFIXES } from '#constants';
 import { AnyFilesInterceptor, CacheService, EntityOwner, getCacheKey, InternalException, ONLY_SR, PolicyEngine, ProjectService, ServiceError, TaskManager, UploadedFiles, UseCache, parseSavepointIdsJson, FilenameSanitizer } from '#helpers';
 import { findBlocks, IAuthUser, MockType, PinoLogger, RunFunctionAsync } from '@guardian/common';
-import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole, PolicyEditableFieldDTO } from '@guardian/interfaces';
+import { DocumentType, MigrationRunStatus, Permissions, PolicyHelper, PolicyStatus, TaskAction, UserRole, PolicyEditableFieldDTO, POLICY_DATA_MAX_PAGE_SIZE, POLICY_DATA_DEFAULT_PAGE_SIZE } from '@guardian/interfaces';
 import {
     Body,
     Controller,
@@ -8497,9 +8497,9 @@ export class PolicyApi {
         summary: 'Get records for a grid, annotated with executable actions.',
         description:
             'Returns the grid\'s filtered, paginated document set. Each ' +
-            'document carries an `_actions` field listing the `actionId` values ' +
-            'the caller may execute on it. Supports the same `page`/`pageSize` ' +
-            'query params as the internal block GET endpoint.',
+            'document carries an `_actions` field listing the `actionId` values the ' +
+            'caller\'s role may invoke on this grid, applied uniformly across all rows. ' +
+            'Pagination is always driven by this endpoint\'s own `page`/`pageSize` query params.',
     })
     @ApiParam({
         name: 'policyId',
@@ -8525,7 +8525,8 @@ export class PolicyApi {
     @ApiQuery({
         name: 'pageSize',
         type: Number,
-        description: 'Records per page (default: 20, max: 200)',
+        description: `Records per page (default: ${POLICY_DATA_DEFAULT_PAGE_SIZE}, max: ${POLICY_DATA_MAX_PAGE_SIZE}). ` +
+            'Always applied, regardless of whether the grid has a pagination control configured.',
         required: false,
         example: 20,
     })
@@ -8547,6 +8548,9 @@ export class PolicyApi {
                             _actions: {
                                 type: 'array',
                                 items: { type: 'string' },
+                                description:
+                                    'The actionId values the caller\'s role may invoke on this ' +
+                                    'grid, applied uniformly across all rows.',
                                 example: ['approve_action', 'reject_action'],
                             },
                         },
@@ -8583,9 +8587,12 @@ export class PolicyApi {
         @Query() query: any,
     ): Promise<any> {
         try {
-            const params: any = {};
-            if (query.page !== undefined) params.page = parseInt(query.page, 10);
-            if (query.pageSize !== undefined) params.pageSize = Math.min(parseInt(query.pageSize, 10), 200);
+            const rawPage = parseInt(query.page, 10);
+            const rawPageSize = parseInt(query.pageSize, 10);
+            const params: any = {
+                page: Number.isNaN(rawPage) ? undefined : rawPage,
+                pageSize: Number.isNaN(rawPageSize) ? undefined : rawPageSize,
+            };
             const engineService = new PolicyEngine();
             return await engineService.getGridRecords(user, policyId, gridId, params);
         } catch (error) {

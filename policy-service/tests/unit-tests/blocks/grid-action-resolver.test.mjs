@@ -824,6 +824,197 @@ describe('GridActionResolver', function () {
             assert.isArray(result.data[0]._actions);
         });
 
+        it("translates external page/pageSize into the block's page/itemsPerPage contract", async function () {
+            const gridBlock = makeBlock({ tag: 'paged_grid' });
+            const tagMap = new Map([['paged_grid', 'pg-uuid']]);
+            const blockMap = new Map([['pg-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            let receivedParams = null;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                receivedParams = params;
+                return {
+                    body: {
+                        data: [],
+                        page: 2, // 0-based internal value corresponding to external page=3
+                        pageSize: 10,
+                        totalCount: 25,
+                        hasNextPage: true,
+                        hasPreviousPage: true,
+                    },
+                };
+            };
+
+            const result = await GridActionResolver.getRecords('policy-1', 'paged_grid', {}, { page: 3, pageSize: 10 });
+
+            assert.equal(receivedParams.page, 2, 'external page=3 (1-based) must become internal page=2 (0-based)');
+            assert.equal(receivedParams.itemsPerPage, 10);
+            assert.isUndefined(receivedParams.pageSize, 'pageSize must not leak into block params (would be misread as a filterId)');
+            assert.equal(result.page, 3, 'internal 0-based page=2 must be translated back to external 1-based page=3');
+        });
+
+        it("trusts the pagination addon's own totalCount/hasNextPage/hasPreviousPage when it reports a numeric page", async function () {
+            const gridBlock = makeBlock({ tag: 'addon_grid' });
+            const tagMap = new Map([['addon_grid', 'ad-uuid']]);
+            const blockMap = new Map([['ad-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            // The addon already counted/sliced using our own translated page/pageSize
+            // (see pagination-addon.ts's getState(), which counts via a real DB query) —
+            // these values must pass through as-is, not be recomputed from data.length.
+            PolicyComponentsUtils.blockGetData = async () => ({
+                body: { data: [{ id: 'doc-20' }], page: 1, pageSize: 10, totalCount: 999, hasNextPage: true, hasPreviousPage: true },
+            });
+
+            const result = await GridActionResolver.getRecords('policy-1', 'addon_grid', {}, { page: 2, pageSize: 10 });
+
+            assert.equal(result.page, 2);
+            assert.equal(result.totalCount, 999, 'must trust the addon\'s DB-computed count, not data.length');
+            assert.isTrue(result.hasNextPage);
+            assert.isTrue(result.hasPreviousPage);
+        });
+
+        it('applies default page/pageSize (1-based page 1, size 20) when the caller omits them', async function () {
+            const gridBlock = makeBlock({ tag: 'no_page_grid' });
+            const tagMap = new Map([['no_page_grid', 'np-uuid']]);
+            const blockMap = new Map([['np-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            let receivedParams = null;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                receivedParams = params;
+                return { body: { data: [] } };
+            };
+
+            await GridActionResolver.getRecords('policy-1', 'no_page_grid', {}, {});
+
+            assert.equal(receivedParams.page, 0, 'defaults to external page 1 → internal 0-based page 0');
+            assert.equal(receivedParams.itemsPerPage, 20, 'defaults to POLICY_DATA_DEFAULT_PAGE_SIZE');
+        });
+
+        it('clamps an oversized pageSize to POLICY_DATA_MAX_PAGE_SIZE', async function () {
+            const gridBlock = makeBlock({ tag: 'huge_page_grid' });
+            const tagMap = new Map([['huge_page_grid', 'hp-uuid']]);
+            const blockMap = new Map([['hp-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            let receivedParams = null;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                receivedParams = params;
+                return { body: { data: [] } };
+            };
+
+            await GridActionResolver.getRecords('policy-1', 'huge_page_grid', {}, { page: 1, pageSize: 99999 });
+
+            assert.equal(receivedParams.itemsPerPage, 200);
+        });
+
+        it('falls back to defaults instead of NaN when page/pageSize are non-numeric strings', async function () {
+            const gridBlock = makeBlock({ tag: 'nan_grid' });
+            const tagMap = new Map([['nan_grid', 'nan-uuid']]);
+            const blockMap = new Map([['nan-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            let receivedParams = null;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                receivedParams = params;
+                return { body: { data: [] } };
+            };
+
+            await GridActionResolver.getRecords('policy-1', 'nan_grid', {}, { page: 'abc', pageSize: 'xyz' });
+
+            assert.equal(receivedParams.page, 0, 'non-numeric page must default to 1 (0-based 0), never NaN');
+            assert.equal(receivedParams.itemsPerPage, 20, 'non-numeric pageSize must default to POLICY_DATA_DEFAULT_PAGE_SIZE, never NaN');
+            assert.isFalse(Number.isNaN(receivedParams.page));
+            assert.isFalse(Number.isNaN(receivedParams.itemsPerPage));
+        });
+
+        it('clamps a negative pageSize to a minimum of 1 instead of leaving it negative', async function () {
+            const gridBlock = makeBlock({ tag: 'neg_grid' });
+            const tagMap = new Map([['neg_grid', 'neg-uuid']]);
+            const blockMap = new Map([['neg-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            let receivedParams = null;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                receivedParams = params;
+                return { body: { data: [] } };
+            };
+
+            await GridActionResolver.getRecords('policy-1', 'neg_grid', {}, { page: -5, pageSize: -50 });
+
+            assert.equal(receivedParams.page, 0, 'negative page must clamp to 1 (0-based 0)');
+            assert.equal(receivedParams.itemsPerPage, 1, 'negative pageSize must clamp to a minimum of 1');
+        });
+
+        it('enforces pagination itself when the grid has no pagination addon configured', async function () {
+            const gridBlock = makeBlock({ tag: 'unpaginated_grid' });
+            const tagMap = new Map([['unpaginated_grid', 'up-uuid']]);
+            const blockMap = new Map([['up-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            const allDocs = Array.from({ length: 25 }, (_, i) => ({ id: `doc-${i}` }));
+            PolicyComponentsUtils.blockGetData = async () => ({ body: { data: allDocs } });
+
+            const result = await GridActionResolver.getRecords(
+                'policy-1', 'unpaginated_grid', {}, { page: 2, pageSize: 10 }
+            );
+
+            assert.equal(result.data.length, 10);
+            assert.equal(result.data[0].id, 'doc-10');
+            assert.equal(result.page, 2);
+            assert.equal(result.pageSize, 10);
+            assert.equal(result.totalCount, 25);
+            assert.isTrue(result.hasPreviousPage);
+            assert.isTrue(result.hasNextPage);
+        });
+
+        it('reports hasNextPage=false on the last unenforced page', async function () {
+            const gridBlock = makeBlock({ tag: 'last_page_grid' });
+            const tagMap = new Map([['last_page_grid', 'lp-uuid']]);
+            const blockMap = new Map([['lp-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            const allDocs = Array.from({ length: 25 }, (_, i) => ({ id: `doc-${i}` }));
+            PolicyComponentsUtils.blockGetData = async () => ({ body: { data: allDocs } });
+
+            const result = await GridActionResolver.getRecords(
+                'policy-1', 'last_page_grid', {}, { page: 3, pageSize: 10 }
+            );
+
+            assert.equal(result.data.length, 5);
+            assert.isFalse(result.hasNextPage);
+            assert.isTrue(result.hasPreviousPage);
+        });
+
+        it('enforces default pagination (page 1, size 20) when the caller supplies no params at all and the grid has no addon', async function () {
+            const gridBlock = makeBlock({ tag: 'defaulted_grid' });
+            const tagMap = new Map([['defaulted_grid', 'df-uuid']]);
+            const blockMap = new Map([['df-uuid', gridBlock]]);
+            installPCUMock(tagMap, blockMap);
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            const allDocs = Array.from({ length: 45 }, (_, i) => ({ id: `doc-${i}` }));
+            PolicyComponentsUtils.blockGetData = async () => ({ body: { data: allDocs } });
+
+            const result = await GridActionResolver.getRecords('policy-1', 'defaulted_grid', {}, {});
+
+            assert.equal(result.data.length, 20);
+            assert.equal(result.page, 1);
+            assert.equal(result.pageSize, 20);
+            assert.equal(result.totalCount, 45);
+            assert.isFalse(result.hasPreviousPage);
+            assert.isTrue(result.hasNextPage);
+        });
+
         it('throws 404 when gridId is unknown', async function () {
             installPCUMock(new Map(), new Map());
             try {
@@ -847,6 +1038,194 @@ describe('GridActionResolver', function () {
             } catch (err) {
                 assert.equal(err.code, 503);
             }
+        });
+    });
+
+    // ── executeAction ────────────────────────────────────────────────────────
+
+    describe('executeAction', function () {
+        function setupExecutableGrid(recordActionStep) {
+            const gridBlock = makeBlock({ tag: 'exec_grid' });
+            const actionBlock = makeActionBlock();
+            gridBlock.options.uiMetaData.fields = [
+                { name: 'status', bindBlocks: [actionBlock.tag] },
+            ];
+            gridBlock.databaseServer = {
+                getVcDocument: async () => ({ id: 'target-doc', option: { status: 'Submitted' } }),
+            };
+
+            const tagMap = new Map([
+                [gridBlock.tag, 'grid-uuid'],
+                [actionBlock.tag, 'action-uuid'],
+            ]);
+            const blockMap = new Map([
+                ['grid-uuid', gridBlock],
+                ['action-uuid', actionBlock],
+            ]);
+            installPCUMock(tagMap, blockMap);
+
+            PolicyComponentsUtils.isAvailableSetData = async () => null;
+            PolicyComponentsUtils.isAvailableGetData = async () => null;
+
+            return { gridBlock, actionBlock, recordActionStep };
+        }
+
+        it('resolves the action internally when no pre-resolved resolution is passed, and 404s on an unknown actionId without touching blockGetData/blockSetData', async function () {
+            setupExecutableGrid();
+
+            let blockGetDataCalled = false;
+            let blockSetDataCalled = false;
+            PolicyComponentsUtils.blockGetData = async () => { blockGetDataCalled = true; return { body: { data: [] } }; };
+            PolicyComponentsUtils.blockSetData = async () => { blockSetDataCalled = true; return { body: {} }; };
+
+            try {
+                await GridActionResolver.executeAction(
+                    'policy-1', 'exec_grid', 'target-doc', 'no_such_action', {}, {}, {}
+                );
+                assert.fail('expected error');
+            } catch (err) {
+                assert.equal(err.code, 404);
+            }
+            assert.isFalse(blockGetDataCalled, 'must not query the grid for an unresolvable action');
+            assert.isFalse(blockSetDataCalled, 'must not execute for an unresolvable action');
+        });
+
+        it("404s when the record exists but isn't in the grid's scoped result set (record-scope authorization)", async function () {
+            setupExecutableGrid();
+            const resolution = GridActionResolver.resolveAction('policy-1', 'exec_grid', 'approve_action');
+            assert.isNotNull(resolution);
+
+            PolicyComponentsUtils.blockGetData = async () => ({
+                body: { data: [{ id: 'some-other-doc' }] }, // does not include 'target-doc'
+            });
+            let blockSetDataCalled = false;
+            PolicyComponentsUtils.blockSetData = async () => { blockSetDataCalled = true; return { body: {} }; };
+
+            try {
+                await GridActionResolver.executeAction(
+                    'policy-1', 'exec_grid', 'target-doc', 'approve_action', {}, {}, {}, resolution
+                );
+                assert.fail('expected error');
+            } catch (err) {
+                assert.equal(err.code, 404);
+            }
+            assert.isFalse(blockSetDataCalled, 'must not execute against a record outside the grid\'s visible scope');
+        });
+
+        it("executes when the record is within the grid's scoped result set (no pagination addon: single call, no `page` field in the response)", async function () {
+            setupExecutableGrid();
+            const resolution = GridActionResolver.resolveAction('policy-1', 'exec_grid', 'approve_action');
+            assert.isNotNull(resolution);
+
+            let scopeCallCount = 0;
+            let receivedScopeParams = null;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                scopeCallCount++;
+                receivedScopeParams = params;
+                // No `page` field — this is how a grid without a pagination addon responds
+                // (see documents-source.ts, which only sets `page` when an addon exists).
+                return { body: { data: [{ id: 'target-doc' }, { id: 'other-doc' }] } };
+            };
+            let receivedPayload = null;
+            PolicyComponentsUtils.blockSetData = async (_block, _user, payload) => {
+                receivedPayload = payload;
+                return { body: { ok: true } };
+            };
+
+            const result = await GridActionResolver.executeAction(
+                'policy-1', 'exec_grid', 'target-doc', 'approve_action', {}, {}, {}, resolution
+            );
+
+            assert.equal(scopeCallCount, 1, 'no `page` field in the response means the grid already returned everything — no second call needed');
+            assert.equal(receivedScopeParams.page, 0);
+            assert.equal(receivedScopeParams.itemsPerPage, 200, 'POLICY_DATA_MAX_PAGE_SIZE');
+            assert.equal(receivedPayload.option.status, 'Approved', 'selector action sets the resolved field/value on the document');
+            assert.deepEqual(result, { ok: true });
+        });
+
+        it("pages through in POLICY_DATA_MAX_PAGE_SIZE-sized chunks to authorize a record beyond the first page on a grid with a real pagination addon", async function () {
+            setupExecutableGrid();
+            const resolution = GridActionResolver.resolveAction('policy-1', 'exec_grid', 'approve_action');
+            assert.isNotNull(resolution);
+
+            // 300 rows, chunk size 200 (POLICY_DATA_MAX_PAGE_SIZE) — the target only appears on
+            // the *second* chunk (index 250), proving real multi-page iteration, not a single
+            // oversized fetch, and not a fixed cap that would miss it. Including a numeric `page`
+            // field in the response is what signals "this grid really paginates" (same signal
+            // getRecords uses), so the loop knows to keep going instead of stopping after page 0.
+            const allDocs = Array.from({ length: 300 }, (_, i) => ({ id: i === 250 ? 'target-doc' : `doc-${i}` }));
+            const receivedPages = [];
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                receivedPages.push(params.page);
+                const start = params.page * params.itemsPerPage;
+                const slice = allDocs.slice(start, start + params.itemsPerPage);
+                return { body: { data: slice, page: params.page, hasNextPage: start + params.itemsPerPage < allDocs.length } };
+            };
+            let blockSetDataCalled = false;
+            PolicyComponentsUtils.blockSetData = async () => { blockSetDataCalled = true; return { body: { ok: true } }; };
+
+            await GridActionResolver.executeAction(
+                'policy-1', 'exec_grid', 'target-doc', 'approve_action', {}, {}, {}, resolution
+            );
+
+            assert.isTrue(blockSetDataCalled, 'must authorize a record found on a later chunk');
+            assert.deepEqual(receivedPages, [0, 1], 'must page through chunk 0 then chunk 1 to find the record, never fetching everything at once');
+        });
+
+        it('stops paging (unauthorized) once a paginated grid reports no more pages, without scanning forever', async function () {
+            setupExecutableGrid();
+            const resolution = GridActionResolver.resolveAction('policy-1', 'exec_grid', 'approve_action');
+            assert.isNotNull(resolution);
+
+            let scopeCallCount = 0;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                scopeCallCount++;
+                // Numeric `page` field signals a real paginated grid; hasNextPage: false says stop.
+                return { body: { data: [{ id: 'some-other-doc' }], page: params.page, hasNextPage: false } };
+            };
+            let blockSetDataCalled = false;
+            PolicyComponentsUtils.blockSetData = async () => { blockSetDataCalled = true; return { body: {} }; };
+
+            try {
+                await GridActionResolver.executeAction(
+                    'policy-1', 'exec_grid', 'target-doc', 'approve_action', {}, {}, {}, resolution
+                );
+                assert.fail('expected error');
+            } catch (err) {
+                assert.equal(err.code, 404);
+            }
+            assert.equal(scopeCallCount, 1, 'must stop after the first page once hasNextPage is false');
+            assert.isFalse(blockSetDataCalled);
+        });
+
+        it('reports a distinct 500 (not a 404) when a grid has more pages than the safety ceiling can scan', async function () {
+            setupExecutableGrid();
+            const resolution = GridActionResolver.resolveAction('policy-1', 'exec_grid', 'approve_action');
+            assert.isNotNull(resolution);
+
+            // Always claims another page exists and never contains the target — simulates a
+            // grid whose real record count exceeds MAX_PAGES * POLICY_DATA_MAX_PAGE_SIZE
+            // (1000 * 200 = 200k), so the record could be legitimately in-scope just beyond
+            // where scanning stops. That must surface as "couldn't verify", not "not found".
+            const fullPage = Array.from({ length: 200 }, (_, i) => ({ id: `doc-${i}` })); // full page — not the last one
+            let scopeCallCount = 0;
+            PolicyComponentsUtils.blockGetData = async (_block, _user, params) => {
+                scopeCallCount++;
+                return { body: { data: fullPage, page: params.page, hasNextPage: true } };
+            };
+            let blockSetDataCalled = false;
+            PolicyComponentsUtils.blockSetData = async () => { blockSetDataCalled = true; return { body: {} }; };
+
+            try {
+                await GridActionResolver.executeAction(
+                    'policy-1', 'exec_grid', 'target-doc', 'approve_action', {}, {}, {}, resolution
+                );
+                assert.fail('expected error');
+            } catch (err) {
+                assert.equal(err.code, 500, 'must not be reported as a 404 — we never actually confirmed the record is absent');
+            }
+            assert.equal(scopeCallCount, 1000, 'must stop scanning at the MAX_PAGES safety ceiling');
+            assert.isFalse(blockSetDataCalled);
         });
     });
 });

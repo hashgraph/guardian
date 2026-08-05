@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
 import { MessageError } from '@guardian/common';
+import { POLICY_DATA_MAX_PAGE_SIZE, POLICY_DATA_DEFAULT_PAGE_SIZE } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { IPolicyBlock, IPolicyInterfaceBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -368,10 +369,34 @@ export class GridActionResolver {
             throw Object.assign(new Error(error.message), { code: error.code });
         }
 
-        const result = await PolicyComponentsUtils.blockGetData(gridBlock as IPolicyInterfaceBlock, user, params);
+        const page = Math.max(1, parseInt(params?.page, 10) || 1);
+        const pageSize = Math.min(
+            POLICY_DATA_MAX_PAGE_SIZE,
+            Math.max(1, parseInt(params?.pageSize, 10) || POLICY_DATA_DEFAULT_PAGE_SIZE)
+        );
+
+        const blockParams: any = { ...(params || {}) };
+        blockParams.page = page - 1;
+        blockParams.itemsPerPage = pageSize;
+        delete blockParams.pageSize;
+
+        const result = await PolicyComponentsUtils.blockGetData(gridBlock as IPolicyInterfaceBlock, user, blockParams);
         const data = result.body;
 
         if (Array.isArray(data?.data)) {
+            if (typeof data.page === 'number') {
+                data.page += 1;
+            } else {
+                const totalCount = data.data.length;
+                const start = (page - 1) * pageSize;
+                data.data = data.data.slice(start, start + pageSize);
+                data.page = page;
+                data.pageSize = pageSize;
+                data.totalCount = totalCount;
+                data.hasPreviousPage = page > 1;
+                data.hasNextPage = start + pageSize < totalCount;
+            }
+
             const actions = await GridActionResolver.getActions(policyId, gridId, user);
             const actionIds = actions.map((a) => a.actionId);
             data.data = data.data.map((doc: any) => ({ ...doc, _actions: actionIds }));
@@ -390,6 +415,7 @@ export class GridActionResolver {
         _body: any,
         user: PolicyUser,
         actionStatus: RecordActionStep,
+        resolution?: ReturnType<typeof GridActionResolver.resolveAction>,
     ): Promise<any> {
         // 1. Resolve grid
         const gridBlock = GridActionResolver.resolveGridBlock(policyId, gridId);
@@ -397,8 +423,11 @@ export class GridActionResolver {
             throw Object.assign(new Error('Grid not found'), { code: 404 });
         }
 
-        // 2. Resolve action
-        const resolution = GridActionResolver.resolveAction(policyId, gridId, actionId);
+        // 2. Resolve action (skip if the caller already resolved it, e.g. to build
+        //    a RecordActionStep closure ahead of this call)
+        if (resolution === undefined) {
+            resolution = GridActionResolver.resolveAction(policyId, gridId, actionId);
+        }
         if (!resolution) {
             throw Object.assign(new Error('Action not found'), { code: 404 });
         }
@@ -412,14 +441,55 @@ export class GridActionResolver {
             throw Object.assign(new Error(actionError.message), { code: actionError.code });
         }
 
-        // 4. Look up the document directly by ID — access is already gated by
-        //    isAvailableGetData (grid) and isAvailableSetData (action block) above.
+        // 4. Look up the document directly by ID.
         const ref = (gridBlock as any);
         const document = await ref.databaseServer.getVcDocument({
             id: recordId,
             policyId: { $eq: policyId },
         } as any);
         if (!document) {
+            throw Object.assign(new Error('Record not found'), { code: 404 });
+        }
+
+        // 4b. Authorize the record against the grid's own scoped query: page through in
+        //     POLICY_DATA_MAX_PAGE_SIZE chunks until the record's id turns up, the grid
+        //     reports no more pages, or MAX_PAGES is reached.
+        const scopeError = await PolicyComponentsUtils.isAvailableGetData(gridBlock as IPolicyInterfaceBlock, user);
+        if (scopeError) {
+            throw Object.assign(new Error(scopeError.message), { code: scopeError.code });
+        }
+        let authorized = false;
+        let exhaustedPageLimit = false;
+        const MAX_PAGES = 1000; // safety ceiling: 1000 * 200 = 200k records
+        for (let pageIndex = 0; ; pageIndex++) {
+            if (pageIndex >= MAX_PAGES) {
+                exhaustedPageLimit = true;
+                break;
+            }
+            const scoped = await PolicyComponentsUtils.blockGetData(
+                gridBlock as IPolicyInterfaceBlock, user,
+                { page: pageIndex, itemsPerPage: POLICY_DATA_MAX_PAGE_SIZE }
+            );
+            const body = scoped.body || {};
+            const rows: any[] = body.data || [];
+            if (rows.some((row: any) => row.id === document.id)) {
+                authorized = true;
+                break;
+            }
+            const paginatesNatively = typeof body.page === 'number';
+            if (!paginatesNatively || rows.length < POLICY_DATA_MAX_PAGE_SIZE || body.hasNextPage === false) {
+                break;
+            }
+        }
+        // Hitting the page cap means we genuinely don't know if the record is further in —
+        // that's not the same as having confirmed it's absent, so don't report it as a 404.
+        if (exhaustedPageLimit) {
+            throw Object.assign(
+                new Error(`Could not verify record access: grid exceeds ${MAX_PAGES * POLICY_DATA_MAX_PAGE_SIZE} scannable records`),
+                { code: 500 }
+            );
+        }
+        if (!authorized) {
             throw Object.assign(new Error('Record not found'), { code: 404 });
         }
 

@@ -99,7 +99,9 @@ execution of actions whose `requiredRoles` the caller does not hold.
   ],
   "page": 1,
   "pageSize": 1,
-  "totalCount": 42
+  "totalCount": 42,
+  "hasNextPage": true,
+  "hasPreviousPage": false
 }
 ```
 

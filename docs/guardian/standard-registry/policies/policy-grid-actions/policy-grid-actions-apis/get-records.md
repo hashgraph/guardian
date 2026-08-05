@@ -3,7 +3,11 @@
 **`GET /policies/{policyId}/grids/{gridId}/records`**
 
 Returns the grid's filtered, paginated document set as seen by the caller's role. Every record
-includes `_actions` — the `actionId` values the caller may execute on it.
+includes `_actions` — the `actionId` values the caller's role may invoke on this grid.
+
+> **Note:** `_actions` lists the actions available to the caller's role on this grid, applied
+> uniformly across all returned records. Whether a specific record's current workflow state
+> supports a given action is validated at execution time (see [Execute Action](execute-action.md)).
 
 ---
 
@@ -31,6 +35,10 @@ Requires a valid Guardian JWT bearer token. The caller must hold at least one of
 |--------------|---------|----------|---------|-----|-------------|
 | `page`       | integer | No | `1` | — | 1-based page number |
 | `pageSize`   | integer | No | `20` | `200` | Results per page |
+
+> **Note:** `page`/`pageSize` are enforced consistently for every grid, regardless of how its
+> underlying data source is configured. The response always includes `page`, `pageSize`,
+> `totalCount`, `hasNextPage`, and `hasPreviousPage`.
 
 ---
 
@@ -64,7 +72,9 @@ Requires a valid Guardian JWT bearer token. The caller must hold at least one of
   ],
   "page": 1,
   "pageSize": 20,
-  "totalCount": 1
+  "totalCount": 1,
+  "hasNextPage": false,
+  "hasPreviousPage": false
 }
 ```
 
@@ -78,10 +88,12 @@ Requires a valid Guardian JWT bearer token. The caller must hold at least one of
 | `data[].document` | object | Cached credential subject fields |
 | `data[].createDate` | string | ISO 8601 creation timestamp |
 | `data[].updateDate` | string | ISO 8601 last update timestamp |
-| `data[]._actions` | array | `actionId` values the caller may execute on this record |
+| `data[]._actions` | array | `actionId` values the caller's role may invoke on this grid, applied uniformly across records (see note above) |
 | `page` | number | Current page (1-based) |
 | `pageSize` | number | Results per page |
 | `totalCount` | number | Total matching records |
+| `hasNextPage` | boolean | Whether a further page of records exists |
+| `hasPreviousPage` | boolean | Whether a prior page of records exists |
 
 > **Note:** Use `_id` (not `id`) as the `recordId` path parameter in the execute call.
 
