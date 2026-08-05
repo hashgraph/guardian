@@ -66,6 +66,7 @@
       * [Reusability and Modularity](guardian/standard-registry/schemas/best-practices-to-implement-schema/reusability-and-modularity.md)
       * [Documentation and Metadata](guardian/standard-registry/schemas/best-practices-to-implement-schema/documentation-and-metadata.md)
     * [Creating Schema using UI](guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
+    * [Repeatable Field Links](guardian/standard-registry/schemas/repeatable-field-links.md)
     * [Importing Schema using UI](guardian/standard-registry/schemas/importing-schema-using-ui.md)
     * [Deleting Schema](guardian/standard-registry/schemas/deleting-schema.md)
     * [Schema APIs](guardian/standard-registry/schemas/schema-creation-using-apis/README.md)
