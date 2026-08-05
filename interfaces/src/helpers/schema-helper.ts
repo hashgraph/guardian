@@ -1,4 +1,5 @@
-import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate } from '../index.js';
+import { GenerateUUIDv4, IOwner, ISchema, ISchemaDocument, SchemaCondition, SchemaField, SchemaFieldPredicate, ISchemaArrayDependency } from '../index.js';
+
 import { SchemaDataTypes } from '../interface/schema-document.interface.js';
 import { Schema } from '../models/schema.js';
 import geoJson from './geojson-schema/geo-json.js';
@@ -782,7 +783,10 @@ export class SchemaHelper {
         const document = {
             $id: ref,
             $comment: SchemaHelper.buildSchemaComment(
-                type, SchemaHelper.buildUrl(schema.contextURL, ref), schema.previousVersion
+                type,
+                SchemaHelper.buildUrl(schema.contextURL, ref),
+                schema.previousVersion,
+                schema.arrayDependencies
             ),
             title: schema.name,
             description: schema.description,
@@ -1145,8 +1149,9 @@ export class SchemaHelper {
         const type = SchemaHelper.buildType(uuid, version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
+        const { arrayDependencies } = SchemaHelper.parseSchemaComment(document.$comment);
         document.$comment = SchemaHelper.buildSchemaComment(
-            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion
+            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion, arrayDependencies
         );
         data.version = version;
         data.document = document;
@@ -1186,8 +1191,9 @@ export class SchemaHelper {
         const type = SchemaHelper.buildType(_uuid, newVersion);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
+        const { arrayDependencies } = SchemaHelper.parseSchemaComment(document.$comment);
         document.$comment = SchemaHelper.buildSchemaComment(
-            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion
+            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion, arrayDependencies
         );
         data.document = document;
         return data;
@@ -1213,8 +1219,9 @@ export class SchemaHelper {
         const type = SchemaHelper.buildType(data.uuid, data.version);
         const ref = SchemaHelper.buildRef(type);
         document.$id = ref;
+        const { arrayDependencies } = SchemaHelper.parseSchemaComment(document.$comment);
         document.$comment = SchemaHelper.buildSchemaComment(
-            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion
+            type, SchemaHelper.buildUrl(data.contextURL, ref), previousVersion, arrayDependencies
         );
         data.document = document;
         return data;
@@ -1500,11 +1507,24 @@ export class SchemaHelper {
      * @param url
      * @param version
      */
-    public static buildSchemaComment(type: string, url: string, version?: string): string {
-        if (version) {
-            return `{ "@id": "${url}", "term": "${type}", "previousVersion": "${version}" }`;
+    public static buildSchemaComment(
+        type: string,
+        url: string,
+        version?: string,
+        arrayDependencies?: ISchemaArrayDependency[]
+    ): string {
+        if (!arrayDependencies || !arrayDependencies.length) {
+            if (version) {
+                return `{ "@id": "${url}", "term": "${type}", "previousVersion": "${version}" }`;
+            }
+            return `{ "@id": "${url}", "term": "${type}" }`;
         }
-        return `{ "@id": "${url}", "term": "${type}" }`;
+        const comment: any = { '@id': url, term: type };
+        if (version) {
+            comment.previousVersion = version;
+        }
+        comment.arrayDependencies = arrayDependencies;
+        return JSON.stringify(comment);
     }
 
     /**

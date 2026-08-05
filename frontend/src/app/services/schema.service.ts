@@ -83,7 +83,14 @@ export class SchemaService {
 
     public update(schema: ISchema, id?: string): Observable<ISchema[]> {
         const data = Object.assign({}, schema, { id: id || schema.id });
+        this.evictSchemaById(data.id);
         return this.http.put<any[]>(`${this.url}`, data);
+    }
+
+    public evictSchemaById(id?: string): void {
+        if (id) {
+            this.schemaByIdCache.delete(id);
+        }
     }
 
     public newVersion(category: SchemaCategory, schema: ISchema, id?: string): Observable<ITask> {

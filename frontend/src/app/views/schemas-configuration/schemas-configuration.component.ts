@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpResponse } from '@angular/common/http';
 import { EMPTY, Observable, Subject, Subscription, forkJoin, of } from 'rxjs';
 import { catchError, debounceTime, distinctUntilChanged, map, switchMap, takeUntil } from 'rxjs/operators';
-import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
+import { DefaultFieldDictionary, DocumentGenerator, isAncestorType, isGeoCustomType, ISchema, relationAncestors, ModuleStatus, ISchemaTemplate, Schema, SchemaCategory, SchemaCondition, SchemaConditionTarget, SchemaEntity, SchemaField, SchemaHelper, SchemaStatus, ISchemaArrayDependency, ISchemaArrayDependencyMapping, } from '@guardian/interfaces';
 import { SchemaService } from 'src/app/services/schema.service';
 import { TagsService } from 'src/app/services/tag.service';
 import { ProjectComparisonService } from 'src/app/services/project-comparison.service';
@@ -24,6 +24,16 @@ export interface DrillEntry {
     schemaIri: string;
 }
 
+interface ArrayDependencyFieldOption {
+    pathStr: string;
+    label: string;
+}
+
+interface ArrayDependencyFieldGroup {
+    label: string;
+    items: ArrayDependencyFieldOption[];
+}
+
 @Component({
     selector: 'app-schemas-configuration',
     templateUrl: './schemas-configuration.component.html',
@@ -41,8 +51,37 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public activeTab: 'builder' | 'preview' = 'builder';
     public activeSideTab: 'fields' | 'schemas' = 'fields';
     public activeRpTab: 'settings' | 'logic' = 'settings';
-    public activeCanvasTab: 'fields' | 'conditions' = 'fields';
+    public activeCanvasTab: 'fields' | 'conditions' | 'links' = 'fields';
     public activeDrillTab: 'fields' | 'conditions' = 'fields';
+
+    private readonly canvasTabStorageKey = 'sc-active-canvas-tab';
+
+    public setCanvasTab(tab: 'fields' | 'conditions' | 'links'): void {
+        this.activeCanvasTab = tab;
+        try {
+            sessionStorage.setItem(this.canvasTabStorageKey, tab);
+        } catch {
+        }
+    }
+
+    private forgetCanvasTab(): void {
+        try {
+            sessionStorage.removeItem(this.canvasTabStorageKey);
+        } catch {
+        }
+    }
+
+    private restoreCanvasTab(): void {
+        let stored: string | null = null;
+        try {
+            stored = sessionStorage.getItem(this.canvasTabStorageKey);
+        } catch {
+            return;
+        }
+        if (stored === 'fields' || stored === 'conditions' || stored === 'links') {
+            this.activeCanvasTab = stored;
+        }
+    }
 
     public schemas: Schema[] = [];
     public schemasLoading: boolean = false;
@@ -81,6 +120,12 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     private dirtySchemaIds = new Set<string>();
     public isSaving: boolean = false;
     private _subSchemasByIri = new Map<string, Schema>();
+    public newArrayDependencyField: string | null = null;
+    public newArrayDependencyOn: string | null = null;
+    public newArrayDependencyTitle: string | null = null;
+    public newArrayDependencyMappingSource: string | null = null;
+    public newArrayDependencyMappingTarget: string | null = null;
+    public newArrayDependencyValueMappings: ISchemaArrayDependencyMapping[] = [];
     public templateConfigSaving: boolean = false;
     private templateConfigDirty: boolean = false;
 
@@ -492,6 +537,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     ) {}
 
     public ngOnInit(): void {
+        this.restoreCanvasTab();
+
         this.projectComparisonService.getProperties()
             .pipe(takeUntil(this.destroy$))
             .subscribe({ next: (p) => { this.properties = p || []; }, error: () => {} });
@@ -554,6 +601,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.schemaTemplate = appliedTemplate;
             }
             this.selectedSchema = schema;
+            this.resetArrayDependencyEditor();
             this.schemaLoading = false;
             const schemaId = schema.id || (schema as any)._id;
             if (schemaId) { this.dirtySchemaIds.delete(schemaId); }
@@ -770,7 +818,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
                 this.selectedField = null;
                 this.selectedSchema = schema;
                 this.drillStack = [];
-                this.activeCanvasTab = 'fields';
+                this.setCanvasTab('fields');
+                this.resetArrayDependencyEditor();
                 this.schemaPropsCollapsed = false;
             }
             return;
@@ -782,7 +831,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.selectedField = null;
         this.selectedSchema = schema; // optimistic: show header before fields load
         this.drillStack = [];
-        this.activeCanvasTab = 'fields';
+        this.setCanvasTab('fields');
+        this.resetArrayDependencyEditor();
         this.schemaPropsCollapsed = false;
         void this.router.navigate([this.configurationRoute], {
             queryParams: {
@@ -815,6 +865,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.topic) { queryParams.topic = this.topic; }
         void this.router.navigate(['/schemas'], { queryParams });
     }
+
+    public schemaEditVersion = 0;
 
     public goToBreadcrumbRoot(): void {
         if (this.isTemplateMode) {
@@ -1050,6 +1102,10 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         if (this.isTemplateReadonly) {
             return;
         }
+
+        this.schemaEditVersion++;
+        // Mark both root and drilled sub-schema dirty: root needs $defs rebuilt on save.
+
         if (this.isDrilling) {
             const contextIri = this.currentDrilledSchemaIri;
             const subSchema = contextIri ? this.schemas.find(s => s.iri === contextIri) : null;
@@ -1728,6 +1784,283 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.markDirty();
     }
 
+    private resetArrayDependencyEditor(): void {
+        this.newArrayDependencyField = null;
+        this.newArrayDependencyOn = null;
+        this.newArrayDependencyTitle = null;
+        this.resetArrayDependencyMappings();
+    }
+
+    private resetArrayDependencyMappings(): void {
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+        this.newArrayDependencyValueMappings = [];
+    }
+
+    private arrayDependencyFieldLabel(field: SchemaField): string {
+        const label = field.description || field.title || field.name;
+        return label === field.name ? field.name : `${label} (${field.name})`;
+    }
+
+    private collectArrayDependencyFieldGroups(
+        fields: SchemaField[],
+        prefix: string[],
+        labelPrefix: string,
+        maxDepth: number = 12,
+    ): ArrayDependencyFieldGroup[] {
+        if (prefix.length > maxDepth) { return []; }
+        const groups: ArrayDependencyFieldGroup[] = [];
+        const directItems: ArrayDependencyFieldOption[] = [];
+
+        for (const field of fields) {
+            if (field.readOnly || !field.isRef) { continue; }
+            const nestedFields = this.resolveRefSchema(field.type)?.fields ?? field.fields ?? [];
+            if (!nestedFields.length) { continue; }
+            const path = [...prefix, field.name];
+            if (field.isArray) {
+                directItems.push({
+                    pathStr: path.join('.'),
+                    label: this.arrayDependencyFieldLabel(field),
+                });
+                continue;
+            }
+            groups.push(...this.collectArrayDependencyFieldGroups(
+                nestedFields,
+                path,
+                `${labelPrefix} > ${this.arrayDependencyFieldLabel(field)}`,
+                maxDepth,
+            ));
+        }
+
+        if (directItems.length) {
+            groups.unshift({ label: labelPrefix, items: directItems });
+        }
+        return groups;
+    }
+
+    public get arrayDependencyFieldGroups(): ArrayDependencyFieldGroup[] {
+        const schema = this.selectedSchema;
+        if (!schema?.fields?.length) { return []; }
+        return this.collectArrayDependencyFieldGroups(
+            schema.fields,
+            [],
+            schema.name || 'This Schema',
+        );
+    }
+
+    private resolveArrayDependencyItemFields(path: string[]): SchemaField[] {
+        let fields = this.selectedSchema?.fields ?? [];
+        for (const name of path) {
+            const field = fields.find(item => item.name === name);
+            if (!field?.isRef) { return []; }
+            fields = this.resolveRefSchema(field.type)?.fields ?? field.fields ?? [];
+        }
+        return fields;
+    }
+
+    private arrayDependencyValueOptions(path: string | null): ArrayDependencyFieldOption[] {
+        if (!path) { return []; }
+        return this.resolveArrayDependencyItemFields(path.split('.'))
+            .filter(field => !field.isRef && !field.isArray && !field.readOnly)
+            .map(field => ({
+                pathStr: field.name,
+                label: this.arrayDependencyFieldLabel(field),
+            }));
+    }
+
+    public get arrayDependencyTitleOptions(): ArrayDependencyFieldOption[] {
+        return this.arrayDependencyValueOptions(this.newArrayDependencyOn);
+    }
+
+    public get arrayDependencyMappingSourceOptions(): ArrayDependencyFieldOption[] {
+        return this.arrayDependencyValueOptions(this.newArrayDependencyOn);
+    }
+
+    public get arrayDependencyMappingTargetOptions(): ArrayDependencyFieldOption[] {
+        return this.arrayDependencyValueOptions(this.newArrayDependencyField);
+    }
+
+    public arrayDependencyMappingLabel(path: string[], scope: string | null): string {
+        const pathStr = path.join('.');
+        const option = this.arrayDependencyValueOptions(scope)
+            .find(item => item.pathStr === pathStr);
+        return option ? option.label : this.arrayDependencyLabel(path);
+    }
+
+    public arrayDependencyDisplayLabel(path: string[]): string {
+        const pathStr = path.join('.');
+        for (const group of this.arrayDependencyFieldGroups) {
+            const option = group.items.find(item => item.pathStr === pathStr);
+            if (option) { return option.label; }
+        }
+        return this.arrayDependencyLabel(path);
+    }
+
+    public arrayDependencyTitleDisplayLabel(dependency: ISchemaArrayDependency): string {
+        let fields = this.resolveArrayDependencyItemFields(dependency.on);
+        let field: SchemaField | undefined;
+        for (const name of dependency.title ?? []) {
+            field = fields.find(item => item.name === name);
+            if (!field) { return this.arrayDependencyLabel(dependency.title ?? []); }
+            fields = field.isRef
+                ? this.resolveRefSchema(field.type)?.fields ?? field.fields ?? []
+                : [];
+        }
+        return field
+            ? this.arrayDependencyFieldLabel(field)
+            : this.arrayDependencyLabel(dependency.title ?? []);
+    }
+
+    public updateOverflowTitle(event: MouseEvent, text: string): void {
+        const element = event.currentTarget;
+        if (!(element instanceof HTMLElement)) { return; }
+        if (element.scrollWidth > element.clientWidth || this.overflowsAncestor(element)) {
+            element.setAttribute('title', text);
+        } else {
+            element.removeAttribute('title');
+        }
+    }
+
+    private overflowsAncestor(element: HTMLElement): boolean {
+        const elementRect = element.getBoundingClientRect();
+        let parent = element.parentElement;
+        while (parent) {
+            const style = getComputedStyle(parent);
+            const clipsContent = style.overflowX === 'hidden' ||
+                style.overflowX === 'clip' ||
+                style.overflow === 'hidden' ||
+                style.overflow === 'clip';
+            if (clipsContent) {
+                const parentRect = parent.getBoundingClientRect();
+                if (elementRect.right > parentRect.right + 1 ||
+                    elementRect.left < parentRect.left - 1) {
+                    return true;
+                }
+            }
+            parent = parent.parentElement;
+        }
+        return false;
+    }
+
+    public updateArrayLinkPanelWidth(event: MouseEvent): void {
+        const element = event.currentTarget;
+        if (!(element instanceof HTMLElement)) { return; }
+        document.documentElement.style.setProperty(
+            '--sc-array-link-panel-width',
+            `${element.getBoundingClientRect().width}px`,
+        );
+    }
+
+    public get arrayDependencies(): ISchemaArrayDependency[] {
+        return this.selectedSchema?.arrayDependencies ?? [];
+    }
+
+    public get arrayDependencyCount(): number {
+        return this.arrayDependencies.length;
+    }
+
+    private createsArrayDependencyCycle(field: string, on: string): boolean {
+        const graph = new Map<string, string[]>();
+        for (const dependency of this.arrayDependencies) {
+            const source = dependency.on.join('.');
+            const targets = graph.get(source) ?? [];
+            targets.push(dependency.field.join('.'));
+            graph.set(source, targets);
+        }
+        const visited = new Set<string>();
+        const pending = [field];
+        while (pending.length) {
+            const current = pending.pop();
+            if (!current) { continue; }
+            if (current === on) { return true; }
+            if (visited.has(current)) { continue; }
+            visited.add(current);
+            pending.push(...(graph.get(current) ?? []));
+        }
+        return false;
+    }
+
+    public canAddArrayDependency(): boolean {
+        const field = this.newArrayDependencyField;
+        const on = this.newArrayDependencyOn;
+        if (!field || !on || field === on) { return false; }
+        const availablePaths = new Set(
+            this.arrayDependencyFieldGroups.flatMap(group => group.items.map(item => item.pathStr))
+        );
+        if (!availablePaths.has(field) || !availablePaths.has(on)) { return false; }
+        if (this.arrayDependencies.some(item => item.field.join('.') === field)) { return false; }
+        if (this.arrayDependencies.some(item => item.on.join('.') === field)) { return false; }
+        return !this.createsArrayDependencyCycle(field, on);
+    }
+
+    public addArrayDependency(): void {
+        const schema = this.selectedSchema;
+        const field = this.newArrayDependencyField;
+        const on = this.newArrayDependencyOn;
+        if (!schema || !field || !on || !this.canAddArrayDependency()) { return; }
+        const dependency: ISchemaArrayDependency = {
+            field: field.split('.'),
+            on: on.split('.'),
+            kind: 'array',
+        };
+        if (this.newArrayDependencyTitle) {
+            dependency.title = this.newArrayDependencyTitle.split('.');
+        }
+        if (this.newArrayDependencyValueMappings.length) {
+            dependency.valueMappings = this.newArrayDependencyValueMappings
+                .map(item => ({ source: [...item.source], target: [...item.target] }));
+        }
+        schema.arrayDependencies = [...(schema.arrayDependencies ?? []), dependency];
+        this.resetArrayDependencyEditor();
+        this.markDirty();
+    }
+
+    public removeArrayDependency(dependency: ISchemaArrayDependency): void {
+        const schema = this.selectedSchema;
+        if (!schema) { return; }
+        schema.arrayDependencies = (schema.arrayDependencies ?? [])
+            .filter(item => item !== dependency);
+        this.markDirty();
+    }
+
+    public onArrayDependencySourceChange(): void {
+        this.newArrayDependencyTitle = null;
+        this.resetArrayDependencyMappings();
+    }
+
+    public onArrayDependencyTargetChange(): void {
+        this.resetArrayDependencyMappings();
+    }
+
+    public canAddArrayDependencyMapping(): boolean {
+        const source = this.newArrayDependencyMappingSource;
+        const target = this.newArrayDependencyMappingTarget;
+        if (!source || !target) { return false; }
+        return !this.newArrayDependencyValueMappings
+            .some(item => item.target.join('.') === target);
+    }
+
+    public addArrayDependencyMapping(): void {
+        const source = this.newArrayDependencyMappingSource;
+        const target = this.newArrayDependencyMappingTarget;
+        if (!source || !target || !this.canAddArrayDependencyMapping()) { return; }
+        this.newArrayDependencyValueMappings = [
+            ...this.newArrayDependencyValueMappings,
+            { source: source.split('.'), target: target.split('.') },
+        ];
+        this.newArrayDependencyMappingSource = null;
+        this.newArrayDependencyMappingTarget = null;
+    }
+
+    public removeArrayDependencyMapping(mapping: ISchemaArrayDependencyMapping): void {
+        this.newArrayDependencyValueMappings = this.newArrayDependencyValueMappings
+            .filter(item => item !== mapping);
+    }
+
+    public arrayDependencyLabel(path: string[]): string {
+        return path.join(' › ');
+    }
+
     // Referenced sub-schemas may live only in _subSchemasByIri (the API's $defs for the
     // loaded schema), not in the paginated sidebar list, so resolve from both.
     private resolveRefSchema(iri: string): Schema | undefined {
@@ -1765,6 +2098,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
             ...this.drillStack,
             { fieldLabel: field.title || field.name, fields, schemaIri: field.type || '' }
         ];
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -1781,6 +2115,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public drillTo(index: number): void {
         this.drillStack = this.drillStack.slice(0, index + 1);
         this.selectedField = null;
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -1789,6 +2124,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.drillStack = this.drillStack.slice(0, -1);
         this.selectedField = null;
         this.activeDrillTab = 'fields';
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -1797,6 +2133,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         this.drillStack = [];
         this.selectedField = null;
         this.activeDrillTab = 'fields';
+        this.resetArrayDependencyEditor();
         this._parentLoadId = null;
         this.loadParentSchemas();
     }
@@ -2351,6 +2688,8 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     // Reconstructs the dot-path for the field stored in a condition row.
     // Needed because the stored object may be a field from a nested sub-schema.
     public getIfRowFieldPath(row: any): string {
+        const storedPath = row?.fieldPath;
+        if (Array.isArray(storedPath) && storedPath.length) { return storedPath.join('.'); }
         const field = row?.field;
         if (!field) { return ''; }
         const schema = this.currentContextSchema;
@@ -2456,12 +2795,17 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public setConditionOperator(cond: SchemaCondition, op: 'SINGLE' | 'AND' | 'OR'): void {
         const rows = this.getIfRows(cond);
         const first = rows[0] ?? { field: this._firstConditionField, fieldValue: '' };
+        const predicate = {
+            field: first.field,
+            fieldValue: first.fieldValue,
+            ...(Array.isArray(first.fieldPath) && first.fieldPath.length > 1 ? { fieldPath: first.fieldPath } : {}),
+        };
         if (op === 'SINGLE') {
-            (cond as any).ifCondition = { field: first.field, fieldValue: first.fieldValue };
+            (cond as any).ifCondition = predicate;
         } else if (op === 'AND') {
-            (cond as any).ifCondition = { AND: [first] };
+            (cond as any).ifCondition = { AND: [predicate] };
         } else {
-            (cond as any).ifCondition = { OR: [first] };
+            (cond as any).ifCondition = { OR: [predicate] };
         }
         this.markDirty();
     }
@@ -2474,10 +2818,16 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public setIfRowField(cond: SchemaCondition, rowIdx: number, pathStr: string): void {
         const field = this._resolveConditionField(pathStr);
         if (!field) { return; }
+        const fieldPath = pathStr.split('.');
+        const predicate = {
+            field,
+            fieldValue: '',
+            ...(fieldPath.length > 1 ? { fieldPath } : {}),
+        };
         const ic = cond.ifCondition as any;
-        if ('AND' in ic) { ic.AND[rowIdx] = { field, fieldValue: '' }; }
-        else if ('OR' in ic) { ic.OR[rowIdx] = { field, fieldValue: '' }; }
-        else { ic.field = field; ic.fieldValue = ''; }
+        if ('AND' in ic) { ic.AND[rowIdx] = predicate; }
+        else if ('OR' in ic) { ic.OR[rowIdx] = predicate; }
+        else { (cond as any).ifCondition = predicate; }
         this.markDirty();
     }
 
@@ -2599,7 +2949,28 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
         return result;
     }
 
+    private conditionFieldGroupsCache: { label: string; items: { pathStr: string; label: string }[] }[] | null = null;
+    private conditionFieldGroupsCacheSchema: Schema | null = null;
+    private conditionFieldGroupsCacheSchemas: Schema[] | null = null;
+    private conditionFieldGroupsCacheVersion = -1;
+
     public getConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
+        const schema = this.currentContextSchema;
+        if (this.conditionFieldGroupsCache
+            && this.conditionFieldGroupsCacheSchema === schema
+            && this.conditionFieldGroupsCacheSchemas === this.schemas
+            && this.conditionFieldGroupsCacheVersion === this.schemaEditVersion) {
+            return this.conditionFieldGroupsCache;
+        }
+        const groups = this.buildConditionFieldPSelectGroups();
+        this.conditionFieldGroupsCache = groups;
+        this.conditionFieldGroupsCacheSchema = schema;
+        this.conditionFieldGroupsCacheSchemas = this.schemas;
+        this.conditionFieldGroupsCacheVersion = this.schemaEditVersion;
+        return groups;
+    }
+
+    private buildConditionFieldPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema) { return []; }
         const schemaByIri = new Map(this.schemas.filter(s => s.iri).map(s => [s.iri as string, s]));
@@ -2635,19 +3006,52 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public condThenRefVal: Record<number, string | null> = {};
     public condElseRefVal: Record<number, string | null> = {};
 
-    public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string }[] }[] {
+    private crossTargetGroupsCache: { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] | null = null;
+    private crossTargetGroupsCacheSchema: Schema | null = null;
+    private crossTargetGroupsCacheSchemas: Schema[] | null = null;
+    private crossTargetGroupsCacheVersion = -1;
+
+    public getCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
+        const schema = this.currentContextSchema;
+        if (this.crossTargetGroupsCache
+            && this.crossTargetGroupsCacheSchema === schema
+            && this.crossTargetGroupsCacheSchemas === this.schemas
+            && this.crossTargetGroupsCacheVersion === this.schemaEditVersion) {
+            return this.crossTargetGroupsCache;
+        }
+        const groups = this.buildCrossTargetPSelectGroups();
+        this.crossTargetGroupsCache = groups;
+        this.crossTargetGroupsCacheSchema = schema;
+        this.crossTargetGroupsCacheSchemas = this.schemas;
+        this.crossTargetGroupsCacheVersion = this.schemaEditVersion;
+        return groups;
+    }
+
+    private buildCrossTargetPSelectGroups(): { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] {
         const schema = this.currentContextSchema;
         if (!schema?.fields) { return []; }
         const schemaByIri = new Map(this.schemas.map(s => [s.iri, s]));
-        const result: { label: string; items: { pathStr: string; label: string }[] }[] = [];
+        const result: { label: string; items: { pathStr: string; label: string; isBlock?: boolean }[] }[] = [];
 
         const nestLabel = (name: string, depth: number) =>
             depth <= 1 ? name : ' '.repeat((depth - 1) * 3) + '› ' + name;
 
         const traverse = (fields: SchemaField[], pathParts: string[], groupName: string, depth: number) => {
-            const items: { pathStr: string; label: string }[] = [];
+            const items: { pathStr: string; label: string; isBlock?: boolean }[] = [];
             for (const f of fields) {
-                if (f.readOnly || (f.isRef && f.type)) { continue; }
+                if (f.readOnly) { continue; }
+                if (f.isRef && f.type) {
+                    const ref = schemaByIri.get(f.type);
+                    const refFields = ref?.fields ?? (Array.isArray((f as any).fields) && (f as any).fields.length ? (f as any).fields : []);
+                    if (refFields.length) {
+                        items.push({
+                            pathStr: [...pathParts, f.name].join('.'),
+                            label: f.description || f.title || f.name,
+                            isBlock: true
+                        });
+                    }
+                    continue;
+                }
                 items.push({ pathStr: [...pathParts, f.name].join('.'), label: f.description || f.title || f.name });
             }
             if (items.length) {
@@ -2678,13 +3082,13 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
     public onCondThenRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
         this.addThenTarget(cond, pathStr);
-        this.condThenRefVal[ci] = null;
+        setTimeout(() => { this.condThenRefVal[ci] = null; });
     }
 
     public onCondElseRefChange(cond: SchemaCondition, ci: number, pathStr: string): void {
         if (!pathStr) { return; }
         this.addElseTarget(cond, pathStr);
-        this.condElseRefVal[ci] = null;
+        setTimeout(() => { this.condElseRefVal[ci] = null; });
     }
 
     public addThenTarget(cond: SchemaCondition, pathStr: string): void {
@@ -3166,6 +3570,7 @@ export class SchemasConfigurationComponent implements OnInit, OnDestroy {
 
     public ngOnDestroy(): void {
         this.clearReorder();
+        this.forgetCanvasTab();
         this.destroy$.next();
         this.destroy$.complete();
     }

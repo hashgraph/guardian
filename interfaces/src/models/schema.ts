@@ -1,5 +1,6 @@
 import { ModelHelper } from '../helpers/model-helper.js';
 import { SchemaHelper } from '../helpers/schema-helper.js';
+import { ISchemaArrayDependency } from '../interface/schema-array-dependency.interface.js';
 import { SchemaCondition } from '../interface/schema-condition.interface.js';
 import { ISchemaDocument } from '../interface/schema-document.interface.js';
 import { ISchema } from '../interface/schema.interface.js';
@@ -106,6 +107,10 @@ export class Schema implements ISchema {
      * Conditions
      */
     public conditions: SchemaCondition[];
+    /**
+     * Array dependencies
+     */
+    public arrayDependencies: ISchemaArrayDependency[];
     /**
      * Previous version
      */
@@ -241,6 +246,7 @@ export class Schema implements ISchema {
             this.errors = [];
             this.codeVersion = '';
         }
+        this.arrayDependencies = [];
         if (this.document) {
             this.parseDocument(includeSystemProperties);
         }
@@ -265,8 +271,10 @@ export class Schema implements ISchema {
      */
     private parseDocument(includeSystemProperties: boolean): void {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
-        const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
+        const { previousVersion, arrayDependencies } =
+            SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
+        this.arrayDependencies = Array.isArray(arrayDependencies) ? arrayDependencies : [];
         const schemaCache = new Map<string, any>();
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
@@ -405,6 +413,7 @@ export class Schema implements ISchema {
         clone.previousVersion = this.previousVersion;
         clone.fields = this.fields;
         clone.conditions = this.conditions;
+        clone.arrayDependencies = this.arrayDependencies;
         clone.userDID = this.userDID;
         clone.topicCount = this.topicCount;
         return clone;
