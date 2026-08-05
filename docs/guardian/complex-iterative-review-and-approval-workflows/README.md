@@ -1,7 +1,3 @@
----
-icon: people-arrows
----
-
 # Complex iterative review and approval workflows
 
 The Complex Iterative Workflow is a digital process within Guardian that enables project developers (proponents) and validators (VVBs) to efficiently perform multiple rounds of feedback, clarifications, and document corrections during validation. Instead of lengthy, fragmented exchanges via email or offline documents, every step is captured, versioned, and discussable inside the Guardian environment, providing a full audit trail and transparency at each stage of project review and approval.

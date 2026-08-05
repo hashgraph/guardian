@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Remote Policy UI
 
 ### **1. Creation**
