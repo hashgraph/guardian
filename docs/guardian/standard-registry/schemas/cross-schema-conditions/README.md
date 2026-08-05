@@ -31,5 +31,5 @@ That placement keeps the sub-schemas independent. Neither sub-schema needs to kn
 ### Related
 
 * Task: [Configure Nested and Cross-Schema Conditions](configure-nested-and-cross-schema-conditions.md)
-* Reference: [Conditional and Visibility Logic](best-practices-to-implement-schema/conditional-and-visibility-logic.md)
-* Concept: [Cross-Schema Conditions](cross-schema-conditions.md)
+* Reference: [Conditional and Visibility Logic](../best-practices-to-implement-schema/conditional-and-visibility-logic.md)
+* Concept: [Cross-Schema Conditions](./)

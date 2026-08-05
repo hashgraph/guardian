@@ -1,3 +1,8 @@
+---
+tags:
+  - tasks
+---
+
 # Configure Nested and Cross-Schema Conditions
 
 Set up a condition where the trigger field, the controlled fields, or both live inside referenced sub-schemas.
@@ -46,6 +51,6 @@ The sub-schema must be fully loaded in the editor. If a group is missing, check 
 
 ### Related
 
-* Concept: [Cross-Schema Conditions](cross-schema-conditions.md)
-* Task: [Creating Schema using UI](creating-system-schema-using-ui.md)
-* Reference: [Conditional and Visibility Logic](best-practices-to-implement-schema/conditional-and-visibility-logic.md)
+* Concept: [Cross-Schema Conditions](./)
+* Task: [Creating Schema using UI](../creating-system-schema-using-ui.md)
+* Reference: [Conditional and Visibility Logic](../best-practices-to-implement-schema/conditional-and-visibility-logic.md)

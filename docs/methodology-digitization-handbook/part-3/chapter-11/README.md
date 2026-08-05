@@ -17,7 +17,7 @@ While Excel-first approach works well for initial development, API operations ma
 * **Integration**: Connecting schema management to external workflows
 * **Field Key Updates**: Programmatically renaming field keys for better calculation code
 
-For detailed API operations, see [Schema Creation Using APIs](../../../guardian/standard-registry/schemas/schema-creation-using-apis/).
+For detailed API operations, see [Schema Creation Using APIs](../../../developer-tools/api-reference/schema-creation-using-apis/).
 
 ## Importance of Good Key Names
 
