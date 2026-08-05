@@ -1513,13 +1513,17 @@ export class SchemaHelper {
         version?: string,
         arrayDependencies?: ISchemaArrayDependency[]
     ): string {
+        if (!arrayDependencies || !arrayDependencies.length) {
+            if (version) {
+                return `{ "@id": "${url}", "term": "${type}", "previousVersion": "${version}" }`;
+            }
+            return `{ "@id": "${url}", "term": "${type}" }`;
+        }
         const comment: any = { '@id': url, term: type };
         if (version) {
             comment.previousVersion = version;
         }
-        if (arrayDependencies && arrayDependencies.length) {
-            comment.arrayDependencies = arrayDependencies;
-        }
+        comment.arrayDependencies = arrayDependencies;
         return JSON.stringify(comment);
     }
 
