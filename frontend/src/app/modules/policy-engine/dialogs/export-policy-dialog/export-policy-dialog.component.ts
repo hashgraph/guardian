@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
 import { ModulesService } from 'src/app/services/modules.service';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -110,50 +111,48 @@ export class ExportPolicyDialog {
     }
 
     private saveToFile() {
-        this.loading = true;
-        this.policyEngineService.exportInFile(this.policy.id).subscribe(
-            (fileBuffer) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-policy',
-                    })
-                );
-                downloadLink.setAttribute(
-                    'download',
-                    `${this.policy.name}.policy`
-                );
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            },
-            (error) => {
-                this.loading = false;
-            }
+        this.download(
+            this.policyEngineService.exportInFile(this.policy.id),
+            'application/guardian-policy',
+            `${this.policy.name}.policy`
         );
     }
 
     private moduleToFile() {
+        this.download(
+            this.modulesService.exportInFile(this.module.uuid),
+            'application/guardian-module',
+            `${this.module.name}.module`
+        );
+    }
+
+    private toolToFile() {
+        this.download(
+            this.toolsService.exportInFile(this.tool.id),
+            'application/guardian-tool',
+            `${this.tool.name}.tool`
+        );
+    }
+
+    private schemaTemplateToFile() {
+        this.download(
+            this.schemaTemplatesService.exportInFile(this.schemaTemplate.id),
+            'application/guardian-schema-template',
+            `${this.schemaTemplate.name}.template`
+        );
+    }
+
+    private download(
+        request: Observable<any>,
+        type: string,
+        fileName: string
+    ): void {
         this.loading = true;
-        this.modulesService.exportInFile(this.module.uuid).subscribe(
+        request.subscribe(
             (fileBuffer) => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(
-                    new Blob([new Uint8Array(fileBuffer)], {
-                        type: 'application/guardian-module',
-                    })
-                );
-                downloadLink.setAttribute(
-                    'download',
-                    `${this.module.name}.module`
-                );
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
+                this.saveBuffer(fileBuffer, type, fileName);
+                this.loading = false;
+                this.ref.close(true);
             },
             (error) => {
                 this.loading = false;
@@ -161,41 +160,16 @@ export class ExportPolicyDialog {
         );
     }
 
-    private toolToFile() {
-        this.loading = true;
-        this.toolsService.exportInFile(this.tool.id)
-            .subscribe(fileBuffer => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-tool'
-                }));
-                downloadLink.setAttribute('download', `${this.tool.name}.tool`);
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, error => {
-                this.loading = false;
-            });
-    }
-
-    private schemaTemplateToFile() {
-        this.loading = true;
-        this.schemaTemplatesService.exportInFile(this.schemaTemplate.id)
-            .subscribe(fileBuffer => {
-                let downloadLink = document.createElement('a');
-                downloadLink.href = window.URL.createObjectURL(new Blob([new Uint8Array(fileBuffer)], {
-                    type: 'application/guardian-schema-template'
-                }));
-                downloadLink.setAttribute('download', `${this.schemaTemplate.name}.template`);
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                setTimeout(() => {
-                    this.loading = false;
-                }, 500);
-            }, () => {
-                this.loading = false;
-            });
+    private saveBuffer(fileBuffer: any, type: string, fileName: string): void {
+        const url = window.URL.createObjectURL(
+            new Blob([new Uint8Array(fileBuffer)], { type })
+        );
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.setAttribute('download', fileName);
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        setTimeout(() => window.URL.revokeObjectURL(url), 500);
     }
 }
