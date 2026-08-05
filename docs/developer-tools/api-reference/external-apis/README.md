@@ -25,3 +25,9 @@ These endpoints allow external systems to push Verifiable Credential (VC) docume
 * [Sends Data from External Source (Generic)](sends-data-from-external-source-generic.md)
 * [Sends Data with Sync Events (Specific Block)](sends-data-with-sync-events.md)
 * [Sends Data with Sync Events (Generic)](sends-data-with-sync-events-generic.md)
+
+---
+
+## Related APIs
+
+* [Policy Grid Actions](../guardian/standard-registry/policies/policy-grid-actions/README.md) — discover and execute workflow actions (Approve/Reject) on policy grid records
