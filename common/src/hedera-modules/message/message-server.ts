@@ -36,6 +36,7 @@ import { SchemaPackageMessage } from './schema-package-message.js';
 import { CommentMessage } from './comment-message.js';
 import { DiscussionMessage } from './discussion-message.js';
 import { PolicyRecordMessage } from './policy-record-message.js';
+import { OrganizationMessage } from './organization-message.js';
 
 interface LoadOptions {
     dryRun?: string,
@@ -515,6 +516,9 @@ export class MessageServer {
             case MessageType.PolicyRecordStep:
                 message = PolicyRecordMessage.fromMessageObject(json);
                 break;
+            case MessageType.Organization:
+                message = OrganizationMessage.fromMessageObject(json);
+                break;
 
             // Default schemas
             case 'schema-document':
@@ -615,6 +619,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyRecordStep:
                 message = PolicyRecordMessage.fromJson(json);
+                break;
+            case MessageType.Organization:
+                message = OrganizationMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':

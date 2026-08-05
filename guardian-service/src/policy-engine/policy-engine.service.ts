@@ -860,6 +860,101 @@ export class PolicyEngineService {
                 }
             });
 
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GRIDS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_POLICY_GRIDS, policyId, { user, policyId }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_GRID_ACTIONS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                gridId: string
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, gridId } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_GRID_ACTIONS, policyId, { user, gridId }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.GET_GRID_RECORDS,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                gridId: string,
+                params: any
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, gridId, params } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const result = await new GuardiansService()
+                        .sendPolicyMessage(PolicyEvents.GET_GRID_RECORDS, policyId, { user, gridId, params }) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
+        this.channel.getMessages<any, any>(PolicyEngineEvents.EXECUTE_GRID_ACTION,
+            async (msg: {
+                user: IAuthUser,
+                policyId: string,
+                gridId: string,
+                recordId: string,
+                actionId: string,
+                body: any,
+                syncEvents?: boolean,
+                timeout?: number
+            }): Promise<IMessageResponse<any>> => {
+                try {
+                    const { user, policyId, gridId, recordId, actionId, body, syncEvents } = msg;
+                    const policy = await DatabaseServer.getPolicyById(policyId);
+                    if (!policy) {
+                        throw Object.assign(new Error('Policy not found'), { code: 404 });
+                    }
+                    await this.policyEngine.accessPolicy(policy, new EntityOwner(user), 'execute');
+                    const timeout = Math.min(Math.max(msg.timeout || 5 * 60 * 1000, 10), 60 * 60 * 1000);
+                    const result = await new GuardiansService()
+                        .sendBlockMessage(PolicyEvents.EXECUTE_GRID_ACTION, policyId,
+                            { user, policyId, gridId, recordId, actionId, body, syncEvents }, timeout) as any;
+                    return new MessageResponse(result);
+                } catch (error) {
+                    await logger.error(error, ['GUARDIAN_SERVICE'], msg?.user?.id);
+                    return new MessageError(error, error.code);
+                }
+            });
+
         this.channel.getMessages<any, any>(PolicyEngineEvents.GET_POLICY_GROUPS,
             async (msg: {
                 user: IAuthUser,

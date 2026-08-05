@@ -73,6 +73,7 @@ import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
+import { getOrgPolicyIdsForUser } from '../api/helpers/organization-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
@@ -124,6 +125,47 @@ export async function validatePolicySchemaTemplateBeforePublish(model: Policy): 
             'Policy cannot be published while it uses a draft schema template. ' +
             'Publish the schema template first or detach it from the policy.'
         );
+    }
+}
+
+/**
+ * Pure decision core for accessPolicyCode, factored out for unit testing.
+ * `isAssigned` already reflects both per-user AssignEntity and (when applicable)
+ * organization-assignment lookups — this function only encodes the AccessType ×
+ * published × isAssigned truth table, unchanged from the original inline switch.
+ * @param access
+ * @param published
+ * @param isAssigned
+ */
+export function resolvePolicyAccessCode(
+    access: AccessType,
+    published: boolean,
+    isAssigned: boolean
+): PolicyAccessCode {
+    switch (access) {
+        case AccessType.ALL: {
+            return PolicyAccessCode.AVAILABLE;
+        }
+        case AccessType.ASSIGNED_OR_PUBLISHED: {
+            return (published || isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.PUBLISHED: {
+            return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.ASSIGNED: {
+            return (isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.ASSIGNED_AND_PUBLISHED: {
+            return (published && isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.NONE: {
+            //Insufficient permissions
+            return PolicyAccessCode.UNAVAILABLE;
+        }
+        default: {
+            //Insufficient permissions
+            return PolicyAccessCode.UNAVAILABLE;
+        }
     }
 }
 
@@ -249,31 +291,26 @@ export class PolicyEngine extends NatsService {
         const published = (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED);
         const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
 
-        switch (user.access) {
-            case AccessType.ALL: {
-                return PolicyAccessCode.AVAILABLE;
-            }
-            case AccessType.ASSIGNED_OR_PUBLISHED: {
-                return (published || assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.PUBLISHED: {
-                return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.ASSIGNED: {
-                return (assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.ASSIGNED_AND_PUBLISHED: {
-                return (published && assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.NONE: {
-                //Insufficient permissions
-                return PolicyAccessCode.UNAVAILABLE;
-            }
-            default: {
-                //Insufficient permissions
-                return PolicyAccessCode.UNAVAILABLE;
+        let isAssigned = !!assigned;
+        // Additive: org-assigned ≡ personally-assigned for access purposes (visibility already
+        // works via addAccessFilters). Only consult the org lookup when the personal assignment
+        // didn't already decide the outcome for this AccessType, to avoid a needless NATS hop.
+        // Fail closed on lookup errors — unlike the list path's fail-open best-effort behavior.
+        if (
+            !isAssigned &&
+            user.creator &&
+            (user.access === AccessType.ASSIGNED ||
+                (user.access === AccessType.ASSIGNED_OR_PUBLISHED && !published) ||
+                (user.access === AccessType.ASSIGNED_AND_PUBLISHED && published))
+        ) {
+            try {
+                isAssigned = (await getOrgPolicyIdsForUser(user.creator, user.id || null)).includes(policy.id);
+            } catch {
+                isAssigned = false;
             }
         }
+
+        return resolvePolicyAccessCode(user.access, published, isAssigned);
     }
 
     /**
@@ -313,6 +350,25 @@ export class PolicyEngine extends NatsService {
         //Local
         const localFilters: any = {};
         localFilters.owner = user.owner;
+
+        // Additive: extend ACCESS_POLICY_ASSIGNED visibility through Organization membership.
+        // For users on an ASSIGNED-flavoured AccessType, also surface policies their organization
+        // has been assigned to via PolicyOrgAssignment. Empty array → bit-for-bit identical to the
+        // pre-Organization behavior. Best-effort; failures never block the existing filter path.
+        let orgPolicyIds: string[] = [];
+        if (
+            user?.creator &&
+            (user.access === AccessType.ASSIGNED ||
+                user.access === AccessType.ASSIGNED_OR_PUBLISHED ||
+                user.access === AccessType.ASSIGNED_AND_PUBLISHED)
+        ) {
+            try {
+                orgPolicyIds = await getOrgPolicyIdsForUser(user.creator, user.id || null);
+            } catch {
+                orgPolicyIds = [];
+            }
+        }
+
         switch (user.access) {
             case AccessType.ALL: {
                 break;
@@ -320,9 +376,12 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED_OR_PUBLISHED: {
                 const assigned1 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap1 = assigned1.map((e) => e.entityId);
+                const allIds1 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap1, ...orgPolicyIds]))
+                    : assignedMap1;
                 localFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
-                    { id: { $in: assignedMap1 } }
+                    { id: { $in: allIds1 } }
                 ];
                 break;
             }
@@ -333,13 +392,19 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED: {
                 const assigned2 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap2 = assigned2.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap2 };
+                const allIds2 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap2, ...orgPolicyIds]))
+                    : assignedMap2;
+                localFilters.id = { $in: allIds2 };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
                 const assigned3 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap3 = assigned3.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap3 };
+                const allIds3 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap3, ...orgPolicyIds]))
+                    : assignedMap3;
+                localFilters.id = { $in: allIds3 };
                 localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }

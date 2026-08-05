@@ -1059,3 +1059,29 @@ export interface CommentMessageBody extends MessageBody {
      */
     target: string;
 }
+
+/**
+ * Organization message body
+ */
+export interface OrganizationMessageBody extends MessageBody {
+    /**
+     * Organization DID
+     */
+    did: string;
+    /**
+     * Organization Hedera topic id
+     */
+    topicId: string;
+    /**
+     * Organization name
+     */
+    name: string;
+    /**
+     * OrgRole definitions captured on-ledger for traceability
+     */
+    roles: { name: string; permissions: string[] }[];
+    /**
+     * Arbitrary attributes (free-form key/value strings)
+     */
+    attributes: { [x: string]: string } | undefined;
+}
