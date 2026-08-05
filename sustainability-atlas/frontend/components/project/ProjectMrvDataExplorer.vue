@@ -7,6 +7,7 @@ import type { LinkedSchema } from '~/types/models';
 const props = defineProps<{
     projectId: string;
     schema: LinkedSchema;
+    loadingId?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -274,11 +275,13 @@ function formatCell(value: string, col: MrvColumn): string {
                             </td>
                             <td class="py-2 px-4 text-center">
                                 <button
-                                    class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                                    class="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                                    :disabled="loadingId === row.consensusTimestamp"
                                     :title="$t('common.viewRawData')"
                                     @click="emit('view-record', row.consensusTimestamp)"
                                 >
-                                    <FileJson class="h-3.5 w-3.5" />
+                                    <Loader2 v-if="loadingId === row.consensusTimestamp" class="h-3.5 w-3.5 animate-spin" />
+                                    <FileJson v-else class="h-3.5 w-3.5" />
                                 </button>
                             </td>
                         </tr>

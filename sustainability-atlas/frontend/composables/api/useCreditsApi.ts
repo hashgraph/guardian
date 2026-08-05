@@ -51,8 +51,24 @@ export interface UseCreditsApiOptions {
     filters?: Ref<Record<string, any>>;
 }
 
-// Filter keys recognised by the backend credits endpoint.
-const CREDIT_FILTER_KEYS = ['type', 'registry', 'registryDid', 'tokenId', 'projectKey', 'methodologyId'] as const;
+// Filter keys recognised by the backend credits endpoint. Must stay in sync
+// with whatever keys the Issuances page puts in its filters object (see
+// credits/index.vue's apiFilters) — useCreditStats.ts forwards every filter
+// key present unconditionally, so a key missing here makes the stat cards
+// reflect a filter the list/count silently ignores.
+const CREDIT_FILTER_KEYS = [
+    'type',
+    'registry',
+    'registryDid',
+    'tokenId',
+    'projectKey',
+    'methodologyId',
+    'linkedOnly',
+    'supplyMin',
+    'supplyMax',
+    'mintDateFrom',
+    'mintDateTo',
+] as const;
 
 const emptyResponse = (limit: number): CreditsResponse => ({
     data: [],

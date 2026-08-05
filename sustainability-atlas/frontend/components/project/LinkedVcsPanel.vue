@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { FileText, FileJson, ChevronDown, Copy, Check } from 'lucide-vue-next';
+import { FileText, FileJson, ChevronDown, Copy, Check, Loader2 } from 'lucide-vue-next';
 import type { Project } from '~/types/models';
 
 const props = defineProps<{
     project: Project;
     network: string;
+    loadingId?: string | null;
 }>();
 
 const emit = defineEmits<{
@@ -155,10 +156,12 @@ async function copyToClipboard(text: string) {
                                 </td>
                                 <td class="py-2.5 px-4 text-right">
                                     <button
-                                        class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors"
+                                        class="inline-flex items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium text-foreground hover:bg-muted transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                                        :disabled="loadingId === vc.consensusTimestamp"
                                         @click="emit('view-vc-json', vc.consensusTimestamp)"
                                     >
-                                        <FileJson class="h-3.5 w-3.5 text-primary" />
+                                        <Loader2 v-if="loadingId === vc.consensusTimestamp" class="h-3.5 w-3.5 text-primary animate-spin" />
+                                        <FileJson v-else class="h-3.5 w-3.5 text-primary" />
                                         {{ $t('projects.detail.linkedVcs.viewJson') }}
                                     </button>
                                 </td>

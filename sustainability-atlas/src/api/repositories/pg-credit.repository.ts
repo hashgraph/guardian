@@ -1,5 +1,6 @@
 import { BadRequestException } from '@nestjs/common';
 import { DataSource } from 'typeorm';
+import { MV_REGISTRY_STATS_NAME, MV_METHODOLOGY_STATS_NAME } from '@shared/materialized-views';
 import {
     CreditRepository,
     CreditListQuery,
@@ -117,51 +118,89 @@ const PROJECT_JOIN = `
 `;
 
 /**
- * LATERAL: resolve methodology from the project's instance topic, with a
+ * Two LATERALs: resolve methodology from the project's instance topic, with a
  * displayName fallback for cases where relatedTopicId chain is not yet linked.
  * Emits relatedTopicId as methodology_id so links match the methodology detail route.
- * Returns NULL when no project was resolved (unattributed mints).
+ * Returns NULL when no project was resolved (unattributed mints). Callers read
+ * `COALESCE(meth_primary.x, meth_fallback.x)` for each column.
+ *
+ * meth_primary reads mv_methodology_stats (unique-indexed on relatedTopicId,
+ * emission_reduction_approach precomputed) joined to business_view by primary
+ * key — O(1) instead of scanning every raw METHODOLOGY row for the topic and
+ * sorting them, which on testnet's ~187x republish-duplicate ratio dominated
+ * the Issuances table's search/count latency.
+ *
+ * meth_fallback is byte-for-byte the original pre-mv_methodology_stats LATERAL
+ * (same SELECT list, same OR'd WHERE, same ORDER BY/LIMIT) for the rare case a
+ * project's topic-id chain isn't linked yet — with one added NOT EXISTS guard
+ * so it only runs when meth_primary found nothing. It's deliberately its own
+ * LATERAL correlated only on `proj` columns (not on meth_primary's output):
+ * an earlier version gated it via `meth_primary.methodology_id IS NULL`
+ * instead, which measured 25s+ locally, because a LATERAL correlated on a
+ * sibling LATERAL's result loses Postgres's Memoize optimization entirely
+ * (confirmed via EXPLAIN ANALYZE —
+ * Memoize's cache hit rate on this fallback collapsed from 1988/2042 to 0
+ * hits when parameterized that way). Re-deriving the same "did the primary
+ * branch find anything" check as a direct NOT EXISTS against
+ * mv_methodology_stats keeps the correlation shape identical to the original
+ * query, which Postgres already knew how to memoize effectively.
  */
 const METHODOLOGY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT
-            bv_meth."relatedTopicId" AS methodology_id,
-            bv_meth."displayName"    AS methodology_name,
+            meth_mv."relatedTopicId"            AS methodology_id,
+            bv_meth."displayName"               AS methodology_name,
+            meth_mv.emission_reduction_approach AS emission_reduction_approach
+        FROM ${MV_METHODOLOGY_STATS_NAME} meth_mv
+        JOIN business_view bv_meth ON bv_meth.id = meth_mv.canonical_id
+        WHERE meth_mv."relatedTopicId" = proj.proj_topic_id
+    ) meth_primary ON true
+    LEFT JOIN LATERAL (
+        SELECT
+            bv_meth2."relatedTopicId" AS methodology_id,
+            bv_meth2."displayName"    AS methodology_name,
             (
                 SELECT p."policyMapping"->'emissionReductionApproach'
                 FROM policy p
-                WHERE p."policyTopicId" = bv_meth."businessData"->>'topicId'
+                WHERE p."policyTopicId" = bv_meth2."businessData"->>'topicId'
                   AND p."decodeStatus" = 'decoded'
                 ORDER BY p."updatedAt" DESC NULLS LAST
                 LIMIT 1
             ) AS emission_reduction_approach
-        FROM business_view bv_meth
-        WHERE bv_meth."viewType" = 'METHODOLOGY'
+        FROM business_view bv_meth2
+        WHERE bv_meth2."viewType" = 'METHODOLOGY'
           AND (
-              bv_meth."relatedTopicId" = proj.proj_topic_id
-              OR bv_meth."displayName" = proj.proj_methodology_name
+              bv_meth2."relatedTopicId" = proj.proj_topic_id
+              OR bv_meth2."displayName" = proj.proj_methodology_name
+          )
+          AND NOT EXISTS (
+              SELECT 1 FROM ${MV_METHODOLOGY_STATS_NAME} mm_guard
+              WHERE mm_guard."relatedTopicId" = proj.proj_topic_id
           )
         ORDER BY
-            (bv_meth."relatedTopicId" = proj.proj_topic_id) DESC,
-            bv_meth."sourceTimestamp"::numeric DESC NULLS LAST,
-            bv_meth."createdAt" DESC NULLS LAST
+            (bv_meth2."relatedTopicId" = proj.proj_topic_id) DESC,
+            bv_meth2."sourceTimestamp"::numeric DESC NULLS LAST,
+            bv_meth2."createdAt" DESC NULLS LAST
         LIMIT 1
-    ) meth ON true
+    ) meth_fallback ON true
 `;
 
 /**
  * LATERAL: resolve registry display name from the project's registryDid,
  * falling back to the token's own registryDid (cred) for mints not yet
  * attributed to a project, so unlinked mints still show their registry.
+ *
+ * Reads mv_registry_stats (unique-indexed on registryDid) joined to
+ * business_view by primary key, instead of scanning every raw REGISTRY row
+ * for the DID and sorting them — same fix as METHODOLOGY_JOIN above, for the
+ * same reason (testnet's ~233x republish-duplicate ratio on REGISTRY rows).
  */
 const REGISTRY_JOIN = `
     LEFT JOIN LATERAL (
         SELECT bv_reg."displayName" AS registry_name
-        FROM business_view bv_reg
-        WHERE bv_reg."viewType"    = 'REGISTRY'
-          AND bv_reg."registryDid" = COALESCE(proj.registry_did, cred.registry_did)
-        ORDER BY bv_reg."createdAt" DESC NULLS LAST
-        LIMIT 1
+        FROM ${MV_REGISTRY_STATS_NAME} reg_mv
+        JOIN business_view bv_reg ON bv_reg.id = reg_mv.canonical_id
+        WHERE reg_mv."registryDid" = COALESCE(proj.registry_did, cred.registry_did)
     ) reg ON true
 `;
 
@@ -186,7 +225,7 @@ interface JoinRequirements {
  *   registry      -> reg.registry_name                          -> REGISTRY_JOIN
  *   search        -> reg.registry_name (plus tc.*, always there) -> REGISTRY_JOIN
  *   registryDid   -> COALESCE(proj.registry_did, cred.registry_did)
- *   methodologyId -> meth.methodology_id                        -> METHODOLOGY_JOIN
+ *   methodologyId -> COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) -> METHODOLOGY_JOIN
  * REGISTRY_JOIN and METHODOLOGY_JOIN both read `proj.*`, and REGISTRY_JOIN also
  * reads `cred.*`, so those pull in their dependencies.
  * projectKey filters `pml.project_key` and `type` filters `tc.type` — both
@@ -238,7 +277,7 @@ export class PgCreditRepository extends CreditRepository {
 
         if (query.methodologyId) {
             const param = builder.nextParam(query.methodologyId);
-            builder.addClause(`meth.methodology_id = ${param}`);
+            builder.addClause(`COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) = ${param}`);
         }
 
         if (query.linkedOnly) {
@@ -342,8 +381,8 @@ export class PgCreditRepository extends CreditRepository {
                 ${MINT_DATE_EXPR}                                                               AS mint_date,
                 proj.project_id,
                 proj.project_name,
-                meth.methodology_id,
-                COALESCE(meth.methodology_name, proj.proj_methodology_name)                    AS methodology_name,
+                COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id)             AS methodology_id,
+                COALESCE(meth_primary.methodology_name, meth_fallback.methodology_name, proj.proj_methodology_name) AS methodology_name,
                 m."consensusTimestamp"                                                          AS "mintConsensusTimestamp",
                 ${rankExpr}                                                                     AS search_rank
             FROM ${MINT_FROM}
@@ -439,7 +478,7 @@ export class PgCreditRepository extends CreditRepository {
 
         if (filters.methodologyId) {
             const param = builder.nextParam(filters.methodologyId);
-            builder.addClause(`meth.methodology_id = ${param}`);
+            builder.addClause(`COALESCE(meth_primary.methodology_id, meth_fallback.methodology_id) = ${param}`);
         }
 
         if (filters.type) {
@@ -491,8 +530,8 @@ export class PgCreditRepository extends CreditRepository {
                     tc.type                                                                          AS token_type_raw,
                     ${SUPPLY_EXPR}                                                                AS emissions_reduced,
                     ${MINT_DATE_EXPR}                                                             AS mint_date,
-                    COALESCE(meth.methodology_name, proj.proj_methodology_name)                       AS standard,
-                    meth.emission_reduction_approach                                                   AS mitigation_type_raw
+                    COALESCE(meth_primary.methodology_name, meth_fallback.methodology_name, proj.proj_methodology_name) AS standard,
+                    COALESCE(meth_primary.emission_reduction_approach, meth_fallback.emission_reduction_approach) AS mitigation_type_raw
                 FROM ${MINT_FROM}
                 ${PROJECT_JOIN}
                 ${METHODOLOGY_JOIN}

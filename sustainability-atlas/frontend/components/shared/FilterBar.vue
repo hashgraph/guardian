@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Search, X, CalendarRange } from 'lucide-vue-next';
-import { onClickOutside } from '@vueuse/core';
+import { onClickOutside, useDebounceFn } from '@vueuse/core';
 import { useI18n } from 'vue-i18n';
 import { encodeMultiValue, decodeMultiValue } from '~/lib/utils';
 
@@ -32,6 +32,19 @@ const emit = defineEmits<{
     'filter': [key: string, value: string];
     'clear': [];
 }>();
+
+const localSearch = ref(props.modelValue);
+watch(() => props.modelValue, (value) => {
+    if (value !== localSearch.value) localSearch.value = value;
+});
+const debouncedEmitSearch = useDebounceFn((value: string) => {
+    emit('update:modelValue', value);
+}, 250);
+function onSearchInput(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+    localSearch.value = value;
+    debouncedEmitSearch(value);
+}
 
 const openDropdown = ref<string | null>(null);
 const dropdownRefs = ref<Record<string, HTMLElement | null>>({});
@@ -343,8 +356,8 @@ if (import.meta.client) {
         <div v-if="!hideSearch" class="relative">
             <Search class="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
             <input
-                :value="modelValue"
-                @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
+                :value="localSearch"
+                @input="onSearchInput"
                 :placeholder="searchPlaceholder || $t('common.searchEllipsis')"
                 class="h-8 w-56 rounded-md border border-input bg-background pl-8 pr-3 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring"
             />

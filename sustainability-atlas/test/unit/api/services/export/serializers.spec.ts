@@ -73,3 +73,27 @@ describe('PdfSerializer', () => {
         expect(res.content.slice(0, 4).toString('ascii')).toBe('%PDF');
     });
 });
+
+describe('issuance_date column', () => {
+    const DATE_FIELDS = ['project_name', 'issuance_date'];
+    const DATE_ROWS = [{ project_name: 'Rimba Raya', issuance_date: '2024-03-17' }];
+
+    // The repository emits a plain YYYY-MM-DD string rather than a Date, so every format renders the
+    // same calendar day: a Date would round-trip through toISOString() in CSV/PDF (gaining a time) and
+    // be re-interpreted in the reader's local timezone by Excel, which can shift the day.
+    it('renders as a bare YYYY-MM-DD day in CSV, with no time component', async () => {
+        const text = (await new CsvSerializer().serialize(DATE_FIELDS, DATE_ROWS, 'Issuances')).content.toString('utf-8');
+        const [header, row] = text.slice(1).split(/\r?\n/);
+        expect(header).toBe('project_name,issuance_date');
+        expect(row).toBe('Rimba Raya,2024-03-17');
+        expect(row).not.toContain('T00:00');
+    });
+
+    it('is carried through the XLSX and PDF serializers too', async () => {
+        const xlsx = await new XlsxSerializer().serialize(DATE_FIELDS, DATE_ROWS, 'Issuances');
+        expect(xlsx.content.slice(0, 2).toString('ascii')).toBe('PK');
+
+        const pdf = await new PdfSerializer().serialize(DATE_FIELDS, DATE_ROWS, 'Issuances');
+        expect(pdf.content.slice(0, 4).toString('ascii')).toBe('%PDF');
+    });
+});

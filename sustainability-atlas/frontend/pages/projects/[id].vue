@@ -149,24 +149,36 @@ const vcViewerOpen = ref(false);
 const vcViewerTitle = ref('');
 const vcViewerData = ref<Record<string, any> | null>(null);
 
+// Loading state for the buttons that trigger a fetch before the viewer can open —
+// the fetch itself (network + response parsing of a large document) can take
+// several seconds, so the triggering icon needs its own spinner rather than
+// leaving the click looking like it did nothing until the modal pops open.
+const viewRawDataLoading = ref(false);
+const vcViewerLoadingId = ref<string | null>(null);
+
 // "View Raw Data" — show the project's anchor VC document.
 async function viewProjectVc() {
     if (!project.value) return;
-    const schemas = project.value.linkedSchemas ?? [];
-    const projectSchema = schemas.find(s => s.isProjectSchema && s.linkedVcs.length > 0);
-    const fallback = schemas.find(s => s.schemaUuid !== 'MintToken' && s.linkedVcs.length > 0);
-    const pick = projectSchema ?? fallback;
-    const anchor = pick?.linkedVcs[0];
+    viewRawDataLoading.value = true;
+    try {
+        const schemas = project.value.linkedSchemas ?? [];
+        const projectSchema = schemas.find(s => s.isProjectSchema && s.linkedVcs.length > 0);
+        const fallback = schemas.find(s => s.schemaUuid !== 'MintToken' && s.linkedVcs.length > 0);
+        const pick = projectSchema ?? fallback;
+        const anchor = pick?.linkedVcs[0];
 
-    if (anchor) {
-        await handleViewVcJson(anchor.consensusTimestamp);
-        vcViewerTitle.value = `${project.value.name} — ${pick!.schemaName ?? pick!.schemaUuid}`;
-        return;
+        if (anchor) {
+            await handleViewVcJson(anchor.consensusTimestamp);
+            vcViewerTitle.value = `${project.value.name} — ${pick!.schemaName ?? pick!.schemaUuid}`;
+            return;
+        }
+
+        vcViewerTitle.value = project.value.name;
+        vcViewerData.value = project.value as unknown as Record<string, any>;
+        vcViewerOpen.value = true;
+    } finally {
+        viewRawDataLoading.value = false;
     }
-
-    vcViewerTitle.value = project.value.name;
-    vcViewerData.value = project.value as unknown as Record<string, any>;
-    vcViewerOpen.value = true;
 }
 
 function handleViewVc(c: Credit) {
@@ -179,6 +191,7 @@ function handleViewVc(c: Credit) {
 async function handleViewVcJson(consensusTimestamp: string) {
     if (!project.value) return;
     if (!import.meta.client) return;
+    vcViewerLoadingId.value = consensusTimestamp;
     const config = useRuntimeConfig();
     const baseURL = config.public.apiBaseUrl as string;
     try {
@@ -192,6 +205,8 @@ async function handleViewVcJson(consensusTimestamp: string) {
     } catch {
         const { toast } = await import('vue-sonner');
         toast.error(t('projects.detail.vcs.loadError'));
+    } finally {
+        vcViewerLoadingId.value = null;
     }
 }
 
@@ -395,6 +410,7 @@ const emissions = computed(() => {
             :display-country="displayCountry"
             :display-country-code="displayCountryCode"
             :hashscan-topic-url="hashscanTopicUrl"
+            :loading="viewRawDataLoading"
             @view-raw-data="viewProjectVc"
         />
 
@@ -601,6 +617,7 @@ const emissions = computed(() => {
                         :key="schema.schemaUuid"
                         :project-id="projectId"
                         :schema="schema"
+                        :loading-id="vcViewerLoadingId"
                         @view-record="handleViewVcJson"
                     />
                 </template>
@@ -663,6 +680,7 @@ const emissions = computed(() => {
                 <LinkedVcsPanel
                     :project="project"
                     :network="network"
+                    :loading-id="vcViewerLoadingId"
                     @view-vc-json="handleViewVcJson"
                 />
 

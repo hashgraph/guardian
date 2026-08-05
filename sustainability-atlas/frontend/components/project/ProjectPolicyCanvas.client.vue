@@ -2,7 +2,9 @@
 import { VueFlow, Handle, Position, MarkerType, type Node, type Edge } from '@vue-flow/core';
 import '@vue-flow/core/dist/style.css';
 import '@vue-flow/core/dist/theme-default.css';
-import { FileText, Coins, Info, CheckCircle2, Circle, Loader2, Braces, X } from 'lucide-vue-next';
+import { FileText, Coins, Info, CheckCircle2, Circle, Loader2, Braces, X, AlertTriangle, Download } from 'lucide-vue-next';
+import { useVirtualList } from '@vueuse/core';
+import { useJsonPayloadView, formatBytes } from '~/composables/useJsonPayloadView';
 import type { Project, LinkedSchema } from '~/types/models';
 
 const props = defineProps<{ project: Project }>();
@@ -219,11 +221,18 @@ function openDrawer(d: NodeData) {
 
 const jsonOpen = ref(false);
 const jsonLoading = ref(false);
-const policyJson = ref<string>('');
+const policyFetched = ref(false);
+const policyRaw = ref<Record<string, unknown> | null>(null);
+const policyEmpty = ref(false);
+const policyLoadError = ref(false);
+
+const { jsonString: policyJsonString, sizeBytes: policySizeBytes, isLarge: policyIsLarge, lines: policyLines, downloadJson: downloadPolicyJsonBlob } = useJsonPayloadView(policyRaw);
+const policySizeLabel = computed(() => formatBytes(policySizeBytes.value));
+const { list: policyVirtualLines, containerProps: policyContainerProps, wrapperProps: policyWrapperProps } = useVirtualList(policyLines, { itemHeight: 20 });
 
 async function openPolicyJson() {
     jsonOpen.value = true;
-    if (policyJson.value || !import.meta.client) return;
+    if (policyFetched.value || !import.meta.client) return;
     jsonLoading.value = true;
     try {
         const baseURL = config.public.apiBaseUrl as string;
@@ -231,12 +240,18 @@ async function openPolicyJson() {
             `/api/v1/${network.value}/projects/${projectId.value}/policy-json`,
             { baseURL },
         );
-        policyJson.value = raw ? JSON.stringify(raw, null, 2) : '// No decoded policy available for this project.';
+        policyRaw.value = raw ?? null;
+        policyEmpty.value = !raw;
     } catch {
-        policyJson.value = '// Failed to load policy JSON.';
+        policyLoadError.value = true;
     } finally {
         jsonLoading.value = false;
+        policyFetched.value = true;
     }
+}
+
+function downloadPolicyJson() {
+    downloadPolicyJsonBlob(`policy-${projectId.value}.json`);
 }
 </script>
 
@@ -380,15 +395,47 @@ async function openPolicyJson() {
                     <h3 class="flex items-center gap-2 text-sm font-semibold text-foreground">
                         <Braces class="h-4 w-4 text-primary" /> {{ $t('projects.detail.canvas.policyJson') }}
                     </h3>
-                    <button class="text-muted-foreground transition-colors hover:text-foreground" @click="jsonOpen = false">
-                        <X class="h-4 w-4" />
-                    </button>
+                    <div class="flex items-center gap-1">
+                        <button
+                            v-if="policyRaw"
+                            class="flex h-7 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            @click="downloadPolicyJson"
+                        >
+                            <Download class="h-3.5 w-3.5" />
+                            {{ $t('common.download') }}
+                        </button>
+                        <button class="text-muted-foreground transition-colors hover:text-foreground" @click="jsonOpen = false">
+                            <X class="h-4 w-4" />
+                        </button>
+                    </div>
                 </div>
                 <div class="flex-1 overflow-auto p-4">
                     <div v-if="jsonLoading" class="flex items-center justify-center gap-2 py-10 text-xs text-muted-foreground">
                         <Loader2 class="h-4 w-4 animate-spin" /> {{ $t('projects.detail.canvas.loadingJson') }}
                     </div>
-                    <pre v-else class="whitespace-pre-wrap break-words rounded-lg bg-muted/30 p-3 font-mono text-[11px] leading-relaxed text-foreground">{{ policyJson }}</pre>
+                    <div v-else-if="policyLoadError" class="px-3 py-10 text-center text-xs text-muted-foreground">
+                        // Failed to load policy JSON.
+                    </div>
+                    <div v-else-if="policyEmpty" class="px-3 py-10 text-center text-xs text-muted-foreground">
+                        // No decoded policy available for this project.
+                    </div>
+                    <pre v-else-if="!policyIsLarge" class="whitespace-pre-wrap break-words rounded-lg bg-muted/30 p-3 font-mono text-[11px] leading-relaxed text-foreground">{{ policyJsonString }}</pre>
+                    <div v-else class="flex h-full flex-col">
+                        <div class="mb-2 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800 shrink-0">
+                            <AlertTriangle class="h-3.5 w-3.5 mt-0.5 shrink-0" />
+                            <p class="font-medium">{{ $t('vcViewer.largePayloadWarning', { size: policySizeLabel }) }}</p>
+                        </div>
+                        <div v-bind="policyContainerProps" class="flex-1 min-h-0 rounded-lg border bg-muted/20">
+                            <div v-bind="policyWrapperProps">
+                                <div
+                                    v-for="item in policyVirtualLines"
+                                    :key="item.index"
+                                    class="px-3 text-[11px] leading-5 font-mono whitespace-pre"
+                                    style="height: 20px;"
+                                >{{ item.data }}</div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
