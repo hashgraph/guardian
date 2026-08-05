@@ -37,46 +37,6 @@ import { BlockErrorType, IBlockErrorData, IDocumentValidatorBlockError, Location
         ],
         defaultEvent: true,
         properties: [{
-            name: 'conditions',
-            label: 'Conditions',
-            title: 'Conditions',
-            type: PropertyType.Array,
-            editable: true,
-            items: {
-                label: 'Condition',
-                value: '',
-                properties: [
-                    {
-                        name: 'type',
-                        label: 'Type',
-                        title: 'Type',
-                        type: PropertyType.Select,
-                        items: [
-                            { label: 'Equal', value: 'equal' },
-                            { label: 'Not Equal', value: 'not_equal' },
-                            { label: 'In', value: 'in' },
-                            { label: 'Not In', value: 'not_in' }
-                        ],
-                        editable: true
-                    },
-                    {
-                        name: 'field',
-                        label: 'Field',
-                        title: 'Field',
-                        type: PropertyType.Input,
-                        editable: true
-                    },
-                    {
-                        name: 'value',
-                        label: 'Value',
-                        title: 'Value',
-                        type: PropertyType.Input,
-                        editable: true
-                    },
-                ]
-            }
-        },
-        {
             name: 'documentType',
             label: 'Document Type',
             title: 'Document Type',
@@ -150,14 +110,14 @@ export class DocumentValidatorBlock {
     }
 
     private resolveDocumentValue(path: string, document: IPolicyDocument): any {
-        return PolicyUtils.getObjectValue(document, path);
+        return PolicyUtils.resolveFieldPath(document, path);
     }
 
     private resolveSourceValue(path: string, sourceDocuments: any[], operator: string): any {
         if (operator === 'in' || operator === 'not_in') {
-            return sourceDocuments.map((doc) => PolicyUtils.getObjectValue(doc, path)).flat();
+            return sourceDocuments.map((doc) => PolicyUtils.resolveFieldPath(doc, path)).flat();
         }
-        return PolicyUtils.getObjectValue(sourceDocuments[0], path);
+        return PolicyUtils.resolveFieldPath(sourceDocuments[0], path);
     }
 
     private resolveConditionSide(
@@ -491,9 +451,13 @@ export class DocumentValidatorBlock {
         if (options.conditions) {
             for (const filter of options.conditions) {
                 if (!PolicyUtils.checkDocumentField(document, filter)) {
-                    const actual = PolicyUtils.getObjectValue(document, filter.field);
+                    const actual = PolicyUtils.resolveFieldPath(document, filter.field);
+                    const expected = filter.valueSource === 'document'
+                        ? PolicyUtils.resolveFieldPath(document, filter.value)
+                        : filter.value;
+                    const [displayActual, displayExpected] = PolicyUtils.firstFailingPair(actual, filter.type, expected);
                     const label = String(filter.field).split('.').filter((p: string) => p !== 'document' && !/^\d+$/.test(p)).pop() || filter.field;
-                    return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, actual, filter.value)}` };
+                    return { message: `Field "${label}": ${this.describeCrossConditionFailure(filter.type, displayActual, displayExpected)}` };
                 }
             }
         }
