@@ -4,7 +4,7 @@ import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPrese
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
 import { EnumTable, SharedEnumTable } from './models/enum-table.js';
@@ -437,6 +437,8 @@ export class XlsxToJson {
                 }
             }
 
+            XlsxToJson.resolveGeoDependencies(worksheet, fields, xlsxResult);
+
             // Create schemas for inline sub-schema fields
             const seenSchemaNames = new Map<string, SchemaField[]>();
             const createInlineSchemas = (schemaFields: SchemaField[]) => {
@@ -701,6 +703,119 @@ export class XlsxToJson {
         }
     }
 
+    private static findGeoParent(
+        level: SchemaField[],
+        child: SchemaField,
+        reference: string
+    ): SchemaField {
+        const wanted = reference.trim().toLowerCase();
+        for (const candidate of level) {
+            if (candidate === child) {
+                continue;
+            }
+            const key = (candidate.name || '').trim().toLowerCase();
+            const description = (candidate.description || '').trim().toLowerCase();
+            if (key === wanted || description === wanted) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static findGeoParentByKey(
+        level: SchemaField[],
+        child: SchemaField
+    ): SchemaField {
+        if (!child.dependency || !child.dependency.on) {
+            return null;
+        }
+        for (const candidate of level) {
+            if (candidate !== child && candidate.name === child.dependency.on) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static hasGeoCycle(level: SchemaField[], child: SchemaField): boolean {
+        const seen = new Set<SchemaField>();
+        let current: SchemaField = child;
+        while (current) {
+            if (seen.has(current)) {
+                return true;
+            }
+            seen.add(current);
+            current = XlsxToJson.findGeoParentByKey(level, current);
+            if (current === child) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static resolveGeoDependencies(
+        worksheet: Worksheet,
+        level: SchemaField[],
+        xlsxResult: XlsxResult
+    ): void {
+        for (const field of level) {
+            if (!field.dependency || !field.dependency.on) {
+                continue;
+            }
+            if (!isRelationType('geo', field.customType)) {
+                continue;
+            }
+            const reference = field.dependency.on;
+            const parent = XlsxToJson.findGeoParent(level, field, reference);
+            if (!parent) {
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Field "${reference}" not found.`,
+                    message: `Field "${field.description}" declares "${reference}" in the Parameter column, `
+                        + `but no field with that key or description exists at the same level. `
+                        + `Enter the Key of the parent geographic field, or clear the cell.`,
+                    worksheet: worksheet.name,
+                    row: field.order
+                }, field);
+                continue;
+            }
+            if (!isAncestorType('geo', parent.customType, field.customType)) {
+                const allowed = relationParent('geo', field.customType);
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `"${parent.description}" is not a valid parent for "${field.description}".`,
+                    message: `Field "${field.description}" depends on "${parent.description}", `
+                        + `but a "${field.customType}" field can only depend on `
+                        + `${allowed ? `a "${allowed}" field or its own ancestors` : 'nothing'}.`,
+                    worksheet: worksheet.name,
+                    row: field.order
+                }, field);
+                continue;
+            }
+            field.dependency = { on: parent.name, kind: 'geo' };
+        }
+        for (const field of level) {
+            if (field.dependency && XlsxToJson.hasGeoCycle(level, field)) {
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Circular dependency on field "${field.description}".`,
+                    message: `Field "${field.description}" is part of a circular chain of geographic `
+                        + `dependencies. Remove one of the Parameter values in the chain.`,
+                    worksheet: worksheet.name,
+                    row: field.order
+                }, field);
+            }
+        }
+        for (const field of level) {
+            if (Array.isArray(field.fields) && field.fields.length) {
+                XlsxToJson.resolveGeoDependencies(worksheet, field.fields, xlsxResult);
+            }
+        }
+    }
+
     private static readFieldParams(
         worksheet: Worksheet,
         table: Table,
@@ -727,6 +842,13 @@ export class XlsxToJson {
                 const subSchemaName = param || field.description;
                 field.type = xlsxResult.addLink(subSchemaName, null);
                 field.property = subSchemaName;
+            }
+            if (isRelationType('geo', fieldType.customType)) {
+                if (param && relationParent('geo', fieldType.customType)) {
+                    field.dependency = { on: param, kind: 'geo' };
+                } else {
+                    field.dependency = null;
+                }
             }
             if (fieldType.name === 'Enum') {
                 if (!param) {

@@ -383,6 +383,12 @@ export class JsonToXlsx {
                 .setValue(stringToXlsx(field.expression))
                 .setStyle(table.paramStyle);
         }
+        if (field.dependency && field.dependency.on) {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.dependency.on))
+                .setStyle(table.paramStyle);
+        }
         if (field.font) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
