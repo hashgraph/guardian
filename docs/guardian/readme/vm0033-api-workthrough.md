@@ -1,7 +1,3 @@
----
-icon: webhook
----
-
 # VM0033 API Walkthrough
 
 Below is complete API flow to execute Verra VM0033 Methodology:
