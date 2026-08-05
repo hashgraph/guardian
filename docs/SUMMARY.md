@@ -34,6 +34,8 @@
   * [API Guideline](guardian/readme/api-guideline.md)
   * [License](guardian/readme/license.md)
   * [Contact](guardian/readme/contact.md)
+  * [Document Validator Block Source Validations](guardian/readme-1/document-validator-block-source-validations.md)
+  * [Configure Source Validations in documentValidatorBlock](guardian/readme-1/configure-source-validations-in-documentvalidatorblock.md)
 * [Architecture](guardian/architecture/README.md)
   * [High Level Architecture](guardian/architecture/architecture-2.md)
   * [Deep Dive Architecture](guardian/architecture/reference-architecture.md)
