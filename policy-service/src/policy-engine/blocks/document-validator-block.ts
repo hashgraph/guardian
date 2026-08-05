@@ -480,20 +480,6 @@ export class DocumentValidatorBlock {
                 }
             }
         }
-        if (options.checkOwnerOrgDocument || options.checkAssigneeOrgDocument) {
-            const orgId = event?.user?.organization;
-            const memberDids = new Set(await resolveOrgMemberDids(event?.user));
-            if (options.checkOwnerOrgDocument) {
-                if (!orgId || !memberDids.has(document.owner)) {
-                    return { message: 'Invalid owner organization' };
-                }
-            }
-            if (options.checkAssigneeOrgDocument) {
-                if (!orgId || !memberDids.has(document.assignedTo)) {
-                    return { message: 'Invalid assignee organization' };
-                }
-            }
-        }
 
         if (options.schema) {
             const schema = await PolicyUtils.loadSchemaByID(ref, options.schema);
