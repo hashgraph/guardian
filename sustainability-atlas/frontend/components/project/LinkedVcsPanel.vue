@@ -14,6 +14,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 
+// Collapsed by default
+const open = ref(false);
+
 // Per-schema open/closed state. First schema with vcCount > 0 starts expanded.
 const schemaOpenState = ref<Record<string, boolean>>({});
 
@@ -64,22 +67,29 @@ async function copyToClipboard(text: string) {
 </script>
 
 <template>
-    <div class="rounded-xl border bg-card overflow-hidden">
-        <div class="px-5 py-3.5 border-b bg-muted/30">
-            <h2 class="text-sm font-semibold text-foreground flex items-center gap-2">
-                <FileText class="h-4 w-4 text-primary" />
-                {{ $t('projects.detail.linkedVcs.title') }}
-            </h2>
-            <p class="text-[11px] text-muted-foreground mt-0.5">{{ $t('projects.detail.linkedVcs.subtitle') }}</p>
+    <div class="overflow-hidden rounded-xl border bg-card">
+        <!-- Header (click to collapse/expand) -->
+        <div
+            class="cursor-pointer border-b bg-muted/30 px-5 py-3.5 transition-colors hover:bg-muted/50"
+            @click="open = !open"
+        >
+            <div class="flex flex-wrap items-center justify-between gap-3">
+                <h2 class="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <FileText class="h-4 w-4 text-primary" />
+                    {{ $t('projects.detail.linkedVcs.title') }}
+                </h2>
+                <ChevronDown :class="['h-4 w-4 text-muted-foreground transition-transform', open ? 'rotate-180' : '']" />
+            </div>
+            <p class="mt-0.5 text-[11px] text-muted-foreground">{{ $t('projects.detail.linkedVcs.subtitle') }}</p>
         </div>
 
         <!-- No tracking data at all -->
-        <div v-if="!project.linkedSchemas?.length" class="px-5 py-8 text-center text-sm text-muted-foreground">
+        <div v-if="open && !project.linkedSchemas?.length" class="px-5 py-8 text-center text-sm text-muted-foreground">
             {{ $t('projects.detail.linkedVcs.notTracked') }}
         </div>
 
         <!-- Schema cards -->
-        <div v-else class="divide-y">
+        <div v-else-if="open" class="divide-y">
             <div
                 v-for="schema in project.linkedSchemas"
                 :key="schema.schemaUuid"

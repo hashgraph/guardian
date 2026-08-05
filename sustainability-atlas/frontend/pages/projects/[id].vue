@@ -672,11 +672,9 @@ const emissions = computed(() => {
                     </button>
                 </div>
 
-                <!-- Pipeline (moved from the former Pipeline tab) -->
                 <ClientOnly>
                     <ProjectPolicyCanvas :project="project" />
                 </ClientOnly>
-                <ProjectPipeline :project="project" />
 
                 <!-- Linked VCs (raw) -->
                 <LinkedVcsPanel
@@ -685,9 +683,6 @@ const emissions = computed(() => {
                     :loading-id="vcViewerLoadingId"
                     @view-vc-json="handleViewVcJson"
                 />
-
-                <!-- Trust Chain (moved from Pipeline tab) -->
-                <ProjectTrustChain :project="project" />
 
                 <!-- Methodology Field Mapping (lazy) -->
                 <div class="rounded-xl border bg-card overflow-hidden">
