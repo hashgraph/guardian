@@ -59,4 +59,6 @@ export enum MessageAction {
     CreateComment = 'create-policy-comment',
     CreateDiscussion = 'create-policy-discussion',
     PolicyRecordStep = 'policy-record-step',
+    CreateOrganization = 'create-organization',
+    EnrollMember = 'enroll-member',
 }

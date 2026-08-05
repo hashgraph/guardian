@@ -1,6 +1,6 @@
 import { ActionCallback, TokenBlock } from '../helpers/decorators/index.js';
 import { BlockActionError } from '../errors/index.js';
-import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType, LocationType } from '@guardian/interfaces';
+import { DocumentSignature, SchemaEntity, SchemaHelper, DocumentCategoryType, LocationType, OrgRolePermission } from '@guardian/interfaces';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { HederaDidDocument, MessageAction, MessageMemo, MessageServer, Token as TokenCollection, VcDocumentDefinition as VcDocument, VcHelper, VCMessage, VPMessage, } from '@guardian/common';
@@ -13,6 +13,7 @@ import { PolicyUser, UserCredentials } from '../policy-user.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
 import { MintService } from '../mint/mint-service.js';
 import { RecordActionStep } from '../record-action-step.js';
+import { checkOrgTokenPermission } from '../helpers/org-utils.js';
 
 /**
  * Mint block
@@ -544,6 +545,18 @@ export class MintBlock {
 
         const relayerAccount = await PolicyUtils.getDocumentRelayerAccount(ref, docs[0], userId);
         const targetAccount = await this.getAccount(ref, docs, accounts, relayerAccount, userId, event.user);
+
+        // Org token guards must stay in run(): it is the single convergence point of both
+        // entry events (RunEvent and AdditionalMintEvent) — a guard in runAction() alone
+        // would be bypassed by AdditionalMintEvent.
+        const mintUser = event.user;
+        const mintOptions = await ref.getOptions(mintUser);
+        if (mintOptions.accountType === 'custom-value') {
+            await checkOrgTokenPermission(ref, mintUser, targetAccount, OrgRolePermission.TOKEN_MINTING, userId);
+        }
+        if (relayerAccount !== mintUser?.hederaAccountId) {
+            await checkOrgTokenPermission(ref, mintUser, relayerAccount, OrgRolePermission.TOKEN_TRANSFER, userId);
+        }
 
         const [vp, amount] = await this.mintProcessing(
             token,

@@ -64,6 +64,21 @@ export enum MessageAPI {
     KYC_TOKEN_ASYNC = 'KYC_TOKEN_ASYNC',
     ASSOCIATE_TOKEN = 'ASSOCIATE_TOKEN',
     ASSOCIATE_TOKEN_ASYNC = 'ASSOCIATE_TOKEN_ASYNC',
+    /**
+     * Associate/dissociate a token with an Organization's Hedera wallet, gated by the
+     * caller's org-role permissions (TOKEN_ASSOCIATE/TOKEN_DISSOCIATE), org-owner bypass.
+     */
+    ASSOCIATE_ORG_TOKEN = 'ASSOCIATE_ORG_TOKEN',
+    /**
+     * Grant/revoke KYC for a token on an Organization's Hedera wallet. SR org-owner
+     * only: signing uses the SR's TOKEN_KYC_KEY, so this is a token-owner action.
+     */
+    GRANT_ORG_KYC_TOKEN = 'GRANT_ORG_KYC_TOKEN',
+    /**
+     * Transfer tokens FROM an Organization's Hedera wallet, signed with the org key.
+     * Gated by the caller's org-role permission TOKEN_TRANSFER, org-owner bypass.
+     */
+    TRANSFER_ORG_TOKEN = 'TRANSFER_ORG_TOKEN',
     GET_ASSOCIATED_TOKENS = 'GET_ASSOCIATED_TOKENS',
     GET_INFO_TOKEN = 'GET_INFO_TOKEN',
     GET_RELAYER_ACCOUNT_INFO = 'GET_RELAYER_ACCOUNT_INFO',
@@ -338,6 +353,11 @@ export enum MessageAPI {
 
     TRANSFER_TOKEN = 'TRANSFER_TOKEN',
     TRANSFER_TOKEN_ASYNC = 'TRANSFER_TOKEN_ASYNC',
+
+    // --- Organization orchestration (guardian-service) ---
+    PUBLISH_ORGANIZATION = 'PUBLISH_ORGANIZATION',
+    ENROLL_ORGANIZATION_MEMBER = 'ENROLL_ORGANIZATION_MEMBER',
+    GET_ORG_POLICY_IDS_FOR_USER = 'GET_ORG_POLICY_IDS_FOR_USER',
 
     // Policy data query — read-only dynamic query for policy-committed documents
     GET_POLICY_DATA_DOCUMENTS = 'GET_POLICY_DATA_DOCUMENTS',

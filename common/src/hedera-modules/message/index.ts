@@ -32,3 +32,4 @@ export { SchemaPackageMessage } from './schema-package-message.js';
 export { CommentMessage } from './comment-message.js';
 export { DiscussionMessage } from './discussion-message.js';
 export { PolicyRecordMessage } from './policy-record-message.js';
+export { OrganizationMessage } from './organization-message.js';

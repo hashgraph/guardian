@@ -56,3 +56,4 @@ export * from './script-language-option.type.js';
 export * from './integration-data.type.js';
 export * from './record.type.js';
 export * from './integration-type.type.js';
+export * from './org-role-permission.type.js';

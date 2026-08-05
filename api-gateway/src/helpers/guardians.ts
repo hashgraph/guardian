@@ -512,6 +512,77 @@ export class Guardians extends NatsService {
     }
 
     /**
+     * Associate/dissociate a token with an Organization's Hedera wallet, gated by the
+     * caller's org-role permissions (TOKEN_ASSOCIATE/TOKEN_DISSOCIATE), org-owner bypass.
+     * @param orgId
+     * @param tokenId
+     * @param associate
+     * @param owner
+     */
+    public async associateOrgToken(
+        orgId: string,
+        tokenId: string,
+        associate: boolean,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.ASSOCIATE_ORG_TOKEN, {
+            orgId,
+            tokenId,
+            associate,
+            owner,
+        });
+    }
+
+    /**
+     * Grant/revoke KYC for a token on an Organization's Hedera wallet.
+     * SR org-owner only (the KYC signature is the SR's TOKEN_KYC_KEY).
+     * @param orgId
+     * @param tokenId
+     * @param grant
+     * @param owner
+     */
+    public async grantKycOrgToken(
+        orgId: string,
+        tokenId: string,
+        grant: boolean,
+        owner: IOwner
+    ): Promise<ITokenInfo> {
+        return await this.sendMessage(MessageAPI.GRANT_ORG_KYC_TOKEN, {
+            orgId,
+            tokenId,
+            grant,
+            owner,
+        });
+    }
+
+    /**
+     * Transfer tokens FROM an Organization's Hedera wallet, gated by the caller's org-role
+     * permission TOKEN_TRANSFER (org-owner bypass).
+     * @param orgId
+     * @param tokenId
+     * @param body
+     * @param owner
+     */
+    public async transferOrgToken(
+        orgId: string,
+        tokenId: string,
+        body: {
+            targetAccount: string,
+            amount?: number,
+            serialNumbers?: number[],
+            memo?: string
+        },
+        owner: IOwner
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.TRANSFER_ORG_TOKEN, {
+            orgId,
+            tokenId,
+            body,
+            owner,
+        });
+    }
+
+    /**
      * Transfer token
      * @param tokenId
      * @param body
@@ -4462,6 +4533,45 @@ export class Guardians extends NatsService {
             serviceType,
             dryRun,
         });
+    }
+
+    // ============================================================
+    // Organization orchestration (delegates to guardian-service)
+    // ============================================================
+
+    /**
+     * Publish a DRAFT organization on the ledger: creates the org topic under the SR/global
+     * topic, publishes DID + OrganizationMessage, stores keys in the org wallet, and persists
+     * the hydrated record.
+     */
+    public async publishOrganization(
+        payload: {
+            organizationId: string,
+            hederaAccountId: string,
+            hederaAccountKey: string,
+            description?: string
+        },
+        owner: IOwner,
+        userId: string | null
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.PUBLISH_ORGANIZATION, { payload, owner, userId });
+    }
+
+    /**
+     * Enroll a member into a published organization: publishes RegistrationMessage(Init) on the
+     * org topic carrying the member DID + role-name attributes, then persists the
+     * OrganizationMember record with the resulting messageId.
+     */
+    public async enrollOrganizationMember(
+        payload: {
+            organizationId: string,
+            did: string,
+            orgRoleId: string
+        },
+        owner: IOwner,
+        userId: string | null
+    ): Promise<any> {
+        return await this.sendMessage(MessageAPI.ENROLL_ORGANIZATION_MEMBER, { payload, owner, userId });
     }
 
 }
