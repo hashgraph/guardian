@@ -1,3 +1,8 @@
+---
+tags:
+  - tasks
+---
+
 # Configure Source Validations in documentValidatorBlock
 
 Add one or more Source Validation entries to a `documentValidatorBlock` to make a policy step verify that a related document already exists in the Guardian database before allowing the workflow to continue.
@@ -71,4 +76,4 @@ When the policy executes this block, it processes each Source Validation entry i
 ### Related
 
 * Concept: [Document Validator Block Source Validations](document-validator-block-source-validations.md)
-* Reference: [documentValidatorBlock](../standard-registry/policies/policy-creation/introduction/documentvalidatorblock.md)
+* Reference: [documentValidatorBlock](./)

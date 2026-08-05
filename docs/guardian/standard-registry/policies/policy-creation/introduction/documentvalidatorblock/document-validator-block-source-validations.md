@@ -1,3 +1,8 @@
+---
+tags:
+  - concept
+---
+
 # Document Validator Block Source Validations
 
 The Source Validations feature of `documentValidatorBlock` lets a policy step verify that a related document already exists in the Guardian database and that specific fields on that document satisfy conditions defined against the incoming document — before the workflow is allowed to proceed.
@@ -48,4 +53,4 @@ Any step that fails stops evaluation immediately and emits the error event.
 ### Related
 
 * Task: [Configure Source Validations in documentValidatorBlock](configure-source-validations-in-documentvalidatorblock.md)
-* Reference: [documentValidatorBlock](../standard-registry/policies/policy-creation/introduction/documentvalidatorblock.md)
+* Reference: [documentValidatorBlock](./)
