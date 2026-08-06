@@ -75,15 +75,15 @@ function setNestedField(obj: any, fieldPath: string, value: any): any {
 
 export class GridActionResolver {
 
-
     static computeGridId(block: IPolicyBlock): string {
         return stableId(block);
     }
 
-
     static resolveGridBlock(policyId: string, gridId: string): IPolicyBlock | null {
         const tagMap = PolicyComponentsUtils.GetTagBlockMap(policyId);
-        if (!tagMap) return null;
+        if (!tagMap) {
+            return null;
+        }
 
         // Fast path: gridId matches a tag directly
         if (tagMap.has(gridId)) {
@@ -112,22 +112,30 @@ export class GridActionResolver {
         buttonTag?: string;
     } | null {
         const gridBlock = GridActionResolver.resolveGridBlock(policyId, gridId);
-        if (!gridBlock) return null;
+        if (!gridBlock) {
+            return null;
+        }
 
         const tagMap = PolicyComponentsUtils.GetTagBlockMap(policyId);
-        if (!tagMap) return null;
+        if (!tagMap) {
+            return null;
+        }
 
         const fields: any[] = gridBlock.options?.uiMetaData?.fields || [];
         const visited = new Set<string>();
 
         for (const field of fields) {
             for (const bindTag of collectBindTags(field)) {
-                if (visited.has(bindTag) || !tagMap.has(bindTag)) continue;
+                if (visited.has(bindTag) || !tagMap.has(bindTag)) {
+                    continue;
+                }
                 visited.add(bindTag);
 
                 const uuid = tagMap.get(bindTag)!;
                 const actionBlock = PolicyComponentsUtils.GetBlockByUUID<IPolicyBlock>(uuid);
-                if (!actionBlock) continue;
+                if (!actionBlock) {
+                    continue;
+                }
 
                 const blockType = actionBlock.blockType;
                 const opts = actionBlock.options || {};
@@ -177,20 +185,28 @@ export class GridActionResolver {
 
     static async getGrids(policyId: string, user: PolicyUser): Promise<IExternalGrid[]> {
         const tagMap = PolicyComponentsUtils.GetTagBlockMap(policyId);
-        if (!tagMap) return [];
+        if (!tagMap) {
+            return [];
+        }
 
         const grids: IExternalGrid[] = [];
         const seenUuids = new Set<string>();
 
         for (const [, uuid] of tagMap) {
-            if (seenUuids.has(uuid)) continue;
+            if (seenUuids.has(uuid)) {
+                continue;
+            }
             seenUuids.add(uuid);
 
             const block = PolicyComponentsUtils.GetBlockByUUID<IPolicyBlock>(uuid);
-            if (!block || block.blockType !== 'interfaceDocumentsSourceBlock') continue;
+            if (!block || block.blockType !== 'interfaceDocumentsSourceBlock') {
+                continue;
+            }
 
             const available = await block.isAvailable(user);
-            if (!available) continue;
+            if (!available) {
+                continue;
+            }
 
             grids.push(GridActionResolver.buildGridDescriptor(block));
         }
@@ -205,7 +221,9 @@ export class GridActionResolver {
 
         const filterSchema: IExternalFilterAddon[] = [];
         for (const child of children) {
-            if (child.blockType !== 'filtersAddon') continue;
+            if (child.blockType !== 'filtersAddon') {
+                continue;
+            }
             const co = child.options || {};
             filterSchema.push({
                 filterId: stableId(child),
@@ -246,7 +264,9 @@ export class GridActionResolver {
         }
 
         const tagMap = PolicyComponentsUtils.GetTagBlockMap(policyId);
-        if (!tagMap) return [];
+        if (!tagMap) {
+            return [];
+        }
 
         const fields: any[] = gridBlock.options?.uiMetaData?.fields || [];
         const visited = new Set<string>();
@@ -254,15 +274,21 @@ export class GridActionResolver {
 
         for (const field of fields) {
             for (const bindTag of collectBindTags(field)) {
-                if (visited.has(bindTag) || !tagMap.has(bindTag)) continue;
+                if (visited.has(bindTag) || !tagMap.has(bindTag)) {
+                    continue;
+                }
                 visited.add(bindTag);
 
                 const uuid = tagMap.get(bindTag)!;
                 const actionBlock = PolicyComponentsUtils.GetBlockByUUID<IPolicyBlock>(uuid);
-                if (!actionBlock) continue;
+                if (!actionBlock) {
+                    continue;
+                }
 
                 const blockAvailable = await actionBlock.isAvailable(user);
-                if (!blockAvailable) continue;
+                if (!blockAvailable) {
+                    continue;
+                }
 
                 const blockType = actionBlock.blockType;
                 const opts = actionBlock.options || {};
@@ -280,7 +306,7 @@ export class GridActionResolver {
                             });
                         }
                     } else if (opts.type === 'dropdown') {
-                        let options: Array<{ name: any; value: any }> = [];
+                        let options: { name: any; value: any }[] = [];
                         try {
                             const dataResult = await PolicyComponentsUtils.blockGetData(
                                 actionBlock as IPolicyInterfaceBlock, user, {}
