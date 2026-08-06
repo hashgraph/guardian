@@ -446,7 +446,7 @@ export class FieldForm {
     public addParentControlledField(field: SchemaField, containerPreset?: any): void {
         if (!this.fieldControls) { this.fieldControls = []; }
         if (this.fieldControls.find(c => c.name === field.name)) { return; }
-        const item = this.createFieldControl(field, containerPreset?.[field.name]);
+        const item = this.createFieldControl(field, containerPreset);
         this.fieldControls.push(item);
         if (item.control) {
             this.form.addControl(item.name, item.control, { emitEvent: false });

@@ -647,8 +647,8 @@ export class SchemaHelper {
                     elseTargets: elseForbiddenTargets,
                     cleanNode: cleanElse,
                 } = extractCrossTargets(n.else);
-                const thenFields = buildFields(cleanThen);
-                const elseFields = buildFields(cleanElse);
+                const thenFields = buildFields(cleanThen).map(f => fields.find(ef => ef.name === f.name) ?? f);
+                const elseFields = buildFields(cleanElse).map(f => fields.find(ef => ef.name === f.name) ?? f);
                 const allThenTargets = dedupeTargets([...thenTargets, ...elseForbiddenTargets]);
                 const allElseTargets = dedupeTargets([...elseTargets, ...elseRequiredTargets]);
                 const condition: any = { ifCondition, thenFields, elseFields };
@@ -906,6 +906,7 @@ export class SchemaHelper {
             if (!targets?.length) { return undefined; }
             const root: any = {};
             for (const t of targets) {
+                if (!t.field.required) { continue; }
                 const path = t.fieldPath;
                 if (!path || path.length < 2) { continue; }
                 let node = root;
