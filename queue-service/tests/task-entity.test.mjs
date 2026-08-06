@@ -153,6 +153,26 @@ describe('TaskEntity large-payload GridFS offloading', () => {
         assert.equal(t.data, null);
     });
 
+    it('records the serialized payload size on create', async () => {
+        const t = new TaskEntity();
+        stubFiles(t);
+        t.data = smallData();
+
+        await t.offloadDataOnCreate();
+
+        assert.equal(t.dataSize, Buffer.byteLength(JSON.stringify(smallData())));
+    });
+
+    it('records the size of offloaded payloads too', async () => {
+        const t = new TaskEntity();
+        stubFiles(t);
+        t.data = largeData();
+
+        await t.offloadDataOnCreate();
+
+        assert.ok(t.dataSize > 5 * 1024 * 1024);
+    });
+
     it('restore is a no-op when data was never offloaded', async () => {
         const t = new TaskEntity();
         const calls = stubFiles(t);
