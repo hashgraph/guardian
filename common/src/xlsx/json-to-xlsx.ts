@@ -1,4 +1,4 @@
-import { Dictionary, FieldTypes } from './models/dictionary.js';
+import { Dictionary, FieldTypes, geoDisplayValue } from './models/dictionary.js';
 import { anyToXlsx, examplesToXlsx, booleanToXlsx, entityToXlsx, fontToXlsx, stringToXlsx, typeToXlsx, unitToXlsx, valueToFormula, visibilityToXlsx } from './models/value-converters.js';
 import { Hyperlink, Range, Workbook, Worksheet } from './models/workbook.js';
 import { Table } from './models/table.js';
@@ -383,6 +383,12 @@ export class JsonToXlsx {
                 .setValue(stringToXlsx(field.expression))
                 .setStyle(table.paramStyle);
         }
+        if (field.dependency && field.dependency.on && field.dependency.kind === 'geo') {
+            worksheet
+                .getCell(table.getCol(Dictionary.PARAMETER), row)
+                .setValue(stringToXlsx(field.dependency.on))
+                .setStyle(table.paramStyle);
+        }
         if (field.font) {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
@@ -420,10 +426,10 @@ export class JsonToXlsx {
             .setValue(examplesToXlsx(field));
         worksheet
             .getCell(table.getCol(Dictionary.DEFAULT), row)
-            .setValue(anyToXlsx(field.default));
+            .setValue(anyToXlsx(geoDisplayValue(field.customType, field.default)));
         worksheet
             .getCell(table.getCol(Dictionary.SUGGEST), row)
-            .setValue(anyToXlsx(field.suggest));
+            .setValue(anyToXlsx(geoDisplayValue(field.customType, field.suggest)));
 
         if (field.hidden) {
             worksheet
