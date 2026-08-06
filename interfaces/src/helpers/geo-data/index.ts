@@ -30,6 +30,18 @@ export function isContinent(code: string): boolean {
     return Object.prototype.hasOwnProperty.call(continents, code);
 }
 
+export function getCountryName(code: string): string | null {
+    return isCountry(code)
+        ? countries[code as keyof typeof countries].name
+        : null;
+}
+
+export function getContinentName(code: string): string | null {
+    return isContinent(code)
+        ? continents[code as keyof typeof continents]
+        : null;
+}
+
 export function getAllContinents(): { value: string; name: string }[] {
     return Object.entries(continents).map(([value, name]) => ({
         value,
