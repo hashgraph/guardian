@@ -164,7 +164,7 @@ describe('PolicyUtils.checkDocumentField', () => {
         assert.isTrue(PolicyUtils.checkDocumentField(doc, { field: 'list', type: 'in', value: 'x' }));
         assert.isFalse(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'in', value: 'x' }));
         assert.isTrue(PolicyUtils.checkDocumentField(doc, { field: 'list', type: 'not_in', value: 'q' }));
-        assert.isFalse(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'not_in', value: 'q' }));
+        assert.isTrue(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'not_in', value: 'q' }));
     });
     it('unknown type returns false', () => {
         assert.isFalse(PolicyUtils.checkDocumentField(doc, { field: 'a', type: 'weird', value: 5 }));

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { TableHeader } from '../../../dist/xlsx/models/table-header.js';
-import { EnumTable } from '../../../dist/xlsx/models/enum-table.js';
+import { EnumTable, SharedEnumTable } from '../../../dist/xlsx/models/enum-table.js';
 
 describe('TableHeader', () => {
     it('captures title + required (default false) and starts unplaced', () => {
@@ -37,7 +37,7 @@ describe('TableHeader', () => {
 });
 
 describe('EnumTable construction', () => {
-    it('exposes a single header (Loaded to IPFS)', () => {
+    it('exposes 1 header (Loaded to IPFS)', () => {
         const t = new EnumTable({ c: 1, r: 1 });
         const titles = Array.from(t.headers).map((h) => h.title);
         assert.deepEqual(titles, ['Loaded to IPFS']);
@@ -65,50 +65,36 @@ describe('EnumTable construction', () => {
     });
 });
 
-describe('EnumTable.setDefault + getRow/getCol', () => {
-    it('places the header on start.r', () => {
-        const t = new EnumTable({ c: 2, r: 5 });
-        t.setDefault();
-        assert.equal(t.getRow('Loaded to IPFS'), 5);
+describe('EnumTable import path: setRow + getRow', () => {
+    it('setRow places Loaded to IPFS at the row found in the file', () => {
+        const t = new EnumTable({ c: 1, r: 1 });
+        t.setRow('Loaded to IPFS', 3);
+        assert.equal(t.getRow('Loaded to IPFS'), 3);
     });
 
-    it('setDefault assigns the column from start.c', () => {
-        const t = new EnumTable({ c: 4, r: 1 });
-        t.setDefault();
-        assert.equal(t.getCol(), 4);
-    });
-
-    it('setDefault advances end by (start.c+2, start.r+headers.size)', () => {
-        const t = new EnumTable({ c: 4, r: 1 });
-        t.setDefault();
-        assert.deepEqual(t.end, { c: 6, r: 2 });
+    it('getRow returns -1 before setRow is called', () => {
+        const t = new EnumTable({ c: 1, r: 1 });
+        assert.equal(t.getRow('Loaded to IPFS'), -1);
     });
 });
 
-describe('EnumTable.setRow / setCol / setEnd', () => {
-    it('setRow updates only the row of the named header', () => {
-        const t = new EnumTable({ c: 1, r: 1 });
-        t.setRow('Loaded to IPFS', 99);
-        assert.equal(t.getRow('Loaded to IPFS'), 99);
+describe('SharedEnumTable column layout', () => {
+    it('defines 3 columns in the correct order (Name / IPFS / Value)', () => {
+        assert.equal(SharedEnumTable.COL_NAME, 1);
+        assert.equal(SharedEnumTable.COL_IPFS, 2);
+        assert.equal(SharedEnumTable.COL_VALUE, 3);
     });
 
-    it('setCol updates the table column', () => {
-        const t = new EnumTable({ c: 1, r: 1 });
-        t.setCol(7);
-        assert.equal(t.getCol(), 7);
+    it('header row is 1 and first data row is 2', () => {
+        assert.equal(SharedEnumTable.HEADER_ROW, 1);
+        assert.equal(SharedEnumTable.FIRST_DATA_ROW, 2);
     });
 
-    it('setEnd updates the end coordinate', () => {
-        const t = new EnumTable({ c: 1, r: 1 });
-        t.setEnd(10, 20);
-        assert.deepEqual(t.end, { c: 10, r: 20 });
+    it('headerStyle and itemStyle have a font defined', () => {
+        const t = new SharedEnumTable();
+        assert.ok(t.headerStyle.font);
+        assert.ok(t.itemStyle.font);
     });
 });
 
-describe('EnumTable.getErrorHeader', () => {
-    it('returns null when no required header is unplaced', () => {
-        const t = new EnumTable({ c: 1, r: 1 });
-        // Default headers are not required.
-        assert.equal(t.getErrorHeader(), null);
-    });
-});
+
