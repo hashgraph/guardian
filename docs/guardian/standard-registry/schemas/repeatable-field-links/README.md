@@ -28,31 +28,23 @@ Because the entries are paired one-to-one, conditions are also evaluated per ent
 
 Add the source entries — here, two project locations:
 
-![Source field with two location entries added](../../../../.gitbook/assets/repeatable-links-form-source.png)
 
 Each location is its own block with its own fields:
 
-![First location entry block](../../../../.gitbook/assets/repeatable-links-form-location-1.png)
 
-![Second location entry block](../../../../.gitbook/assets/repeatable-links-form-location-2.png)
 
 Each linked section then gets a matching entry, labelled by the display name, with copied fields filled and read-only:
 
-![Each linked section gets a matching entry, labelled by the display name, with copied fields filled and read-only](../../../../.gitbook/assets/repeatable-links-form-entries.png)
 
 **Different fields for each entry**
 
 Each entry runs its conditions independently. The first location chose _Quantification Approach 3_ — its monitoring card expands and shows the conditional fields:
 
-![Monitoring section for location 1 — card expanded](../../../../.gitbook/assets/repeatable-links-form-monitoring-1.png)
 
-![Conditional fields shown for location 1](../../../../.gitbook/assets/repeatable-links-form-shown.png)
 
 The second location chose _Quantification Approach 1_ — the same card hides those fields:
 
-![Monitoring section for location 2 — card collapsed](../../../../.gitbook/assets/repeatable-links-form-monitoring-2.png)
 
-![Conditional fields hidden for location 2](../../../../.gitbook/assets/repeatable-links-form-hidden.png)
 
 #### Key distinctions
 

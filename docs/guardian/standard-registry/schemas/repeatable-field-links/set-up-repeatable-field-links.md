@@ -18,7 +18,6 @@ Configure a source repeatable field to drive one or more dependent repeatable fi
 
 Switch to the **Repeatable links** tab in the schema editor. The tab shows the existing links defined for this schema.
 
-![Repeatable links tab showing existing dependencies](../../../../.gitbook/assets/repeatable-links-copied-values.png)
 
 **2. Add a link**
 
@@ -30,15 +29,12 @@ Fill in the link form and click **Add link**:
 
 Repeat to add more links. One source can drive several dependents, and a dependent can itself become the source for the next field.
 
-![Add link form with Source array, Dependent array, and Display name fields](../../../../.gitbook/assets/repeatable-links-add-link.png)
 
-![Repeatable links tab showing existing links and a new link form with Display name filled](../../../../.gitbook/assets/repeatable-links-add-link-display-name.png)
 
 **3. Copy values between entries (optional)**
 
 Before clicking **Add link**, use **Add value** to map a field from the source entry to a field in the dependent entry. The value is copied automatically and shown as read-only. Add as many pairs as needed — they appear under **Copied values** in the link form.
 
-![Link form with a Copied values pair configured](../../../../.gitbook/assets/repeatable-links-add-link-filled.png)
 
 **4. Save the schema**
 
@@ -50,11 +46,9 @@ Switch to the **Conditions** tab and add a condition.
 
 * In **When**, choose the controlling field. Fields inside linked entries are available here — not just top-level schema fields. Set the value that triggers the rule.
 
-![Condition When clause with the controlling field and value selected](../../../../.gitbook/assets/repeatable-links-condition-when.png)
 
 * In **THEN** and **ELSE**, add the target fields. Each target can be a single field or a whole sub-schema block. Selecting a block adds one target instead of listing every field it contains; it is marked with a **Sub-schema** tag.
 
-![Condition target selector showing Sub-schema option](../../../../.gitbook/assets/repeatable-links-condition-target.png)
 
 Click **Save all**.
 
