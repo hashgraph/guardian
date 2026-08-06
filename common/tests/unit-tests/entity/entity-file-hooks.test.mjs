@@ -14,6 +14,7 @@ function makeBucket() {
             let chunks = [];
             return {
                 id,
+                on() { return this; },
                 write(buf) { chunks.push(Buffer.from(buf)); },
                 end(cb) { store.set(id.toString(), Buffer.concat(chunks)); if (cb) { cb(); } },
             };

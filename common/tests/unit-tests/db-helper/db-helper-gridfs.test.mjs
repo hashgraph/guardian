@@ -13,13 +13,17 @@ function makeBucket() {
             const id = new ObjectId(ObjectId.generate());
             return {
                 id,
+                on() { return this; },
                 write(buf) { calls.push(['write', name, buf]); },
                 end(cb) { calls.push(['end', name]); cb(); },
             };
         },
         openUploadStreamWithId(id, name) {
             return {
-                end(buf, cb) { calls.push(['endWithId', id, name, buf]); cb(state.endError || undefined); },
+                id,
+                on() { return this; },
+                write(buf) { calls.push(['endWithId', id, name, buf]); },
+                end(cb) { cb(state.endError || undefined); },
             };
         },
         async delete(id) { calls.push(['delete', id]); if (state.deleteError) { throw state.deleteError; } },
