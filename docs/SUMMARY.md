@@ -70,6 +70,8 @@
     * [Importing a Schema](guardian/standard-registry/schemas/importing-schema-using-ui.md)
     * [Repeatable Field Links](guardian/standard-registry/schemas/repeatable-field-links/README.md)
       * [Set up Repeatable Field Links](guardian/standard-registry/schemas/repeatable-field-links/set-up-repeatable-field-links.md)
+    * [Geo Fields](guardian/standard-registry/schemas/geo-fields/README.md)
+      * [Configure Geo Fields](guardian/standard-registry/schemas/geo-fields/configure-geo-fields.md)
     * [Cross-Schema Conditions](guardian/standard-registry/schemas/cross-schema-conditions/README.md)
       * [Configure Nested and Cross-Schema Conditions](guardian/standard-registry/schemas/cross-schema-conditions/configure-nested-and-cross-schema-conditions.md)
     * [Adding Example Data](guardian/standard-registry/schemas/adding-example-data-using-ui.md)
