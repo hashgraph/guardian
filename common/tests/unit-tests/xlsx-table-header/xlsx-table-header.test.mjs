@@ -37,10 +37,10 @@ describe('TableHeader', () => {
 });
 
 describe('EnumTable construction', () => {
-    it('exposes 3 headers (Schema name / Field name / Loaded to IPFS)', () => {
+    it('exposes a single header (Loaded to IPFS)', () => {
         const t = new EnumTable({ c: 1, r: 1 });
         const titles = Array.from(t.headers).map((h) => h.title);
-        assert.deepEqual(titles, ['Schema name', 'Field name', 'Loaded to IPFS']);
+        assert.deepEqual(titles, ['Loaded to IPFS']);
     });
 
     it('every header has a configured style and width=30', () => {
@@ -66,12 +66,10 @@ describe('EnumTable construction', () => {
 });
 
 describe('EnumTable.setDefault + getRow/getCol', () => {
-    it('places each header on its own row at start.c', () => {
+    it('places the header on start.r', () => {
         const t = new EnumTable({ c: 2, r: 5 });
         t.setDefault();
-        assert.equal(t.getRow('Schema name'), 5);
-        assert.equal(t.getRow('Field name'), 6);
-        assert.equal(t.getRow('Loaded to IPFS'), 7);
+        assert.equal(t.getRow('Loaded to IPFS'), 5);
     });
 
     it('setDefault assigns the column from start.c', () => {
@@ -83,15 +81,15 @@ describe('EnumTable.setDefault + getRow/getCol', () => {
     it('setDefault advances end by (start.c+2, start.r+headers.size)', () => {
         const t = new EnumTable({ c: 4, r: 1 });
         t.setDefault();
-        assert.deepEqual(t.end, { c: 6, r: 4 });
+        assert.deepEqual(t.end, { c: 6, r: 2 });
     });
 });
 
 describe('EnumTable.setRow / setCol / setEnd', () => {
     it('setRow updates only the row of the named header', () => {
         const t = new EnumTable({ c: 1, r: 1 });
-        t.setRow('Schema name', 99);
-        assert.equal(t.getRow('Schema name'), 99);
+        t.setRow('Loaded to IPFS', 99);
+        assert.equal(t.getRow('Loaded to IPFS'), 99);
     });
 
     it('setCol updates the table column', () => {
