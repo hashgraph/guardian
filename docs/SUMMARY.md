@@ -68,6 +68,8 @@
     * [Creating Schema using UI](guardian/standard-registry/schemas/creating-system-schema-using-ui.md)
     * [Importing Schema using UI](guardian/standard-registry/schemas/importing-schema-using-ui.md)
     * [Deleting Schema](guardian/standard-registry/schemas/deleting-schema.md)
+    * [Geo Fields](guardian/standard-registry/schemas/geo-fields/README.md)
+      * [Configure Geo Fields](guardian/standard-registry/schemas/geo-fields/configure-geo-fields.md)
     * [Cross-Schema Conditions](guardian/standard-registry/schemas/cross-schema-conditions/README.md)
       * [Configure Nested and Cross-Schema Conditions](guardian/standard-registry/schemas/cross-schema-conditions/configure-nested-and-cross-schema-conditions.md)
     * [Schema Differentiation](guardian/standard-registry/schemas/schema-differentiation/README.md)
