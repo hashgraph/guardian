@@ -64,12 +64,12 @@ export class DocumentValidatorConfigComponent implements OnInit {
         { label: 'Variable (Input Doc)', value: 'variable' },
     ];
 
-    conditionValueSourceOptions = [
+    conditionDocumentSourceOptions = [
         { label: 'Value', value: 'value' },
         { label: 'Input Document', value: 'document' },
     ];
 
-    conditionSourceOptions = [
+    crossConditionSourceOptions = [
         { label: 'Value', value: 'value' },
         { label: 'Input Document', value: 'document' },
         { label: 'Source Document', value: 'source' },

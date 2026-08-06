@@ -36,13 +36,13 @@ The following document types are supported:
 
 The Field of the document to validate the Value parameter.
 
-Field paths use dot-notation and support array traversal. When a segment resolves to an array the remainder of the path is mapped over each element, producing a list of leaf values that is then checked with **for-all** semantics — the condition passes only if every element satisfies it.
+Field paths use dot-notation and support array traversal. When a segment resolves to an array the remainder of the path is mapped over each element, producing a list of leaf values that is then checked with **for-all** semantics – the condition passes only if every element satisfies it.
 
 Special segments:
-* **`L`** — last element of the array (e.g. `items.L.qty`)
-* **`0`, `1`, … (integer)** — element at that index (e.g. `items.0.qty`)
+* **`L`** – last element of the array (e.g. `items.L.qty`)
+* **`0`, `1`, … (integer)** – element at that index (e.g. `items.0.qty`)
 
-> **Empty-array behaviour**: if the field resolves to an empty array the condition always **fails**, regardless of operator.
+> **Empty-array behaviour**: if one side resolves to an empty array and the other side is a scalar, the condition **fails** (no elements to validate). Two empty arrays (`[] equal []`) pass because for-all over an empty set is vacuously true.
 
 #### Value Type:
 
@@ -59,4 +59,4 @@ When both Field and Value resolve to arrays of the same length a **pairwise** co
 
 The content of this parameter is compared to the content of the Field. When Value Type is **Input Document** this is a dot-notation field path; otherwise it is a literal value.
 
-**`in` / `not_in` with Input Document**: if the value path resolves to an array, membership is checked — i.e. the field value must appear in (or be absent from) that collection.
+**`in` / `not_in` with Input Document**: if the value path resolves to an array, membership is checked – i.e. the field value must appear in (or be absent from) that collection.

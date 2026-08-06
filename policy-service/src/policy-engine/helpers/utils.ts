@@ -525,6 +525,7 @@ export class PolicyUtils {
         // get positional comparison instead of membership.
         if (type === 'in' || type === 'not_in') {
             if (leftIsArray) {
+                if (left.length === 0) { return false; }
                 return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
             }
             if (rightIsArray) {
@@ -544,9 +545,6 @@ export class PolicyUtils {
         }
         if (leftIsArray) {
             return left.every((l: any) => PolicyUtils.evaluateFieldCondition(l, type, right));
-        }
-        if (rightIsArray) {
-            return right.every((r: any) => PolicyUtils.evaluateFieldCondition(left, type, r));
         }
         return PolicyUtils.compareScalarPair(left, type, right);
     }
@@ -628,7 +626,7 @@ export class PolicyUtils {
         if (leftIsArray && rightIsArray) {
             if (left.length === 0)  { return ['(empty array)', '(empty array)']; }
             if (left.length !== right.length) {
-                return [`(${left.length} element(s))`, `(${right.length} element(s) — length mismatch)`];
+                return [`(${left.length} element(s))`, `(${right.length} element(s) – length mismatch)`];
             }
             for (let i = 0; i < left.length; i++) {
                 if (!PolicyUtils.evaluateFieldCondition(left[i], type, right[i])) {
@@ -640,13 +638,6 @@ export class PolicyUtils {
             for (const l of left) {
                 if (!PolicyUtils.evaluateFieldCondition(l, type, right)) {
                     return PolicyUtils.firstFailingPair(l, type, right);
-                }
-            }
-        } else if (rightIsArray) {
-            if (right.length === 0) { return [left, '(empty array)']; }
-            for (const r of right) {
-                if (!PolicyUtils.evaluateFieldCondition(left, type, r)) {
-                    return PolicyUtils.firstFailingPair(left, type, r);
                 }
             }
         }

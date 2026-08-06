@@ -139,7 +139,7 @@
             [disabled]="readonly"
             (onChange)="onSave()"
             [appendTo]="'body'"
-            [options]="conditionValueSourceOptions">
+            [options]="conditionDocumentSourceOptions">
           </p-select>
         </td>
       </tr>
@@ -357,7 +357,7 @@
           <td class="propRowCell cellName">Left Source</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="condition.fieldSource" [disabled]="readonly" (onChange)="onSave()"
-              [appendTo]="'body'" [options]="conditionSourceOptions">
+              [appendTo]="'body'" [options]="crossConditionSourceOptions">
             </p-select>
           </td>
         </tr>
@@ -389,7 +389,7 @@
           <td class="propRowCell cellName">Right Source</td>
           <td class="propRowCell">
             <p-select [(ngModel)]="condition.valueSource" [disabled]="readonly" (onChange)="onSave()"
-              [appendTo]="'body'" [options]="conditionSourceOptions">
+              [appendTo]="'body'" [options]="crossConditionSourceOptions">
             </p-select>
           </td>
         </tr>

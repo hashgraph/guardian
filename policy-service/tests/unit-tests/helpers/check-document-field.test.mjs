@@ -129,3 +129,122 @@ describe('PolicyUtils.checkDocumentField', () => {
         });
     });
 });
+
+describe('PolicyUtils.resolveFieldPath', () => {
+    it('resolves a simple flat path', () => {
+        assert.equal(PolicyUtils.resolveFieldPath({ a: { b: 1 } }, 'a.b'), 1);
+    });
+
+    it('returns null for missing key', () => {
+        assert.equal(PolicyUtils.resolveFieldPath({ a: 1 }, 'b'), null);
+    });
+
+    it('returns null for null data', () => {
+        assert.equal(PolicyUtils.resolveFieldPath(null, 'a'), null);
+    });
+
+    it('maps over intermediate array (broadcast semantics)', () => {
+        const data = { items: [{ qty: 10 }, { qty: 20 }] };
+        assert.deepEqual(PolicyUtils.resolveFieldPath(data, 'items.qty'), [10, 20]);
+    });
+
+    it('resolves numeric index into array', () => {
+        const data = { credentialSubject: [{ status: 'Approved' }] };
+        assert.equal(PolicyUtils.resolveFieldPath(data, 'credentialSubject.0.status'), 'Approved');
+    });
+
+    it('L segment resolves to last element', () => {
+        const data = [1, 2, 3];
+        assert.equal(PolicyUtils.resolveFieldPath(data, 'L'), 3);
+    });
+});
+
+describe('PolicyUtils.evaluateFieldCondition', () => {
+    it('scalar equal: matching values', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'equal', 'A'), true);
+    });
+
+    it('scalar equal: mismatched values', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'equal', 'B'), false);
+    });
+
+    it('empty array vs scalar fails (fail-closed)', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'equal', 'A'), false);
+    });
+
+    it('scalar vs empty array fails (fail-closed)', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('A', 'equal', []), false);
+    });
+
+    it('empty array vs empty array passes', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'equal', []), true);
+    });
+
+    it('array vs scalar: for-all semantics pass when all match', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([5, 10], 'gt', 3), true);
+    });
+
+    it('array vs scalar: for-all semantics fail when any element fails', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([5, 2], 'gt', 3), false);
+    });
+
+    it('pairwise equal: same length arrays matching positionally', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([1, 2], 'equal', [1, 2]), true);
+    });
+
+    it('pairwise equal: length mismatch fails', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([1, 2], 'equal', [1, 2, 3]), false);
+    });
+
+    it('in: scalar is member of array right-side', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('B', 'in', ['A', 'B', 'C']), true);
+    });
+
+    it('not_in: scalar is not member of array right-side', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition('D', 'not_in', ['A', 'B', 'C']), true);
+    });
+
+    it('in: array left — every element must be in right', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'B'], 'in', ['A', 'B', 'C']), true);
+    });
+
+    it('in: array left — fails if any element not in right', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(['A', 'D'], 'in', ['A', 'B', 'C']), false);
+    });
+
+    it('scalar vs array (non-in/not_in): type mismatch fails', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition(1, 'equal', [1]), false);
+    });
+
+    it('in: empty left array vs non-empty right array fails', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'in', [1, 2, 3]), false);
+    });
+
+    it('not_in: empty left array vs non-empty right array fails', () => {
+        assert.equal(PolicyUtils.evaluateFieldCondition([], 'not_in', [1, 2, 3]), false);
+    });
+});
+
+describe('PolicyUtils.firstFailingPair', () => {
+    it('scalars: returns them directly', () => {
+        assert.deepEqual(PolicyUtils.firstFailingPair(1, 'gt', 5), [1, 5]);
+    });
+
+    it('array vs scalar: returns first failing element', () => {
+        assert.deepEqual(PolicyUtils.firstFailingPair([10, 2], 'gt', 5), [2, 5]);
+    });
+
+    it('equal-length arrays: drills to first failing positional pair', () => {
+        assert.deepEqual(PolicyUtils.firstFailingPair([1, 3], 'equal', [1, 4]), [3, 4]);
+    });
+
+    it('length mismatch: returns descriptive sentinels', () => {
+        const [l, r] = PolicyUtils.firstFailingPair([1, 2], 'equal', [1]);
+        assert.match(r, /length mismatch/);
+    });
+
+    it('empty array vs scalar: returns empty-array sentinel', () => {
+        const [l] = PolicyUtils.firstFailingPair([], 'equal', 'x');
+        assert.equal(l, '(empty array)');
+    });
+});

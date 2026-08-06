@@ -245,7 +245,7 @@ export class DocumentValidatorBlock {
             return null;
         }
 
-        const failureMap = new Map<string, { field: string, type: string, leftValue: any, count: number }>();
+        const failureMap = new Map<string, { field: string, type: string, leftValue: any, rightValue: any, count: number }>();
         for (const sourceDoc of sourceDocuments) {
             let failed = false;
             const counted = new Set<string>();
@@ -256,7 +256,7 @@ export class DocumentValidatorBlock {
                 if (!PolicyUtils.evaluateFieldCondition(left, condition.type, right)) {
                     const key = `${condition.field}\0${ci}`;
                     if (!failureMap.has(key)) {
-                        failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, count: 0 });
+                        failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, rightValue: right, count: 0 });
                     }
                     if (!counted.has(key)) {
                         failureMap.get(key).count++;
@@ -279,7 +279,7 @@ export class DocumentValidatorBlock {
         const N = failureMap.size;
         const summary = `Checked ${N} condition${N !== 1 ? 's' : ''} across ${total} source${total !== 1 ? 's' : ''}:`;
         const conditionResults: IDocumentValidatorBlockError['conditions'] = [];
-        for (const { field, type, leftValue, count } of Array.from(failureMap.values())) {
+        for (const { field, type, leftValue, rightValue, count } of Array.from(failureMap.values())) {
             const rawLabel = field.split('.').filter(p => p !== 'document' && !/^\d+$/.test(p)).pop() || field;
             const label = schemaName ? `${schemaName} · ${rawLabel}` : rawLabel;
             let hint: string;
@@ -290,7 +290,8 @@ export class DocumentValidatorBlock {
             } else if (type === 'not_in') {
                 hint = `Value ${JSON.stringify(leftValue)} must not appear in sources`;
             } else {
-                hint = `Value ${JSON.stringify(leftValue)} not found in any sources`;
+                const [dl, dr] = PolicyUtils.firstFailingPair(leftValue, type, rightValue);
+                hint = this.describeCrossConditionFailure(type, dl, dr);
             }
             conditionResults.push({ label, hint, matched: total - count, total });
         }
