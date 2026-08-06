@@ -6,8 +6,8 @@ export abstract class MessageLoadError extends Error {
     public readonly code: number;
     public readonly messageId?: string;
 
-    protected constructor(name: string, code: number, message: string, messageId?: string) {
-        super(message);
+    protected constructor(name: string, code: number, message: string, messageId?: string, cause?: unknown) {
+        super(message, { cause });
         this.name = name;
         this.code = code;
         this.messageId = messageId;
@@ -19,10 +19,10 @@ export abstract class MessageLoadError extends Error {
  * offline, or timed out).
  */
 export class MessageIpfsError extends MessageLoadError {
-    constructor(messageId?: string) {
+    constructor(messageId?: string, cause?: unknown) {
         super('MessageIpfsError', 422,
             `IPFS_UNAVAILABLE: IPFS data for message ${messageId} could not be retrieved. It may be unpinned or the source node is offline.`,
-            messageId);
+            messageId, cause);
     }
 }
 
@@ -31,10 +31,10 @@ export class MessageIpfsError extends MessageLoadError {
  * node unavailable, or an unreadable payload).
  */
 export class MessageNotFoundError extends MessageLoadError {
-    constructor(messageId?: string) {
+    constructor(messageId?: string, cause?: unknown) {
         super('MessageNotFoundError', 404, messageId
             ? `MESSAGE_NOT_FOUND: Message ${messageId} could not be retrieved. Check the message id and that it belongs to the current Hedera network.`
             : 'MESSAGE_NOT_FOUND: Message id is not set.',
-            messageId);
+            messageId, cause);
     }
 }

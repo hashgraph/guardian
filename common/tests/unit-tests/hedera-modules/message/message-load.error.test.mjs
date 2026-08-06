@@ -8,6 +8,12 @@ describe('@unit MessageLoadError', () => {
         assert.ok(new MessageIpfsError('1.2.3') instanceof MessageLoadError);
         assert.ok(new MessageNotFoundError('1.2.3') instanceof MessageLoadError);
     });
+
+    it('chains the underlying cause', () => {
+        const cause = new Error('mirror node 503');
+        assert.equal(new MessageIpfsError('1.2.3', cause).cause, cause);
+        assert.equal(new MessageNotFoundError('1.2.3', cause).cause, cause);
+    });
 });
 
 describe('@unit MessageIpfsError', () => {

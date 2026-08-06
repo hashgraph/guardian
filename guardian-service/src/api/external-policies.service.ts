@@ -278,7 +278,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error, error?.code);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, error instanceof MessageLoadError ? error.code : undefined);
             }
         });
 
@@ -337,7 +338,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error, error?.code);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, error instanceof MessageLoadError ? error.code : undefined);
             }
         });
 
@@ -393,6 +395,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
+                    // Forward error.code (404/422 for message load errors) instead of a generic 500.
                     notifier.fail(error, error instanceof MessageLoadError ? error.code : undefined);
                 });
 
@@ -620,7 +623,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error, error?.code);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, error instanceof MessageLoadError ? error.code : undefined);
             }
         });
 }

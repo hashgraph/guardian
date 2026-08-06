@@ -871,7 +871,7 @@ export class MessageServer {
                     } catch (ipfsError) {
                         // Distinguish unreachable IPFS from a missing message.
                         new PinoLogger().error(ipfsError, ['GUARDIAN_SERVICE'], options?.userId);
-                        throw new MessageIpfsError(messageId);
+                        throw new MessageIpfsError(messageId, ipfsError);
                     }
                 }
                 return message;
@@ -881,20 +881,24 @@ export class MessageServer {
                 throw error;
             }
             new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
-            throw new MessageNotFoundError(messageId);
+            throw new MessageNotFoundError(messageId, error);
         }
     }
 
     /**
-     * Get message, returns null instead of throwing when it cannot be loaded.
-     * For callers where a missing message is an expected, non-exceptional outcome.
+     * Get message, returns null instead of throwing when the message cannot be
+     * found. For callers where a missing message is an expected, non-exceptional
+     * outcome. Other failures, including an unreachable IPFS, still throw.
      * @param options
      */
     public static async tryGetMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
         try {
             return await MessageServer.getMessage<T>(options);
         } catch (error) {
-            return null;
+            if (error instanceof MessageNotFoundError) {
+                return null;
+            }
+            throw error;
         }
     }
 
@@ -921,7 +925,7 @@ export class MessageServer {
                     } catch (ipfsError) {
                         // Distinguish unreachable IPFS from a missing message.
                         new PinoLogger().error(ipfsError, ['GUARDIAN_SERVICE'], options?.userId);
-                        throw new MessageIpfsError(messageId);
+                        throw new MessageIpfsError(messageId, ipfsError);
                     }
                 }
                 return message as T;
@@ -931,20 +935,24 @@ export class MessageServer {
                 throw error;
             }
             new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
-            throw new MessageNotFoundError(messageId);
+            throw new MessageNotFoundError(messageId, error);
         }
     }
 
     /**
-     * Get message, returns null instead of throwing when it cannot be loaded.
-     * For callers where a missing message is an expected, non-exceptional outcome.
+     * Get message, returns null instead of throwing when the message cannot be
+     * found. For callers where a missing message is an expected, non-exceptional
+     * outcome. Other failures, including an unreachable IPFS, still throw.
      * @param options
      */
     public async tryGetMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
         try {
             return await this.getMessage<T>(options);
         } catch (error) {
-            return null;
+            if (error instanceof MessageNotFoundError) {
+                return null;
+            }
+            throw error;
         }
     }
 

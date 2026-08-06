@@ -1,4 +1,4 @@
-import { DatabaseServer, MessageAction, MessageServer, MessageType, PinoLogger, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/common';
+import { DatabaseServer, MessageAction, MessageLoadError, MessageServer, MessageType, PinoLogger, SchemaMessage, SchemaPackageMessage, UrlType } from '@guardian/common';
 import { ISchema, SchemaCategory, SchemaEntity, SchemaHelper, SchemaStatus } from '@guardian/interfaces';
 
 export class SchemaCache {
@@ -60,8 +60,10 @@ export async function loadSchema(
         }
         const messageServer = new MessageServer(null);
         log.info(`loadSchema: ${messageId}`, ['GUARDIAN_SERVICE'], userId);
+        // An id that is not on Hedera means "skip this schema"; both callers treat a
+        // null result that way. An unreachable IPFS still throws.
         const response = await messageServer
-            .getMessage<SchemaMessage | SchemaPackageMessage>({
+            .tryGetMessage<SchemaMessage | SchemaPackageMessage>({
                 messageId,
                 loadIPFS: true,
                 type: [MessageType.Schema, MessageType.SchemaPackage],
@@ -145,6 +147,10 @@ export async function loadSchema(
         }
     } catch (error) {
         log.error(error, ['GUARDIAN_SERVICE'], userId);
+        // Keep the code and the message id from a load failure instead of a generic 500.
+        if (error instanceof MessageLoadError) {
+            throw error;
+        }
         throw new Error(`Cannot load schema ${messageId}`);
     }
 }
