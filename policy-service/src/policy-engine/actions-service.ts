@@ -950,7 +950,7 @@ export class PolicyActionsService {
         if (!row) {
             throw Error('Action not found');
         }
-        const message = await MessageServer.getMessage<PolicyActionMessage>({
+        const message = await MessageServer.tryGetMessage<PolicyActionMessage>({
             messageId,
             loadIPFS: false,
             type: MessageType.PolicyAction,

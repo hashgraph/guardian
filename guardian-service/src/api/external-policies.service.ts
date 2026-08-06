@@ -2,6 +2,7 @@ import { ApiResponse } from './helpers/api-response.js';
 import {
     DatabaseServer,
     MessageError,
+    MessageLoadError,
     MessageResponse,
     PinoLogger,
     RunFunctionAsync,
@@ -72,9 +73,6 @@ async function preparePolicyPreviewMessage(
     });
     const message = await messageServer
         .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId, interception: userId });
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }
@@ -280,7 +278,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                return new MessageError(error, error?.code);
             }
         });
 
@@ -339,7 +337,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                return new MessageError(error, error?.code);
             }
         });
 
@@ -395,7 +393,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.fail(error);
+                    notifier.fail(error, error instanceof MessageLoadError ? error.code : undefined);
                 });
 
                 return new MessageResponse(task);
@@ -622,7 +620,7 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                return new MessageError(error, error?.code);
             }
         });
 }

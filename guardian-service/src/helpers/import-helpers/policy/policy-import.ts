@@ -560,7 +560,7 @@ export class PolicyImport {
             return localTemplate;
         }
 
-        const message = await this.messageServer.getMessage<SchemaTemplateMessage>({
+        const message = await this.messageServer.tryGetMessage<SchemaTemplateMessage>({
             messageId,
             loadIPFS: true,
             userId,

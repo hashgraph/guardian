@@ -73,10 +73,6 @@ export async function preparePreviewMessage(
             interception: null
         });
 
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
-
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }

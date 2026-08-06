@@ -7,7 +7,7 @@ import { MessageMemo } from '../memo-mappings/message-memo.js';
 import { DatabaseServer } from '../../database-modules/index.js';
 import { TopicConfig } from '../topic.js';
 import { Message } from './message.js';
-import { MessageIpfsError } from './message-load.error.js';
+import { MessageIpfsError, MessageLoadError, MessageNotFoundError } from './message-load.error.js';
 import { MessageType } from './message-type.js';
 import { MessageAction } from './message-action.js';
 import { VCMessage } from './vc-message.js';
@@ -855,18 +855,12 @@ export class MessageServer {
      * @param userId
      */
     public static async getMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        const messageId = options?.messageId?.trim();
+        if (!messageId) {
+            throw new MessageNotFoundError();
+        }
         try {
-            if (!options) {
-                return null;
-            }
             const { loadIPFS, type, userId, dryRun } = options;
-            let { messageId } = options;
-            if (messageId && typeof messageId === 'string') {
-                messageId = messageId.trim();
-            }
-            if (!messageId || typeof messageId !== 'string') {
-                return null;
-            }
             if (dryRun && !options.mockId) {
                 return await MessageServer.getDryRunTopicMessage<T>(dryRun, messageId, type, userId);
             } else {
@@ -883,10 +877,23 @@ export class MessageServer {
                 return message;
             }
         } catch (error) {
-            if (error instanceof MessageIpfsError) {
+            if (error instanceof MessageLoadError) {
                 throw error;
             }
             new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
+            throw new MessageNotFoundError(messageId);
+        }
+    }
+
+    /**
+     * Get message, returns null instead of throwing when it cannot be loaded.
+     * For callers where a missing message is an expected, non-exceptional outcome.
+     * @param options
+     */
+    public static async tryGetMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        try {
+            return await MessageServer.getMessage<T>(options);
+        } catch (error) {
             return null;
         }
     }
@@ -898,18 +905,12 @@ export class MessageServer {
      * @param userId
      */
     public async getMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        const messageId = options?.messageId?.trim();
+        if (!messageId) {
+            throw new MessageNotFoundError();
+        }
         try {
-            if (!options) {
-                return null;
-            }
             const { loadIPFS, type, userId } = options;
-            let { messageId } = options;
-            if (messageId && typeof messageId === 'string') {
-                messageId = messageId.trim();
-            }
-            if (!messageId || typeof messageId !== 'string') {
-                return null;
-            }
             if (this.dryRun && !options.mockId) {
                 return await this.getDryRunTopicMessage<T>(messageId, type, userId);
             } else {
@@ -926,10 +927,23 @@ export class MessageServer {
                 return message as T;
             }
         } catch (error) {
-            if (error instanceof MessageIpfsError) {
+            if (error instanceof MessageLoadError) {
                 throw error;
             }
             new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
+            throw new MessageNotFoundError(messageId);
+        }
+    }
+
+    /**
+     * Get message, returns null instead of throwing when it cannot be loaded.
+     * For callers where a missing message is an expected, non-exceptional outcome.
+     * @param options
+     */
+    public async tryGetMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        try {
+            return await this.getMessage<T>(options);
+        } catch (error) {
             return null;
         }
     }
