@@ -194,7 +194,10 @@ describe('PolicyUser', function () {
                 roleMessage: 'm1',
                 virtual: false,
                 isAdmin: false,
-                policyId: 'policy-1'
+                policyId: 'policy-1',
+                organization: null,
+                organizationRole: null,
+                organizationRolePermissions: []
             });
         });
         it('virtual is false for PolicyUser', function () {

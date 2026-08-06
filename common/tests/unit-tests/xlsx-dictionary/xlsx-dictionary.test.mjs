@@ -5,8 +5,8 @@ describe('Dictionary enum', () => {
     it('exposes the documented header labels', () => {
         assert.equal(Dictionary.REQUIRED_FIELD, 'Required Field');
         assert.equal(Dictionary.FIELD_TYPE, 'Field Type');
-        assert.equal(Dictionary.QUESTION, 'Question');
-        assert.equal(Dictionary.ANSWER, 'Answer');
+        assert.equal(Dictionary.QUESTION, 'Description');
+        assert.equal(Dictionary.ANSWER, 'Test Value');
         assert.equal(Dictionary.SCHEMA_NAME, 'Schema');
         assert.equal(Dictionary.SCHEMA_TOOL, 'Tool');
         assert.equal(Dictionary.AUTO_CALCULATE, 'Auto-Calculate');
