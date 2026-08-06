@@ -437,7 +437,7 @@ export class XlsxToJson {
                 }
             }
 
-            XlsxToJson.resolveGeoDependencies(worksheet, fields, xlsxResult);
+            XlsxToJson.resolveGeoDependencies(worksheet, table, fields, xlsxResult);
 
             // Create schemas for inline sub-schema fields
             const seenSchemaNames = new Map<string, SchemaField[]>();
@@ -670,6 +670,9 @@ export class XlsxToJson {
                     ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
                     : parseType(xlsxToPresetValue(field, exampleValue))
                 field.examples = example ? [example] : null;
+                XlsxToJson.checkGeoPreset(
+                    worksheet, table, field, Dictionary.ANSWER, exampleValue, example, row, xlsxResult
+                );
 
                 if (table.hasCol(Dictionary.DEFAULT)) {
                     const defaultValue = worksheet
@@ -678,6 +681,9 @@ export class XlsxToJson {
                     field.default = field.isArray && !field.isRef
                         ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
                         : parseType(xlsxToPresetValue(field, defaultValue));
+                    XlsxToJson.checkGeoPreset(
+                        worksheet, table, field, Dictionary.DEFAULT, defaultValue, field.default, row, xlsxResult
+                    );
                 }
 
                 if (table.hasCol(Dictionary.SUGGEST)) {
@@ -687,6 +693,9 @@ export class XlsxToJson {
                     field.suggest = field.isArray && !field.isRef
                         ? xlsxToPresetArray(field, suggest)?.map(parseType)
                         : parseType(xlsxToPresetValue(field, suggest));
+                    XlsxToJson.checkGeoPreset(
+                        worksheet, table, field, Dictionary.SUGGEST, suggest, field.suggest, row, xlsxResult
+                    );
                 }
             }
 
@@ -701,6 +710,36 @@ export class XlsxToJson {
             }, field);
             return null;
         }
+    }
+
+    private static checkGeoPreset(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        column: Dictionary,
+        raw: any,
+        parsed: any,
+        row: number,
+        xlsxResult: XlsxResult
+    ): void {
+        if (!isRelationType('geo', field.customType)) {
+            return;
+        }
+        const text = raw === undefined || raw === null ? '' : String(raw).trim();
+        if (!text || parsed) {
+            return;
+        }
+        xlsxResult.addError({
+            type: 'warning',
+            text: `"${text}" is not a recognized ${field.customType}.`,
+            message: `The "${column}" cell of field "${field.description}" contains "${text}", `
+                + `which does not match any ${field.customType} in the dataset. `
+                + `The field will be imported without that value.`,
+            worksheet: worksheet.name,
+            cell: worksheet.getPath(table.getCol(column), row),
+            row,
+            col: table.getCol(column)
+        }, field);
     }
 
     private static findGeoParent(
@@ -753,13 +792,18 @@ export class XlsxToJson {
         return false;
     }
 
+    /** @internal Called from unit tests. Renaming breaks them at run time, not at compile time. */
     private static resolveGeoDependencies(
         worksheet: Worksheet,
+        table: Table,
         level: SchemaField[],
         xlsxResult: XlsxResult
     ): void {
         for (const field of level) {
             if (!field.dependency || !field.dependency.on) {
+                continue;
+            }
+            if (field.dependency.kind !== 'geo') {
                 continue;
             }
             if (!isRelationType('geo', field.customType)) {
@@ -776,7 +820,9 @@ export class XlsxToJson {
                         + `but no field with that key or description exists at the same level. `
                         + `Enter the Key of the parent geographic field, or clear the cell.`,
                     worksheet: worksheet.name,
-                    row: field.order
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
                 }, field);
                 continue;
             }
@@ -790,14 +836,20 @@ export class XlsxToJson {
                         + `but a "${field.customType}" field can only depend on `
                         + `${allowed ? `a "${allowed}" field or its own ancestors` : 'nothing'}.`,
                     worksheet: worksheet.name,
-                    row: field.order
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
                 }, field);
                 continue;
             }
             field.dependency = { on: parent.name, kind: 'geo' };
         }
         for (const field of level) {
-            if (field.dependency && XlsxToJson.hasGeoCycle(level, field)) {
+            if (
+                field.dependency &&
+                field.dependency.kind === 'geo' &&
+                XlsxToJson.hasGeoCycle(level, field)
+            ) {
                 field.dependency = null;
                 xlsxResult.addError({
                     type: 'error',
@@ -805,13 +857,15 @@ export class XlsxToJson {
                     message: `Field "${field.description}" is part of a circular chain of geographic `
                         + `dependencies. Remove one of the Parameter values in the chain.`,
                     worksheet: worksheet.name,
-                    row: field.order
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
                 }, field);
             }
         }
         for (const field of level) {
             if (Array.isArray(field.fields) && field.fields.length) {
-                XlsxToJson.resolveGeoDependencies(worksheet, field.fields, xlsxResult);
+                XlsxToJson.resolveGeoDependencies(worksheet, table, field.fields, xlsxResult);
             }
         }
     }

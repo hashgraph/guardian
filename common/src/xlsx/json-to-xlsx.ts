@@ -383,7 +383,7 @@ export class JsonToXlsx {
                 .setValue(stringToXlsx(field.expression))
                 .setStyle(table.paramStyle);
         }
-        if (field.dependency && field.dependency.on) {
+        if (field.dependency && field.dependency.on && field.dependency.kind === 'geo') {
             worksheet
                 .getCell(table.getCol(Dictionary.PARAMETER), row)
                 .setValue(stringToXlsx(field.dependency.on))

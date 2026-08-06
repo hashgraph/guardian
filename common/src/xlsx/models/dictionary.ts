@@ -1,4 +1,4 @@
-import { getAllContinents, getAllCountries, isContinent, isCountry } from '@guardian/interfaces';
+import { getAllContinents, getAllCountries, getContinentName, getCountryName, isContinent, isCountry } from '@guardian/interfaces';
 
 export interface IFieldTypes {
     name?: string;
@@ -18,7 +18,7 @@ function geoCode(
     isCode: (code: string) => boolean,
     options: { value: string, name: string }[]
 ): string {
-    const raw = value === undefined || value === null ? '' : String(value).trim();
+    const raw = geoText(value);
     if (!raw) {
         return '';
     }
@@ -34,16 +34,17 @@ export function geoDisplayValue(customType: string, value: any): any {
     if (typeof value !== 'string' || !value) {
         return value;
     }
-    let options: { value: string, name: string }[];
     if (customType === 'country') {
-        options = getAllCountries();
-    } else if (customType === 'continent') {
-        options = getAllContinents();
-    } else {
-        return value;
+        return getCountryName(value) || value;
     }
-    const match = options.find((option) => option.value === value);
-    return match ? match.name : value;
+    if (customType === 'continent') {
+        return getContinentName(value) || value;
+    }
+    return value;
+}
+
+function geoText(value: any): string {
+    return value === undefined || value === null ? '' : String(value).trim();
 }
 
 export enum Dictionary {
@@ -388,7 +389,7 @@ export class FieldTypes {
             unitSystem: undefined,
             customType: 'state',
             hidden: false,
-            pars: (value: any) => (value)
+            pars: (value: any) => geoText(value)
         },
     ];
 

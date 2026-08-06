@@ -51,11 +51,13 @@ describe('Geographic field types in the Excel dictionary', () => {
         assert.equal(continent('NA'), 'NA');
     });
 
-    it('leaves a State/Province preset exactly as written', () => {
+    it('leaves a State/Province preset as written, but trims it', () => {
         const state = FieldTypes.findByName('State/Province').pars;
         assert.equal(state('US-CA'), 'US-CA');
+        assert.equal(state('  US-CA  '), 'US-CA');
         assert.equal(state('Aitutaki'), 'Aitutaki');
         assert.equal(state('Georgia'), 'Georgia');
+        assert.equal(state(undefined), '');
     });
 
     it('gives the display name back on export, and only where it is unambiguous', () => {
