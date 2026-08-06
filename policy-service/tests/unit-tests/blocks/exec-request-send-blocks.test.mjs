@@ -68,12 +68,10 @@ describe('@unit exec RequestVcDocumentBlock.getData', () => {
         assert.equal(d.actionType, LocationType.REMOTE);
     });
 
-    it('strips schema fields/conditions into an empty-fields envelope', async () => {
-        const { block } = mk({}, { iri: '#S', fields: [{ name: 'x' }], conditions: [{ c: 1 }] });
+    it('sends a lightweight schema reference, not the full schema', async () => {
+        const { block } = mk({}, { id: 'sid', iri: '#S', uuid: 'su', name: 'S', version: '1', fields: [{ name: 'x' }], conditions: [{ c: 1 }] });
         const d = await block.getData(makeUser());
-        assert.deepEqual(d.schema.fields, []);
-        assert.deepEqual(d.schema.conditions, []);
-        assert.equal(d.schema.iri, '#S');
+        assert.deepEqual(d.schema, { id: 'sid', iri: '#S', uuid: 'su', name: 'S', version: '1' });
     });
 
     it('is readonly only when REMOTE block AND remote user', async () => {
@@ -286,7 +284,7 @@ describe('@unit exec RequestVcDocumentBlockAddon.getData', () => {
 
     function mk(options = {}) {
         const { block } = makeBlock(RequestVcDocumentBlockAddon, { options });
-        block._schema = { iri: '#Addon', fields: [{ name: 'q' }], conditions: [{ c: 9 }] };
+        block._schema = { id: 'aid', iri: '#Addon', uuid: 'au', name: 'A', version: '2', fields: [{ name: 'q' }], conditions: [{ c: 9 }] };
         return block;
     }
 
@@ -302,10 +300,9 @@ describe('@unit exec RequestVcDocumentBlockAddon.getData', () => {
         assert.equal(d.custom, 42);
     });
 
-    it('strips schema fields/conditions', async () => {
+    it('sends a lightweight schema reference, not the full schema', async () => {
         const d = await mk().getData(makeUser());
-        assert.deepEqual(d.schema.fields, []);
-        assert.deepEqual(d.schema.conditions, []);
+        assert.deepEqual(d.schema, { id: 'aid', iri: '#Addon', uuid: 'au', name: 'A', version: '2' });
     });
 
     it('readonly true for remote user', async () => {
