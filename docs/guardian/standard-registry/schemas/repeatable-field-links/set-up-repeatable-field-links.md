@@ -1,6 +1,3 @@
----
-icon: link
----
 
 # Set up Repeatable Field Links
 
