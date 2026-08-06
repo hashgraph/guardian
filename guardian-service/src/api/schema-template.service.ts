@@ -766,7 +766,7 @@ function getSnapshotSchemaConfig(
     return config?.schemas?.[templateSchemaId] || {};
 }
 
-function fieldsByTemplateId(fields: Array<ISchemaTemplateSnapshotField | any>): Map<string, any> {
+function fieldsByTemplateId(fields: (ISchemaTemplateSnapshotField | any)[]): Map<string, any> {
     const result = new Map<string, any>();
     for (const field of fields || []) {
         if (field?.templateFieldId) {
@@ -776,7 +776,7 @@ function fieldsByTemplateId(fields: Array<ISchemaTemplateSnapshotField | any>): 
     return result;
 }
 
-function customFields(fields: Array<ISchemaTemplateSnapshotField | any>): any[] {
+function customFields(fields: (ISchemaTemplateSnapshotField | any)[]): any[] {
     return (fields || []).filter((field) => !field?.templateFieldId);
 }
 
@@ -897,7 +897,7 @@ function getFieldDisplayName(field: any): string {
 function buildDetails(
     previous: any,
     next: any,
-    properties: Array<{ key: string, label: string }>
+    properties: { key: string, label: string }[]
 ): ISchemaTemplateUpdateChange['details'] {
     return properties
         .map(({ key, label }) => ({
@@ -1012,9 +1012,9 @@ function findSchemaProperty(document: any, path: string[]): any {
 function ensureSchemaPropertyParent(document: any, path: string[]): any {
     let current = document;
     for (const key of path.slice(0, -1)) {
-        const target = current?.type === 'array' ? current.items : current;
-        target.properties = target.properties || {};
-        current = target.properties[key];
+        const parent = current?.type === 'array' ? current.items : current;
+        parent.properties = parent.properties || {};
+        current = parent.properties[key];
         if (!current) {
             return null;
         }
@@ -1384,7 +1384,7 @@ async function updateAppliedSchemaTemplate(
     for (const [templateSchemaId, source] of templateSchemaById.entries()) {
         const target = context.policySchemaByTemplateId.get(templateSchemaId);
         if (target) {
-            const sourceIri = source.iri;
+            const targetSourceIri = source.iri;
             preparePolicySchemaUpdate(
                 target,
                 source,
@@ -1393,8 +1393,8 @@ async function updateAppliedSchemaTemplate(
             );
             await DatabaseServer.updateSchema(target.id, target);
             schemaMap[templateSchemaId] = target.id;
-            if (sourceIri && target.iri) {
-                iriMap.set(sourceIri, target.iri);
+            if (targetSourceIri && target.iri) {
+                iriMap.set(targetSourceIri, target.iri);
             }
             changedSchemas.push(target);
             continue;

@@ -87,11 +87,11 @@ export interface ISchemaTemplateUpdateChange {
     fieldName?: string;
     before?: string;
     after?: string;
-    details?: Array<{
+    details?: {
         label: string;
         before?: string;
         after?: string;
-    }>;
+    }[];
     message: string;
 }
 

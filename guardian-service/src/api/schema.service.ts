@@ -62,7 +62,6 @@ import { FilterObject } from '@mikro-orm/core';
 @Controller()
 export class SchemaService { }
 
-
 interface TemplateSchemaValidationContext {
     schemaConfig: ISchemaTemplateSchemaConfig;
 }
