@@ -66,7 +66,7 @@ export class DocumentValidatorConfigComponent implements OnInit {
 
     conditionValueSourceOptions = [
         { label: 'Value', value: 'value' },
-        { label: 'Document Field', value: 'document' },
+        { label: 'Input Document', value: 'document' },
     ];
 
     conditionSourceOptions = [
@@ -90,6 +90,9 @@ export class DocumentValidatorConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.conditions = this.properties.conditions || [];
+        for (const c of this.properties.conditions) {
+            c.valueSource ??= 'value';
+        }
         if (!this.conditionsGroupInitialized) {
             this.propHidden.conditionsGroup = this.properties.conditions.length === 0;
             this.conditionsGroupInitialized = true;

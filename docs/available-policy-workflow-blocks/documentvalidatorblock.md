@@ -36,6 +36,27 @@ The following document types are supported:
 
 The Field of the document to validate the Value parameter.
 
+Field paths use dot-notation and support array traversal. When a segment resolves to an array the remainder of the path is mapped over each element, producing a list of leaf values that is then checked with **for-all** semantics — the condition passes only if every element satisfies it.
+
+Special segments:
+* **`L`** — last element of the array (e.g. `items.L.qty`)
+* **`0`, `1`, … (integer)** — element at that index (e.g. `items.0.qty`)
+
+> **Empty-array behaviour**: if the field resolves to an empty array the condition always **fails**, regardless of operator.
+
+#### Value Type:
+
+Controls how the **Value** field is interpreted:
+
+| Option | Behaviour |
+|---|---|
+| **Value** | The text entered in Value is compared directly (with type coercion, e.g. `"10"` matches `10`). |
+| **Input Document** | The Value field is treated as a dot-notation path into the same document. The resolved value is used for comparison, enabling field-to-field checks and array-to-array pairwise comparison. |
+
+When both Field and Value resolve to arrays of the same length a **pairwise** comparison is performed (each element compared to its positional counterpart). A length mismatch always fails.
+
 #### Value:
 
-The content of this parameter is compared to the content of the Field.
+The content of this parameter is compared to the content of the Field. When Value Type is **Input Document** this is a dot-notation field path; otherwise it is a literal value.
+
+**`in` / `not_in` with Input Document**: if the value path resolves to an array, membership is checked — i.e. the field value must appear in (or be absent from) that collection.

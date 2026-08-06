@@ -134,25 +134,6 @@ export class DocumentValidatorBlock {
         }
     }
 
-    private evaluateCrossCondition(left: any, type: string, right: any): boolean {
-        switch (type) {
-            case 'not_equal': return left !== right;
-            case 'in':
-                if (Array.isArray(right)) { return right.includes(left); }
-                if (Array.isArray(left)) { return left.includes(right); }
-                return String(right).split(',').map((v: string) => v.trim()).includes(String(left));
-            case 'not_in':
-                if (Array.isArray(right)) { return !right.includes(left); }
-                if (Array.isArray(left)) { return !left.includes(right); }
-                return !String(right).split(',').map((v: string) => v.trim()).includes(String(left));
-            case 'gt':        return left > right;
-            case 'gte':       return left >= right;
-            case 'lt':        return left < right;
-            case 'lte':       return left <= right;
-            default:          return left === right;
-        }
-    }
-
     private describeCrossConditionFailure(type: string, left: any, right: any): string {
         const l = JSON.stringify(left);
         const r = JSON.stringify(right);
@@ -270,10 +251,9 @@ export class DocumentValidatorBlock {
             const counted = new Set<string>();
             for (let ci = 0; ci < conditions.length; ci++) {
                 const condition = conditions[ci];
-                const coerceDeep = (v: any) => Array.isArray(v) ? v.map((e: any) => this.coerceValue(e)) : this.coerceValue(v);
-                const left  = coerceDeep(this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]));
-                const right = coerceDeep(this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]));
-                if (!this.evaluateCrossCondition(left, condition.type, right)) {
+                const left  = this.resolveConditionSide(condition.field, condition.fieldSource, condition.type, document, [sourceDoc]);
+                const right = this.resolveConditionSide(condition.value, condition.valueSource, condition.type, document, [sourceDoc]);
+                if (!PolicyUtils.evaluateFieldCondition(left, condition.type, right)) {
                     const key = `${condition.field}\0${ci}`;
                     if (!failureMap.has(key)) {
                         failureMap.set(key, { field: condition.field, type: condition.type, leftValue: left, detail: this.describeCrossConditionFailure(condition.type, left, right), count: 0 });
