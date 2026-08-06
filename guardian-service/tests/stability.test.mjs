@@ -56,12 +56,18 @@ describe('Stability test', function () {
     const OPERATOR_KEY = process.env.OPERATOR_KEY;
     const maxTransaction = 10;
 
-    const client = Client.forTestnet();
-    client.setOperator(OPERATOR_ID, OPERATOR_KEY);
-
+    let client;
     let newAccountId, newAccountKey;
 
     before(async function () {
+        // Requires real testnet credentials; skipped when they are not configured.
+        if (!OPERATOR_ID || !OPERATOR_KEY) {
+            this.skip();
+        }
+
+        client = Client.forTestnet();
+        client.setOperator(OPERATOR_ID, OPERATOR_KEY);
+
         const newPrivateKey = PrivateKey.generate();
         const transaction = new AccountCreateTransaction()
             .setKey(newPrivateKey.publicKey)
