@@ -1,5 +1,21 @@
 import assert from 'node:assert/strict';
-import { MessageIpfsError, MessageLoadError, MessageNotFoundError } from '../../../../dist/hedera-modules/message/message-load.error.js';
+import { MessageIpfsError, MessageLoadError, MessageNotFoundError, loadErrorCode } from '../../../../dist/hedera-modules/message/message-load.error.js';
+
+describe('@unit loadErrorCode', () => {
+    it('returns the code of a message load error', () => {
+        assert.equal(loadErrorCode(new MessageIpfsError('1.2.3')), 422);
+        assert.equal(loadErrorCode(new MessageNotFoundError('1.2.3')), 404);
+    });
+
+    // A Mongo duplicate-key code or a NATS/Node string code is not an HTTP
+    // status, so it must not be forwarded to the API response.
+    it('returns undefined for anything else', () => {
+        assert.equal(loadErrorCode(Object.assign(new Error('duplicate key'), { code: 11000 })), undefined);
+        assert.equal(loadErrorCode(Object.assign(new Error('no responders'), { code: 'NO_RESPONDERS' })), undefined);
+        assert.equal(loadErrorCode(new Error('plain')), undefined);
+        assert.equal(loadErrorCode(undefined), undefined);
+    });
+});
 
 // getMessage() rethrows on `instanceof MessageLoadError`, so both classes must
 // stay under that base.

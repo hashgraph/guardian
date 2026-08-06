@@ -15,6 +15,17 @@ export abstract class MessageLoadError extends Error {
 }
 
 /**
+ * The HTTP-style code to report for an error, or undefined when there is none to
+ * forward. Only message load errors carry a code that is a valid HTTP status —
+ * a Mongo duplicate-key error (11000) or a Node/NATS string code would otherwise
+ * reach `new HttpException(message, code)` as an invalid status.
+ * @param error
+ */
+export function loadErrorCode(error: unknown): number | undefined {
+    return error instanceof MessageLoadError ? error.code : undefined;
+}
+
+/**
  * Message found on Hedera but its IPFS documents could not be loaded (unpinned,
  * offline, or timed out).
  */

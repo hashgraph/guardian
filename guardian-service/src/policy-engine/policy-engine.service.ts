@@ -15,6 +15,7 @@ import {
     IPFS,
     JsonToXlsx,
     MessageAction,
+    loadErrorCode,
     MessageError,
     MessageResponse,
     MessageServer,
@@ -2170,8 +2171,8 @@ export class PolicyEngineService {
                     return new MessageResponse(true);
                 } catch (error) {
                     await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                    // Forward error.code (422 for MessageIpfsError) instead of a generic 500.
-                    return new MessageError(error, error?.code);
+                    // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                    return new MessageError(error, loadErrorCode(error));
                 }
             });
 
@@ -2253,8 +2254,8 @@ export class PolicyEngineService {
                         }
                     } catch (error) {
                         await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                        // Forward error.code (422 for MessageIpfsError) instead of a generic 500.
-                        notifier.fail(error, error?.code);
+                        // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                        notifier.fail(error, loadErrorCode(error));
                     }
                 });
                 return new MessageResponse(task);
