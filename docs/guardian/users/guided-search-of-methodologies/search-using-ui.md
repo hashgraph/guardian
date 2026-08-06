@@ -1,23 +1,19 @@
-# Search using UI
+# Searching policies by category or methodology name
 
-Guided Search can be performed by two ways:
+## 1. Searching by Category
 
-1. Category based search
-2. Integration with Methodology name search
+Searching within a single group of categories, a logical 'OR' is applied. Methodologies found within any one of the specified categories will be included in the search results.
 
-## 1. Category-Based Search:
+Across different groups of categories, a logical 'AND' is applied. Methodologies that meet all category criteria across groups will included in the search results.
 
-* Within a single group of categories, Guided Search utilizes a logical 'OR' approach. This means that if a methodology falls under any one of the specified categories within the group, it will be included in the search results.
-* Across different groups of categories, a logical 'AND' criterion is applied. In this scenario, only methodologies that meet all category criteria across different groups will be shown in the results.
+## 2. Searching by Methodology Name&#x20;
 
-## 2. Integration with Methodology Name Search:
-
-* Guided Search further enhances its functionality by allowing the combination of category-based searches with specific methodology name searches. This dual-search capability enables users to refine their search results more precisely.
+Guided Search further enhances its functionality by allowing the combination of category-based searches with specific methodology name searches. This dual-search capability enables users to refine their search results more precisely.
 
 <figure><img src="../../../.gitbook/assets/image (416).png" alt=""><figcaption></figcaption></figure>
 
-## 3. Search Result:
+## Search Results
 
-The result of using Guided Search is a tailored list of policies that align closely with the user's specified categories and methodology names. This makes the process of finding relevant methodologies both efficient and user-friendly.
+Guided Search results are a tailored list of policies that align closely with the user's specified categories and methodology names.
 
 <figure><img src="../../../.gitbook/assets/image (415).png" alt=""><figcaption></figcaption></figure>

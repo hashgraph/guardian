@@ -1,8 +1,4 @@
----
-icon: chart-line-up
----
-
-# Bottom Up Data Traceability using UI
+# Bottom Up Data Traceability
 
 1. [Step By Step Process](bottom-up-data-traceability-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](bottom-up-data-traceability-using-ui.md#id-2.-demo-video)
@@ -18,7 +14,7 @@ icon: chart-line-up
 
 #### **1.1 List of statistics definitions and their statuses**
 
-<figure><img src="../../../.gitbook/assets/0 (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/0 (22).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.2 New statistics definition**
 
@@ -27,39 +23,39 @@ Define new Statistics by specifying mandatory parameters:
 * **Name** – the name of the statistic, this will be displayed in the statistics grid for users to choose from.
 * **Policy** – the policy to which this statistic is related to. All data used in the statistics assessment will from documents produced by projects governed by this policy.
 
-<figure><img src="../../../.gitbook/assets/1 (24).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/1 (24).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/2 (26).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/2 (26).png" alt=""><figcaption></figcaption></figure>
 
 #### **1.3 Configuration**
 
 Statistics **definition** is configured via the corresponding configuration wizard.
 
-![](<../../../.gitbook/assets/3 (22).png>)
+![](<../../.gitbook/assets/3 (22).png>)
 
 **1.3.1 Generic configuration options**
 
-![](<../../../.gitbook/assets/4 (20).png>)
+![](<../../.gitbook/assets/4 (20).png>)
 
 **1.3.2 Specifying data schemas and fields**
 
-To retrieve data from documents for use in the statistics Guardian relies on the schema and field specifications.&#x20;
+To retrieve data from documents for use in the statistics Guardian relies on the schema and field specifications.
 
 The main tool for their configuration is the “schema tree view” of the policy as shown below, which allows the identification of the needed fields by browsing and search.
 
-![](<../../../.gitbook/assets/5 (23).png>)
+![](<../../.gitbook/assets/5 (23).png>)
 
 **1.3.2.1 Search**
 
 Field names and/or property names can be used in the search for lookup and identification of the target fields.
 
-<figure><img src="../../../.gitbook/assets/6 (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/6 (22).png" alt=""><figcaption></figcaption></figure>
 
 **1.3.2.2 Selecting the fields**
 
 Selecting a schema ‘box’ in the tree pop-ups a right-hand panel where the list of fields in the selected schema is displayed. The interface allows for the selection of multiple fields using checkboxes.
 
-![](<../../../.gitbook/assets/7 (22).png>)
+![](<../../.gitbook/assets/7 (22).png>)
 
 **Note: T**_**he right-hand panel always shows fields from the parent (or top-level) schemas, which are directly used by Guardian Policies to generate documents. As sub-schemas do not map to their own stand-alone documents (they are embedded into the parent schemas), when a sub-schema is selected in the tree view the right hand-panel display also includes fields from the parent document for clarity.**_
 
@@ -67,7 +63,7 @@ Selecting a schema ‘box’ in the tree pop-ups a right-hand panel where the li
 
 By default files are searched and displayed by description. Users can navigate to the **Select** **Properties** tab to switch to search and display by **Properties**.
 
-<figure><img src="../../../.gitbook/assets/8 (22).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/8 (22).png" alt=""><figcaption></figcaption></figure>
 
 _**Note: for fields which do not have defined Properties the UI instead shows their description fields in greyed out text.**_
 
@@ -79,10 +75,9 @@ In addition to fields, for each target schema users must specify rules for selec
 2. **Relationships –** contains the list of dependent documents for the main document.
 
 \
-Document selections settings:\
+Document selections settings:\\
 
-
-![](<../../../.gitbook/assets/9 (19).png>)
+![](<../../.gitbook/assets/9 (19).png>)
 
 1. **Main** – each document conforming to this schema will be placed into the **Main** list to be available for use in creating **Assessments.**
 
@@ -97,12 +92,11 @@ Document selections settings:\
 
 The final step in statistics configuration is to configure the outputs of the statistics calculation.
 
-![](<../../../.gitbook/assets/10 (20).png>)
+![](<../../.gitbook/assets/10 (20).png>)
 
 **1.3.3.1 Input Fields**
 
-The list of source fields and schemas, selected in the previous steps, their short identifiers serve to simplify the use in formulas.\
-
+The list of source fields and schemas, selected in the previous steps, their short identifiers serve to simplify the use in formulas.\\
 
 **1.3.3.2 Scores**
 
@@ -116,7 +110,7 @@ Questions with lists of possible answers and their matching numerical scores. Th
 
 Answer options, the associated numerical values are used in the formula\[s].
 
-![](<../../../.gitbook/assets/11 (17).png>)
+![](<../../.gitbook/assets/11 (17).png>)
 
 **1.3.3.3 Output Fields (Formulas)**
 
@@ -128,21 +122,21 @@ The values from the **ID** column (short names) of **Input Fields** and **Scores
 
 A sort of ‘dry-run’ mode for Formulas, useful for testing and validation of the correctness of formula specifications with test data.
 
-![](<../../../.gitbook/assets/12 (15).png>)
+![](<../../.gitbook/assets/12 (15).png>)
 
 In this view users can manually fill out the test data and verify that the formula calculates the expected value.
 
-![](<../../../.gitbook/assets/13 (15).png>)
+![](<../../.gitbook/assets/13 (15).png>)
 
 The changes to the Statistics Definition are saved once the “Apply Changes” button is pressed.
 
-![](<../../../.gitbook/assets/14 (12).png>)
+![](<../../.gitbook/assets/14 (12).png>)
 
 ### **2. Publication**
 
 To enable the use of **Definitions** for creating **Assessments** of real data, they need to be published.
 
-![](<../../../.gitbook/assets/15 (14).png>)
+![](<../../.gitbook/assets/15 (14).png>)
 
 ### **3. Assessments**
 
@@ -150,61 +144,61 @@ To enable the use of **Definitions** for creating **Assessments** of real data, 
 
 Published **Definitions** can be used for creating an **Assessment** by pressing the **Create** button for the corresponding Statistics **Definition** which launches the **Assessment Wizard**.
 
-![](<../../../.gitbook/assets/16 (13).png>)
+![](<../../.gitbook/assets/16 (13).png>)
 
 **3.1.1 Target documents**
 
 Users are presented with the choice of documents to select for the **Assessment**, this list contains all documents nominated as **Main** in the Statistics Definition.
 
-![](<../../../.gitbook/assets/17 (14).png>)
+![](<../../.gitbook/assets/17 (14).png>)
 
 **3.1.2 Preview**
 
 The wizard then displays the relevant fields from the documents (which are configured in **Rules** in the Statistics Definition).
 
-<figure><img src="../../../.gitbook/assets/18 (12).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/18 (12).png" alt=""><figcaption></figcaption></figure>
 
 **3.1.3 Scores**
 
 Users are then required to ‘score’ the questions (if questions and options for answers were configured in the Statistics Definition).
 
-![](<../../../.gitbook/assets/19 (10).png>)
+![](<../../.gitbook/assets/19 (10).png>)
 
 **3.1.4 Statistics**
 
 Guardian calculates and presents the Assessment result. To confirm, create, and publish the document users need to press the **Create** button.
 
-![](<../../../.gitbook/assets/20 (7).png>)
+![](<../../.gitbook/assets/20 (7).png>)
 
 #### **3.2 Viewing**
 
 Existing **Assessments** can be found in the corresponding grid.
 
-<figure><img src="../../../.gitbook/assets/image (690).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (690).png" alt=""><figcaption></figcaption></figure>
 
-<figure><img src="../../../.gitbook/assets/image (691).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (691).png" alt=""><figcaption></figcaption></figure>
 
 **3.2.1 General information**
 
 Technical information about the selected Statistics, its Policy, Hedera Topic, Hedera message, the document, etc is presented in the **Overview** tab.
 
-<figure><img src="../../../.gitbook/assets/image (692).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (692).png" alt=""><figcaption></figcaption></figure>
 
 **3.2.2 Document**
 
 The document content is viewable from the **Document** tab.
 
-<figure><img src="../../../.gitbook/assets/image (693).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (693).png" alt=""><figcaption></figcaption></figure>
 
 **3.2.3 Links**
 
 Related documents can be browsed and viewed from the **Relationships** tab.
 
-<figure><img src="../../../.gitbook/assets/image (694).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (694).png" alt=""><figcaption></figcaption></figure>
 
 The detailed view of the related document.
 
-<figure><img src="../../../.gitbook/assets/image (695).png" alt=""><figcaption></figcaption></figure>
+<figure><img src="../../.gitbook/assets/image (695).png" alt=""><figcaption></figcaption></figure>
 
 ### **4. Messages**
 
