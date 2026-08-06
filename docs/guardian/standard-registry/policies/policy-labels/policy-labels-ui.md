@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Policy Labels UI
 
 ## **1. Permissions**
@@ -117,7 +113,7 @@ Rules can be edited in the corresponding area of the UI:
 
 ![](../../../../.gitbook/assets/17.png)
 
-**Conditions** Formula and Rules configurator (see more detailed description in the [Schema Rules](../../schemas/schema-rules/) documentation section).
+**Conditions** Formula and Rules configurator (see more detailed description in the [Schema Rules](/broken/pages/DROmrMtNcJeHT4rZTvE6) documentation section).
 
 ![](../../../../.gitbook/assets/18.png)
 

@@ -1,7 +1,3 @@
----
-icon: mortar-pestle
----
-
 # Integrating 3rd Party Data Resources
 
 1. [Step By Step](./#id-1.-step-by-step)

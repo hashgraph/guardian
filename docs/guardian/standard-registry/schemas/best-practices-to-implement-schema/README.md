@@ -1,4 +1,4 @@
-# 📽️ Best Practices to Implement Schema
+# Best Practices to Implement Schema
 
 Best practices for implementing the schema cycle in Hedera Guardian involve a systematic approach to schema design, development, testing, deployment, versioning, and ongoing iteration as part of the complete methodology digitization lifecycle.
 

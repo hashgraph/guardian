@@ -1,7 +1,3 @@
----
-icon: sidebar-flip
----
-
 # Demo using UI
 
 [Step By Step](demo-using-ui.md#id-1.-step-by-step)

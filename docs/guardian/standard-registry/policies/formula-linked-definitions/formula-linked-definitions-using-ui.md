@@ -1,7 +1,3 @@
----
-icon: laptop-code
----
-
 # Formula Linked Definitions using UI
 
 ## **1. Creation**

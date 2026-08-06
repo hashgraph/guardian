@@ -1,7 +1,3 @@
----
-icon: arrow-right-to-bracket
----
-
 # Data Entry Updatability
 
 ### Overview
@@ -15,4 +11,3 @@ At its core, this feature provides:
 2\) the ability to display all document versions, from the original to the latest (current) version
 
 3\) when multiple VC versions exist, the latest (most recent) version is displayed or returned by default
-

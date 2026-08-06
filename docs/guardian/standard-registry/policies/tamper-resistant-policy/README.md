@@ -1,7 +1,3 @@
----
-icon: arrows-rotate-reverse
----
-
 # Tamper Resistant Policy
 
 ### Overview

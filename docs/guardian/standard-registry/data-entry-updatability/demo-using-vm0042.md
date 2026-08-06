@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Demo using VM0042
 
 1. First, we will import the VM0042 policy:

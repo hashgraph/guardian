@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Demo using Reader and Writer Block
 
 ## 1. Overview

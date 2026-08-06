@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Demo using UI
 
 [Step by Step](demo-using-ui.md#step-by-step)

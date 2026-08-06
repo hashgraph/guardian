@@ -1,8 +1,4 @@
----
-icon: cart-plus
----
-
-# Creating Schema using UI
+# Creating a Schema
 
 #### **1. Log in as a Standard Registry**
 

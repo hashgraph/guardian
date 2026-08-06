@@ -1,7 +1,3 @@
----
-icon: viruses
----
-
 # Multi-Workflow Engine
 
 ## 1. Purpose

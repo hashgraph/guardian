@@ -1,8 +1,4 @@
----
-icon: sidebar-flip
----
-
-# Schema Predefined Values using UI
+# Schema Predefined Values
 
 1. [Step By Step Process](schema-predefined-values-using-ui.md#id-1.-step-by-step-process)
 2. [Demo Video](schema-predefined-values-using-ui.md#id-2.-demo-video)
@@ -19,7 +15,7 @@ Predefined schema values allow users to set up values for each field in schema (
 
 ### 1.1 Setting Predefined Values:
 
-Predefined values can be found in the schema configuration dialog.&#x20;
+Predefined values can be found in the schema configuration dialog.
 
 There is “Selected values” block and “Show More”/”Show Less” button there.
 
