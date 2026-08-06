@@ -2152,9 +2152,6 @@ export class PolicyEngine extends NatsService {
                 userId,
                 interception: null
             });
-        if (!message) {
-            throw new Error('Invalid Message');
-        }
         if (message.type !== MessageType.InstancePolicy) {
             throw new Error('Invalid Message Type');
         }

@@ -2,6 +2,7 @@ import { ApiResponse } from './helpers/api-response.js';
 import {
     DatabaseServer,
     MessageError,
+    loadErrorCode,
     MessageResponse,
     PinoLogger,
     RunFunctionAsync,
@@ -72,9 +73,6 @@ async function preparePolicyPreviewMessage(
     });
     const message = await messageServer
         .getMessage<PolicyMessage>({ messageId, loadIPFS: true, userId, interception: userId });
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.InstancePolicy) {
         throw new Error('Invalid Message Type');
     }
@@ -280,7 +278,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(externalPolicy);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 
@@ -339,7 +338,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(true);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 
@@ -395,7 +395,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                     notifier.result({ id: messageId, errors });
                 }, async (error) => {
                     await logger.error(error, ['GUARDIAN_SERVICE'], owner?.id);
-                    notifier.fail(error);
+                    // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                    notifier.fail(error, loadErrorCode(error));
                 });
 
                 return new MessageResponse(task);
@@ -622,7 +623,8 @@ export async function externalPoliciesAPI(logger: PinoLogger): Promise<void> {
                 return new MessageResponse(policyToImport);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 }

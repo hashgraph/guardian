@@ -117,9 +117,6 @@ export async function importToolByMessage(
             userId,
             interception: null
         });
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }
@@ -612,9 +609,6 @@ export async function previewToolByMessage(messageId: string, userId: string | n
             interception: null
         });
 
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
     }

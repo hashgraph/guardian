@@ -313,9 +313,6 @@ async function prepareTemplatePreviewMessage(
         interception: null
     });
 
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
     if (message.type !== MessageType.SchemaTemplate) {
         throw new Error('Invalid Message Type');
     }
