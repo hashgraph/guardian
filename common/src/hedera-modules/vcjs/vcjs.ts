@@ -551,6 +551,22 @@ export class VCJS {
     /**
      * Replaces AJV messages with a human-readable description
      */
+    private resolveSchemaForError(rootSchema: any, instancePath: string): any {
+        // Root $defs is flat (updateSchemaDefs hoists all nested defs up); fall back to
+        // the current node's own $defs for schemas that were not hoisted.
+        const rootDefs = rootSchema.$defs || {};
+        const segments = instancePath.split('/').filter(Boolean).slice(0, -1);
+        let current = rootSchema;
+        for (const seg of segments) {
+            const ref = current.properties?.[seg]?.$ref;
+            if (ref) {
+                const next = current.$defs?.[ref] ?? rootDefs[ref];
+                if (next) { current = next; }
+            }
+        }
+        return current;
+    }
+
     private enhanceConditionErrors(errors: any[] | null | undefined, schema: any): any[] | null | undefined {
         if (!errors?.length || !Array.isArray(schema?.allOf)) {
             return errors;
@@ -559,7 +575,9 @@ export class VCJS {
             if (error.keyword !== 'false schema') { return error; }
             const match = (error.schemaPath as string)?.match(/^#\/allOf\/(\d+)\/(then|else)\//);
             if (!match) { return error; }
-            const condEntry = schema.allOf[parseInt(match[1], 10)];
+            const schemaForError = this.resolveSchemaForError(schema, error.instancePath);
+            if (!Array.isArray(schemaForError?.allOf)) { return error; }
+            const condEntry = schemaForError.allOf[parseInt(match[1], 10)];
             if (!condEntry?.if) { return error; }
             const fieldName = (error.instancePath as string).split('/').filter(Boolean).pop() || 'field';
             const condition = this.describeIfCondition(condEntry.if) || 'condition not met';
