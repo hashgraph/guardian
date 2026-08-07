@@ -69,6 +69,8 @@
     * [Schema Versioning & Deprecation Policy](guardian/standard-registry/schemas/schema-versioning-and-deprecation-policy.md)
     * [Repeatable Field Links](guardian/standard-registry/schemas/repeatable-field-links/README.md)
       * [Set up Repeatable Field Links](guardian/standard-registry/schemas/repeatable-field-links/set-up-repeatable-field-links.md)
+    * [Geo Fields](guardian/standard-registry/schemas/geo-fields/README.md)
+      * [Configure Geo Fields](guardian/standard-registry/schemas/geo-fields/configure-geo-fields.md)
     * [Data Entry Updatability](guardian/standard-registry/schemas/data-entry-updatability/README.md)
       * [Demo using UI](guardian/standard-registry/schemas/data-entry-updatability/demo-using-ui.md)
       * [Demo using VM0042](guardian/standard-registry/schemas/data-entry-updatability/demo-using-vm0042.md)
