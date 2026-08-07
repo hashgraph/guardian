@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Export Documents in CSV using UI
 
 1. Users with the **POLICY\_EXECUTE** permission can access the **"Export documents"** tab while executing a policy.

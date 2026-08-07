@@ -4,6 +4,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
     selector: 'app-refresh-btn',
     templateUrl: './refresh-btn.component.html',
     styleUrls: ['./refresh-btn.component.scss'],
+    standalone: false
 })
 export class RefreshBtnComponent implements OnInit {
     @Output() refresh: EventEmitter<any> = new EventEmitter();

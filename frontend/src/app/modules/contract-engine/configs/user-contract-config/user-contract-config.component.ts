@@ -22,6 +22,7 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'user-contract-config',
     templateUrl: './user-contract-config.component.html',
     styleUrls: ['./user-contract-config.component.css'],
+    standalone: false
 })
 export class UserContractConfigComponent implements OnInit {
     contractRequests: any[] = [];
@@ -124,10 +125,11 @@ export class UserContractConfigComponent implements OnInit {
     openRetirePoolsDialog() {
         const dialogRef = this.dialog.open(UserRetirePoolsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog pools-dialog',
+            styleClass: 'guardian-dialog pools-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
-        });
+        })!;
         dialogRef.onClose.subscribe((result) => {
             if (!result) {
                 return;
@@ -149,7 +151,8 @@ export class UserContractConfigComponent implements OnInit {
     openRetireRequestsDialog() {
         this.dialog.open(UserRetireRequestsDialogComponent, {
             width: '800px',
-            styleClass: 'g-dialog',
+            styleClass: 'guardian-dialog',
+            showHeader: false,
             modal: true,
             closable: false,
         });
@@ -170,7 +173,7 @@ export class UserContractConfigComponent implements OnInit {
                 document: document.document,
                 type: 'VC',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }

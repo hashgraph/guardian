@@ -144,7 +144,7 @@
                 font-size: 12px;
                 font-weight: 500;
                 line-height: 14px;
-                color: #181818;
+                color: var(--guardian-font-color, #181818);
                 margin-bottom: 6px;
             }
 
@@ -153,13 +153,13 @@
                 height: 40px;
                 border-radius: 8px;
                 border: 1px solid #E1E7EF;
-                background: #F9FAFC;
+                background: var(--guardian-grey-background, #F9FAFC);
                 padding: 12px 16px;
                 font-family: Inter;
                 font-size: 14px;
                 font-weight: 400;
                 line-height: 14px;
-                color: #23252E;
+                color: var(--guardian-font-color, #23252E);
                 margin-bottom: 8px;
             }
         }

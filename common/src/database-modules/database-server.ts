@@ -1,7 +1,6 @@
 import { AssignedEntityType, GenerateUUIDv4, IVC, MintTransactionStatus, PolicyTestStatus, PolicyStatus, SchemaEntity, TokenType, TopicType, ExternalPolicyStatus } from '@guardian/interfaces';
 import { TopicId } from '@hiero-ledger/sdk';
-import { FilterObject, FilterQuery, FindAllOptions, MikroORM } from '@mikro-orm/core';
-import type { FindOptions } from '@mikro-orm/core/drivers/IDatabaseDriver';
+import { FilterObject, FilterQuery, FindAllOptions, MikroORM, FindOptions } from '@mikro-orm/core';
 import { MongoDriver, ObjectId, PopulatePath } from '@mikro-orm/mongodb';
 import { Binary } from 'bson';
 import {
@@ -41,6 +40,8 @@ import {
     Record,
     RetirePool,
     Schema as SchemaCollection,
+    SchemaTemplate,
+    SchemaTemplateSnapshot,
     SchemaRule,
     SplitDocuments,
     SuggestionsConfig,
@@ -1952,6 +1953,138 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Create a schema template object.
+     * @param item template
+     */
+    public static createSchemaTemplate(item: Partial<SchemaTemplate>): SchemaTemplate {
+        return new DataBaseHelper(SchemaTemplate).create(item);
+    }
+
+    /**
+     * Save schema template.
+     * @param item template
+     */
+    public static async saveSchemaTemplate(item: Partial<SchemaTemplate>): Promise<SchemaTemplate> {
+        const template = new DataBaseHelper(SchemaTemplate).create(item);
+        return await new DataBaseHelper(SchemaTemplate).save(template);
+    }
+
+    /**
+     * Get schema templates.
+     * @param filters filters
+     * @param options options
+     */
+    public static async getSchemaTemplates(
+        filters?: FilterQuery<SchemaTemplate>,
+        options?: unknown
+    ): Promise<SchemaTemplate[]> {
+        return await new DataBaseHelper(SchemaTemplate).find(filters, options);
+    }
+
+    /**
+     * Get schema templates and count.
+     * @param filters filters
+     * @param options options
+     */
+    public static async getSchemaTemplatesAndCount(
+        filters?: FilterObject<SchemaTemplate>,
+        options?: FindOptions<object>
+    ): Promise<[SchemaTemplate[], number]> {
+        return await new DataBaseHelper(SchemaTemplate).findAndCount(filters, options);
+    }
+
+    /**
+     * Get schema template by id.
+     * @param id template id
+     */
+    public static async getSchemaTemplateById(id: string): Promise<SchemaTemplate | null> {
+        return await new DataBaseHelper(SchemaTemplate).findOne(id);
+    }
+
+    /**
+     * Get schema template.
+     * @param filters filters
+     */
+    public static async getSchemaTemplate(
+        filters: FilterQuery<SchemaTemplate>
+    ): Promise<SchemaTemplate | null> {
+        return await new DataBaseHelper(SchemaTemplate).findOne(filters);
+    }
+
+    /**
+     * Update schema template.
+     * @param item template
+     */
+    public static async updateSchemaTemplate(item: SchemaTemplate): Promise<SchemaTemplate> {
+        return await new DataBaseHelper(SchemaTemplate).update(item);
+    }
+
+    /**
+     * Delete schema template.
+     * @param item template
+     */
+    public static async removeSchemaTemplate(item: SchemaTemplate): Promise<void> {
+        return await new DataBaseHelper(SchemaTemplate).remove(item);
+    }
+
+    /**
+     * Save schema template snapshot.
+     * @param item snapshot
+     */
+    public static async saveSchemaTemplateSnapshot(
+        item: Partial<SchemaTemplateSnapshot>
+    ): Promise<SchemaTemplateSnapshot> {
+        const snapshot = new DataBaseHelper(SchemaTemplateSnapshot).create(item);
+        return await new DataBaseHelper(SchemaTemplateSnapshot).save(snapshot);
+    }
+
+    /**
+     * Get schema template snapshot by id.
+     * @param id snapshot id
+     */
+    public static async getSchemaTemplateSnapshotById(id: string): Promise<SchemaTemplateSnapshot | null> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).findOne(id);
+    }
+
+    /**
+     * Get schema template snapshot.
+     * @param filters filters
+     */
+    public static async getSchemaTemplateSnapshot(
+        filters: FilterQuery<SchemaTemplateSnapshot>
+    ): Promise<SchemaTemplateSnapshot | null> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).findOne(filters);
+    }
+
+    /**
+     * Get schema template snapshots.
+     * @param filters filters
+     * @param options options
+     */
+    public static async getSchemaTemplateSnapshots(
+        filters?: FilterQuery<SchemaTemplateSnapshot>,
+        options?: unknown
+    ): Promise<SchemaTemplateSnapshot[]> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).find(filters, options);
+    }
+
+    /**
+     * Update schema template snapshot.
+     * @param item snapshot
+     */
+    public static async updateSchemaTemplateSnapshot(item: SchemaTemplateSnapshot): Promise<SchemaTemplateSnapshot> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).update(item);
+    }
+
+    /**
+     * Delete schema template snapshot.
+     * @param item snapshot
+     */
+    public static async removeSchemaTemplateSnapshot(item: SchemaTemplateSnapshot): Promise<void> {
+        return await new DataBaseHelper(SchemaTemplateSnapshot).remove(item);
+    }
+
+    /**
      * Create tag
      * @param tag
      */
@@ -2684,6 +2817,27 @@ export class DatabaseServer extends AbstractDatabaseServer {
         return await this.find(DocumentState, filters, options);
     }
 
+    public async getDocumentStateHistory(
+        filters: FilterObject<DocumentState>,
+        documentSubpaths: string[],
+    ): Promise<{ createDate: Date, document: any }[]> {
+        const topLevelKeys = Array.from(new Set(
+            documentSubpaths.map(p => (p || '').split('.', 1)[0])
+        ));
+        const projection: any = { _id: 0, createDate: 1 };
+        for (const key of topLevelKeys) {
+            if (!key || key.startsWith('$') || key.includes('.') || key.includes('\0')) {
+                continue;
+            }
+            projection[`document.${key}`] = 1;
+        }
+        const pipeline: any[] = [
+            { $match: filters },
+            { $project: projection },
+        ];
+        return await this.aggregate(DocumentState, pipeline) as any;
+    }
+
     /**
      * Get Dry Run id
      * @returns Dry Run id
@@ -3096,7 +3250,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyCategories(): Promise<PolicyCategory[]> {
-        return await new DataBaseHelper(PolicyCategory).find(PolicyCategory as FilterQuery<PolicyCategory>);
+        return await new DataBaseHelper(PolicyCategory).find({});
     }
 
     /**
@@ -3113,7 +3267,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * @virtual
      */
     public static async getPolicyProperties(): Promise<PolicyProperty[]> {
-        return await new DataBaseHelper(PolicyProperty).find(PolicyProperty as FilterQuery<PolicyProperty>);
+        return await new DataBaseHelper(PolicyProperty).find({});
     }
 
     /**
@@ -4085,7 +4239,36 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async getVirtualUser(policyId: string): Promise<DryRun | null> {
+    public static async getVirtualUser(policyId: string, userId?: string | null): Promise<DryRun | null> {
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            if (!pointer?.did) {
+                return null;
+            }
+            return await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'VirtualUsers',
+                did: pointer.did
+            }, {
+                fields: [
+                    'id',
+                    'did',
+                    'username',
+                    'hederaAccountId',
+                    'active'
+                ]
+            } as unknown as FindOptions<object>);
+        }
+        // Legacy fallback: single shared active pointer. Used only when no
+        // real (authenticated) user context is available, e.g. background
+        // jobs. Callers resolving a request on behalf of a real user should
+        // always pass `userId`, so that each real user driving a dry-run
+        // policy keeps their own independently selected virtual persona
+        // instead of sharing one global pointer with every other tester.
         return await new DataBaseHelper(DryRun).findOne({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers',
@@ -4105,6 +4288,13 @@ export class DatabaseServer extends AbstractDatabaseServer {
      * Get All Virtual Users
      * @param policyId
      * @param savepointIds
+     * @param virtualKey
+     * @param document
+     * @param userId Real (authenticated) user requesting the list. When
+     * provided, each returned user's `active` field is recomputed against
+     * that real user's own selected persona (`ActiveVirtualUser` pointer)
+     * instead of the legacy shared `active` column, so concurrent dry-run
+     * testers each see their own persona highlighted.
      * @virtual
      */
     public static async getVirtualUsers(
@@ -4112,6 +4302,7 @@ export class DatabaseServer extends AbstractDatabaseServer {
         savepointIds?: string[],
         virtualKey?: boolean,
         document?: boolean,
+        userId?: string | null,
     ): Promise<DryRun[]> {
         const filter: any = {
             dryRunId: policyId,
@@ -4138,6 +4329,17 @@ export class DatabaseServer extends AbstractDatabaseServer {
                 createDate: 1
             }
         });
+
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            for (const user of users) {
+                user.active = !!pointer?.did && pointer.did === user.did;
+            }
+        }
 
         if (virtualKey) {
             for (const user of users) {
@@ -4787,6 +4989,22 @@ export class DatabaseServer extends AbstractDatabaseServer {
     }
 
     /**
+     * Save many Mock rows in a single batch insert
+     * @param dryRun
+     * @param rows array of { type, ...data }
+     */
+    public static async saveMockBatch(
+        dryRun: string,
+        rows: any[]
+    ): Promise<void> {
+        if (!rows || !rows.length) {
+            return;
+        }
+        const items = DatabaseServer.addDryRunId(rows, dryRun, 'Mock', false) as DryRun[];
+        await new DataBaseHelper(DryRun).insertMany(items);
+    }
+
+    /**
      * Save Mock
      * @param dryRun
      * @param type
@@ -5087,7 +5305,25 @@ export class DatabaseServer extends AbstractDatabaseServer {
      *
      * @virtual
      */
-    public static async setVirtualUser(policyId: string, did: string): Promise<void> {
+    public static async setVirtualUser(policyId: string, did: string, userId?: string | null): Promise<void> {
+        if (userId) {
+            const pointer = await new DataBaseHelper(DryRun).findOne({
+                dryRunId: policyId,
+                dryRunClass: 'ActiveVirtualUser',
+                userId
+            });
+            if (pointer) {
+                pointer.did = did;
+                await new DataBaseHelper(DryRun).save(pointer);
+            } else {
+                await new DataBaseHelper(DryRun).save(DatabaseServer.addDryRunId({
+                    did,
+                    userId
+                }, policyId, 'ActiveVirtualUser', false));
+            }
+            return;
+        }
+        // Legacy fallback: see getVirtualUser() above.
         const items = (await new DataBaseHelper(DryRun).find({
             dryRunId: policyId,
             dryRunClass: 'VirtualUsers'

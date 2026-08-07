@@ -10,7 +10,8 @@ import { DialogService } from 'primeng/dynamicdialog';
     selector: 'request-config',
     templateUrl: './request-config.component.html',
     styleUrls: ['./request-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class RequestConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

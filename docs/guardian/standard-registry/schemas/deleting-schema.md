@@ -1,8 +1,4 @@
----
-icon: trash-can-xmark
----
-
-# Deleting Schema
+# Deleting a Schema
 
 ## 1. Overview
 

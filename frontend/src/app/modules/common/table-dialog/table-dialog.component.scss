@@ -73,7 +73,7 @@
     align-items: center;
     gap: 12px;
     padding: 12px 8px 16px;
-    background: #ffffff;
+    background: var(--guardian-background, #ffffff);
     position: sticky;
     bottom: 0;
     z-index: 1;

@@ -1,5 +1,5 @@
 import { DatabaseServer, DidDocument, HederaBBSMethod, HederaDidDocument, HederaEd25519Method, IAuthUser, KeyType, PolicyRoles, Users, Wallet } from '@guardian/common';
-import { ISignOptions, LocationType, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
+import { ISignOptions, LocationType, OrgRolePermission, Permissions, PolicyRole, PolicyStatus, SignType } from '@guardian/interfaces';
 import { AnyBlockType, IPolicyDocument, IPolicyInstance } from './policy-engine.interface.js';
 
 /**
@@ -98,6 +98,18 @@ export class PolicyUser {
      * Location
      */
     public readonly policyLocation: LocationType;
+    /**
+     * Organization id (used as comparand in document-org filters)
+     */
+    public organization: string | null = null;
+    /**
+     * Organization role name (informational / future use only — not used for block access)
+     */
+    public organizationRole: string | null = null;
+    /**
+     * Organization role permissions (used for token-op authorization in Phase 6)
+     */
+    public organizationRolePermissions: OrgRolePermission[] = [];
 
     /**
      * User id
@@ -247,7 +259,10 @@ export class PolicyUser {
             roleMessage: this.roleMessage,
             virtual: this.virtual,
             isAdmin: this.isAdmin,
-            policyId: this.policyId
+            policyId: this.policyId,
+            organization: this.organization,
+            organizationRole: this.organizationRole,
+            organizationRolePermissions: this.organizationRolePermissions
         }
     }
 }

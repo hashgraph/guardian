@@ -9,16 +9,17 @@ The integration challenge went beyond just implementing calculations. Each tool 
 When we first analyzed VM0033, we found references to numerous CDM tools and VCS modules scattered throughout the methodology. Initially, this seemed overwhelming - how could we possibly implement all these external systems? The recursive analysis from Chapter 5 helped us understand which tools were actually needed for our mangrove restoration focus.
 
 **VM0033's Tool References**: The methodology mentions over a dozen external tools, but our boundary condition analysis revealed that the Allcot ABC Mangrove project only required three:
-- **AR-Tool05**: For calculating fossil fuel emissions from project activities
-- **AR-Tool14**: For estimating carbon stocks in trees and shrubs
-- **AFLOU Non-permanence Risk Tool**: For assessing project risks that might reverse carbon benefits
+
+* **AR-Tool05**: For calculating fossil fuel emissions from project activities
+* **AR-Tool14**: For estimating carbon stocks in trees and shrubs
+* **AFLOU Non-permanence Risk Tool**: For assessing project risks that might reverse carbon benefits
 
 **Why Only These Three**: The Allcot project boundary decisions eliminated the need for most other tools. No fire reduction premium meant no fire-related tools. Mineral soil only meant no peat-specific calculations. Simple planting activities meant minimal fossil fuel calculations.
 
 **Tool Integration Strategy**: Rather than trying to implement complete standalone versions of each tool, we focused on integrating the specific calculation procedures that VM0033 actually uses from each tool.
 
 {% hint style="info" %}
-**Reference Materials**: For tool integration context, see our [parsed VM0033 methodology](../../_shared/artifacts/VM0033-Methodology.md) and [Python extraction tool](../../_shared/artifacts/excel_artifact_extractor.py) in our [Artifacts Collection](../../_shared/artifacts/README.md). The [VM0033 test artifact](../../_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) contains real project data for validation (covered in Chapter 7).
+**Reference Materials**: For tool integration context, see our [parsed VM0033 methodology](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033-Methodology.md) and [Python extraction tool](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/excel_artifact_extractor.py) in our [Artifacts Collection](../../_shared/artifacts/). The [VM0033 test artifact](https://github.com/hashgraph/guardian/blob/develop/docs/methodology-digitization-handbook/_shared/artifacts/VM0033_Allcot_Test_Case_Artifact.xlsx) contains real project data for validation (covered in Chapter 7).
 {% endhint %}
 
 ### Tool vs. Methodology Calculations
@@ -60,10 +61,11 @@ AR-Tool14 is central to mangrove restoration because it provides the standardize
 **Why This Tool Matters**: Without AR-Tool14, every project would need to develop its own biomass equations, which is expensive and time-consuming. The tool provides scientifically validated equations that are accepted by carbon standards worldwide.
 
 **VM0033 Integration Points**: VM0033 uses AR-Tool14 calculations in several places:
-- Baseline biomass estimation for existing vegetation  
-- Project biomass growth projections over time
-- Above-ground and below-ground biomass calculations
-- Dead wood and litter biomass when included
+
+* Baseline biomass estimation for existing vegetation
+* Project biomass growth projections over time
+* Above-ground and below-ground biomass calculations
+* Dead wood and litter biomass when included
 
 ### AR-Tool14 Implementation Details
 
@@ -74,10 +76,11 @@ AR-Tool14 is central to mangrove restoration because it provides the standardize
 **Growth Projection Logic**: AR-Tool14 provides approaches for projecting biomass growth over time using diameter increment data. This became critical for VM0033's long-term carbon benefit projections.
 
 **Parameter Requirements We Mapped**:
-- Tree diameter at breast height (DBH) measurements
-- Tree height measurements for species without height-specific equations
-- Species identification or species group classification
-- Site condition factors (soil type, climate region, management intensity)
+
+* Tree diameter at breast height (DBH) measurements
+* Tree height measurements for species without height-specific equations
+* Species identification or species group classification
+* Site condition factors (soil type, climate region, management intensity)
 
 ### Handling AR-Tool14 Complexity
 
@@ -100,9 +103,10 @@ The AFLOU (Agriculture, Forestry, and Other Land Use) non-permanence risk tool a
 ### AFLOU Implementation Approach
 
 **Risk Category Assessment**: AFLOU evaluates risks across multiple standardized categories. For mangrove restoration, the most relevant categories include:
-- Natural disturbance risks (storms, sea level rise, disease)
-- Management and financial risks (funding stability, technical capacity)
-- Market and political risks (land tenure, regulatory changes)
+
+* Natural disturbance risks (storms, sea level rise, disease)
+* Management and financial risks (funding stability, technical capacity)
+* Market and political risks (land tenure, regulatory changes)
 
 **Scoring Integration**: AFLOU produces risk scores that feed into VM0033's buffer pool calculations. We implemented the scoring logic while simplifying the user interface to focus on risks most relevant to mangrove restoration.
 
@@ -158,7 +162,7 @@ The tool integration work creates the foundation for comprehensive test artifact
 
 **Validation Testing**: Tool validation logic must be tested to ensure it properly prevents calculation errors without blocking valid parameter combinations.
 
----
+***
 
 ## Tool Integration Summary and Next Steps
 
@@ -167,12 +171,13 @@ The tool integration work creates the foundation for comprehensive test artifact
 {% endhint %}
 
 **Key Integration Outcomes**:
-- [ ] External tool identification and prioritization based on project boundary conditions
-- [ ] AR-Tool05 integration for fossil fuel emission calculations
-- [ ] AR-Tool14 integration for biomass and carbon stock calculations  
-- [ ] AFLOU integration for non-permanence risk assessment
-- [ ] Unified integration framework for consistent data management
-- [ ] Testing and validation approaches for tool integrations
+
+* [ ] External tool identification and prioritization based on project boundary conditions
+* [ ] AR-Tool05 integration for fossil fuel emission calculations
+* [ ] AR-Tool14 integration for biomass and carbon stock calculations
+* [ ] AFLOU integration for non-permanence risk assessment
+* [ ] Unified integration framework for consistent data management
+* [ ] Testing and validation approaches for tool integrations
 
 **Preparation for Chapter 7**: The tool integration work provides essential components for test artifact development. The parameter requirements, calculation procedures, and validation logic from tool integration become key elements in comprehensive test scenarios.
 

@@ -1,5 +1,3 @@
-import 'module-alias/register.js';
-
 import { assert } from 'chai';
 
 import { EventBlock } from '../../../../dist/policy-engine/helpers/decorators/event-block.js';

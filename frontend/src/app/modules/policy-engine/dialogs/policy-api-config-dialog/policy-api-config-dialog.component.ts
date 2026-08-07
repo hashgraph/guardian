@@ -1,7 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { IPolicyDocumentationEntry, POLICY_ALIAS_REGEX } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { RegisteredService } from '../../services/registered.service';
 import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
 
@@ -9,6 +9,7 @@ import { IBlockAbout, PolicyFolder, PolicyItem } from '../../structures';
     selector: 'app-policy-api-config-dialog',
     templateUrl: './policy-api-config-dialog.component.html',
     styleUrls: ['./policy-api-config-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyApiConfigDialogComponent {
     public entries: IPolicyDocumentationEntry[] = [];
@@ -23,6 +24,20 @@ export class PolicyApiConfigDialogComponent {
     ];
     public validationErrors: Map<number, string> = new Map();
     public isLargeSize = true;
+
+    // Block types whose APIs should not be exposed externally: excluded from the
+    // target dropdown and "Add all", and flagged invalid if present in imported
+    // entries. Extend this list by adding another block type string.
+    private static readonly SKIPPED_BLOCK_TYPES: ReadonlySet<string> = new Set<string>([
+        'informationBlock',
+        'interfaceStepBlock',
+        'interfaceContainerBlock',
+        'ipfsTransformationUIAddon',
+        'transformationUIAddon',
+        'httpRequestUIAddon',
+        'documentsSourceAddon',
+        'paginationAddon',
+    ]);
 
     private static readonly POST_PARAMS: { name: string; type: string; description: string }[] = [
         { name: 'timeout', type: 'number', description: 'Request timeout in ms (default: 60000)' },
@@ -49,12 +64,14 @@ export class PolicyApiConfigDialogComponent {
         public ref: DynamicDialogRef,
         public config: DynamicDialogConfig,
         private registeredService: RegisteredService,
-        private informService: InformService
+        private toastService: ToastService
     ) {
         this.policyId = this.config.data?.policyId ?? '';
         this.blocks = this.config.data?.blocks ?? [];
         this.root = this.config.data?.root;
-        this.eligibleBlocks = this.blocks.filter((block: any) => this.isApiCapableBlock(block));
+        this.eligibleBlocks = this.blocks.filter(
+            (block: any) => this.isApiCapableBlock(block) && !this.isSkippedBlock(block)
+        );
         const existing: IPolicyDocumentationEntry[] = this.config.data?.entries ?? [];
         this.entries = existing.map((e) => ({ ...e }));
     }
@@ -164,6 +181,10 @@ export class PolicyApiConfigDialogComponent {
         return !!(about?.get || about?.post);
     }
 
+    private isSkippedBlock(block: any): boolean {
+        return PolicyApiConfigDialogComponent.SKIPPED_BLOCK_TYPES.has(block?.blockType);
+    }
+
     private getBlockAbout(block: any): IBlockAbout | null {
         return this.registeredService.getAbout(block, this.root);
     }
@@ -225,6 +246,9 @@ export class PolicyApiConfigDialogComponent {
         if (!POLICY_ALIAS_REGEX.test(entry.alias)) {
             return "Alias: lowercase letters, digits, hyphens; use '/' to separate path segments";
         }
+        if (block && this.isSkippedBlock(block)) {
+            return 'Selected block cannot be exposed via API';
+        }
         if (!block || !about || (!about.get && !about.post)) {
             return 'Selected block does not support API aliases';
         }
@@ -284,16 +308,18 @@ export class PolicyApiConfigDialogComponent {
             try {
                 imported = JSON.parse(reader.result as string);
             } catch {
-                this.informService.errorShortMessage(
+                this.toastService.error(
                     'Could not parse the selected file. Expected a JSON array exported from this dialog.',
-                    'Import failed'
+                    'Import failed',
+                    { sticky: true }
                 );
                 return;
             }
             if (!Array.isArray(imported)) {
-                this.informService.errorShortMessage(
+                this.toastService.error(
                     'Unexpected file contents. Expected a JSON array of API entries.',
-                    'Import failed'
+                    'Import failed',
+                    { sticky: true }
                 );
                 return;
             }
@@ -310,9 +336,10 @@ export class PolicyApiConfigDialogComponent {
             this.revalidate();
         };
         reader.onerror = () => {
-            this.informService.errorShortMessage(
+            this.toastService.error(
                 'Could not read the selected file.',
-                'Import failed'
+                'Import failed',
+                { sticky: true }
             );
         };
         reader.readAsText(file);

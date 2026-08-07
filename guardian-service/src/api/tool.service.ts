@@ -1,9 +1,9 @@
 import { ApiResponse } from '../api/helpers/api-response.js';
-import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
+import { BinaryMessageResponse, DatabaseServer, Hashing, INotificationStep, MessageAction, loadErrorCode, MessageError, MessageResponse, MessageServer, MessageType, NewNotifier, PinoLogger, Policy, PolicyTool, replaceAllEntities, replaceAllVariables, RunFunctionAsync, SchemaFields, ToolImportExport, ToolMessage, TopicConfig, TopicHelper, Users } from '@guardian/common';
 import { GenerateUUIDv4, IOwner, IRootConfig, MessageAPI, ModelHelper, ModuleStatus, PolicyEvents, PolicyStatus, SchemaStatus, TagType, TopicType } from '@guardian/interfaces';
 import { ISerializedErrors } from '../policy-engine/policy-validation-results-container.js';
 import { PolicyConverterUtils } from '../helpers/import-helpers/policy/policy-converter-utils.js';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import { FilterObject } from '@mikro-orm/core';
 import { deleteSchema, findAndDryRunSchema, importToolByFile, importToolByMessage, importToolErrors, PolicyImportExportHelper, publishSchemasPackage, publishToolTags, updateToolConfig } from '../helpers/import-helpers/index.js'
 import { escapeRegExp } from './helpers/api-helper.js';
@@ -72,10 +72,6 @@ export async function preparePreviewMessage(
             userId: user.id,
             interception: null
         });
-
-    if (!message) {
-        throw new Error('Invalid Message');
-    }
 
     if (message.type !== MessageType.Tool) {
         throw new Error('Invalid Message Type');
@@ -1115,13 +1111,14 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                 }
                 const notifier = NewNotifier.empty();
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const root = await users.getHederaAccount(owner.owner, owner?.id);
                 const item = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.complete();
                 return new MessageResponse(item);
             } catch (error) {
                 await logger.error(error, ['GUARDIAN_SERVICE'], msg?.owner?.id);
-                return new MessageError(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                return new MessageError(error, loadErrorCode(error));
             }
         });
 
@@ -1174,7 +1171,7 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     throw new Error('The tool already exists');
                 }
                 const users = new Users();
-                const root = await users.getHederaAccount(owner.creator, owner?.id);
+                const root = await users.getHederaAccount(owner.owner, owner?.id);
                 const { tool, errors } = await importToolByMessage(root, id, owner, notifier, owner.id);
                 notifier.complete();
                 if (errors?.length) {
@@ -1188,7 +1185,8 @@ export async function toolsAPI(logger: PinoLogger): Promise<void> {
                     });
                 }
             }, async (error) => {
-                notifier.fail(error);
+                // Forward error.code (404/422 for message load errors) instead of a generic 500.
+                notifier.fail(error, loadErrorCode(error));
             });
             return new MessageResponse(task);
         });

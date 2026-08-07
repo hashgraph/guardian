@@ -9,7 +9,7 @@ import { ProfileService } from '../../services/profile.service';
 import { DemoService } from '../../services/demo.service';
 import { SchemaService } from '../../services/schema.service';
 import { HeaderPropsService } from '../../services/header-props.service';
-import { InformService } from '../../services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from '../../services/tasks.service';
 //modules
 import { VCViewerDialog } from '../../modules/schema-engine/vc-dialog/vc-dialog.component';
@@ -26,6 +26,11 @@ import { OtpConfigDialogComponent } from '../login/otp-config-dialog/otp-config-
 import { OtpDisableDialogComponent } from '../login/otp-disable-dialog/otp-disable-dialog.component';
 import { OtpCodesDialogComponent } from '../login/otp-codes-dialog/otp-codes-dialog.component';
 import moment from 'moment';
+import { AppTheme, AppThemeOption, AppThemeService } from '../../services/app-theme.service';
+import { MenuLayout, MenuLayoutOption, MenuLayoutService } from '../../services/menu-layout.service';
+import { DocWidgetService } from '../../services/doc-widget.service';
+import { FirstStepsService } from '../../services/first-steps.service';
+import { formatBalance, getUserInitials } from '../../utils';
 
 
 enum OperationMode {
@@ -63,6 +68,7 @@ interface IColumn {
     selector: 'app-user-profile',
     templateUrl: './user-profile.component.html',
     styleUrls: ['./user-profile.component.scss'],
+    standalone: false
 })
 export class UserProfileComponent implements OnInit {
     public loading: boolean = true;
@@ -166,13 +172,17 @@ export class UserProfileComponent implements OnInit {
         private relayerAccountsService: RelayerAccountsService,
         private otherService: DemoService,
         private schemaService: SchemaService,
-        private informService: InformService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private route: ActivatedRoute,
         private router: Router,
         private dialogService: DialogService,
         private headerProps: HeaderPropsService,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private docWidgetService: DocWidgetService,
+        private appThemeService: AppThemeService,
+        private menuLayoutService: MenuLayoutService,
+        private firstStepsService: FirstStepsService
     ) {
         this.balances = new Map<string, string>();
         this.standardRegistryForm = new UntypedFormControl('', [Validators.required]);
@@ -536,7 +546,7 @@ export class UserProfileComponent implements OnInit {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
@@ -579,7 +589,7 @@ export class UserProfileComponent implements OnInit {
                 type: 'VC',
                 viewDocument: true,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -597,7 +607,7 @@ export class UserProfileComponent implements OnInit {
                 title,
                 type: 'JSON',
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
         });
     }
@@ -975,7 +985,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 login: profile?.username,
             }
-        }).onClose.subscribe((data) => {
+        })!.onClose.subscribe((data) => {
             this.loadDate();
         });
     }
@@ -1015,9 +1025,9 @@ export class UserProfileComponent implements OnInit {
         });
     }
 
-    public onChangeTab(tab: any) {
-        this.tabIndex = tab.index;
-        this.tab = this.tabs[tab.index] || 'general';
+    public onChangeTab(index: string | number | undefined) {
+        this.tabIndex = typeof index === 'number' ? index : 0;
+        this.tab = this.tabs[this.tabIndex] || 'general';
         this.router.navigate([], {
             queryParams: { tab: this.tab }
         });
@@ -1070,7 +1080,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 type: 'create',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.createKey(result.messageId);
@@ -1086,7 +1096,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 type: 'import',
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => {
             if (result) {
                 this.createKey(result.messageId, result.key)
@@ -1104,7 +1114,7 @@ export class UserProfileComponent implements OnInit {
                 type: 'preview',
                 key
             },
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result: any | null) => { });
     }
 
@@ -1124,7 +1134,7 @@ export class UserProfileComponent implements OnInit {
                     class: 'delete'
                 }]
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((result: string) => {
             if (result === 'Delete') {
                 this.deleteKey(item.id)
@@ -1209,7 +1219,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 title: 'Add Relayer Account'
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.subLoading = true;
@@ -1232,7 +1242,7 @@ export class UserProfileComponent implements OnInit {
             data: {
                 relayerAccount: item
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => { });
     }
 
@@ -1278,7 +1288,7 @@ export class UserProfileComponent implements OnInit {
                 width: '50vw',
                 closable: false,
                 data: { config: config }
-            }).onClose.subscribe((codes) => {
+            })!.onClose.subscribe((codes) => {
                 this.refreshOtpStatus();
                 if (codes && codes.length) {
                     this.dialogService.open(OtpCodesDialogComponent, {
@@ -1296,12 +1306,77 @@ export class UserProfileComponent implements OnInit {
             width: '50vw',
             closable: false,
 
-        }).onClose.subscribe(result => {
+        })!.onClose.subscribe(result => {
             if (result == true) {
                 this.auth.deactivateOtp().subscribe(() => {
                     this.refreshOtpStatus();
                 });
             }
         })
+    }
+    public readonly getUserInitials = getUserInitials;
+
+    formatBalance(balance: string | null | undefined): string {
+        return formatBalance(balance);
+    }
+
+    formatRole(role: string | undefined): string {
+        if (!role) { return ''; }
+        return role.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(' ');
+    }
+
+    get appThemes(): AppThemeOption[] {
+        return this.appThemeService.themes;
+    }
+
+    get selectedTheme(): AppTheme {
+        return this.appThemeService.getCurrentTheme();
+    }
+
+    get menuLayouts(): MenuLayoutOption[] {
+        return this.menuLayoutService.layouts;
+    }
+
+    get selectedMenuLayout(): MenuLayout {
+        return this.menuLayoutService.layout;
+    }
+
+    get docWidgetEnabled(): boolean {
+        return this.docWidgetService.isEnabled();
+    }
+
+    get docWidgetAvailable(): boolean {
+        return this.docWidgetService.available;
+    }
+
+    get firstStepsEnabled(): boolean {
+        return this.firstStepsService.isEnabled();
+    }
+
+    onThemeChange(theme: AppTheme): void {
+        this.appThemeService.setTheme(theme);
+    }
+
+    onMenuLayoutChange(layout: MenuLayout): void {
+        this.menuLayoutService.setLayout(layout);
+    }
+
+    onDocWidgetToggle(checked: boolean): void {
+        this.docWidgetService.setEnabled(checked);
+    }
+
+    onFirstStepsToggle(checked: boolean): void {
+        this.firstStepsService.setEnabled(checked);
+    }
+
+    onToggle2fa(checked: boolean): void {
+        checked ? this.generate2fa() : this.deactivate2fa();
+    }
+
+    copyToClipboard(value: string | null | undefined): void {
+        if (!value) { return; }
+        navigator.clipboard.writeText(value).then(() => {
+            this.toastService.success('Copied to clipboard');
+        }).catch((error) => console.error(error));
     }
 }

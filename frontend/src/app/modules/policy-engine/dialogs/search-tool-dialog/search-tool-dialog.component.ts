@@ -12,7 +12,8 @@ import { ToolsService } from 'src/app/services/tools.service';
 @Component({
     selector: 'search-tool-dialog',
     templateUrl: './search-tool-dialog.component.html',
-    styleUrls: ['./search-tool-dialog.component.scss']
+    styleUrls: ['./search-tool-dialog.component.scss'],
+    standalone: false
 })
 export class SearchToolDialog {
     public loading = false;

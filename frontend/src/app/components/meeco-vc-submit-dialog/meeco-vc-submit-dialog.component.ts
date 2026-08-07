@@ -19,6 +19,7 @@ interface RolesData {
     selector: 'app-meeco-vc-submit-dialog',
     templateUrl: './meeco-vc-submit-dialog.component.html',
     styleUrls: ['./meeco-vc-submit-dialog.component.scss'],
+    standalone: false
 })
 export class MeecoVCSubmitDialogComponent {
     vcSubject: any;

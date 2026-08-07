@@ -1,35 +1,41 @@
-<div class="content user-profile">
-    <div class="policy-search">
-        <h1>Search for Policies</h1>
+<div class="guardian-page">
+  <div class="policy-search">
+    <div class="guardian-user-page-header">Search for Policies</div>
 
-        <p-tabView
-            (onChange)="onChange($event)"
-            *ngIf="!loading && isConfirmed"
-            [activeIndex]="selectedIndex"
-            [ngStyle]="{'height': 'calc(100vh - 120px)'}">
+    @if (!loading && isConfirmed) {
+      <p-tabs (valueChange)="onChange($event)"
+        [value]="selectedIndex"
+        [ngStyle]="{'height': 'calc(100vh - 120px)'}">
+        <p-tablist>
+          <p-tab [value]="0">Search with AI</p-tab>
+          <p-tab [value]="1">Guided Search</p-tab>
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel [value]="0">
+            <app-policy-ai-search class="possible-problems-with-empty-tab-here"></app-policy-ai-search>
+          </p-tabpanel>
+          <p-tabpanel [value]="1">
+            <app-policy-guided-search></app-policy-guided-search>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+    }
 
-            <ng-container *useWithServiceDecorator="'AI_SERVICE'">
-                <p-tabPanel [header]="'Search with AI'">
-                    <app-policy-ai-search class="possible-problems-with-empty-tab-here"></app-policy-ai-search>
-                </p-tabPanel>
-            </ng-container>
-
-            <p-tabPanel [header]="'Guided Search'">
-                <app-policy-guided-search></app-policy-guided-search>
-            </p-tabPanel>
-        </p-tabView>
-
-        <div *ngIf="!loading && !isConfirmed" class="not-exist">
-            Before starting work you need to get DID
-            <a [routerLink]="['/profile']">here</a>
-        </div>
-    </div>
+    @if (!loading && !isConfirmed) {
+      <div class="not-exist">
+        Before starting work you need to get DID
+        <a [routerLink]="['/profile']">here</a>
+      </div>
+    }
+  </div>
 </div>
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

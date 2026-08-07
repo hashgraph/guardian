@@ -11,6 +11,7 @@ import { TreeSource } from './tree-source';
     selector: 'app-tree-graph',
     templateUrl: './tree-graph.component.html',
     styleUrls: ['./tree-graph.component.scss'],
+    standalone: false
 })
 export class TreeGraphComponent implements OnInit {
     @ViewChild('movedEl', { static: true }) movedEl: ElementRef<HTMLDivElement>;

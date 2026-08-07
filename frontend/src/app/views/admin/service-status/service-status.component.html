@@ -1,128 +1,171 @@
-<div class="container">
-    <ng-container [ngTemplateOutlet]="header"></ng-container>
-    <ng-container [ngTemplateOutlet]="statusContainer"></ng-container>
+<div class="guardian-page">
+  <ng-container [ngTemplateOutlet]="header"></ng-container>
+  <ng-container [ngTemplateOutlet]="statusContainer"></ng-container>
 
-    <div *ngIf="guardianVersion" class="guardian-version-card">
-        <div class="guardian-version-content">
-            <svg-icon
-                    class="svg-icon-32"
-                    src="/assets/images/icons/guardian-icon-secondary.svg"
-                    svgClass="guardian-version-icon">
-            </svg-icon>
-
-            <span class="guardian-version-text">
-            Guardian Version {{ guardianVersion }}
+  @if (guardianVersion) {
+    <div class="guardian-version-card">
+      <div class="guardian-version-content">
+        <svg-icon
+          class="svg-icon-32"
+          src="/assets/images/icons/guardian-icon-secondary.svg"
+          svgClass="guardian-version-icon">
+        </svg-icon>
+        <span class="guardian-version-text">
+          Guardian Version {{ guardianVersion }}
         </span>
-        </div>
+      </div>
     </div>
+  }
 
-    <div *ngIf="false" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  @if (false) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
     </div>
+  }
 </div>
 
 <ng-template #header>
-    <div class="header">
-        <h1>Services status</h1>
-    </div>
+  <div class="guardian-user-page-header">Services status</div>
 </ng-template>
 
 <ng-template #statusContainer>
-    <div class="status-container">
-        <ng-container *ngFor="let service of servicesStates">
-            <div class="item">
-                <div class="header">
-                    <span>{{ service.serviceName }}</span>
-                    <div class="statuses">
-                        <div *ngFor="let state of service.states" [ngSwitch]="state" [pTooltip]="state">
-                            <svg-icon *ngSwitchCase="'READY'"
-                                      src="/assets/images/icons/check.svg"
-                                      svgClass="success-color">
-                            </svg-icon>
-                            <svg-icon *ngSwitchCase="'BAD_CONFIGURATION'"
-                                      src="/assets/images/icons/warning.svg"
-                                      svgClass="warning-color">
-                            </svg-icon>
-                            <div *ngSwitchCase="'INITIALIZING'" class="preloader-image"></div>
-                            <div *ngSwitchCase="'STARTED'" class="preloader-image"></div>
-                            <svg-icon *ngSwitchCase="'STOPPED'"
-                                      src="/assets/images/icons/time.svg"
-                                      svgClass="error-color">
-                            </svg-icon>
-                        </div>
-                    </div>
-                </div>
-                <div class="actions-container">
-                    <button *ngIf="service.serviceName !== 'LOGGER_SERVICE'"
-                            [queryParams]="{ attr: service.serviceName }" [routerLink]="'/admin/logs'"
-                            class="button secondary" label="View Logs"
-                            pButton type="button"></button>
-                </div>
-            </div>
-        </ng-container>
-    </div>
+  <div class="status-container">
+    @for (service of servicesStates; track service) {
+      <div class="item">
+        <div class="header">
+          <span>{{ service.serviceName }}</span>
+          <div class="statuses">
+            @for (state of service.states; track state) {
+              <div [pTooltip]="state">
+                @switch (state) {
+                  @case ('READY') {
+                    <svg-icon
+                      src="/assets/images/icons/check.svg"
+                      svgClass="success-color">
+                    </svg-icon>
+                  }
+                  @case ('BAD_CONFIGURATION') {
+                    <svg-icon
+                      src="/assets/images/icons/warning.svg"
+                      svgClass="warning-color">
+                    </svg-icon>
+                  }
+                  @case ('INITIALIZING') {
+                    <div class="preloader-image"></div>
+                  }
+                  @case ('STARTED') {
+                    <div class="preloader-image"></div>
+                  }
+                  @case ('STOPPED') {
+                    <svg-icon
+                      src="/assets/images/icons/time.svg"
+                      svgClass="error-color">
+                    </svg-icon>
+                  }
+                }
+              </div>
+            }
+          </div>
+        </div>
+        <div class="actions-container">
+          @if (service.serviceName !== 'LOGGER_SERVICE') {
+            <button
+              [queryParams]="{ attr: service.serviceName }" [routerLink]="'/admin/logs'"
+              class="button secondary" label="View Logs"
+            pButton type="button"></button>
+          }
+        </div>
+      </div>
+    }
+  </div>
 </ng-template>
 
-<div *ngIf="false" class="service-status-container">
+@if (false) {
+  <div class="service-status-container">
     <ng-template #info let-allServicesAreRunning="getIfAllServicesAreRunning()"
-                 let-loadingServices="getLoadingServices()"
-                 let-stoppedServices="getStoppedServices()">
-        <h1 class="info-message" *ngIf="loadingServices.length">
-            {{ getServiceNames(loadingServices) }}
-            is (are) initializing
-            <br/>
-            Please wait...
+      let-loadingServices="getLoadingServices()"
+      let-stoppedServices="getStoppedServices()">
+      @if (loadingServices.length) {
+        <h1 class="info-message">
+          {{ getServiceNames(loadingServices) }}
+          is (are) initializing
+          <br/>
+          Please wait...
         </h1>
-        <h1 class="info-message" *ngIf="stoppedServices.length">
-            There are some problems with services...
+      }
+      @if (stoppedServices.length) {
+        <h1 class="info-message">
+          There are some problems with services...
         </h1>
-        <h1 *ngIf="allServicesAreRunning" class="info-message">
-            All services are running
+      }
+      @if (allServicesAreRunning) {
+        <h1 class="info-message">
+          All services are running
         </h1>
-        <table class="status-table">
-            <tr *ngFor="let service of servicesStates" class="service-status-row">
-                <td class="">
-                    <b>{{ service.serviceName }}</b>
-                </td>
-                <td class="">-</td>
-                <td class="flex-line">
-                    <div *ngFor="let state of service.states" [ngSwitch]="state">
-                        <div *ngSwitchCase="'READY'" class="icon-row">
-                            <i class="pi pi-check icon-status ready-status"></i>
-                        </div>
-                        <div *ngSwitchCase="'BAD_CONFIGURATION'" class="icon-row">
-                            <svg-icon src="/assets/images/icons/abc.svg"
-                                      svgClass="icon-style-abc icon-status bad-configuration-status"></svg-icon>
-                        </div>
-                        <div *ngSwitchCase="'INITIALIZING'" class="icon-row">
-                            <p-progressSpinner
-                                *ngSwitchCase="'INITIALIZING'"
-                                [style]="{ width: '35px', height: '35px' }">
-                            </p-progressSpinner>
-                        </div>
-                        <div *ngSwitchCase="'STARTED'" class="icon-row">
-                            <p-progressSpinner
-                                *ngSwitchCase="'STARTED'"
-                                [style]="{ width: '35px', height: '35px' }">
-                            </p-progressSpinner>
-                        </div>
-                        <div *ngSwitchCase="'STOPPED'" class="icon-row">
-                            <i *ngSwitchCase="'STOPPED'" class="pi pi-times icon-status stopped-status"></i>
-                        </div>
-                    </div>
-                    <div *ngIf="!service.states.length" class="icon-row">
+      }
+      <table class="status-table">
+        @for (service of servicesStates; track service) {
+          <tr class="service-status-row">
+            <td class="">
+              <b>{{ service.serviceName }}</b>
+            </td>
+            <td class="">-</td>
+            <td class="flex-line">
+              @for (state of service.states; track state) {
+                <div>
+                  @switch (state) {
+                    @case ('READY') {
+                      <div class="icon-row">
+                        <i class="pi pi-check icon-status ready-status"></i>
+                      </div>
+                    }
+                    @case ('BAD_CONFIGURATION') {
+                      <div class="icon-row">
+                        <svg-icon src="/assets/images/icons/abc.svg"
+                        svgClass="icon-style-abc icon-status bad-configuration-status"></svg-icon>
+                      </div>
+                    }
+                    @case ('INITIALIZING') {
+                      <div class="icon-row">
+                        <p-progressSpinner
+                          [style]="{ width: '35px', height: '35px' }">
+                        </p-progressSpinner>
+                      </div>
+                    }
+                    @case ('STARTED') {
+                      <div class="icon-row">
+                        <p-progressSpinner
+                          [style]="{ width: '35px', height: '35px' }">
+                        </p-progressSpinner>
+                      </div>
+                    }
+                    @case ('STOPPED') {
+                      <div class="icon-row">
                         <i class="pi pi-times icon-status stopped-status"></i>
-                        <span>
-                            (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View
-                            Logs</a>)
-                        </span>
-                    </div>
-                </td>
-            </tr>
-        </table>
-        <div class="back" *ngIf="last && !stoppedServices.length && !loadingServices.length" (click)="onBack()">
-            Return to previous page
-        </div>
-    </ng-template>
-    <ng-container *ngTemplateOutlet="info; context: this"></ng-container>
+                      </div>
+                    }
+                  }
+                </div>
+              }
+              @if (!service.states.length) {
+                <div class="icon-row">
+                  <i class="pi pi-times icon-status stopped-status"></i>
+                  <span>
+                    (Stopped, <a [routerLink]="'/admin/logs'" [queryParams]="{ attr: service.serviceName }">View
+                  Logs</a>)
+                </span>
+              </div>
+            }
+          </td>
+        </tr>
+      }
+    </table>
+    @if (last && !stoppedServices.length && !loadingServices.length) {
+      <div class="back" (click)="onBack()">
+        Return to previous page
+      </div>
+    }
+  </ng-template>
+  <ng-container *ngTemplateOutlet="info; context: this"></ng-container>
 </div>
+}

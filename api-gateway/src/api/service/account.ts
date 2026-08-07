@@ -32,8 +32,8 @@ import {
 } from '#middlewares';
 import { Auth, AuthUser, checkPermission } from '#auth';
 import { EntityOwner, Guardians, InternalException, PolicyEngine, ServiceError, TaskManager, UseCache, Users } from '#helpers';
-import { PolicyListResponse } from '../../entities/policy';
-import { StandardRegistryAccountResponse } from '../../entities/account';
+import { PolicyListResponse } from '../../entities/policy.js';
+import { StandardRegistryAccountResponse } from '../../entities/account.js';
 import { ApplicationEnvironment } from '../../environment.js';
 import { CACHE } from '#constants';
 

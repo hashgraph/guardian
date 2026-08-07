@@ -1,4 +1,9 @@
-# 📽️ Best Practices to Implement Schema
+---
+tags:
+  - guide
+---
+
+# Schema Design Best Practices
 
 Best practices for implementing the schema cycle in Hedera Guardian involve a systematic approach to schema design, development, testing, deployment, versioning, and ongoing iteration as part of the complete methodology digitization lifecycle.
 
@@ -11,3 +16,9 @@ Best practices for implementing the schema cycle in Hedera Guardian involve a sy
 * **Conditional and Visibility Logic**: Implement conditional sub-schemas and field visibility toggles to streamline user input flows and accommodate complex project workflows dynamically.
 * **Reusability and Modularity**: Design schemas to be reusable components across multiple policies and methodologies to encourage standardization and reduce duplication.
 * **Documentation and Metadata**: Maintain detailed documentation within and alongside schemas to provide context, field definitions, use cases, and change history for stakeholders.
+
+
+
+Related
+
+* [Creating Policies](https://www.youtube.com/watch?v=AAlu1btvkGc\&list=PLnld0e1pwLhqdR0F9dusqILDww6uZywwR\&index=4) (Youtube)

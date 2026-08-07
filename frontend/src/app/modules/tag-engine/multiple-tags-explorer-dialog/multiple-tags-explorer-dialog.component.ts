@@ -12,7 +12,8 @@ import { LocationType, UserPermissions } from '@guardian/interfaces';
 @Component({
     selector: 'multiple-tags-explorer-dialog',
     templateUrl: './multiple-tags-explorer-dialog.component.html',
-    styleUrls: ['./multiple-tags-explorer-dialog.component.scss']
+    styleUrls: ['./multiple-tags-explorer-dialog.component.scss'],
+    standalone: false
 })
 export class MultipleTagsExplorerDialog {
     public loading = false;
@@ -90,7 +91,7 @@ export class MultipleTagsExplorerDialog {
                     schemas: this.schemas,
                     inheritTagsOption: this.inheritTagsOption,
                 }
-            });
+            })!;
             dialogRef.onClose.subscribe(async (result) => {
                 if (result) {
                     this.create(result, history);
@@ -185,7 +186,7 @@ export class MultipleTagsExplorerDialog {
                 schemas: this.schemas,
                 inheritTagsOption: this.inheritTagsOption,
             }
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             if (result) {
                 this.createMultiple(result, this.histories);

@@ -16,12 +16,14 @@ export class FieldControl {
     public hidden: UntypedFormControl;
     public controlDescription: UntypedFormControl;
     public controlType: UntypedFormControl;
+    public controlDependency: UntypedFormControl;
     public property: UntypedFormControl;
     public controlRequired: UntypedFormControl;
     public controlArray: UntypedFormControl;
     public controlUnit: UntypedFormControl;
     public controlRemoteLink: UntypedFormControl;
     public controlEnum: UntypedFormArray;
+    public controlEnumName: UntypedFormControl;
     public controlAvailableOptions: UntypedFormArray;
     public controlColor: UntypedFormControl;
     public controlSize: UntypedFormControl;
@@ -61,12 +63,14 @@ export class FieldControl {
             this.controlTitle = new UntypedFormControl(field.title, Validators.required);
             this.controlDescription = new UntypedFormControl(field.description, Validators.required);
             this.controlType = new UntypedFormControl(type, Validators.required);
+            this.controlDependency = new UntypedFormControl(field.dependency?.on || null);
             this.controlRequired = new UntypedFormControl(field.required);
             this.controlArray = new UntypedFormControl(field.isArray);
             this.controlUnit = new UntypedFormControl(field.unit);
             this.controlRemoteLink = new UntypedFormControl(field.remoteLink);
             this.controlPrivate = new UntypedFormControl(field.isPrivate || false);
             this.controlEnum = new UntypedFormArray([]);
+            this.controlEnumName = new UntypedFormControl(field.enumName || '');
             this.controlAvailableOptions = new UntypedFormArray([]);
             this.hidden = new UntypedFormControl(!!field.hidden);
             this.property = new UntypedFormControl(field.property || '');
@@ -99,11 +103,13 @@ export class FieldControl {
             this.controlTitle = new UntypedFormControl(name || this.name, Validators.required);
             this.controlDescription = new UntypedFormControl('', Validators.required);
             this.controlType = new UntypedFormControl(type, Validators.required);
+            this.controlDependency = new UntypedFormControl(null);
             this.controlRequired = new UntypedFormControl(false);
             this.controlArray = new UntypedFormControl(false);
             this.controlUnit = new UntypedFormControl('');
             this.controlRemoteLink = new UntypedFormControl('');
             this.controlEnum = new UntypedFormArray([]);
+            this.controlEnumName = new UntypedFormControl('');
             this.controlAvailableOptions = new UntypedFormArray([]);
             this.controlColor = new UntypedFormControl('#000000');
             this.controlSize = new UntypedFormControl(18);
@@ -173,6 +179,10 @@ export class FieldControl {
         return this.controlEnum.value;
     }
 
+    public get enumName(): string {
+        return this.controlEnumName.value;
+    }
+
     public get availableOptions(): string[] {
         return this.controlAvailableOptions.value;
     }
@@ -211,11 +221,13 @@ export class FieldControl {
             controlTitle: this.controlTitle,
             controlDescription: this.controlDescription,
             fieldType: this.controlType,
+            controlDependency: this.controlDependency,
             fieldRequired: this.controlRequired,
             fieldArray: this.controlArray,
             fieldUnit: this.controlUnit,
             controlRemoteLink: this.controlRemoteLink,
             controlEnum: this.controlEnum,
+            controlEnumName: this.controlEnumName,
             controlAvailableOptions: this.controlAvailableOptions,
             controlColor: this.controlColor,
             controlSize: this.controlSize,
@@ -240,11 +252,13 @@ export class FieldControl {
             const title = group.controlTitle;
             const description = group.controlDescription;
             const typeIndex = group.fieldType;
+            const dependency = group.controlDependency;
             const required = group.fieldRequired;
             const isArray = group.fieldArray;
             const unit = group.fieldUnit;
             const remoteLink = group.controlRemoteLink;
             const enumArray = group.controlEnum;
+            const enumName = group.controlEnumName;
             const availableOptionsArray = group.controlAvailableOptions;
             const textColor = group.controlColor;
             const textSize = group.controlSize
@@ -265,11 +279,13 @@ export class FieldControl {
                 title,
                 description,
                 typeIndex,
+                dependency,
                 required,
                 isArray,
                 unit,
                 remoteLink,
                 enumArray,
+                enumName,
                 availableOptionsArray,
                 textColor,
                 textSize,

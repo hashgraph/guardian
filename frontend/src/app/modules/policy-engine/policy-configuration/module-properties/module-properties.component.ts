@@ -7,13 +7,15 @@ import { ModuleEvent, ModuleVariable, PolicyModule, SchemaVariables } from '../.
 @Component({
     selector: 'module-properties',
     templateUrl: './module-properties.component.html',
-    styleUrls: ['./module-properties.component.scss']
+    styleUrls: ['./module-properties.component.scss'],
+    standalone: false
 })
 export class ModulePropertiesComponent implements OnInit {
     @Input('module') module!: any;
     @Input('readonly') readonly!: boolean;
     @Input('type') type!: string;
     @Input('errors') errors!: any[];
+    @Input('rootType') rootType: 'Policy' | 'Module' | 'Tool' = 'Module';
 
     @ViewChild('body') body?: ElementRef;
 

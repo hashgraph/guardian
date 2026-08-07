@@ -1,16 +1,15 @@
-.mint-memo-prefix {
-    margin-left: 5px;
-    margin-right: 10px;
+.properties .propHeader .mint-section-header {
+    gap: 4px !important;
 }
 
-.mint-memo-prefix + .mint-memo-input {
-    width: 191px;
+.mint-memo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
 }
 
-::ng-deep p-dropdown span {
-    height: 34px
-}
-
-::ng-deep p-dropdownitem li {
-    height: 30px;
+.mint-memo-input {
+    flex: 1 1 auto;
+    min-width: 0;
 }

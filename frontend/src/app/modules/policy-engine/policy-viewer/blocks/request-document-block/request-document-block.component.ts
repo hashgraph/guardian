@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild, } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { FormControl, FormGroup, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { DocumentGenerator, DocumentValidators, ISchema, LocationType, Schema } from '@guardian/interfaces';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
@@ -10,11 +10,11 @@ import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component'
 import { PolicyHelper } from 'src/app/services/policy-helper.service';
 import { RequestDocumentBlockDialog } from './dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaService } from 'src/app/services/schema.service';
 import { audit, finalize, takeUntil } from 'rxjs/operators';
 import { interval, Subject, Subscription, firstValueFrom } from 'rxjs';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component';
-import { ToastrService } from 'ngx-toastr';
 import { SavepointFlowService } from 'src/app/services/savepoint-flow.service';
 import { DocumentAutosaveStorage } from '../../../structures';
 import { IndexedDbRegistryService } from 'src/app/services/indexed-db-registry.service';
@@ -56,17 +56,18 @@ interface IRequestDocumentData {
 @Component({
     selector: 'request-document-block',
     templateUrl: './request-document-block.component.html',
-    styleUrls: ['./request-document-block.component.scss']
+    styleUrls: ['./request-document-block.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockComponent
     extends AbstractUIBlockComponent<IRequestDocumentData>
     implements OnInit {
 
-    @Input('id') id!: string;
-    @Input('policyId') policyId!: string;
-    @Input('static') static!: any;
+    @Input('id') override id!: string;
+    @Input('policyId') override policyId!: string;
+    @Input('static') override static!: any;
     @Input('dryRun') dryRun!: any;
-    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('savepointIds') override savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
     @ViewChild('dialogTemplate') dialogTemplate!: TemplateRef<any>;
@@ -146,12 +147,12 @@ export class RequestDocumentBlockComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private toastr: ToastrService,
         private savepointFlow: SavepointFlowService,
         private indexedDb: IndexedDbRegistryService,
         private tablePersist: TablePersistenceService,
         private ipfsService: IPFSService,
         private policyTest: PolicyTestAutomationService,
+        private schemaService: SchemaService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
@@ -210,6 +211,25 @@ export class RequestDocumentBlockComponent
     }
 
     protected override _onSuccess(data: any) {
+        // A schema reference (id, no document) is resolved to the full schema once
+        // before the render flow; a full schema is used as-is.
+        const schemaRef = data?.schema;
+        if (schemaRef && !schemaRef.document && schemaRef.id) {
+            this.loading = true;
+            this.schemaService.evictSchemaById(schemaRef.id);
+            this.schemaService.resolveSchemaById(schemaRef.id).subscribe({
+                next: (full) => {
+                    data.schema = full;
+                    this._applyBlockData(data);
+                },
+                error: (e) => this._onError(e)
+            });
+            return;
+        }
+        this._applyBlockData(data);
+    }
+
+    private _applyBlockData(data: any) {
         this.setData(data);
         if (this.type === 'dialog') {
             setTimeout(() => {
@@ -478,6 +498,10 @@ export class RequestDocumentBlockComponent
         }
     }
 
+    public onDraftImported(doc: any): void {
+        this.preset(doc);
+    }
+
     public onEvidenceDrop($event: DragEvent) {
         $event.preventDefault();
         const files = $event.dataTransfer?.files;
@@ -623,7 +647,7 @@ export class RequestDocumentBlockComponent
                     class: 'primary'
                 }]
             },
-        });
+        })!;
 
         dialogOptionRef.onClose.subscribe(async (result: string) => {
             if (result != 'Cancel') {

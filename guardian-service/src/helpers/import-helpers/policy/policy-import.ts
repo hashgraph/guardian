@@ -14,6 +14,9 @@ import {
     LocationType,
     PolicyAvailability,
     RecordMethod,
+    ModuleStatus,
+    SchemaHelper,
+    SchemaStatus,
 } from '@guardian/interfaces';
 import {
     DatabaseServer,
@@ -37,6 +40,10 @@ import {
     INotificationStep,
     PolicyRecordMessage,
     Record,
+    SchemaTemplate,
+    SchemaTemplateImportExport,
+    SchemaTemplateMessage,
+    SchemaTemplateSnapshot,
 } from '@guardian/common';
 import { ImportMode } from '../common/import.interface.js';
 import { ImportFormulaResult, ImportPolicyError, ImportPolicyOptions, ImportPolicyResult, ImportTestResult } from './policy-import.interface.js';
@@ -81,6 +88,7 @@ export class PolicyImport {
     private formulasResult: ImportFormulaResult;
     private formulasMapping: Map<string, string>;
     private importRecords = false;
+    private schemaTemplate: SchemaTemplate | null = null;
 
     constructor(mode: ImportMode, notifier: INotificationStep) {
         this.mode = mode;
@@ -122,6 +130,7 @@ export class PolicyImport {
             delete policy.version;
             delete policy.previousVersion;
             delete policy.createDate;
+            delete policy.discontinuedDate;
             policy.uuid = GenerateUUIDv4();
             policy.creator = user.creator;
             policy.owner = user.owner;
@@ -155,6 +164,7 @@ export class PolicyImport {
             delete policy.version;
             delete policy.previousVersion;
             delete policy.createDate;
+            delete policy.discontinuedDate;
             policy.uuid = GenerateUUIDv4();
             policy.creator = user.creator;
             policy.owner = user.owner;
@@ -533,6 +543,182 @@ export class PolicyImport {
         step.complete();
     }
 
+    private async resolveSchemaTemplateByMessage(
+        messageId: string,
+        user: IOwner,
+        userId: string | null
+    ): Promise<SchemaTemplate | null> {
+        if (!messageId) {
+            return null;
+        }
+
+        const localTemplate = await DatabaseServer.getSchemaTemplate({
+            messageId,
+            status: ModuleStatus.PUBLISHED
+        });
+        if (localTemplate) {
+            return localTemplate;
+        }
+
+        const message = await this.messageServer.tryGetMessage<SchemaTemplateMessage>({
+            messageId,
+            loadIPFS: true,
+            userId,
+            interception: null
+        });
+        if (!message || message.type !== MessageType.SchemaTemplate || !message.document) {
+            return null;
+        }
+
+        const components = await SchemaTemplateImportExport.parseZipFile(message.document);
+        const templatePayload: any = components.template || {};
+        delete templatePayload._id;
+        delete templatePayload.id;
+        delete templatePayload.configFileId;
+        delete templatePayload.contentFileId;
+
+        templatePayload.owner = message.owner;
+        templatePayload.creator = message.owner;
+        templatePayload.topicId = message.schemaTemplateTopicId?.toString();
+        templatePayload.messageId = message.id;
+        templatePayload.status = ModuleStatus.PUBLISHED;
+        templatePayload.config = templatePayload.config || {};
+        templatePayload.contentFileId = await DatabaseServer.saveFile(GenerateUUIDv4(), Buffer.from(message.document));
+
+        const template = await DatabaseServer.saveSchemaTemplate(templatePayload);
+        const schemas = components.schemas || [];
+        const schemaObjects = [];
+        for (const schema of schemas) {
+            delete schema._id;
+            delete schema.id;
+            schema.topicId = template.topicId;
+            schema.category = SchemaCategory.TEMPLATE;
+            schema.templateId = template.id;
+            schema.status = SchemaStatus.PUBLISHED;
+            schema.owner = message.owner;
+            schema.creator = message.owner;
+            schemaObjects.push(DatabaseServer.createSchema(schema));
+        }
+        if (schemaObjects.length) {
+            await DatabaseServer.saveSchemas(schemaObjects);
+        }
+        return template;
+    }
+
+    private async resolveSchemaTemplate(
+        metadata: PolicyToolMetadata | null,
+        policy: Policy,
+        user: IOwner,
+        step: INotificationStep,
+        userId: string | null
+    ): Promise<void> {
+        step.start();
+        const binding = policy.schemaTemplate;
+        if (!binding || metadata?.schemaTemplate?.detach) {
+            this.schemaTemplate = null;
+            step.complete();
+            return;
+        }
+
+        if (metadata?.schemaTemplate?.templateId) {
+            const template = await DatabaseServer.getSchemaTemplateById(metadata.schemaTemplate.templateId);
+            if (template && (template.status === ModuleStatus.PUBLISHED || template.owner === user.owner)) {
+                this.schemaTemplate = template;
+                step.complete();
+                return;
+            }
+            throw new Error('Selected schema template is inaccessible');
+        }
+
+        const messageId = metadata?.schemaTemplate?.templateMessageId || binding.templateMessageId;
+        if (messageId) {
+            const template = await this.resolveSchemaTemplateByMessage(messageId, user, userId);
+            if (template) {
+                this.schemaTemplate = template;
+                step.complete();
+                return;
+            }
+        }
+
+        throw new Error('Schema template is inaccessible. Select a template or detach it.');
+    }
+
+    private clearTemplateMetadataFromSchemas(schemas: Schema[]): void {
+        for (const schema of schemas) {
+            schema.templateId = '';
+            schema.templateSchemaId = '';
+            SchemaHelper.removeTemplateFieldIds(schema.document);
+        }
+    }
+
+    private remapSchemaTemplateSnapshot(
+        snapshot: SchemaTemplateSnapshot,
+        policy: Policy
+    ): SchemaTemplateSnapshot {
+        const next: any = { ...snapshot };
+        delete next._id;
+        delete next.id;
+        delete next.configFileId;
+        delete next.schemasFileId;
+        delete next._configFileId;
+        delete next._schemasFileId;
+
+        const schemaIds = new Map<string, string>();
+        for (const item of this.schemasMapping || []) {
+            schemaIds.set(item.oldID, item.newID);
+        }
+
+        const schemaMap: { [key: string]: string } = {};
+        const sourceSchemaMap = next.schemaMap || {};
+        for (const [templateSchemaId, schemaId] of Object.entries(sourceSchemaMap)) {
+            schemaMap[templateSchemaId] = schemaIds.get(String(schemaId)) || String(schemaId);
+        }
+
+        next.policyId = policy.id?.toString();
+        next.policyUUID = policy.uuid;
+        next.schemaMap = schemaMap;
+        if (this.schemaTemplate) {
+            next.templateId = this.schemaTemplate.id?.toString();
+            next.templateUUID = this.schemaTemplate.uuid;
+            next.templateName = this.schemaTemplate.name;
+            next.templateVersion = this.schemaTemplate.version;
+            next.templateStatus = this.schemaTemplate.status;
+            next.templateMessageId = this.schemaTemplate.messageId || next.templateMessageId;
+        }
+
+        return next;
+    }
+
+    private async saveSchemaTemplateSnapshot(
+        policy: Policy,
+        snapshot: SchemaTemplateSnapshot | null | undefined,
+        step: INotificationStep
+    ): Promise<void> {
+        step.start();
+        if (!policy.schemaTemplate || !snapshot || !this.schemaTemplate) {
+            policy.schemaTemplate = null;
+            step.complete();
+            return;
+        }
+
+        const nextSnapshot = this.remapSchemaTemplateSnapshot(snapshot, policy);
+        const savedSnapshot = await DatabaseServer.saveSchemaTemplateSnapshot(nextSnapshot);
+        policy.schemaTemplate = {
+            ...policy.schemaTemplate,
+            templateId: this.schemaTemplate.id?.toString(),
+            templateName: this.schemaTemplate.name,
+            templateVersion: this.schemaTemplate.version,
+            templateStatus: this.schemaTemplate.status,
+            templateMessageId: this.schemaTemplate.messageId || policy.schemaTemplate.templateMessageId,
+            templateStateHash: savedSnapshot.templateStateHash,
+            snapshotId: savedSnapshot.id,
+            schemaMap: savedSnapshot.schemaMap || {},
+            appliedAt: savedSnapshot.appliedAt || new Date().toISOString()
+        };
+        await DatabaseServer.updatePolicy(policy);
+        step.complete();
+    }
+
     private async updateUUIDs(policy: Policy): Promise<Policy> {
         await PolicyImportExportHelper.replaceConfig(
             policy,
@@ -706,6 +892,7 @@ export class PolicyImport {
             tools,
             tests,
             formulas,
+            schemaTemplateSnapshot,
         } = options.policyComponents;
 
         const copySchemas = schemas.map((schema) => structuredClone(schema));
@@ -715,14 +902,20 @@ export class PolicyImport {
         const additionalPolicyConfig = options.additionalPolicyConfig;
         const metadata = options.metadata;
         const logger = options.logger;
+        const detachSchemaTemplate = !!metadata?.schemaTemplate?.detach;
 
         this.importRecords = !!options.importRecords;
+        if (detachSchemaTemplate) {
+            policy.schemaTemplate = null;
+            this.clearTemplateMetadataFromSchemas(schemas);
+        }
 
         // <-- Steps
         const STEP_RESOLVE_ACCOUNT = 'Resolve Hedera account';
         const STEP_RESOLVE_TOPIC = 'Resolve topic';
         const STEP_PUBLISH_SYSTEM_SCHEMAS = 'Publish system schemas';
         const STEP_IMPORT_TOOLS = 'Import tools';
+        const STEP_RESOLVE_SCHEMA_TEMPLATE = 'Resolve schema template';
         const STEP_IMPORT_TOKENS = 'Import tokens';
         const STEP_IMPORT_SCHEMAS = 'Import schemas';
         const STEP_IMPORT_ARTIFACTS = 'Import artifacts';
@@ -736,6 +929,7 @@ export class PolicyImport {
         this.notifier.addStep(STEP_RESOLVE_TOPIC, 1);
         this.notifier.addStep(STEP_PUBLISH_SYSTEM_SCHEMAS, 30, true);
         this.notifier.addStep(STEP_IMPORT_TOOLS, 10);
+        this.notifier.addStep(STEP_RESOLVE_SCHEMA_TEMPLATE, 1);
         this.notifier.addStep(STEP_IMPORT_TOKENS, 2);
         this.notifier.addStep(STEP_IMPORT_SCHEMAS, 50);
         this.notifier.addStep(STEP_IMPORT_ARTIFACTS, 5);
@@ -771,6 +965,13 @@ export class PolicyImport {
             user,
             metadata,
             this.notifier.getStep(STEP_IMPORT_TOOLS),
+            userId
+        );
+        await this.resolveSchemaTemplate(
+            metadata,
+            policy,
+            user,
+            this.notifier.getStep(STEP_RESOLVE_SCHEMA_TEMPLATE),
             userId
         );
         await this.importTokens(
@@ -811,6 +1012,7 @@ export class PolicyImport {
         const STEP_SAVE_ARTIFACTS = 'Save artifacts';
         const STEP_SAVE_TESTS = 'Save tests';
         const STEP_SAVE_FORMULAS = 'Save formulas';
+        const STEP_SAVE_SCHEMA_TEMPLATE = 'Save schema template snapshot';
         const STEP_SAVE_HASH = 'Save hash';
         const STEP_SAVE_SUGGEST = 'Save suggestions';
         // Steps -->
@@ -819,6 +1021,7 @@ export class PolicyImport {
         step.addStep(STEP_SAVE_ARTIFACTS);
         step.addStep(STEP_SAVE_TESTS);
         step.addStep(STEP_SAVE_FORMULAS);
+        step.addStep(STEP_SAVE_SCHEMA_TEMPLATE);
         step.addStep(STEP_SAVE_HASH);
         step.addStep(STEP_SAVE_SUGGEST);
         step.start();
@@ -832,6 +1035,7 @@ export class PolicyImport {
         await this.saveArtifacts(row, step.getStep(STEP_SAVE_ARTIFACTS));
         await this.saveTests(row, step.getStep(STEP_SAVE_TESTS));
         await this.saveFormulas(row, step.getStep(STEP_SAVE_FORMULAS));
+        await this.saveSchemaTemplateSnapshot(row, schemaTemplateSnapshot, step.getStep(STEP_SAVE_SCHEMA_TEMPLATE));
         await this.saveHash(row, logger, step.getStep(STEP_SAVE_HASH), userId);
         await this.setSuggestionsConfig(row, user, step.getStep(STEP_SAVE_SUGGEST));
         step.complete();

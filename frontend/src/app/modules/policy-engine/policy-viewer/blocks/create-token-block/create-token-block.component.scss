@@ -5,7 +5,7 @@
     bottom: 0;
     top: 0;
     display: block;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     margin: 10px 5px 5px 5px;
     box-shadow:
         0px 2px 4px -1px rgb(0 0 0 / 20%),
@@ -96,7 +96,7 @@
 }
 
 ::ng-deep .raised-button {
-    background-color: var(--color-grey-white, #FFF);
+    background-color: var(--color-grey-white);
     color: var(--primary-color);
     border-radius: 20px;
     padding: 8px 24px;
@@ -106,7 +106,7 @@
 
 ::ng-deep .raised-button {
     background-color: var(--primary-color);
-    color: var(--color-grey-white, #FFF);
+    color: var(--guardian-on-primary-color, #FFF);
 }
 
 ::ng-deep .raised-button:hover {

@@ -3,7 +3,8 @@ import { Component, OnInit } from '@angular/core';
 @Component({
     selector: 'app-annotation-block',
     templateUrl: './annotation-block.component.html',
-    styleUrls: ['./annotation-block.component.scss']
+    styleUrls: ['./annotation-block.component.scss'],
+    standalone: false
 })
 export class AnnotationBlockComponent implements OnInit {
     counters: any = {

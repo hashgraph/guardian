@@ -51,6 +51,17 @@ export class AuthStateService {
         this._value.next(state);
     }
 
+    /**
+     * Tear down the current session: drop the stored tokens and username, and
+     * flip the login state (which also stops the refresh timer). The single
+     * place that clears a session, so callers don't re-compose the steps.
+     */
+    public clearSession(): void {
+        this.authService.removeAccessToken();
+        this.authService.removeUsername();
+        this.updateState(false);
+    }
+
     public doLogin(login: string, password: string): void {
         this._loginRequests.next({ login, password });
     }

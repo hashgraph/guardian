@@ -4,7 +4,7 @@
 
 .compare-header {
     font-weight: bold;
-    color: #686868;
+    color: var(--guardian-grid-color, #686868);
     padding-left: 10px;
 }
 
@@ -28,7 +28,7 @@
     height: 30px;
 
     &:hover {
-        background: #f1f1f1;
+        background: var(--guardian-grey-background, #f1f1f1);
     }
 
     .compare-item-select {
@@ -52,7 +52,7 @@
         i, svg {
             position: absolute;
             font-size: 20px;
-            color: #f44336;
+            color: var(--guardian-failure-color, #f44336);
             width: 20px;
             height: 20px;
             top: -1px;
@@ -84,8 +84,8 @@
     margin-right: 8px;
 
     &[disable="true"] {
-        color: #888;
-        border: 1px solid #888;
+        color: var(--guardian-grid-color, #888);
+        border: 1px solid var(--guardian-grid-color, #888);
         cursor: not-allowed;
     }
 
@@ -128,7 +128,7 @@
         display: flex;
         align-items: center;
         column-gap: 10px;
-        color: #fff;
+        color: var(--guardian-background, #fff);
         font-family: Inter, serif;
         font-size: 14px;
         font-style: normal;
@@ -136,7 +136,7 @@
         line-height: 20px;
 
         strong {
-            color: #fff;
+            color: var(--guardian-background, #fff);
             font-family: Inter, serif;
             font-size: 16px;
             font-style: normal;
@@ -187,7 +187,7 @@
     cursor: pointer;
 
     span {
-        color: #fff;
+        color: var(--guardian-background, #fff);
         font-family: Inter, serif;
         font-size: 12px;
         font-style: normal;
@@ -200,12 +200,13 @@
     width: 16px;
     height: 16px;
     position: relative;
-    color: #fff;
+    color: var(--guardian-background, #fff);
     font-size: 16px;
 }
 
 .color-white {
-    fill: white;
+    fill: var(--guardian-secondary-color, #FFFFFF);
+    color: var(--guardian-secondary-color, #FFFFFF);
     width: 16px;
     height: 16px;
 }

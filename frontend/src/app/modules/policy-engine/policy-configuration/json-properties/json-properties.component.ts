@@ -17,7 +17,8 @@ import { PolicyBlock } from "../../structures/";
 @Component({
     selector: 'json-properties',
     templateUrl: './json-properties.component.html',
-    styleUrls: ['./json-properties.component.scss']
+    styleUrls: ['./json-properties.component.scss'],
+    standalone: false
 })
 export class JsonPropertiesComponent implements OnInit {
     @ViewChild("configContainer", { read: ViewContainerRef }) configContainer!: ViewContainerRef;
@@ -51,8 +52,13 @@ export class JsonPropertiesComponent implements OnInit {
     };
 
     code!: string;
+    originalCode: string = '';
     errors: any[] = [];
     loading: boolean = false;
+
+    get dirty(): boolean {
+        return this.code !== this.originalCode;
+    }
 
     constructor(
         private componentFactoryResolver: ComponentFactoryResolver
@@ -87,6 +93,7 @@ export class JsonPropertiesComponent implements OnInit {
         } else {
             this.code = '';
         }
+        this.originalCode = this.code;
     }
 
     onClose() {
@@ -98,6 +105,7 @@ export class JsonPropertiesComponent implements OnInit {
             this.loading = true;
             const block = JSON.parse(this.code);
             this.block.rebuild(block);
+            this.originalCode = this.code;
             setTimeout(() => {
                 this.loading = false;
             }, 250);

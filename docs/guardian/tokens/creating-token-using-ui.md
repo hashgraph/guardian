@@ -1,4 +1,9 @@
-# Creating Token using UI
+---
+tags:
+  - tasks
+---
+
+# Creating a Token
 
 Following are the steps to create a token:
 

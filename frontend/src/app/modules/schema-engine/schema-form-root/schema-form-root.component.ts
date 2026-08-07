@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { SchemaFormComponent } from '../schema-form/schema-form.component';
 import { UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Schema, SchemaField, SchemaRuleValidateResult } from '@guardian/interfaces';
@@ -12,19 +12,24 @@ import { SchemaFormNavigationComponent } from '../schema-form-navigation/schema-
     selector: 'app-schema-form-root',
     templateUrl: './schema-form-root.component.html',
     styleUrls: ['./schema-form-root.component.scss'],
+    standalone: false
 })
-export class SchemaFormRootComponent implements OnInit {
+export class SchemaFormRootComponent implements OnInit, AfterViewInit {
     public group: UntypedFormGroup;
     public model: FieldForm | null;
     public loading: boolean = true;
     public hasNavigation = true;
-    
+    public navCollapsed = false;
+    public navFields: IFieldControl<any>[] = [];
+
     private startX: number = 0;
     private startWidthPercent: number = 25;
     private containerWidth: number = 0;
     private readonly MIN_WIDTH_PERCENT = 0;
     private readonly MAX_WIDTH_PERCENT = 75;
     private rafId: number | null = null;
+    private navScrollParent: HTMLElement | null = null;
+    private navResizeObserver: ResizeObserver | null = null;
 
     @ViewChild('childForm') private childForm?: SchemaFormComponent;
     @ViewChild('schemaNav') private schemaNav?: SchemaFormNavigationComponent;
@@ -68,7 +73,7 @@ export class SchemaFormRootComponent implements OnInit {
     @Output() submitBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() saveBtnEvent = new EventEmitter<IFieldControl<any>[] | undefined | boolean | null>();
     @Output() updatableBtnEvent = new EventEmitter();
-    
+
     constructor(
         private fb: UntypedFormBuilder,
         protected changeDetectorRef: ChangeDetectorRef
@@ -78,6 +83,48 @@ export class SchemaFormRootComponent implements OnInit {
     }
 
     ngOnInit(): void {
+    }
+
+    ngAfterViewInit(): void {
+        // Inside a dialog the navigation panel is sticky within a scrollable
+        // body whose height depends on the dialog size and the banners shown
+        // above the form. Sync its height to that container so it fills the
+        // available space instead of relying on a fixed viewport calculation.
+        if (this.comesFromDialog) {
+            setTimeout(() => this.setupNavHeightSync(), 0);
+        }
+    }
+
+    private setupNavHeightSync(): void {
+        if (!this.navContainerRef) {
+            return;
+        }
+        this.navScrollParent = this.getScrollParent(this.navContainerRef.nativeElement);
+        if (!this.navScrollParent) {
+            return;
+        }
+        this.navResizeObserver = new ResizeObserver(() => this.updateNavHeight());
+        this.navResizeObserver.observe(this.navScrollParent);
+        this.updateNavHeight();
+    }
+
+    private updateNavHeight(): void {
+        if (!this.navContainerRef || !this.navScrollParent) {
+            return;
+        }
+        this.navContainerRef.nativeElement.style.maxHeight = `${this.navScrollParent.clientHeight}px`;
+    }
+
+    private getScrollParent(element: HTMLElement): HTMLElement | null {
+        let node: HTMLElement | null = element.parentElement;
+        while (node) {
+            const overflowY = getComputedStyle(node).overflowY;
+            if (overflowY === 'auto' || overflowY === 'scroll') {
+                return node;
+            }
+            node = node.parentElement;
+        }
+        return null;
     }
 
     ngOnChanges(changes: SimpleChanges) {
@@ -107,11 +154,16 @@ export class SchemaFormRootComponent implements OnInit {
         }
         document.removeEventListener('mousemove', this.onResizeMove);
         document.removeEventListener('mouseup', this.onResizeEnd);
-        
+
+        if (this.navResizeObserver) {
+            this.navResizeObserver.disconnect();
+            this.navResizeObserver = null;
+        }
+
         if (this.rafId) {
             cancelAnimationFrame(this.rafId);
         }
-        
+
         document.body.classList.remove('resizing');
     }
 
@@ -131,11 +183,15 @@ export class SchemaFormRootComponent implements OnInit {
             conditions: this.conditions,
         });
         this.model.build();
+        this.navFields = [...(this.model.controls || [])];
         this.group.updateValueAndValidity();
         this.form.emit(this.group);
     }
 
     public onChange($event: Schema | null) {
+        if (this.model?.controls) {
+            this.navFields = [...this.model.controls];
+        }
         this.change.emit($event);
     }
 
@@ -165,6 +221,11 @@ export class SchemaFormRootComponent implements OnInit {
         this.changeDetectorRef.detectChanges();
     }
 
+    public toggleNav(): void {
+        this.navCollapsed = !this.navCollapsed;
+        this.changeDetectorRef.detectChanges();
+    }
+
     public onNavSelectEvent(link: string) {
         if (this.childForm && typeof this.childForm.openField === 'function') {
             this.childForm.openField(link);
@@ -185,18 +246,18 @@ export class SchemaFormRootComponent implements OnInit {
         public onResizeStart(event: MouseEvent): void {
         event.preventDefault();
         event.stopPropagation();
-        
+
         this.startX = event.clientX;
-        
+
         if (this.contentContainerRef) {
             this.containerWidth = this.contentContainerRef.nativeElement.offsetWidth;
         }
-        
+
         if (this.navContainerRef) {
             const currentWidth = this.navContainerRef.nativeElement.offsetWidth;
             this.startWidthPercent = (currentWidth / this.containerWidth) * 100;
         }
-        
+
         document.body.classList.add('resizing');
         document.addEventListener('mousemove', this.onResizeMove);
         document.addEventListener('mouseup', this.onResizeEnd);
@@ -204,33 +265,33 @@ export class SchemaFormRootComponent implements OnInit {
 
     private onResizeMove = (event: MouseEvent): void => {
         event.preventDefault();
-        
+
         if (this.rafId) {
             cancelAnimationFrame(this.rafId);
         }
-        
+
         this.rafId = requestAnimationFrame(() => {
             if (!this.navContainerRef || !this.contentContainerRef)
                 return;
-            
+
             const navElement = this.navContainerRef.nativeElement;
             const contentElement = this.contentContainerRef.nativeElement;
-            
+
             this.containerWidth = contentElement.offsetWidth;
             const deltaX = event.clientX - this.startX;
             const deltaPercent = (deltaX / this.containerWidth) * 100;
             let newWidthPercent = this.startWidthPercent + deltaPercent;
-            
+
             newWidthPercent = Math.max(
-                this.MIN_WIDTH_PERCENT, 
+                this.MIN_WIDTH_PERCENT,
                 Math.min(this.MAX_WIDTH_PERCENT, newWidthPercent)
             );
-            
+
             navElement.style.width = `${newWidthPercent}%`;
-            
+
             this.startWidthPercent = newWidthPercent;
             this.startX = event.clientX;
-            
+
             this.changeDetectorRef.detectChanges();
             this.rafId = null;
         });
@@ -238,15 +299,15 @@ export class SchemaFormRootComponent implements OnInit {
 
     private onResizeEnd = (event: MouseEvent): void => {
         document.body.classList.remove('resizing');
-        
+
         if (this.rafId) {
             cancelAnimationFrame(this.rafId);
             this.rafId = null;
         }
-        
+
         document.removeEventListener('mousemove', this.onResizeMove);
         document.removeEventListener('mouseup', this.onResizeEnd);
-        
+
         this.changeDetectorRef.detectChanges();
     }
 }

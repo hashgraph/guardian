@@ -1,30 +1,36 @@
 <div class="dialog-body">
-    <div *ngIf="this.description" class="description">
-        {{ this.description }}
+  @if (this.description) {
+    <div class="description">
+      {{ this.description }}
     </div>
-    <div *ngIf="this.descriptions" class="description">
-        <div *ngFor="let item of this.descriptions">
-            {{ item }}
+  }
+  @if (this.descriptions) {
+    <div class="description">
+      @for (item of this.descriptions; track item) {
+        <div>
+          {{ item }}
         </div>
+      }
     </div>
-    <div class="textarea">
-        <div class="p-fluid">
-            <textarea
-                pInputTextarea
-                rows="4"
-                [formControl]="value"
-                placeholder="Enter the text">
-            </textarea>
-        </div>
+  }
+  <div class="textarea">
+    <div class="p-fluid">
+      <textarea
+        pInputTextarea
+        rows="4"
+        [formControl]="value"
+        placeholder="Enter the text">
+      </textarea>
     </div>
+  </div>
 </div>
 <div class="dialog-footer" mat-dialog-actions>
-    <div class="action-buttons">
-        <div class="cancel-button">
-            <p-button (click)="onNoClick()" label="Cancel" [outlined]="true"></p-button>
-        </div>
-        <div>
-            <p-button (click)="onSubmit()" [disabled]="value.invalid" label="Save"></p-button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button">
+      <p-button (click)="onNoClick()" label="Cancel" [outlined]="true"></p-button>
     </div>
+    <div>
+      <p-button (click)="onSubmit()" [disabled]="value.invalid" label="Save"></p-button>
+    </div>
+  </div>
 </div>

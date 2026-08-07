@@ -1,5 +1,5 @@
 import MurmurHash3 from 'imurmurhash';
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import bs58 from 'bs58';
 
 /**

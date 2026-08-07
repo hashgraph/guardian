@@ -1,3 +1,8 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
 .errors-properties  {
     max-height: 200px;
     overflow: auto;
@@ -8,7 +13,7 @@
     border: 1px solid #f90000;
     padding: 5px;
     color: #f90000;
-    background: #fff2f2;
+    background: var(--guardian-failure-background, #fff2f2);
     position: relative;
     padding-left: 10px;
     margin: 5px 9px 5px 5px;

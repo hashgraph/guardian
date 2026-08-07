@@ -21,7 +21,8 @@ import {
             useExisting: forwardRef(() => ParameterDocumentPathComponent),
             multi: true
         }
-    ]
+    ],
+    standalone: false
 })
 export class ParameterDocumentPathComponent implements ControlValueAccessor {
     @Input() displayTooltip!: boolean;

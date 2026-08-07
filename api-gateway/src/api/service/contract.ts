@@ -104,9 +104,10 @@ export class ContractsApi {
         example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getContracts(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('type') type?: ContractType,
         @Query('pageIndex') pageIndex?: number,
@@ -121,6 +122,7 @@ export class ContractsApi {
                 pageIndex,
                 pageSize
             );
+            req.locals = contracts;
             return res.header('X-Total-Count', count).send(contracts);
         } catch (error) {
             await InternalException(error, this.logger, user.id);

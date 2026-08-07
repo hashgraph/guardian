@@ -8,24 +8,24 @@
     flex-direction: column;
 
     ::ng-deep {
-        .p-tabview .p-tabview-nav {
+        .p-tabs .p-tablist-tab-list {
             li:first-child {
                 margin-left: 48px;
             }
         }
 
-        .p-tabview {
+        .p-tabs {
             height: 100%;
             display: flex;
             flex-direction: column;
         }
 
-        .p-tabview-nav-container {
+        .p-tablist {
             height: 50px;
             min-height: 50px;
         }
 
-        .p-tabview-panels {
+        .p-tabpanels {
             background: none;
             padding: 0;
             height: 100%;
@@ -33,7 +33,7 @@
             width: 100%;
             overflow: hidden;
 
-            .p-tabview-panel {
+            .p-tabpanel {
                 height: 100%;
                 position: relative;
             }
@@ -42,7 +42,7 @@
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: fixed;
     z-index: 101;
     top: var(--header-height);
@@ -57,7 +57,7 @@
 }
 
 .record-loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -172,7 +172,7 @@ a.go-back-link svg {
 .policy-header {
     display: flex;
     flex-direction: column;
-    background: #ffffff;
+    background: var(--guardian-background, #ffffff);
     padding: 25px 40px 0 48px;
     font-size: 20px;
 }
@@ -196,13 +196,13 @@ a.go-back-link svg {
 
 .dry-run-back-button {
     background: none !important;
-    color: #ffffff !important;
-    border: 1px solid #fff !important;
+    color: var(--guardian-secondary-color, #FFFFFF) !important;
+    border: 1px solid var(--guardian-secondary-color, #FFFFFF) !important;
 
     svg {
         transition: all 0.25s ease-in-out;
-        fill: #ffffff !important;
-        color: #ffffff !important;
+        fill: var(--guardian-secondary-color, #FFFFFF) !important;
+        color: var(--guardian-secondary-color, #FFFFFF) !important;
     }
 
     &:hover {
@@ -219,7 +219,7 @@ a.go-back-link svg {
 .policy-header[policy-status="DRY-RUN"] {
     top: 170px;
     background: #000;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .policy-container {
@@ -228,7 +228,7 @@ a.go-back-link svg {
     //flex-direction: column;
     gap: 24px;
     padding: 24px 20px 24px 48px;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
     overflow: auto;
 }
 
@@ -239,7 +239,7 @@ a.go-back-link svg {
     right: 25px;
     bottom: 0;
     // overflow: auto;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .policy-container[hidden-container="true"] {
@@ -247,7 +247,7 @@ a.go-back-link svg {
     opacity: 0;
     z-index: -1;
     pointer-events: none;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .second-policy-container {
@@ -255,7 +255,7 @@ a.go-back-link svg {
     flex-direction: column;
     //gap: 24px;
     padding: 20px 48px;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .second-policy-container[policy-status="DEMO"],
@@ -265,7 +265,7 @@ a.go-back-link svg {
     right: 25px;
     bottom: 0;
     // overflow: auto;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .second-policy-container[hidden-container="true"] {
@@ -273,7 +273,7 @@ a.go-back-link svg {
     opacity: 0;
     z-index: -1;
     pointer-events: none;
-    background: #f9fafc;
+    background: var(--guardian-grey-background, #f9fafc);
 }
 
 .policy-header span {
@@ -331,7 +331,7 @@ a.go-back-link svg {
     text-overflow: ellipsis;
     font-size: 12px;
     margin-bottom: 2px;
-    color: #3c3c3c;
+    color: var(--guardian-font-color);
 }
 
 .dry-run-panel {
@@ -344,7 +344,7 @@ a.go-back-link svg {
     min-height: 136px;
     height: 136px;
     background: #23252e;
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .content[status="DISCONTINUED"] .policy-header {
@@ -363,14 +363,14 @@ a.go-back-link svg {
 
 .content[status="DEMO"] .go-back-link,
 .content[status="DRY-RUN"] .go-back-link {
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .content[status="DEMO"] .go-back-link i,
 .content[status="DRY-RUN"] .go-back-link i,
 .content[status="DEMO"] .go-back-link svg,
 .content[status="DRY-RUN"] .go-back-link svg {
-    color: #fff;
+    color: var(--guardian-secondary-color, #FFFFFF);
 }
 
 .dry-run-content {
@@ -383,9 +383,9 @@ a.go-back-link svg {
     box-sizing: border-box;
     z-index: 150;
     font-size: 20px;
-    background: #fff;
-    border-bottom: 1px solid #000000;
-    box-shadow: 0px 0px 1px 1px rgb(179 179 179);
+    background: var(--guardian-background, #fff);
+    border-bottom: 1px solid var(--guardian-border-color);
+    box-shadow: 0px 0px 1px 1px var(--guardian-border-color);
     padding: 3px 10px 0px 10px;
 }
 
@@ -394,18 +394,18 @@ a.go-back-link svg {
     font-size: 14px;
     padding: 6px 12px;
     margin: 6px 6px 6px 0px;
-    color: #646464;
+    color: var(--guardian-font-color);
     cursor: pointer;
     user-select: none;
 }
 
 .dry-run-btn:hover {
-    background: #f7f8fc;
+    background: var(--guardian-grey-background);
 }
 
 .dry-run-btn[action="true"] {
-    color: #3f51b5;
-    border-bottom: 2px solid #3f51b5;
+    color: var(--guardian-menu-color-2, #8259ef);
+    border-bottom: 2px solid var(--guardian-menu-color-2, #8259ef);
 }
 
 .dry-run-group-btn,
@@ -420,18 +420,19 @@ a.go-back-link svg {
     font-size: 12px;
     align-items: center;
     align-content: center;
-    color: #3f51b5;
+    color: var(--guardian-menu-color-2, #8259ef);
     cursor: pointer;
     padding-top: 4px;
     position: relative;
     user-select: none;
     border-radius: 6px;
-    background: rgb(252 252 252);
-    border: 1px solid rgb(220 220 220);
+    background: var(--guardian-grey-background);
+    border: 1px solid var(--guardian-border-color);
     box-sizing: border-box;
 
-    .icon-style-restart_alt {
-        fill: #3f51b5;
+    .icon-style-restart_alt,
+    .icon-style-restart_alt * {
+        fill: var(--guardian-menu-color-2, #8259ef);
     }
 }
 
@@ -454,8 +455,8 @@ a.go-back-link svg {
 
 .dry-run-group-btn:hover,
 .dry-run-action-btn:hover {
-    background: rgb(63 81 181 / 3%);
-    border: 1px solid #3f51b5;
+    background: color-mix(in srgb, var(--guardian-menu-color-2, #8259ef) 3%, transparent);
+    border: 1px solid var(--guardian-menu-color-2, #8259ef);
 }
 
 .dry-run-group-btn[disabled="true"],
@@ -481,10 +482,10 @@ a.go-back-link svg {
     bottom: 0;
     width: 18px;
     overflow: hidden;
-    background: rgb(240 240 240);
+    background: var(--guardian-grey-background);
     border-top-right-radius: 6px;
     border-bottom-right-radius: 6px;
-    border-left: 1px solid rgb(220 220 220);
+    border-left: 1px solid var(--guardian-border-color);
 }
 
 .dry-run-group-btn .expand-group i,
@@ -493,6 +494,31 @@ a.go-back-link svg {
     top: 9px;
     font-size: 14px;
     left: 2px;
+}
+
+.dry-run-view-btn span {
+    max-width: 90px;
+    min-width: 70px;
+}
+
+.view-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 13px;
+    min-width: 160px;
+    color: var(--guardian-menu-color-2, #8259ef);
+    border-radius: 4px;
+    user-select: none;
+
+    &:hover {
+        background: color-mix(in srgb, var(--guardian-menu-color-2, #8259ef) 5%, transparent);
+    }
+
+    &[active="true"] {
+        background: var(--guardian-menu-color-2, #8259ef);
+        color: #fff;
+        font-weight: 500;
+    }
 }
 
 .record-btn {
@@ -506,7 +532,7 @@ a.go-back-link svg {
 .delimiter {
     width: 2px;
     height: 30px;
-    border-left: 1px solid #7e7e7e;
+    border-left: 1px solid var(--guardian-border-color);
     margin-left: 12px;
     margin-right: 10px;
     margin-top: 7px;
@@ -745,10 +771,11 @@ a.go-back-link svg {
 }
 
 .white-additional-policy-info-text {
-    color: #ffffff !important;
+    color: var(--guardian-secondary-color, #FFFFFF) !important;
 }
 
 .policy-name-container {
+    color: var(--guardian-secondary-color, #FFFFFF);
     font-family: Poppins, sans-serif;
     font-size: 32px;
     font-style: normal;
@@ -758,7 +785,7 @@ a.go-back-link svg {
 
     .policy-status {
         padding: 6px 12px;
-        background: #E1E7EF;
+        background: var(--guardian-grey-background, #E1E7EF);
         margin: 4px 16px;
         border-radius: 6px;
         color: #6f7279;
@@ -786,13 +813,13 @@ a.go-back-link svg {
 :host {
     ::ng-deep {
         .p-button-outlined {
-            background-color: #ffffff !important;
+            background-color: var(--guardian-background, #ffffff) !important;
         }
     }
 }
 
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     top: 0;
@@ -851,7 +878,7 @@ a.go-back-link svg {
 
 .progress-footer {
     padding: 12px 48px;
-    padding-left: calc(var(--header-width-expand) + 48px);
+    padding-left: calc(var(--header-width, var(--header-width-expand)) + 48px);
     display: flex;
     justify-content: space-between;
     position: fixed;
@@ -859,7 +886,7 @@ a.go-back-link svg {
     right: 0;
     width: 100%;
     border-top: 1px solid var(--color-grey-3, #E1E7EF);
-    background: #FFF;
+    background: var(--guardian-background, #FFF);
 
     ::ng-deep {
         .p-button {
@@ -874,7 +901,7 @@ a.go-back-link svg {
                 font-style: normal;
                 font-weight: 500;
                 line-height: 30px;
-                color: var(--color-grey-white, #FFF);
+                color: var(--guardian-on-primary-color, #FFF);
             }
 
             &:disabled {
@@ -969,7 +996,7 @@ a.go-back-link svg {
     margin-bottom: 16px;
 
     ::ng-deep {
-        .p-tabview .p-tabview-nav {
+        .p-tabs .p-tablist-tab-list {
             li:first-child {
                 margin-left: 8px !important;
             }
@@ -1049,7 +1076,7 @@ a.go-back-link svg {
         position: relative;
         width: 50px;
         height: 26px;
-        background-color: #E1E7EF;
+        background-color: var(--guardian-grey-background, #E1E7EF);
         border-radius: 20px;
         cursor: pointer;
         transition-duration: .2s;
@@ -1060,20 +1087,20 @@ a.go-back-link svg {
     .toggleSwitch::after {
         content: "";
         position: absolute;
-        height: 10px;
-        width: 10px;
-        left: 5px;
+        height: 18px;
+        width: 18px;
+        top: 50%;
+        left: 4px;
         background-color: #fff;
         border-radius: 50%;
-        transition-duration: .2s;
-        box-shadow: 5px 2px 7px rgba(8, 8, 8, 0.26);
-        border: 5px solid #fff;
+        box-shadow: 2px 2px 5px rgba(8, 8, 8, 0.26);
+        transform: translateY(-50%);
+        transition: transform .2s;
     }
 
     input:checked+.toggleSwitch::after {
-        transform: translateX(100%);
-        transition-duration: .2s;
-        background-color: white;
+        transform: translateY(-50%) translateX(24px);
+        background-color: #fff;
     }
 
     input:checked+.toggleSwitch {
@@ -1102,7 +1129,7 @@ a.go-back-link svg {
 }
 
 .dialog-grid-body {
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .grid-row-header {

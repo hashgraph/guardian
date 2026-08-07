@@ -25,6 +25,7 @@ type PolicyForm = {
     selector: 'app-parameters-config-dialog',
     templateUrl: './policy-parameters-config-dialog.component.html',
     styleUrls: ['./policy-parameters-config-dialog.component.scss'],
+    standalone: false
 })
 export class PolicyParametersConfigDialog implements OnInit {
     @ViewChild('dialogHeader', { static: false }) dialogHeader!: ElementRef<HTMLElement>;

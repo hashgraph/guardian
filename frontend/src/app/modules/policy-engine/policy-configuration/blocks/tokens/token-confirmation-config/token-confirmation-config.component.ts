@@ -8,7 +8,8 @@ import { IModuleVariables, PolicyBlock, TokenTemplateVariables, TokenVariables }
     selector: 'token-confirmation-config',
     templateUrl: './token-confirmation-config.component.html',
     styleUrls: ['./token-confirmation-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class TokenConfirmationConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;

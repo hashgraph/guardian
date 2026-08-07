@@ -1,5 +1,5 @@
 import { Controller } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern } from '@nestjs/microservices';
 import {
     IndexerMessageAPI,
     MessageResponse,
@@ -7,23 +7,11 @@ import {
     DataBaseHelper,
     ProjectCoordinates,
     Analytics,
-    Message,
-    MessageCache,
-    MessageError,
-    TopicCache,
-    TokenCache,
 } from '@indexer/common';
 import {
-    DataLoadingProgress,
-    DataPriorityLoadingProgress,
     LandingAnalytics as IAnalytics,
     ProjectCoordinates as IProjectCoordinates,
-    MessageType,
-    Page,
-    PageFilters,
-    PriorityStatus,
 } from '@indexer/interfaces';
-import { parsePageParams } from '../utils/parse-page-params.js';
 
 @Controller()
 export class LandingService {

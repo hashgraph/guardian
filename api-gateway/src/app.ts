@@ -4,15 +4,17 @@ import { PolicyEngine } from './helpers/policy-engine.js';
 import { WebSocketsService } from './api/service/websockets.js';
 import { Users } from './helpers/users.js';
 import { Wallet } from './helpers/wallet.js';
-import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, MessageBrokerChannel, OldSecretManager, PinoLogger } from '@guardian/common';
+import { GenerateTLSOptionsNats, JwtServicesValidator, LargePayloadContainer, markServiceBooted, MessageBrokerChannel, OldSecretManager, PinoLogger, setGlobalErrorLogger } from '@guardian/common';
 import { TaskManager } from './helpers/task-manager.js';
 import { AppModule } from './app.module.js';
 import { NestFactory } from '@nestjs/core';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import process from 'process';
+import process from 'node:process';
 import { HttpStatus, ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule } from '@nestjs/swagger';
 import { SwaggerConfig } from './helpers/swagger-config.js';
+import { applyScalarTagMetadata } from './helpers/swagger-tags.js';
+import { setupApiDocs } from './helpers/setup-api-docs.js';
 import { MeecoAuth } from './helpers/meeco.js';
 import * as extraModels from './middlewares/index.js'
 import { ProjectService } from './helpers/projects.js';
@@ -66,6 +68,7 @@ Promise.all([
         }));
 
         const logger: PinoLogger = app.get(PinoLogger);
+        setGlobalErrorLogger(logger);
 
         app.useBodyParser('binary/octet-stream', { bodyLimit: BODY_LIMIT });
 
@@ -104,7 +107,8 @@ Promise.all([
                 }
             }) as any
         });
-        SwaggerModule.setup('api-docs', app, document);
+        applyScalarTagMetadata(document);
+        setupApiDocs(app, document, 'Guardian API');
 
         const maxPayload = parseInt(process.env.MQ_MAX_PAYLOAD, 10);
         if (Number.isInteger(maxPayload)) {
@@ -113,6 +117,10 @@ Promise.all([
         app.listen(PORT, '0.0.0.0', async () => {
             await logger.info(`Started on ${PORT}`, ['API_GATEWAY'], null);
         });
+
+        // Bootstrap complete: from here on, a stray unhandled rejection is logged
+        // and swallowed instead of terminating the process.
+        markServiceBooted();
     } catch (error) {
         console.error(error.message);
         process.exit(1);

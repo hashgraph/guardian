@@ -1,107 +1,112 @@
 <div class="content login">
-    <div class="overlay"></div>
+  <div class="overlay"></div>
+  @if (isRoleSelected$ | async) {
     <form class="credential-creation" [formGroup]="loginForm" (ngSubmit)="signup()"
-          *ngIf="isRoleSelected$ | async; else selectRoleTemplate">
-        <div class="login-header">
-            <button class="login-header__back-button" (click)="setRole('')">
-                <i class="pi pi-chevron-left"></i>
-                <span>Back</span>
-            </button>
-            <span class="login-header__title">Create Account</span>
+      >
+      <div class="login-header">
+        <button class="login-header__back-button" (click)="setRole('')">
+          <i class="pi pi-chevron-left"></i>
+          <span>Back</span>
+        </button>
+        <span class="login-header__title">Create Account</span>
+      </div>
+      <div class="login-content">
+        <div class="form-group example-full-width">
+          <label for="usernameInput" class="form-label">Username:</label>
+          <input
+            pInputText
+            id="usernameInput"
+            formControlName="login"
+            (input)="onInput()"
+            class="full-width">
+          @if (error) {
+            <small class="p-error">{{ error }}</small>
+          }
+          @if (shouldShowRequiredError('login')) {
+            <small class="p-error">Value is required</small>
+          }
         </div>
-
-        <div class="login-content">
-            <div class="form-group example-full-width">
-                <label for="usernameInput" class="form-label">Username:</label>
-                <input
-                    pInputText
-                    id="usernameInput"
-                    formControlName="login"
-                    (input)="onInput()"
-                    class="full-width">
-
-                <small *ngIf="error" class="p-error">{{ error }}</small>
-                <small *ngIf="shouldShowRequiredError('login')" class="p-error">Value is required</small>
-            </div>
-
-            <div class="password-control">
-                <div class="form-group example-full-width">
-                    <label for="passwordInput" class="form-label">Password:</label>
-                    <input
-                        pInputText
-                        id="passwordInput"
-                        formControlName="password"
-                        [type]="passFieldType"
-                        class="full-width">
-
-                    <small *ngIf="shouldShowRequiredError('password')" class="p-error">
-                        Value is required
-                    </small>
-                </div>
-                <i
-                    *ngIf="showPasswordValue; else hidePassBtn"
-                    class="pi pi-eye eye-icon"
-                    (click)="togglePasswordShow()"
-                ></i>
-                <ng-template #hidePassBtn>
-                    <i class="pi pi-eye-slash eye-icon" (click)="togglePasswordShow()"></i>
-                </ng-template>
-            </div>
-
-            <div class="password-control">
-                <div class="form-group example-full-width">
-                    <label for="confirmPasswordInput" class="form-label">Confirm Password:</label>
-                    <input
-                        pInputText
-                        id="confirmPasswordInput"
-                        formControlName="confirmPassword"
-                        [type]="confirmPassFieldType"
-                        class="full-width">
-
-                    <small *ngIf="shouldShowRequiredError('confirmPassword')" class="p-error">
-                        Value is required
-                    </small>
-                    <small *ngIf="showPassMismatchError" class="p-error">
-                        The entered passwords do not match
-                    </small>
-                </div>
-                <i
-                    *ngIf="showConfirmPasswordValue; else hideConfirmPassBtn"
-                    class="pi pi-eye eye-icon"
-                    (click)="toggleConfirmPasswordShow()"
-                ></i>
-                <ng-template #hideConfirmPassBtn>
-                    <i class="pi pi-eye-slash eye-icon" (click)="toggleConfirmPasswordShow()"></i>
-                </ng-template>
-            </div>
+        <div class="password-control">
+          <div class="form-group example-full-width">
+            <label for="passwordInput" class="form-label">Password:</label>
+            <input
+              pInputText
+              id="passwordInput"
+              formControlName="password"
+              [type]="passFieldType"
+              class="full-width">
+            @if (shouldShowRequiredError('password')) {
+              <small class="p-error">
+                Value is required
+              </small>
+            }
+          </div>
+          @if (showPasswordValue) {
+            <i
+              class="pi pi-eye eye-icon"
+              (click)="togglePasswordShow()"
+            ></i>
+          } @else {
+            <i class="pi pi-eye-slash eye-icon" (click)="togglePasswordShow()"></i>
+          }
         </div>
-
-        <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Create</button>
+        <div class="password-control">
+          <div class="form-group example-full-width">
+            <label for="confirmPasswordInput" class="form-label">Confirm Password:</label>
+            <input
+              pInputText
+              id="confirmPasswordInput"
+              formControlName="confirmPassword"
+              [type]="confirmPassFieldType"
+              class="full-width">
+            @if (shouldShowRequiredError('confirmPassword')) {
+              <small class="p-error">
+                Value is required
+              </small>
+            }
+            @if (showPassMismatchError) {
+              <small class="p-error">
+                The entered passwords do not match
+              </small>
+            }
+          </div>
+          @if (showConfirmPasswordValue) {
+            <i
+              class="pi pi-eye eye-icon"
+              (click)="toggleConfirmPasswordShow()"
+            ></i>
+          } @else {
+            <i class="pi pi-eye-slash eye-icon" (click)="toggleConfirmPasswordShow()"></i>
+          }
+        </div>
+      </div>
+      <button mat-raised-button type="submit" color="primary" [disabled]="!loginForm.valid">Create</button>
     </form>
-
-    <ng-template #selectRoleTemplate>
-        <div class="role-select-step">
-            <span class="select-role-title">Select Account Type</span>
-            <button mat-button (click)="setRole('STANDARD_REGISTRY')">
-                <span class="role-name">Standard Registry</span>
-                <span class="role-description">Creating/importing policies, managing users, managing tokens.</span>
-            </button>
-            <button mat-button (click)="setRole('USER')">
-                <span class="role-name">User</span>
-                <span class="role-description">Applicants creating environmental projects / performing other<br>activities in the environmental domain.</span>
-            </button>
-            <button mat-button (click)="setRole('AUDITOR')">
-                <span class="role-name">Auditor</span>
-                <span class="role-description">Read only access (only relevant to iREC Policies).</span>
-            </button>
-
-            <button mat-icon-button class="close-button" type="button" (click)="goBack()">
-                <i class="pi pi-times"></i>
-            </button>
-        </div>
-    </ng-template>
-
-    <div *ngIf="loading" class="loading">
-        <div class="preloader-image preloader-image-l-size"></div>
+  } @else {
+    <div class="role-select-step">
+      <span class="select-role-title">Select Account Type</span>
+      <button mat-button (click)="setRole('STANDARD_REGISTRY')">
+        <span class="role-name">Standard Registry</span>
+        <span class="role-description">Creating/importing policies, managing users, managing tokens.</span>
+      </button>
+      <button mat-button (click)="setRole('USER')">
+        <span class="role-name">User</span>
+        <span class="role-description">Applicants creating environmental projects / performing other<br>activities in the environmental domain.</span>
+      </button>
+      <button mat-button (click)="setRole('AUDITOR')">
+        <span class="role-name">Auditor</span>
+        <span class="role-description">Read only access (only relevant to iREC Policies).</span>
+      </button>
+      <button mat-icon-button class="close-button" type="button" (click)="goBack()">
+        <i class="pi pi-times"></i>
+      </button>
     </div>
+  }
+
+
+  @if (loading) {
+    <div class="loading">
+      <div class="preloader-image preloader-image-l-size"></div>
+    </div>
+  }
 </div>

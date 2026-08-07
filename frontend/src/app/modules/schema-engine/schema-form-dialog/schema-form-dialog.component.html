@@ -1,37 +1,39 @@
 <div #dialogHeader class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{header}}</div>
-    </div>
-    <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
-        <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
-    </div>
-    <div class="header-icon" (click)="onClose()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
+  <div class="header-container">
+    <div class="header-text">{{header}}</div>
+  </div>
+  <div class="header-icon resize" (click)="toggleSize()" [title]="isLargeSize ? 'The size 50%' : 'The size 90%'">
+    <i [class]="isLargeSize ? 'pi pi-window-minimize' : 'pi pi-window-maximize'"></i>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
 </div>
 <div class="dialog-body">
-    <div *ngIf="!started" class="guardian-loading">
-        <div class="guardian-loading-image"></div>
+  @if (!started) {
+    <div class="guardian-loading">
+      <div class="guardian-loading-image"></div>
     </div>
-    <div class="context">
-        <app-schema-form-root
-            [schema]="schema"
-            [preset]="presetDocument"
-            [private-fields]="hideFields"
-            [readonly-fields]="readonlyFields"
-            [showButtons]="false"
-            [example]="example"
-            (form)="initForm($event)">
-        </app-schema-form-root>
-    </div>
+  }
+  <div class="context">
+    <app-schema-form-root
+      [schema]="schema"
+      [preset]="presetDocument"
+      [private-fields]="hideFields"
+      [readonly-fields]="readonlyFields"
+      [showButtons]="false"
+      [example]="example"
+      (form)="initForm($event)">
+    </app-schema-form-root>
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="cancel-button">
-            <button 
-                (click)="onClose()" 
-                class="guardian-button guardian-button-secondary"
-            >Cancel</button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button">
+      <button
+        (click)="onClose()"
+        class="guardian-button guardian-button-secondary"
+      >Cancel</button>
     </div>
+  </div>
 </div>

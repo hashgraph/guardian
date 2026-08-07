@@ -14,7 +14,8 @@ import {AnalyticsService} from 'src/app/services/analytics.service';
 @Component({
     selector: 'app-search-policies',
     templateUrl: './search-policies.component.html',
-    styleUrls: ['./search-policies.component.scss']
+    styleUrls: ['./search-policies.component.scss'],
+    standalone: false
 })
 export class SearchPoliciesComponent implements OnInit {
     public loading: boolean = true;

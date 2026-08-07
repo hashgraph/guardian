@@ -11,9 +11,7 @@ import { ArtifactEngineModule } from '../artifact-engine/artifact-engine.module'
 import { DynamicDialogModule } from 'primeng/dynamicdialog';
 import { AgGridModule } from 'ag-grid-angular';
 //Components
-import { SchemaDialog } from './schema-dialog/schema-dialog.component';
 import { SchemaFormComponent } from './schema-form/schema-form.component';
-import { SchemaConfigurationComponent } from './schema-configuration/schema-configuration.component';
 import { ImportSchemaDialog } from './import-schema/import-schema-dialog.component';
 import { SchemaFormViewComponent } from './schema-form-view/schema-form-view.component';
 import { DocumentViewComponent } from './document-view/document-view.component';
@@ -28,12 +26,12 @@ import { SchemaFieldConfigurationComponent } from './schema-field-configuration/
 import { EnumEditorDialog } from './enum-editor-dialog/enum-editor-dialog.component';
 import { CompareSchemaDialog } from './compare-schema-dialog/compare-schema-dialog.component';
 import { ButtonModule } from 'primeng/button';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { Textarea as InputTextareaModule } from 'primeng/textarea';
 import { CheckboxModule } from 'primeng/checkbox';
-import { DropdownModule } from 'primeng/dropdown';
-import { CalendarModule } from 'primeng/calendar';
+import { SelectModule } from 'primeng/select';
+import { DatePickerModule } from 'primeng/datepicker';
 import { RadioButtonModule } from 'primeng/radiobutton';
 import { ServiceUnavailableDialog } from './service-unavailable-dialog/service-unavailable-dialog.component';
 import { SchemaFormDialog } from './schema-form-dialog/schema-form-dialog.component';
@@ -47,6 +45,7 @@ import { AccordionModule } from 'primeng/accordion';
 import { DateTimeComponent } from './schema-form/controls/date-time/date-time.component';
 import { FormulasModule } from '../formulas/formulas.module';
 import { DialogService } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../services/guardian-dialog.service';
 import { SchemaFormRootComponent } from './schema-form-root/schema-form-root.component';
 import { UploadGeoDataDialog } from './upload-geo-data-dialog/upload-geo-data-dialog.component';
 import {TableFieldComponent} from './table-field/table-field.component';
@@ -58,10 +57,8 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
 
 @NgModule({
     declarations: [
-        SchemaDialog,
         SchemaFormComponent,
         CopySchemaDialog,
-        SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
         DocumentViewComponent,
@@ -99,12 +96,12 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         CodemirrorModule,
         ArtifactEngineModule,
         ButtonModule,
-        TabViewModule,
+        TabsModule,
         InputTextModule,
         InputTextareaModule,
         CheckboxModule,
-        DropdownModule,
-        CalendarModule,
+        SelectModule,
+        DatePickerModule,
         TooltipModule,
         RadioButtonModule,
         SelectButtonModule,
@@ -114,9 +111,7 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         DynamicDialogModule,
     ],
     exports: [
-        SchemaDialog,
         SchemaFormComponent,
-        SchemaConfigurationComponent,
         ImportSchemaDialog,
         SchemaFormViewComponent,
         DocumentViewComponent,
@@ -132,7 +127,7 @@ import { SchemaFormViewNavigationComponent } from './schema-form-view-navigation
         SchemaFormViewNavigationComponent
     ],
     providers: [
-        DialogService
+        { provide: DialogService, useClass: GuardianDialogService }
     ],
 })
 export class SchemaEngineModule {

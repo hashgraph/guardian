@@ -17,7 +17,7 @@ While Excel-first approach works well for initial development, API operations ma
 * **Integration**: Connecting schema management to external workflows
 * **Field Key Updates**: Programmatically renaming field keys for better calculation code
 
-For detailed API operations, see [Schema Creation Using APIs](../../../guardian/standard-registry/schemas/schema-creation-using-apis/).
+For detailed API operations, see [Schema Creation Using APIs](../../../developer-tools/api-reference/schema-creation-using-apis/).
 
 ## Importance of Good Key Names
 
@@ -54,7 +54,7 @@ const totalEmissions = (
 ); // What calculation is this performing?
 ```
 
-![Example of good code using relevant field names](<../../../.gitbook/assets/image (68).png>)
+![Example of good code using relevant field names](<../../../.gitbook/assets/image (8).png>)
 
 ## Standardized Property Definitions
 
@@ -71,7 +71,7 @@ For complete property definitions, see [Available Schema Types](../../../guardia
 * **Enhanced Searchability**: Allow efficient data retrieval across the Guardian ecosystem
 * **GBBC Compliance**: Align with industry-standard dMRV specifications
 
-![Property dropdown in schemas](<../../../.gitbook/assets/image-4 (1).png>)
+![Property dropdown in schemas](../../../.gitbook/assets/image-4.png)
 
 ### Key Standardized Property Categories
 
@@ -148,7 +148,7 @@ VM0033 Project → Standard Properties → Different Methodology
 
 Guardian provides four distinct Required field settings that control field behavior and visibility. Understanding these types is crucial for proper schema design.
 
-![Required dropdown](<../../../.gitbook/assets/image-1 (4).png>)
+![Required dropdown](<../../../.gitbook/assets/image-1 (3).png>)
 
 ### Required Field Types
 
@@ -248,7 +248,7 @@ Guardian schema UUIDs follow this format:
 * **Reference**: Used in policy blocks to reference specific schemas
 * **Immutable**: UUID doesn't change when schema content is updated
 
-![Schema JSON](<../../../.gitbook/assets/image-2 (3).png>)
+![Schema JSON](<../../../.gitbook/assets/image-2 (2).png>)
 
 ### UUID Benefits for Development
 
@@ -270,7 +270,7 @@ Policy workflow blocks reference schemas by UUID:
 }
 ```
 
-![Schema UUID on bottom right](<../../../.gitbook/assets/image-3 (1) (1).png>)
+![Schema UUID on bottom right](../../../.gitbook/assets/image-3.png)
 
 ## Best Practices Summary
 

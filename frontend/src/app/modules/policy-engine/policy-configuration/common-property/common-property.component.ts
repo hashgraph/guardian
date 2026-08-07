@@ -13,6 +13,7 @@ import { CustomConfirmDialogComponent } from 'src/app/modules/common/custom-conf
     templateUrl: './common-property.component.html',
     styleUrls: ['./common-property.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    standalone: false
 })
 export class CommonPropertyComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -40,6 +41,7 @@ export class CommonPropertyComponent implements OnInit {
     }
 
     groupCollapse: boolean = false;
+    private groupCollapseInitialized: boolean = false;
     itemCollapse: any = {};
     needUpdate: boolean = true;
 
@@ -77,6 +79,10 @@ export class CommonPropertyComponent implements OnInit {
             } else if (this.property.type === 'Array') {
                 if (!Array.isArray(this.data[this.property.name])) {
                     this.data[this.property.name] = [];
+                }
+                if (!this.groupCollapseInitialized) {
+                    this.groupCollapse = !this.data[this.property.name].length;
+                    this.groupCollapseInitialized = true;
                 }
             } else if (
                 this.property.type === 'Select' ||
@@ -144,7 +150,7 @@ export class CommonPropertyComponent implements OnInit {
                     { name: 'Yes', class: 'primary' }
                 ]
             }
-        });
+        })!;
 
         dialogRef.onClose.subscribe(result => {
             if (result !== 'Yes') {
@@ -176,7 +182,7 @@ export class CommonPropertyComponent implements OnInit {
                 expression: this.value,
                 readonly: this.readonly
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.value = result.expression;
@@ -205,12 +211,16 @@ export class CommonPropertyComponent implements OnInit {
             }
         }
         this.value.push(item);
+        this.groupCollapse = false;
         this.update.emit();
     }
 
     removeItems(i: number) {
         this.needUpdate = true;
         this.value.splice(i, 1);
+        if (!this.value.length) {
+            this.groupCollapse = true;
+        }
         this.update.emit();
     }
 

@@ -6,7 +6,8 @@ import { Component, ElementRef, EventEmitter, Inject, Input, Output, SimpleChang
 @Component({
     selector: 'pages-control',
     templateUrl: './pages-control.component.html',
-    styleUrls: ['./pages-control.component.scss']
+    styleUrls: ['./pages-control.component.scss'],
+    standalone: false
 })
 export class PagesControl {
     @Input('items') items!: any[];

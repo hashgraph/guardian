@@ -1,11 +1,25 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnInit, Output, SimpleChanges } from '@angular/core';
 import { UntypedFormArray } from '@angular/forms';
-import { Schema, SchemaField, SchemaRuleValidateResult, UnitSystem } from '@guardian/interfaces';
-import { Subject, takeUntil } from 'rxjs';
+import {
+    isGeoCustomType,
+    Schema,
+    SchemaField,
+    SchemaRuleValidateResult,
+    UnitSystem
+} from '@guardian/interfaces';
+import { DialogService } from 'primeng/dynamicdialog';
+import { Subject, Subscription, takeUntil } from 'rxjs';
+import { CustomConfirmDialogComponent } from '../../common/custom-confirm-dialog/custom-confirm-dialog.component';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { API_IPFS_GATEWAY_URL, IPFS_SCHEMA } from '../../../services/api';
 import { FieldForm, IFieldControl, IFieldIndexControl } from '../schema-form-model/field-form';
 import { getMinutesAgoStream } from 'src/app/utils/autosave-utils';
+import {
+    GeoOption,
+    GeoResolverField,
+    GeoType,
+    resolveGeoDependencies
+} from './geo-dependency-resolver';
 
 enum PlaceholderByFieldType {
     Email = "example@email.com",
@@ -65,6 +79,7 @@ const FILE_EXTENSIONS = '.txt, .pdf, .doc, .docx, .xls, .csv, .kml, .geoJSON';
     selector: 'app-schema-form',
     templateUrl: './schema-form.component.html',
     styleUrls: ['./schema-form.component.scss'],
+    standalone: false
 })
 export class SchemaFormComponent implements OnInit {
     @Input('form-model') formModel!: FieldForm;
@@ -107,11 +122,14 @@ export class SchemaFormComponent implements OnInit {
     public currentIndex: number = 0;
     public buttonsConfig: IButton[] = [];
     public editButtonConfig: IButton;
+    private geoSubscriptions = new Subscription();
+    private geoOptions = new Map<string, GeoOption[]>();
     private controlsIndex: Map<string, { ancestors: IFieldControl<any>[], field: IFieldControl<any>, listItem?: any }> = new Map();
 
     constructor(
         private ipfs: IPFSService,
-        protected changeDetectorRef: ChangeDetectorRef
+        protected changeDetectorRef: ChangeDetectorRef,
+        private readonly dialog: DialogService
     ) { }
 
     ngOnInit(): void {
@@ -123,11 +141,12 @@ export class SchemaFormComponent implements OnInit {
                 this.updateRemoteFiles(item);
             }
         }
+        this.setupGeoDependencies();
         this.updatePages();
-        try { 
-            this.buildControlsIndex(); 
+        try {
+            this.buildControlsIndex();
         } catch (e) {
-             console.error('[schema-form] buildControlsIndex failed', e); 
+             console.error('[schema-form] buildControlsIndex failed', e);
         }
         if (changes.rules && this.rules) {
             for (const value of Object.values(this.rules)) {
@@ -182,6 +201,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     ngOnDestroy() {
+        this.geoSubscriptions.unsubscribe();
         this.destroy.emit();
         this.destroy$.next(true);
         this.destroy$.unsubscribe();
@@ -326,10 +346,56 @@ export class SchemaFormComponent implements OnInit {
         if (event?.stopPropagation) {
             event.stopPropagation();
         }
+        const dependents = this.formModel?.rootForm?.getDependentArrays(item) || [];
+        if (!dependents.length) {
+            this.applyRemoveItem(item, listItem);
+            return;
+        }
+        this.dialog.open(CustomConfirmDialogComponent, {
+            showHeader: false,
+            width: '640px',
+            styleClass: 'guardian-dialog',
+            data: {
+                header: 'Delete entry',
+                text: 'Linked entries will be deleted together with this one.',
+                buttons: [{
+                    name: 'Close',
+                    class: 'secondary'
+                }, {
+                    name: 'Delete',
+                    class: 'delete'
+                }]
+            },
+        })!.onClose.subscribe((result: string) => {
+            if (result === 'Delete') {
+                this.applyRemoveItem(item, listItem);
+            }
+        });
+    }
+
+    private applyRemoveItem(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): void {
         this.formModel?.removeItem(item, listItem);
         this.formModel?.updateValueAndValidity();
         this.changeDetectorRef.detectChanges();
         this.change.emit();
+    }
+
+    public isManagedArray(item: IFieldControl<any>): boolean {
+        return !!this.formModel?.rootForm?.isManagedArray(item);
+    }
+
+    public entryTitleLabel(item: IFieldControl<any>): string {
+        return this.formModel?.getEntryTitleLabel(item) || 'Source entry';
+    }
+
+    public entryTitle(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        return this.formModel?.getEntryTitle(item, listItem)
+            || `${item.description} #${listItem.index2}`;
+    }
+
+    public entryTitleNumber(item: IFieldControl<any>, listItem: IFieldIndexControl<any>): string {
+        const fallback = `${item.description} #${listItem.index2}`;
+        return this.entryTitle(item, listItem) === fallback ? '' : `#${listItem.index2}`;
     }
 
     public patchSuggestValue(item: IFieldControl<any>) {
@@ -370,6 +436,103 @@ export class SchemaFormComponent implements OnInit {
         return this.rules?.[item.fullPath]?.status;
     }
 
+    public isGeoLocation(item: IFieldControl<any>): boolean {
+        return isGeoCustomType(item.customType || '');
+    }
+
+    public getGeoOptions(item: IFieldControl<any>): GeoOption[] {
+        return this.geoOptions.get(item.id) || [];
+    }
+
+    private setupGeoDependencies(): void {
+        this.geoSubscriptions.unsubscribe();
+        this.geoSubscriptions = new Subscription();
+        this.geoOptions.clear();
+        this.setupGeoGroups(this.formModel?.controls || []);
+    }
+
+    private setupGeoGroups(fields: IFieldControl<any>[]): void {
+        const geoFields = fields.filter((field) =>
+            !field.isArray && this.isGeoLocation(field)
+        );
+        const fieldsByName = new Map(
+            geoFields.map((field) => [field.name, field])
+        );
+        const related = new Map(
+            geoFields.map((field) => [field, new Set<IFieldControl<any>>()])
+        );
+
+        for (const field of geoFields) {
+            if (field.dependency?.kind !== 'geo') {
+                continue;
+            }
+            const parent = fieldsByName.get(field.dependency.on);
+            if (parent) {
+                related.get(field)?.add(parent);
+                related.get(parent)?.add(field);
+            }
+        }
+
+        const visited = new Set<IFieldControl<any>>();
+        for (const field of geoFields) {
+            if (visited.has(field)) {
+                continue;
+            }
+            const group: IFieldControl<any>[] = [];
+            const pending = [field];
+            visited.add(field);
+            while (pending.length) {
+                const current = pending.pop();
+                if (!current) {
+                    continue;
+                }
+                group.push(current);
+                for (const candidate of related.get(current) || []) {
+                    if (!visited.has(candidate)) {
+                        visited.add(candidate);
+                        pending.push(candidate);
+                    }
+                }
+            }
+            this.setupGeoGroup(group);
+        }
+    }
+
+    private setupGeoGroup(fields: IFieldControl<any>[]): void {
+        const recompute = (changed: IFieldControl<any> | null) => {
+            const input: GeoResolverField[] = fields.map((field) => ({
+                name: field.name,
+                type: field.customType as GeoType,
+                value: field.control.value,
+                dependency: field.dependency
+            }));
+            const result = resolveGeoDependencies(input, changed?.name || null);
+            for (const field of fields) {
+                const value = result.values[field.name];
+                if (field.control.value !== value) {
+                    field.control.setValue(value, { emitEvent: false });
+                }
+                this.geoOptions.set(field.id, result.options[field.name]);
+                const errors = { ...(field.control.errors || {}) };
+                delete errors[field.id];
+                const error = result.errors[field.name];
+                if (error) {
+                    errors[field.id] = error;
+                }
+                field.control.setErrors(Object.keys(errors).length ? errors : null);
+            }
+            this.formModel.form.updateValueAndValidity({ emitEvent: false });
+            this.changeDetectorRef.markForCheck();
+        };
+
+        recompute(null);
+        for (const field of fields) {
+            this.geoSubscriptions.add(
+                field.control.valueChanges.subscribe(() => recompute(field))
+            );
+        }
+    }
+
     public isInput(item: IFieldControl<any>): boolean {
         return (
             (
@@ -384,6 +547,7 @@ export class SchemaFormComponent implements OnInit {
                 item.format !== 'date-time'
             ) && !item.remoteLink && !item.enum
             && item.customType !== 'table'
+            && !this.isGeoLocation(item)
         );
     }
 
@@ -952,7 +1116,7 @@ export class SchemaFormComponent implements OnInit {
     }
 
     public canDrawTable(item: IFieldControl<any>): boolean {
-        const customTypes = ['geo', 'table', 'sentinel'];
+        const customTypes = ['geo', 'table', 'sentinel', 'country', 'continent', 'state'];
 
         if (!item.isArray || !item.isRef || item.hidden) {
             return false;
@@ -973,18 +1137,24 @@ export class SchemaFormComponent implements OnInit {
         );
     }
 
-    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
-        if (this.hide) {
-            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
-        }
-        return item.fields?.filter(f => f.type !== 'null' && !f.hidden);
+    private getTitleMappedNames(item: IFieldControl<any>): Set<string> {
+        return this.formModel?.getTitleMappedNames(item) || new Set<string>();
     }
 
-    public getTableRowFields(item: IFieldIndexControl<any>): any[] | undefined {
+    public getTableHeaderFields(item: IFieldControl<any>): any[] | undefined {
+        const mapped = this.getTitleMappedNames(item);
         if (this.hide) {
-            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden);
+            return item.fields?.filter(f => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
         }
-        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden);
+        return item.fields?.filter(f => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
+    }
+
+    public getTableRowFields(item: IFieldIndexControl<any>, owner?: IFieldControl<any>): any[] | undefined {
+        const mapped = owner ? this.getTitleMappedNames(owner) : new Set<string>();
+        if (this.hide) {
+            return item.model.controls?.filter((f: any) => f.type !== 'null' && !this.hide[f.name] && !f.hidden && !mapped.has(f.name));
+        }
+        return item.model.controls?.filter((f: any) => f.type !== 'null' && !f.hidden && !mapped.has(f.name));
     }
 }
 

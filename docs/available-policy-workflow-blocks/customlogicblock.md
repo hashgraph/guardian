@@ -13,3 +13,7 @@ This block supports two types of artifacts : JSON (.json) and Executable Code (.
 **JSON** :  will be added to the “artifacts” variable which is array in specific order (for example artifacts\[0] is e\_grid\_mapping json object).
 
 **Executable Code** :  will be executed before main function.
+
+## Bulk processing
+
+When the block code returns an array, the output documents are processed with bounded concurrency (10 in parallel by default). The limit is configured with the `CUSTOM_LOGIC_CONCURRENCY` environment variable (provided by the `configs/.env.*.guardian.system` templates). During policy recording or replay, processing is always sequential so that recorded UUID/DID sequences stay deterministic. If processing of one document fails, no further documents are started; documents already in flight complete before the error is reported.

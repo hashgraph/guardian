@@ -1,3 +1,5 @@
+@import '../nav-collapse';
+
 form {
     display: flex;
     flex-direction: column;
@@ -73,7 +75,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -83,7 +85,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -104,7 +106,7 @@ form {
             display: block;
             width: 100%;
             position: relative;
-            background: #F9FAFC;
+            background: var(--guardian-grey-background, #F9FAFC);
             border: 1px solid #E1E7EF;
             padding: 16px;
             border-radius: 8px;
@@ -213,7 +215,7 @@ form {
         font-family: Inter;
         font-size: 13px;
         line-height: 18px;
-        color: #23252E;
+        color: var(--guardian-font-color, #23252E);
         word-break: break-word;
 
         svg-icon {
@@ -239,7 +241,7 @@ form {
 }
 
 .guardian-accordion-container::ng-deep .guardian-accordion-container {
-    background: #F9FAFC;
+    background: var(--guardian-grey-background, #F9FAFC);
 }
 
 .tags-container {
@@ -259,18 +261,46 @@ form {
 }
 
 .schema-form-view-nav {
-    width: 25%; 
-    min-width: 0%; 
-    max-width: 75%; 
+    width: 25%;
+    min-width: 0%;
+    max-width: 75%;
     align-self: flex-start;
     position: sticky;
     top: 0;
     max-height: calc(100vh - 230px);
-    overflow-y: auto;
     box-sizing: border-box;
+    overflow-y: auto;
+    border: 1px solid var(--guardian-border-color, rgba(0, 0, 0, 0.06));
+    border-radius: 6px;
+    transition: width 0.2s ease;
+
+    // The panel now owns the border and the scroll; the sticky collapse
+    // header stays pinned while the tree scrolls underneath it.
+    ::ng-deep .schema-nav {
+        max-height: none !important;
+        overflow: visible;
+        border: none;
+        border-radius: 0;
+    }
 }
 
 .schema-form-content {
     flex: 1;
     min-width: 0;
+}
+
+:host ::ng-deep .guardian-accordion {
+
+    .p-accordionpanel,
+    .p-accordioncontent,
+    .p-motion,
+    .p-accordioncontent-wrapper,
+    .p-accordioncontent-content {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    .p-accordioncontent-content {
+        overflow-x: auto;
+    }
 }

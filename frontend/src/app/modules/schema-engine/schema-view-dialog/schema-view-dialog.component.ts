@@ -7,7 +7,8 @@ import {DynamicDialogConfig, DynamicDialogRef} from 'primeng/dynamicdialog';
 @Component({
     selector: 'app-schema-view-dialog',
     templateUrl: './schema-view-dialog.component.html',
-    styleUrls: ['./schema-view-dialog.component.scss']
+    styleUrls: ['./schema-view-dialog.component.scss'],
+    standalone: false
 })
 export class SchemaViewDialog {
     loading = true;

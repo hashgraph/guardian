@@ -48,7 +48,8 @@ interface IFieldContext {
 @Component({
     selector: 'app-compare-document',
     templateUrl: './compare-document.component.html',
-    styleUrls: ['./compare-document.component.scss']
+    styleUrls: ['./compare-document.component.scss'],
+    standalone: false
 })
 export class CompareDocumentComponent implements OnInit {
     @Input('disableHeader') disableHeader: boolean = false;

@@ -1,5 +1,5 @@
 <div class="container">
-    <p-calendar [(ngModel)]="currentDate"
+    <p-datepicker [(ngModel)]="currentDate"
                 (onSelect)="onValue($event)"
                 [placeholder]="placeholder"
                 [disabled]="readonly"
@@ -13,5 +13,5 @@
                 class="p-inputtext"
                 [appendTo]="appendTo ? 'body' : null"
     >
-    </p-calendar>
+    </p-datepicker>
 </div>

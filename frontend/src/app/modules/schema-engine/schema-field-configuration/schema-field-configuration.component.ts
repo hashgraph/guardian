@@ -15,8 +15,8 @@ import {
     UntypedFormGroup,
     Validators,
 } from '@angular/forms';
-import { SchemaField, UnitSystem } from '@guardian/interfaces';
-import { ToastrService } from 'ngx-toastr';
+import { isGeoCustomType, relationAncestors, SchemaField, UnitSystem } from '@guardian/interfaces';
+import { ToastService } from 'src/app/services/toast.service';
 import { IPFS_SCHEMA } from 'src/app/services/api';
 import { IPFSService } from 'src/app/services/ipfs.service';
 import { EnumEditorDialog } from '../enum-editor-dialog/enum-editor-dialog.component';
@@ -34,11 +34,13 @@ import { EditorHelpContext } from '../../policy-engine/dialogs/code-editor-dialo
     selector: 'schema-field-configuration',
     templateUrl: './schema-field-configuration.component.html',
     styleUrls: ['./schema-field-configuration.component.scss'],
+    standalone: false
 })
 export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     @Input('readonly') readonly!: boolean;
     @Input('form') form!: UntypedFormGroup;
     @Input('field') field!: FieldControl;
+    @Input() fields: FieldControl[] = [];
     @Input() fieldsForm?: AbstractControl | null;
     @Input('types') types!: any[];
     @Input('measureTypes') measureTypes!: any[];
@@ -62,6 +64,8 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     public loading: boolean = false;
     public keywords: string[] = [];
     public isString: boolean = false;
+    public geoLocation = false;
+    public geoAncestorTypes: string[] = [];
     public fieldType: UntypedFormControl;
     public property: UntypedFormControl;
     public groupedFieldTypes: any[] = this.createFieldTypes();
@@ -102,7 +106,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         public dialog: DialogService,
         private dialogService: DialogService,
         private ipfs: IPFSService,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private cdr: ChangeDetectorRef,
     ) {
         this.fieldType = new UntypedFormControl();
@@ -151,6 +155,12 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     ...value,
                 });
             });
+    }
+
+    private clearFieldPresetControls(): void {
+        this.field.controlDefault.setValue(null, { emitEvent: false });
+        this.field.controlSuggest.setValue(null, { emitEvent: false });
+        this.field.controlExample.setValue(null, { emitEvent: false });
     }
 
     ngOnInit(): void {
@@ -205,6 +215,10 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                     JSON.stringify(oldField?.controlEnum) !==
                     JSON.stringify(newField?.controlEnum)
                 ) {
+                    if (oldField?.fieldType !== newField?.fieldType) {
+                        this.clearFieldPresetControls();
+                    }
+
                     this.presetValues =
                         JSON.stringify(newField?.controlEnum) !==
                             JSON.stringify(oldField?.controlEnum)
@@ -382,6 +396,28 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.remove.emit(field);
     }
 
+    public get geoDependencyOptions(): FieldControl[] {
+        return (this.fields || []).filter((candidate) => {
+            if (candidate === this.field) {
+                return false;
+            }
+            const type = this.schemaTypeMap?.[candidate.controlType.value]?.customType;
+            return this.geoAncestorTypes.includes(type);
+        });
+    }
+
+    public geoDependencyLabel(field: FieldControl | string | null): string {
+        if (!field) {
+            return '';
+        }
+        if (typeof field === 'string') {
+            return field;
+        }
+        return field.controlDescription.value
+            || field.controlTitle.value
+            || field.controlKey.value;
+    }
+
     onTypeChange(event: any) {
         const typeName = event.value;
         const item = this.types.find((e) => e.value == typeName);
@@ -391,6 +427,16 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
         this.helpText = (item && item.name === 'Help Text') || false;
         this.enum = ((item && item.name) || typeName) === 'Enum';
         this.geoJson = ((item && item.name) || typeName) === 'GeoJSON';
+        const geoType = this.schemaTypeMap?.[typeName]?.customType;
+        this.geoLocation = isGeoCustomType(geoType);
+        this.geoAncestorTypes = this.geoLocation
+            ? relationAncestors('geo', geoType)
+            : [];
+        if (!this.enum) {
+            this.field.controlEnum.clear();
+            this.field.controlEnumName.patchValue('');
+            this.field.controlRemoteLink.patchValue('');
+        }
         if (!item) {
             this.field.isUpdatable.setValue(false);
             this.field.isUpdatable.disable()
@@ -409,7 +455,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 enumValue: this.field.controlEnum.value,
                 errorHandler: this.errorHandler.bind(this),
             },
-        });
+        })!;
         dialogRef.onClose.subscribe((res: { enumValue: string; loadToIpfs: boolean }) => {
             if (!res) {
                 return;
@@ -458,12 +504,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
     }
 
     private errorHandler(errorMessage: string, errorHeader: string): void {
-        this.toastr.error(errorMessage, errorHeader, {
-            timeOut: 30000,
-            closeButton: true,
-            positionClass: 'toast-bottom-right',
-            enableHtml: true,
-        });
+        this.toastService.error(errorMessage, errorHeader, { sticky: true });
     }
 
     onEditExpression() {
@@ -556,7 +597,7 @@ export class SchemaFieldConfigurationComponent implements OnInit, OnDestroy {
                 helpContext,
                 validate: true,
             }
-        })
+        })!
         dialogRef.onClose.subscribe(result => {
             if (result) {
                 this.field.expression.setValidators([Validators.required]);

@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { AboutInterface, CommonSettings } from '@guardian/interfaces';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { filter, shareReplay } from 'rxjs/operators';
 import { API_BASE_URL } from './api';
 
@@ -12,15 +12,10 @@ import { API_BASE_URL } from './api';
 export class SettingsService {
     private readonly url: string = `${API_BASE_URL}/settings`;
 
-    private hederaNetSubject = new BehaviorSubject<string>('');
-    private hederaNet = this.hederaNetSubject
-        .asObservable()
-        .pipe(filter((res) => !!res));
+    // Fetched lazily on first use so it never fires before login (endpoint requires auth).
+    private hederaNet?: Observable<string>;
 
     constructor(private http: HttpClient) {
-        this.getRemoteHederaNet().subscribe((res) => {
-            this.hederaNetSubject.next(res);
-        });
     }
 
     public updateSettings(settings: CommonSettings): Observable<void> {
@@ -32,6 +27,12 @@ export class SettingsService {
     }
 
     public getHederaNet(): Observable<string> {
+        if (!this.hederaNet) {
+            this.hederaNet = this.getRemoteHederaNet().pipe(
+                filter((res) => !!res),
+                shareReplay(1)
+            );
+        }
         return this.hederaNet;
     }
 

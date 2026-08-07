@@ -1,57 +1,59 @@
-<div class="context" *ngIf="count > 0">
+@if (count > 0) {
+  <div class="context">
     <div
-        [class.current]="active"
-        class="item cursor-pointer"
-    >
-        <svg-icon class="svg-icon-16" src="/assets/images/icons/compare.svg" svgClass="color-white"></svg-icon>
-        <div [class.hidden-logotype]="!collapsed" class="collapsed-notify-counter">
-            <div class="badge" (click)="onMenuOpened($event)">
-                <span class="notification-counter">
-                    {{ count }}
-                </span>
-            </div>
+      [class.current]="active"
+      class="item cursor-pointer"
+      >
+      <svg-icon class="svg-icon-16" src="/assets/images/icons/compare.svg" svgClass="color-white"></svg-icon>
+      <div [class.hidden-logotype]="!collapsed" class="collapsed-notify-counter">
+        <div class="badge" (click)="onMenuOpened($event)">
+          <span class="notification-counter">
+            {{ count }}
+          </span>
         </div>
-        <div
-            [class.hidden-logotype]="collapsed"
-            class="span-icon"
-            (click)="compareMenu.toggle($event); onMenuOpened($event)"
+      </div>
+      <div
+        [class.hidden-logotype]="collapsed"
+        class="span-icon"
+        (click)="compareMenu.toggle($event); onMenuOpened($event)"
         >
-            <span>Documents</span>
-
-            <div class="badge">
-                <span class="notification-counter">
-                    {{ count }}
-                </span>
-            </div>
-
+        <span>Documents</span>
+        <div class="badge">
+          <span class="notification-counter">
+            {{ count }}
+          </span>
         </div>
+      </div>
     </div>
-    <p-overlayPanel #compareMenu class="compare-menu-panel">
-        <div class="compare-menu" (click)="$event.stopPropagation()">
-            <div class="compare-header">
-                Documents
-            </div>
-            <div *ngFor="let item of ids" class="compare-item">
-                <div class="compare-item-select" (click)="onSelect(item)">
-                    <input
-                        class="compare-checkbox"
-                        type="checkbox"
-                        [checked]="isSelected(item)">
-                </div>
-                <div class="compare-item-name" (click)="onSelect(item)">
-                    {{ item }}
-                </div>
-                <div class="compare-item-delete" (click)="onDelete(item)">
-                    <i class="pi pi-trash"></i>
-                </div>
-            </div>
-            <div class="compare-results">
-                <div class="compare-results-btn"
-                     [attr.disable]="selectedCount<2"
-                     (click)="onCompare()">
-                    Compare ({{ selectedCount }})
-                </div>
-            </div>
+    <p-popover #compareMenu class="compare-menu-panel">
+      <div class="compare-menu" (click)="$event.stopPropagation()">
+        <div class="compare-header">
+          Documents
         </div>
-    </p-overlayPanel>
-</div>
+        @for (item of ids; track item) {
+          <div class="compare-item">
+            <div class="compare-item-select" (click)="onSelect(item)">
+              <input
+                class="compare-checkbox"
+                type="checkbox"
+                [checked]="isSelected(item)">
+            </div>
+            <div class="compare-item-name" (click)="onSelect(item)">
+              {{ item }}
+            </div>
+            <div class="compare-item-delete" (click)="onDelete(item)">
+              <i class="pi pi-trash"></i>
+            </div>
+          </div>
+        }
+        <div class="compare-results">
+          <div class="compare-results-btn"
+            [attr.disable]="selectedCount<2"
+            (click)="onCompare()">
+            Compare ({{ selectedCount }})
+          </div>
+        </div>
+      </div>
+    </p-popover>
+  </div>
+}

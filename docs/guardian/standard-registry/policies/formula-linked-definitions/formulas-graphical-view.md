@@ -1,7 +1,3 @@
----
-icon: display-chart-up-circle-currency
----
-
 # Formulas Graphical View
 
 ## 1. Overview

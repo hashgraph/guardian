@@ -19,6 +19,7 @@ interface IColumn {
     selector: 'app-policy-label-documents',
     templateUrl: './policy-label-documents.component.html',
     styleUrls: ['./policy-label-documents.component.scss'],
+    standalone: false
 })
 export class PolicyLabelDocumentsComponent implements OnInit {
     public readonly title: string = 'Documents';

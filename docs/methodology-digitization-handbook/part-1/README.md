@@ -70,11 +70,11 @@ Track your progress through Part I:
 
 ### Resources
 
-* [Guardian Documentation](../../../) - Complete platform documentation
-* [VM0033 Parsed Content](../../VM0033-methodology-pdf-parsed/VM0033-Methodology.md) - Source methodology
-* [Methodology Library](../../../Methodology%20Library/) - Additional methodologies
-* [Guardian Architecture](../../../guardian/architecture/architecture-2.md) - Technical architecture details
-* [API Guidelines](../../../guardian/readme/api-guideline.md) - Integration guidance
+* [Guardian Documentation](https://github.com/hashgraph/guardian/blob/develop/README.md) - Complete platform documentation
+* [VM0033 Parsed Content](https://github.com/hashgraph/guardian/blob/develop/docs/VM0033-methodology-pdf-parsed/VM0033-Methodology.md) - Source methodology
+* [Methodology Library](https://github.com/hashgraph/guardian/blob/develop/Methodology%20Library/README.md) - Additional methodologies
+* [Guardian Architecture](https://github.com/hashgraph/guardian/blob/develop/guardian/architecture/architecture-2.md) - Technical architecture details
+* [API Guidelines](https://github.com/hashgraph/guardian/blob/develop/guardian/readme/api-guideline.md) - Integration guidance
 
 ## Next Steps
 

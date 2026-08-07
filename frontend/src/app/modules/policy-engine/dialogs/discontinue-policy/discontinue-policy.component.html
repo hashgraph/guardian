@@ -1,27 +1,31 @@
 <div class="dialog-body">
-    <div class="dialog-form">
-        <span class="form-label">
-            Time to discontinuing the policy:
-        </span>
-        <div class="form-value">
-            <p-selectButton [options]="stateOptions" [(ngModel)]="isDiscontinuingDeferred" optionLabel="label"
-                optionValue="value"></p-selectButton>
-        </div>
-        <span class="form-label" *ngIf="isDiscontinuingDeferred">
-            Please select date:
-        </span>
-        <div class="form-value" *ngIf="isDiscontinuingDeferred">
-            <p-calendar [minDate]="minDate" [(ngModel)]="date"></p-calendar>
-        </div>
+  <div class="dialog-form">
+    <span class="form-label">
+      Time to discontinuing the policy:
+    </span>
+    <div class="form-value">
+      <p-selectButton [options]="stateOptions" [(ngModel)]="isDiscontinuingDeferred" optionLabel="label"
+      optionValue="value"></p-selectButton>
     </div>
+    @if (isDiscontinuingDeferred) {
+      <span class="form-label">
+        Please select date:
+      </span>
+    }
+    @if (isDiscontinuingDeferred) {
+      <div class="form-value">
+        <p-datepicker [minDate]="minDate" [(ngModel)]="date"></p-datepicker>
+      </div>
+    }
+  </div>
 </div>
 <div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="cancel-button">
-            <button pButton (click)="onNoClick()" label="Cancel" [outlined]=true class="button secondary"></button>
-        </div>
-        <div>
-            <button pButton (click)="onSubmit()" label="OK" class="button"></button>
-        </div>
+  <div class="action-buttons">
+    <div class="cancel-button">
+      <button pButton (click)="onNoClick()" label="Cancel" [outlined]=true class="button secondary"></button>
     </div>
+    <div>
+      <button pButton (click)="onSubmit()" label="OK" class="button"></button>
+    </div>
+  </div>
 </div>

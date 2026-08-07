@@ -657,7 +657,7 @@
                         padding: 1px 1px !important;
 
                         &::ng-deep {
-                            .p-dropdown-label {
+                            .p-select-label {
                                 padding-left: 16px;
                             }
                         }
@@ -755,7 +755,7 @@
                         }
 
                         .rule-type-name {
-                            background: #E1E7EF;
+                            background: var(--guardian-grey-background, #E1E7EF);
                             height: 28px;
                             padding: 4px 10px 4px 10px;
                             border-radius: 6px;
@@ -807,10 +807,10 @@
 }
 
 .guardian-dropdown {
-    &::ng-deep .p-dropdown {
+    &::ng-deep .p-select {
         width: 100%;
 
-        .p-dropdown-label {
+        .p-select-label {
             padding-left: 0px;
         }
     }
@@ -888,7 +888,7 @@
             font-weight: 600;
             line-height: 14px;
             text-align: left;
-            color: #23252E;
+            color: var(--guardian-font-color, #23252E);
         }
 
         .node-fields {
@@ -903,7 +903,7 @@
             text-overflow: ellipsis;
 
             .node-field {
-                color: #23252E;
+                color: var(--guardian-font-color, #23252E);
                 border-bottom: 1px solid var(--guardian-border-color, #E1E7EF);
                 padding: 8px 8px 8px 16px;
                 overflow: hidden;

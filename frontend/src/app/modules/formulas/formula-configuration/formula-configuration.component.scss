@@ -149,7 +149,7 @@
         display: flex;
         flex-direction: row;
         border-top: 1px solid var(--guardian-grey-color-2, #E1E7EF);
-        background: #fff;
+        background: var(--guardian-background, #fff);
         padding: 12px 48px;
         position: relative;
 
@@ -301,7 +301,7 @@
                 padding: 1px 1px !important;
 
                 &::ng-deep {
-                    .p-dropdown-label {
+                    .p-select-label {
                         padding-left: 16px;
                     }
                 }
@@ -399,7 +399,7 @@
                 }
 
                 .rule-type-name {
-                    background: #E1E7EF;
+                    background: var(--guardian-grey-background, #E1E7EF);
                     height: 28px;
                     padding: 4px 10px 4px 10px;
                     border-radius: 6px;
@@ -456,7 +456,7 @@
     font-family: Inter;
     font-size: 14px;
     font-weight: 400;
-    color: #000;
+    color: var(--guardian-font-color, #000);
     padding: 10px 16px;
     position: relative;
     cursor: pointer;

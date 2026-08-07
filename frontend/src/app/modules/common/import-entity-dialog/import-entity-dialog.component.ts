@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, Validators } from '@angular/forms';
 import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { ImportType } from '@guardian/interfaces';
-import { InformService } from 'src/app/services/inform.service';
+import { ToastService } from 'src/app/services/toast.service';
 import { TasksService } from 'src/app/services/tasks.service';
 import { ModulesService } from 'src/app/services/modules.service';
 import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
@@ -12,11 +12,13 @@ import { SchemaRulesService } from 'src/app/services/schema-rules.service';
 import { PolicyStatisticsService } from 'src/app/services/policy-statistics.service';
 import { PolicyLabelsService } from 'src/app/services/policy-labels.service';
 import { FormulasService } from 'src/app/services/formulas.service';
+import { SchemaTemplatesService } from 'src/app/services/schema-templates.service';
 
 export enum ImportEntityType {
     Policy = 'policy',
     Module = 'module',
     Tool = 'tool',
+    Template = 'template',
     Xlsx = 'xlsx',
     Record = 'record',
     SchemaRule = 'schema-rule',
@@ -31,7 +33,8 @@ export interface IImportEntityArray {
     type: 'file',
     data: ArrayBuffer,
     policy?: any,
-    tool?: any
+    tool?: any,
+    template?: any,
     module?: any,
     xlsx?: any,
     rule?: any,
@@ -48,7 +51,8 @@ export interface IImportEntityMessage {
     type: 'message',
     data: string,
     policy?: any,
-    tool?: any
+    tool?: any,
+    template?: any,
     module?: any,
     xlsx?: any,
     rule?: any,
@@ -70,6 +74,7 @@ export type IImportEntityResult = IImportEntityArray | IImportEntityMessage;
     selector: 'import-entity-dialog',
     templateUrl: './import-entity-dialog.component.html',
     styleUrls: ['./import-entity-dialog.component.scss'],
+    standalone: false
 })
 export class ImportEntityDialog implements OnInit {
     public loading: boolean = false;
@@ -80,6 +85,7 @@ export class ImportEntityDialog implements OnInit {
 
     public type: ImportEntityType = ImportEntityType.Policy;
     public importType: ImportType = ImportType.FILE;
+    public tabIndex: number = 0;
     public recordSource: 'file' | 'imported' | 'otherPolicy' = 'file';
     public selectedPolicy: { id?: string; name?: string } | null = null;
     public policiesWithImportedRecords: { id?: string; name?: string }[] = [];
@@ -117,7 +123,8 @@ export class ImportEntityDialog implements OnInit {
         private policyEngineService: PolicyEngineService,
         private modulesService: ModulesService,
         private toolsService: ToolsService,
-        private informService: InformService,
+        private schemaTemplatesService: SchemaTemplatesService,
+        private toastService: ToastService,
         private taskService: TasksService,
         private schemaRulesService: SchemaRulesService,
         private policyStatisticsService: PolicyStatisticsService,
@@ -150,6 +157,14 @@ export class ImportEntityDialog implements OnInit {
                 this.title = 'Import Tool';
                 this.fileExtension = 'tool';
                 this.placeholder = 'Import Tool .tool file';
+                break;
+            case 'template':
+                this.type = ImportEntityType.Template;
+                this.canImportFile = true;
+                this.canImportMessage = true;
+                this.title = 'Import Schema Template';
+                this.fileExtension = 'template';
+                this.placeholder = 'Import Schema Template .template file';
                 break;
             case 'xlsx':
                 this.type = ImportEntityType.Xlsx;
@@ -272,8 +287,9 @@ export class ImportEntityDialog implements OnInit {
         }
     }
 
-    public setImportType(event: any): void {
-        this.importType = event.index;
+    public setImportType(index: string | number | undefined): void {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        this.importType = tabIndex;
         this.changeDetectorRef.detectChanges();
     }
 
@@ -286,7 +302,7 @@ export class ImportEntityDialog implements OnInit {
     }
 
     public onAsyncError(error: any) {
-        this.informService.processAsyncError(error);
+        this.toastService.processAsyncError(error);
         this.loading = false;
         this.taskId = undefined;
     }
@@ -329,6 +345,10 @@ export class ImportEntityDialog implements OnInit {
                 }
                 case ImportEntityType.Tool: {
                     this.toolFromFile(arrayBuffer);
+                    break;
+                }
+                case ImportEntityType.Template: {
+                    this.templateFromFile(arrayBuffer);
                     break;
                 }
                 case ImportEntityType.Policy: {
@@ -386,6 +406,10 @@ export class ImportEntityDialog implements OnInit {
             }
             case ImportEntityType.Tool: {
                 this.toolFromMessage(messageId);
+                break;
+            }
+            case ImportEntityType.Template: {
+                this.templateFromMessage(messageId);
                 break;
             }
             case ImportEntityType.Policy: {
@@ -586,6 +610,39 @@ export class ImportEntityDialog implements OnInit {
                     tool: result
                 });
             }, (e) => {
+                this.loading = false;
+            });
+    }
+
+    //Schema Template
+    private templateFromMessage(messageId: string) {
+        this.loading = true;
+        this.schemaTemplatesService
+            .previewByMessage(messageId)
+            .subscribe((result) => {
+                this.loading = false;
+                this.setResult({
+                    type: 'message',
+                    data: messageId,
+                    template: result
+                });
+            }, () => {
+                this.loading = false;
+            });
+    }
+
+    private templateFromFile(arrayBuffer: any) {
+        this.loading = true;
+        this.schemaTemplatesService
+            .previewByFile(arrayBuffer)
+            .subscribe((result) => {
+                this.loading = false;
+                this.setResult({
+                    type: 'file',
+                    data: arrayBuffer,
+                    template: result
+                });
+            }, () => {
                 this.loading = false;
             });
     }

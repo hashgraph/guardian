@@ -1,0 +1,103 @@
+/**
+ * AUTO-GENERATED — do not edit manually.
+ * Run `npx tsx scripts/generate-standard-mappings.ts` to regenerate.
+ *
+ * Maps IWA DMRV field paths → CADTrust V2 / CDOP field paths.
+ * Source: https://docs.google.com/spreadsheets/d/1VpMcVXP-WOXS2P2MwSUoL8ja7v-pH5A9SKuaF7Qj9F8
+ *
+ * Generated: 2026-05-27T16:55:48.257Z
+ */
+
+/** IWA field path → CADTrust V2 field path (table.column) */
+export const IWA_TO_CADTRUST: Record<string, string> = {
+    "ActivityImpactModule.registryProjectId": "project.project_id",
+    "ProjectModule.aimId": "project.project_crediting_program",
+    "ActivityImpactModule.name": "project.project_name",
+    "ProjectModule.description": "project.project_description",
+    "ActivityImpactModule.projectScope": "project.project_sector",
+    "ActivityImpactModule.projectType": "project.project_type",
+    "ActivityImpactModule.validations": "project.project_status",
+    "Validation.validationDate": "project.project_status_date",
+    "ImpactClaim.unitOfMeasure": "project.project_unit_metric",
+    "QualityStandard.methodologyAndTools": "methodology.methodology_code",
+    "QualityStandard.name": "methodology.methodology_name",
+    "ActivityImpactModule.country": "location.location_country",
+    "Validation.validationMethod+Validation.validationStepName": "validation.validation_id",
+    "Validation.validationStepName": "validation.validation_type",
+    "Validation.validatingPartyId": "validation.validation_body",
+    "CheckpointResult.id": "verification.verification_id",
+    "ProjectModule.vvbId": "verification.verification_body",
+    "ProcessedClaim.id": "issuance.issuance_id",
+    "AccountableImpactOrganization.id": "unit.org_uid",
+    "CRU.id": "unit.unit_serial_id",
+    "ProcessedClaim.quantity": "unit.unit_count",
+    "ActivityImpactModule.classificationCategory": "unit.unit_type",
+    "CRU.vintage": "unit.unit_vintage_year",
+    "REC.status": "unit.unit_status",
+    "CheckpointResult.coment": "unit.unit_status_reason",
+    "CheckpointResult.dateRange.endDate": "unit.unit_status_date",
+    "AccountableImpactOrganization.name": "stakeholder.stakeholder_name",
+    "ActivityImpactModule.benefitCategory": "co_benefit.co_benefit_id",
+    "ImpactClaim.startDate": "estimation.estimation_start_date",
+    "ImpactClaim.endDate": "estimation.estimation_end_date",
+    "ImpactClaim.quantity": "estimation.estimation_unit_count",
+    "Attestation.type": "rating.rating_type",
+    "Attestation.tag.name": "rating.rating_name",
+    "QualityStandard.standard": "program.program_registry",
+    "PACompliance.correspondingAdjustment": "aef_t2_authorizations.aef_t2_authorizations_purposes_for_authorization"
+};
+
+/** IWA field path → CDOP field path (entity.field_name) */
+export const IWA_TO_CDOP: Record<string, string> = {
+    "UsingActivityImpactModule.country": "project.country code",
+    "UsingAccountableImpactOrganization.addresses.country": "project_stakeholder.country code",
+    "AccountableImpactOrganization.addresses.country": "facility.country code",
+    "ActivityImpactModule.country": "project.country name",
+    "UsingActivityImpactModule.region": "project.geographical region code",
+    "ActivityImpactModule.region": "project_stakeholder.geographical region code",
+    "AccountableImpactOrganization.address.city": "facility.geographical region name",
+    "AccountableImpactOrganization.address.addressLines": "facility.address line 1",
+    "AccountableImpactOrganization.address.addressType": "facility.alternative address",
+    "UsingActivityImpactModule.geographicLocation": "project.country subdivision code",
+    "AccountableImpactOrganization.address.country": "facility.country subdivision name",
+    "AccountableImpactOrganization.address.postalCode": "facility.postal code",
+    "ActivityImpactModule.geographicLocation.geographicLocationFile": "geolocation_file.file name",
+    "ActivityImpactModule.geographicLocation.geoJsonOrKml": "geolocation_file.file format",
+    "ActivityImpactModule.geographicLocation": "geolocation_file.validity start date",
+    "ActivityImpactModule.name": "crediting_program.crediting_program_name",
+    "QualityStandard.standard": "crediting_program.standard_name",
+    "QualityStandard.version": "crediting_program.current_standard_version",
+    "QualityStandard.name": "methodology.methodology",
+    "MRVRequirements.MeasurementSpecification": "methodology.current_methodology_document",
+    "ActivityImpactModule.id": "project.project_id_type",
+    "ActivityImpactModule.registryProjectId": "project.project_id",
+    "ProjectModule.description": "project.project_description",
+    "Validation.stepDocumentLink": "project.project_design_document_link",
+    "ActivityImpactModule.classificationCategory": "project.program_type",
+    "ActivityImpactModule.classificationMethod": "project.activity_type",
+    "ActivityImpactModule.ProjectScope": "project.project_sector",
+    "ActivityImpactModule.CarbonCategory": "project.project_type",
+    "ActivityImpactModule.validations": "project.project_status",
+    "Validation.validationDate": "project.project_status_updated_at",
+    "MRVRequirements.claimPeriod": "project.number_of_crediting_periods",
+    "ActivityImpactModule.firstYearIssuance": "project.crediting_period_length",
+    "AccountableImpactOrganization.name": "project_stakeholder.project_developer_name",
+    "AccountableImpactOrganization.developers": "project_stakeholder.project_stakeholder_name",
+    "OriginationProcessAgreement.name": "registry.current_registry",
+    "ValidationStep.stepDocumentLink": "validation.validation_report",
+    "OriginationProcessAgreement.estimatedAnnualCredits": "issuance.forecast_annual_issuance",
+    "activityImpactModule.firstYearIssuance": "issuance.forecast_year",
+    "OriginationProcessAgreement.signatories": "project.auditor_name",
+    "ImpactClaim.startDate": "issuance.estimated_crediting_period_start",
+    "ImpactClaim.endDate": "issuance.estimated_crediting_period_end",
+    "SumofImpactClaim.quantity": "issuance.forecast_total_issuance",
+    "ImpactClaim.Id": "issuance.Batch_Identifier",
+    "CRU.issuanceDate": "issuance.date_of_issuance",
+    "Audits.lastAuditDate": "issuance.date_of_verification",
+    "Date.DateTime": "issuance.verification_period_start",
+    "ProcessedClaim.quantityor": "issuance.cumulative_issued_volume",
+    "CRU.CreditStatus": "issuance.issuance_status",
+    "ActivityImpactModule.attestations": "project.attestations",
+    "AccountableImpactOrganization.owners": "project_stakeholder.organization_project_employees",
+    "AccountableImpactOrganization.informationLink": "project_stakeholder.organization_URL"
+};

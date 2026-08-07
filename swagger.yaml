@@ -1,4 +1,4 @@
-openapi: 3.0.0
+openapi: 3.2.0
 paths:
   /accounts/session:
     get:
@@ -14330,6 +14330,20 @@ paths:
                 - DISCONTINUED
                 - DEMO
                 - VIEW
+        - name: name
+          required: false
+          in: query
+          description: Filter by policy name.
+          schema:
+            example: Example Policy
+            type: string
+        - name: version
+          required: false
+          in: query
+          description: Filter by policy version.
+          schema:
+            example: 1.0.0
+            type: string
         - name: Api-Version
           in: header
           description: Use "2" for this endpoint (supports status filter).
@@ -21972,7 +21986,7 @@ paths:
                           verificationMethod: >-
                             did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599#did-root-key
                           proofPurpose: assertionMethod
-                          jws: ...
+                          jws: '...'
                       owner: >-
                         did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
                       group: null
@@ -24700,6 +24714,513 @@ paths:
       summary: Get policy parameters.
       tags:
         - policies
+  /policies/{policyId}/grids:
+    get:
+      description: >-
+        Returns every interfaceDocumentsSourceBlock reachable by the caller's
+        role in the given policy.
+      operationId: PolicyApi_getPolicyGrids
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Array of grid descriptors visible to the caller.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    gridId:
+                      type: string
+                      example: installer_documents_grid
+                    title:
+                      type: string
+                      example: Installer Activity Reports
+                    description:
+                      type: string
+                    filterSchema:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          filterId:
+                            type: string
+                          title:
+                            type: string
+                          type:
+                            type: string
+                            enum:
+                              - dropdown
+                              - datepicker
+                              - input
+                          field:
+                            type: string
+                          operators:
+                            type: array
+                            items:
+                              type: string
+                    columnSchema:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          name:
+                            type: string
+                          title:
+                            type: string
+                          type:
+                            type: string
+                          bindActions:
+                            type: array
+                            items:
+                              type: string
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+        '503':
+          description: Policy instance not running.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+              example:
+                statusCode: 503
+                message: Block Unavailable
+      security:
+        - bearer: []
+      summary: List grid containers accessible to the caller.
+      tags:
+        - policies
+  /policies/{policyId}/grids/{gridId}/actions:
+    get:
+      description: >-
+        Returns all 9-level actions (Approve, Reject, etc.) defined on the
+        specified grid that the caller's role is permitted to execute. Actions
+        with `requiredRoles` the caller does not hold are omitted entirely the
+        response never leaks inaccessible actions.
+      operationId: PolicyApi_getGridActions
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: gridId
+          required: true
+          in: path
+          description: Stable grid identifier (policy block tag or hash fallback)
+          schema:
+            example: installer_documents_grid
+            type: string
+      responses:
+        '200':
+          description: Array of action descriptors available to the caller.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    actionId:
+                      type: string
+                      example: approve_action
+                    label:
+                      type: string
+                      example: Approve
+                    requiredRoles:
+                      type: array
+                      items:
+                        type: string
+                    appliesTo:
+                      type: string
+                      enum:
+                        - row
+                    inputSchema:
+                      type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Grid not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Grid not found
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+        '503':
+          description: Grid not available to the caller's role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+              example:
+                statusCode: 503
+                message: Block Unavailable
+      security:
+        - bearer: []
+      summary: List actions available on a grid for the caller.
+      tags:
+        - policies
+  /policies/{policyId}/grids/{gridId}/records:
+    get:
+      description: >-
+        Returns the grid's filtered, paginated document set. Each document
+        carries an `_actions` field listing the `actionId` values the caller's
+        role may invoke on this grid, applied uniformly across all rows.
+        Pagination is always driven by this endpoint's own `page`/`pageSize`
+        query params.
+      operationId: PolicyApi_getGridRecords
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: gridId
+          required: true
+          in: path
+          description: Stable grid identifier
+          schema:
+            example: installer_documents_grid
+            type: string
+        - name: pageSize
+          required: false
+          in: query
+          description: >-
+            Records per page (default: 20, max: 200). Always applied, regardless
+            of whether the grid has a pagination control configured.
+          schema:
+            example: 20
+            type: number
+        - name: page
+          required: false
+          in: query
+          description: '1-based page number (default: 1)'
+          schema:
+            example: 1
+            type: number
+      responses:
+        '200':
+          description: Paginated grid records annotated with _actions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: 69aeb71ef8c5b278e3bab4e5
+                        owner:
+                          type: string
+                          example: >-
+                            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                        option:
+                          type: object
+                        document:
+                          type: object
+                        createDate:
+                          type: string
+                          format: date-time
+                        _actions:
+                          type: array
+                          items:
+                            type: string
+                          description: >-
+                            The actionId values the caller's role may invoke on
+                            this grid, applied uniformly across all rows.
+                          example:
+                            - approve_action
+                            - reject_action
+                  page:
+                    type: number
+                    example: 1
+                  pageSize:
+                    type: number
+                    example: 20
+                  totalCount:
+                    type: number
+                    example: 42
+                  hasNextPage:
+                    type: boolean
+                    example: true
+                  hasPreviousPage:
+                    type: boolean
+                    example: false
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Grid not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Grid not found
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+        '503':
+          description: Grid not available to the caller's role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+              example:
+                statusCode: 503
+                message: Block Unavailable
+      security:
+        - bearer: []
+      summary: Get records for a grid, annotated with executable actions.
+      tags:
+        - policies
+  /policies/{policyId}/grids/{gridId}/records/{recordId}/actions/{actionId}:
+    post:
+      description: >-
+        Executes the named action on the specified record. The server resolves
+        `gridId` and `actionId` to the appropriate internal block and option
+        value without exposing any internal block UUID.
+
+
+        **Typical flow:**
+
+        1. `GET /grids` — discover `gridId` values
+
+        2. `GET /grids/{gridId}/actions` — discover `actionId` values and
+        required body shape
+
+        3. `GET /grids/{gridId}/records` — get `_id` of the target record
+
+        4. `POST /grids/{gridId}/records/{_id}/actions/{actionId}` — execute
+
+
+        **Request body depends on the action's `inputSchema` (from step 2):**
+
+        - Selector/button actions (e.g. Approve/Reject): body is `{}`.
+
+        - Dropdown actions (e.g. assigning an entity to a record): body is `{
+        "value": "<one of inputSchema.properties.value.enum>" }`.
+
+        - Request-VC-document actions (e.g. submitting a form that mints a new
+        VC): body is `{ "document": { ...fields matching the action's schema...
+        } }`.
+
+
+        **Response body:** `{}` — the action triggers an internal workflow
+        event; the 200 status code is the success signal.
+      operationId: PolicyApi_executeGridAction
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          description: Policy Id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: gridId
+          required: true
+          in: path
+          description: Stable grid identifier
+          schema:
+            example: installer_documents_grid
+            type: string
+        - name: recordId
+          required: true
+          in: path
+          description: Document id from GET /records (MongoDB ObjectId)
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: actionId
+          required: true
+          in: path
+          description: Stable action identifier (from GET /actions)
+          schema:
+            example: approve_action
+            type: string
+      requestBody:
+        required: true
+        description: >-
+          Action-specific payload, shaped by the action's `inputSchema` (see
+          List Actions). Validated server-side.
+        content:
+          application/json:
+            schema:
+              type: object
+            examples:
+              Standard action (empty body):
+                value: {}
+              Dropdown action:
+                value:
+                  value: did:hedera:testnet:z...vvbDid
+              Request-VC-document action:
+                value:
+                  document:
+                    finalMintAmount: 1500
+      responses:
+        '200':
+          description: Action executed successfully. Returns the block execution result.
+          content:
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: >-
+            Action requires a body field that was not supplied (e.g. `value` for
+            a dropdown action, or `document` for a request-VC-document action).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorDTO'
+              example:
+                statusCode: 400
+                message: >-
+                  This action requires a "value" body field with the selected
+                  option value
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Grid, action, or record not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Record not found in grid
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+        '503':
+          description: Action not available to the caller's role.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServiceUnavailableErrorDTO'
+              example:
+                statusCode: 503
+                message: Block Unavailable
+      security:
+        - bearer: []
+      summary: Execute an action on a grid record.
+      tags:
+        - policies
   /dmrv/{policyId}/{path}:
     get:
       description: >-
@@ -25558,6 +26079,7 @@ paths:
               - TOOL
               - STATISTIC
               - LABEL
+              - TEMPLATE
             type: string
         - name: policyId
           required: false
@@ -25580,6 +26102,13 @@ paths:
           schema:
             example: 69aeb71ef8c5b278e3bab4e5
             type: string
+        - name: templateId
+          required: false
+          in: query
+          description: Schema template id
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
         - name: topicId
           required: false
           in: query
@@ -25595,6 +26124,16 @@ paths:
           description: Search
           schema:
             example: text
+            type: string
+        - name: templateSchemasOnly
+          required: true
+          in: query
+          schema:
+            type: string
+        - name: unusedInPolicyOnly
+          required: true
+          in: query
+          schema:
             type: string
         - name: searchOptions
           required: false
@@ -25864,6 +26403,7 @@ paths:
               - TOOL
               - STATISTIC
               - LABEL
+              - TEMPLATE
             type: string
       responses:
         '200':
@@ -26349,22 +26889,23 @@ paths:
   /schemas/list/sub:
     get:
       description: >-
-        Returns schemas for the specified policy or tool topic, including
-        related tool schemas discovered from that parent entity. Only users with
-        the Standard Registry role are allowed to make the request.
+        Returns schemas for the specified policy, tool, or template topic.
+        Policy topics include related tool schemas discovered from that parent
+        entity. Only users with the Standard Registry role are allowed to make
+        the request.
       operationId: SchemaApi_getSub
       parameters:
         - name: category
           required: false
           in: query
           description: >-
-            Determines which parent entity type is used to resolve related tool
-            topics. Does not directly filter the returned schemas by category.
-            Supported values: POLICY, TOOL.
+            Determines which parent entity type is used to resolve related
+            schemas. Supported values: POLICY, TOOL, TEMPLATE.
           schema:
             enum:
               - POLICY
               - TOOL
+              - TEMPLATE
             type: string
         - name: topicId
           required: false
@@ -26447,13 +26988,13 @@ paths:
           required: false
           in: query
           description: >-
-            Determines which parent entity type is used to resolve related tool
-            topics. Does not directly filter the returned schemas by category.
-            Supported values: POLICY, TOOL.
+            Determines which parent entity type is used to resolve related
+            schemas. Supported values: POLICY, TOOL, TEMPLATE.
           schema:
             enum:
               - POLICY
               - TOOL
+              - TEMPLATE
             type: string
         - name: topicId
           required: false
@@ -49925,23 +50466,2806 @@ paths:
       summary: Delete SR policy credential.
       tags:
         - credentials
+  /organizations:
+    post:
+      description: >-
+        Creates a registry-scoped organization record owned by the calling
+        Standard Registry. The record is created with status DRAFT; on-ledger
+        topic/DID/message publishing is a separate explicit action: POST
+        /organizations/{id}/publish.
+      operationId: OrganizationApi_createOrganization
+      parameters: []
+      requestBody:
+        required: true
+        description: Organization name and optional description.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationDTO'
+      responses:
+        '201':
+          description: Organization created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Create a new (DRAFT) organization.
+      tags:
+        - organizations
+    get:
+      description: >-
+        Returns a paginated list of organizations owned by the calling Standard
+        Registry. Supports filtering by name (case-insensitive partial match).
+        If the caller is instead an organization administrator (an active member
+        whose OrgRole carries MEMBER_MANAGE), the single organization they
+        administer is also included — their discovery path for that
+        organization's id.
+      operationId: OrganizationApi_getOrganizations
+      parameters:
+        - name: name
+          required: false
+          in: query
+          description: >-
+            Filter by organization name (case-insensitive, partial match). Leave
+            empty to return all.
+          schema:
+            example: ''
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+      responses:
+        '200':
+          description: >-
+            Successful operation. Returns organizations array and total count in
+            X-Total-Count header.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: List organizations owned by the active Standard Registry.
+      tags:
+        - organizations
+  /organizations/{id}:
+    get:
+      description: >-
+        Returns the organization identified by the path parameter. Must be owned
+        by the calling Standard Registry, or the calling organization
+        administrator's own organization (an active member whose OrgRole carries
+        MEMBER_MANAGE).
+      operationId: OrganizationApi_getOrganization
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get one organization by id.
+      tags:
+        - organizations
+    put:
+      description: >-
+        Updates the human-readable fields of an organization. On-ledger fields
+        (did, topicId, parentTopicId, hederaAccountId, status, location) are
+        hydrated by the explicit publish action and are not settable here.
+      operationId: OrganizationApi_updateOrganization
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: >-
+          Fields to update. All fields are optional; only provided fields are
+          written.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrganizationDTO'
+      responses:
+        '200':
+          description: Organization updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Update an organization (record-layer fields only).
+      tags:
+        - organizations
+    delete:
+      description: >-
+        Deletes the organization and cascades its OrgRoles, OrganizationMembers,
+        and PolicyOrgAssignments at the record layer. Only DRAFT organizations
+        can be deleted; once publishing has begun (PUBLISHED or PUBLISH_ERROR)
+        the organization is permanent — a PUBLISH_ERROR organization can be
+        republished, and decommissioning a published organization is future
+        work. Hedera-side artefacts (topic, DID document, on-ledger messages)
+        are immutable and are NOT removed.
+      operationId: OrganizationApi_deleteOrganization
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Organization deleted. Returns the removed record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Delete an organization.
+      tags:
+        - organizations
+  /organizations/{id}/publish:
+    post:
+      description: >-
+        Creates the organization topic under the SR/global topic, publishes the
+        organization DID and OrganizationMessage, stores the Hedera key in the
+        org wallet, and persists the hydrated record (status PUBLISHED) as the
+        final step. If publishing fails after the first ledger write the
+        organization is marked PUBLISH_ERROR and can be republished (a retry
+        creates a fresh topic/DID set). The provided Hedera key is stored
+        securely and never echoed.
+      operationId: OrganizationApi_publishOrganization
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: >-
+          Hedera account ID and key to associate with the organization (key
+          stored in vault).
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PublishOrganizationDTO'
+      responses:
+        '200':
+          description: Organization published. Returns the hydrated record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Publish a DRAFT organization on the ledger.
+      tags:
+        - organizations
+  /organizations/{id}/roles:
+    post:
+      description: >-
+        Creates a named role under the organization with a subset of
+        OrgRolePermission (TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER,
+        TOKEN_ASSOCIATE, TOKEN_DISSOCIATE, MEMBER_MANAGE). MEMBER_MANAGE makes
+        members holding the role organization administrators, able to manage
+        their own organization's non-admin membership; granting or revoking it
+        is always Standard-Registry-only. Role names are unique within an
+        organization.
+      operationId: OrganizationApi_createOrgRole
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: Role name + optional permissions list.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrgRoleDTO'
+      responses:
+        '201':
+          description: Role created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Create a role under an organization.
+      tags:
+        - organizations
+    get:
+      description: >-
+        Returns all OrgRoles defined under the organization. Callable by the
+        owning Standard Registry, or by an organization administrator (an active
+        member whose OrgRole carries MEMBER_MANAGE) for their own organization.
+      operationId: OrganizationApi_getOrgRoles
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrgRoleDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: List roles under an organization.
+      tags:
+        - organizations
+  /organizations/{id}/roles/{roleId}:
+    put:
+      description: >-
+        Updates the name, description, or permissions of an OrgRole. A name
+        change propagates to the denormalized OrganizationMember.orgRoleName on
+        all existing members.
+      operationId: OrganizationApi_updateOrgRole
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: roleId
+          required: true
+          in: path
+          description: OrgRole identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      requestBody:
+        required: true
+        description: Role fields to update.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOrgRoleDTO'
+      responses:
+        '200':
+          description: Role updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Update an organization role.
+      tags:
+        - organizations
+    delete:
+      description: >-
+        Removes an OrgRole. The operation is refused if any active
+        OrganizationMember is still assigned to the role; re-assign or remove
+        those members first.
+      operationId: OrganizationApi_deleteOrgRole
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: roleId
+          required: true
+          in: path
+          description: OrgRole identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Role deleted. Returns the removed record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrgRoleDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Delete an organization role.
+      tags:
+        - organizations
+  /organizations/{id}/members:
+    post:
+      description: >-
+        Validates the member first (user exists, not already in an
+        organization), then publishes a RegistrationMessage(Init) on the
+        organization topic (carrying member DID + role name as attributes), then
+        persists the OrganizationMember record with the resulting messageId. A
+        user can belong to at most one organization (enforced by @Unique(did)).
+        Callable by the owning Standard Registry (no restriction), or by an
+        organization administrator (an active member whose OrgRole carries
+        MEMBER_MANAGE) enrolling into their own organization — subject to
+        server-side rules: an admin cannot assign a role that itself carries
+        MEMBER_MANAGE, and the assigned role's permissions must be a subset of
+        the admin's own role's permissions.
+      operationId: OrganizationApi_enrollOrganizationMember
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: Member DID + target OrgRole identifier.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollMemberDTO'
+      responses:
+        '201':
+          description: Member enrolled.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMemberDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Enroll a user as a member of an organization.
+      tags:
+        - organizations
+    get:
+      description: >-
+        Returns a paginated list of OrganizationMember rows. Supports filtering
+        by active flag, OrgRole id, and member DID. Callable by the owning
+        Standard Registry, or by an organization administrator (an active member
+        whose OrgRole carries MEMBER_MANAGE) for their own organization.
+      operationId: OrganizationApi_getOrgMembers
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: orgRoleId
+          required: false
+          in: query
+          description: Filter by OrgRole identifier.
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+        - name: did
+          required: false
+          in: query
+          description: Filter by member DID.
+          schema:
+            example: >-
+              did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+            type: string
+        - name: pageIndex
+          required: false
+          in: query
+          description: >-
+            The number of pages to skip before starting to collect the result
+            set
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: The numbers of items to return
+          schema:
+            example: 20
+            type: number
+        - name: active
+          required: false
+          in: query
+          description: Filter by active flag (true/false). Omit to return all.
+          schema:
+            example: true
+            type: boolean
+      responses:
+        '200':
+          description: >-
+            Successful operation. Returns members array and total count in
+            X-Total-Count header.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrganizationMemberDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: List members of an organization.
+      tags:
+        - organizations
+  /organizations/{id}/members/{memberId}:
+    get:
+      description: >-
+        Returns one OrganizationMember row by its database identifier. Scoped
+        via the parent organization: the owning Standard Registry, or an
+        organization administrator (an active member whose OrgRole carries
+        MEMBER_MANAGE) for their own organization.
+      operationId: OrganizationApi_getOrgMember
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: memberId
+          required: true
+          in: path
+          description: OrganizationMember identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMemberDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Get an organization member by id.
+      tags:
+        - organizations
+    delete:
+      description: >-
+        Removes an OrganizationMember row. The delete is hard (not soft) so the
+        @Unique(did) constraint is freed and the user can be enrolled in another
+        organization. Callable by the owning Standard Registry (no restriction),
+        or by an organization administrator (an active member whose OrgRole
+        carries MEMBER_MANAGE) removing a member of their own organization —
+        subject to server-side rules: an admin cannot remove a member who
+        currently holds MEMBER_MANAGE (including themselves).
+      operationId: OrganizationApi_removeOrgMember
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: memberId
+          required: true
+          in: path
+          description: OrganizationMember identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Member removed. Returns the removed record.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMemberDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Remove an organization member.
+      tags:
+        - organizations
+  /organizations/{id}/members/{memberId}/role:
+    put:
+      description: >-
+        Re-assigns the OrgRole of an existing OrganizationMember. The new role
+        must belong to the same organization. Callable by the owning Standard
+        Registry (no restriction), or by an organization administrator (an
+        active member whose OrgRole carries MEMBER_MANAGE) re-assigning a member
+        of their own organization — subject to server-side rules: an admin
+        cannot re-role a member who currently holds MEMBER_MANAGE (including
+        themselves) or assign a role that itself carries MEMBER_MANAGE, and the
+        new role's permissions must be a subset of the admin's own role's
+        permissions.
+      operationId: OrganizationApi_updateOrgMemberRole
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: memberId
+          required: true
+          in: path
+          description: OrganizationMember identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      requestBody:
+        required: true
+        description: Target OrgRole identifier.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMemberRoleDTO'
+      responses:
+        '200':
+          description: Member role updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationMemberDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Update an organization member's role.
+      tags:
+        - organizations
+  /organizations/{id}/policies/assign:
+    post:
+      description: >-
+        Creates a PolicyOrgAssignment row that grants current and future members
+        of the organization visibility into the policy and open/execute access
+        to it. Does NOT auto-enroll members into policy groups (PolicyRoles
+        group selection still applies on first entry). Idempotent: an existing
+        assignment is returned unchanged; a previously revoked assignment is
+        reactivated.
+      operationId: OrganizationApi_assignPolicyToOrg
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+      requestBody:
+        required: true
+        description: Policy identifier to assign.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssignPolicyToOrgDTO'
+      responses:
+        '201':
+          description: Policy assigned.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyOrgAssignmentDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Assign a policy to an organization.
+      tags:
+        - organizations
+  /organizations/{id}/policies/{policyId}:
+    delete:
+      description: >-
+        Soft-revokes a PolicyOrgAssignment by setting assigned=false; the row is
+        kept for audit purposes and can be reactivated by re-assigning the same
+        policy.
+      operationId: OrganizationApi_revokePolicyFromOrg
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          description: Policy identifier
+          schema:
+            example: 69b7da996d2f71c7a55b1fa3
+            type: string
+      responses:
+        '200':
+          description: Assignment revoked. Returns the updated record (assigned=false).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyOrgAssignmentDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Revoke a policy assignment from an organization.
+      tags:
+        - organizations
+  /organizations/{id}/policies:
+    get:
+      description: >-
+        Returns the PolicyOrgAssignment rows for an organization. By default
+        only active assignments are returned; pass includeRevoked=true to
+        include soft-revoked rows.
+      operationId: OrganizationApi_getOrgPolicies
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: includeRevoked
+          required: false
+          in: query
+          description: Set to true to include soft-revoked assignments.
+          schema:
+            example: false
+            type: boolean
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PolicyOrgAssignmentDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: List policies assigned to an organization.
+      tags:
+        - organizations
+  /organizations/{id}/tokens/{tokenId}/associate:
+    put:
+      description: >-
+        Associates the provided token with the organization's Hedera account.
+        Requires the caller to be an active member of the organization whose
+        OrgRole carries TOKEN_ASSOCIATE, or the organization's owner (always
+        allowed).
+      operationId: OrganizationApi_associateOrgToken
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Associate a token with the organization's Hedera wallet.
+      tags:
+        - organizations
+  /organizations/{id}/tokens/{tokenId}/dissociate:
+    put:
+      description: >-
+        Dissociates the provided token from the organization's Hedera account.
+        Requires the caller to be an active member of the organization whose
+        OrgRole carries TOKEN_DISSOCIATE, or the organization's owner (always
+        allowed).
+      operationId: OrganizationApi_dissociateOrgToken
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Dissociate a token from the organization's Hedera wallet.
+      tags:
+        - organizations
+  /organizations/{id}/tokens/{tokenId}/grant-kyc:
+    put:
+      description: >-
+        Sets the KYC flag for the organization's Hedera account on the provided
+        token. Requires the caller to be the organization's owner (Standard
+        Registry) and the owner of the token's KYC key.
+      operationId: OrganizationApi_grantKycOrgToken
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Grant KYC for a token to the organization's Hedera wallet.
+      tags:
+        - organizations
+  /organizations/{id}/tokens/{tokenId}/revoke-kyc:
+    put:
+      description: >-
+        Unsets the KYC flag for the organization's Hedera account on the
+        provided token. Requires the caller to be the organization's owner
+        (Standard Registry) and the owner of the token's KYC key.
+      operationId: OrganizationApi_revokeKycOrgToken
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenInfoDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: Revoke KYC for a token from the organization's Hedera wallet.
+      tags:
+        - organizations
+  /organizations/{id}/tokens/{tokenId}/transfer:
+    post:
+      description: >-
+        Transfers fungible or non-fungible tokens FROM the organization's Hedera
+        account to the specified target account, signed with the organization's
+        key. Requires the caller to be an active member of the organization
+        whose OrgRole carries TOKEN_TRANSFER, or the organization's owner
+        (always allowed). For FT specify amount; for NFT specify serialNumbers,
+        or amount to pick that many of the highest-numbered owned serials (max
+        10 per request).
+      operationId: OrganizationApi_transferOrgToken
+      parameters:
+        - name: id
+          required: true
+          in: path
+          description: Organization identifier
+          schema:
+            example: 69aeb71ef8c5b278e3bab4e5
+            type: string
+        - name: tokenId
+          required: true
+          in: path
+          description: Token identifier
+          schema:
+            example: 69b8115f3dc0fa022156fb89
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransferTokenDTO'
+      responses:
+        '200':
+          description: Successful operation.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+      security:
+        - bearer: []
+      summary: >-
+        Transfers tokens from the organization's Hedera wallet to a target
+        account.
+      tags:
+        - organizations
+  /policy-data/query:
+    get:
+      description: >-
+        Returns a paginated list of Verifiable Credential documents committed by
+        a published Guardian policy. Intentionally restricted to audit/manage
+        roles for cross-policy access; there is no per-participant filtering.
+      operationId: PolicyDataApi_queryPolicyData
+      parameters:
+        - name: policyId
+          required: true
+          in: query
+          description: MongoDB ObjectId of the published policy.
+          schema:
+            example: 645f1e2d3a4b5c6d7e8f9012
+            type: string
+        - name: schemaName
+          required: true
+          in: query
+          description: Schema name as returned by GET /schema (e.g. "MRV Data").
+          schema:
+            example: MRV Data
+            type: string
+        - name: filters
+          required: false
+          in: query
+          description: >-
+            JSON-encoded filter map. Each key is a whitelisted system field or
+            an `option.*` field. Each value is `{ "op": "<operator>", "value":
+            <any> }`. Supported operators: `eq`, `ne`, `in`, `nin`, `gt`, `gte`,
+            `lt`, `lte`, `contains` (case-insensitive partial string match). For
+            `in`/`nin`, value must be an array. For `contains`, value must be a
+            string. System field whitelist: owner, assignedTo, assignedToGroup,
+            group, hederaStatus, signature, type, draft, edited, disconnected,
+            policyId, schema, tag, messageId, topicId, hash, createDate,
+            updateDate, option.*. Example:
+            `{"hederaStatus":{"op":"eq","value":"ISSUE"}}`
+          schema:
+            example: >-
+              {"hederaStatus":{"op":"eq","value":"ISSUE"},"option.status":{"op":"ne","value":"REJECTED"}}
+            type: string
+        - name: page
+          required: false
+          in: query
+          description: '1-based page number (default: 1).'
+          schema:
+            example: 1
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          description: 'Items per page (default: 20, max: 200).'
+          schema:
+            example: 20
+            type: number
+        - name: sort
+          required: false
+          in: query
+          description: >-
+            Field to sort by. Prefix with `-` for descending order (default:
+            `-createDate`). Example: `createDate`, `-updateDate`, `owner`.
+          schema:
+            example: -createDate
+            type: string
+      responses:
+        '200':
+          description: Query executed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDataQueryResponseDTO'
+              example:
+                data:
+                  - id: 645f1e2d3a4b5c6d7e8f9012
+                    policyId: 645f1e2d3a4b5c6d7e8f1234
+                    schema: '#MRVData'
+                    owner: >-
+                      did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+                    hederaStatus: ISSUE
+                    tag: mrv_data_block
+                    createDate: '2026-01-15T10:30:00.000Z'
+                    updateDate: '2026-01-15T10:30:00.000Z'
+                    option:
+                      status: APPROVED
+                    document:
+                      id: urn:uuid:example
+                      type:
+                        - VerifiableCredential
+                pagination:
+                  page: 1
+                  pageSize: 20
+                  total: 42
+                  totalPages: 3
+                query:
+                  policyId: 645f1e2d3a4b5c6d7e8f1234
+                  schemaName: MRV Data
+                  appliedFilters:
+                    hederaStatus:
+                      op: eq
+                      value: ISSUE
+        '400':
+          description: >-
+            Invalid query parameters (unknown filter field, invalid operator,
+            bad JSON).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadRequestErrorDTO'
+              example:
+                statusCode: 400
+                message: >-
+                  Unknown filter field: "fooBar". Consult the system field
+                  whitelist in the API docs.
+        '401':
+          description: |-
+            Unauthorized request.
+
+            Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: |-
+            Forbidden.
+
+            Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '404':
+          description: Policy or schema not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotFoundErrorDTO'
+              example:
+                statusCode: 404
+                message: Policy "abc" not found.
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Query policy-committed VC documents.
+      tags:
+        - policy-data
+  /schema-templates:
+    post:
+      description: >-
+        Creates a new schema template and a dedicated template topic. Only users
+        with the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_createSchemaTemplate
+      parameters: []
+      requestBody:
+        required: true
+        description: Schema template metadata and configuration.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                version:
+                  type: string
+                config:
+                  type: object
+      responses:
+        '201':
+          description: Created schema template.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Creates a new schema template.
+      tags:
+        - schema-templates
+    get:
+      description: >-
+        Returns schema templates visible to the current user. Only users with
+        the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_getSchemaTemplates
+      parameters:
+        - name: pageIndex
+          required: false
+          in: query
+          schema:
+            example: 0
+            type: number
+        - name: pageSize
+          required: false
+          in: query
+          schema:
+            example: 20
+            type: number
+        - name: search
+          required: false
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema templates page.
+          headers:
+            X-Total-Count:
+              schema:
+                type: integer
+              description: Total items in the collection.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Returns schema templates.
+      tags:
+        - schema-templates
+  /schema-templates/push:
+    post:
+      description: >-
+        Creates a new schema template and a dedicated template topic
+        asynchronously. Only users with the Standard Registry role are allowed
+        to make the request.
+      operationId: SchemaTemplatesApi_createSchemaTemplateAsync
+      parameters: []
+      requestBody:
+        required: true
+        description: Schema template metadata and configuration.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                config:
+                  type: object
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Creates a new schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/push/new-version:
+    post:
+      description: >-
+        Copies a published schema template and its schemas into a new editable
+        draft version. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_createSchemaTemplateVersionAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Creates a new draft version of a schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/export/file:
+    get:
+      description: >-
+        Exports schema template metadata, configuration, and schemas as a
+        zip-based *.template file. Only users with the Standard Registry role
+        are allowed to make the request.
+      operationId: SchemaTemplatesApi_exportSchemaTemplateFile
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Exports schema template as a file.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/export/message:
+    get:
+      description: >-
+        Returns template metadata and message id when the template has been
+        published. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_exportSchemaTemplateMessage
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Returns schema template identity and Hedera message id for export.
+      tags:
+        - schema-templates
+  /schema-templates/check/{messageId}:
+    get:
+      description: >-
+        Checks whether a schema template message is available locally or from
+        Hedera/IPFS. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_checkSchemaTemplate
+      parameters:
+        - name: messageId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Checks schema template message availability.
+      tags:
+        - schema-templates
+  /schema-templates/import/file/preview:
+    post:
+      description: >-
+        Parses a schema template archive without persisting it. Only users with
+        the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateFile
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Previews schema template package from uploaded file.
+      tags:
+        - schema-templates
+  /schema-templates/import/message/preview:
+    post:
+      description: >-
+        Loads a schema template package from a Hedera message/IPFS and parses it
+        without persisting. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateMessage
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Previews schema template package from message.
+      tags:
+        - schema-templates
+  /schema-templates/push/import/file:
+    post:
+      description: >-
+        Imports schema template metadata, configuration, and schemas from a
+        local archive. Only users with the Standard Registry role are allowed to
+        make the request.
+      operationId: SchemaTemplatesApi_importSchemaTemplateFileAsync
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Imports schema template from uploaded file asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/push/import/message:
+    post:
+      description: >-
+        Imports schema template metadata, configuration, and schemas from a
+        Hedera message/IPFS archive. Only users with the Standard Registry role
+        are allowed to make the request.
+      operationId: SchemaTemplatesApi_importSchemaTemplateMessageAsync
+      parameters: []
+      responses:
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+      security:
+        - bearer: []
+      summary: Imports schema template from message asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/policies/topic/{topicId}/applied:
+    get:
+      description: >-
+        Returns policy-specific schema template state. Snapshot configuration is
+        used when available. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_getAppliedSchemaTemplateByPolicyTopic
+      parameters:
+        - name: topicId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Applied schema template state.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Returns effective applied schema template state by policy topic.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}:
+    get:
+      description: >-
+        Returns schema template by internal id. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_getSchemaTemplate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema template.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Returns schema template by id.
+      tags:
+        - schema-templates
+    put:
+      description: >-
+        Updates schema template metadata and configuration. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_updateSchemaTemplate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Schema template metadata and configuration.
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        '200':
+          description: Updated schema template.
+          content:
+            application/json:
+              schema:
+                type: object
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Updates schema template.
+      tags:
+        - schema-templates
+    delete:
+      description: >-
+        Deletes draft schema template and its draft schemas. Only users with the
+        Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_deleteSchemaTemplate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Operation result.
+          content:
+            application/json:
+              schema:
+                type: boolean
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Deletes schema template.
+      tags:
+        - schema-templates
+  /schema-templates/push/{templateId}:
+    delete:
+      description: >-
+        Deletes draft schema template and its draft schemas asynchronously. Only
+        users with the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_deleteSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Deletes schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/push/publish:
+    put:
+      description: >-
+        Publishes schema template package with metadata, configuration, and
+        schemas. Only users with the Standard Registry role are allowed to make
+        the request.
+      operationId: SchemaTemplatesApi_publishSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+      requestBody:
+        required: true
+        description: Schema template version for publish.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                templateVersion:
+                  type: string
+                  example: 1.0.0
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Publishes schema template asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/push/apply:
+    post:
+      description: >-
+        Copies template schemas into the selected draft policy and stores
+        template binding metadata on the policy. Only users with the Standard
+        Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_applySchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Applies schema template to policy asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/update/preview:
+    get:
+      description: >-
+        Calculates schema and field changes before updating the template applied
+        to a draft policy. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_previewSchemaTemplateUpdate
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Schema template update preview.
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Previews applied schema template update.
+      tags:
+        - schema-templates
+  /schema-templates/{templateId}/policies/{policyId}/push/update:
+    post:
+      description: >-
+        Applies a newer schema template version to a draft policy and refreshes
+        the policy snapshot. Only users with the Standard Registry role are
+        allowed to make the request.
+      operationId: SchemaTemplatesApi_updateAppliedSchemaTemplateAsync
+      parameters:
+        - name: templateId
+          required: true
+          in: path
+          schema:
+            type: string
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Updates applied schema template on policy asynchronously.
+      tags:
+        - schema-templates
+  /schema-templates/policies/{policyId}/push/detach:
+    post:
+      description: >-
+        Removes template binding metadata from the selected draft policy and
+        turns copied template schemas into regular policy schemas. Only users
+        with the Standard Registry role are allowed to make the request.
+      operationId: SchemaTemplatesApi_detachSchemaTemplateAsync
+      parameters:
+        - name: policyId
+          required: true
+          in: path
+          schema:
+            type: string
+      responses:
+        '202':
+          description: Task created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TaskDTO'
+        '401':
+          description: Unauthorized request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnauthorizedErrorDTO'
+              example:
+                statusCode: 401
+                message: Unauthorized request
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ForbiddenErrorDTO'
+              example:
+                message: Forbidden resource
+                error: Forbidden
+                statusCode: 403
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalServerErrorDTO'
+              example:
+                statusCode: 500
+                message: Error message
+      security:
+        - bearer: []
+      summary: Detaches schema template from policy asynchronously.
+      tags:
+        - schema-templates
 info:
   title: Guardian
   description: >-
-    The Guardian is a modular open-source solution that includes best-in-class
-    identity management and decentralized ledger technology (DLT) libraries. At
-    the heart of the Guardian solution is a sophisticated Policy Workflow Engine
-    (PWE) that enables applications to offer a requirements-based tokenization
-    implementation.
-  version: 3.6.0
+    The Guardian is an innovative open-source platform that streamlines the
+    creation, management, and verification of digital environmental assets. It
+    leverages a customizable Policy Workflow Engine and Web3 technology to
+    ensure transparent and fraud-proof operations, making it a key tool for
+    transforming sustainability practices and carbon markets.
+  version: 3.7.0-rc
   contact:
     name: API developer
-    url: https://envisionblockchain.com
-    email: info@envisionblockchain.com
+    url: https://hashgraph.com
+    email: guardian@hashgraph.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-tags: []
+tags:
+  - name: schemas
+    description: Create and manage JSON schemas for policy data structures.
+    x-displayName: Schemas
+  - name: schema
+    description: Schema operations on individual schema objects.
+    x-displayName: Schema
+  - name: schema-rules
+    description: Validation rules and constraints applied to schema fields.
+    x-displayName: Schema Rules
+  - name: policies
+    description: Create, publish, and manage environmental policy workflows.
+    x-displayName: Policies
+  - name: record
+    description: Environmental data records submitted through policy workflows.
+    x-displayName: Records
+  - name: tools
+    description: Standalone tools that extend policy workflow capabilities.
+    x-displayName: Tools
+  - name: modules
+    description: Reusable policy logic modules that can be composed into workflows.
+    x-displayName: Modules
+  - name: formulas
+    description: Calculation formulas for quantifying environmental impact.
+    x-displayName: Formulas
+  - name: artifacts
+    description: Files and documents attached to policies and policy blocks.
+    x-displayName: Artifacts
+  - name: policy-labels
+    description: Labels for categorizing and filtering policies.
+    x-displayName: Labels
+  - name: policy-comments
+    description: Threaded comments and review notes on policies.
+    x-displayName: Comments
+  - name: policy-repository
+    description: Policy marketplace for discovering and importing published policies.
+    x-displayName: Repository
+  - name: suggestions
+    description: Context-aware suggestions for policy design and configuration.
+    x-displayName: Suggestions
+  - name: analytics
+    description: Query and export usage analytics across the platform.
+    x-displayName: Analytics
+  - name: policy-statistics
+    description: Usage and execution statistics for policies.
+    x-displayName: Statistics
+  - name: external-policies
+    description: Integration with externally hosted or managed policies.
+    x-displayName: External Policies
+  - name: wizard
+    description: Step-by-step guided policy creation workflow.
+    x-displayName: Wizard
+  - name: tokens
+    description: Manage Hedera tokens representing environmental assets and carbon credits.
+    x-displayName: Tokens
+  - name: contracts
+    description: Smart contract interactions for token issuance and retirement.
+    x-displayName: Contracts
+  - name: relayer-accounts
+    description: Hedera relayer account configuration and management.
+    x-displayName: Relayer Accounts
+  - name: dmrv
+    description: Digital Measurement, Reporting and Verification data operations.
+    x-displayName: DMRV
+  - name: ipfs
+    description: Decentralized file storage via the InterPlanetary File System.
+    x-displayName: IPFS
+  - name: external
+    description: Integration with external data sources and third-party systems.
+    x-displayName: External
+  - name: projects
+    description: Environmental projects generating verified carbon or ecological credits.
+    x-displayName: Projects
+  - name: map
+    description: Geospatial data and map visualization for project locations.
+    x-displayName: Map
+  - name: accounts
+    description: Manage user accounts and authentication sessions.
+    x-displayName: Accounts
+  - name: profiles
+    description: User profile configuration and DID management.
+    x-displayName: Profiles
+  - name: permissions
+    description: Role-based access control and permission management.
+    x-displayName: Permissions
+  - name: credentials
+    description: W3C Verifiable Credentials issued and managed within policies.
+    x-displayName: Credentials
+  - name: trust-chains
+    description: Chains of verifiable trust linking issuers, verifiers, and holders.
+    x-displayName: Trust Chains
+  - name: settings
+    description: Global application configuration and environment settings.
+    x-displayName: Settings
+  - name: notifications
+    description: User notifications and alert management.
+    x-displayName: Notifications
+  - name: tags
+    description: User-defined tags for organizing platform resources.
+    x-displayName: Tags
+  - name: logs
+    description: Audit logs recording user and system activity.
+    x-displayName: Logs
+  - name: tasks
+    description: Background task tracking for long-running operations.
+    x-displayName: Tasks
+  - name: worker-tasks
+    description: Worker-level task queue management.
+    x-displayName: Worker Tasks
+  - name: metrics
+    description: Real-time performance and operational metrics.
+    x-displayName: Metrics
+  - name: ai-suggestions
+    description: AI-powered recommendations for policies, schemas, and workflows.
+    x-displayName: AI Suggestions
+  - name: demo
+    description: Demo data and sample environment setup.
+    x-displayName: Demo
+  - name: themes
+    description: UI theme selection and customization.
+    x-displayName: Themes
+  - name: branding
+    description: White-label branding assets and configuration.
+    x-displayName: Branding
 servers:
   - url: /api/v1
     description: version 1.0
@@ -50980,6 +54304,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyToolDTO'
+        schemaTemplate:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: >-
+            Server-managed schema template binding. Ignored by normal policy
+            update endpoints.
         createDate:
           type: string
           example: '2026-03-03T17:25:53.312Z'
@@ -51137,6 +54468,7 @@ components:
         - messageId
         - codeVersion
         - tools
+        - schemaTemplate
         - createDate
         - version
         - editableParametersSettings
@@ -53875,7 +57207,16 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
+        templateId:
+          type: string
+          nullable: true
+          example: 69aeb71ef8c5b278e3bab4e5
+        templateSchemaId:
+          type: string
+          nullable: true
+          example: 9db028d2-03ad-4d49-a178-cf4b67f8c147
         documentURL:
           type: string
           example: ipfs://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
@@ -55626,6 +58967,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
       required:
         - id
@@ -55675,6 +59017,7 @@ components:
             - TOOL
             - STATISTIC
             - LABEL
+            - TEMPLATE
           example: POLICY
       required:
         - id
@@ -56559,6 +59902,10 @@ components:
           type: string
         termsAndConditions:
           type: string
+        useCustomMenuColors:
+          type: boolean
+        useSolidBackground:
+          type: boolean
       required:
         - headerColor
         - primaryColor
@@ -56568,6 +59915,8 @@ components:
         - faviconUrl
         - headerColor1
         - termsAndConditions
+        - useCustomMenuColors
+        - useSolidBackground
     SuggestionsInputDTO:
       type: object
       properties:
@@ -57058,6 +60407,11 @@ components:
               - TOOLS_TOOL_UPDATE
               - TOOLS_TOOL_DELETE
               - TOOLS_TOOL_REVIEW
+              - TEMPLATES_TEMPLATE_READ
+              - TEMPLATES_TEMPLATE_CREATE
+              - TEMPLATES_TEMPLATE_UPDATE
+              - TEMPLATES_TEMPLATE_DELETE
+              - TEMPLATES_TEMPLATE_REVIEW
               - TOKENS_TOKEN_READ
               - TOKENS_TOKEN_CREATE
               - TOKENS_TOKEN_UPDATE
@@ -57094,6 +60448,13 @@ components:
               - CREDENTIALS_SR_READ
               - CREDENTIALS_SR_WRITE
               - DELEGATION_ROLE_MANAGE
+              - ORGANIZATIONS_ORGANIZATION_READ
+              - ORGANIZATIONS_ORGANIZATION_CREATE
+              - ORGANIZATIONS_ORGANIZATION_UPDATE
+              - ORGANIZATIONS_ORGANIZATION_DELETE
+              - ORGANIZATIONS_ORG_ROLE_MANAGE
+              - ORGANIZATIONS_ORG_MEMBER_MANAGE
+              - ORGANIZATIONS_ORG_POLICY_ASSIGN
         default:
           type: boolean
           description: Whether this is the default role for new users
@@ -57160,6 +60521,11 @@ components:
             - TOOLS_TOOL_UPDATE
             - TOOLS_TOOL_DELETE
             - TOOLS_TOOL_REVIEW
+            - TEMPLATES_TEMPLATE_READ
+            - TEMPLATES_TEMPLATE_CREATE
+            - TEMPLATES_TEMPLATE_UPDATE
+            - TEMPLATES_TEMPLATE_DELETE
+            - TEMPLATES_TEMPLATE_REVIEW
             - TOKENS_TOKEN_READ
             - TOKENS_TOKEN_CREATE
             - TOKENS_TOKEN_UPDATE
@@ -57196,6 +60562,13 @@ components:
             - CREDENTIALS_SR_READ
             - CREDENTIALS_SR_WRITE
             - DELEGATION_ROLE_MANAGE
+            - ORGANIZATIONS_ORGANIZATION_READ
+            - ORGANIZATIONS_ORGANIZATION_CREATE
+            - ORGANIZATIONS_ORGANIZATION_UPDATE
+            - ORGANIZATIONS_ORGANIZATION_DELETE
+            - ORGANIZATIONS_ORG_ROLE_MANAGE
+            - ORGANIZATIONS_ORG_MEMBER_MANAGE
+            - ORGANIZATIONS_ORG_POLICY_ASSIGN
           example: ANALYTIC_POLICY_READ
         category:
           type: string
@@ -57219,6 +60592,7 @@ components:
             - TOKENS
             - AUDIT
             - TOOLS
+            - TEMPLATES
             - PERMISSIONS
             - ACCESS
             - DELEGATION
@@ -57226,6 +60600,7 @@ components:
             - FORMULAS
             - WORKER_TASKS
             - CREDENTIALS
+            - ORGANIZATIONS
           example: ANALYTIC
         entity:
           type: string
@@ -57238,6 +60613,7 @@ components:
             - RECORD
             - POLICY
             - TOOL
+            - TEMPLATE
             - DOCUMENT
             - SCHEMA
             - MODULE
@@ -57270,6 +60646,10 @@ components:
             - EXTERNAL_POLICY
             - WORKER_TASK
             - CREDENTIAL
+            - ORGANIZATION
+            - ORG_ROLE
+            - ORG_MEMBER
+            - ORG_POLICY
           example: POLICY
         action:
           type: string
@@ -58429,6 +61809,373 @@ components:
         - taskId
         - type
         - updateDate
+    CreateOrganizationDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Human-readable organization name (required)
+          example: Acme Carbon Co.
+        description:
+          type: string
+          description: Optional free-text description
+          example: Verified carbon-credit issuer for Acme group entities.
+      required:
+        - name
+    OrganizationDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal database identifier
+          example: 69aeb71ef8c5b278e3bab4e5
+        name:
+          type: string
+          description: Human-readable organization name
+          example: Acme Carbon Co.
+        description:
+          type: string
+          description: Free-text description of the organization
+          example: Verified carbon-credit issuer for Acme group entities.
+        owner:
+          type: string
+          description: DID of the Standard Registry that owns the organization
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        did:
+          type: string
+          description: DID of the organization (populated after publish)
+          example: >-
+            did:hedera:testnet:EthnLQfQnh8x6vKyegyekhy72oSAok6cH59pfVssKLDw_0.0.8200599
+        walletToken:
+          type: string
+          description: >-
+            Vault handle for the organization wallet (server-side identifier;
+            safe to expose)
+        hederaAccountId:
+          type: string
+          description: >-
+            Hedera account ID associated with the organization (populated after
+            publish)
+          example: 0.0.6046379
+        topicId:
+          type: string
+          description: Hedera topic ID for the organization (populated after publish)
+          example: 0.0.1234567
+        parentTopicId:
+          type: string
+          description: >-
+            Parent topic ID (the SR / global topic) the organization topic is
+            linked to
+          example: 0.0.7654321
+        status:
+          type: string
+          description: >-
+            Lifecycle status of the organization. PUBLISH_ERROR indicates a
+            failed publish attempt; the organization can be republished.
+          enum:
+            - DRAFT
+            - PUBLISHED
+            - PUBLISH_ERROR
+          example: PUBLISHED
+        location:
+          type: string
+          description: Location of the organization record
+          enum:
+            - LOCAL
+            - REMOTE
+          example: LOCAL
+        createDate:
+          type: string
+          description: Creation date in ISO 8601 format
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          description: Last update date in ISO 8601 format
+          example: '2026-03-03T17:25:53.312Z'
+      required:
+        - id
+    UpdateOrganizationDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New organization name
+          example: Acme Carbon Co.
+        description:
+          type: string
+          description: New free-text description
+          example: Verified carbon-credit issuer for Acme group entities.
+    PublishOrganizationDTO:
+      type: object
+      properties:
+        hederaAccountId:
+          type: string
+          description: >-
+            Hedera account ID to associate with the organization (operator
+            account)
+          example: 0.0.6046379
+        hederaAccountKey:
+          type: string
+          description: >-
+            Private key for the Hedera account (stored securely in the org
+            wallet, never echoed)
+        description:
+          type: string
+          description: Optional description override applied during publish
+          example: Verified carbon-credit issuer for Acme group entities.
+      required:
+        - hederaAccountId
+        - hederaAccountKey
+    CreateOrgRoleDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Role name (required, unique within the organization)
+          example: Manager
+        description:
+          type: string
+          description: Optional free-text description
+          example: Operators authorized to mint on behalf of the organization.
+        permissions:
+          description: >-
+            Subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER,
+            TOKEN_ASSOCIATE, TOKEN_DISSOCIATE, MEMBER_MANAGE
+          example:
+            - TOKEN_MINTING
+          type: array
+          items:
+            type: string
+      required:
+        - name
+    OrgRoleDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal database identifier
+          example: 69aeb71ef8c5b278e3bab4e5
+        organizationId:
+          type: string
+          description: Parent organization identifier
+          example: 69b8115f3dc0fa022156fb89
+        name:
+          type: string
+          description: Role name (unique within the organization)
+          example: Manager
+        description:
+          type: string
+          description: Free-text role description
+          example: Operators authorized to mint on behalf of the organization.
+        permissions:
+          description: >-
+            Subset of TOKEN_MINTING, TOKEN_RETIREMENT, TOKEN_TRANSFER,
+            TOKEN_ASSOCIATE, TOKEN_DISSOCIATE, MEMBER_MANAGE
+          example:
+            - TOKEN_MINTING
+            - TOKEN_TRANSFER
+          type: array
+          items:
+            type: string
+      required:
+        - id
+    UpdateOrgRoleDTO:
+      type: object
+      properties:
+        name:
+          type: string
+          description: New role name (must be unique within the organization)
+          example: Manager
+        description:
+          type: string
+          description: New free-text description
+          example: Operators authorized to mint on behalf of the organization.
+        permissions:
+          description: >-
+            New permissions list — subset of TOKEN_MINTING, TOKEN_RETIREMENT,
+            TOKEN_TRANSFER, TOKEN_ASSOCIATE, TOKEN_DISSOCIATE, MEMBER_MANAGE
+          example:
+            - TOKEN_MINTING
+            - TOKEN_TRANSFER
+          type: array
+          items:
+            type: string
+    EnrollMemberDTO:
+      type: object
+      properties:
+        did:
+          type: string
+          description: DID of the user to enroll (must already exist as a Guardian user)
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        orgRoleId:
+          type: string
+          description: Identifier of the OrgRole to assign to the new member
+          example: 69b8115f3dc0fa022156fb89
+      required:
+        - did
+        - orgRoleId
+    OrganizationMemberDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal database identifier
+          example: 69aeb71ef8c5b278e3bab4e5
+        organizationId:
+          type: string
+          description: Parent organization identifier
+          example: 69b8115f3dc0fa022156fb89
+        did:
+          type: string
+          description: Member DID
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        userId:
+          type: string
+          description: Underlying user identifier (auth-service User._id)
+          example: 69b7da996d2f71c7a55b1fa3
+        username:
+          type: string
+          description: Username (denormalized for display)
+          example: jane.doe
+        orgRoleId:
+          type: string
+          description: OrgRole identifier the member is enrolled in
+          example: 69b8115f3dc0fa022156fb89
+        orgRoleName:
+          type: string
+          description: OrgRole name (denormalized for display)
+          example: Manager
+        active:
+          type: boolean
+          description: Whether the membership is active
+          example: true
+        messageId:
+          type: string
+          description: >-
+            Identifier of the RegistrationMessage(Init) published on the org
+            topic
+          example: '1700000000.000000000'
+        createDate:
+          type: string
+          description: Creation date in ISO 8601 format
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          description: Last update date in ISO 8601 format
+          example: '2026-03-03T17:25:53.312Z'
+      required:
+        - id
+    UpdateMemberRoleDTO:
+      type: object
+      properties:
+        orgRoleId:
+          type: string
+          description: Identifier of the new OrgRole (must belong to the same organization)
+          example: 69b8115f3dc0fa022156fb89
+      required:
+        - orgRoleId
+    AssignPolicyToOrgDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          description: Identifier of the policy to assign to the organization
+          example: 69b7da996d2f71c7a55b1fa3
+      required:
+        - policyId
+    PolicyOrgAssignmentDTO:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Internal database identifier
+          example: 69aeb71ef8c5b278e3bab4e5
+        organizationId:
+          type: string
+          description: Organization identifier
+          example: 69b8115f3dc0fa022156fb89
+        policyId:
+          type: string
+          description: Policy identifier
+          example: 69b7da996d2f71c7a55b1fa3
+        owner:
+          type: string
+          description: DID of the Standard Registry that created the assignment
+          example: >-
+            did:hedera:testnet:Cvzp5kKVUuipBCQjcF54fBjdicvaKsB8zHeQ6Qq22U2Z_0.0.8200599
+        assigned:
+          type: boolean
+          description: Whether the assignment is currently active (false = soft-revoked)
+          example: true
+        createDate:
+          type: string
+          description: Creation date in ISO 8601 format
+          example: '2026-03-03T17:25:53.312Z'
+        updateDate:
+          type: string
+          description: Last update date in ISO 8601 format
+          example: '2026-03-03T17:25:53.312Z'
+      required:
+        - id
+    PolicyDataPaginationDTO:
+      type: object
+      properties:
+        page:
+          type: number
+          example: 1
+        pageSize:
+          type: number
+          example: 20
+        total:
+          type: number
+          example: 1234
+        totalPages:
+          type: number
+          example: 62
+      required:
+        - page
+        - pageSize
+        - total
+        - totalPages
+    PolicyDataQueryInfoDTO:
+      type: object
+      properties:
+        policyId:
+          type: string
+          example: 69aeb71ef8c5b278e3bab4e5
+        schemaName:
+          type: string
+          example: MRV Data
+        appliedFilters:
+          type: object
+          additionalProperties: true
+          example:
+            hederaStatus:
+              op: eq
+              value: ISSUE
+      required:
+        - policyId
+        - schemaName
+    PolicyDataQueryResponseDTO:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          description: Committed VC documents matching the query.
+        pagination:
+          $ref: '#/components/schemas/PolicyDataPaginationDTO'
+        query:
+          $ref: '#/components/schemas/PolicyDataQueryInfoDTO'
+      required:
+        - data
+        - pagination
+        - query
     CredentialSubjectDTO:
       type: object
       properties:
@@ -58677,3 +62424,59 @@ components:
         - owner
         - topicId
         - messageId
+x-tagGroups:
+  - name: Guardian Schemas
+    tags:
+      - schemas
+      - schema
+      - schema-rules
+  - name: Guardian Policies
+    tags:
+      - policies
+      - record
+      - tools
+      - modules
+      - formulas
+      - artifacts
+      - policy-labels
+      - policy-comments
+      - policy-repository
+      - suggestions
+      - analytics
+      - policy-statistics
+      - external-policies
+      - wizard
+  - name: Hedera
+    tags:
+      - tokens
+      - contracts
+      - relayer-accounts
+  - name: Data & DMRV
+    tags:
+      - dmrv
+      - ipfs
+      - external
+      - projects
+      - map
+  - name: Identity & Access
+    tags:
+      - accounts
+      - profiles
+      - permissions
+      - credentials
+      - trust-chains
+  - name: Platform
+    tags:
+      - settings
+      - notifications
+      - tags
+      - logs
+      - tasks
+      - worker-tasks
+      - metrics
+      - ai-suggestions
+      - demo
+  - name: Customization
+    tags:
+      - themes
+      - branding

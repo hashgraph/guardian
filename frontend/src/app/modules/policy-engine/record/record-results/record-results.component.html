@@ -1,20 +1,40 @@
 <div class="content">
-    <div *ngIf="loading" class="loading">
-        <p-progressSpinner></p-progressSpinner>
+  @if (loading) {
+    <div class="loading">
+      <p-progressSpinner></p-progressSpinner>
     </div>
+  }
 
-    <ng-container *ngIf="!owner">
-        <div class="not-exist">
-            Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+  @if (!owner) {
+    <div class="not-exist">
+      Before starting work you need to get DID <a [routerLink]="['/profile']">here</a>
+    </div>
+  }
+
+  @if (!policyId) {
+    <div class="not-exist">No results found.</div>
+  }
+
+
+  @if (owner && policyId && results) {
+    <div class="content-result">
+      <div class="record-results-header">
+        <div class="header-row">
+          <a
+            class="record-breadcrumb record-breadcrumb-clickable"
+            [routerLink]="['/policy-viewer', policyId]">
+            <span class="breadcrumb-item">Manage Policies</span>
+            <span class="breadcrumb-sep"> / </span>
+            <span class="breadcrumb-item">Recording</span>
+          </a>
         </div>
-    </ng-container>
-
-    <ng-container *ngIf="!policyId">
-        <div class="not-exist">No results found.</div>
-    </ng-container>
-
-
-    <div *ngIf="owner && policyId && results" class="content-result">
-        <app-compare-record [value]="results"></app-compare-record>
+        <div class="header-row header-row-controls">
+          <span class="record-total-info" [attr.total]="results?.total">
+            Documents are <span>{{ results?.total }}%</span> the same.
+          </span>
+        </div>
+      </div>
+      <app-compare-record [value]="results" [showTotal]="false"></app-compare-record>
     </div>
+  }
 </div>

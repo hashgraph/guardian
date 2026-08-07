@@ -19,10 +19,12 @@ export * from './retire-request.interface.js';
 export * from './retire-token-pool.interface.js';
 export * from './retire-token-request.interface.js';
 export * from './root-config.interface.js';
+export * from './schema-array-dependency.interface.js';
 export * from './schema-condition.interface.js';
 export * from './schema-document.interface.js';
 export * from './schema-field.interface.js';
 export * from './schema.interface.js';
+export * from './schema-template.interface.js';
 export * from './standard-registry-response.interface.js';
 export * from './suggestions-order-priority.js';
 export * from './token.interface.js';
@@ -53,3 +55,4 @@ export * from './table-field.interface.js'
 export * from './schema-deletion.interface.js'
 export * from './global-events.js'
 export * from './service-credential-schema.interface.js'
+export * from './block-error.interface.js'

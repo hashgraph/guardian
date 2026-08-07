@@ -1,13 +1,17 @@
-<div *ngIf="isBtnVisible()" class="content" [style.visibility]="visible ? 'visible' : 'hidden' " [attr.readonly-block]="readonly">
+@if (isBtnVisible()) {
+  <div class="content" [style.visibility]="visible ? 'visible' : 'hidden' " [attr.readonly-block]="readonly">
     <div class="btn-option {{uiClass}}" (click)="dialog ? onSelectDialog() : onSelect()">
-        {{name}}
+      {{name}}
     </div>
-</div>
+  </div>
+}
 
 <ng-template #preloader>
-    <div class="preloader-image"></div>
+  <div class="preloader-image"></div>
 </ng-template>
 
-<div *ngIf="loading" class="loading">
+@if (loading) {
+  <div class="loading">
     <div class="preloader-image preloader-image-l-size"></div>
-</div>
+  </div>
+}

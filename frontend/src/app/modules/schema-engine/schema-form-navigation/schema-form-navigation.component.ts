@@ -11,30 +11,29 @@ export interface NavItem {
     selector: 'app-schema-form-navigation',
     templateUrl: './schema-form-navigation.component.html',
     styleUrls: ['./schema-form-navigation.component.scss'],
+    standalone: false
 })
 export class SchemaFormNavigationComponent {
     @Input() schemaFields: IFieldControl<any>[] | null;
     @Output() selectEvent = new EventEmitter<string>();
-    @Output() hasItemsChangeEvent = new EventEmitter<boolean>(); 
+    @Output() hasItemsChangeEvent = new EventEmitter<boolean>();
 
     public expanded = new Set<string>();
+    public navTree: NavItem[] = [];
 
-    public get navTree(): NavItem[] {
-        return this.buildNavTree(this.schemaFields || []);
-    }
-
-    ngOnInit(): void {
-        this.openFirstNavItem();
+    private rebuildNavTree(): void {
+        this.navTree = this.buildNavTree(this.schemaFields || []);
         this.hasItemsChangeEvent.emit(this.navTree.length > 0);
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['schemaFields'] && !changes['schemaFields'].firstChange) {
-            this.expanded.clear();
-            this.openFirstNavItem();
+        if (changes.schemaFields) {
+          this.rebuildNavTree();
+          if (changes.schemaFields.firstChange) {
+             this.expanded.clear();
+             this.openFirstNavItem();
+          }
         }
-
-        this.hasItemsChangeEvent.emit(this.navTree.length > 0);
     }
 
     private openFirstNavItem() {
@@ -111,8 +110,9 @@ export class SchemaFormNavigationComponent {
     }
 
     public onSelect(node: NavItem) {
-        if (!node || !node.accordionId) 
+        if (!node || !node.accordionId) {
             return;
+        }
         this.expandAncestors(node.accordionId);
         this.selectEvent.emit(node.accordionId);
     }

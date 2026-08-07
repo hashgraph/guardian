@@ -184,9 +184,10 @@ export class ToolsApi {
         example: { statusCode: 500, message: 'Error message' }
     })
     @HttpCode(HttpStatus.OK)
-    @UseCache()
+    @UseCache({ isFastify: true })
     async getTools(
         @AuthUser() user: IAuthUser,
+        @Req() req,
         @Response() res: any,
         @Query('pageIndex') pageIndex?: number,
         @Query('pageSize') pageSize?: number
@@ -198,6 +199,7 @@ export class ToolsApi {
                 pageIndex,
                 pageSize
             }, owner);
+            req.locals = items;
             return res.header('X-Total-Count', count).send(items);
         } catch (error) {
             await InternalException(error, this.logger, user.id);
@@ -1194,7 +1196,7 @@ export class ToolsApi {
      */
     @Post('/import/file-metadata')
     @Auth(
-        Permissions.TOOL_MIGRATION_CREATE,
+        Permissions.TOOLS_TOOL_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({
@@ -1353,7 +1355,7 @@ export class ToolsApi {
      */
     @Post('/push/import/file-metadata')
     @Auth(
-        Permissions.TOOL_MIGRATION_CREATE,
+        Permissions.TOOLS_TOOL_CREATE,
         //UserRole.STANDARD_REGISTRY
     )
     @ApiOperation({

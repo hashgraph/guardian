@@ -1,4 +1,4 @@
-import * as process from 'process';
+import * as process from 'node:process';
 import { Module } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { ClientsModule, MicroserviceOptions, Transport, } from '@nestjs/microservices';

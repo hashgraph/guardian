@@ -1,5 +1,6 @@
 import { ModelHelper } from '../helpers/model-helper.js';
 import { SchemaHelper } from '../helpers/schema-helper.js';
+import { ISchemaArrayDependency } from '../interface/schema-array-dependency.interface.js';
 import { SchemaCondition } from '../interface/schema-condition.interface.js';
 import { ISchemaDocument } from '../interface/schema-document.interface.js';
 import { ISchema } from '../interface/schema.interface.js';
@@ -107,6 +108,10 @@ export class Schema implements ISchema {
      */
     public conditions: SchemaCondition[];
     /**
+     * Array dependencies
+     */
+    public arrayDependencies: ISchemaArrayDependency[];
+    /**
      * Previous version
      */
     public previousVersion: string;
@@ -122,6 +127,14 @@ export class Schema implements ISchema {
      * Schema Category
      */
     public category?: SchemaCategory;
+    /**
+     * Schema template id
+     */
+    public templateId?: string;
+    /**
+     * Stable schema id inside a schema template
+     */
+    public templateSchemaId?: string;
     /**
      * Parent component
      */
@@ -168,6 +181,8 @@ export class Schema implements ISchema {
             this.creator = schema.creator || '';
             this.owner = schema.owner || '';
             this.topicId = schema.topicId || '';
+            this.templateId = schema.templateId || '';
+            this.templateSchemaId = schema.templateSchemaId || '';
             this.messageId = schema.messageId || '';
             this.documentURL = schema.documentURL || '';
             this.contextURL = schema.contextURL || '';
@@ -231,6 +246,7 @@ export class Schema implements ISchema {
             this.errors = [];
             this.codeVersion = '';
         }
+        this.arrayDependencies = [];
         if (this.document) {
             this.parseDocument(includeSystemProperties);
         }
@@ -255,8 +271,10 @@ export class Schema implements ISchema {
      */
     private parseDocument(includeSystemProperties: boolean): void {
         this.type = SchemaHelper.buildType(this.uuid, this.version);
-        const { previousVersion } = SchemaHelper.parseSchemaComment(this.document.$comment);
+        const { previousVersion, arrayDependencies } =
+            SchemaHelper.parseSchemaComment(this.document.$comment);
         this.previousVersion = previousVersion;
+        this.arrayDependencies = Array.isArray(arrayDependencies) ? arrayDependencies : [];
         const schemaCache = new Map<string, any>();
         this.fields = SchemaHelper.parseFields(this.document, this.contextURL, schemaCache, null, includeSystemProperties);
         this.conditions = SchemaHelper.parseConditions(this.document, this.contextURL, this.fields, schemaCache);
@@ -395,6 +413,7 @@ export class Schema implements ISchema {
         clone.previousVersion = this.previousVersion;
         clone.fields = this.fields;
         clone.conditions = this.conditions;
+        clone.arrayDependencies = this.arrayDependencies;
         clone.userDID = this.userDID;
         clone.topicCount = this.topicCount;
         return clone;

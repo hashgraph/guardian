@@ -19,7 +19,8 @@ type ValueType = string | PolicyBlock | null | undefined;
     selector: 'select-block',
     changeDetection: ChangeDetectionStrategy.OnPush,
     templateUrl: './select-block.component.html',
-    styleUrls: ['./select-block.component.scss']
+    styleUrls: ['./select-block.component.scss'],
+    standalone: false
 })
 export class SelectBlock implements AfterViewInit {
     private searchTimeout!: any;
@@ -32,6 +33,7 @@ export class SelectBlock implements AfterViewInit {
     @Output('valueChange') valueChange = new EventEmitter<any>();
     @Output('change') change = new EventEmitter<any>();
     @Input() multiple: boolean = false;
+    @Input() panelStyleClass: string = 'pc-select-panel pc-drawer-panel';
     public text: string | null | undefined;
     public search: string = '';
     public searchData?: any[];

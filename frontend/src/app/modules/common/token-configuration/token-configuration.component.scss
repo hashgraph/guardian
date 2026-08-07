@@ -116,7 +116,7 @@ form {
     border: 1px solid var(--color-primary);
 }
 
-:host ::ng-deep .p-dropdown {
+:host ::ng-deep .p-select {
     width: 100%;
     border-radius: 8px;
     border: 1px solid var(--color-grey-3, #E1E7EF);

@@ -1,4 +1,4 @@
-import assert from 'assert';
+import assert from 'node:assert';
 import { connect, headers, NatsConnection, StringCodec, Subscription } from 'nats';
 import { IMessageResponse, MessageError } from '../models/index.js';
 import { GenerateUUIDv4 } from '@guardian/interfaces';
@@ -147,7 +147,7 @@ export class MessageBrokerChannel {
                     try {
                         responseMessage = await handleFunc(payload);
                     } catch (error) {
-                        responseMessage = new MessageError(error, error.code);
+                        responseMessage = new MessageError(error, error.code, error.data);
                     }
 
                     const head = headers();

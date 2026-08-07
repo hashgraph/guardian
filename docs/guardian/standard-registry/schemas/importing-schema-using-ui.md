@@ -1,8 +1,4 @@
----
-icon: upload
----
-
-# Importing Schema using UI
+# Importing a Schema
 
 #### **1. Log in as Standard Registry**
 

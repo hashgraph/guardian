@@ -8,6 +8,7 @@ import { IFormulaLink } from '@guardian/interfaces';
     selector: 'link-dialog',
     templateUrl: './link-dialog.component.html',
     styleUrls: ['./link-dialog.component.scss'],
+    standalone: false
 })
 export class LinkDialog {
     public loading = true;

@@ -1043,6 +1043,33 @@ export class PolicyEngine extends NatsService {
         return await this.sendMessage(PolicyEngineEvents.GET_POLICY_NAVIGATION, { user, policyId, params });
     }
 
+    public async getPolicyGrids(user: IAuthUser, policyId: string): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_POLICY_GRIDS, { user, policyId });
+    }
+
+    public async getGridActions(user: IAuthUser, policyId: string, gridId: string): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_GRID_ACTIONS, { user, policyId, gridId });
+    }
+
+    public async getGridRecords(user: IAuthUser, policyId: string, gridId: string, params: any): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.GET_GRID_RECORDS, { user, policyId, gridId, params });
+    }
+
+    public async executeGridAction(
+        user: IAuthUser,
+        policyId: string,
+        gridId: string,
+        recordId: string,
+        actionId: string,
+        body: any,
+        timeout?: number
+    ): Promise<any> {
+        return await this.sendMessage(PolicyEngineEvents.EXECUTE_GRID_ACTION, {
+            user, policyId, gridId, recordId, actionId, body, timeout,
+            syncEvents: true,
+        });
+    }
+
     /**
      * Get policy groups
      *

@@ -10,7 +10,8 @@ import { Component, ContentChild, TemplateRef } from '@angular/core';
             }
         `
     ],
-    template: '<ng-content></ng-content>'
+    template: '<ng-content></ng-content>',
+    standalone: false
 })
 export class TextInputAutocompleteContainerComponent {
     @ContentChild('itemTemplate') itemTemplate?: TemplateRef<any>;

@@ -9,7 +9,8 @@ import { EditorHelpContext } from './editor-help-context';
 @Component({
     selector: 'code-editor-dialog',
     templateUrl: './code-editor-dialog.component.html',
-    styleUrls: ['./code-editor-dialog.component.scss']
+    styleUrls: ['./code-editor-dialog.component.scss'],
+    standalone: false
 })
 export class CodeEditorDialogComponent implements OnInit, AfterContentInit {
     public codeMirrorOptions: any = {

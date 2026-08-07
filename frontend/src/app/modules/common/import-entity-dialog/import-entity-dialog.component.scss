@@ -2,6 +2,13 @@
     position: relative;
 }
 
+:host ::ng-deep {
+    .p-tabs {
+        display: block;
+        margin-bottom: 40px;
+    }
+}
+
 .form-container {
     height: 310px;
     position: relative;
@@ -17,7 +24,7 @@
     right: 0;
     bottom: 0;
     overflow: auto;
-    background: #fff;
+    background: var(--guardian-background, #fff);
 }
 
 .record-source-selector {

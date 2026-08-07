@@ -1,5 +1,5 @@
 import { BaseEntity } from '../models/index.js';
-import { GenerateUUIDv4, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyEditableFieldDTO, PolicyStatus } from '@guardian/interfaces';
+import { GenerateUUIDv4, IPolicySchemaTemplateBinding, LocationType, PolicyAvailability, PolicyCategoryExport, PolicyEditableFieldDTO, PolicyStatus } from '@guardian/interfaces';
 import { AfterCreate, AfterDelete, AfterUpdate, BeforeCreate, BeforeUpdate, Entity, OnLoad, Property, Unique } from '@mikro-orm/core';
 import { DataBaseHelper } from '../helpers/index.js';
 import { ObjectId } from '@mikro-orm/mongodb';
@@ -236,6 +236,12 @@ export class Policy extends BaseEntity {
      */
     @Property({ nullable: true, type: 'unknown' })
     tools?: any;
+
+    /**
+     * Server-managed schema template binding.
+     */
+    @Property({ nullable: true, type: 'unknown' })
+    schemaTemplate?: IPolicySchemaTemplateBinding;
 
     /**
      * Discontinued date

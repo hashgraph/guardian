@@ -10,7 +10,8 @@ import { SettingsService } from 'src/app/services/settings.service';
 @Component({
     selector: 'app-service-status',
     templateUrl: './service-status.component.html',
-    styleUrls: ['./service-status.component.css']
+    styleUrls: ['./service-status.component.css'],
+    standalone: false
 })
 export class ServiceStatusComponent implements OnInit {
 

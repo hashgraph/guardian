@@ -1,8 +1,8 @@
-# Creating Tag Schemas using UI
+# Adding a Schema Tag
 
-## Tag Schemas
+## Schema Tags
 
-Tags can have attached/linked documents. To add a document to the tag a schema is required. Such documents can be found under the **Tag Schemas** section.
+Tags can have attached/linked documents. To add a document to the tag a schema is required. Such documents can be found under the **Tag** section.
 
 <figure><img src="../../../../.gitbook/assets/image (14) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1) (1).png" alt=""><figcaption></figcaption></figure>
 

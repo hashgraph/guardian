@@ -14,7 +14,8 @@ import { ViewerDialog } from '../../policy-engine/dialogs/viewer-dialog/viewer-d
 @Component({
     selector: 'vc-dialog',
     templateUrl: './vc-dialog.component.html',
-    styleUrls: ['./vc-dialog.component.scss']
+    styleUrls: ['./vc-dialog.component.scss'],
+    standalone: false
 })
 export class VCViewerDialog {
     public IntegrationDataTypes = IntegrationDataTypes;
@@ -106,7 +107,7 @@ export class VCViewerDialog {
         this.documentId = row?.id;
         this.schemaId = row?.schema;
         this.messageId = row?.messageId;
-        this.canExport = !(canExport === false);
+        this.canExport = canExport === true;
 
         this.getByUser = getByUser;
         this.id = id;

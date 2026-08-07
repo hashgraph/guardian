@@ -5,6 +5,7 @@ import { PolicyUser, UserCredentials } from './policy-user.js';
 import { PolicyUtils } from './helpers/utils.js';
 import { PolicyComponentsUtils } from './policy-components-utils.js';
 import { PolicyActionsUtils } from './policy-actions/utils.js';
+import { isPolicyAssignedToUserOrg } from './helpers/org-utils.js';
 
 interface IPromise {
     resolve: Function,
@@ -860,7 +861,14 @@ export class PolicyActionsService {
             Permissions.ACCESS_POLICY_ASSIGNED,
             Permissions.ACCESS_POLICY_ASSIGNED_AND_PUBLISHED
         ])) {
-            return !!(await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, this.policyId, policyUser.did));
+            if (await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, this.policyId, policyUser.did)) {
+                return true;
+            }
+            try {
+                return await isPolicyAssignedToUserOrg(policyUser, this.policyId);
+            } catch {
+                return false;
+            }
         }
         return false;
     }
@@ -942,7 +950,7 @@ export class PolicyActionsService {
         if (!row) {
             throw Error('Action not found');
         }
-        const message = await MessageServer.getMessage<PolicyActionMessage>({
+        const message = await MessageServer.tryGetMessage<PolicyActionMessage>({
             messageId,
             loadIPFS: false,
             type: MessageType.PolicyAction,

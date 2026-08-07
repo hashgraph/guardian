@@ -17,6 +17,7 @@ import { DialogService } from 'primeng/dynamicdialog';
 import { AbstractUIBlockComponent } from '../models/abstract-ui-block.component';
 import { RequestDocumentBlockDialog } from '../request-document-block/dialog/request-document-block-dialog.component';
 import { SchemaRulesService } from 'src/app/services/schema-rules.service';
+import { SchemaService } from 'src/app/services/schema.service';
 import { prepareVcData } from 'src/app/modules/common/models/prepare-vc-data';
 import { PolicyTestAutomationService } from '../../policy-test-automation/policy-test-automation.service';
 
@@ -43,16 +44,17 @@ interface IRequestDocumentAddonData {
     selector: 'request-document-block-addon',
     templateUrl: './request-document-block-addon.component.html',
     styleUrls: ['./request-document-block-addon.component.scss'],
+    standalone: false
 })
 export class RequestDocumentBlockAddonComponent
     extends AbstractUIBlockComponent<IRequestDocumentAddonData>
     implements OnInit {
 
-    @Input('id') id!: string;
-    @Input('policyId') policyId!: string;
-    @Input('static') static!: any;
+    @Input('id') override id!: string;
+    @Input('policyId') override policyId!: string;
+    @Input('static') override static!: any;
     @Input('dryRun') dryRun!: any;
-    @Input('savepointIds') savepointIds?: string[] | null = null;
+    @Input('savepointIds') override savepointIds?: string[] | null = null;
     @Input('policyStatus') policyStatus!: string;
 
     public isExist = false;
@@ -93,10 +95,29 @@ export class RequestDocumentBlockAddonComponent
         private dialogService: DialogService,
         private router: Router,
         private changeDetectorRef: ChangeDetectorRef,
-        private policyTest: PolicyTestAutomationService
+        private policyTest: PolicyTestAutomationService,
+        private schemaService: SchemaService,
     ) {
         super(policyEngineService, profile, wsService);
         this.dataForm = this.fb.group({});
+    }
+
+    protected override _onSuccess(data: any) {
+        // Resolve a schema reference (id, no document) to the full schema before setData.
+        const schemaRef = data?.schema;
+        if (schemaRef && !schemaRef.document && schemaRef.id) {
+            this.loading = true;
+            this.schemaService.evictSchemaById(schemaRef.id);
+            this.schemaService.resolveSchemaById(schemaRef.id).subscribe({
+                next: (full) => {
+                    data.schema = full;
+                    super._onSuccess(data);
+                },
+                error: (e) => this._onError(e)
+            });
+            return;
+        }
+        super._onSuccess(data);
     }
 
     ngOnInit(): void {
@@ -269,7 +290,7 @@ export class RequestDocumentBlockAddonComponent
             width: '90%',
             styleClass: 'guardian-dialog',
             data: this
-        });
+        })!;
         dialogRef.onClose.subscribe(async (result) => {
             //
         });

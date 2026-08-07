@@ -1,0 +1,241 @@
+<div class="dialog-header">
+  <div class="header-container">
+    <div class="header-text">{{ headerText }}</div>
+  </div>
+  <div class="header-icon" (click)="onClose()">
+    <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+  </div>
+</div>
+
+<div class="dialog-body" [class.update-mode]="mode === 'update'">
+  <div class="context">
+    @if (loading || applying || previewLoading) {
+      <div class="loading">
+        <div class="preloader-image preloader-image-l-size"></div>
+      </div>
+    }
+
+    <form [formGroup]="filtersForm" class="filters">
+      <div class="filter-row">
+        <div class="p-input-icon-right guardian-input-container">
+          <input
+            class="search-policy-input"
+            formControlName="name"
+            pInputText
+            placeholder="Search by template name"
+            type="text" />
+          <i class="pi pi-search search-icon"></i>
+        </div>
+      </div>
+    </form>
+
+    @if (list && list.length) {
+      <div class="grid-container">
+        <div class="grid-header">
+          <div class="col-auto">Name</div>
+          <div class="col-120">Status</div>
+          <div class="col-120">Version</div>
+        </div>
+        <div class="grid-body">
+          @for (template of list; track template) {
+            <div
+              class="grid-row"
+              [class.selected]="selectedTemplateId === getTemplateId(template)"
+              (click)="selectTemplate(template)">
+              <div class="col-auto">
+                <div class="template-name">{{ template.name }}</div>
+                <div class="template-description">{{ template.description }}</div>
+              </div>
+              <div class="col-120">
+                <span class="chip chip-color-{{ getStatusColor(template.status) }}">
+                  {{ getStatusLabel(template.status) }}
+                </span>
+              </div>
+              <div class="col-120">{{ template.version || '' }}</div>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    @if (!list || !list.length) {
+      <div class="empty-grid">
+        <div class="empty-grid-icon">
+          <svg-icon
+            class="svg-icon-32"
+            src="/assets/images/icons/32/search.svg"
+            svgClass="empty-icon-color">
+          </svg-icon>
+        </div>
+        <div class="empty-grid-header">There are no schema templates</div>
+        <div class="empty-grid-text">Please try to change or clear filters</div>
+      </div>
+    }
+
+    @if (mode === 'update' && updatePreview) {
+      <div class="update-preview">
+        <div class="preview-head">
+          <div>
+            <div class="preview-title">Template update preview</div>
+            <div class="preview-meta">
+              <span>{{ updatePreview.previousTemplateName || 'Current template' }}</span>
+              @if (updatePreview.previousTemplateVersion) {
+                <span>v{{ updatePreview.previousTemplateVersion }}</span>
+              }
+              <span class="arrow">&rarr;</span>
+              <span>{{ updatePreview.templateName || 'Selected template' }}</span>
+              @if (updatePreview.templateVersion) {
+                <span>v{{ updatePreview.templateVersion }}</span>
+              }
+            </div>
+          </div>
+          <div class="preview-counters">
+            <span class="counter-pill">{{ visibleChangesCount }} changes</span>
+            @if (visibleConflictsCount) {
+              <span class="counter-pill counter-pill-warn">{{ visibleConflictsCount }} conflicts</span>
+            }
+          </div>
+        </div>
+
+        @if (visibleChangesCount) {
+          <div class="diff-list">
+            @for (group of diffGroups; track group.schemaName) {
+              <div class="diff-group">
+                <div class="diff-group-header">
+                  <svg-icon src="/assets/images/icons/file.svg" svgClass="diff-group-icon"></svg-icon>
+                  <span>{{ group.schemaName }}</span>
+                  <span class="diff-group-count">{{ group.changesCount }}</span>
+                </div>
+                @if (group.schemaChanges.length) {
+                  <div class="diff-section-title">Schema</div>
+                  @for (change of group.schemaChanges; track change) {
+                    <div class="diff-row schema-diff-row">
+                      <div class="diff-row-main">
+                        <span class="diff-badge diff-badge-{{ getChangeColor(change.type) }}">
+                          {{ getChangeLabel(change.type) }}
+                        </span>
+                        <div class="diff-row-title">
+                          <div class="diff-row-name">{{ getChangeTitle(change) }}</div>
+                          <div class="diff-row-scope">Schema settings</div>
+                        </div>
+                      </div>
+                      @if (hasDetails(change)) {
+                        <div class="diff-details">
+                          @for (detail of change.details; track detail) {
+                            <div class="diff-detail-row">
+                              <div class="diff-detail-label">{{ detail.label }}</div>
+                              <div class="diff-detail-value before">{{ detail.before || '-' }}</div>
+                              <div class="diff-arrow">&rarr;</div>
+                              <div class="diff-detail-value after">{{ detail.after || '-' }}</div>
+                            </div>
+                          }
+                        </div>
+                      } @else {
+                        <div class="diff-message">{{ change.message }}</div>
+                      }
+                    </div>
+                  }
+                }
+                @if (group.fieldChanges.length) {
+                  <div class="diff-section-title">Fields</div>
+                  @for (change of group.fieldChanges; track change) {
+                    <div class="diff-row">
+                      <div class="diff-row-main">
+                        <span class="diff-badge diff-badge-{{ getChangeColor(change.type) }}">
+                          {{ getChangeLabel(change.type) }}
+                        </span>
+                        <div class="diff-row-title">
+                          <div class="diff-row-name">{{ getChangeTitle(change) }}</div>
+                          <div class="diff-row-scope">{{ getChangeScope(change.type) }}</div>
+                        </div>
+                      </div>
+                      @if (hasDetails(change)) {
+                        <div class="diff-details">
+                          @for (detail of change.details; track detail) {
+                            <div class="diff-detail-row">
+                              <div class="diff-detail-label">{{ detail.label }}</div>
+                              <div class="diff-detail-value before">{{ detail.before || '-' }}</div>
+                              <div class="diff-arrow">&rarr;</div>
+                              <div class="diff-detail-value after">{{ detail.after || '-' }}</div>
+                            </div>
+                          }
+                        </div>
+                      } @else if (isAddChange(change.type)) {
+                        <div class="diff-single diff-single-add">
+                          <div class="diff-value-label">Added</div>
+                          <div class="diff-value-text">{{ change.after || change.message }}</div>
+                        </div>
+                      } @else if (isRemoveChange(change.type)) {
+                        <div class="diff-single diff-single-remove">
+                          <div class="diff-value-label">Removed</div>
+                          <div class="diff-value-text">{{ change.before || change.message }}</div>
+                        </div>
+                      } @else {
+                        <div class="diff-values">
+                          <div class="diff-value diff-value-before">
+                            <div class="diff-value-label">Before</div>
+                            <div class="diff-value-text">{{ change.before || '-' }}</div>
+                          </div>
+                          <div class="diff-arrow">&rarr;</div>
+                          <div class="diff-value diff-value-after">
+                            <div class="diff-value-label">After</div>
+                            <div class="diff-value-text">{{ change.after || '-' }}</div>
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  }
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (visibleConflictsCount) {
+          <div class="preview-section conflict-section">
+            <div class="preview-section-title">Resolve conflicts</div>
+            @for (conflict of visibleConflicts; track conflict) {
+              <div class="conflict-item">
+                <div class="conflict-header">
+                  <div class="conflict-message">{{ conflict.message }}</div>
+                </div>
+                <div class="resolution-actions">
+                  @for (action of conflict.allowedActions; track action) {
+                    <button
+                      type="button"
+                      class="resolution-button"
+                      [class.selected]="resolutions[conflict.id] === action"
+                      (click)="setResolution(conflict, action)">
+                      @switch (action) {
+                        @case (resolutionAction.KEEP_AS_CUSTOM_SCHEMA) {
+                          Keep as custom
+                        }
+                        @case (resolutionAction.REMOVE_FROM_POLICY) {
+                          Remove
+                        }
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        }
+
+        @if (!visibleChangesCount && !visibleConflictsCount) {
+          <div class="preview-empty">The selected template has no changes for this policy.</div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<div class="dialog-footer">
+  <div class="action-buttons">
+    <button (click)="onClose()" class="guardian-button guardian-button-secondary">Cancel</button>
+    <button
+      (click)="applyTemplate()"
+      [disabled]="!canSubmit() || applying"
+      class="guardian-button guardian-button-primary">{{ submitText }}</button>
+  </div>
+</div>

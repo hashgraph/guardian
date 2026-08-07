@@ -1,5 +1,5 @@
 import { Worker } from 'node:worker_threads';
-import path from 'path'
+import path from 'node:path';
 import { ActionCallback, BasicBlock } from '../helpers/decorators/index.js';
 import { CatchErrors } from '../helpers/decorators/catch-errors.js';
 import { PolicyComponentsUtils } from '../policy-components-utils.js';
@@ -11,8 +11,9 @@ import { ChildrenType, ControlType, PropertyType } from '../interfaces/block-abo
 import { PolicyUser } from '../policy-user.js';
 import { PolicyUtils } from '../helpers/utils.js';
 import { ExternalDocuments, ExternalEvent, ExternalEventType } from '../interfaces/external-event.js';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 import { PolicyActionsUtils } from '../policy-actions/utils.js';
+import { IGenerateDidBatch } from '../policy-actions/generate-did.js';
 import { BlockActionError } from '../errors/index.js';
 import { collectTablesPack, hydrateTablesInObject, loadFileTextById } from '../helpers/table-field.js';
 import { RecordActionStep } from '../record-action-step.js';
@@ -118,9 +119,31 @@ export class CustomLogicBlock {
     public async runAction(event: IPolicyEvent<IPolicyEventState>) {
         const ref = PolicyComponentsUtils.GetBlockRef<IPolicyCalculateBlock>(this);
 
+        // This block has no UI, so whenever it finishes without handing work to the next
+        // child, the enclosing step must not be left pointing at it.
+        const unparkParentStep = async () => {
+            const parent = ref.parent as any;
+            if (parent?.blockType === 'interfaceStepBlock' && typeof parent.unparkStalledChild === 'function') {
+                try {
+                    await parent.unparkStalledChild(event.user, ref, event.actionStatus);
+                } catch (unparkError) {
+                    ref.error(`unparkStalledChild failed: ${PolicyUtils.getErrorMessage(unparkError)}`);
+                }
+            }
+        };
+
         try {
             const triggerEvents = async (documents: IPolicyDocument | IPolicyDocument[]) => {
                 if (!documents) {
+                    // An empty result is a legitimate script outcome (`done(null)`, or a bare
+                    // `return` when a source lookup misses), but it must not silently kill the
+                    // workflow. Skipping every event left an interfaceStepBlock parked on this
+                    // non-UI block with nothing to render, so the viewer showed "This step isn't
+                    // available to you right now" forever. Nothing goes downstream (still no
+                    // RunEvent), but refresh the viewer and tell the step the chain ended here.
+                    ref.warn('custom logic returned an empty result; nothing passed downstream');
+                    await unparkParentStep();
+                    await ref.triggerEvents(PolicyOutputEventType.RefreshEvent, event.user, event.data, event.actionStatus);
                     return;
                 }
                 const outData: IPolicyEventState = { ...event.data, data: documents };
@@ -136,7 +159,16 @@ export class CustomLogicBlock {
             await this.execute(event.data, event.user, triggerEvents, event?.user?.userId, event.actionStatus);
             ref.backup();
         } catch (error) {
-            ref.error(PolicyUtils.getErrorMessage(error));
+            const message = PolicyUtils.getErrorMessage(error);
+            ref.error(message);
+            // Also surface to the UI: this local catch pre-empts @CatchErrors, which would
+            // otherwise broadcast the failure via BlockErrorFn. Without it the error is logged only.
+            PolicyComponentsUtils.BlockErrorFn(ref.blockType, message, event.user)
+                .catch((broadcastError) => ref.error(PolicyUtils.getErrorMessage(broadcastError)));
+            ref.triggerEvents(PolicyOutputEventType.ErrorEvent, event.user, event.data, event.actionStatus);
+            // Surfacing the error still left the step parked here, so the user got a toast
+            // *and* a permanent "step isn't available" screen. Rewind as well.
+            await unparkParentStep();
         }
 
         return event.data;
@@ -178,6 +210,9 @@ export class CustomLogicBlock {
     ): Promise<IPolicyDocument | IPolicyDocument[]> {
         return new Promise<IPolicyDocument | IPolicyDocument[]>(async (resolve, reject) => {
             let settled = false;
+            // Set synchronously when a terminal 'complete' message starts being handled, so
+            // the worker 'exit' fallback below does not race the in-progress completion.
+            let finalizing = false;
             const safeResolve = (value: any) => {
                 if (!settled) {
                     settled = true;
@@ -210,6 +245,7 @@ export class CustomLogicBlock {
                     }
                     metadata = await this.aggregateMetadata(documents, user, ref, userId);
                 }
+                const didBatch: IGenerateDidBatch = {};
                 const done = async (result: any | any[], final: boolean) => {
                     if (!result) {
                         await triggerEvents(null);
@@ -231,14 +267,11 @@ export class CustomLogicBlock {
                         if (options.unsigned) {
                             return await this.createUnsignedDocument(json, ref, actionStatus?.id);
                         } else {
-                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user);
+                            return await this.createDocument(json, metadata, ref, userId, actionStatus?.id, user, didBatch);
                         }
                     }
                     if (Array.isArray(result)) {
-                        const items: IPolicyDocument[] = [];
-                        for (const r of result) {
-                            items.push(await processing(r))
-                        }
+                        const items = await this.processItems(result, processing, ref);
                         await triggerEvents(items);
                         if (final) {
                             try {
@@ -334,9 +367,31 @@ export class CustomLogicBlock {
                             safeReject(error);
                         }
                     } else {
+                        // Give the worker an explicit minimal env instead of inheriting the
+                        // full process environment. The worker reads nothing from process.env;
+                        // these keys cover Node/pyodide runtime needs.
+                        const sandboxEnvAllowlist = ['PATH', 'HOME', 'TMPDIR', 'LANG', 'LC_ALL', 'TZ'];
+                        const sandboxEnv: Record<string, string> = {};
+                        for (const key of sandboxEnvAllowlist) {
+                            if (typeof process.env[key] === 'string') {
+                                sandboxEnv[key] = process.env[key];
+                            }
+                        }
+
+                        // Cap the pyodide worker's heap (MB) so a misbehaving script can't exhaust
+                        // host memory. Env-tunable; the default is conservative.
+                        const parsedHeapMb = parseInt(process.env.PYTHON_SANDBOX_HEAP_MB, 10);
+                        const maxOldGenerationSizeMb = Number.isFinite(parsedHeapMb) && parsedHeapMb > 0
+                            ? parsedHeapMb
+                            : 512;
+
                         const worker = new Worker(
                             path.join(path.dirname(filename), '..', 'helpers', 'workers', 'custom-logic-python-worker.js'),
-                            { workerData: pythonWorkerData });
+                            {
+                                workerData: pythonWorkerData,
+                                env: sandboxEnv,
+                                resourceLimits: { maxOldGenerationSizeMb }
+                            });
 
                         const pendingDones: Promise<void>[] = [];
 
@@ -348,7 +403,15 @@ export class CustomLogicBlock {
 
                         worker.on('exit', async (code) => {
                             clearTimeout(workerTimer);
-                            // Wait for all pending done() calls to finish
+                            // Fallback only: normal completion is handled by the 'complete'
+                            // message below. Reaching here unsettled means the worker died
+                            // without sending a terminal message (crash, OOM heap cap, terminate).
+                            if (settled || finalizing) {
+                                // A terminal message already drove resolution; just make sure
+                                // tables are released (e.g. the python-error path doesn't dispose).
+                                try { disposeTables(); } catch { /* */ }
+                                return;
+                            }
                             if (pendingDones.length > 0) {
                                 try { await Promise.all(pendingDones); } catch { /* already handled */ }
                             } else {
@@ -365,10 +428,26 @@ export class CustomLogicBlock {
                             try { disposeTables(); } catch { /* */ }
                             safeReject(error);
                         });
-                        worker.on('message', (data) => {
+                        worker.on('message', async (data) => {
                             if (data?.error) {
                                 clearTimeout(workerTimer);
                                 safeReject(new Error(data.error));
+                                return;
+                            }
+                            // Terminal sentinel: every done/debug message preceding it on this
+                            // FIFO channel has already been handled, so awaiting pendingDones
+                            // here drains them all before we dispose and resolve. disposeTables
+                            // is idempotent, so calling it here (a final done() may have already
+                            // disposed) is safe; safeResolve(null) is a no-op once a done() with
+                            // final=true has resolved with its result.
+                            if (data?.type === 'complete') {
+                                finalizing = true;
+                                clearTimeout(workerTimer);
+                                if (pendingDones.length > 0) {
+                                    try { await Promise.all(pendingDones); } catch { /* already handled */ }
+                                }
+                                try { disposeTables(); } catch { /* */ }
+                                safeResolve(null);
                                 return;
                             }
                             try {
@@ -414,6 +493,13 @@ export class CustomLogicBlock {
                         reject(error);
                     });
                     worker.on('message', async (data) => {
+                        // A thrown script posts an 'error' sentinel; reject so runAction's catch
+                        // surfaces it (BlockErrorFn + log) instead of silently parking the step.
+                        if (data?.error) {
+                            cleanup();
+                            reject(new Error(data.error));
+                            return;
+                        }
                         try {
                             if (data?.type === 'done') {
                                 await done(data.result, data.final);
@@ -432,6 +518,49 @@ export class CustomLogicBlock {
                 safeReject(error);
             }
         });
+    }
+
+    /**
+     * Process result items with bounded concurrency
+     * @param items
+     * @param task
+     * @param ref
+     */
+    private async processItems(
+        items: any[],
+        task: (json: any) => Promise<IPolicyDocument>,
+        ref: IPolicyCalculateBlock
+    ): Promise<IPolicyDocument[]> {
+        // Recording and replay consume UUID/DID sequences in order, so they require sequential processing.
+        let limit = 1;
+        if (!ref.components.runAndRecordController) {
+            const configured = parseInt(process.env.CUSTOM_LOGIC_CONCURRENCY, 10);
+            limit = Number.isFinite(configured) && configured > 0 ? configured : 10;
+        }
+        limit = Math.min(limit, items.length);
+        const results = new Array<IPolicyDocument>(items.length);
+        let index = 0;
+        let failed = false;
+        const workers: Promise<void>[] = [];
+        for (let i = 0; i < limit; i++) {
+            workers.push((async () => {
+                while (!failed && index < items.length) {
+                    const current = index++;
+                    try {
+                        results[current] = await task(items[current]);
+                    } catch (error) {
+                        failed = true;
+                        throw error;
+                    }
+                }
+            })());
+        }
+        const settled = await Promise.allSettled(workers);
+        const failure = settled.find((s) => s.status === 'rejected');
+        if (failure) {
+            throw (failure as PromiseRejectedResult).reason;
+        }
+        return results;
     }
 
     /**
@@ -521,7 +650,8 @@ export class CustomLogicBlock {
         ref: IPolicyCalculateBlock,
         userId: string | null,
         actionStatusId: string,
-        user?: PolicyUser
+        user?: PolicyUser,
+        didBatch?: IGenerateDidBatch
     ): Promise<IPolicyDocument> {
         const {
             owner,
@@ -568,7 +698,7 @@ export class CustomLogicBlock {
             user: owner,
             relayerAccount,
             userId
-        }, actionStatusId);
+        }, actionStatusId, didBatch);
         if (newId) {
             vcSubject.id = newId;
         }

@@ -1,13 +1,13 @@
-import { Workbook, Worksheet } from './models/workbook.js';
+import { Range, Workbook, Worksheet } from './models/workbook.js';
 import { Dictionary, FieldTypes, IFieldTypes } from './models/dictionary.js';
 import { xlsxToBoolean, xlsxToEntity, xlsxToFont, xlsxToPresetArray, xlsxToPresetValue, xlsxToUnit, xlsxToVisibility } from './models/value-converters.js';
 import { Table } from './models/table.js';
 import * as mathjs from 'mathjs';
 import { XlsxSchemaConditions } from './models/schema-condition.js';
-import { SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
+import { isAncestorType, isRelationType, relationParent, SchemaCategory, SchemaEntity, SchemaField } from '@guardian/interfaces';
 import { XlsxResult } from './models/xlsx-result.js';
 import { XlsxEnum } from './models/xlsx-enum.js';
-import { EnumTable } from './models/enum-table.js';
+import { EnumTable, SharedEnumTable } from './models/enum-table.js';
 import { XlsxSchema, XlsxTool } from './models/xlsx-schema.js';
 import { XlsxExpressions } from './models/xlsx-expressions.js';
 import { IFieldKey } from './interfaces/field-key.interface.js';
@@ -32,24 +32,41 @@ export class XlsxToJson {
             await workbook.read(buffer as any);
             const worksheets = workbook.getWorksheets();
 
+            // Pass 0: shared enum tab
+            for (const worksheet of worksheets) {
+                if (worksheet.name === Dictionary.SHARED_ENUM_SHEET) {
+                    if (XlsxToJson.isSharedEnumSheet(worksheet)) {
+                        const enums = await XlsxToJson.readSharedEnumSheet(worksheet, xlsxResult, preview);
+                        for (const item of enums) {
+                            xlsxResult.addEnum(item);
+                        }
+                    } else {
+                        XlsxToJson.validateSharedEnumHeaders(worksheet, xlsxResult);
+                    }
+                }
+            }
+
+            // Pass 1: per-tab enum sheets (backward compatibility)
             for (const worksheet of worksheets) {
                 if (XlsxToJson.isEnum(worksheet)) {
                     const item = await XlsxToJson.readEnumSheet(worksheet, xlsxResult);
                     if (item) {
                         xlsxResult.addEnum(item);
-                    }
-                    const loaded = await item.upload(preview);
-                    if (!loaded) {
-                        xlsxResult.addError({
-                            type: 'error',
-                            text: `Failed to upload enum "${worksheet.name}".`,
-                            message: `Failed to upload enum "${worksheet.name}".`,
-                            worksheet: worksheet.name
-                        }, null);
+                        const loaded = await item.upload(preview);
+                        if (!loaded) {
+                            xlsxResult.addError({
+                                type: 'error',
+                                text: `Failed to upload enum "${worksheet.name}".`,
+                                message: `Failed to upload enum "${worksheet.name}". `
+                                    + `Check your IPFS configuration, or set "Loaded to IPFS" to "No" in the header of the "${worksheet.name}" enum sheet.`,
+                                worksheet: worksheet.name
+                            }, null);
+                        }
                     }
                 }
             }
 
+            // Pass 2: schema sheets
             for (const worksheet of worksheets) {
                 if (XlsxToJson.isSchema(worksheet)) {
                     const schema = await XlsxToJson.readSchemaSheet(worksheet, xlsxResult);
@@ -75,7 +92,61 @@ export class XlsxToJson {
         }
     }
 
+    /**
+     * Resolve the Enums-tab columns by matching header text on the header row.
+     * Returns null if any of the three required headers is missing.
+     */
+    private static resolveSharedEnumColumns(
+        worksheet: Worksheet
+    ): { name: number; ipfs: number; value: number } | null {
+        const range = worksheet.getRange();
+        let name: number | undefined;
+        let ipfs: number | undefined;
+        let value: number | undefined;
+        for (let col = range.s.c; col < range.e.c; col++) {
+            const header = worksheet.getValue<string>(col, SharedEnumTable.HEADER_ROW);
+            if (header === Dictionary.ENUM_NAME) { name = col; }
+            else if (header === Dictionary.ENUM_IPFS) { ipfs = col; }
+            else if (header === Dictionary.ENUM_VALUE) { value = col; }
+        }
+        if (name === undefined || ipfs === undefined || value === undefined) {
+            return null;
+        }
+        return { name, ipfs, value };
+    }
+
+    private static isSharedEnumSheet(worksheet: Worksheet): boolean {
+        return XlsxToJson.resolveSharedEnumColumns(worksheet) !== null;
+    }
+
+    private static validateSharedEnumHeaders(worksheet: Worksheet, xlsxResult: XlsxResult): void {
+        if (XlsxToJson.resolveSharedEnumColumns(worksheet)) {
+            return;
+        }
+        const range = worksheet.getRange();
+        const present = new Set<string>();
+        for (let col = range.s.c; col < range.e.c; col++) {
+            present.add(worksheet.getValue<string>(col, SharedEnumTable.HEADER_ROW));
+        }
+        const missing = [Dictionary.ENUM_NAME, Dictionary.ENUM_IPFS, Dictionary.ENUM_VALUE]
+            .filter(header => !present.has(header));
+        const text = `"${Dictionary.SHARED_ENUM_SHEET}" sheet is missing required header(s): ${missing.map(h => `"${h}"`).join(', ')}.`;
+        xlsxResult.addError({
+            type: 'error',
+            text,
+            message: text,
+            worksheet: worksheet.name,
+            row: SharedEnumTable.HEADER_ROW
+        }, null);
+    }
+
     private static isEnum(worksheet: Worksheet): boolean {
+        if (worksheet.name === Dictionary.SHARED_ENUM_SHEET) {
+            return false;
+        }
+        if (worksheet.name === Dictionary.README_SHEET) {
+            return false;
+        }
         return !XlsxToJson.isSchema(worksheet);
     }
 
@@ -119,12 +190,6 @@ export class XlsxToJson {
         }
         table.setEnd(endCol, row);
 
-        if (table.getRow(Dictionary.ENUM_SCHEMA_NAME) !== -1) {
-            _enum.setSchemaName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_SCHEMA_NAME)));
-        }
-        if (table.getRow(Dictionary.ENUM_FIELD_NAME) !== -1) {
-            _enum.setFieldName(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_FIELD_NAME)));
-        }
         if (table.getRow(Dictionary.ENUM_IPFS) !== -1) {
             _enum.setIPFS(xlsxToBoolean(worksheet.getValue<string>(startCol + 1, table.getRow(Dictionary.ENUM_IPFS))));
         }
@@ -138,7 +203,7 @@ export class XlsxToJson {
                     xlsxResult.addError({
                         type: 'warning',
                         text: 'Duplicate value.',
-                        message: 'Duplicate value.',
+                        message: `Duplicate enum value at row ${row}. Each value in an enum list must be unique — remove or rename the repeated entry.`,
                         worksheet: worksheet.name,
                         row
                     }, null);
@@ -149,6 +214,106 @@ export class XlsxToJson {
         }
         _enum.setData(Array.from(items));
         return _enum;
+    }
+
+    private static async readSharedEnumSheet(
+        worksheet: Worksheet,
+        xlsxResult: XlsxResult,
+        preview: boolean
+    ): Promise<XlsxEnum[]> {
+        const result: XlsxEnum[] = [];
+        const range = worksheet.getRange();
+        const endRow = range.e.r;
+
+        const cols = XlsxToJson.resolveSharedEnumColumns(worksheet);
+        if (!cols) {
+            return result;
+        }
+
+        let currentName: string = null;
+        let currentIpfs: boolean = false;
+        let currentItems: string[] = [];
+        let currentItemsSet: Set<string> = new Set();
+        let groupStartRow: number = SharedEnumTable.FIRST_DATA_ROW;
+        const seenNames = new Set<string>();
+
+        const flushGroup = async (
+            enumName: string,
+            ipfs: boolean,
+            items: string[],
+            startRow: number,
+            nextRow: number
+        ): Promise<void> => {
+            if (!enumName) {
+                return;
+            }
+            if (seenNames.has(enumName)) {
+                xlsxResult.addError({
+                    type: 'warning',
+                    text: `Duplicate enum name "${enumName}" in the "${Dictionary.SHARED_ENUM_SHEET}" tab. The first definition is used; this one is ignored.`,
+                    message: `Duplicate enum name "${enumName}" in the "${Dictionary.SHARED_ENUM_SHEET}" tab. The first definition is used; this one is ignored.`,
+                    worksheet: worksheet.name,
+                    row: startRow
+                }, null);
+                return;
+            }
+            seenNames.add(enumName);
+            const _enum = new XlsxEnum(worksheet);
+            _enum.setEnumName(enumName);
+            _enum.setIPFS(ipfs);
+            _enum.setData([...items]);
+            _enum.setRange(Range.fromRows(startRow, nextRow - 1, cols.value));
+
+            const loaded = await _enum.upload(preview);
+            if (!loaded) {
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Failed to upload enum "${enumName}".`,
+                    message: `Failed to upload enum "${enumName}. `
+                        + `Check your IPFS configuration, or set "Loaded to IPFS" to "No" for this entry in the "${Dictionary.SHARED_ENUM_SHEET}" tab.`,
+                    worksheet: worksheet.name
+                }, null);
+                return;
+            }
+            result.push(_enum);
+        };
+
+        for (let row = SharedEnumTable.FIRST_DATA_ROW; row < endRow; row++) {
+            const enumName = worksheet.getValue<string>(cols.name,  row);
+            const ipfsRaw  = worksheet.getValue<string>(cols.ipfs,  row);
+            const value    = worksheet.getValue<string>(cols.value, row);
+
+            if (!enumName && !value) {
+                continue;
+            }
+
+            if (enumName) {
+                await flushGroup(currentName, currentIpfs, currentItems, groupStartRow, row);
+                currentName   = enumName;
+                currentIpfs   = xlsxToBoolean(ipfsRaw);
+                currentItems  = [];
+                currentItemsSet   = new Set();
+                groupStartRow = row;
+            }
+
+            if (value) {
+                if (currentItemsSet.has(value)) {
+                    xlsxResult.addError({
+                        type: 'warning',
+                        text: 'Duplicate value.',
+                        message: `Duplicate enum value "${value}" at row ${row}. Each value in an enum list must be unique — remove or rename the repeated entry.`,
+                        worksheet: worksheet.name,
+                        row
+                    }, null);
+                } else {
+                    currentItemsSet.add(value);
+                    currentItems.push(value);
+                }
+            }
+        }
+        await flushGroup(currentName, currentIpfs, currentItems, groupStartRow, endRow);
+
+        return result;
     }
 
     private static async readSchemaSheet(
@@ -173,8 +338,7 @@ export class XlsxToJson {
                 }
                 if (table.isSchemaHeader(title)) {
                     table.setRow(title, row);
-                }
-                if (table.isFieldHeader(title)) {
+                } else if (table.isFieldHeader(title)) {
                     break;
                 }
             }
@@ -191,7 +355,8 @@ export class XlsxToJson {
                 xlsxResult.addError({
                     type: 'error',
                     text: `Invalid headers. Header "${errorHeader.title}" not set.`,
-                    message: `Invalid headers. Header "${errorHeader.title}" not set.`,
+                    message: `Sheet "${worksheet.name}" is missing required column header "${errorHeader.title}". `
+                        + `Ensure the header row contains all required columns matching the template exactly.`,
                     worksheet: worksheet.name
                 }, schema);
                 return schema;
@@ -209,7 +374,7 @@ export class XlsxToJson {
                     xlsxResult.addError({
                         type: 'error',
                         text: 'Schema name is empty.',
-                        message: `Schema name is empty on sheet "${worksheet.name}".`,
+                        message: `Schema name is empty on sheet "${worksheet.name}". Enter the schema name in the first cell of row 1.`,
                         worksheet: worksheet.name,
                         cell: worksheet.getPath(startCol, nameRow),
                         row: nameRow,
@@ -242,6 +407,7 @@ export class XlsxToJson {
             row = table.end.r + 1;
             const fields: SchemaField[] = [];
             const allFields = new Map<string, SchemaField>();
+            const fieldPaths = new Map<string, string[]>();
 
             let parents: SchemaField[] = [];
             for (; row < range.e.r; row++) {
@@ -256,6 +422,7 @@ export class XlsxToJson {
                     allFields.set(field.title, field);
                     parents = parents.slice(0, groupIndex);
                     parents[groupIndex] = field;
+                    fieldPaths.set(field.title, parents.slice(0, groupIndex + 1).map(p => p.name));
                     if (groupIndex === 0) {
                         XlsxToJson.addFieldByName(worksheet, table, row, xlsxResult, fields, field);
                     } else {
@@ -270,6 +437,41 @@ export class XlsxToJson {
                 }
             }
 
+            XlsxToJson.resolveGeoDependencies(worksheet, table, fields, xlsxResult);
+
+            // Create schemas for inline sub-schema fields
+            const seenSchemaNames = new Map<string, SchemaField[]>();
+            const createInlineSchemas = (schemaFields: SchemaField[]) => {
+                for (const field of schemaFields) {
+                    if (field.isRef && field.customType === 'subSchema') {
+                        const name = field.property || field.description;
+                        const childFields = field.fields || [];
+                        if (seenSchemaNames.has(name)) {
+                            const existing = seenSchemaNames.get(name);
+                            if (!XlsxToJson.inlineFieldsMatch(existing, childFields)) {
+                                xlsxResult.addError({
+                                    type: 'warning',
+                                    text: `Sub-schema "${name}" is defined more than once with different fields. The first definition will be used.`,
+                                    message: `Sub-schema "${name}" on sheet "${worksheet.name}" has conflicting field definitions across its occurrences. `
+                                        + `Ensure every use of this sub-schema has the same fields, or rename one of them to distinguish them.`,
+                                    worksheet: worksheet.name,
+                                }, null);
+                            }
+                        } else {
+                            seenSchemaNames.set(name, [...childFields]);
+                            const syntheticSchema = new XlsxSchema(worksheet);
+                            syntheticSchema.name = name;
+                            syntheticSchema.update(childFields, [], new XlsxExpressions());
+                            xlsxResult.addInlineSchema(syntheticSchema, worksheet.name);
+                            if (childFields.length) {
+                                createInlineSchemas(childFields);
+                            }
+                        }
+                    }
+                }
+            };
+            createInlineSchemas(fields);
+
             row = table.end.r + 1;
             const conditionCache: XlsxSchemaConditions[] = [];
             for (; row < range.e.r; row++) {
@@ -277,6 +479,8 @@ export class XlsxToJson {
                     worksheet,
                     table,
                     fields,
+                    allFields,
+                    fieldPaths,
                     conditionCache,
                     row,
                     xlsxResult
@@ -285,7 +489,6 @@ export class XlsxToJson {
                     conditionCache.push(condition);
                 }
             }
-
             row = table.end.r + 1;
             const expressions: XlsxExpressions = new XlsxExpressions();
             for (; row < range.e.r; row++) {
@@ -441,8 +644,12 @@ export class XlsxToJson {
                 typeError = true;
                 xlsxResult.addError({
                     type: 'error',
-                    text: 'Unknown field type.',
-                    message: 'Unknown field type.',
+                    text: `Unknown field type (cell is empty).`,
+                    message: `Field Type cell is empty. `
+                        + `Supported types: Number, Integer, String, Boolean, Date, Time, DateTime, Duration, `
+                        + `URL, URI, Email, Image, File, Pattern, Help Text, GeoJSON, HederaAccount, `
+                        + `Prefix, Postfix, Auto-Calculate, Enum, Sub-Schema, `
+                        + `Country, Continent, State/Province.`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.FIELD_TYPE), row),
                     row,
@@ -463,6 +670,9 @@ export class XlsxToJson {
                     ? xlsxToPresetArray(field, exampleValue)?.map(parseType)
                     : parseType(xlsxToPresetValue(field, exampleValue))
                 field.examples = example ? [example] : null;
+                XlsxToJson.checkGeoPreset(
+                    worksheet, table, field, Dictionary.ANSWER, exampleValue, example, row, xlsxResult
+                );
 
                 if (table.hasCol(Dictionary.DEFAULT)) {
                     const defaultValue = worksheet
@@ -471,6 +681,9 @@ export class XlsxToJson {
                     field.default = field.isArray && !field.isRef
                         ? xlsxToPresetArray(field, defaultValue)?.map(parseType)
                         : parseType(xlsxToPresetValue(field, defaultValue));
+                    XlsxToJson.checkGeoPreset(
+                        worksheet, table, field, Dictionary.DEFAULT, defaultValue, field.default, row, xlsxResult
+                    );
                 }
 
                 if (table.hasCol(Dictionary.SUGGEST)) {
@@ -480,6 +693,9 @@ export class XlsxToJson {
                     field.suggest = field.isArray && !field.isRef
                         ? xlsxToPresetArray(field, suggest)?.map(parseType)
                         : parseType(xlsxToPresetValue(field, suggest));
+                    XlsxToJson.checkGeoPreset(
+                        worksheet, table, field, Dictionary.SUGGEST, suggest, field.suggest, row, xlsxResult
+                    );
                 }
             }
 
@@ -488,11 +704,169 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse field.',
-                message: error?.toString(),
+                message: `Failed to parse field at row ${row} on sheet "${worksheet.name}": ${error?.toString()}`,
                 worksheet: worksheet.name,
                 row
             }, field);
             return null;
+        }
+    }
+
+    private static checkGeoPreset(
+        worksheet: Worksheet,
+        table: Table,
+        field: SchemaField,
+        column: Dictionary,
+        raw: any,
+        parsed: any,
+        row: number,
+        xlsxResult: XlsxResult
+    ): void {
+        if (!isRelationType('geo', field.customType)) {
+            return;
+        }
+        const text = raw === undefined || raw === null ? '' : String(raw).trim();
+        if (!text || parsed) {
+            return;
+        }
+        xlsxResult.addError({
+            type: 'warning',
+            text: `"${text}" is not a recognized ${field.customType}.`,
+            message: `The "${column}" cell of field "${field.description}" contains "${text}", `
+                + `which does not match any ${field.customType} in the dataset. `
+                + `The field will be imported without that value.`,
+            worksheet: worksheet.name,
+            cell: worksheet.getPath(table.getCol(column), row),
+            row,
+            col: table.getCol(column)
+        }, field);
+    }
+
+    private static findGeoParent(
+        level: SchemaField[],
+        child: SchemaField,
+        reference: string
+    ): SchemaField {
+        const wanted = reference.trim().toLowerCase();
+        for (const candidate of level) {
+            if (candidate === child) {
+                continue;
+            }
+            const key = (candidate.name || '').trim().toLowerCase();
+            const description = (candidate.description || '').trim().toLowerCase();
+            if (key === wanted || description === wanted) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static findGeoParentByKey(
+        level: SchemaField[],
+        child: SchemaField
+    ): SchemaField {
+        if (!child.dependency || !child.dependency.on) {
+            return null;
+        }
+        for (const candidate of level) {
+            if (candidate !== child && candidate.name === child.dependency.on) {
+                return candidate;
+            }
+        }
+        return null;
+    }
+
+    private static hasGeoCycle(level: SchemaField[], child: SchemaField): boolean {
+        const seen = new Set<SchemaField>();
+        let current: SchemaField = child;
+        while (current) {
+            if (seen.has(current)) {
+                return true;
+            }
+            seen.add(current);
+            current = XlsxToJson.findGeoParentByKey(level, current);
+            if (current === child) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** @internal Called from unit tests. Renaming breaks them at run time, not at compile time. */
+    private static resolveGeoDependencies(
+        worksheet: Worksheet,
+        table: Table,
+        level: SchemaField[],
+        xlsxResult: XlsxResult
+    ): void {
+        for (const field of level) {
+            if (!field.dependency || !field.dependency.on) {
+                continue;
+            }
+            if (field.dependency.kind !== 'geo') {
+                continue;
+            }
+            if (!isRelationType('geo', field.customType)) {
+                continue;
+            }
+            const reference = field.dependency.on;
+            const parent = XlsxToJson.findGeoParent(level, field, reference);
+            if (!parent) {
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Field "${reference}" not found.`,
+                    message: `Field "${field.description}" declares "${reference}" in the Parameter column, `
+                        + `but no field with that key or description exists at the same level. `
+                        + `Enter the Key of the parent geographic field, or clear the cell.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
+                }, field);
+                continue;
+            }
+            if (!isAncestorType('geo', parent.customType, field.customType)) {
+                const allowed = relationParent('geo', field.customType);
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `"${parent.description}" is not a valid parent for "${field.description}".`,
+                    message: `Field "${field.description}" depends on "${parent.description}", `
+                        + `but a "${field.customType}" field can only depend on `
+                        + `${allowed ? `a "${allowed}" field or its own ancestors` : 'nothing'}.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
+                }, field);
+                continue;
+            }
+            field.dependency = { on: parent.name, kind: 'geo' };
+        }
+        for (const field of level) {
+            if (
+                field.dependency &&
+                field.dependency.kind === 'geo' &&
+                XlsxToJson.hasGeoCycle(level, field)
+            ) {
+                field.dependency = null;
+                xlsxResult.addError({
+                    type: 'error',
+                    text: `Circular dependency on field "${field.description}".`,
+                    message: `Field "${field.description}" is part of a circular chain of geographic `
+                        + `dependencies. Remove one of the Parameter values in the chain.`,
+                    worksheet: worksheet.name,
+                    cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), field.order),
+                    row: field.order,
+                    col: table.getCol(Dictionary.PARAMETER)
+                }, field);
+            }
+        }
+        for (const field of level) {
+            if (Array.isArray(field.fields) && field.fields.length) {
+                XlsxToJson.resolveGeoDependencies(worksheet, table, field.fields, xlsxResult);
+            }
         }
     }
 
@@ -518,18 +892,49 @@ export class XlsxToJson {
                     .getFormat();
                 field.unit = xlsxToUnit(format);
             }
+            if (fieldType.name === 'Sub-Schema') {
+                const subSchemaName = param || field.description;
+                field.type = xlsxResult.addLink(subSchemaName, null);
+                field.property = subSchemaName;
+            }
+            if (isRelationType('geo', fieldType.customType)) {
+                if (param && relationParent('geo', fieldType.customType)) {
+                    field.dependency = { on: param, kind: 'geo' };
+                } else {
+                    field.dependency = null;
+                }
+            }
             if (fieldType.name === 'Enum') {
-                // field.enum = worksheet
-                //     .getCell(table.getCol(Dictionary.ANSWER), row)
-                //     .getList()
-                // field.enum = param.split(/\r?\n/);
-                const hyperlink = worksheet
-                    .getCell(table.getCol(Dictionary.PARAMETER), row)
-                    .getLink();
-                const enumName = hyperlink?.worksheet || param;
-                const enumObject = xlsxResult.getEnum(enumName);
+                if (!param) {
+                    field.enumName = '';
+                    field.enum = [];
+                    field.remoteLink = null;
+                    xlsxResult.addError({
+                        type: 'error',
+                        text: 'Enum field is missing a value in the Parameter column.',
+                        message: 'Enum field is missing a value in the Parameter column.',
+                        worksheet: worksheet.name,
+                        row
+                    }, field);
+                    return;
+                }
+                let enumName: string = param;
+                let enumObject = xlsxResult.getEnumByName(enumName);
+
+                if (!enumObject) {
+                    // Legacy fallback: per-tab enum sheet referenced by hyperlink or name.
+                    const hyperlink = worksheet
+                        .getCell(table.getCol(Dictionary.PARAMETER), row)
+                        .getLink();
+                    const legacyName = hyperlink?.worksheet || enumName;
+                    if (legacyName) {
+                        enumName = legacyName;
+                        enumObject = xlsxResult.getEnum(legacyName);
+                    }
+                }
 
                 if (enumObject) {
+                    field.enumName = enumObject?.enumName || '';
                     if (enumObject.loaded) {
                         field.enum = enumObject?.getEnum();
                         field.remoteLink = enumObject?.getLink();
@@ -538,13 +943,15 @@ export class XlsxToJson {
                         field.remoteLink = null;
                         xlsxResult.addError({
                             type: 'error',
-                            text: `Enum named "${enumName}" not loaded.`,
-                            message: `Enum named "${enumName}" not loaded.`,
+                            text: `Enum "${enumName}" failed to load.`,
+                            message: `Enum "${enumName}" was found in the "Enums" tab but failed to upload to IPFS. `
+                                + `Try setting "Loaded to IPFS" to "No" in the Enums tab, or check your IPFS configuration.`,
                             worksheet: worksheet.name,
                             row
                         }, field);
                     }
                 } else {
+                    field.enumName = '';
                     field.enum = [];
                     field.remoteLink = null;
                     xlsxResult.addError({
@@ -558,8 +965,8 @@ export class XlsxToJson {
                 if (!(field.enum || field.remoteLink)) {
                     xlsxResult.addError({
                         type: 'error',
-                        text: `Enum named "${enumName}" is empty.`,
-                        message: `Enum named "${enumName}" is empty.`,
+                        text: `Enum "${enumName}" has no values.`,
+                        message: `Enum "${enumName}" was found but contains no values. Add at least one value in the "Value" column of the "Enums" tab.`,
                         worksheet: worksheet.name,
                         row
                     }, field);
@@ -592,11 +999,13 @@ export class XlsxToJson {
             if (field.autocalculate && !param) {
                 xlsxResult.addError({
                     type: 'error',
-                    text: `Auto-calculate field is empty.`,
-                    message: `Auto-calculate field is empty.`,
+                    text: `Auto-Calculate field is missing an expression.`,
+                    message: `Row ${row}: Auto-Calculate field "${field.description}" has no expression in the Parameter column. `
+                        + `Enter a math expression referencing other field cells, e.g. "G6 + G7".`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.PARAMETER), row),
-                    row
+                    row,
+                    col: table.getCol(Dictionary.PARAMETER),
                 }, field);
             }
 
@@ -624,8 +1033,8 @@ export class XlsxToJson {
         } catch (error) {
             xlsxResult.addError({
                 type: 'error',
-                text: 'Failed to parse params.',
-                message: error?.toString(),
+                text: `Failed to parse params for field "${field.description || '(unknown)'}" (${fieldType.name}).`,
+                message: `Row ${row}: Failed to parse params for "${field.description || '(unknown)'}" (type: ${fieldType.name}): ${error?.toString()}`,
                 worksheet: worksheet.name,
                 row
             }, field);
@@ -636,6 +1045,8 @@ export class XlsxToJson {
         worksheet: Worksheet,
         table: Table,
         fields: SchemaField[],
+        allFields: Map<string, SchemaField>,
+        fieldPaths: Map<string, string[]>,
         conditionCache: XlsxSchemaConditions[],
         row: number,
         xlsxResult: XlsxResult
@@ -643,32 +1054,36 @@ export class XlsxToJson {
         if (worksheet.empty(table.start.c, table.end.c, row)) {
             return null;
         }
-        if (worksheet.getRow(row).getOutline()) {
-            return null;
-        }
 
         const key = XlsxToJson.getFieldKey(worksheet, table, row, xlsxResult);
-        const field = fields.find((f) => f.title === key.path);
+        const field = allFields.get(key.path) || fields.find((f) => f.title === key.path);
+        const targetPath = fieldPaths.get(key.path);
+        const isNested = targetPath && targetPath.length > 1;
 
         try {
-            //visibility
             if (worksheet.outColumnRange(table.getCol(Dictionary.VISIBILITY))) {
                 return;
             }
             const cell = worksheet.getCell(table.getCol(Dictionary.VISIBILITY), row);
             let result: ICondition | null = null;
 
+            let rawConditionValue: string = '';
             try {
                 if (cell.isFormulae()) {
-                    result = XlsxToJson.parseCondition(cell.getFormulae());
+                    rawConditionValue = cell.getFormulae();
+                    result = XlsxToJson.parseCondition(rawConditionValue);
                 } else if (cell.isValue()) {
-                    result = XlsxToJson.parseCondition(xlsxToVisibility(cell.getValue<string>()));
+                    rawConditionValue = xlsxToVisibility(cell.getValue<string>());
+                    result = XlsxToJson.parseCondition(rawConditionValue);
                 }
             } catch (error) {
                 xlsxResult.addError({
                     type: 'error',
-                    text: `Failed to parse condition.`,
-                    message: error?.toString(),
+                    text: `Invalid visibility condition on field "${field?.description || key.path}".`,
+                    message: `Row ${row}: Failed to parse Visibility formula "${rawConditionValue}". `
+                        + `Supported formats: blank (always visible), "hidden" or "No" (always hidden), `
+                        + `EXACT(Gn,"value") or NOT(EXACT(Gn,"value")) where Gn is an "Test Value" cell reference. `
+                        + `Error: ${error?.toString()}`,
                     worksheet: worksheet.name,
                     cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
                     row,
@@ -681,40 +1096,49 @@ export class XlsxToJson {
             }
 
             if (result.type === 'const') {
-                field.hidden = field.hidden || !result.value;
+                if (field) { field.hidden = field.hidden || !result.value; }
                 return;
             }
 
+            const addToCondition = (holder: XlsxSchemaConditions, invert: boolean) => {
+                if (isNested && field) {
+                    holder.addTarget(field, targetPath, invert);
+                } else if (field) {
+                    holder.addField(field, invert);
+                }
+            };
+
             if (result.op && Array.isArray(result.items)) {
                 const resolved = result.items.map(it => {
-                    const target = fields.find(f => f.title === it.fieldPath);
-                    if (!target) {
+                    const trigger = allFields.get(it.fieldPath) || fields.find(f => f.title === it.fieldPath);
+                    if (!trigger) {
                         throw new Error(`Invalid target in ${result.op} condition: ${it.fieldPath}`);
                     }
-                    return { field: target, value: it.compareValue };
+                    return { field: trigger, value: it.compareValue, fieldPath: fieldPaths.get(it.fieldPath) };
                 });
 
                 const conditionKey = { op: result.op, items: resolved };
                 const existed = conditionCache.find(c => (c as any).equal(conditionKey));
                 const holder = existed || new XlsxSchemaConditions(conditionKey as any);
 
-                holder.addField(field, !!result.invert);
+                addToCondition(holder, !!result.invert);
                 if (!existed) {
                     return holder;
                 }
                 return null;
             } else {
-                const target = fields.find((f) => f.title === result.fieldPath);
-                if (!target) {
-                    throw new Error('Invalid target');
+                const trigger = allFields.get(result.fieldPath) || fields.find((f) => f.title === result.fieldPath);
+                if (!trigger) {
+                    throw new Error('Invalid trigger field');
                 }
-                const condition = conditionCache.find(c => c.equal(target, result.compareValue));
+                const triggerPath = fieldPaths.get(result.fieldPath);
+                const condition = conditionCache.find(c => c.equal(trigger, result.compareValue, triggerPath));
                 if (condition) {
-                    condition.addField(field, result.invert);
+                    addToCondition(condition, result.invert);
                     return null;
                 } else {
-                    const newCondition = new XlsxSchemaConditions(target, result.compareValue);
-                    newCondition.addField(field, result.invert);
+                    const newCondition = new XlsxSchemaConditions(trigger, result.compareValue, triggerPath);
+                    addToCondition(newCondition, result.invert);
                     return newCondition;
                 }
             }
@@ -722,8 +1146,10 @@ export class XlsxToJson {
         } catch (error) {
             xlsxResult.addError({
                 type: 'error',
-                text: 'Failed to parse condition.',
-                message: error?.toString(),
+                text: `Failed to resolve condition for field "${field?.description || key?.path}".`,
+                message: `Row ${row}: Visibility condition references a field that does not exist on this sheet. `
+                    + `Make sure the cell reference in EXACT(Gn, ...) points to an "Test Value" cell of a field defined above this row. `
+                    + `Error: ${error?.toString()}`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.VISIBILITY), row),
                 row,
@@ -766,7 +1192,8 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: 'Failed to parse expression.',
-                message: error?.toString(),
+                message: `Row ${row}: Failed to parse Auto-Calculate expression on sheet "${worksheet.name}". `
+                    + `Ensure the formula in the Test Value column is a valid math expression. Error: ${error?.toString()}`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.ANSWER), row),
                 row,
@@ -853,6 +1280,15 @@ export class XlsxToJson {
                 }
             }
 
+            if ((node as any).type === 'AssignmentNode') {
+                const assign = node as any;
+                const obj = assign.object;
+                const val = assign.value;
+                if (obj?.type === 'SymbolNode' && val?.type === 'ConstantNode') {
+                    return { type: 'formulae', fieldPath: obj.name, compareValue: val.value, invert };
+                }
+            }
+
             throw new Error(`Failed to parse formulae: ${formulae}.`);
         };
 
@@ -861,6 +1297,25 @@ export class XlsxToJson {
 
     private static isAutoCalculate(type: string, field: SchemaField): boolean {
         return field.hidden || type === 'Auto-Calculate';
+    }
+
+    private static inlineFieldsMatch(a: SchemaField[], b: SchemaField[]): boolean {
+        if (a.length !== b.length) {
+            return false;
+        }
+        for (let i = 0; i < a.length; i++) {
+            if (a[i].description !== b[i].description) {
+                return false;
+            }
+            if (a[i].isRef && a[i].customType === 'subSchema') {
+                if (!XlsxToJson.inlineFieldsMatch(a[i].fields || [], b[i].fields || [])) {
+                    return false;
+                }
+            } else if (a[i].type !== b[i].type) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private static getFieldKey(
@@ -884,7 +1339,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'warning',
                 text: `Invalid character.`,
-                message: `Dots are not allowed in the Keys (${name})`,
+                message: `Key "${name}" contains a dot ('.'), which is not allowed in field keys. The dot has been removed automatically — rename the key in the Key column to avoid this.`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,
@@ -907,7 +1362,7 @@ export class XlsxToJson {
             xlsxResult.addError({
                 type: 'error',
                 text: `Failed to parse field.`,
-                message: `Key ${field.name} already exists`,
+                message: `Row ${row}: Field key "${field.name}" already exists on sheet "${worksheet.name}". Each field must have a unique key — rename it in the Key column.`,
                 worksheet: worksheet.name,
                 cell: worksheet.getPath(table.getCol(Dictionary.KEY), row),
                 row,

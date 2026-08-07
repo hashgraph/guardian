@@ -32,6 +32,7 @@ import { SchemaImportExportHelper } from './schema-import-helper.js';
 import { ImportMode } from '../common/import.interface.js';
 import { importTag } from '../tag/tag-import-helper.js';
 import { updateSchemaDefs } from './schema-helper.js';
+import { validateSchemaDependencies } from './schema-dependency-validator.js';
 
 export class SchemaImport {
     private readonly mode: ImportMode;
@@ -257,6 +258,17 @@ export class SchemaImport {
         userId: string | null
     ) {
         step.addEstimate(schemas.length);
+
+        // Collect all policy schema UUIDs upfront so the guard inside the loop
+        // is order-independent (schemas are sorted by name, not by dependency order).
+        const policySchemaUUIDs = new Set<string>();
+        for (const file of schemas) {
+            const uuid = file.iri?.startsWith('#') ? file.iri.substring(1) : file.iri;
+            if (uuid) {
+                policySchemaUUIDs.add(uuid);
+            }
+        }
+
         for (const file of schemas) {
             this.updateId(file);
             file.category = category;
@@ -275,10 +287,15 @@ export class SchemaImport {
                 file.status = SchemaStatus.DRAFT;
             }
 
-            //Find external schemas by Title
+            //Find external (tool) schemas by title.
+            //Skip policy-owned defs to prevent rebinding when titles collide with a tool schema name.
             const defs = SchemaImportExportHelper.getDefDocuments(file);
             for (const def of defs) {
                 if (def && !this.schemaIdsMapping.has(def.$id)) {
+                    const defUUID = def.$id?.startsWith('#') ? def.$id.substring(1) : def.$id;
+                    if (policySchemaUUIDs.has(defUUID)) {
+                        continue;
+                    }
                     const externalSchemaIRI = this.externalSchemas.get(def.title);
                     if (externalSchemaIRI) {
                         this.schemaIdsMapping.set(def.$id, externalSchemaIRI);
@@ -355,9 +372,25 @@ export class SchemaImport {
             if (checkForCircularDependency(file)) {
                 throw new Error(`There is circular dependency in schema: ${file.iri}`);
             }
+            let dependencyError: string | null = null;
+            try {
+                validateSchemaDependencies(file);
+            } catch (validationError) {
+                dependencyError = validationError instanceof Error
+                    ? validationError.message
+                    : String(validationError);
+            }
 
             const schemaObject = DatabaseServer.createSchema(file);
             const errors = SchemaHelper.checkErrors(file as Schema);
+            if (dependencyError) {
+                errors.push({
+                    target: {
+                        type: 'schema'
+                    },
+                    message: dependencyError
+                });
+            }
             SchemaHelper.updateIRI(schemaObject);
 
             schemaObject.errors = errors;
@@ -381,8 +414,10 @@ export class SchemaImport {
                 row.description = schemaObject.description;
                 row.entity = schemaObject.entity;
                 row.document = schemaObject.document;
-                row.status = SchemaStatus.DRAFT;
-                row.errors = [];
+                row.status = dependencyError
+                    ? SchemaStatus.ERROR
+                    : SchemaStatus.DRAFT;
+                row.errors = dependencyError ? errors : [];
                 SchemaHelper.setVersion(row, null, row.version);
                 SchemaHelper.updateIRI(row);
                 await DatabaseServer.updateSchema(row.id, row);

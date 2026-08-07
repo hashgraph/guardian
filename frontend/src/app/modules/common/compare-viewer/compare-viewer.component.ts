@@ -6,7 +6,8 @@ import {Router} from '@angular/router';
 @Component({
     selector: 'app-compare-viewer',
     templateUrl: './compare-viewer.component.html',
-    styleUrls: ['./compare-viewer.component.scss']
+    styleUrls: ['./compare-viewer.component.scss'],
+    standalone: false
 })
 export class CompareViewerComponent implements OnInit {
     @Input() active: boolean = false;

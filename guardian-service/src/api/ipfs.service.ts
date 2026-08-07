@@ -167,6 +167,11 @@ export async function ipfsAPI(logger: PinoLogger): Promise<void> {
 
             const file = await new DatabaseServer().findOne(DryRunFiles, { id: msg.cid });
 
+            //An unknown cid is an expected miss: keep the non-Buffer shape so the gateway answers 404 without logging a trace.
+            if (!file || !file.file) {
+                return new MessageResponse({ error: 'File is not found' });
+            }
+
             return new MessageResponse(file.file);
         } catch (error) {
             await logger.error(error, ['IPFS_CLIENT'], msg?.user?.id);

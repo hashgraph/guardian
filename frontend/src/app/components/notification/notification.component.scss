@@ -57,6 +57,18 @@
     }
 }
 
+.badge-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #ff432a;
+    cursor: pointer;
+
+    &:hover {
+        filter: brightness(1.2);
+    }
+}
+
 .notification-position {
     pointer-events: none;
     position: fixed;
@@ -142,7 +154,7 @@
 }
 
 .primary-btn {
-    color: var(--color-grey-white, #FFFFFF);
+    color: var(--guardian-on-primary-color, #FFFFFF);
     background-color: var(--color-primary, #438EFF);
     border: 0;
     height: 40px;
@@ -183,7 +195,7 @@
         overflow: hidden;
 
         span {
-            color: #000;
+            color: var(--guardian-font-color, #000);
             font-family: Inter, sans-serif;
             font-size: 16px;
             font-style: normal;

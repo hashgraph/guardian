@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock} from '../../../../structures';
     selector: 'button-config',
     templateUrl: './button-config.component.html',
     styleUrls: ['./button-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ButtonConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -57,6 +58,7 @@ export class ButtonConfigComponent implements OnInit {
         this.properties.uiMetaData.buttons = this.properties.uiMetaData.buttons || [];
 
         this.ensureButtonsDefaults(this.properties.uiMetaData.buttons);
+        this.propHidden.buttonsGroup = !this.properties.uiMetaData.buttons.length;
 
         for (const i in this.properties.uiMetaData.buttons) {
             this.propHidden.buttons[i] = {};
@@ -77,6 +79,7 @@ export class ButtonConfigComponent implements OnInit {
             outgoingHideEventsEnabled: false,
             visibleButtons: ''
         })
+        this.propHidden.buttonsGroup = false;
         this.propHidden.buttons[this.properties.uiMetaData.buttons.length - 1] = {};
     }
 
@@ -90,6 +93,9 @@ export class ButtonConfigComponent implements OnInit {
 
     onRemoveButton(i: number) {
         this.properties.uiMetaData.buttons.splice(i, 1);
+        if (!this.properties.uiMetaData.buttons.length) {
+            this.propHidden.buttonsGroup = true;
+        }
     }
 
     onRemoveFilter(button: any, i: number) {

@@ -10,7 +10,7 @@ import {
     Users,
     VcHelper
 } from '@guardian/common';
-import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity } from '@guardian/interfaces';
+import { GenerateUUIDv4, PolicyHelper, PolicyStatus, SchemaEntity, SchemaStatus } from '@guardian/interfaces';
 import { PrivateKey } from '@hiero-ledger/sdk';
 import { IPolicyBlock } from '../policy-engine.interface.js';
 import { PolicyUser } from '../policy-user.js';
@@ -68,6 +68,19 @@ export class ComponentsService {
      * Schemas
      */
     private readonly schemasByType: Map<string, SchemaCollection>;
+    /**
+     * Topics whose schemas this policy may reference (policy topic + tool topics).
+     * Schemas are resolved lazily by IRI/type from these topics on first use
+     * instead of bulk-loading the whole topic set — a large methodology can have
+     * thousands of schemas on a topic while a policy references only a handful.
+     */
+    private readonly schemaTopicIds: string[] = [];
+    /**
+     * True when the policy this service serves is a VIEW/imported policy. VIEW
+     * schemas are duplicate copies (same IRIs) of the PUBLISHED set created by
+     * view-imports; only a VIEW policy resolves them.
+     */
+    private isViewPolicy: boolean = false;
     /**
      * Automatic recording flag
      */
@@ -165,7 +178,17 @@ export class ComponentsService {
      * @param type
      */
     public async loadSchemaByType(type: SchemaEntity): Promise<SchemaCollection> {
-        return this.schemasByType.get(type);
+        if (this.schemasByType.has(type)) {
+            return this.schemasByType.get(type) || undefined;
+        }
+        // Resolve the readonly schema for this entity from the policy/tool topics
+        // on first use, then cache (incl. a null miss to avoid re-querying).
+        const schema = await this.resolveSchema({ entity: type, readonly: true });
+        this.schemasByType.set(type, schema || null);
+        if (schema) {
+            this.schemasByID.set(schema.iri, schema);
+        }
+        return schema || undefined;
     }
 
     /**
@@ -173,7 +196,17 @@ export class ComponentsService {
      * @param id
      */
     public async loadSchemaByID(id: string): Promise<SchemaCollection> {
-        return this.schemasByID.get(id);
+        if (this.schemasByID.has(id)) {
+            return this.schemasByID.get(id) || undefined;
+        }
+        // Resolve this IRI from the policy/tool topics on first use, then cache
+        // (incl. a null miss so a genuinely-absent schema isn't re-queried).
+        const schema = await this.resolveSchema({ iri: id });
+        this.schemasByID.set(id, schema || null);
+        if (schema && schema.readonly) {
+            this.schemasByType.set(schema.entity, schema);
+        }
+        return schema || undefined;
     }
 
     /**
@@ -228,15 +261,11 @@ export class ComponentsService {
         this.policyTokens = (policy as PolicyCollection).policyTokens || [];
         this.policyGroups = (policy as PolicyCollection).policyGroups || [];
         this.policyRoles = (policy as PolicyCollection).policyRoles || [];
-        if (policy.topicId) {
-            const schemas = await DatabaseServer.getSchemas({ topicId: policy.topicId });
-            for (const schema of schemas) {
-                if (schema.readonly) {
-                    this.schemasByType.set(schema.entity, schema);
-                }
-                this.schemasByID.set(schema.iri, schema);
-            }
-        }
+        // Only a VIEW policy resolves VIEW-status (duplicate) schemas.
+        this.isViewPolicy = (policy as PolicyCollection).status === PolicyStatus.VIEW;
+        // Track the topic; schemas are resolved lazily on first use
+        // (loadSchemaByID/Type) instead of bulk-loading the whole topic set.
+        this.trackSchemaTopic(policy.topicId);
     }
 
     /**
@@ -244,15 +273,37 @@ export class ComponentsService {
      * @param name
      */
     public async registerTool(tool: PolicyToolCollection): Promise<void> {
-        if (tool.topicId) {
-            const schemas = await DatabaseServer.getSchemas({ topicId: tool.topicId });
-            for (const schema of schemas) {
-                if (schema.readonly) {
-                    this.schemasByType.set(schema.entity, schema);
-                }
-                this.schemasByID.set(schema.iri, schema);
-            }
+        // Track the tool topic; schemas resolved lazily on first use.
+        this.trackSchemaTopic(tool.topicId);
+    }
+
+    /**
+     * Record a topic whose schemas this policy may reference, for lazy
+     * resolution. De-duplicated.
+     * @param topicId
+     */
+    private trackSchemaTopic(topicId: string): void {
+        if (topicId && !this.schemaTopicIds.includes(topicId)) {
+            this.schemaTopicIds.push(topicId);
         }
+    }
+
+    /**
+     * Resolve a single schema matching `match` (e.g. { iri } or
+     * { entity, readonly }) from the tracked policy/tool topics, excluding
+     * duplicate VIEW schemas unless this is a VIEW policy. Returns null if none.
+     * @param match
+     */
+    private async resolveSchema(match: any): Promise<SchemaCollection> {
+        if (!this.schemaTopicIds.length) {
+            return null;
+        }
+        const filter: any = { ...match, topicId: { $in: this.schemaTopicIds } };
+        if (!this.isViewPolicy) {
+            filter.status = { $ne: SchemaStatus.VIEW };
+        }
+        const schemas = await DatabaseServer.getSchemas(filter);
+        return (schemas && schemas.length) ? schemas[0] : null;
     }
 
     /**

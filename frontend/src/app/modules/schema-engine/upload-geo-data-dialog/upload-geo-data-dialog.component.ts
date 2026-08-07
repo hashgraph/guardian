@@ -6,6 +6,7 @@ import { DynamicDialogConfig, DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'upload-geo-data-dialog',
     templateUrl: './upload-geo-data-dialog.component.html',
     styleUrls: ['./upload-geo-data-dialog.component.scss'],
+    standalone: false
 })
 export class UploadGeoDataDialog {
     featureCollection: FeatureCollection;

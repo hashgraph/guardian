@@ -81,7 +81,7 @@ services:
       - '3333'
 
   ipfs-node:
-    image: ipfs/kubo:v0.41.0
+    image: ipfs/kubo:v0.43.0
     environment:
       IPFS_TELEMETRY: off # valid options: 'on' (default), 'off', 'auto' (https://github.com/ipfs/kubo/blob/master/docs/telemetry.md)
     init: true
@@ -98,7 +98,7 @@ services:
     init: true
 
   mongo:
-    image: mongo:6.0.26
+    image: mongo:6.0.28
     command: "--setParameter allowDiskUseByDefault=true"
     # command: "--setParameter allowDiskUseByDefault=true --quiet --logpath /dev/null" # use this command to reduce log noise
     restart: always

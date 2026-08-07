@@ -15,7 +15,8 @@ export enum PolicyAction {
 @Component({
     selector: 'save-policy-dialog',
     templateUrl: './save-policy-dialog.component.html',
-    styleUrls: ['./save-policy-dialog.component.scss']
+    styleUrls: ['./save-policy-dialog.component.scss'],
+    standalone: false
 })
 export class SavePolicyDialog {
     action?: PolicyAction;

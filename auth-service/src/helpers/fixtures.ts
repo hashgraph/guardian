@@ -2,7 +2,7 @@ import { User } from '../entity/user.js';
 import { UserRole } from '@guardian/interfaces';
 import { DatabaseServer } from '@guardian/common';
 import { UserPassword } from '#utils';
-import process from 'process';
+import process from 'node:process';
 
 /**
  * Create default users

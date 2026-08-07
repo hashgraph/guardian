@@ -19,7 +19,7 @@
 }
 
 .sub-loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 9;
     top: 0;
@@ -77,7 +77,7 @@
 }
 
 .form {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     color: #404040;
     margin-bottom: 30px;
     padding: 10px 35px;
@@ -189,7 +189,7 @@
 }
 
 .synchronization-update:hover {
-    background: #f1f1f1;
+    background: var(--guardian-grey-background, #f1f1f1);
 }
 
 .text {

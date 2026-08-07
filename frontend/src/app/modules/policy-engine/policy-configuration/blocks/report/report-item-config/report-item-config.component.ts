@@ -12,7 +12,8 @@ import {DialogService} from 'primeng/dynamicdialog';
     selector: 'report-item-config',
     templateUrl: './report-item-config.component.html',
     styleUrls: ['./report-item-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class ReportItemConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -37,6 +38,8 @@ export class ReportItemConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    private groupsInitialized = false;
 
     public iconTypeOptions = [
         {label: 'Common Library', value: 'common'},
@@ -79,6 +82,12 @@ export class ReportItemConfigComponent implements OnInit {
         this.properties.variables = this.properties.variables || [];
         this.properties.visible = this.properties.visible !== false;
         this.properties.iconType = this.properties.iconType;
+        if (!this.groupsInitialized) {
+            this.propHidden.filterGroup = this.properties.filters.length === 0;
+            this.propHidden.variableGroup = this.properties.variables.length === 0;
+            this.propHidden.dynamicFilterGroup = this.properties.dynamicFilters.length === 0;
+            this.groupsInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -87,26 +96,38 @@ export class ReportItemConfigComponent implements OnInit {
 
     addVariable() {
         this.properties.variables.push({});
+        this.propHidden.variableGroup = false;
     }
 
     onRemoveVariable(i: number) {
         this.properties.variables.splice(i, 1);
+        if (this.properties.variables.length === 0) {
+            this.propHidden.variableGroup = true;
+        }
     }
 
     addFilter() {
         this.properties.filters.push({});
+        this.propHidden.filterGroup = false;
     }
 
     onRemoveFilter(i: number) {
         this.properties.filters.splice(i, 1);
+        if (this.properties.filters.length === 0) {
+            this.propHidden.filterGroup = true;
+        }
     }
 
     addDynamicFilter() {
         this.properties.dynamicFilters.push({});
+        this.propHidden.dynamicFilterGroup = false;
     }
 
     onRemoveDynamicFilter(i: number) {
         this.properties.dynamicFilters.splice(i, 1);
+        if (this.properties.dynamicFilters.length === 0) {
+            this.propHidden.dynamicFilterGroup = true;
+        }
     }
 
     onFileSelected(event: any, block: any) {

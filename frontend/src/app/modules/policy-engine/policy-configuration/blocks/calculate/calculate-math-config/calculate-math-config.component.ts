@@ -8,7 +8,8 @@ import { IModuleVariables, PolicyBlock } from '../../../../structures';
     selector: 'calculate-math-config',
     templateUrl: './calculate-math-config.component.html',
     styleUrls: ['./calculate-math-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class CalculateMathConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -24,6 +25,8 @@ export class CalculateMathConfigComponent implements OnInit {
     };
 
     properties!: any;
+
+    private equationsGroupInitialized = false;
 
     constructor() {
     }
@@ -42,6 +45,10 @@ export class CalculateMathConfigComponent implements OnInit {
         this.item = block;
         this.properties = block.properties;
         this.properties.equations = this.properties.equations || [];
+        if (!this.equationsGroupInitialized) {
+            this.propHidden.equationsGroup = this.properties.equations.length === 0;
+            this.equationsGroupInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -53,10 +60,14 @@ export class CalculateMathConfigComponent implements OnInit {
             variable: '',
             formula: ''
         })
+        this.propHidden.equationsGroup = false;
     }
 
     onRemoveEquation(i: number) {
         this.properties.equations.splice(i, 1);
+        if (this.properties.equations.length === 0) {
+            this.propHidden.equationsGroup = true;
+        }
     }
 
     onSave() {

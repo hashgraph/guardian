@@ -256,6 +256,8 @@ export class InterfaceDocumentsSource {
         if (
             !enableCommonSorting && history
         ) {
+            const timelineLabelPath = history.options.timelineLabelPath || 'option.status';
+            const timelineCommentPath = history.options.timelineDescriptionPath || 'option.comment';
             for (const document of data) {
                 const filter: any = { documentId: document.id };
 
@@ -269,29 +271,15 @@ export class InterfaceDocumentsSource {
                 }
 
                 document.history = (
-                    await ref.databaseServer.getDocumentStates(filter)
-                ).map((state) =>
-                    Object.assign(
-                        {},
-                        {
-                            labelValue: ObjGet(
-                                state.document,
-                                history
-                                    ? history.options.timelineLabelPath ||
-                                    'option.status'
-                                    : 'option.status'
-                            ),
-                            comment: ObjGet(
-                                state.document,
-                                history
-                                    ? history.options.timelineDescriptionPath ||
-                                    'option.comment'
-                                    : 'option.comment'
-                            ),
-                            created: state.createDate,
-                        }
+                    await ref.databaseServer.getDocumentStateHistory(
+                        filter,
+                        [timelineLabelPath, timelineCommentPath]
                     )
-                );
+                ).map((state) => ({
+                    labelValue: ObjGet(state.document, timelineLabelPath),
+                    comment: ObjGet(state.document, timelineCommentPath),
+                    created: state.createDate,
+                }));
             }
         }
 

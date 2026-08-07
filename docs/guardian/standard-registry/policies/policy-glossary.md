@@ -1,6 +1,11 @@
+---
+tags:
+  - reference
+---
+
 # Policy Glossary
 
-Next, we discuss the terms that need to be understood to create Policies within the Guardian framework:
+The following terms are used when creating Policies within the Guardian.
 
 | Term                  | Definition                                                                                                          | Example                                                                                                                         |
 | --------------------- | ------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |

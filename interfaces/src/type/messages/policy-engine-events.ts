@@ -131,5 +131,10 @@ export enum PolicyEngineEvents {
     GET_POLICY_PARAMETERS_VALUES = 'policy-engine-get-policy-parameters-values',
 
     RETRY_MINT = 'policy-engine-event-retry-mint',
-    GET_MINT_REQUESTS = 'policy-engine-event-get-mint-requests'
+    GET_MINT_REQUESTS = 'policy-engine-event-get-mint-requests',
+
+    GET_POLICY_GRIDS = 'policy-engine-event-get-policy-grids',
+    GET_GRID_ACTIONS = 'policy-engine-event-get-grid-actions',
+    GET_GRID_RECORDS = 'policy-engine-event-get-grid-records',
+    EXECUTE_GRID_ACTION = 'policy-engine-event-execute-grid-action'
 }

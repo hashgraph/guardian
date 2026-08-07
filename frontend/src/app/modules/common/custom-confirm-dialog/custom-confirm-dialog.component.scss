@@ -1,5 +1,5 @@
 .loading {
-    background: #fff;
+    background: var(--guardian-background, #fff);
     position: absolute;
     z-index: 99;
     border-radius: 16px;
@@ -76,6 +76,22 @@
     margin-top: 25px;
     white-space: pre-line;
     margin-bottom: 48px;
+
+    div {
+        margin-bottom: 8px;
+    }
+}
+
+.confirmation-details {
+    font-family: Inter, sans-serif;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 18px;
+    color: #848FA9;
+    margin-top: 8px;
+    margin-bottom: 48px;
+    white-space: pre-line;
 
     div {
         margin-bottom: 8px;

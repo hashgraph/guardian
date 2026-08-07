@@ -1,40 +1,45 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
-    <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">UI</td>
-        <td class="propHeaderCell"></td>
+@if (properties) {
+  <table class="properties information-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName information-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
+      </td>
+      <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Title</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Title</td>
+      <td class="propRowCell">
+        <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Description</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
-                   (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Description</td>
+      <td class="propRowCell">
+        <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+          (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Type</td>
-        <td class="propRowCell">
-            <p-dropdown [(ngModel)]="properties.uiMetaData.type"
-                        [options]="uiMetaDataTypeOptions"
-                        [disabled]="readonly"
-                        (onChange)="onSave()"
-                        [appendTo]="'body'"
-                        placeholder="Select UI Metadata Type"
-                        optionLabel="label"
-                        optionValue="value">
-            </p-dropdown>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Type</td>
+      <td class="propRowCell">
+        <p-select [(ngModel)]="properties.uiMetaData.type"
+          panelStyleClass="pc-select-panel"
+          [options]="uiMetaDataTypeOptions"
+          [disabled]="readonly"
+          (onChange)="onSave()"
+          [appendTo]="'body'"
+          placeholder="Select UI Metadata Type"
+          optionLabel="label"
+          optionValue="value">
+        </p-select>
+      </td>
     </tr>
-</table>
+  </table>
+}

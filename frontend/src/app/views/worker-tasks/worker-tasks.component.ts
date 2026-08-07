@@ -12,6 +12,7 @@ import { UserPermissions } from '@guardian/interfaces';
     selector: 'app-worker-tasks',
     templateUrl: './worker-tasks.component.html',
     styleUrls: ['./worker-tasks.component.scss'],
+    standalone: false
 })
 export class WorkerTasksComponent implements OnInit {
     public loading: boolean = true;

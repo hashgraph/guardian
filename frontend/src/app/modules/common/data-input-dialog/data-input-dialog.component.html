@@ -1,38 +1,22 @@
-<div class="dialog-header">
-    <div class="header-container">
-        <div class="header-text">{{ title }}</div>
-    </div>
-    <div class="header-icon" (click)="onNoClick()">
-        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
-    </div>
-</div>
-
-<div class="dialog-body">
-     <form [formGroup]="dataForm">
-        <div *ngFor="let field of fieldsConfig" class="guardian-input-container">
-            <label class="form-label">{{field.label}}</label>
-            <input 
-                pInputText 
-                [formControlName]="field.name"
-                type="text"
-                [placeholder]="field.placeholder"
-                [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}"/>
-        </div>
-    </form>
-</div>
-
-<div class="dialog-footer">
-    <div class="action-buttons">
-        <div class="dialog-button">
-            <button
-                (click)="onNoClick()"
-                class="guardian-button guardian-button-secondary">Close</button>
-        </div>
-        <div class="dialog-button">
-            <button
-                [disabled]="!dataForm.valid"
-                (click)="dialogRef.close(dataForm.value)"
-                class="guardian-button guardian-button-primary">{{button}}</button>
-        </div>
-    </div>
-</div>
+<app-common-dialog
+  [title]="title"
+  cancelLabel="Close"
+  [confirmLabel]="button"
+  [confirmDisabled]="!dataForm.valid"
+  (cancel)="onNoClick()"
+  (close)="onNoClick()"
+  (confirm)="dialogRef.close(dataForm.value)">
+  <form [formGroup]="dataForm">
+    @for (field of fieldsConfig; track field) {
+      <div class="guardian-input-container">
+        <label class="form-label">{{field.label}}</label>
+        <input
+          pInputText
+          [formControlName]="field.name"
+          type="text"
+          [placeholder]="field.placeholder"
+          [ngClass]="{'invalid': dataForm.get(field.name)?.invalid && dataForm.get(field.name)?.touched}"/>
+      </div>
+    }
+  </form>
+</app-common-dialog>

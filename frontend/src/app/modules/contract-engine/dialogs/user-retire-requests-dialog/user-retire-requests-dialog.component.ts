@@ -8,6 +8,7 @@ import {DynamicDialogRef} from 'primeng/dynamicdialog';
     selector: 'app-user-retire-requests-dialog',
     templateUrl: './user-retire-requests-dialog.component.html',
     styleUrls: ['./user-retire-requests-dialog.component.scss'],
+    standalone: false
 })
 export class UserRetireRequestsDialogComponent implements OnInit {
     requests: any[] = [];

@@ -8,6 +8,7 @@ import { DynamicDialogRef } from 'primeng/dynamicdialog';
     selector: 'discontinue-policy',
     templateUrl: './discontinue-policy.component.html',
     styleUrls: ['./discontinue-policy.component.scss'],
+    standalone: false
 })
 export class DiscontinuePolicy {
     stateOptions = [

@@ -3,7 +3,7 @@
     height: 70px;
     min-height: 70px;
     overflow: hidden;
-    background: #fff;
+    background: var(--guardian-background, #fff);
     border-bottom: 1px solid #E1E7EF;
     display: flex;
     flex-direction: row;
@@ -143,6 +143,6 @@
     width: 70px;
 
     .p-menuitem-content {
-        background: #fff !important;
+        background: var(--guardian-background, #fff) !important;
     }
 }

@@ -12,6 +12,7 @@ import { PolicyEngineService } from 'src/app/services/policy-engine.service';
 import { WebSocketService } from 'src/app/services/web-socket.service';
 
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
+import { GuardianDialogService } from '../../../../../services/guardian-dialog.service';
 import { GlobalEventsReaderFiltersDialogComponent } from '../../dialogs/global-events-reader-filters-dialog/global-events-reader-filters-dialog.component';
 import { CustomConfirmDialogComponent } from "src/app/modules/common/custom-confirm-dialog/custom-confirm-dialog.component";
 import {GlobalEventsStreamStatus} from "@guardian/interfaces";
@@ -72,7 +73,8 @@ export interface GlobalEventsReaderGetDataResponse {
     selector: 'global-events-reader-block',
     templateUrl: './global-events-reader-block.component.html',
     styleUrls: ['./global-events-reader-block.component.scss'],
-    providers: [DialogService],
+    providers: [{ provide: DialogService, useClass: GuardianDialogService }],
+    standalone: false
 })
 export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
     @Input('id')
@@ -392,7 +394,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                 filterFieldsByBranch: row.filterFieldsByBranch || {},
                 branchDocumentTypeByBranch,
             },
-        });
+        })!;
 
         this.filtersDialogCloseSub = this.filtersDialogRef.onClose.subscribe((result: FiltersDialogResult | null) => {
             if (!result) {
@@ -542,7 +544,7 @@ export class GlobalEventsReaderBlockComponent implements OnInit, OnDestroy {
                     },
                 ],
             },
-        });
+        })!;
 
         this.confirmDialogRef.onClose.subscribe((action: string | null) => {
             this.confirmDialogRef = null;

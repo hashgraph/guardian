@@ -1,6 +1,8 @@
-<div class="help" *ngIf="text">
+@if (text) {
+  <div class="help">
     <i class="pi pi-info-circle"
-       [pTooltip]="text"
-       tooltipPosition="top"
-       tooltipStyleClass="helpText"></i>
-</div>
+      [pTooltip]="text"
+      tooltipPosition="top"
+    tooltipStyleClass="helpText"></i>
+  </div>
+}

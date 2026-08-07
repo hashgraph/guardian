@@ -1,4 +1,4 @@
-# 🪅 Multiple Draft
+# Multiple Draft
 
 ### Overview
 

@@ -1,5 +1,3 @@
-import 'module-alias/register.js';
-
 import { assert } from 'chai';
 
 import { ContainerBlock} from '../../../../dist/policy-engine/helpers/decorators/container-block.js';

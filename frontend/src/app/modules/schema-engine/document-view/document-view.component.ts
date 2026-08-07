@@ -16,7 +16,8 @@ import { SchemaFormViewNavigationComponent } from '../schema-form-view-navigatio
     selector: 'app-document-view',
     templateUrl: './document-view.component.html',
     styleUrls: ['./document-view.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    standalone: false
 })
 export class DocumentViewComponent implements OnInit {
     @Input() dialogContext?: 'fullscreen' | 'viewer';
@@ -62,6 +63,7 @@ export class DocumentViewComponent implements OnInit {
     public formulasResults: any | null;
     public link: string | undefined;
     public accordionLink: string | undefined;
+    public navCollapsed: boolean = false;
 
     private destroy$: Subject<boolean> = new Subject<boolean>();
 
@@ -297,6 +299,11 @@ export class DocumentViewComponent implements OnInit {
     public openField(id?: string): void {
         const path = id?.split('/');
         this.link = path && path.length > 1 ? path[path.length - 1] : undefined;
+        this.ref.detectChanges();
+    }
+
+    public toggleNav(): void {
+        this.navCollapsed = !this.navCollapsed;
         this.ref.detectChanges();
     }
 

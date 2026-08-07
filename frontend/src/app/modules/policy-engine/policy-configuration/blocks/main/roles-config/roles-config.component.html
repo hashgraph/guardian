@@ -1,57 +1,63 @@
 <!-- UI Prop -->
-<table class="properties" [attr.readonly]="readonly" *ngIf="properties">
+@if (properties) {
+  <table class="properties roles-properties" [attr.readonly]="readonly">
+  <colgroup><col class="col-toggle"><col class="col-name"><col class="col-value"></colgroup>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Available Roles</td>
-        <td class="propRowCell">
-            <p-multiSelect [(ngModel)]="properties.roles"
-                           [options]="roles"
-                           [disabled]="readonly"
-                           (onChange)="onSave()"
-                           placeholder="Select Roles"
-                           optionLabel="name"
-                           optionValue="value"
-                           [appendTo]="'body'"
-            >
-            </p-multiSelect>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Available Roles</td>
+      <td class="propRowCell">
+        <p-multiSelect [(ngModel)]="properties.roles"
+          panelStyleClass="pc-select-panel"
+          [options]="roles"
+          [disabled]="readonly"
+          (onChange)="onSave()"
+          placeholder="Select Roles"
+          optionLabel="name"
+          optionValue="value"
+          [appendTo]="'body'"
+          >
+        </p-multiSelect>
+      </td>
     </tr>
     <tr class="propRow">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Available Groups</td>
-        <td class="propRowCell">
-            <p-multiSelect [(ngModel)]="properties.groups"
-                           [options]="groups"
-                           [disabled]="readonly"
-                           (onChange)="onSave()"
-                           placeholder="Select Groups"
-                           optionLabel="name"
-                           optionValue="value"
-                           [appendTo]="'body'"
-            >
-            </p-multiSelect>
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Available Groups</td>
+      <td class="propRowCell">
+        <p-multiSelect [(ngModel)]="properties.groups"
+          panelStyleClass="pc-select-panel"
+          [options]="groups"
+          [disabled]="readonly"
+          (onChange)="onSave()"
+          placeholder="Select Groups"
+          optionLabel="name"
+          optionValue="value"
+          [appendTo]="'body'"
+          >
+        </p-multiSelect>
+      </td>
     </tr>
-    <tr class="propHeader">
-        <td class="propRowCol cellCollapse" (click)="onHide(propHidden, 'main')" [attr.collapse]="propHidden.main">
-            <i class="pi pi-caret-down"></i>
-        </td>
-        <td class="propHeaderCell cellName">UI</td>
-        <td class="propHeaderCell"></td>
+    <tr class="propHeader" (click)="onHide(propHidden, 'main')">
+      <td class="propRowCol"></td>
+      <td class="propHeaderCell cellName roles-section-header" [attr.collapse]="propHidden.main">
+        <i class="pi pi-chevron-down chevron-icon"></i>
+        <span>UI</span>
+      </td>
+      <td class="propHeaderCell"></td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Title</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Title</td>
+      <td class="propRowCell">
+        <input class="prop-input" [(ngModel)]="properties.uiMetaData.title" [readonly]="readonly" (blur)="onSave()">
+      </td>
     </tr>
     <tr class="propRow" [attr.collapse]="propHidden.main">
-        <td class="propRowCol"></td>
-        <td class="propRowCell cellName">Description</td>
-        <td class="propRowCell">
-            <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
-                   (blur)="onSave()">
-        </td>
+      <td class="propRowCol"></td>
+      <td class="propRowCell cellName">Description</td>
+      <td class="propRowCell">
+        <input class="prop-input" [(ngModel)]="properties.uiMetaData.description" [readonly]="readonly"
+          (blur)="onSave()">
+      </td>
     </tr>
-</table>
+  </table>
+}

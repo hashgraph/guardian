@@ -1,13 +1,13 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Injector } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from './toast.service';
 import { MessageTranslationService } from './message-translation-service/message-translation-service';
 import { SILENT_HTTP_ERRORS } from '../constants';
-// import { AuthService } from './auth.service';
-// import { AuthStateService } from './auth-state.service';
+import { AuthService } from './auth.service';
+import { AuthStateService } from './auth-state.service';
 
 /**
  * Error interceptor.
@@ -16,10 +16,12 @@ import { SILENT_HTTP_ERRORS } from '../constants';
 export class HandleErrorsService implements HttpInterceptor {
     constructor(
         public router: Router,
-        private toastr: ToastrService,
+        private toastService: ToastService,
         private messageTranslator: MessageTranslationService,
-        // private auth: AuthService,
-        // private authState: AuthStateService,
+        // AuthService/AuthStateService depend on HttpClient, so injecting them
+        // directly would create a cyclic dependency with this interceptor.
+        // They are resolved lazily through the injector inside intercept().
+        private injector: Injector,
     ) {
     }
 
@@ -47,7 +49,7 @@ export class HandleErrorsService implements HttpInterceptor {
             const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(error.message));
             header = `${error.status} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : error.statusText}`;
             if (error.message) {
-                text = `<div>${translatedMessage.text}</div><div>${this.messageToText(errorObject)}</div>`;
+                text = `${translatedMessage.text}\n${this.messageToText(errorObject)}`;
             } else {
                 text = `${errorObject}`;
             }
@@ -65,7 +67,7 @@ export class HandleErrorsService implements HttpInterceptor {
                     const header = `${_error.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                     let text;
                     if (_error.message) {
-                        text = `<div>${translatedMessage.text}</div><div>${this.messageToText(_error.error)}</div>`;
+                        text = `${translatedMessage.text}\n${this.messageToText(_error.error)}`;
                     } else {
                         text = `${_error.error}`;
                     }
@@ -76,7 +78,7 @@ export class HandleErrorsService implements HttpInterceptor {
             } else if (typeof errorObject.message === 'string') {
                 const translatedMessage = this.messageTranslator.translateMessage(this.messageToText(errorObject.message));
                 if (errorObject.uuid) {
-                    text = `<div>${this.messageToText(translatedMessage.text)}</div><div>${errorObject.uuid}</div>`;
+                    text = `${this.messageToText(translatedMessage.text)}\n${errorObject.uuid}`;
                 } else {
                     text = `${this.messageToText(translatedMessage.text)}`;
                 }
@@ -85,7 +87,7 @@ export class HandleErrorsService implements HttpInterceptor {
                 } else {
                     header = `${errorObject.statusCode} ${(translatedMessage.wasTranslated) ? 'Hedera transaction failed' : 'Other Error'}`;
                 }
-                return { warning, text, header };
+                return { warning, text, header, blockErrorData: errorObject.data };
             }
         }
 
@@ -96,53 +98,48 @@ export class HandleErrorsService implements HttpInterceptor {
         return { warning, text, header };
     }
 
-    private createMessage(result: { warning: any, text: any, header: any }, error: any) {
+    private createMessage(result: { warning: any, text: any, header: any, blockErrorData?: any }, error: any) {
         if (result.warning) {
-            this.toastr.warning(result.text, 'Waiting for initialization', {
-                timeOut: 30000,
-                closeButton: true,
-                positionClass: 'toast-bottom-right',
-                enableHtml: true
-            });
+            this.toastService.warn(result.text, 'Waiting for initialization');
         } else {
             if (
                 !this.excludeErrorCodes.includes(String(error.status)) &&
                 !this.excludeErrorTexts.includes(String(result.text))
             ) {
-                const body = `
-                    <div>${result.text}</div>
-                    <div>See <a style="color: #0B73F8" href="/admin/logs?message=${btoa(result.text)}">logs</a> for details.</div>
-                `;
-                this.toastr.error(body, result.header, {
-                    timeOut: 100000,
-                    extendedTimeOut: 30000,
-                    closeButton: true,
-                    positionClass: 'toast-bottom-right',
-                    toastClass: 'ngx-toastr error-message-toastr',
-                    enableHtml: true,
-                });
+                this.toastService.error(result.text, result.header, { sticky: true, logMessage: result.text, blockErrorData: result.blockErrorData });
             }
         }
     }
 
-    private ifTokenExpired(error:any){
-        if( error?.status === 401 && error?.error?.message === 'Token expired') {
-            return true;
+    /**
+     * A 401 returned while an access token is attached means that token is no
+     * longer accepted (the session has expired). Clear the stale credentials
+     * and send the user to the login page. Requests made without a token (the
+     * user is already logged out) are left untouched, so this never loops on
+     * the login page. The first handled error clears the token, so concurrent
+     * 401s from the bootstrap requests skip straight past this.
+     */
+    private handleExpiredSession(error: any): boolean {
+        if (error?.status !== 401) {
+            return false;
         }
-        return false;
+        const auth = this.injector.get(AuthService);
+        if (!auth.getAccessToken()) {
+            return false;
+        }
+        const authState = this.injector.get(AuthStateService);
+        authState.clearSession();
+        this.router.navigate(['/login']);
+        return true;
     }
 
     public intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(req).pipe(
             catchError((error: any) => {
                 console.error(error);
-                // if(this.ifTokenExpired(error)) {
-                //     this.auth.removeAccessToken();
-                //     this.auth.removeUsername();
-                //     this.authState.updateState(false);
-                //     this.router.navigate(['/login']);
-                //     return throwError(error);
-                // }
+                if (this.handleExpiredSession(error)) {
+                    return throwError(error);
+                }
                 if (req.context.get(SILENT_HTTP_ERRORS)) {
                     return throwError(error);
                 }

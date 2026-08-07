@@ -27,10 +27,12 @@ import {
     FormulaImportExport,
     getArtifactType,
     INotificationStep,
+    IPFS,
     IPolicyComponents,
     MessageAction,
     MessageServer,
     MessageType,
+    MockEntityType,
     MockHelper,
     MultiPolicy,
     NatsService,
@@ -51,7 +53,6 @@ import {
     Topic,
     TopicConfig,
     TopicHelper,
-    UrlType,
     Users,
     VcHelper
 } from '@guardian/common';
@@ -72,6 +73,7 @@ import { ISerializedErrors } from './policy-validation-results-container.js';
 import { PolicyServiceChannelsContainer } from '../helpers/policy-service-channels-container.js';
 import { createHederaToken } from '../api/token.service.js';
 import { GuardiansService } from '../helpers/guardians.js';
+import { getOrgPolicyIdsForUser } from '../api/helpers/organization-helper.js';
 import { AISuggestionsService } from '../helpers/ai-suggestions.js';
 import { publishFormula } from '../api/helpers/formulas-helpers.js';
 import { FilterObject } from '@mikro-orm/core';
@@ -99,6 +101,72 @@ export enum PolicyAccessCode {
     AVAILABLE = 0,
     NOT_EXIST = 1,
     UNAVAILABLE = 2
+}
+
+export async function validatePolicySchemaTemplateBeforePublish(model: Policy): Promise<void> {
+    const binding = model.schemaTemplate;
+    const hasTemplateBinding = !!(
+        binding?.templateId ||
+        binding?.snapshotId ||
+        Object.keys(binding?.schemaMap || {}).length
+    );
+    if (!hasTemplateBinding) {
+        return;
+    }
+    if (!binding?.templateId) {
+        throw new Error(
+            'Policy cannot be published while it uses a schema template snapshot without a linked template. ' +
+            'Select a published schema template or detach it from the policy.'
+        );
+    }
+    const template = await DatabaseServer.getSchemaTemplateById(binding.templateId);
+    if (!template || template.status !== ModuleStatus.PUBLISHED) {
+        throw new Error(
+            'Policy cannot be published while it uses a draft schema template. ' +
+            'Publish the schema template first or detach it from the policy.'
+        );
+    }
+}
+
+/**
+ * Pure decision core for accessPolicyCode, factored out for unit testing.
+ * `isAssigned` already reflects both per-user AssignEntity and (when applicable)
+ * organization-assignment lookups — this function only encodes the AccessType ×
+ * published × isAssigned truth table, unchanged from the original inline switch.
+ * @param access
+ * @param published
+ * @param isAssigned
+ */
+export function resolvePolicyAccessCode(
+    access: AccessType,
+    published: boolean,
+    isAssigned: boolean
+): PolicyAccessCode {
+    switch (access) {
+        case AccessType.ALL: {
+            return PolicyAccessCode.AVAILABLE;
+        }
+        case AccessType.ASSIGNED_OR_PUBLISHED: {
+            return (published || isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.PUBLISHED: {
+            return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.ASSIGNED: {
+            return (isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.ASSIGNED_AND_PUBLISHED: {
+            return (published && isAssigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
+        }
+        case AccessType.NONE: {
+            //Insufficient permissions
+            return PolicyAccessCode.UNAVAILABLE;
+        }
+        default: {
+            //Insufficient permissions
+            return PolicyAccessCode.UNAVAILABLE;
+        }
+    }
 }
 
 /**
@@ -223,31 +291,26 @@ export class PolicyEngine extends NatsService {
         const published = (policy.status === PolicyStatus.PUBLISH || policy.status === PolicyStatus.DISCONTINUED);
         const assigned = await DatabaseServer.getAssignedEntity(AssignedEntityType.Policy, policy.id, user.creator);
 
-        switch (user.access) {
-            case AccessType.ALL: {
-                return PolicyAccessCode.AVAILABLE;
-            }
-            case AccessType.ASSIGNED_OR_PUBLISHED: {
-                return (published || assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.PUBLISHED: {
-                return (published) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.ASSIGNED: {
-                return (assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.ASSIGNED_AND_PUBLISHED: {
-                return (published && assigned) ? PolicyAccessCode.AVAILABLE : PolicyAccessCode.UNAVAILABLE;
-            }
-            case AccessType.NONE: {
-                //Insufficient permissions
-                return PolicyAccessCode.UNAVAILABLE;
-            }
-            default: {
-                //Insufficient permissions
-                return PolicyAccessCode.UNAVAILABLE;
+        let isAssigned = !!assigned;
+        // Additive: org-assigned ≡ personally-assigned for access purposes (visibility already
+        // works via addAccessFilters). Only consult the org lookup when the personal assignment
+        // didn't already decide the outcome for this AccessType, to avoid a needless NATS hop.
+        // Fail closed on lookup errors — unlike the list path's fail-open best-effort behavior.
+        if (
+            !isAssigned &&
+            user.creator &&
+            (user.access === AccessType.ASSIGNED ||
+                (user.access === AccessType.ASSIGNED_OR_PUBLISHED && !published) ||
+                (user.access === AccessType.ASSIGNED_AND_PUBLISHED && published))
+        ) {
+            try {
+                isAssigned = (await getOrgPolicyIdsForUser(user.creator, user.id || null)).includes(policy.id);
+            } catch {
+                isAssigned = false;
             }
         }
+
+        return resolvePolicyAccessCode(user.access, published, isAssigned);
     }
 
     /**
@@ -287,6 +350,25 @@ export class PolicyEngine extends NatsService {
         //Local
         const localFilters: any = {};
         localFilters.owner = user.owner;
+
+        // Additive: extend ACCESS_POLICY_ASSIGNED visibility through Organization membership.
+        // For users on an ASSIGNED-flavoured AccessType, also surface policies their organization
+        // has been assigned to via PolicyOrgAssignment. Empty array → bit-for-bit identical to the
+        // pre-Organization behavior. Best-effort; failures never block the existing filter path.
+        let orgPolicyIds: string[] = [];
+        if (
+            user?.creator &&
+            (user.access === AccessType.ASSIGNED ||
+                user.access === AccessType.ASSIGNED_OR_PUBLISHED ||
+                user.access === AccessType.ASSIGNED_AND_PUBLISHED)
+        ) {
+            try {
+                orgPolicyIds = await getOrgPolicyIdsForUser(user.creator, user.id || null);
+            } catch {
+                orgPolicyIds = [];
+            }
+        }
+
         switch (user.access) {
             case AccessType.ALL: {
                 break;
@@ -294,9 +376,12 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED_OR_PUBLISHED: {
                 const assigned1 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap1 = assigned1.map((e) => e.entityId);
+                const allIds1 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap1, ...orgPolicyIds]))
+                    : assignedMap1;
                 localFilters.$or = [
                     { status: { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] } },
-                    { id: { $in: assignedMap1 } }
+                    { id: { $in: allIds1 } }
                 ];
                 break;
             }
@@ -307,13 +392,19 @@ export class PolicyEngine extends NatsService {
             case AccessType.ASSIGNED: {
                 const assigned2 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap2 = assigned2.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap2 };
+                const allIds2 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap2, ...orgPolicyIds]))
+                    : assignedMap2;
+                localFilters.id = { $in: allIds2 };
                 break;
             }
             case AccessType.ASSIGNED_AND_PUBLISHED: {
                 const assigned3 = await DatabaseServer.getAssignedEntities(user.creator, AssignedEntityType.Policy);
                 const assignedMap3 = assigned3.map((e) => e.entityId);
-                localFilters.id = { $in: assignedMap3 };
+                const allIds3 = orgPolicyIds.length
+                    ? Array.from(new Set([...assignedMap3, ...orgPolicyIds]))
+                    : assignedMap3;
+                localFilters.id = { $in: allIds3 };
                 localFilters.status = { $in: [PolicyStatus.PUBLISH, PolicyStatus.DISCONTINUED] };
                 break;
             }
@@ -461,6 +552,7 @@ export class PolicyEngine extends NatsService {
             delete data.owner;
             delete data.version;
             delete data.messageId;
+            delete data.discontinuedDate;
         }
         const model = DatabaseServer.createPolicy(data);
         model.creator = user.creator;
@@ -1129,12 +1221,15 @@ export class PolicyEngine extends NatsService {
     public async dryRunSchemas(
         model: Policy,
         user: IOwner,
-        messageServer: MessageServer,
+        accountId: string,
         mockId: string
     ): Promise<Policy> {
         const schemas = await DatabaseServer.getSchemas({ topicId: model.topicId });
 
-        // const draftSchemas: SchemaCollection[] = [];
+        const topicId = (model.topicId || '').toString();
+        const updatedSchemas: SchemaCollection[] = [];
+        const mockRows: any[] = [];
+
         for (const schema of schemas) {
             if (schema.status === SchemaStatus.PUBLISHED) {
                 continue;
@@ -1142,33 +1237,45 @@ export class PolicyEngine extends NatsService {
 
             schema.context = generateSchemaContext(schema);
             SchemaHelper.updateIRI(schema);
-            await DatabaseServer.updateSchema(schema.id, schema);
+            updatedSchemas.push(schema);
 
             if (mockId) {
+                // Build the mock schema-publish records in-process with the final context CID
+                // already set, so no per-schema worker round-trip or replaceSchema read-back is
+                // needed. All rows are batch-inserted after the loop.
                 const message = new SchemaMessage(MessageAction.PublishSchema);
                 message.setDocument(schema);
                 message.setRelationships([]);
-                const result = await messageServer
-                    .sendMessage(message, {
-                        sendToIPFS: true,
-                        memo: null,
-                        userId: user.id,
-                        interception: user.id,
-                        mockId
-                    });
+                const [documentBuffer, contextBuffer] = await message.toDocuments();
 
-                const messageId = result.getId();
-                const contextCid = result.getContextUrl(UrlType.cid);
+                const documentCid = GenerateUUIDv4();
+                const contextCid = (schema.contextURL || '').replace('schema:', '');
+                message.setUrls([
+                    { cid: documentCid, url: IPFS.IPFS_PROTOCOL + documentCid },
+                    { cid: contextCid, url: schema.contextURL }
+                ]);
 
-                await MockHelper.replaceSchema(
-                    mockId,
-                    messageId,
-                    contextCid,
-                    schema.contextURL
-                );
+                if (documentBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: documentCid, document: MockHelper.getBuffer(documentBuffer) });
+                }
+                if (contextBuffer) {
+                    mockRows.push({ type: MockEntityType.FILE, cid: contextCid, document: MockHelper.getBuffer(contextBuffer) });
+                }
+                mockRows.push(MockHelper.getMessageRecord(topicId, message.toMessage(), accountId));
             }
         }
+
+        // Independent bulk writes to different collections - run them concurrently.
+        await Promise.all([
+            DatabaseServer.updateSchemas(updatedSchemas),
+            DatabaseServer.saveMockBatch(mockId, mockRows)
+        ]);
+
         return model;
+    }
+
+    private async validateSchemaTemplateBeforePublish(model: Policy): Promise<void> {
+        await validatePolicySchemaTemplateBeforePublish(model);
     }
 
     /**
@@ -1225,6 +1332,8 @@ export class PolicyEngine extends NatsService {
         notifier.addStep(STEP_PUBLISH_TAGS, 4);
         notifier.addStep(STEP_SAVE, 2);
         notifier.start();
+
+        await this.validateSchemaTemplateBeforePublish(model);
 
         model.version = version;
         model.availability = availability;
@@ -1718,7 +1827,7 @@ export class PolicyEngine extends NatsService {
         });
 
         //'Publish' policy schemas
-        model = await this.dryRunSchemas(model, user, messageServer, mockId);
+        model = await this.dryRunSchemas(model, user, root.hederaAccountId, mockId);
         model.status = demo ? PolicyStatus.DEMO : PolicyStatus.DRY_RUN;
         model.version = version;
 
@@ -2124,12 +2233,15 @@ export class PolicyEngine extends NatsService {
             if (confirmed) {
                 return new Promise((resolve, reject) => {
                     this.policyReadyCallbacks.set(policyId, (data, error) => {
+                        // Always clean up first so the callback settles exactly once,
+                        // even if a duplicate ready-event arrives.
+                        this.policyReadyCallbacks.delete(policyId);
                         if (error) {
                             this.policyInitializationErrors.set(policyId, error);
                             reject(new Error(error));
+                            return;
                         }
                         resolve(data);
-                        this.policyReadyCallbacks.delete(policyId);
                     })
                 });
             } else {
@@ -2258,23 +2370,27 @@ export class PolicyEngine extends NatsService {
         isDruRun: boolean = false,
         ignoreRules?: ReadonlyArray<IgnoreRule>
     ): Promise<ISerializedErrors> {
-        let policyId: string;
         if (typeof policy === 'string') {
-            policyId = policy
-            policy = await DatabaseServer.getPolicyById(policyId);
-        } else {
-            if (!policy.id) {
-                policy.id = GenerateUUIDv4();
-            }
-            policyId = policy.id.toString();
+            // Persisted policy: send only the id reference and let the handler reload it
+            // locally (policy-service has DB access), instead of shipping the full policy -
+            // including its potentially large config - over the message broker.
+            return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+                policyId: policy,
+                isDruRun,
+                ignoreRules,
+                reachability: true
+            });
         }
-        const result = await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
+        if (!policy.id) {
+            policy.id = GenerateUUIDv4();
+        }
+        // Unsaved/in-memory policy (editor validation): send the full object as before.
+        return await this.sendMessageWithTimeout<any>(PolicyEvents.VALIDATE_POLICY, 60 * 1000, {
             policy,
             isDruRun,
             ignoreRules,
             reachability: true
         });
-        return result;
     }
 
     /**

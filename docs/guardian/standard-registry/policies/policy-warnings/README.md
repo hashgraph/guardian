@@ -1,7 +1,3 @@
----
-icon: triangle-exclamation
----
-
 # Policy Warnings
 
 ### Overview

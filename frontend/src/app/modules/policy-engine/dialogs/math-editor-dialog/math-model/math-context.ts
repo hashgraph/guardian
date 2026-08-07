@@ -4,7 +4,9 @@ import { getValueByPath, convertValue, createComputeEngine, getDocumentValueByPa
 import { MathItemType } from './math-item.type';
 import { IContext } from './math.interface';
 import { DocumentMap } from './document-map';
-import { BoxedExpression, ComputeEngine } from '@cortex-js/compute-engine';
+import { ComputeEngine } from '@cortex-js/compute-engine';
+
+type BoxedExpression = ReturnType<ComputeEngine['box']>;
 
 export function getList(expr: any): any[] {
     if (!expr) { return []; }

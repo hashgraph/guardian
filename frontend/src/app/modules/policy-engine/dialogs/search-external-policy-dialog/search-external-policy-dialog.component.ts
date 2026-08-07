@@ -6,6 +6,7 @@ import { ExternalPoliciesService } from 'src/app/services/external-policy.servic
     selector: 'search-external-policy-dialog',
     templateUrl: './search-external-policy-dialog.component.html',
     styleUrls: ['./search-external-policy-dialog.component.scss'],
+    standalone: false
 })
 export class SearchExternalPolicyDialog {
     public loading = true;

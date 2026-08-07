@@ -5,7 +5,6 @@ import {
     encryptWithKeyDerivedFromString,
     utf8ToBytes,
 } from '@meeco/cryppo';
-import { SerializationFormat } from '@meeco/cryppo/dist/src/serialization-versions.js';
 
 export class EncryptVcHelper {
     public static async encrypt(document: string, key: string): Promise<string> {
@@ -15,8 +14,7 @@ export class EncryptVcHelper {
         const encryptedDocument = await encryptWithKeyDerivedFromString({
             passphrase: key,
             data: utf8ToBytes(document),
-            strategy: CipherStrategy.AES_GCM,
-            serializationVersion: SerializationFormat.latest_version,
+            strategy: CipherStrategy.AES_GCM
         });
         return encryptedDocument.serialized;
     }

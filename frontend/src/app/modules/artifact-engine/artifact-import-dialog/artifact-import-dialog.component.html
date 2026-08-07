@@ -1,33 +1,43 @@
-<div class="content">
-    <h1 mat-dialog-title>
-        Import Artifacts
-    </h1>
-    <div mat-dialog-content>
-        <form>
-
-            <div class="p-fluid">
-                <label for="policyDropdown">Policy Identifier</label>
-                <p-dropdown
-                    id="policyDropdown"
-                    [formControl]="policyId"
-                    [options]="getPolicyOptions()"
-                    optionLabel="label"
-                    placeholder="Select a Policy">
-                </p-dropdown>
-            </div>
+<div class="dialog-header">
+    <div class="header-container">
+        <div class="header-text">Import Artifacts</div>
+    </div>
+    <div class="header-icon" (click)="onNoClick()">
+        <svg-icon src="/assets/images/icons/close.svg" svgClass="icon-color-close"></svg-icon>
+    </div>
+</div>
+<div class="dialog-body">
+    <div class="context">
+        <div class="form-field">
+            <label class="form-label" for="policyDropdown">Policy Identifier</label>
+            <p-select
+                id="policyDropdown"
+                [formControl]="policyId"
+                [options]="getPolicyOptions()"
+                optionLabel="label"
+                placeholder="Select a Policy"
+                appendTo="body"
+                styleClass="guardian-dropdown"
+                class="guardian-dropdown"
+                panelStyleClass="guardian-dropdown-panel">
+            </p-select>
+        </div>
+        <div class="form-container">
             <app-file-drag-n-drop
-                fileExtension="*" [multiple]="true" (onFileLoaded)="importFiles($event)"
-                dropZoneLabel="Import Artifacts"></app-file-drag-n-drop
-            >
-            <div mat-dialog-actions>
-                <div class="cancel-button">
-                    <p-button
-                        (click)="onNoClick()"
-                        label="Cancel"
-                        [outlined]=true
-                    ></p-button>
-                </div>
-            </div>
-        </form>
+                fileExtension="*"
+                [multiple]="true"
+                (onFileLoaded)="importFiles($event)"
+                dropZoneLabel="Import Artifacts">
+            </app-file-drag-n-drop>
+        </div>
+    </div>
+</div>
+<div class="dialog-footer">
+    <div class="action-buttons">
+        <div class="dialog-button">
+            <button
+                (click)="onNoClick()"
+                class="guardian-button guardian-button-secondary">Cancel</button>
+        </div>
     </div>
 </div>

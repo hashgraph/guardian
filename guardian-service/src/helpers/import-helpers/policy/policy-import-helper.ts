@@ -155,13 +155,19 @@ export class PolicyImportExportHelper {
         const schemas: string[] = [];
         const tools: string[] = [];
         const others: string[] = []
+        // Carry the cause into the message, not just the component name. This
+        // string is what an operator sees (it becomes the MessageError returned
+        // to the API); name-only turned every failure into an indistinguishable
+        // 'tools: ["X"]' regardless of whether the package 404'd, timed out or
+        // was rejected.
+        const label = (e: ImportPolicyError): string => (e?.error ? `${e.name}: ${e.error}` : e?.name);
         for (const e of errors) {
             if (e.type === 'schema') {
-                schemas.push(e.name);
+                schemas.push(label(e));
             } else if (e.type === 'tool') {
-                tools.push(e.name);
+                tools.push(label(e));
             } else {
-                others.push(e.name);
+                others.push(label(e));
             }
         }
         let message: string = 'Failed to import components:';

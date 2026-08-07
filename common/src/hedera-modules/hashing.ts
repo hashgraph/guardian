@@ -1,4 +1,4 @@
-import * as crypto from 'crypto';
+import * as crypto from 'node:crypto';
 import bs58 from 'bs58';
 import { Base64 } from 'js-base64';
 

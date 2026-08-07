@@ -14,6 +14,7 @@ import { HttpErrorResponse } from '@angular/common/http';
     selector: 'create-token-block',
     templateUrl: './create-token-block.component.html',
     styleUrls: ['./create-token-block.component.scss'],
+    standalone: false
 })
 export class CreateTokenBlockComponent implements OnInit {
     @Input('id') id!: string;

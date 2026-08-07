@@ -12,7 +12,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 @Component({
     selector: 'app-roles-block',
     templateUrl: './roles-block.component.html',
-    styleUrls: ['./roles-block.component.scss']
+    styleUrls: ['./roles-block.component.scss'],
+    standalone: false
 })
 export class RolesBlockComponent implements OnInit {
     @Input('id') id!: string;

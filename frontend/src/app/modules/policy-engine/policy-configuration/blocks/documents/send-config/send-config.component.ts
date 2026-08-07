@@ -8,7 +8,8 @@ import {IModuleVariables, PolicyBlock, TopicVariables} from '../../../../structu
     selector: 'send-config',
     templateUrl: './send-config.component.html',
     styleUrls: ['./send-config.component.scss'],
-    encapsulation: ViewEncapsulation.Emulated
+    encapsulation: ViewEncapsulation.Emulated,
+    standalone: false
 })
 export class SendConfigComponent implements OnInit {
     @Input('block') currentBlock!: PolicyBlock;
@@ -26,6 +27,8 @@ export class SendConfigComponent implements OnInit {
 
     properties!: any;
     topics!: TopicVariables[];
+
+    private optionGroupInitialized = false;
 
     public dataTypeOptions = [
         {label: '', value: ''},
@@ -71,6 +74,10 @@ export class SendConfigComponent implements OnInit {
             this.properties.dataSource = 'auto';
         }
         this.topics = this.moduleVariables?.topics || [];
+        if (!this.optionGroupInitialized) {
+            this.propHidden.optionGroup = this.properties.options.length === 0;
+            this.optionGroupInitialized = true;
+        }
     }
 
     onHide(item: any, prop: any) {
@@ -82,10 +89,14 @@ export class SendConfigComponent implements OnInit {
             name: '',
             value: ''
         })
+        this.propHidden.optionGroup = false;
     }
 
     removeOption(i: number) {
         this.properties.options.splice(i, 1);
+        if (this.properties.options.length === 0) {
+            this.propHidden.optionGroup = true;
+        }
     }
 
     selectTopic(event: any) {

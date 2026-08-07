@@ -1,3 +1,5 @@
+import { getAllContinents, getAllCountries, getContinentName, getCountryName, isContinent, isCountry } from '@guardian/interfaces';
+
 export interface IFieldTypes {
     name?: string;
     type?: string;
@@ -11,27 +13,63 @@ export interface IFieldTypes {
     pars?: (value: any) => any;
 }
 
+function geoCode(
+    value: any,
+    isCode: (code: string) => boolean,
+    options: { value: string, name: string }[]
+): string {
+    const raw = geoText(value);
+    if (!raw) {
+        return '';
+    }
+    if (isCode(raw)) {
+        return raw;
+    }
+    const lower = raw.toLowerCase();
+    const match = options.find((option) => option.name.toLowerCase() === lower);
+    return match ? match.value : '';
+}
+
+export function geoDisplayValue(customType: string, value: any): any {
+    if (typeof value !== 'string' || !value) {
+        return value;
+    }
+    if (customType === 'country') {
+        return getCountryName(value) || value;
+    }
+    if (customType === 'continent') {
+        return getContinentName(value) || value;
+    }
+    return value;
+}
+
+function geoText(value: any): string {
+    return value === undefined || value === null ? '' : String(value).trim();
+}
+
 export enum Dictionary {
     REQUIRED_FIELD = 'Required Field',
     FIELD_TYPE = 'Field Type',
     PARAMETER = 'Parameter',
-    QUESTION = 'Question',
+    QUESTION = 'Description',
     ALLOW_MULTIPLE_ANSWERS = 'Allow Multiple Answers',
-    ANSWER = 'Answer',
+    ANSWER = 'Test Value',
     KEY = 'Key',
     AUTO_CALCULATE = 'Auto-Calculate',
     SUB_SCHEMA = 'Sub-Schema',
     SCHEMA_NAME = 'Schema',
-    SCHEMA_DESCRIPTION = 'Description',
+    SCHEMA_DESCRIPTION = 'Schema Description',
     VISIBILITY = 'Visibility',
     SCHEMA_TYPE = 'Schema Type',
     SCHEMA_TOOL = 'Tool',
     SCHEMA_TOOL_ID = 'Tool Id',
-    ENUM_SCHEMA_NAME = 'Schema name',
-    ENUM_FIELD_NAME = 'Field name',
+    ENUM_NAME = 'Enum Name',
     ENUM_IPFS = 'Loaded to IPFS',
-    DEFAULT = 'Default',
-    SUGGEST = 'Suggest',
+    ENUM_VALUE = 'Value',
+    SHARED_ENUM_SHEET = 'Enums',
+    README_SHEET = 'README',
+    DEFAULT = 'Default Value',
+    SUGGEST = 'Suggest Value',
 }
 
 export class FieldTypes {
@@ -304,6 +342,54 @@ export class FieldTypes {
             customType: undefined,
             hidden: false,
             pars: (value: any) => String(value)
+        },
+        {
+            name: 'Sub-Schema',
+            type: null,
+            format: undefined,
+            pattern: undefined,
+            isRef: true,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'subSchema',
+            hidden: false,
+            pars: (value: any) => value
+        },
+        {
+            name: 'Country',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'country',
+            hidden: false,
+            pars: (value: any) => geoCode(value, isCountry, getAllCountries())
+        },
+        {
+            name: 'Continent',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'continent',
+            hidden: false,
+            pars: (value: any) => geoCode(value, isContinent, getAllContinents())
+        },
+        {
+            name: 'State/Province',
+            type: 'string',
+            format: undefined,
+            pattern: undefined,
+            isRef: false,
+            unit: undefined,
+            unitSystem: undefined,
+            customType: 'state',
+            hidden: false,
+            pars: (value: any) => geoText(value)
         },
     ];
 

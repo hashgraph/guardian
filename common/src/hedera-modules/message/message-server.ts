@@ -1,12 +1,13 @@
 import { AccountId, PrivateKey, TopicId, } from '@hiero-ledger/sdk';
 import { GenerateUUIDv4, ISignOptions, SignType, WorkerTaskType } from '@guardian/interfaces';
-import { IPFS, IPFSOptions, PinoLogger, Workers } from '../../helpers/index.js';
+import { IPFS, IPFSOptions, MockEntityType, MockHelper, MockType, PinoLogger, Workers } from '../../helpers/index.js';
 import { TransactionLogger } from '../transaction-logger.js';
 import { Environment } from '../environment.js';
 import { MessageMemo } from '../memo-mappings/message-memo.js';
 import { DatabaseServer } from '../../database-modules/index.js';
 import { TopicConfig } from '../topic.js';
 import { Message } from './message.js';
+import { MessageIpfsError, MessageLoadError, MessageNotFoundError } from './message-load.error.js';
 import { MessageType } from './message-type.js';
 import { MessageAction } from './message-action.js';
 import { VCMessage } from './vc-message.js';
@@ -20,6 +21,7 @@ import { TokenMessage } from './token-message.js';
 import { ModuleMessage } from './module-message.js';
 import { TagMessage } from './tag-message.js';
 import { ToolMessage } from './tool-message.js';
+import { SchemaTemplateMessage } from './schema-template-message.js';
 import { RoleMessage } from './role-message.js';
 import { GuardianRoleMessage } from './guardian-role-message.js';
 import { UserPermissionsMessage } from './user-permissions-message.js';
@@ -34,6 +36,7 @@ import { SchemaPackageMessage } from './schema-package-message.js';
 import { CommentMessage } from './comment-message.js';
 import { DiscussionMessage } from './discussion-message.js';
 import { PolicyRecordMessage } from './policy-record-message.js';
+import { OrganizationMessage } from './organization-message.js';
 
 interface LoadOptions {
     dryRun?: string,
@@ -312,6 +315,15 @@ export class MessageServer {
             }
             await new TransactionLogger().virtualFileLog(this.dryRun, file, result);
             return result
+        } else if (this.dryRun && options.mockId) {
+            // Dry-run mock file: record in-process (same saveMock the worker's mock path does),
+            // skipping the per-file worker round-trip that dominates schema-heavy dry-run switches.
+            const cid = await MockHelper.execute({
+                mockId: options.mockId,
+                type: MockType.ADD_FILE,
+                data: { type: MockEntityType.FILE, content: MockHelper.getBuffer(file) }
+            });
+            return { cid, url: IPFS.IPFS_PROTOCOL + cid };
         } else {
             // <-- Steps
             const STEP_SEND_FILE = 'Send file';
@@ -465,6 +477,9 @@ export class MessageServer {
             case MessageType.Tool:
                 message = ToolMessage.fromMessageObject(json);
                 break;
+            case MessageType.SchemaTemplate:
+                message = SchemaTemplateMessage.fromMessageObject(json);
+                break;
             case MessageType.Tag:
                 message = TagMessage.fromMessageObject(json);
                 break;
@@ -500,6 +515,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyRecordStep:
                 message = PolicyRecordMessage.fromMessageObject(json);
+                break;
+            case MessageType.Organization:
+                message = OrganizationMessage.fromMessageObject(json);
                 break;
 
             // Default schemas
@@ -563,6 +581,9 @@ export class MessageServer {
             case MessageType.Tool:
                 message = ToolMessage.fromJson(json);
                 break;
+            case MessageType.SchemaTemplate:
+                message = SchemaTemplateMessage.fromJson(json);
+                break;
             case MessageType.Tag:
                 message = TagMessage.fromJson(json);
                 break;
@@ -598,6 +619,9 @@ export class MessageServer {
                 break;
             case MessageType.PolicyRecordStep:
                 message = PolicyRecordMessage.fromJson(json);
+                break;
+            case MessageType.Organization:
+                message = OrganizationMessage.fromJson(json);
                 break;
             // Default schemas
             case 'schema-document':
@@ -635,30 +659,42 @@ export class MessageServer {
         }
         const time = await this.messageStartLog('Hedera', options.userId);
         const buffer = message.toMessage();
-        const timestamp = await new Workers().addRetryableTask({
-            type: WorkerTaskType.SEND_HEDERA,
-            data: {
-                topicId: this.topicId,
-                buffer,
-                submitKey: this.submitKey,
-                clientOptions: this.clientOptions,
-                network: Environment.network,
-                localNodeAddress: Environment.localNodeAddress,
-                localNodeProtocol: Environment.localNodeProtocol,
-                signOptions: this.signOptions,
-                memo: message.getMemo(),
+        let timestamp: string;
+        if (this.dryRun && options.mockId) {
+            // Dry-run mock message: record in-process (same saveMock the worker's mock path does),
+            // skipping the per-message worker round-trip that dominates schema-heavy dry-run switches.
+            const record = await MockHelper.execute({
+                mockId: options.mockId,
+                type: MockType.EXECUTE_AND_RECORD,
+                data: MockHelper.getMessageRecord(this.topicId.toString(), buffer, this.operatorId)
+            });
+            timestamp = record.consensus_timestamp;
+        } else {
+            timestamp = await new Workers().addRetryableTask({
+                type: WorkerTaskType.SEND_HEDERA,
+                data: {
+                    topicId: this.topicId,
+                    buffer,
+                    submitKey: this.submitKey,
+                    clientOptions: this.clientOptions,
+                    network: Environment.network,
+                    localNodeAddress: Environment.localNodeAddress,
+                    localNodeProtocol: Environment.localNodeProtocol,
+                    signOptions: this.signOptions,
+                    memo: message.getMemo(),
+                    dryRun: this.dryRun,
+                    payload: { userId: options.userId },
+                }
+            }, {
+                priority: 10,
+                attempts: 0,
+                userId: options.userId,
+                interception: options.interception,
+                registerCallback: true,
                 dryRun: this.dryRun,
-                payload: { userId: options.userId },
-            }
-        }, {
-            priority: 10,
-            attempts: 0,
-            userId: options.userId,
-            interception: options.interception,
-            registerCallback: true,
-            dryRun: this.dryRun,
-            mockId: options.mockId,
-        });
+                mockId: options.mockId,
+            });
+        }
 
         await this.messageEndLog(time, 'Hedera', options.userId);
         message.setId(timestamp);
@@ -819,29 +855,50 @@ export class MessageServer {
      * @param userId
      */
     public static async getMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        const messageId = options?.messageId?.trim();
+        if (!messageId) {
+            throw new MessageNotFoundError();
+        }
         try {
-            if (!options) {
-                return null;
-            }
             const { loadIPFS, type, userId, dryRun } = options;
-            let { messageId } = options;
-            if (messageId && typeof messageId === 'string') {
-                messageId = messageId.trim();
-            }
-            if (!messageId || typeof messageId !== 'string') {
-                return null;
-            }
             if (dryRun && !options.mockId) {
                 return await MessageServer.getDryRunTopicMessage<T>(dryRun, messageId, type, userId);
             } else {
                 let message = await MessageServer.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
-                    message = await MessageServer.loadIPFS(message, options.encryptKey, options);
+                    try {
+                        message = await MessageServer.loadIPFS(message, options.encryptKey, options);
+                    } catch (ipfsError) {
+                        // Distinguish unreachable IPFS from a missing message.
+                        new PinoLogger().error(ipfsError, ['GUARDIAN_SERVICE'], options?.userId);
+                        throw new MessageIpfsError(messageId, ipfsError);
+                    }
                 }
                 return message;
             }
         } catch (error) {
-            return null;
+            if (error instanceof MessageLoadError) {
+                throw error;
+            }
+            new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
+            throw new MessageNotFoundError(messageId, error);
+        }
+    }
+
+    /**
+     * Get message, returns null instead of throwing when the message cannot be
+     * found. For callers where a missing message is an expected, non-exceptional
+     * outcome. Other failures, including an unreachable IPFS, still throw.
+     * @param options
+     */
+    public static async tryGetMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        try {
+            return await MessageServer.getMessage<T>(options);
+        } catch (error) {
+            if (error instanceof MessageNotFoundError) {
+                return null;
+            }
+            throw error;
         }
     }
 
@@ -852,29 +909,50 @@ export class MessageServer {
      * @param userId
      */
     public async getMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        const messageId = options?.messageId?.trim();
+        if (!messageId) {
+            throw new MessageNotFoundError();
+        }
         try {
-            if (!options) {
-                return null;
-            }
             const { loadIPFS, type, userId } = options;
-            let { messageId } = options;
-            if (messageId && typeof messageId === 'string') {
-                messageId = messageId.trim();
-            }
-            if (!messageId || typeof messageId !== 'string') {
-                return null;
-            }
             if (this.dryRun && !options.mockId) {
                 return await this.getDryRunTopicMessage<T>(messageId, type, userId);
             } else {
                 let message = await this.getTopicMessage<T>(messageId, type, options);
                 if (loadIPFS) {
-                    message = await this.loadIPFS(message, options);
+                    try {
+                        message = await this.loadIPFS(message, options);
+                    } catch (ipfsError) {
+                        // Distinguish unreachable IPFS from a missing message.
+                        new PinoLogger().error(ipfsError, ['GUARDIAN_SERVICE'], options?.userId);
+                        throw new MessageIpfsError(messageId, ipfsError);
+                    }
                 }
                 return message as T;
             }
         } catch (error) {
-            return null;
+            if (error instanceof MessageLoadError) {
+                throw error;
+            }
+            new PinoLogger().error(error, ['GUARDIAN_SERVICE'], options?.userId);
+            throw new MessageNotFoundError(messageId, error);
+        }
+    }
+
+    /**
+     * Get message, returns null instead of throwing when the message cannot be
+     * found. For callers where a missing message is an expected, non-exceptional
+     * outcome. Other failures, including an unreachable IPFS, still throw.
+     * @param options
+     */
+    public async tryGetMessage<T extends Message>(options: LoadMessageOptions): Promise<T> {
+        try {
+            return await this.getMessage<T>(options);
+        } catch (error) {
+            if (error instanceof MessageNotFoundError) {
+                return null;
+            }
+            throw error;
         }
     }
 

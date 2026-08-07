@@ -7,6 +7,7 @@ import { TreeListData, TreeListItem, TreeListView } from 'src/app/modules/common
     selector: 'formulas-view-dialog',
     templateUrl: './formulas-view-dialog.component.html',
     styleUrls: ['./formulas-view-dialog.component.scss'],
+    standalone: false
 })
 export class FormulasViewDialog {
     public loading = true;
@@ -37,6 +38,7 @@ export class FormulasViewDialog {
     ];
 
     public activeTab: string = 'formulas';
+    public tabIndex: number = 0;
 
     constructor(
         public ref: DynamicDialogRef,
@@ -94,8 +96,9 @@ export class FormulasViewDialog {
         this.nav.updateSelected();
     }
 
-    public setTab(event: any): void {
-        const opt = this.viewDocumentOptions[event.index];
+    public setTab(index: string | number | undefined): void {
+        const tabIndex = typeof index === 'number' ? index : 0;
+        const opt = this.viewDocumentOptions[tabIndex];
         this.activeTab = opt?.key || 'formulas';
     }
 
