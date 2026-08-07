@@ -1,3 +1,8 @@
+---
+tags:
+  - tasks
+---
+
 # Run a Policy Integrity Test
 
 Run a Policy Integrity Test to test to verify outputs produced during policy execution

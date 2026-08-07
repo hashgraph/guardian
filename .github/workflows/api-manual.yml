@@ -154,8 +154,8 @@ jobs:
           ACCESS_TOKEN_UPDATE_INTERVAL: 600000
           MIN_PASSWORD_LENGTH: 4
           PASSWORD_COMPLEXITY: easy
-          INITIAL_BALANCE: 10
-          INITIAL_STANDARD_REGISTRY_BALANCE: 200
+          INITIAL_BALANCE: 20
+          INITIAL_STANDARD_REGISTRY_BALANCE: 250
 
       - name: Set up Docker Buildx
         uses: step-security/setup-buildx-action@a4709e2865773e1792246433e8eb922f9743a875 # v4.2.0

@@ -1,7 +1,3 @@
----
-icon: computer
----
-
 # Demo using UI
 
 1. Step By Step
