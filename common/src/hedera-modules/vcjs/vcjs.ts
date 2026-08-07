@@ -317,6 +317,7 @@ export class VCJS {
         addFormats.default(ajv);
 
         this.prepareSchema(schema);
+        this.coerceConditionConsts(schema);
 
         const schemaObject = Schema.fromVc(schema);
 
@@ -548,6 +549,56 @@ export class VCJS {
         return '';
     }
 
+    private coerceConditionConsts(schema: any): void {
+        const rootDefs = schema.$defs || {};
+
+        const coerceConst = (value: any, type: string): any => {
+            if (type === 'number' || type === 'integer') {
+                const n = Number(value);
+                return isNaN(n) ? value : n;
+            }
+            if (type === 'boolean') {
+                return value === 'true';
+            }
+            if (type === 'string' && value !== null && value !== undefined) {
+                return String(value);
+            }
+            return value;
+        };
+
+        const walkIfNode = (node: any, context: any): void => {
+            if (!node || typeof node !== 'object') { return; }
+            if (Array.isArray(node.allOf)) {
+                for (const child of node.allOf) { walkIfNode(child, context); }
+                return;
+            }
+            if (!node.properties) { return; }
+            for (const [key, val] of Object.entries(node.properties) as [string, any][]) {
+                if (!val || typeof val !== 'object') { continue; }
+                if ('const' in val) {
+                    const type = context?.properties?.[key]?.type;
+                    if (type) { val.const = coerceConst(val.const, type); }
+                } else if (val.properties || val.allOf) {
+                    const ref = context?.properties?.[key]?.$ref;
+                    const subContext = ref ? (context.$defs?.[ref] ?? rootDefs[ref]) : null;
+                    if (subContext) { walkIfNode(val, subContext); }
+                }
+            }
+        };
+
+        const walkAllOf = (s: any, context: any): void => {
+            if (!Array.isArray(s?.allOf)) { return; }
+            for (const entry of s.allOf) {
+                if (entry?.if) { walkIfNode(entry.if, context); }
+            }
+        };
+
+        walkAllOf(schema, schema);
+        for (const def of Object.values(rootDefs) as any[]) {
+            if (def && typeof def === 'object') { walkAllOf(def, def); }
+        }
+    }
+
     /**
      * Replaces AJV messages with a human-readable description
      */
@@ -612,6 +663,7 @@ export class VCJS {
         addFormats.default(ajv);
 
         this.prepareSchema(schema);
+        this.coerceConditionConsts(schema);
 
         const schemaObject = Schema.fromVc(schema);
 
