@@ -7,11 +7,6 @@ FROM --platform=$BUILDPLATFORM node:${NODE_VERSION} AS base
 WORKDIR /usr/local/app
 RUN corepack enable
 
-# Production deps: native to the target arch
-FROM node:${NODE_VERSION} AS base-target
-WORKDIR /usr/local/app
-RUN corepack enable
-
 # Stage 1: Install all dependencies for building.
 FROM base AS deps-dev
 COPY --link package.json yarn.lock .yarnrc.yml ./
@@ -26,13 +21,18 @@ COPY --link mrv-sender/tsconfig*.json mrv-sender/
 COPY --link mrv-sender/src mrv-sender/src/
 RUN yarn workspace mrv-sender run build:prod
 
-# Stage 3: FOCUSED production install TARGET platform.
-FROM base-target AS deps-prod
+# Stage 3: FOCUSED production install for the target arch, run on the
+# builder's arch with the target declared to Yarn instead of emulated.
+FROM base AS deps-prod
+ARG TARGETOS
+ARG TARGETARCH
 COPY --link package.json yarn.lock .yarnrc.yml ./
 COPY --link .yarn .yarn
 COPY --link --parents */package.json ./
 RUN --mount=type=cache,target=/root/.yarn/berry/cache,sharing=private \
-    yarn workspaces focus --production mrv-sender
+    printf '\nsupportedArchitectures:\n  os: ["%s"]\n  cpu: ["%s"]\n' \
+      "${TARGETOS}" "$(echo "${TARGETARCH}" | sed 's/^amd64$/x64/')" >> .yarnrc.yml \
+ && yarn workspaces focus --production mrv-sender
 
 # Stage 4: Create the final image.
 FROM node:${NODE_VERSION} AS image
