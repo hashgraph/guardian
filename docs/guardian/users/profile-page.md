@@ -50,7 +50,7 @@ The Profile page is the account view at `/profile`, where a Standard Registry or
 | Documentation            | toggle  | No              | Off            | Shows the in-app documentation widget. HTTPS only.               |
 | Experimental UI          | toggle  | No (SR only)    | Off            | Enables experimental interface features, with a feedback link.   |
 | First Steps              | toggle  | No              | Off            | Shows the First Steps tutorial toggle in the side menu.          |
-| Two-factor authentication| toggle  | No              | Off            | Requires an authenticator code at sign-in.                       |
+| Two-factor authentication | toggle  | No              | Off            | Requires an authenticator code at sign-in.                       |
 | Password                 | action  | No              | —              | Opens the change-password dialog.                                |
 | Theme                    | select  | No              | System         | Appearance for the current device only.                          |
 | Menu layout              | select  | No              | Side rail      | Navigation as a side rail or a top bar, for the current device.  |
@@ -118,7 +118,7 @@ Shown instead of the tabs while the account is not yet confirmed.
 
 | Value              | Description                                                                       |
 | ------------------ | --------------------------------------------------------------------------------- |
-| `STANDARD_REGISTRY`| Role that sees the Init Topic, Experimental UI toggle, and registry setup steps.  |
+| `STANDARD_REGISTRY` | Role that sees the Init Topic, Experimental UI toggle, and registry setup steps.  |
 | `USER`             | Role that sees the Standard Registry field, profile download, and access keys.    |
 | `local`            | Identity location where Guardian holds the keys; keys can be generated.           |
 | `remote`           | Identity location where keys are held externally; keys must be imported.          |
