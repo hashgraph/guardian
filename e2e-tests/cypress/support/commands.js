@@ -175,10 +175,12 @@ Cypress.Commands.add('getHederaKeys', (token) => {
         url: `${API.ApiServer}${API.RandomKey}`,
         headers: { authorization: token },
         timeout: 600000
-    }).then((res) => {
-        cy.wait(3000); // Wait for Hedera propagation
-        return { id: res.body.id, key: res.body.key };
-    });
+    }).then((res) =>
+        // The value has to be returned from inside the wait: a `.then()` callback that
+        // enqueues cy commands does not yield a synchronously returned value.
+        cy.wait(3000) // Wait for Hedera propagation
+            .then(() => ({ id: res.body.id, key: res.body.key }))
+    );
 });
 
 Cypress.Commands.add('setupLocalProfile', (username, auth, additionalBody = {}) => {

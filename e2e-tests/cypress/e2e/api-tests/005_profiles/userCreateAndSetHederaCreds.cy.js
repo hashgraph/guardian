@@ -42,19 +42,20 @@ context('Profiles', { tags: ['profiles', 'thirdPool', 'all'] }, () => {
             expect(response.body.username).to.equal(name)
             expect(response.body.permissionsGroup.at(0).roleName).to.equal('Default policy user')
             Authorization.getAccessToken(name).then((authorization) => {
-                cy.request({
-                    method: 'PUT',
-                    url: API.ApiServer + 'profiles/' + name,
-                    headers: {
-                        authorization
-                    },
-                    body: {
-                        //bepodo
-                        hederaAccountId: "0.0.2954463",
-                        hederaAccountKey: "3030020100300706052b8104000a042204200501fd610df433a7dd202faa6864d5f270dbb129ccc6455ab5cb1ee44838cab8",
-                        parent: did
-                    },
-                    timeout: 200000
+                cy.getHederaKeys(authorization).then((hederaAccount) => {
+                    cy.request({
+                        method: 'PUT',
+                        url: API.ApiServer + 'profiles/' + name,
+                        headers: {
+                            authorization
+                        },
+                        body: {
+                            hederaAccountId: hederaAccount.id,
+                            hederaAccountKey: hederaAccount.key,
+                            parent: did
+                        },
+                        timeout: 200000
+                    })
                 })
             })
         })
