@@ -117,8 +117,9 @@ If you built the Guardian in Docker, set the `portApi` variable in `cypress.env.
 
 - `portApi` - API port (default: `4200/api/v1`)
 - `baseUrl` - Base URL for the application (default: `http://localhost:4200`)
-- `operatorId` - Hedera operator ID
-- `operatorKey` - Hedera operator key
+- `operatorId` - Hedera operator ID (empty by default – must be supplied)
+- `operatorKey` - Hedera operator key (empty by default – must be supplied)
+- `ipfsStorageApiKey` - IPFS storage API key (empty by default; only needed for a non-local `IPFS_PROVIDER`)
 - `MGSAdmin` - MGS tenant name
 - `MGSIndexerAPIToken` - MGS Indexer API token
 
@@ -381,8 +382,9 @@ When running Docker tests, most variables are prefixed with `CYPRESS_` (the repo
 | CYPRESS_baseUrl | - | Base URL for UI tests. When using `docker compose run cypress-tests`, set `CYPRESS_UI_BASEURL` (it maps to `CYPRESS_baseUrl`) e.g. `http://host.docker.internal:4200`. When using `docker compose run cypress-ui`, it is set automatically to `http://ui`. |
 | CYPRESS_grepTags | all | Tag filter; for multiple tags use spaces (e.g. `preparing policies`). Commas are also accepted. |
 | CYPRESS_grepFilterSpecs | true | Enable tag filtering |
-| CYPRESS_operatorId | - | Hedera operator ID (optional) |
-| CYPRESS_operatorKey | - | Hedera operator key (optional) |
+| CYPRESS_operatorId | - | Hedera operator ID. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_ID`. |
+| CYPRESS_operatorKey | - | Hedera operator key. Required by the `settings` specs; no value is bundled in `cypress.env.json`. Falls back to `OPERATOR_KEY`. |
+| CYPRESS_ipfsStorageApiKey | - | IPFS storage API key sent by the `settings` specs. Falls back to `IPFS_STORAGE_API_KEY`, then to a placeholder – the value is unused while `IPFS_PROVIDER=local`. |
 | CYPRESS_BROWSER | chromium | Browser: `chromium`, `electron`, or `firefox` (must exist in the image) |
 | CYPRESS_apiServer | - | Optional full API origin override (useful on Docker Desktop). Examples: `http://host.docker.internal:3002/` (direct API gateway) or `http://host.docker.internal:4200/api/v1/` (if using Angular proxy) |
 | CYPRESS_SPEC | `cypress/e2e/api-tests/**/*.cy.js` in `cypress-api` | Optional default spec pattern used by the Docker entrypoint when `--spec` is not provided |
@@ -435,7 +437,7 @@ Important caveat for `CYPRESS_baseUrl`:
 When running `docker compose` from `e2e-tests/`, we also load `../guardian-service/configs/.env.guardian`, so `OPERATOR_ID` / `OPERATOR_KEY` can be picked up automatically (they’re mapped to `operatorId` / `operatorKey` inside `entrypoint.sh`).
 
 Parameter summary:
-- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`).
+- **Mandatory (typical runs):** `OPERATOR_ID` + `OPERATOR_KEY` (or `CYPRESS_operatorId` + `CYPRESS_operatorKey`). No operator credentials are committed to `cypress.env.json`, so the `settings` specs fail without them. This is the only Hedera account the suite needs – specs that require their own funded account request one at runtime via `cy.getHederaKeys()` (`GET /demo/random-key`).
 - **Mandatory only for MGS/remote-policy tests:** `CYPRESS_MGSAdmin` + `CYPRESS_MGSIndexerAPIToken`.
 - **Optional:** `ReportName`, `CYPRESS_apiServer`, `CYPRESS_baseUrl`, `CYPRESS_grepTags`, `CYPRESS_grepFilterSpecs`, `CYPRESS_SPEC`.
 
