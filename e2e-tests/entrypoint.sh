@@ -163,6 +163,9 @@ fi
 if [[ -z "${CYPRESS_operatorKey:-}" && -n "${OPERATOR_KEY:-}" ]]; then
   export CYPRESS_operatorKey="$OPERATOR_KEY"
 fi
+if [[ -z "${CYPRESS_ipfsStorageApiKey:-}" && -n "${IPFS_STORAGE_API_KEY:-}" ]]; then
+  export CYPRESS_ipfsStorageApiKey="$IPFS_STORAGE_API_KEY"
+fi
 
 if [[ -n "${CYPRESS_apiServer:-}" ]]; then
   wait_for_api "$CYPRESS_apiServer" "${CYPRESS_API_WAIT_TIMEOUT:-60}" "${CYPRESS_API_WAIT_INTERVAL:-2}"

@@ -1,4 +1,9 @@
-# Configuring Multi Policy using UI
+---
+tags:
+  - tasks
+---
+
+# Configuring Multi Policy
 
 1. [Step By Step Process](page-1.md#id-1.-step-by-step-process)
 2. [Demo Video](page-1.md#demo-video)

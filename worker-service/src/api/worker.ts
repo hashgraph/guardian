@@ -142,7 +142,7 @@ export class Worker extends NatsService {
     constructor(
         private w3cKey: string,
         private w3cProof: string,
-        private readonly filebaseKey: string,
+        private filebaseKey: string,
         private readonly workerID: string,
         private readonly logger: PinoLogger
     ) {
@@ -256,14 +256,22 @@ export class Worker extends NatsService {
                 if (!ipfsStorageApiKey) {
                     throw new Error('Ipfs storage api key setting is empty');
                 }
-                const [w3cKey, w3cProof] = ipfsStorageApiKey.split(';');
+                // `filebase` stores the whole value as a single bucket token, while
+                // `web3storage` stores it as `key;proof` (see the worker startup validator).
+                const isFilebase = process.env.IPFS_PROVIDER === 'filebase';
+                const [w3cKey, w3cProof] = isFilebase
+                    ? [null, null]
+                    : ipfsStorageApiKey.split(';');
+                const filebaseKey = isFilebase ? ipfsStorageApiKey : this.filebaseKey;
                 const ipfsClient = new IpfsClientClass(
                     w3cKey,
-                    w3cProof
+                    w3cProof,
+                    filebaseKey
                 );
                 await ipfsClient.createClient();
                 this.w3cKey = w3cKey;
                 this.w3cProof = w3cProof;
+                this.filebaseKey = filebaseKey;
                 this.ipfsClient = ipfsClient;
                 const secretManager = SecretManager.New();
                 await secretManager.setSecrets('apikey/ipfs', { IPFS_STORAGE_API_KEY: ipfsStorageApiKey });
