@@ -8,7 +8,7 @@ description: >-
 
 The Hedera Guardian is an open source platform for issuing, verifying, and managing digital environmental assets. Follow the steps below to learn about primary capabilities of the Guardian.
 
-## Create a Hedera testnet account
+## 1. Create a Hedera testnet account
 
 The Hedera Guardian operates on the Hedera network and a testnet or mainnet Hedera account is required.
 
@@ -24,7 +24,7 @@ The Hedera Guardian operates on the Hedera network and a testnet or mainnet Hede
 
 </details>
 
-## Import a policy from the Methodology Library.
+## 2. Import a policy from the Methodology Library.
 
 Policy's are digital workflows at the heart of the Hedera Guardian. The Methdology Libary for the Guardian ecosystem includes the world's largest repository of open source digital environmental policies.
 
@@ -39,7 +39,7 @@ Policy's are digital workflows at the heart of the Hedera Guardian. The Methdolo
 
 </details>
 
-## Publish a policy to testnet
+## 3. Publish a policy to testnet
 
 When you publish a policy, users defined in the policy such as project proponents, auditors, registry admins, data providers and other stakeholders defined by the policy author can interact with the policy over the Hedera network by submitting, reviewing, or approving data.
 
@@ -55,7 +55,7 @@ When you publish a policy, users defined in the policy such as project proponent
 
 </details>
 
-## Send data to a policy
+## 4. Send data to a policy
 
 Now that the policy is published, you can interact with the policy and submit data. The policy itself defines a workflow, schema, and policy roles which the Guardian uses to generate forms and even data submission endpoints.
 
@@ -70,7 +70,7 @@ Now that the policy is published, you can interact with the policy and submit da
 
 </details>
 
-## Inspect verifiable credential documents
+## 5. Inspect verifiable credential documents
 
 Every submission in Guardian generates a verifiable credential — a tamper-proof, cryptographically signed record of data. Any data submitted to your policy can be inspected via your Guardian instance or by others across the Hedera Network. This is how registry owners, project developers, auditors, and dMRV providers can collaborate together transparently and securely.
 
