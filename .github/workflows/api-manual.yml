@@ -176,7 +176,7 @@ jobs:
             -e CYPRESS_BROWSER=chromium \
             -e CYPRESS_operatorId=${{ secrets.CI_HEDERA_ACCOUNT }} \
             -e CYPRESS_operatorKey=${{ secrets.CI_HEDERA_PRIV_KEY }} \
-            -e CYPRESS_ipfsStorageApiKey=${{ secrets.IPFS_STORAGE_API_KEY }} \
+            -e CYPRESS_ipfsStorageApiKey="${{ secrets.IPFS_STORAGE_API_KEY }}" \
             -e CYPRESS_MGSAdmin=${{ secrets.MGS_TENANT_NAME }} \
             -e CYPRESS_MGSIndexerAPIToken=${{ secrets.MGSIndexerAPIToken }} \
             -e "CYPRESS_grepTags=${{ inputs.tags }}" \

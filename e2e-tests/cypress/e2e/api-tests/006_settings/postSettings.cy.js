@@ -11,8 +11,22 @@ const testOperatorKey = "302e020100300506032b6570042204206d8024debb71d43324e4b59
 // Required by the API, but unused while IPFS_PROVIDER=local.
 const ipfsStorageApiKey = Cypress.env('ipfsStorageApiKey') || 'local-ipfs-node-unused';
 
+// POST /settings replaces the operator for the whole Guardian instance. Without a real
+// operator to put back afterwards this spec would strand every later spec on the throwaway
+// account, so it is skipped instead of run.
+const realOperatorId = Cypress.env('operatorId');
+const realOperatorKey = Cypress.env('operatorKey');
+const operatorConfigured = Boolean(realOperatorId && realOperatorKey);
+
 context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
     const SRUsername = Cypress.env('SRUser');
+
+    before(function () {
+        if (!operatorConfigured) {
+            cy.log('Skipping: CYPRESS_operatorId / CYPRESS_operatorKey are not set');
+            this.skip();
+        }
+    });
 
     const setSettings = (authorization, operatorId, operatorKey) =>
         cy.request({
@@ -46,11 +60,12 @@ context('Settings', { tags: ['settings', 'thirdPool', 'all'] }, () => {
         })
     })
 
-    // POST /settings overwrites the operator for the whole Guardian instance, so the real
-    // one has to be put back or every later spec runs against the throwaway account.
     after("Restore the real operator", () => {
+        if (!operatorConfigured) {
+            return;
+        }
         Authorization.getAccessToken(SRUsername).then((authorization) => {
-            setSettings(authorization, Cypress.env('operatorId'), Cypress.env('operatorKey'))
+            setSettings(authorization, realOperatorId, realOperatorKey)
         })
     })
 })
