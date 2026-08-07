@@ -216,6 +216,7 @@ export class RequestDocumentBlockComponent
         const schemaRef = data?.schema;
         if (schemaRef && !schemaRef.document && schemaRef.id) {
             this.loading = true;
+            this.schemaService.evictSchemaById(schemaRef.id);
             this.schemaService.resolveSchemaById(schemaRef.id).subscribe({
                 next: (full) => {
                     data.schema = full;
