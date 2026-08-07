@@ -1,3 +1,9 @@
+@property --header-height {
+    syntax: '<length>';
+    inherits: true;
+    initial-value: 0px;
+}
+
 :root,
 :root.guardian-theme-light {
     --font-family-poppins: 'Poppins', sans-serif;
@@ -42,7 +48,9 @@
     --header-color-primary-dark: rgba(0, 0, 0, 1);
     --header-color-shadow: rgba(76, 0, 161, 0.24);
 
-    --header-height: 0px;
+    --topbar-height: 0px;
+    --banner-height: 0px;
+    --header-height: calc(var(--topbar-height) + var(--banner-height));
     --header-height-policy: 175px;
     --header-background-color: #000;
 
@@ -192,11 +200,11 @@
 :root.layout-horizontal {
     --header-width-expand: 0px;
     --header-width-collapse: 0px;
-    --header-height: 56px;
+    --topbar-height: 56px;
 }
 
 @media (max-width: 810px) {
     :root {
-        --header-height: 0px;
+        --topbar-height: 0px;
     }
 }
